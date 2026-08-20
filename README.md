@@ -1,45 +1,35 @@
 # Portfolio
 
-The source of https://aaronsteele.vercel.app, a single self-contained page.
+Source of https://aaronsteele.vercel.app. One HTML file, five photographs, three
+self-hosted fonts, no build step and no dependencies.
 
-`PREFLIGHT.md` holds the design pre-flight the page was built against, answered
-in writing before any markup, per the design playbook this repository's author
-works to. It names the audience, the register, the one reference site and the
-one move taken from it, the accent seed, the type pairing, the signature detail,
-the colour mode and the one visual moment plus its degraded tier.
+`PREFLIGHT.md` holds the design pre-flight it was built against, answered in
+writing before any markup, including the deviations from the house playbook and
+the three defects found by looking at the rendered page rather than the markup.
 
-## What is on the page
+## The moving parts
 
-Two live MCP servers with their repositories and endpoints, a HubSpot
-implementation described generically because the client is not named, two
-adversarial security reviews, and the business and solution analysis track
-record behind all of it.
+| What | How | What happens without it |
+|---|---|---|
+| Parallax plates | `animation-timeline: view()`, off the main thread | A static full-bleed photograph, which is the composition anyway |
+| Reveal on scroll | IntersectionObserver adds a class | Everything is visible |
+| Count-up numbers | rAF, quartic ease, real figures in `data-count` | The final number, immediately |
+| Rotating word | Three true descriptions, crossfaded | The first one |
+| Pointer tilt | CSS 3D, capped at 6 degrees | A flat card |
+| Live tool counts | `tools/list` posted to both MCP servers | A line saying the check did not run |
 
-## The one moving element
+Every one of those has an honest `prefers-reduced-motion` branch, and the hero
+animates on load rather than on scroll because it is already on screen.
 
-A status line under the masthead calls both servers' `tools/list` from the
-reader's own browser, so "these are live" is not something they have to take
-from the page. Both endpoints send `Access-Control-Allow-Origin: *`.
+## Imagery
 
-The static text in the HTML is the designed fallback and reads correctly on its
-own if the fetch never runs. If a call fails, the label says the check did not
-run from this browser, which is what actually happened, rather than claiming the
-server is down.
+Generated through the house image pipeline on a personal key, one colour grade
+across the whole set, all text-free, each tied to the work it sits beside. None
+depicts a real client's product and none stands in for something that must be
+true. See `PREFLIGHT.md` for the table of what each image is doing there.
 
-## Build
-
-There is no build. One HTML file, two self-hosted fonts, no dependencies, no
-external requests except the two status calls above.
+## Build and deploy
 
 ```bash
 npx vercel deploy --prod
 ```
-
-## Checking the layout
-
-The page was verified in a browser at 360px, 414px and 768px for page-level
-horizontal overflow, in both colour schemes, and against the target-size and
-typography numbers in the playbook. Two real defects were found and fixed that
-way: a CSS grid child's default `min-width: auto` let a table escape its own
-scroll container and push the page sideways on a phone, and the contents
-navigation and footer links were 22px tall against a 24px minimum.
