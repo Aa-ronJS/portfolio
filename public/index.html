@@ -4,49 +4,48 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Aaron Steele</title>
-<meta name="description" content="Solution architect and AI engineer. Two live MCP servers you can connect to right now, a HubSpot migration rebuilt on a durable key, and fifteen years of turning messy business rules into systems that hold.">
+<meta name="description" content="Fifteen years walking into other people's messes and coming out with a system. Legislation into eligibility logic, regulators into operating controls, half-finished migrations rebuilt by hand, and now agent systems running in production.">
 <meta name="theme-color" content="#12181f">
 <link rel="preload" as="font" type="font/woff2" href="/fonts/clash-display-var.woff2" crossorigin>
 <link rel="preload" as="font" type="font/woff2" href="/fonts/satoshi-var.woff2" crossorigin>
-<link rel="preload" as="image" href="/img/hero.jpg" fetchpriority="high">
+<link rel="preload" as="image" href="/img/aaron.jpg" fetchpriority="high">
 
 <style>
 /* ===========================================================================
    PRE-FLIGHT (answered before markup; full version in PREFLIGHT.md)
 
-   Audience   a studio owner and a GTM recruiter who decide in three seconds
-              whether this person looks expensive. Phone first.
-   Register   product-confident, brand-forward. A shop front.
-   Reference  agency one-pagers of the Locomotive / Igloo class. The one move
-              taken: full-bleed cinematic plates that scroll at a different rate
-              to the type over them, so the page has real depth.
-   Accent     one hue, sampled from the art set: the molten amber breaking
-              through the storm in hero.jpg. --brand-h 58.
-   Type       Clash Display (variable 200-700) over Satoshi (300-900). Neither is
-              on the AI-favourite list; Clash carries the bold headers.
-   Signature  the amber hairline that draws itself across each act as you reach
-              it, and the big number that counts up beside it.
-   Mode       dark-first and committed, because the photography is dark. The bone
-              acts are the white space, not a second theme.
-   Moment     the full-bleed parallax plates. Degraded tier: static full-bleed
-              photographs, which is the composition either way.
+   Audience   someone deciding whether to hire this person. They have thirty
+              seconds and they want to meet a person, not read a spec.
+   Register   product-confident, brand-forward. A shop front, and the shop is him.
+   Reference  agency one-pagers of the Locomotive / Igloo class. The one move:
+              full-bleed cinematic plates scrolling at a different rate to the
+              type over them, so the page has real depth.
+   Accent     one hue, sampled from the art set: the amber breaking through the
+              storm in hero.jpg. --brand-h 58.
+   Type       Clash Display (200-700) over Satoshi (300-900). Neither is on the
+              AI-favourite list; Clash carries the bold headers.
+   Signature  the amber hairline that draws itself across each capability as you
+              reach it, and the numbered spine running down them.
+   Mode       dark-first and committed; the photography is dark. The bone acts
+              are the white space, not a second theme.
+   Moment     the hero: a real portrait standing in front of a storm-lit plain,
+              with the parallax plate behind it. Degraded tier: the same
+              composition, static.
    Deviation  the playbook prefers one visual idea and warns off permanent dark.
-              The brief asks for motion, imagery and depth, and a brief beats the
-              playbook. Recorded here, per DESIGN.md section 1.
+              The brief asked for motion, imagery, depth and bold headers, and a
+              brief beats the playbook. Recorded per DESIGN.md section 1.
    =========================================================================== */
 
 @font-face{font-family:'Clash';src:url('/fonts/clash-display-var.woff2') format('woff2-variations');font-weight:200 700;font-style:normal;font-display:swap}
 @font-face{font-family:'Satoshi';src:url('/fonts/satoshi-var.woff2') format('woff2-variations');font-weight:300 900;font-style:normal;font-display:swap}
 @font-face{font-family:'Mono';src:url('/fonts/ibm-plex-mono-400.woff2') format('woff2');font-weight:400;font-style:normal;font-display:swap}
 @font-face{font-family:'Mono';src:url('/fonts/ibm-plex-mono-500.woff2') format('woff2');font-weight:500;font-style:normal;font-display:swap}
-/* Metric-matched fallbacks: the swap must not move anything. */
 @font-face{font-family:'Clash Fallback';src:local('Segoe UI Semibold'),local('Helvetica Neue'),local('Arial');size-adjust:94%;ascent-override:96%;descent-override:22%;line-gap-override:0%}
 @font-face{font-family:'Satoshi Fallback';src:local('Segoe UI'),local('Helvetica Neue'),local('Arial');size-adjust:99%;ascent-override:97%;descent-override:24%;line-gap-override:0%}
 
 :root{
   --brand-h:58; --brand-c:0.155;
 
-  /* Sampled off the art set: ink blue-black shadow, molten amber highlight. */
   --ink:        oklch(0.158 0.019 252);
   --ink-2:      oklch(0.205 0.021 252);
   --ink-line:   oklch(0.330 0.020 252);
@@ -73,17 +72,17 @@
 
   --t--1:clamp(0.80rem,0.78rem + 0.10vw,0.875rem);
   --t-0: clamp(1.06rem,1.00rem + 0.30vw,1.25rem);
-  --t-1: clamp(1.28rem,1.14rem + 0.65vw,1.75rem);
+  --t-1: clamp(1.22rem,1.10rem + 0.55vw,1.60rem);
   --t-2: clamp(1.62rem,1.35rem + 1.30vw,2.75rem);
-  --t-3: clamp(2.20rem,1.60rem + 2.90vw,4.75rem);
-  --t-4: clamp(2.80rem,1.70rem + 5.40vw,7.50rem);
-  --t-5: clamp(3.20rem,1.55rem + 8.20vw,10.5rem);
+  --t-3: clamp(2.00rem,1.50rem + 2.40vw,4.00rem);
+  --t-4: clamp(2.60rem,1.70rem + 4.40vw,6.40rem);
+  --t-5: clamp(2.60rem,1.55rem + 4.60vw,6.20rem);
 
   --s2:8px; --s3:12px; --s4:16px; --s5:24px; --s6:32px;
   --s7:48px; --s8:64px; --s9:96px; --s10:128px;
   --act:clamp(96px,15vh,190px);
   --gut:clamp(20px,5vw,80px);
-  --r:0px;                      /* sharp pole, held everywhere */
+  --r:0px;
 
   --ease:cubic-bezier(0.22,1,0.36,1);
   --ease-out:cubic-bezier(0.16,1,0.3,1);
@@ -106,7 +105,7 @@ h1,h2,h3{
 }
 h1{font-size:var(--t-5)}
 h2{font-size:var(--t-4)}
-h3{font-size:var(--t-2); line-height:0.98; letter-spacing:-0.028em}
+h3{font-size:var(--t-2); line-height:0.98}
 p{margin:0 0 1em; text-wrap:pretty}
 p:last-child{margin-bottom:0}
 a{color:inherit}
@@ -117,77 +116,97 @@ a{color:inherit}
   letter-spacing:0.14em; text-transform:uppercase; color:var(--accent); margin:0;
 }
 .wrap{max-width:1500px; margin-inline:auto; padding-inline:var(--gut)}
-.measure{max-inline-size:20ch}
+.measure{max-inline-size:19ch}
 .measure-wide{max-inline-size:50ch}
 
-/* ---------- Acts: dark cinematic, and bone-white air ---------------------- */
 .act{position:relative; padding-block:var(--act)}
 .act--bone{
   background:var(--bone); color:var(--on-bone);
   --fg:var(--on-bone); --fg-dim:var(--on-bone-dim); --fg-mute:var(--on-bone-mute);
   --line:var(--bone-line); --accent:var(--amber-deep);
 }
-.act--air{padding-block:clamp(130px,20vh,280px)}
-.act--deep{
-  background:var(--ink); overflow:clip; isolation:isolate;
-  padding-block:clamp(120px,18vh,240px);
-}
+.act--air{padding-block:clamp(120px,18vh,250px)}
+.act--deep{background:var(--ink); overflow:clip; isolation:isolate; padding-block:clamp(110px,16vh,220px)}
 .act--deep::before{
   content:''; position:absolute; inset:0; z-index:-1; pointer-events:none;
   background:radial-gradient(120% 85% at 78% 18%, oklch(0.76 0.155 58 / 0.10), transparent 62%);
 }
 .act--deep + .act--deep{border-top:1px solid var(--ink-line)}
 
-/* ---------- The one visual idea: full-bleed parallax plates --------------- */
+/* ---------- Parallax plates ---------------------------------------------- */
 .plate{overflow:clip; isolation:isolate}
 .plate__media{position:absolute; inset:-14% 0; z-index:-2}
 .plate__media img{width:100%; height:100%; object-fit:cover}
 .plate__veil{
   position:absolute; inset:0; z-index:-1;
   background:
-    linear-gradient(to right, oklch(0.125 0.02 252 / 0.95) 0%, oklch(0.125 0.02 252 / 0.78) 44%, oklch(0.125 0.02 252 / 0.32) 100%),
-    linear-gradient(to bottom, oklch(0.125 0.02 252 / 0.88) 0%, transparent 24%, transparent 70%, oklch(0.125 0.02 252 / 0.92) 100%);
+    linear-gradient(to right, oklch(0.125 0.02 252 / 0.96) 0%, oklch(0.125 0.02 252 / 0.86) 46%, oklch(0.125 0.02 252 / 0.55) 100%),
+    linear-gradient(to bottom, oklch(0.125 0.02 252 / 0.90) 0%, transparent 26%, transparent 66%, oklch(0.125 0.02 252 / 0.94) 100%);
 }
-/* Scroll-driven, so it runs off the main thread. Where it is unsupported the
-   plate is simply a static full-bleed photograph, which is the composition
-   anyway; nothing on the page depends on the movement. */
 @supports (animation-timeline: view()){
   @media (prefers-reduced-motion: no-preference){
-    .plate__media{
-      animation:drift linear both; animation-timeline:view();
-      animation-range:cover 0% cover 100%;
-    }
-    @keyframes drift{
-      from{transform:translate3d(0,-7%,0) scale(1.05)}
-      to  {transform:translate3d(0, 7%,0) scale(1.05)}
-    }
+    .plate__media{animation:drift linear both; animation-timeline:view(); animation-range:cover 0% cover 100%}
+    @keyframes drift{from{transform:translate3d(0,-7%,0) scale(1.05)} to{transform:translate3d(0,7%,0) scale(1.05)}}
   }
 }
 
 /* ---------- Hero ---------------------------------------------------------- */
-.hero{min-height:100svh; display:grid; align-items:end; padding-bottom:var(--s7)}
+.hero{min-height:100svh; display:grid; align-items:center; padding-block:var(--s9) var(--s8)}
 .hero .wrap{width:100%}
-.hero h1{margin-block:var(--s4) var(--s5)}
-.hero__lede{
-  font-size:var(--t-1); line-height:1.34; color:var(--fg-dim);
-  font-weight:400; max-inline-size:38ch;
+.hero__grid{display:grid; gap:var(--s8); align-items:center}
+@media (min-width:64rem){
+  .hero__grid{grid-template-columns:minmax(0,1.18fr) minmax(0,0.82fr); gap:var(--s10)}
 }
+.hero__grid > *{min-width:0}
+.hero h1{margin-block:var(--s4) var(--s6)}
+.hero h1 em{font-style:normal; color:var(--amber)}
+.hero__lede{font-size:var(--t-1); line-height:1.44; color:var(--fg-dim); max-inline-size:42ch}
 .hero__lede b{color:var(--fg); font-weight:600}
-.hero__sub{margin-top:var(--s5); color:var(--fg-mute); max-inline-size:44ch}
-.hero__foot{
-  display:flex; flex-wrap:wrap; gap:var(--s4) var(--s5); align-items:center;
-  margin-top:var(--s6); padding-top:var(--s5); border-top:1px solid oklch(1 0 0 / 0.15);
-}
 
-/* Rotating word: three true descriptions of the same job. */
-.rot{display:inline-grid; vertical-align:top; text-align:left}
-.rot > span{
-  grid-area:1/1; color:var(--amber); opacity:0; transform:translateY(0.55em);
-  transition:opacity 260ms var(--ease), transform 380ms var(--ease);
-  white-space:nowrap;
+.creds{
+  display:flex; flex-wrap:wrap; gap:var(--s3) var(--s5); margin-top:var(--s7);
+  font-family:var(--mono); font-size:var(--t--1); color:var(--fg-mute);
 }
-.rot > span.out{opacity:0; transform:translateY(-0.55em); transition-duration:240ms}
-.rot > span.on{opacity:1; transform:none; transition:opacity 300ms var(--ease) 120ms, transform 440ms var(--ease) 120ms}
+.creds span{display:inline-flex; align-items:center; gap:var(--s3)}
+.creds span:not(:last-child)::after{content:''; width:4px; height:4px; background:var(--amber); opacity:0.7}
+
+.hero__foot{display:flex; flex-wrap:wrap; gap:var(--s4); align-items:center; margin-top:var(--s7)}
+
+/* The portrait: framed, lifted, and lit from the same side as the plate. */
+.portrait{position:relative; perspective:1200px}
+.portrait__frame{
+  position:relative;
+  background:var(--bone);
+  padding:clamp(14px,1.6vw,26px) clamp(14px,1.6vw,26px) clamp(46px,4.4vw,72px);
+  transform:rotateX(var(--rx,0deg)) rotateY(var(--ry,0deg));
+  transition:transform 480ms var(--ease);
+  box-shadow:
+    0.3px 0.6px 0.8px oklch(0.08 0.02 252 / 0.45),
+    2.4px 4.8px 6px oklch(0.08 0.02 252 / 0.45),
+    9px 18px 24px oklch(0.08 0.02 252 / 0.45),
+    30px 60px 78px oklch(0.08 0.02 252 / 0.45);
+}
+.portrait__frame img{width:100%; height:auto; aspect-ratio:4/5; object-fit:cover; display:block}
+/* The caption sits in the mount, letterpress small, the way a print is labelled. */
+.portrait__frame figcaption{
+  position:absolute; left:clamp(14px,1.6vw,26px); right:clamp(14px,1.6vw,26px);
+  bottom:clamp(16px,1.7vw,28px);
+  display:flex; justify-content:space-between; align-items:baseline; gap:var(--s4);
+  font-family:var(--mono); font-size:0.625rem; letter-spacing:0.16em;
+  text-transform:uppercase; color:var(--on-bone-mute);
+}
+.portrait__frame figcaption b{color:var(--on-bone); font-weight:500}
+.portrait__rule{
+  position:absolute; left:calc(var(--s6) * -1); top:0; bottom:0; width:1px;
+  background:var(--amber); opacity:0.75; transform-origin:top;
+}
+@media (max-width:64rem){.portrait__rule{display:none}}
+@media (hover:hover) and (pointer:fine) and (prefers-reduced-motion: no-preference){
+  .portrait__frame{transition:transform 200ms var(--ease)}
+}
+@media (hover:none),(pointer:coarse),(prefers-reduced-motion: reduce){
+  .portrait__frame{transform:none !important}
+}
 
 .btn{
   display:inline-flex; align-items:center; gap:0.6em; min-height:54px;
@@ -203,53 +222,34 @@ a{color:inherit}
 .btn__arrow{transition:transform 220ms var(--ease)}
 .btn:hover .btn__arrow{transform:translateX(5px)}
 
-.scrollcue{
-  position:absolute; right:var(--gut); bottom:var(--s6); z-index:2; margin:0;
-  font-family:var(--mono); font-size:0.625rem; letter-spacing:0.22em;
-  text-transform:uppercase; color:oklch(1 0 0 / 0.45);
-  display:flex; align-items:center; gap:var(--s3);
+/* ---------- Capabilities: the numbered spine ------------------------------ */
+.caps{margin-top:var(--s10); border-top:1px solid var(--line)}
+.cap{
+  display:grid; gap:var(--s4) var(--s8); padding-block:var(--s8);
+  border-bottom:1px solid var(--line); align-items:start;
 }
-.scrollcue i{display:block; width:46px; height:1px; background:oklch(1 0 0 / 0.3); position:relative; overflow:hidden}
-@media (prefers-reduced-motion: no-preference){
-  .scrollcue i::after{
-    content:''; position:absolute; inset:0; background:var(--amber);
-    transform:translateX(-100%); animation:sweep 2.8s var(--ease) infinite;
-  }
-  @keyframes sweep{0%{transform:translateX(-100%)}55%,100%{transform:translateX(100%)}}
+@media (min-width:58rem){.cap{grid-template-columns:5rem minmax(0,1fr) minmax(0,1.15fr); gap:var(--s9)}}
+.cap > *{min-width:0}
+.cap__n{
+  font-family:var(--mono); font-size:var(--t--1); font-weight:500;
+  letter-spacing:0.1em; color:var(--accent); padding-top:0.5em;
 }
+.cap h3{letter-spacing:-0.028em}
+.cap__body{color:var(--fg-dim); line-height:1.62}
+.cap__body b{color:var(--fg); font-weight:600}
 
-/* ---------- Live counter strip ------------------------------------------- */
-.live{
-  display:grid; gap:var(--s6) var(--s7);
-  grid-template-columns:repeat(auto-fit,minmax(200px,1fr));
-  margin-top:var(--s9);
-}
-.live__cell{border-top:1px solid var(--line); padding-top:var(--s4); min-width:0}
-.live__n{
-  font-family:var(--display); font-weight:600; font-size:var(--t-3);
-  line-height:0.9; letter-spacing:-0.045em; font-variant-numeric:tabular-nums;
-  display:block; color:var(--fg);
-}
-.live__n[data-state="wait"]{color:var(--fg-mute)}
-.live__n[data-state="bad"]{
-  font-family:var(--body); font-size:var(--t--1); font-weight:500;
-  line-height:1.4; letter-spacing:0; color:var(--fg-mute); padding-block:0.6em;
-}
-.live__k{display:block; margin-top:var(--s3); color:var(--fg-dim); font-size:var(--t--1); line-height:1.5}
-
-/* ---------- Reveal on scroll --------------------------------------------- */
+/* ---------- Reveal -------------------------------------------------------- */
 @media (prefers-reduced-motion: no-preference){
   .rise{opacity:0; transform:translate3d(0,28px,0)}
-  .rise.in{
-    opacity:1; transform:none;
-    transition:opacity 640ms var(--ease-out) var(--d,0ms), transform 640ms var(--ease-out) var(--d,0ms);
-  }
+  .rise.in{opacity:1; transform:none; transition:opacity 640ms var(--ease-out) var(--d,0ms), transform 640ms var(--ease-out) var(--d,0ms)}
   .wipe{transform:scaleX(0); transform-origin:left}
   .wipe.in{transform:scaleX(1); transition:transform 900ms var(--ease-out) var(--d,0ms)}
+  .wipe-y{transform:scaleY(0)}
+  .wipe-y.in{transform:scaleY(1); transition:transform 1000ms var(--ease-out) var(--d,0ms)}
 }
 .rule{height:1px; background:var(--accent); border:0; margin:0}
 
-/* ---------- Project acts -------------------------------------------------- */
+/* ---------- Work ---------------------------------------------------------- */
 .proj{display:grid; gap:var(--s8); align-items:center}
 @media (min-width:62rem){
   .proj{grid-template-columns:minmax(0,1.05fr) minmax(0,0.95fr); gap:var(--s10)}
@@ -263,24 +263,19 @@ a{color:inherit}
 .proj__body b{color:var(--fg); font-weight:600}
 
 .chips{display:flex; flex-wrap:wrap; gap:var(--s2); margin:var(--s6) 0 var(--s7); padding:0; list-style:none}
-.chips li{
-  font-family:var(--mono); font-size:0.6875rem; letter-spacing:0.06em;
-  padding:7px 11px; border:1px solid var(--line); color:var(--fg-dim);
-}
+.chips li{font-family:var(--mono); font-size:0.6875rem; letter-spacing:0.06em; padding:7px 11px; border:1px solid var(--line); color:var(--fg-dim)}
 .links{display:flex; flex-wrap:wrap; gap:var(--s3) var(--s6); align-items:center}
 .link{
   display:inline-flex; align-items:center; gap:0.5em; min-height:32px;
-  font-family:var(--mono); font-size:var(--t--1); letter-spacing:0.02em;
-  text-decoration:none; color:var(--fg);
+  font-family:var(--mono); font-size:var(--t--1); text-decoration:none; color:var(--fg);
   box-shadow:inset 0 -1px 0 0 color-mix(in oklch, var(--accent) 55%, transparent);
   transition:color 180ms var(--ease), box-shadow 180ms var(--ease);
 }
 .link:hover{color:var(--accent); box-shadow:inset 0 -1px 0 0 var(--accent)}
 
-/* The figure: a photograph that tilts to the pointer. 3D, but restrained. */
 .proj__figure{perspective:1100px; margin:0}
 .tilt{
-  position:relative; overflow:hidden; border-radius:var(--r);
+  position:relative; overflow:hidden;
   transform:rotateX(var(--rx,0deg)) rotateY(var(--ry,0deg));
   transition:transform 480ms var(--ease);
   box-shadow:
@@ -295,18 +290,10 @@ a{color:inherit}
   background:linear-gradient(140deg, oklch(0.76 0.155 58 / 0.16), transparent 48%);
   mix-blend-mode:screen;
 }
-@media (hover:hover) and (pointer:fine) and (prefers-reduced-motion: no-preference){
-  .tilt{transition:transform 200ms var(--ease)}
-}
-@media (hover:none),(pointer:coarse),(prefers-reduced-motion: reduce){
-  .tilt{transform:none !important}
-}
+@media (hover:hover) and (pointer:fine) and (prefers-reduced-motion: no-preference){.tilt{transition:transform 200ms var(--ease)}}
+@media (hover:none),(pointer:coarse),(prefers-reduced-motion: reduce){.tilt{transform:none !important}}
 
-/* ---------- Big number block --------------------------------------------- */
-.figures{
-  display:grid; gap:var(--s7) var(--s6); margin-top:var(--s10);
-  grid-template-columns:repeat(auto-fit,minmax(170px,1fr));
-}
+.figures{display:grid; gap:var(--s7) var(--s6); margin-top:var(--s10); grid-template-columns:repeat(auto-fit,minmax(170px,1fr))}
 .figures > *{min-width:0}
 .fig__n{
   font-family:var(--display); font-weight:600; font-size:var(--t-2);
@@ -314,6 +301,17 @@ a{color:inherit}
   display:block; color:var(--accent);
 }
 .fig__k{display:block; margin-top:var(--s4); color:var(--fg-dim); font-size:var(--t--1); line-height:1.5; max-inline-size:26ch}
+
+.live{display:grid; gap:var(--s6) var(--s7); grid-template-columns:repeat(auto-fit,minmax(200px,1fr)); margin-top:var(--s8)}
+.live__cell{border-top:1px solid var(--line); padding-top:var(--s4); min-width:0}
+.live__n{
+  font-family:var(--display); font-weight:600; font-size:var(--t-3);
+  line-height:0.9; letter-spacing:-0.045em; font-variant-numeric:tabular-nums;
+  display:block; color:var(--fg);
+}
+.live__n[data-state="wait"]{color:var(--fg-mute)}
+.live__n[data-state="bad"]{font-family:var(--body); font-size:var(--t--1); font-weight:500; line-height:1.4; letter-spacing:0; color:var(--fg-mute); padding-block:0.6em}
+.live__k{display:block; margin-top:var(--s3); color:var(--fg-dim); font-size:var(--t--1); line-height:1.5}
 
 /* ---------- Marquee ------------------------------------------------------- */
 .marq{overflow:hidden; border-block:1px solid var(--ink-line); padding-block:var(--s5); --gap:var(--s7)}
@@ -323,28 +321,19 @@ a{color:inherit}
   .marq:hover .marq__row{animation-play-state:paused}
   @keyframes slide{to{transform:translateX(calc(-50% - (var(--gap) / 2)))}}
 }
-.marq__row span{
-  font-family:var(--display); font-weight:400; font-size:var(--t-1);
-  letter-spacing:-0.02em; color:var(--on-ink-mute); white-space:nowrap;
-}
+.marq__row span{font-family:var(--display); font-weight:400; font-size:var(--t-1); letter-spacing:-0.02em; color:var(--on-ink-mute); white-space:nowrap}
 .marq__row span::after{content:'/'; margin-left:var(--gap); color:var(--amber); opacity:0.6}
 
 /* ---------- Findings ------------------------------------------------------ */
 .finds{display:grid; gap:var(--s6); margin-top:var(--s9); padding:0; list-style:none}
 @media (min-width:54rem){.finds{grid-template-columns:repeat(2,minmax(0,1fr)); gap:var(--s7) var(--s9)}}
 .finds li{border-top:1px solid var(--line); padding-top:var(--s5); min-width:0}
-.finds h4{
-  font-family:var(--display); font-weight:500; font-size:var(--t-1);
-  line-height:1.06; letter-spacing:-0.022em; margin:0 0 var(--s3);
-}
+.finds h4{font-family:var(--display); font-weight:500; font-size:var(--t-1); line-height:1.1; letter-spacing:-0.022em; margin:0 0 var(--s3)}
 .finds p{color:var(--fg-dim); font-size:var(--t--1); line-height:1.65; margin:0}
 
-/* ---------- CV rail ------------------------------------------------------- */
+/* ---------- CV ------------------------------------------------------------ */
 .cv{margin-top:var(--s9); border-top:1px solid var(--line)}
-.cv__row{
-  display:grid; gap:var(--s2) var(--s6); padding-block:var(--s5);
-  border-bottom:1px solid var(--line); align-items:baseline;
-}
+.cv__row{display:grid; gap:var(--s2) var(--s6); padding-block:var(--s5); border-bottom:1px solid var(--line); align-items:baseline}
 @media (min-width:50rem){.cv__row{grid-template-columns:9rem 1fr minmax(0,22rem)}}
 .cv__row > *{min-width:0}
 .cv__when{font-family:var(--mono); font-size:var(--t--1); color:var(--fg-mute); font-variant-numeric:tabular-nums; white-space:nowrap}
@@ -352,163 +341,136 @@ a{color:inherit}
 .cv__what{color:var(--fg-dim); font-size:var(--t--1); line-height:1.5}
 @media (min-width:50rem){.cv__what{text-align:right}}
 
-/* ---------- Footer -------------------------------------------------------- */
 .foot{padding-block:var(--s10) var(--s8)}
-.foot__grid{
-  display:flex; flex-wrap:wrap; gap:var(--s6) var(--s9);
-  justify-content:space-between; align-items:flex-end; margin-top:var(--s10);
-  padding-top:var(--s6); border-top:1px solid var(--ink-line);
-}
+.foot__grid{display:flex; flex-wrap:wrap; gap:var(--s6) var(--s9); justify-content:space-between; align-items:flex-end; margin-top:var(--s10); padding-top:var(--s6); border-top:1px solid var(--ink-line)}
 .foot__note{color:var(--on-ink-mute); font-size:var(--t--1); max-inline-size:44ch; line-height:1.6}
 
 @media (prefers-reduced-motion: reduce){
   *,*::before,*::after{animation-duration:1ms !important; animation-iteration-count:1 !important; transition-duration:1ms !important}
   html:focus-within{scroll-behavior:auto}
-  .rot > span{opacity:0}
-  .rot > span:first-child{opacity:1; transform:none}
 }
 </style>
 </head>
 <body>
 
-<!-- ============================ HERO ============================ -->
+<!-- ============================ HERO: HIM ============================ -->
 <header class="act hero plate">
   <div class="plate__media"><img src="/img/hero.jpg" alt="" width="1800" height="771" fetchpriority="high"></div>
   <div class="plate__veil"></div>
 
   <div class="wrap">
-    <p class="tag rise">Aaron Steele, South Australia</p>
-    <h1 class="rise" style="--d:80ms">Built for the field,<br>not the demo.</h1>
-    <p class="hero__lede rise" style="--d:170ms">
-      Fifteen years turning messy business rules into systems that hold.<br>
-      Lately that means <b class="rot" aria-label="agents, MCP servers and CRM plumbing."><span class="on">agents.</span><span aria-hidden="true">MCP servers.</span><span aria-hidden="true">CRM plumbing.</span></b>
-    </p>
-    <p class="hero__sub rise" style="--d:220ms">
-      Two are live right now. You can connect to either one before you finish this page.
-    </p>
-    <div class="hero__foot rise" style="--d:260ms">
-      <a class="btn" href="#work">See the work <span class="btn__arrow" aria-hidden="true">&rarr;</span></a>
-      <a class="btn btn--ghost" href="#doorknock">Connect a server</a>
+    <div class="hero__grid">
+      <div>
+        <p class="tag rise">Aaron Steele, South Australia</p>
+        <h1 class="rise" style="--d:80ms">I work out what's <em>actually true</em>, then I build it.</h1>
+        <p class="hero__lede rise" style="--d:170ms">
+          Fifteen years of walking into other people's messes. Mining, energy, policing, federal
+          service delivery, councils. Legislation nobody can apply, migrations nobody can reconcile,
+          systems nobody can explain any more. <b>I find the rules underneath, and then I build the
+          thing.</b>
+        </p>
+        <p class="creds rise" style="--d:230ms">
+          <span>15 years</span><span>9 organisations</span><span>TOGAF certified</span><span>Baseline cleared</span>
+        </p>
+        <div class="hero__foot rise" style="--d:290ms">
+          <a class="btn" href="#bring">What I bring <span class="btn__arrow" aria-hidden="true">&rarr;</span></a>
+          <a class="btn btn--ghost" href="#work">See the work</a>
+        </div>
+      </div>
+
+      <figure class="portrait rise" style="--d:140ms; margin:0">
+        <span class="portrait__rule wipe-y" style="--d:400ms" aria-hidden="true"></span>
+        <div class="portrait__frame">
+          <img src="/img/aaron.jpg" alt="Aaron Steele, looking straight at the camera." width="1080" height="1350" fetchpriority="high">
+          <figcaption><b>Aaron Steele</b><span>Solution architect</span></figcaption>
+        </div>
+      </figure>
     </div>
   </div>
-
-  <p class="scrollcue" aria-hidden="true">Scroll <i></i></p>
 </header>
 
-<!-- ============================ LIVE ============================ -->
-<section class="act act--bone act--air" id="work">
+<!-- ============================ WHAT I BRING ============================ -->
+<section class="act act--bone act--air" id="bring">
   <div class="wrap">
-    <p class="tag rise">Right now</p>
-    <h2 class="rise measure" style="--d:80ms">Not a screenshot.</h2>
+    <p class="tag rise">What I bring</p>
+    <h2 class="rise measure" style="--d:80ms">Most people do one of these.</h2>
+    <p class="rise measure-wide" style="--d:150ms; margin-top:var(--s6); color:var(--fg-dim)">
+      The analyst who can run the workshop usually hands over a document. The engineer who can build
+      it usually needs the document. I have spent fifteen years being both, which is the only reason
+      any of the work below exists.
+    </p>
 
-    <div class="live">
-      <div class="live__cell rise" style="--d:140ms">
-        <span class="live__n" id="n-rain" data-state="wait">&mdash;</span>
-        <span class="live__k">tools answering on Rain Check, asked from your browser just now</span>
+    <div class="caps">
+      <div class="cap rise">
+        <div class="cap__n">01</div>
+        <h3>I make the unexplainable explicit.</h3>
+        <div class="cap__body">
+          <p>Legislation turned into eligibility logic for the <b>National Redress Scheme</b>, as a rules
+             engine the people accountable for it could actually read. A regulator's ring-fencing
+             guideline turned into operating controls at <b>Essential Energy</b>, separating a regulated
+             electricity network from its contestable arm across four workstreams. If nobody can say
+             how a thing is supposed to work, that is the job, and I like it.</p>
+        </div>
       </div>
-      <div class="live__cell rise" style="--d:220ms">
-        <span class="live__n" id="n-door" data-state="wait">&mdash;</span>
-        <span class="live__k">tools answering on Doorknock, same request, same moment</span>
+
+      <div class="cap rise" style="--d:80ms">
+        <div class="cap__n">02</div>
+        <h3>I build it, not just specify it.</h3>
+        <div class="cap__body">
+          <p>A national charity's donor migration was out by <b>$3.8 million and 3,600 transactions</b>
+             because it had matched people on email address instead of the real identifier. I did not
+             write a report about it. I rebuilt <b>37,729 records</b> on the right key myself and
+             reconciled them to their control totals.</p>
+          <p>The two systems further down this page are also mine: written, deployed, public, and
+             running right now.</p>
+        </div>
       </div>
-      <div class="live__cell rise" style="--d:300ms">
-        <span class="live__n" data-count="3">0</span>
-        <span class="live__k">public repositories, MIT licensed, nothing behind a login</span>
+
+      <div class="cap rise" style="--d:160ms">
+        <div class="cap__n">03</div>
+        <h3>I tell you the truth about it, including when it's mine.</h3>
+        <div class="cap__body">
+          <p>On a security review I signed in as a different retailer and <b>ended their live
+             broadcast</b>, because reading the code and saying "this looks exploitable" is not the same
+             as proving it. On the same review I rejected a reported flaw that turned out not to be
+             one.</p>
+          <p>I do the same to my own work. Both of my servers ship a script whose only job is to
+             check them against sources I do not control, and it has caught things my own tests
+             could not.</p>
+        </div>
       </div>
-      <div class="live__cell rise" style="--d:380ms">
-        <span class="live__n" data-count="0">0</span>
-        <span class="live__k">mocks in any test suite, in either project</span>
+
+      <div class="cap rise" style="--d:240ms">
+        <div class="cap__n">04</div>
+        <h3>And I can hold the room.</h3>
+        <div class="cap__body">
+          <p>Fifteen years of workshops with people who disagree with each other, executives who want
+             a different answer, and regulators who want evidence. I have mentored teams of analysts
+             through it and I can talk to a head of sales and a mine site superintendent in the same
+             week, in language each of them would use.</p>
+        </div>
       </div>
     </div>
   </div>
 </section>
-
-<!-- ============================ RAIN CHECK ============================ -->
-<section class="act act--deep">
-
-  <div class="wrap">
-    <div class="proj">
-      <div>
-        <div class="proj__eyebrow rise"><span class="tag">Live &middot; 01</span><hr class="rule wipe" style="--d:120ms"></div>
-        <h3 class="rise" style="--d:80ms">Rain Check</h3>
-        <div class="proj__body rise" style="--d:160ms">
-          <p>Not "what is the weather". <b>Can we book the Thursday slab pour in Bendigo.</b></p>
-          <p>Six tools reading live forecast, daylight and public holiday data, answering for a
-             specific trade on a specific day. Every threshold behind a verdict comes back with it,
-             and an ambiguous suburb comes back as a question rather than a guess.</p>
-        </div>
-        <ul class="chips rise" style="--d:220ms">
-          <li>MCP</li><li>Streamable HTTP</li><li>OpenAPI</li><li>TypeScript</li><li>Serverless</li>
-        </ul>
-        <div class="links rise" style="--d:280ms">
-          <a class="link" href="https://rain-check-mu.vercel.app">Open it <span aria-hidden="true">&rarr;</span></a>
-          <a class="link" href="https://github.com/Aa-ronJS/rain-check">Source</a>
-          <a class="link" href="https://rain-check-mu.vercel.app/openapi.json">OpenAPI</a>
-        </div>
-      </div>
-      <figure class="proj__figure rise" style="--d:200ms">
-        <div class="tilt"><img src="/img/slab.jpg" alt="A freshly poured concrete slab on a suburban building site, tools left mid-job, under a breaking storm sky." width="1400" height="933" loading="lazy"></div>
-      </figure>
-    </div>
-  </div>
-</section>
-
-<!-- ============================ DOORKNOCK ============================ -->
-<section class="act act--deep" id="doorknock">
-
-  <div class="wrap">
-    <div class="proj proj--flip">
-      <div>
-        <div class="proj__eyebrow rise"><span class="tag">Live &middot; 02</span><hr class="rule wipe" style="--d:120ms"></div>
-        <h3 class="rise" style="--d:80ms">Doorknock</h3>
-        <div class="proj__body rise" style="--d:160ms">
-          <p>Everything a salesperson could learn about a company <b>before they knock</b>, read live
-             off that company's own website and DNS.</p>
-          <p>Which marketing and CRM software is loaded on their site, who runs their email, whether
-             their domain can be spoofed. Then a score against your rules and a write straight into
-             HubSpot. The token travels on the connection header, never as a tool argument, so it
-             never enters the model's context.</p>
-        </div>
-        <ul class="chips rise" style="--d:220ms">
-          <li>HubSpot CRM API</li><li>MCP</li><li>Custom GPT Action</li><li>DNS over HTTPS</li><li>Rules as data</li>
-        </ul>
-        <div class="links rise" style="--d:280ms">
-          <a class="link" href="https://doorknock-eight.vercel.app">Open it <span aria-hidden="true">&rarr;</span></a>
-          <a class="link" href="https://github.com/Aa-ronJS/doorknock">Source</a>
-          <a class="link" href="https://doorknock-eight.vercel.app/v1/research?domain=servicem8.com">Run one now</a>
-        </div>
-      </div>
-      <figure class="proj__figure rise" style="--d:200ms">
-        <div class="tilt"><img src="/img/doors.jpg" alt="A row of weathered front doors along a bluestone terrace at dusk, warm light spilling from one open doorway." width="1400" height="933" loading="lazy"></div>
-      </figure>
-    </div>
-  </div>
-</section>
-
-<!-- ============================ MARQUEE ============================ -->
-<div class="marq" aria-hidden="true">
-  <div class="marq__row">
-    <span>HubSpot</span><span>Claude</span><span>MCP</span><span>Salesforce</span><span>OpenAPI</span><span>n8n</span><span>Xero</span><span>Stripe</span><span>TOGAF</span><span>Azure DevOps</span><span>Dynamics</span><span>Raisely</span>
-    <span>HubSpot</span><span>Claude</span><span>MCP</span><span>Salesforce</span><span>OpenAPI</span><span>n8n</span><span>Xero</span><span>Stripe</span><span>TOGAF</span><span>Azure DevOps</span><span>Dynamics</span><span>Raisely</span>
-  </div>
-</div>
 
 <!-- ============================ HUBSPOT ============================ -->
-<section class="act act--bone act--air">
+<section class="act act--deep" id="work">
   <div class="wrap">
     <div class="proj">
       <div>
-        <p class="tag rise">HubSpot, hands-on since 2016</p>
+        <div class="proj__eyebrow rise"><span class="tag">Selected work, 01</span><hr class="rule wipe" style="--d:120ms"></div>
         <h2 class="rise" style="--d:80ms">$3.8m out.</h2>
         <div class="proj__body rise" style="--d:180ms; margin-top:var(--s6)">
-          <p>A national charity's donor migration had matched people on <b>email address</b> instead of
-             the source system's real identifier. Against their own reconciliation it was out by
-             roughly $3.8 million and 3,600 transactions.</p>
-          <p>I took it over as technical lead and rebuilt the dataset on the durable key myself,
-             reconciled to their control totals. Donations arrive from Raisely, Stripe, Square and
-             PayPal, and post through to Xero.</p>
+          <p>Technical lead on a stalled HubSpot implementation for a national charity, through a
+             solutions partner. Donor and donation data off a legacy platform, integrated with
+             Raisely, Stripe, Square and PayPal, posting through to Xero.</p>
+          <p>The earlier migration had matched people on <b>email address</b> rather than the source
+             system's durable identifier. Against the client's own reconciliation it was out by
+             roughly $3.8 million. I rebuilt the dataset by hand on the right key.</p>
         </div>
         <p class="rise" style="--d:260ms; margin-top:var(--s6); font-family:var(--mono); font-size:var(--t--1); color:var(--fg-mute)">
-          Client and partner not named, by choice.
+          Client and partner not named, by choice. Hands-on in HubSpot since 2016.
         </p>
       </div>
       <figure class="proj__figure rise" style="--d:200ms">
@@ -525,13 +487,20 @@ a{color:inherit}
   </div>
 </section>
 
+<div class="marq" aria-hidden="true">
+  <div class="marq__row">
+    <span>HubSpot</span><span>Claude</span><span>MCP</span><span>Salesforce</span><span>OpenAPI</span><span>n8n</span><span>Xero</span><span>Stripe</span><span>TOGAF</span><span>Azure DevOps</span><span>Dynamics</span><span>Raisely</span>
+    <span>HubSpot</span><span>Claude</span><span>MCP</span><span>Salesforce</span><span>OpenAPI</span><span>n8n</span><span>Xero</span><span>Stripe</span><span>TOGAF</span><span>Azure DevOps</span><span>Dynamics</span><span>Raisely</span>
+  </div>
+</div>
+
 <!-- ============================ ADVERSARIAL ============================ -->
 <section class="act plate">
   <div class="plate__media"><img src="/img/seam.jpg" alt="" width="1400" height="933" loading="lazy"></div>
   <div class="plate__veil"></div>
 
   <div class="wrap">
-    <p class="tag rise">Adversarial review</p>
+    <div class="proj__eyebrow rise"><span class="tag">Selected work, 02</span><hr class="rule wipe" style="--d:120ms"></div>
     <h2 class="rise measure" style="--d:80ms">I broke into it myself.</h2>
     <p class="proj__body rise measure-wide" style="--d:160ms; margin-top:var(--s6)">
       Two security reviews of a live video shopping platform built largely by agents. Six exploits
@@ -560,29 +529,102 @@ a{color:inherit}
       <li class="rise" style="--d:270ms">
         <h4>One reported flaw that was not one</h4>
         <p>An agent reported a leaking stream key. I traced the path, found the serialiser that
-           redacts it, and said so. A review that accepts everything it is handed is not a review.</p>
+           redacts it, and said so.</p>
       </li>
     </ul>
   </div>
 </section>
 
-<!-- ============================ TRACK RECORD ============================ -->
+<!-- ============================ LIVE SYSTEMS ============================ -->
 <section class="act act--bone act--air">
   <div class="wrap">
-    <p class="tag rise">Before all this</p>
+    <div class="proj__eyebrow rise"><span class="tag">Selected work, 03</span><hr class="rule wipe" style="--d:120ms"></div>
+    <h2 class="rise measure" style="--d:80ms">Two of them are running now.</h2>
+    <p class="rise measure-wide" style="--d:150ms; margin-top:var(--s6); color:var(--fg-dim)">
+      Both are public, MIT licensed, and answering as you read this. The counts below were fetched
+      from them by your own browser a moment ago.
+    </p>
+
+    <div class="live">
+      <div class="live__cell rise" style="--d:120ms">
+        <span class="live__n" id="n-rain" data-state="wait">&mdash;</span>
+        <span class="live__k">tools answering on <b>Rain Check</b>, which tells a trades business whether Thursday's slab pour will survive the weather</span>
+      </div>
+      <div class="live__cell rise" style="--d:200ms">
+        <span class="live__n" id="n-door" data-state="wait">&mdash;</span>
+        <span class="live__k">tools on <b>Doorknock</b>, which learns what a company runs before a salesperson knocks, and writes it into HubSpot</span>
+      </div>
+      <div class="live__cell rise" style="--d:280ms">
+        <span class="live__n" data-count="3">0</span>
+        <span class="live__k">public repositories, nothing behind a login</span>
+      </div>
+      <div class="live__cell rise" style="--d:360ms">
+        <span class="live__n" data-count="0">0</span>
+        <span class="live__k">mocks in any test suite, in either project</span>
+      </div>
+    </div>
+
+    <div class="proj" style="margin-top:var(--s10)">
+      <div>
+        <h3 class="rise">Rain Check</h3>
+        <div class="proj__body rise" style="--d:80ms; margin-top:var(--s5)">
+          <p>Not "what is the weather". <b>Can we book the Thursday slab pour in Bendigo.</b> Six tools
+             reading live forecast, daylight and public holiday data, answering for a specific trade
+             on a specific day. An ambiguous suburb comes back as a question, never a guess.</p>
+        </div>
+        <ul class="chips rise" style="--d:140ms"><li>MCP</li><li>OpenAPI</li><li>TypeScript</li><li>Serverless</li></ul>
+        <div class="links rise" style="--d:200ms">
+          <a class="link" href="https://rain-check-mu.vercel.app">Open it <span aria-hidden="true">&rarr;</span></a>
+          <a class="link" href="https://github.com/Aa-ronJS/rain-check">Source</a>
+        </div>
+      </div>
+      <figure class="proj__figure rise" style="--d:160ms">
+        <div class="tilt"><img src="/img/slab.jpg" alt="A freshly poured concrete slab on a suburban building site, tools left mid-job, under a breaking storm sky." width="1400" height="933" loading="lazy"></div>
+      </figure>
+    </div>
+
+    <div class="proj proj--flip" style="margin-top:var(--s10)">
+      <div>
+        <h3 class="rise">Doorknock</h3>
+        <div class="proj__body rise" style="--d:80ms; margin-top:var(--s5)">
+          <p>Everything a salesperson could learn about a company <b>before they knock</b>, read live
+             off that company's own website and DNS, then scored against your rules and written into
+             HubSpot. The credential travels on the connection header, never as a tool argument, so
+             it never enters the model's context.</p>
+        </div>
+        <ul class="chips rise" style="--d:140ms"><li>HubSpot CRM API</li><li>MCP</li><li>Custom GPT Action</li><li>Rules as data</li></ul>
+        <div class="links rise" style="--d:200ms">
+          <a class="link" href="https://doorknock-eight.vercel.app">Open it <span aria-hidden="true">&rarr;</span></a>
+          <a class="link" href="https://github.com/Aa-ronJS/doorknock">Source</a>
+          <a class="link" href="https://doorknock-eight.vercel.app/v1/research?domain=servicem8.com">Run one now</a>
+        </div>
+      </div>
+      <figure class="proj__figure rise" style="--d:160ms">
+        <div class="tilt"><img src="/img/doors.jpg" alt="A row of weathered front doors along a bluestone terrace at dusk, warm light spilling from one open doorway." width="1400" height="933" loading="lazy"></div>
+      </figure>
+    </div>
+  </div>
+</section>
+
+<!-- ============================ TRACK RECORD ============================ -->
+<section class="act act--deep">
+  <div class="wrap">
+    <p class="tag rise">Where I have done it</p>
     <h2 class="rise measure" style="--d:80ms">Fifteen years of load-bearing work.</h2>
     <p class="proj__body rise measure-wide" style="--d:160ms; margin-top:var(--s6)">
-      Mining, energy, policing, federal service delivery, local government. Mostly the same job: take
-      something nobody can quite explain, work out the rules it actually runs on, and get them built.
+      Mostly the same job in different clothes: take something nobody can quite explain, work out the
+      rules it actually runs on, and get them built.
     </p>
 
     <div class="cv">
       <div class="cv__row rise"><span class="cv__when">2016 to now</span><span class="cv__who">HubSpot and CRM consultant</span><span class="cv__what">Independent. Configuration, migration, automation, integration.</span></div>
-      <div class="cv__row rise" style="--d:60ms"><span class="cv__when">2022 to now</span><span class="cv__who">BHP</span><span class="cv__what">Senior analyst and architect. Immutable backups, refuge chamber monitoring.</span></div>
+      <div class="cv__row rise" style="--d:60ms"><span class="cv__when">2022 to now</span><span class="cv__who">BHP</span><span class="cv__what">Senior analyst and architect. Immutable backups, refuge chamber monitoring. Mentors junior analysts.</span></div>
       <div class="cv__row rise" style="--d:120ms"><span class="cv__when">2024 to 2025</span><span class="cv__who">Essential Energy</span><span class="cv__what">Ring-fencing a regulated network from its contestable arm. Four workstreams.</span></div>
       <div class="cv__row rise" style="--d:180ms"><span class="cv__when">2021 to 2022</span><span class="cv__who">City of Marion</span><span class="cv__what">Lead analyst on a council-wide asset management platform.</span></div>
       <div class="cv__row rise" style="--d:240ms"><span class="cv__when">2020 to 2021</span><span class="cv__who">SA Police</span><span class="cv__what">Project Shield. Frontline policing transformation.</span></div>
       <div class="cv__row rise" style="--d:300ms"><span class="cv__when">2018 to 2020</span><span class="cv__who">Services Australia</span><span class="cv__what">National Redress Scheme. Designed the eligibility rules engine.</span></div>
+      <div class="cv__row rise" style="--d:360ms"><span class="cv__when">2018</span><span class="cv__who">DVE Business Solutions</span><span class="cv__what">CRM and ERP implementations in the university sector.</span></div>
+      <div class="cv__row rise" style="--d:420ms"><span class="cv__when">2015 to 2018</span><span class="cv__who">Australian Institute of Business, Dept of Industry</span><span class="cv__what">Enterprise transformation, a new CRM, corporate network reform.</span></div>
     </div>
   </div>
 </section>
@@ -613,13 +655,10 @@ a{color:inherit}
 (function () {
   var reduced = matchMedia('(prefers-reduced-motion: reduce)').matches;
 
-  /* ---- Reveal on scroll. Everything is visible if this never runs. ---- */
-  var hero = document.querySelectorAll('header .rise, header .wipe');
-  var rest = document.querySelectorAll('main .rise, main .wipe, section .rise, section .wipe, footer .rise, footer .wipe');
+  var hero = document.querySelectorAll('header .rise, header .wipe, header .wipe-y');
+  var rest = document.querySelectorAll('section .rise, section .wipe, footer .rise, footer .wipe');
 
-  requestAnimationFrame(function () {
-    hero.forEach(function (el) { el.classList.add('in'); });
-  });
+  requestAnimationFrame(function () { hero.forEach(function (el) { el.classList.add('in'); }); });
 
   if (reduced || !('IntersectionObserver' in window)) {
     rest.forEach(function (el) { el.classList.add('in'); });
@@ -632,7 +671,7 @@ a{color:inherit}
     rest.forEach(function (el) { io.observe(el); });
   }
 
-  /* ---- Count up. Real numbers only; the final value lives in the markup. ---- */
+  /* Count up. Real numbers only; the final value lives in the markup. */
   var counters = document.querySelectorAll('[data-count]');
   function land(el) { el.textContent = Number(el.dataset.count).toLocaleString('en-AU'); }
   if (reduced || !('IntersectionObserver' in window)) {
@@ -653,24 +692,10 @@ a{color:inherit}
     counters.forEach(function (el) { co.observe(el); });
   }
 
-  /* ---- Rotating word. Three true descriptions of the same job. ---- */
-  var rot = document.querySelector('.rot');
-  if (rot && !reduced) {
-    var words = rot.querySelectorAll('span'), i = 0;
-    setInterval(function () {
-      var leaving = words[i];
-      leaving.classList.remove('on');
-      leaving.classList.add('out');
-      setTimeout(function () { leaving.classList.remove('out'); }, 300);
-      i = (i + 1) % words.length;
-      words[i].classList.add('on');
-    }, 2800);
-  }
-
-  /* ---- Pointer tilt. Touch and reduced motion get the composed still. ---- */
+  /* Pointer tilt on the portrait and the work cards. Touch gets the flat still. */
   if (matchMedia('(hover: hover) and (pointer: fine)').matches && !reduced) {
-    document.querySelectorAll('.tilt').forEach(function (card) {
-      var frame = null;
+    document.querySelectorAll('.tilt, .portrait__frame').forEach(function (card) {
+      var frame = null, max = card.classList.contains('portrait__frame') ? 4 : 6;
       card.addEventListener('pointermove', function (ev) {
         if (frame) return;
         frame = requestAnimationFrame(function () {
@@ -678,9 +703,8 @@ a{color:inherit}
           var r = card.getBoundingClientRect();
           var x = (ev.clientX - r.left) / r.width - 0.5;
           var y = (ev.clientY - r.top) / r.height - 0.5;
-          /* Capped at 6 degrees. Past about 8 a card reads as a gimmick. */
-          card.style.setProperty('--ry', (x * 6).toFixed(2) + 'deg');
-          card.style.setProperty('--rx', (-y * 6).toFixed(2) + 'deg');
+          card.style.setProperty('--ry', (x * max).toFixed(2) + 'deg');
+          card.style.setProperty('--rx', (-y * max).toFixed(2) + 'deg');
         });
       });
       card.addEventListener('pointerleave', function () {
@@ -690,9 +714,8 @@ a{color:inherit}
     });
   }
 
-  /* ---- The live counts, asked of the real servers from this browser.
-     If a call does not complete the cell says so rather than showing a number
-     that would be a guess. Both endpoints send Access-Control-Allow-Origin: *. */
+  /* The live counts, asked of the real servers from this browser. If a call does
+     not complete the cell says so rather than showing a number that is a guess. */
   [
     { id: 'n-rain', url: 'https://rain-check-mu.vercel.app/mcp' },
     { id: 'n-door', url: 'https://doorknock-eight.vercel.app/mcp' }
