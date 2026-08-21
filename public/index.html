@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Aaron Steele</title>
-<meta name="description" content="Fifteen years walking into other people's messes and coming out with a system. Legislation into eligibility logic, regulators into operating controls, half-finished migrations rebuilt by hand, and now agent systems running in production.">
+<meta name="description" content="Business analyst since 2015 who also builds the thing. HubSpot, Salesforce, Zoho, Zapier, Make, n8n and AI agents. Usually this takes two people.">
 <meta name="theme-color" content="#12181f">
 <link rel="preload" as="font" type="font/woff2" href="/fonts/clash-display-var.woff2" crossorigin>
 <link rel="preload" as="font" type="font/woff2" href="/fonts/satoshi-var.woff2" crossorigin>
@@ -238,6 +238,25 @@ a{color:inherit}
 .cap__body{color:var(--fg-dim); line-height:1.62}
 .cap__body b{color:var(--fg); font-weight:600}
 
+
+/* ---------- Claude Code: what it buys you --------------------------------- */
+/* No rule of its own: the last capability row already closes with one, and two
+   hairlines with 100px of nothing between them read as a mistake. */
+.whatthen{margin-top:var(--s9)}
+.doable{
+  display:grid; gap:var(--s5) var(--s8); margin:0; padding:0; list-style:none;
+}
+@media (min-width:56rem){.doable{grid-template-columns:repeat(2,minmax(0,1fr))}}
+.doable > li{
+  min-width:0; padding-left:var(--s6); position:relative;
+  color:var(--fg-dim); line-height:1.6; max-inline-size:44ch;
+}
+.doable > li::before{
+  content:''; position:absolute; left:0; top:0.62em;
+  width:14px; height:1px; background:var(--accent);
+}
+.doable b{color:var(--fg); font-weight:600}
+
 /* ---------- Reveal -------------------------------------------------------- */
 @media (prefers-reduced-motion: no-preference){
   .rise{opacity:0; transform:translate3d(0,28px,0)}
@@ -362,19 +381,19 @@ a{color:inherit}
     <div class="hero__grid">
       <div>
         <p class="tag rise">Aaron Steele, South Australia</p>
-        <h1 class="rise" style="--d:80ms">I work out what's <em>actually true</em>, then I build it.</h1>
+        <h1 class="rise" style="--d:80ms">Most analysts hand you a document.<br><em>I hand you the thing that works.</em></h1>
         <p class="hero__lede rise" style="--d:170ms">
-          Fifteen years of walking into other people's messes. Mining, energy, policing, federal
-          service delivery, councils. Legislation nobody can apply, migrations nobody can reconcile,
-          systems nobody can explain any more. <b>I find the rules underneath, and then I build the
-          thing.</b>
+          Business analyst since 2015, in mining, policing, federal service delivery and local
+          government. Since 2016 I have also been building the automation myself, so
+          <b>the person who works out what you need is the person who builds it.</b> That is normally
+          two people and a handover, and the handover is where the meaning goes missing.
         </p>
         <p class="creds rise" style="--d:230ms">
-          <span>15 years</span><span>9 organisations</span><span>TOGAF certified</span><span>Baseline cleared</span>
+          <span>Analyst since 2015</span><span>Building since 2016</span><span>TOGAF certified</span><span>Baseline cleared</span>
         </p>
         <div class="hero__foot rise" style="--d:290ms">
-          <a class="btn" href="#bring">What I bring <span class="btn__arrow" aria-hidden="true">&rarr;</span></a>
-          <a class="btn btn--ghost" href="#work">See the work</a>
+          <a class="btn" href="#bring">What I do <span class="btn__arrow" aria-hidden="true">&rarr;</span></a>
+          <a class="btn btn--ghost" href="#claude">Working with AI</a>
         </div>
       </div>
 
@@ -382,7 +401,7 @@ a{color:inherit}
         <span class="portrait__rule wipe-y" style="--d:400ms" aria-hidden="true"></span>
         <div class="portrait__frame">
           <img src="/img/aaron.jpg" alt="Aaron Steele, looking straight at the camera." width="1080" height="1350" fetchpriority="high">
-          <figcaption><b>Aaron Steele</b><span>Solution architect</span></figcaption>
+          <figcaption><b>Aaron Steele</b><span>Business analyst &amp; builder</span></figcaption>
         </div>
       </figure>
     </div>
@@ -392,85 +411,178 @@ a{color:inherit}
 <!-- ============================ WHAT I BRING ============================ -->
 <section class="act act--bone act--air" id="bring">
   <div class="wrap">
-    <p class="tag rise">What I bring</p>
-    <h2 class="rise measure" style="--d:80ms">Most people do one of these.</h2>
+    <p class="tag rise">What I do</p>
+    <h2 class="rise measure" style="--d:80ms">Usually this takes two people.</h2>
     <p class="rise measure-wide" style="--d:150ms; margin-top:var(--s6); color:var(--fg-dim)">
-      The analyst who can run the workshop usually hands over a document. The engineer who can build
-      it usually needs the document. I have spent fifteen years being both, which is the only reason
-      any of the work below exists.
+      Cloud architects are not hard to find. An analyst who can sit with your team, work out what the
+      business actually needs, and then go and build it is much harder. That is the job I do, and
+      everything below came out of doing both halves.
     </p>
 
     <div class="caps">
       <div class="cap rise">
         <div class="cap__n">01</div>
-        <h3>I make the unexplainable explicit.</h3>
+        <h3>I find out what the business actually needs.</h3>
         <div class="cap__body">
-          <p>Legislation turned into eligibility logic for the <b>National Redress Scheme</b>, as a rules
-             engine the people accountable for it could actually read. A regulator's ring-fencing
-             guideline turned into operating controls at <b>Essential Energy</b>, separating a regulated
-             electricity network from its contestable arm across four workstreams. If nobody can say
-             how a thing is supposed to work, that is the job, and I like it.</p>
+          <p>Not what somebody asked for in a meeting. The real thing, pulled out of people who
+             disagree with each other, processes nobody has written down, and rules that only exist
+             in somebody's head.</p>
+          <p>On the <b>National Redress Scheme</b> that meant turning the legislation into the
+             decisions the system makes about who qualifies, written so the people accountable for
+             those decisions could read them and check them. Getting that wrong is expensive, and you
+             find out late. It is the part that gets rushed, and it is most of the value.</p>
         </div>
       </div>
 
       <div class="cap rise" style="--d:80ms">
         <div class="cap__n">02</div>
-        <h3>I build it, not just specify it.</h3>
+        <h3>Then I build it, instead of writing a report about it.</h3>
         <div class="cap__body">
-          <p>A national charity's donor migration was out by <b>$3.8 million and 3,600 transactions</b>
-             because it had matched people on email address instead of the real identifier. I did not
-             write a report about it. I rebuilt <b>37,729 records</b> on the right key myself and
-             reconciled them to their control totals.</p>
-          <p>The two systems further down this page are also mine: written, deployed, public, and
-             running right now.</p>
+          <p>A charity's donor records had been merged on <b>email address</b> instead of the account
+             number their old system used, and their donation totals were out by <b>$3.8 million</b>.
+             Nobody had worked out why.</p>
+          <p>I found it, then rebuilt <b>37,729 donations</b> against the right donors myself and
+             reconciled them to the charity's own books. Ten years across HubSpot, Salesforce, Zoho,
+             Zapier, Make and n8n means I can usually just fix a thing like that faster than I could
+             brief somebody else to.</p>
         </div>
       </div>
 
       <div class="cap rise" style="--d:160ms">
         <div class="cap__n">03</div>
-        <h3>I tell you the truth about it, including when it's mine.</h3>
+        <h3>I try to break it before your customers do.</h3>
         <div class="cap__body">
-          <p>On a security review I signed in as a different retailer and <b>ended their live
-             broadcast</b>, because reading the code and saying "this looks exploitable" is not the same
-             as proving it. On the same review I rejected a reported flaw that turned out not to be
-             one.</p>
-          <p>I do the same to my own work. Both of my servers ship a script whose only job is to
-             check them against sources I do not control, and it has caught things my own tests
-             could not.</p>
+          <p>Reading code and saying "that looks risky" is not the same as proving it. Reviewing a
+             live shopping platform, I <b>logged into somebody else's account and shut down their
+             broadcast</b>, so nobody had to argue about whether the gap was real. It was closed that
+             week.</p>
+          <p>On the same review I told them one of the reported problems was not a problem at all.
+             Both halves of that matter: I will not wave something through, and I will not invent a
+             finding to look thorough.</p>
         </div>
       </div>
 
       <div class="cap rise" style="--d:240ms">
         <div class="cap__n">04</div>
-        <h3>And I can hold the room.</h3>
+        <h3>And I can explain it to anyone in the room.</h3>
         <div class="cap__body">
-          <p>Fifteen years of workshops with people who disagree with each other, executives who want
-             a different answer, and regulators who want evidence. I have mentored teams of analysts
-             through it and I can talk to a head of sales and a mine site superintendent in the same
-             week, in language each of them would use.</p>
+          <p>A decade of workshops with people who want different answers, executives who want a
+             shorter one, and auditors who want evidence. I have mentored analyst teams through it.</p>
+          <p>I can talk to a head of sales and a mine site superintendent in the same week without
+             changing what is true, only how I say it. Most of the projects I have watched go wrong
+             did not go wrong on the technology.</p>
         </div>
       </div>
     </div>
   </div>
 </section>
 
+<!-- ============================ CLAUDE CODE ============================ -->
+<section class="act act--deep" id="claude">
+  <div class="wrap">
+    <p class="tag rise">Claude Code</p>
+    <h2 class="rise measure" style="--d:80ms">Most people paste a prompt in and hope.</h2>
+    <p class="rise measure-wide" style="--d:150ms; margin-top:var(--s6); color:var(--fg-dim)">
+      An AI coding agent is a delivery team: fast, tireless, literal, and perfectly willing to build
+      the wrong thing beautifully if nobody tells it what right looks like. I have spent ten years
+      writing the brief that stops exactly that happening to a room full of contractors.
+      <b>It turns out to be the same skill.</b>
+    </p>
+
+    <div class="caps">
+      <div class="cap rise">
+        <div class="cap__n">01</div>
+        <h3>I give it a specification, not a wish.</h3>
+        <div class="cap__body">
+          <p>What it must do, what it must never do, the edge cases, and what finished looks like.
+             The same document I would hand a delivery team, because it is the same problem. That is
+             the difference between output you rewrite and output you ship.</p>
+        </div>
+      </div>
+
+      <div class="cap rise" style="--d:70ms">
+        <div class="cap__n">02</div>
+        <h3>I make it prove its work, because it will tell you it is finished.</h3>
+        <div class="cap__body">
+          <p>Both tools further down this page carry a script whose only job is to check the result
+             against something I do not control: a different DNS provider, the original data source,
+             the company's own website. It has caught things my own tests never could.</p>
+          <p>It has also caught the agent itself overclaiming: documentation describing a test
+             pipeline that did not exist, and a performance report that was structurally incapable of
+             failing. <b>An agent saying "done" is a claim, not a fact.</b></p>
+        </div>
+      </div>
+
+      <div class="cap rise" style="--d:140ms">
+        <div class="cap__n">03</div>
+        <h3>I set it against itself.</h3>
+        <div class="cap__body">
+          <p>One run builds. A separate one, knowing nothing about the first, tries to break it. That
+             is how the security gaps above were found, and how three real defects in my own tool
+             turned up within an hour of it going live, including one where it happily answered a
+             question it should have refused.</p>
+        </div>
+      </div>
+
+      <div class="cap rise" style="--d:210ms">
+        <div class="cap__n">04</div>
+        <h3>I give it hands.</h3>
+        <div class="cap__body">
+          <p>Out of the box an agent can only talk. I build it real tools, so instead of guessing
+             about your CRM it reads your CRM, and instead of describing a job it books the job. Two
+             of mine are on this page and you can connect to either one. The same approach reaches a
+             CRM, an accounting system, a field service app, a warehouse, anything with an API.</p>
+        </div>
+      </div>
+
+      <div class="cap rise" style="--d:280ms">
+        <div class="cap__n">05</div>
+        <h3>And I make it not look like a machine wrote it.</h3>
+        <div class="cap__body">
+          <p>Left alone, every one of these models produces the same page, the same email, the same
+             report. I work to a written standard and check the finished thing against it, which is
+             why this page does not look like the other forty you have been sent this month.</p>
+        </div>
+      </div>
+    </div>
+
+    <div class="whatthen rise" style="--d:120ms">
+      <p class="tag" style="margin-bottom:var(--s5)">So in practice</p>
+      <ul class="doable">
+        <li><b>An internal tool in a fortnight</b> instead of a quarter, because the specification and
+            the build are the same person and there is no handover.</li>
+        <li><b>A whole process automated end to end</b>: the intake, the rules, the system it lands
+            in, the exceptions, and the reporting somebody actually reads.</li>
+        <li><b>A stalled build finished.</b> I am usually the second person on a project, and the
+            first job is working out what the last one meant.</li>
+        <li><b>Agents wired into what you already run</b>, rather than another tab your team forgets
+            to open.</li>
+        <li><b>Your own people taught to do it properly</b>, so this does not become one more thing
+            only the consultant understands.</li>
+      </ul>
+    </div>
+  </div>
+</section>
+
 <!-- ============================ HUBSPOT ============================ -->
-<section class="act act--deep" id="work">
+<section class="act act--bone act--air" id="work">
   <div class="wrap">
     <div class="proj">
       <div>
-        <div class="proj__eyebrow rise"><span class="tag">Selected work, 01</span><hr class="rule wipe" style="--d:120ms"></div>
-        <h2 class="rise" style="--d:80ms">$3.8m out.</h2>
+        <div class="proj__eyebrow rise"><span class="tag">Recent work</span><hr class="rule wipe" style="--d:120ms"></div>
+        <h2 class="rise" style="--d:80ms">$3.8 million<br>missing.</h2>
         <div class="proj__body rise" style="--d:180ms; margin-top:var(--s6)">
-          <p>Technical lead on a stalled HubSpot implementation for a national charity, through a
-             solutions partner. Donor and donation data off a legacy platform, integrated with
-             Raisely, Stripe, Square and PayPal, posting through to Xero.</p>
-          <p>The earlier migration had matched people on <b>email address</b> rather than the source
-             system's durable identifier. Against the client's own reconciliation it was out by
-             roughly $3.8 million. I rebuilt the dataset by hand on the right key.</p>
+          <p>A national charity's move onto HubSpot had stalled. Their donation history was coming out
+             wrong and nobody could say why. I came in as technical lead.</p>
+          <p>The earlier migration had merged donors on <b>email address</b> instead of the account
+             number their old system used. Anyone who had changed their email, or who shared one with
+             a partner, ended up merged into somebody else or lost. Against the charity's own books
+             it was out by around $3.8 million.</p>
+          <p>I rebuilt the whole thing on the right key, reconciled it, and connected their donation
+             platforms and accounting system so it stays right without anyone retyping it.</p>
         </div>
         <p class="rise" style="--d:260ms; margin-top:var(--s6); font-family:var(--mono); font-size:var(--t--1); color:var(--fg-mute)">
-          Client and partner not named, by choice. Hands-on in HubSpot since 2016.
+          Client and partner not named, by choice.
         </p>
       </div>
       <figure class="proj__figure rise" style="--d:200ms">
@@ -479,18 +591,18 @@ a{color:inherit}
     </div>
 
     <div class="figures">
-      <div class="rise"><span class="fig__n" data-count="1019">0</span><span class="fig__k">companies rematched on the durable key</span></div>
+      <div class="rise"><span class="fig__n" data-count="1019">0</span><span class="fig__k">organisations rebuilt against the right records</span></div>
       <div class="rise" style="--d:90ms"><span class="fig__n" data-count="19350">0</span><span class="fig__k">contacts</span></div>
-      <div class="rise" style="--d:180ms"><span class="fig__n" data-count="37729">0</span><span class="fig__k">order and transaction pairs, reconciled to control totals</span></div>
-      <div class="rise" style="--d:270ms"><span class="fig__n" data-count="2">0</span><span class="fig__k">rounds of user acceptance testing against a numbered defect log</span></div>
+      <div class="rise" style="--d:180ms"><span class="fig__n" data-count="37729">0</span><span class="fig__k">donations matched back to the right donor</span></div>
+      <div class="rise" style="--d:270ms"><span class="fig__n" data-count="2">0</span><span class="fig__k">rounds of testing with the charity before it went live</span></div>
     </div>
   </div>
 </section>
 
 <div class="marq" aria-hidden="true">
   <div class="marq__row">
-    <span>HubSpot</span><span>Claude</span><span>MCP</span><span>Salesforce</span><span>OpenAPI</span><span>n8n</span><span>Xero</span><span>Stripe</span><span>TOGAF</span><span>Azure DevOps</span><span>Dynamics</span><span>Raisely</span>
-    <span>HubSpot</span><span>Claude</span><span>MCP</span><span>Salesforce</span><span>OpenAPI</span><span>n8n</span><span>Xero</span><span>Stripe</span><span>TOGAF</span><span>Azure DevOps</span><span>Dynamics</span><span>Raisely</span>
+    <span>HubSpot</span><span>Salesforce</span><span>Zoho</span><span>Zapier</span><span>Make</span><span>n8n</span><span>Claude Code</span><span>Xero</span><span>Stripe</span><span>Dynamics</span><span>Azure DevOps</span><span>TOGAF</span>
+    <span>HubSpot</span><span>Salesforce</span><span>Zoho</span><span>Zapier</span><span>Make</span><span>n8n</span><span>Claude Code</span><span>Xero</span><span>Stripe</span><span>Dynamics</span><span>Azure DevOps</span><span>TOGAF</span>
   </div>
 </div>
 
@@ -500,36 +612,39 @@ a{color:inherit}
   <div class="plate__veil"></div>
 
   <div class="wrap">
-    <div class="proj__eyebrow rise"><span class="tag">Selected work, 02</span><hr class="rule wipe" style="--d:120ms"></div>
-    <h2 class="rise measure" style="--d:80ms">I broke into it myself.</h2>
+    <div class="proj__eyebrow rise"><span class="tag">Recent work</span><hr class="rule wipe" style="--d:120ms"></div>
+    <h2 class="rise measure" style="--d:80ms">Finding the holes before customers do.</h2>
     <p class="proj__body rise measure-wide" style="--d:160ms; margin-top:var(--s6)">
-      Two security reviews of a live video shopping platform built largely by agents. Six exploits
-      driven by hand against the running application, then re-driven after the fixes.
-      <b>Three shut properly, one still open, one reopened, one re-broken by its own fix.</b>
+      A live shopping platform, most of it written by AI. I was asked whether it was safe to put
+      customers on it. Rather than read the code and give an opinion, I used the gaps, then went back
+      after they were fixed and tried the same things again. <b>Four of the six are properly closed
+      now. Two are not, and I said so.</b>
     </p>
 
     <ul class="finds">
       <li class="rise">
-        <h4>The new sign-in had a back door beside it</h4>
-        <p>A one-time-code login had been added, and it guarded one route. The old route still handed
-           an identical session to any email address that asked. I used it to sign in as a retailer
-           with a live show and end their broadcast.</p>
+        <h4>Anyone could sign in as anyone</h4>
+        <p>A new secure login had been added, and it covered one way in. The old way in was still
+           sitting there, and it let you into any account just by typing the email address. I used it
+           to log in as a retailer who was live on air, and shut their broadcast down.</p>
       </li>
       <li class="rise" style="--d:90ms">
-        <h4>Deleting an account destroyed its paid invoices</h4>
-        <p>A cascade on a foreign key, while the message on screen told the user their financial
-           records were being kept.</p>
+        <h4>Closing an account deleted its paid invoices</h4>
+        <p>The screen told the customer their financial records were being kept. They were not. For a
+           business that has to produce those records at tax time, that is not a bug, it is a
+           liability.</p>
       </li>
       <li class="rise" style="--d:180ms">
-        <h4>A proof page that could only ever pass</h4>
-        <p>It measured cache behaviour by reading two response headers the site never exposed
-           cross-origin, so every reading came back empty and the score was a structural 100%. The
-           project's own notes had it recorded as verified.</p>
+        <h4>A test that could only ever pass</h4>
+        <p>A page existed to measure how well the system was performing, and it always came back
+           perfect. It was reading numbers the system never actually handed it, so it was scoring
+           blanks out of blanks. The project's own notes had it down as verified.</p>
       </li>
       <li class="rise" style="--d:270ms">
-        <h4>One reported flaw that was not one</h4>
-        <p>An agent reported a leaking stream key. I traced the path, found the serialiser that
-           redacts it, and said so.</p>
+        <h4>One reported problem that was not one</h4>
+        <p>An automated tool flagged a leaked key. I traced it through, found the code that strips
+           that key before it ever leaves the server, and told them to ignore it. Chasing a phantom
+           costs a team a week.</p>
       </li>
     </ul>
   </div>
@@ -538,29 +653,30 @@ a{color:inherit}
 <!-- ============================ LIVE SYSTEMS ============================ -->
 <section class="act act--bone act--air">
   <div class="wrap">
-    <div class="proj__eyebrow rise"><span class="tag">Selected work, 03</span><hr class="rule wipe" style="--d:120ms"></div>
-    <h2 class="rise measure" style="--d:80ms">Two of them are running now.</h2>
+    <div class="proj__eyebrow rise"><span class="tag">Built and shipped</span><hr class="rule wipe" style="--d:120ms"></div>
+    <h2 class="rise measure" style="--d:80ms">Two you can go and use.</h2>
     <p class="rise measure-wide" style="--d:150ms; margin-top:var(--s6); color:var(--fg-dim)">
-      Both are public, MIT licensed, and answering as you read this. The counts below were fetched
-      from them by your own browser a moment ago.
+      Small tools I built end to end and gave away, free for anyone to use or copy. The numbers below
+      are not a screenshot: your browser asked both of them a question a moment ago, and this is what
+      came back.
     </p>
 
     <div class="live">
       <div class="live__cell rise" style="--d:120ms">
         <span class="live__n" id="n-rain" data-state="wait">&mdash;</span>
-        <span class="live__k">tools answering on <b>Rain Check</b>, which tells a trades business whether Thursday's slab pour will survive the weather</span>
+        <span class="live__k">jobs <b>Rain Check</b> can do, answering right now. It tells a trades business whether Thursday's concrete pour will survive the weather</span>
       </div>
       <div class="live__cell rise" style="--d:200ms">
         <span class="live__n" id="n-door" data-state="wait">&mdash;</span>
-        <span class="live__k">tools on <b>Doorknock</b>, which learns what a company runs before a salesperson knocks, and writes it into HubSpot</span>
+        <span class="live__k">jobs <b>Doorknock</b> can do. It finds out what a company already uses before a salesperson rings them, and files it in the CRM</span>
       </div>
       <div class="live__cell rise" style="--d:280ms">
         <span class="live__n" data-count="3">0</span>
-        <span class="live__k">public repositories, nothing behind a login</span>
+        <span class="live__k">code repositories anyone can read, nothing hidden</span>
       </div>
       <div class="live__cell rise" style="--d:360ms">
         <span class="live__n" data-count="0">0</span>
-        <span class="live__k">mocks in any test suite, in either project</span>
+        <span class="live__k">made-up test data in either of them. They are tested against the real thing</span>
       </div>
     </div>
 
@@ -568,9 +684,10 @@ a{color:inherit}
       <div>
         <h3 class="rise">Rain Check</h3>
         <div class="proj__body rise" style="--d:80ms; margin-top:var(--s5)">
-          <p>Not "what is the weather". <b>Can we book the Thursday slab pour in Bendigo.</b> Six tools
-             reading live forecast, daylight and public holiday data, answering for a specific trade
-             on a specific day. An ambiguous suburb comes back as a question, never a guess.</p>
+          <p>Not "what's the weather this week". <b>Can we pour the slab in Bendigo on Thursday.</b>
+             It knows concreting and painting fail on different things, checks the daylight and the
+             public holidays too, and when a suburb name is ambiguous it asks instead of picking one
+             and being confidently wrong.</p>
         </div>
         <ul class="chips rise" style="--d:140ms"><li>MCP</li><li>OpenAPI</li><li>TypeScript</li><li>Serverless</li></ul>
         <div class="links rise" style="--d:200ms">
@@ -587,10 +704,10 @@ a{color:inherit}
       <div>
         <h3 class="rise">Doorknock</h3>
         <div class="proj__body rise" style="--d:80ms; margin-top:var(--s5)">
-          <p>Everything a salesperson could learn about a company <b>before they knock</b>, read live
-             off that company's own website and DNS, then scored against your rules and written into
-             HubSpot. The credential travels on the connection header, never as a tool argument, so
-             it never enters the model's context.</p>
+          <p>Everything a salesperson could usefully know about a company <b>before they pick up the
+             phone</b>, read from that company's own website: what software they already run, who
+             handles their email, whether they look like a fit at all. Then scored against your own
+             rules and filed straight into HubSpot, so nobody has to retype it.</p>
         </div>
         <ul class="chips rise" style="--d:140ms"><li>HubSpot CRM API</li><li>MCP</li><li>Custom GPT Action</li><li>Rules as data</li></ul>
         <div class="links rise" style="--d:200ms">
@@ -610,21 +727,22 @@ a{color:inherit}
 <section class="act act--deep">
   <div class="wrap">
     <p class="tag rise">Where I have done it</p>
-    <h2 class="rise measure" style="--d:80ms">Fifteen years of load-bearing work.</h2>
+    <h2 class="rise measure" style="--d:80ms">Since 2015.</h2>
     <p class="proj__body rise measure-wide" style="--d:160ms; margin-top:var(--s6)">
-      Mostly the same job in different clothes: take something nobody can quite explain, work out the
-      rules it actually runs on, and get them built.
+      Mining, policing, federal service delivery, local government, universities. Mostly the same job
+      in different clothes: take something nobody can quite explain, work out the rules it really
+      runs on, and get them built.
     </p>
 
     <div class="cv">
-      <div class="cv__row rise"><span class="cv__when">2016 to now</span><span class="cv__who">HubSpot and CRM consultant</span><span class="cv__what">Independent. Configuration, migration, automation, integration.</span></div>
-      <div class="cv__row rise" style="--d:60ms"><span class="cv__when">2022 to now</span><span class="cv__who">BHP</span><span class="cv__what">Senior analyst and architect. Immutable backups, refuge chamber monitoring. Mentors junior analysts.</span></div>
-      <div class="cv__row rise" style="--d:120ms"><span class="cv__when">2024 to 2025</span><span class="cv__who">Essential Energy</span><span class="cv__what">Ring-fencing a regulated network from its contestable arm. Four workstreams.</span></div>
-      <div class="cv__row rise" style="--d:180ms"><span class="cv__when">2021 to 2022</span><span class="cv__who">City of Marion</span><span class="cv__what">Lead analyst on a council-wide asset management platform.</span></div>
-      <div class="cv__row rise" style="--d:240ms"><span class="cv__when">2020 to 2021</span><span class="cv__who">SA Police</span><span class="cv__what">Project Shield. Frontline policing transformation.</span></div>
-      <div class="cv__row rise" style="--d:300ms"><span class="cv__when">2018 to 2020</span><span class="cv__who">Services Australia</span><span class="cv__what">National Redress Scheme. Designed the eligibility rules engine.</span></div>
-      <div class="cv__row rise" style="--d:360ms"><span class="cv__when">2018</span><span class="cv__who">DVE Business Solutions</span><span class="cv__what">CRM and ERP implementations in the university sector.</span></div>
-      <div class="cv__row rise" style="--d:420ms"><span class="cv__when">2015 to 2018</span><span class="cv__who">Australian Institute of Business, Dept of Industry</span><span class="cv__what">Enterprise transformation, a new CRM, corporate network reform.</span></div>
+      <div class="cv__row rise"><span class="cv__when">2016 to now</span><span class="cv__who">AI and automation consultant</span><span class="cv__what">Independent, alongside the day job. HubSpot, Salesforce and Zoho on the CRM side; Zapier, Make and n8n for the plumbing; Claude Code for the agents.</span></div>
+      <div class="cv__row rise" style="--d:60ms"><span class="cv__when">2022 to now</span><span class="cv__who">BHP</span><span class="cv__what">Senior business analyst and architect on critical infrastructure. Mentors the junior analysts.</span></div>
+      <div class="cv__row rise" style="--d:120ms"><span class="cv__when">2021 to 2022</span><span class="cv__who">City of Marion</span><span class="cv__what">Lead analyst on a council-wide asset management platform.</span></div>
+      <div class="cv__row rise" style="--d:180ms"><span class="cv__when">2020 to 2021</span><span class="cv__who">SA Police</span><span class="cv__what">Project Shield, rebuilding the systems frontline officers work on.</span></div>
+      <div class="cv__row rise" style="--d:240ms"><span class="cv__when">2020</span><span class="cv__who">SA Department of Education</span><span class="cv__what">Led the technology side of the state's vocational education strategy.</span></div>
+      <div class="cv__row rise" style="--d:300ms"><span class="cv__when">2018 to 2020</span><span class="cv__who">Services Australia</span><span class="cv__what">National Redress Scheme, and veterans' entitlements. Designed how the system decides who qualifies.</span></div>
+      <div class="cv__row rise" style="--d:360ms"><span class="cv__when">2018</span><span class="cv__who">DVE Business Solutions</span><span class="cv__what">CRM and ERP rollouts for universities.</span></div>
+      <div class="cv__row rise" style="--d:420ms"><span class="cv__when">2015 to 2018</span><span class="cv__who">Australian Institute of Business, Dept of Industry</span><span class="cv__what">Where it started. A new CRM, and reforming a federal department's network.</span></div>
     </div>
   </div>
 </section>
@@ -632,8 +750,8 @@ a{color:inherit}
 <!-- ============================ FOOT ============================ -->
 <footer class="act foot">
   <div class="wrap">
-    <p class="tag rise">Available</p>
-    <h2 class="rise measure" style="--d:80ms">Let's build the real one.</h2>
+    <p class="tag rise">Available now</p>
+    <h2 class="rise measure" style="--d:80ms">Tell me what's broken.</h2>
 
     <div class="links rise" style="--d:200ms; margin-top:var(--s7)">
       <a class="link" href="https://rain-check-mu.vercel.app">Rain Check <span aria-hidden="true">&rarr;</span></a>
@@ -643,8 +761,9 @@ a{color:inherit}
 
     <div class="foot__grid">
       <p class="foot__note">
-        Everything here is a system you can open or a repository you can read. The client work is
-        described without naming anyone, and that is the only part you have to take my word for.
+        The two tools above are live and the code behind them is public, so you can check any of that
+        yourself. The client work is described without naming anyone, and that is the only part you
+        have to take my word for.
       </p>
       <p class="foot__note">My details are on the application this link came with.</p>
     </div>
