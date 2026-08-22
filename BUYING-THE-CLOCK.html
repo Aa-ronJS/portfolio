@@ -1,0 +1,413 @@
+<title>Buying the Clock</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,700;12..96,800&family=IBM+Plex+Mono:wght@400;500;600&family=Newsreader:ital,opsz,wght@0,6..72,300;0,6..72,400;0,6..72,600;1,6..72,400&display=swap">
+
+<style>
+:root {
+  --ground:#E7EAE5; --surface:#F4F6F1; --surface-2:#DDE2DB;
+  --ink:#0E1A17; --body:#37423D; --muted:#6B7671;
+  --rule:#C3CAC1; --rule-soft:#D5DBD2;
+  --accent:#0A6355; --accent-soft:#DCE9E3;
+  --signal:#A8401B; --signal-soft:#F0DFD6;
+  --good:#3E6B22; --good-soft:#E1EAD6;
+  --display:"Bricolage Grotesque","Helvetica Neue",Arial,sans-serif;
+  --serif:"Newsreader",Georgia,"Times New Roman",serif;
+  --mono:"IBM Plex Mono",ui-monospace,"SF Mono",Menlo,monospace;
+  --measure:63ch; --pad:clamp(1.25rem,5vw,4rem);
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --ground:#0C1312; --surface:#141D1B; --surface-2:#1C2724;
+    --ink:#E9EDE7; --body:#B3BDB7; --muted:#7E8A85;
+    --rule:#26322E; --rule-soft:#1E2926;
+    --accent:#4FBBA6; --accent-soft:#16302B;
+    --signal:#E08355; --signal-soft:#2E1E17;
+    --good:#8FC46A; --good-soft:#1B2A16;
+  }
+}
+:root[data-theme="dark"] {
+  --ground:#0C1312; --surface:#141D1B; --surface-2:#1C2724;
+  --ink:#E9EDE7; --body:#B3BDB7; --muted:#7E8A85;
+  --rule:#26322E; --rule-soft:#1E2926;
+  --accent:#4FBBA6; --accent-soft:#16302B;
+  --signal:#E08355; --signal-soft:#2E1E17;
+  --good:#8FC46A; --good-soft:#1B2A16;
+}
+
+* { box-sizing:border-box; }
+body {
+  background:var(--ground); color:var(--body); font-family:var(--serif);
+  font-size:clamp(1.02rem,0.42vw + 0.94rem,1.16rem); line-height:1.62;
+  -webkit-font-smoothing:antialiased; margin:0; padding:0 var(--pad) 6rem;
+}
+.wrap { max-width:78rem; margin:0 auto; }
+p, ul, ol { max-width:var(--measure); }
+p { margin:0 0 1.1em; }
+h1,h2,h3,h4,.eyebrow { font-family:var(--display); color:var(--ink); text-wrap:balance; }
+a { color:var(--accent); text-decoration-thickness:1px; text-underline-offset:2px; }
+a:focus-visible { outline:2px solid var(--accent); outline-offset:3px; }
+strong { color:var(--ink); font-weight:600; }
+code { font-family:var(--mono); font-size:0.88em; }
+
+.masthead {
+  padding:clamp(3.5rem,9vw,6.5rem) 0 clamp(2.5rem,5vw,4rem);
+  border-bottom:1px solid var(--rule); display:flex; flex-direction:column; gap:1.75rem;
+}
+.slug {
+  font-family:var(--mono); font-size:0.72rem; letter-spacing:0.16em; text-transform:uppercase;
+  color:var(--muted); display:flex; flex-wrap:wrap; gap:0.5rem 1.5rem;
+}
+.slug span:first-child { color:var(--accent); }
+h1 { font-size:clamp(2.9rem,8.5vw,6.4rem); line-height:0.94; letter-spacing:-0.035em; font-weight:800; margin:0; max-width:13ch; }
+.standfirst { font-size:clamp(1.15rem,1vw + 0.95rem,1.5rem); line-height:1.45; max-width:47ch; font-weight:300; margin:0; }
+.standfirst b { color:var(--ink); font-weight:600; }
+
+section { padding:clamp(3rem,6vw,5rem) 0; border-bottom:1px solid var(--rule-soft); }
+section:last-of-type { border-bottom:0; }
+.eyebrow {
+  font-family:var(--mono); font-size:0.72rem; font-weight:600; letter-spacing:0.18em;
+  text-transform:uppercase; color:var(--accent); display:flex; align-items:center;
+  gap:0.85rem; margin:0 0 1.5rem;
+}
+.eyebrow::after { content:""; flex:1; height:1px; background:var(--rule); max-width:10rem; }
+h2 { font-size:clamp(1.85rem,3.2vw,2.9rem); line-height:1.06; letter-spacing:-0.028em; font-weight:700; margin:0 0 1.5rem; max-width:22ch; }
+h3 { font-size:1.12rem; font-weight:700; letter-spacing:-0.012em; margin:2.3rem 0 0.7rem; }
+h4 { font-family:var(--mono); font-size:0.7rem; font-weight:600; letter-spacing:0.16em; text-transform:uppercase; color:var(--muted); margin:0 0 0.6rem; }
+
+.tbl-wrap { overflow-x:auto; margin:2rem 0 0; border:1px solid var(--rule); background:var(--surface); }
+table { border-collapse:collapse; width:100%; min-width:44rem; font-size:0.92rem; }
+caption { text-align:left; padding:1rem 1.1rem 0; font-family:var(--mono); font-size:0.68rem; letter-spacing:0.14em; text-transform:uppercase; color:var(--muted); }
+th, td { text-align:left; padding:0.85rem 1.1rem; border-bottom:1px solid var(--rule-soft); vertical-align:top; }
+thead th { font-family:var(--mono); font-size:0.66rem; font-weight:600; letter-spacing:0.13em; text-transform:uppercase; color:var(--muted); border-bottom:1px solid var(--rule); }
+tbody tr:last-child td { border-bottom:0; }
+td b { color:var(--ink); font-weight:600; font-family:var(--display); }
+.num { font-variant-numeric:tabular-nums; white-space:nowrap; }
+
+.callout { border-left:3px solid var(--accent); background:var(--accent-soft); padding:1.35rem 1.5rem; margin:2.25rem 0; max-width:62rem; }
+.callout.warn { border-left-color:var(--signal); background:var(--signal-soft); }
+.callout p { max-width:none; margin:0; font-size:0.99rem; }
+.callout p + p { margin-top:0.8em; }
+.callout .eyebrow { margin-bottom:0.7rem; }
+.callout.warn .eyebrow { color:var(--signal); }
+.callout .eyebrow::after { background:currentColor; opacity:0.28; max-width:5rem; }
+
+figure { margin:2.5rem 0 0; max-width:none; }
+figure svg { display:block; width:100%; max-width:64rem; height:auto; color:var(--body); }
+figcaption { font-size:0.9rem; color:var(--muted); margin-top:1rem; max-width:58ch; font-style:italic; }
+
+.cards { display:grid; gap:1px; background:var(--rule); border:1px solid var(--rule); margin:2rem 0 0; }
+@media (min-width:52rem) { .cards.two { grid-template-columns:1fr 1fr; } }
+@media (min-width:60rem) { .cards.three { grid-template-columns:repeat(3,1fr); } }
+.cards > div { background:var(--surface); padding:1.5rem 1.4rem 1.7rem; }
+.cards h3 { margin-top:0; }
+.cards p { max-width:none; font-size:0.96rem; }
+.cards p:last-child { margin-bottom:0; }
+.cards .big {
+  font-family:var(--display); font-size:2rem; font-weight:800; color:var(--ink);
+  letter-spacing:-0.03em; display:block; margin-bottom:0.3rem; font-variant-numeric:tabular-nums;
+}
+
+.checks { list-style:none; padding:0; margin:2rem 0 0; max-width:66rem; counter-reset:c; }
+.checks li {
+  counter-increment:c; display:grid; grid-template-columns:2.4rem 1fr; gap:0 1.1rem;
+  padding:1.05rem 0; border-top:1px solid var(--rule-soft); font-size:1rem;
+}
+.checks li:last-child { border-bottom:1px solid var(--rule-soft); }
+.checks li::before {
+  content:counter(c,decimal-leading-zero); font-family:var(--mono); font-size:0.76rem;
+  font-weight:600; color:var(--accent); padding-top:0.3em; font-variant-numeric:tabular-nums;
+}
+.checks b { display:block; font-family:var(--display); font-weight:700; color:var(--ink); font-size:1rem; margin-bottom:0.15rem; }
+.checks .why { color:var(--muted); font-style:italic; }
+
+.steps { counter-reset:step; list-style:none; padding:0; margin:1.5rem 0 0; max-width:64rem; }
+.steps li { counter-increment:step; display:grid; grid-template-columns:2.6rem 1fr; gap:0 1.1rem; padding:1rem 0; border-top:1px solid var(--rule-soft); font-size:1rem; }
+.steps li:last-child { border-bottom:1px solid var(--rule-soft); }
+.steps li::before { content:counter(step,decimal-leading-zero); font-family:var(--mono); font-size:0.78rem; font-weight:600; color:var(--accent); padding-top:0.28em; font-variant-numeric:tabular-nums; }
+
+.kill { list-style:none; padding:0; margin:1.5rem 0 0; max-width:62rem; }
+.kill li { padding:0.8rem 0 0.8rem 1.9rem; border-top:1px solid var(--rule-soft); font-size:0.99rem; position:relative; }
+.kill li:last-child { border-bottom:1px solid var(--rule-soft); }
+.kill li::before { content:"\00d7"; position:absolute; left:0; top:0.78rem; color:var(--signal); font-family:var(--mono); font-weight:600; }
+
+.sign { font-family:var(--mono); font-size:0.72rem; letter-spacing:0.14em; text-transform:uppercase; color:var(--muted); margin-top:3rem; padding-top:1.25rem; border-top:1px solid var(--rule); max-width:none; }
+.src { font-size:0.85rem; color:var(--muted); }
+.src a { color:var(--muted); }
+</style>
+
+<div class="wrap">
+
+<header class="masthead">
+  <div class="slug">
+    <span>Strategy note, three</span>
+    <span>Fastest path to profitable</span>
+    <span>22 August 2026</span>
+  </div>
+  <h1>Buying the Clock</h1>
+  <p class="standfirst">Every marketplace I recommended demands customers before it will give you any. <b>There is one legitimate way to skip that, and it is the fastest path on the board.</b></p>
+</header>
+
+<section>
+  <p class="eyebrow">First, a definition</p>
+  <h2>Profitable is a much lower bar than you are probably picturing.</h2>
+  <p>Profitable means revenue exceeds cost, and our cost base is unusual: infrastructure is a rounding error. A domain is twenty dollars a year, hosting is nothing to twenty five dollars a month, Stripe takes about 1.75% plus thirty cents on Australian cards. <strong>The only real operating cost is tokens</strong>, and that scales with how hard we run the fleet.</p>
+
+  <div class="cards three">
+    <div>
+      <h4>Threshold one</h4>
+      <span class="big">~$400/mo</span>
+      <p>Break even. Covers a hard-running agent fleet plus infrastructure. Genuinely reachable within a couple of months on the right path, and mostly a psychological milestone rather than a financial one.</p>
+    </div>
+    <div>
+      <h4>Threshold two</h4>
+      <span class="big">$5&ndash;10k/mo</span>
+      <p>Worth your attention. This is the honest target for the next twelve to eighteen months, and it is what the rest of this note is aimed at.</p>
+    </div>
+    <div>
+      <h4>Threshold three</h4>
+      <span class="big">$20k+/mo</span>
+      <p>Replaces the day job. Two to three years, and almost certainly not from one thing. Optimising for threshold one actively works against reaching this.</p>
+    </div>
+  </div>
+
+  <p style="margin-top:2.5rem">That last point is the trap in your question, and I want it on the record before the recommendation. <strong>The fastest path to the first dollar and the path to the biggest number are different roads.</strong> Speed comes from inheriting somebody else's distribution, which caps you at whatever you inherited. Scale comes from building your own, which is slow by definition. I will give you the fast road because that is what you asked for, but I am also going to keep one cheap thing running on the slow one.</p>
+</section>
+
+<section>
+  <p class="eyebrow">The physics</p>
+  <h2>Building is free now, so every remaining day is distribution.</h2>
+  <p>Time to revenue is time to build, plus time to be found, plus time to convert. Agent labour takes the first term to nearly zero, which means <em>one hundred percent</em> of the remaining clock is the other two. Speed is therefore not a build question at all. It is entirely a question of how you get distribution.</p>
+  <p>There are only three ways to get it. You can <strong>rent</strong> it, which is advertising, and you ruled that out. You can <strong>earn</strong> it, which is search, content and open source, and it is slow by construction. Or you can <strong>inherit</strong> it, which means taking over distribution somebody else already built.</p>
+  <p>That third one is the entire content of this document.</p>
+</section>
+
+<section>
+  <p class="eyebrow">A correction</p>
+  <h2>I said the platform does the reaching. I did not check what it wants first.</h2>
+  <p>In the first note I described marketplaces as free distribution where the platform's search box is your advertising channel. That is true, eventually. What I failed to check is the entry condition, and every one of them has a cold start gate that requires you to arrive with customers already in hand:</p>
+
+  <div class="tbl-wrap">
+    <table>
+      <caption>What each marketplace demands before it will help you</caption>
+      <thead><tr><th>Marketplace</th><th>The gate</th><th>Bills for you?</th></tr></thead>
+      <tbody>
+        <tr>
+          <td><b>GitHub Marketplace</b><br><span class="src">paid listings</span></td>
+          <td><b>100 installs</b> for a GitHub App, or 200 users for an OAuth app, <em>plus</em> a verified publisher organisation with a verified domain and enforced 2FA. You cannot charge a cent before that.</td>
+          <td>Yes, once you are through</td>
+        </tr>
+        <tr>
+          <td><b>HubSpot App Marketplace</b></td>
+          <td><b>Three active installs in unaffiliated production accounts</b>, showing real activity in the last 30 days, before you may even submit the listing. Certification needs 60 installs and six months listed.</td>
+          <td>No, you bill</td>
+        </tr>
+        <tr>
+          <td><b>Chrome Web Store</b></td>
+          <td>Review only, days to a couple of weeks. But Google killed Chrome Web Store Payments in February 2021, so you bring your own billing and licence keys.</td>
+          <td>No</td>
+        </tr>
+        <tr>
+          <td><b>VS Code Marketplace</b></td>
+          <td>Effectively none. Publish immediately. But there is no paid extension mechanism at all, so the free version is the listing and the licence key is the business.</td>
+          <td>No</td>
+        </tr>
+        <tr>
+          <td><b>npm, PyPI, MCP directories</b></td>
+          <td>None. Publish in minutes.</td>
+          <td>No</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <div class="callout warn">
+    <p class="eyebrow">The pattern, stated plainly</p>
+    <p>Listing speed and billing support are <strong>inversely correlated</strong>. The platforms that will collect money for you demand proven traction first. The platforms that let you publish this afternoon will not take a dollar on your behalf. There is no marketplace that is both open and monetised, and any plan that assumed one was is wrong.</p>
+    <p>Which means the marketplaces are not actually a fast path. They are a medium path with a false start, and the first hundred customers have to come from somewhere other than the marketplace itself.</p>
+  </div>
+</section>
+
+<section>
+  <p class="eyebrow">The fast path</p>
+  <h2>Buy something that is already profitable, and operate it with a fleet.</h2>
+  <p>The one way to skip every cold start gate simultaneously is to acquire an asset that has already cleared them. You inherit the installs, the reviews, the ranking, the backlinks, the customers and the revenue in a single transaction. Profitability is not a milestone you work towards; it is a property of the thing on the day you buy it.</p>
+
+  <h3>The market is priced in your favour, and specifically at your size</h3>
+  <p>Median profit multiple on Acquire.com sits around <strong>3.9x</strong>. But that is the whole market. Break it down and the small end is dramatically cheaper: <strong>transactions under $100,000 close at about 1.68x annual profit</strong>, against 4.3x for deals above a million. Flippa micro-SaaS averages 2.85x.</p>
+  <p>At 1.68x, an asset throwing off eight hundred dollars a month of profit costs roughly sixteen thousand dollars and pays for itself in about twenty months, before you have improved anything. One at two hundred and fifty a month costs around five thousand.</p>
+
+  <div class="callout">
+    <p class="eyebrow">Why the small end is cheap, and why that is the arbitrage</p>
+    <p>Sub-$100k assets sell at the lowest multiples in the market because the buyer pool is thin and the work is unglamorous. Dig into <em>why</em> any specific one is cheap and the answer is almost always the same: neglected maintenance, a broken integration nobody fixed, stale content, a support inbox the founder stopped opening, a dead blog.</p>
+    <p>Every item on that list is a human time problem. <strong>You are buying assets priced for a tired solo operator and running them with a fleet that does not get tired.</strong> The exact attributes that depress the price are the attributes agent labour removes for close to nothing. That is the whole trade, and it is the best risk-adjusted idea in these three documents.</p>
+  </div>
+
+  <figure>
+    <svg viewBox="0 0 1000 360" role="img" aria-label="Timeline comparing five paths to first revenue over eighty weeks. Acquiring an asset starts earning at about week five. Instant-listing marketplaces earn from about week twelve. A HubSpot app via existing clients earns from about week fourteen. A paid GitHub Marketplace app is blocked by a hundred-install gate until about week thirty. The register play does not earn until about week fifty-six.">
+      <defs>
+        <marker id="tick" viewBox="0 0 4 4" refX="2" refY="2" markerWidth="4" markerHeight="4"><circle cx="2" cy="2" r="1.5" fill="currentColor"/></marker>
+      </defs>
+
+      <g font-family="IBM Plex Mono, monospace" font-size="10" fill="currentColor" opacity="0.55">
+        <text x="248" y="30" text-anchor="middle">week 0</text>
+        <text x="433" y="30" text-anchor="middle">20</text>
+        <text x="618" y="30" text-anchor="middle">40</text>
+        <text x="803" y="30" text-anchor="middle">60</text>
+        <text x="970" y="30" text-anchor="end">80</text>
+      </g>
+      <g stroke="currentColor" opacity="0.16" stroke-width="1">
+        <line x1="248" y1="40" x2="248" y2="300"/>
+        <line x1="433" y1="40" x2="433" y2="300"/>
+        <line x1="618" y1="40" x2="618" y2="300"/>
+        <line x1="803" y1="40" x2="803" y2="300"/>
+        <line x1="970" y1="40" x2="970" y2="300"/>
+      </g>
+
+      <g font-family="Bricolage Grotesque, sans-serif" font-size="12.5" fill="currentColor">
+        <text x="0" y="66">Acquire an asset</text>
+        <text x="0" y="118">Chrome / VS Code / MCP</text>
+        <text x="0" y="170">HubSpot, via your clients</text>
+        <text x="0" y="222">GitHub Marketplace, paid</text>
+        <text x="0" y="274">The register play</text>
+      </g>
+
+      <rect x="248" y="50" width="46" height="22" fill="#C86A38" opacity="0.85"/>
+      <rect x="294" y="50" width="676" height="22" fill="#2E9683"/>
+      <text x="302" y="66" font-family="IBM Plex Mono, monospace" font-size="10" fill="#08302A">earning from week 5</text>
+
+      <rect x="248" y="102" width="28" height="22" fill="currentColor" opacity="0.3"/>
+      <rect x="276" y="102" width="83" height="22" fill="#C86A38" opacity="0.85"/>
+      <rect x="359" y="102" width="611" height="22" fill="#2E9683"/>
+
+      <rect x="248" y="154" width="55" height="22" fill="currentColor" opacity="0.3"/>
+      <rect x="303" y="154" width="74" height="22" fill="#C86A38" opacity="0.85"/>
+      <rect x="377" y="154" width="593" height="22" fill="#2E9683"/>
+
+      <rect x="248" y="206" width="46" height="22" fill="currentColor" opacity="0.3"/>
+      <rect x="294" y="206" width="231" height="22" fill="#C86A38" opacity="0.85"/>
+      <text x="302" y="222" font-family="IBM Plex Mono, monospace" font-size="10" fill="#FFF">100 installs before you may charge</text>
+      <rect x="525" y="206" width="445" height="22" fill="#2E9683"/>
+
+      <rect x="248" y="258" width="92" height="22" fill="currentColor" opacity="0.3"/>
+      <rect x="340" y="258" width="426" height="22" fill="#C86A38" opacity="0.85"/>
+      <text x="348" y="274" font-family="IBM Plex Mono, monospace" font-size="10" fill="#FFF">waiting for organic search</text>
+      <rect x="766" y="258" width="204" height="22" fill="#2E9683"/>
+
+      <g font-family="IBM Plex Mono, monospace" font-size="11" fill="currentColor">
+        <rect x="0" y="322" width="14" height="14" fill="currentColor" opacity="0.3"/>
+        <text x="22" y="333" opacity="0.8">build</text>
+        <rect x="90" y="322" width="14" height="14" fill="#C86A38" opacity="0.85"/>
+        <text x="112" y="333" opacity="0.8">gate &mdash; the part nobody budgets for</text>
+        <rect x="420" y="322" width="14" height="14" fill="#2E9683"/>
+        <text x="442" y="333" opacity="0.8">earning</text>
+      </g>
+    </svg>
+    <figcaption>Estimates, not forecasts. The point is not the exact weeks, it is the proportions: on every path except acquisition, the gate is longer than the build. Buying an asset is the only route where the earning bar starts at the left edge, because you are purchasing something that already cleared its gate.</figcaption>
+  </figure>
+
+  <h3>What I do, and what you do</h3>
+  <p>I can run sourcing continuously across Acquire, Flippa, Tiny Acquisitions and the smaller broker lists, screen every new listing against a written buy box, run full diligence on anything that survives, build the valuation, draft the offer and the asset purchase terms, and then do one hundred percent of the operating work afterwards: the maintenance backlog, the support inbox, the content, the integrations, the SEO, the roadmap.</p>
+  <p>You provide the capital, sign, and move money through escrow. That is a genuinely small human footprint for the largest speed gain available.</p>
+</section>
+
+<section>
+  <p class="eyebrow">Discipline</p>
+  <h2>The diligence that stops this becoming an expensive lesson.</h2>
+  <p>Most listings are junk. Expect to screen well over a hundred to buy one, and expect sellers to present their best fortnight as their run rate. Every one of these is a gate, not a preference.</p>
+
+  <ol class="checks">
+    <li><span><b>Revenue, from the processor, not a screenshot</b>Read-only Stripe access covering 24 months. <span class="why">If they will not grant it, walk. There is no version of this where a screenshot is sufficient evidence, and you of all people know what a screenshot is worth.</span></span></li>
+    <li><span><b>Monthly churn, logo and revenue separately</b><span class="why">Above 8 to 10% monthly on a small subscription product means you are buying a leaking bucket and paying to refill it. Every point of churn reduction is worth 15 to 25% on the asset's value, which cuts both ways.</span></span></li>
+    <li><span><b>Traffic concentration</b>Where does every visitor come from? <span class="why">If ninety percent arrives from one channel, that channel is the actual asset and you are exposed to a single algorithm change. Price it accordingly or pass.</span></span></li>
+    <li><span><b>Customer concentration</b><span class="why">Any single customer above 20% of revenue means this is a consulting contract wearing a SaaS costume, and it will leave with the founder.</span></span></li>
+    <li><span><b>Platform dependence</b><span class="why">Built entirely on one company's API? One policy change ends it. This is not disqualifying, it is a discount.</span></span></li>
+    <li><span><b>Support burden, measured in tickets per customer per month</b><span class="why">The one metric where we want a bad number. High support load is why the seller is exhausted and why the price is low, and it is the thing a fleet absorbs for nothing. Buy the tired founder's problem.</span></span></li>
+    <li><span><b>Transferability</b>Can it actually move? <span class="why">Undocumented cron jobs, a personal API key, a domain on someone else's registrar, a single point of failure in the founder's head. Get a full inventory before money moves.</span></span></li>
+    <li><span><b>Legal cleanliness</b><span class="why">Trademark position, no copyleft contamination in the dependency tree, no scraped data of questionable provenance, no accumulated personal information liability. Escrow always. Fraud is real at this end of the market.</span></span></li>
+    <li><span><b>Why are they selling?</b><span class="why">The good answer is boredom, or a new job, or the maintenance backlog outgrew their weekends. The bad answer is a platform change they can see coming and you cannot. Ask directly, then verify independently.</span></span></li>
+  </ol>
+</section>
+
+<section>
+  <p class="eyebrow">The path with no capital</p>
+  <h2>The three customers you already have.</h2>
+  <p>If capital is not on the table, the second fastest path uses the one asset I have been ignoring: <strong>you already do HubSpot consulting, and HubSpot's gate is three active installs in unaffiliated production accounts.</strong></p>
+  <p>Almost no marketplace developer can clear that gate quickly. You can, because you have existing client relationships and a decade of credibility with exactly the people who run the portals in question. That is not cold outreach and it does not violate your constraint. It is asking three people who already pay you for advice whether they want a tool that fixes a problem you have personally watched cost them money.</p>
+  <p>Do that, and HubSpot goes from a fourteen week gate to a two week one, and it is the highest revenue per customer surface in these documents.</p>
+
+  <div class="callout">
+    <p class="eyebrow">Meanwhile, publish where there is no gate at all</p>
+    <p>npm, PyPI, the MCP directories and VS Code take minutes and ask nothing. Chrome takes a review of days. None of them will bill for you, so the pattern is the same in each: the listing is free and public, the premium path is a licence key checked against your own endpoint, and Stripe does the collecting.</p>
+    <p>These are cheap enough to run as a portfolio rather than a bet. Five of them is a week of fleet time, and the only clock left running is discovery.</p>
+  </div>
+</section>
+
+<section>
+  <p class="eyebrow">The plan</p>
+  <h2>Ninety days, three things at once.</h2>
+  <p>These do not compete for my attention the way they would compete for yours, which is the point of the arrangement.</p>
+
+  <h3>Days 1 to 14</h3>
+  <ol class="steps">
+    <li><b>Write the buy box.</b> Price ceiling, minimum monthly profit, acceptable churn, acceptable concentration, categories we understand. Written down first, so we are not negotiating with ourselves at 11pm over a listing that looks exciting.</li>
+    <li><b>Start sourcing.</b> Continuous screening of every new listing across the marketplaces against that buy box, with a one page verdict on anything that survives the first cut.</li>
+    <li><b>Publish two zero-gate products</b> into VS Code and the MCP directories, with licence-key billing wired to Stripe from day one so we learn the conversion mechanics on something small.</li>
+    <li><b>Start the snapshot store.</b> Half a day of work, a few dollars a month, and it begins accumulating the one asset that cannot be bought later. Whatever else happens, this should be recording by Friday.</li>
+  </ol>
+
+  <h3>Days 15 to 45</h3>
+  <ol class="steps">
+    <li><b>Full diligence on three to five shortlisted assets</b>, to the nine gates above, with a written valuation and a walk-away price for each.</li>
+    <li><b>Three client conversations</b> about the first HubSpot tool. Yours to have, and the only part of this plan that needs your voice.</li>
+    <li><b>Three more zero-gate products</b>, chosen from whatever the first two taught us about which listings actually get found.</li>
+  </ol>
+
+  <h3>Days 46 to 90</h3>
+  <ol class="steps">
+    <li><b>Close one acquisition</b> through escrow, and run the neglected-maintenance program against it immediately: the support backlog, the broken integration, the dead content, the churn causes.</li>
+    <li><b>Submit the HubSpot listing</b> once the three installs are live and active.</li>
+    <li><b>Report actual numbers</b> against these estimates, and revise the plan against what the market said rather than what I predicted.</li>
+  </ol>
+</section>
+
+<section>
+  <p class="eyebrow">Honesty</p>
+  <h2>What this gets you, and what it does not.</h2>
+  <p>A portfolio of acquired micro-assets and zero-gate utilities, run by a fleet, realistically reaches five to fifteen thousand a month within twelve to eighteen months if it works. That is a good cashflow business. <strong>It is not a large company, and it never becomes one</strong>, because inherited distribution comes with an inherited ceiling.</p>
+  <p>That is the price of speed, and it is a fair one. It is also why the snapshot store goes up in week one regardless: it costs almost nothing, it is the only thing here with a ceiling worth having, and every day we do not run it is a day of history that can never be recovered.</p>
+
+  <h3>Kill criteria, written now</h3>
+  <ul class="kill">
+    <li><b>Acquisition:</b> if a hundred and fifty screened listings produce nothing that clears all nine gates, the buy box is wrong or the market is picked over. Stop and reprice rather than relaxing the gates.</li>
+    <li><b>Acquisition, post-close:</b> if revenue is below the pre-purchase run rate after ninety days of fleet work, the decline was structural and we misread it. Sell, take the lesson, do not average down.</li>
+    <li><b>Zero-gate products:</b> if five listings produce under fifty installs between them in sixty days, discovery on those surfaces does not work for our category.</li>
+    <li><b>HubSpot:</b> if three existing clients will not install a free tool that fixes a problem they have paid you to diagnose, the product thesis is wrong, and no amount of marketplace ranking would have saved it.</li>
+  </ul>
+
+  <h3>What only you can do</h3>
+  <p>The capital and the escrow. Stripe and its identity checks. A verified organisation and domain if we go the GitHub route. The three client conversations. And being the named buyer and operator of record, which is not paperwork: it is what makes the whole arrangement legitimate.</p>
+</section>
+
+<section class="close">
+  <p class="eyebrow">The decision</p>
+  <h2>The fork is capital.</h2>
+  <p class="standfirst">With money to deploy, acquisition is the fastest legitimate path to profitable that exists, and I can start screening today. <b>Without it, the answer is your three HubSpot clients and a shelf of zero-gate listings</b>, which is slower but costs nothing except tokens.</p>
+  <p class="sign">Corrected from note one: marketplaces are a medium path with a false start, not a fast one.</p>
+</section>
+
+<section style="border-bottom:0;padding-top:2rem">
+  <h4>Sources</h4>
+  <p class="src">
+    <a href="https://blog.acquire.com/acquire-com-biannual-acquisition-multiples-report-jan-2026/">Acquire.com acquisition multiples, Jan 2026</a> &middot;
+    <a href="https://flippa.com/blog/saas-multiples/">Flippa SaaS valuation multiples 2026</a> &middot;
+    <a href="https://docs.github.com/en/apps/github-marketplace/creating-apps-for-github-marketplace/requirements-for-listing-an-app">GitHub Marketplace listing requirements</a> &middot;
+    <a href="https://docs.github.com/en/apps/github-marketplace/github-marketplace-overview/applying-for-publisher-verification-for-your-organization">GitHub publisher verification</a> &middot;
+    <a href="https://developers.hubspot.com/docs/apps/developer-platform/list-apps/apply-for-certification/certification-requirements">HubSpot certification requirements</a> &middot;
+    <a href="https://developers.hubspot.com/changelog/app-listing-and-app-certification-requirement-updates-for-may-2026">HubSpot listing requirement updates, May 2026</a> &middot;
+    <a href="https://extensionpay.com/articles/extensionpay-is-the-chrome-web-store-payments-replacement">Chrome Web Store Payments deprecation</a> &middot;
+    <a href="https://dodopayments.com/blogs/sell-vscode-extensions">VS Code Marketplace has no paid mechanism</a>
+  </p>
+</section>
+
+</div>
