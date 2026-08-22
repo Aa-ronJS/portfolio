@@ -1,0 +1,552 @@
+<title>Distribution Without Ads</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,700;12..96,800&family=IBM+Plex+Mono:wght@400;500;600&family=Newsreader:ital,opsz,wght@0,6..72,300;0,6..72,400;0,6..72,600;1,6..72,400&display=swap">
+
+<style>
+:root {
+  --ground:      #E7EAE5;
+  --surface:     #F4F6F1;
+  --surface-2:   #DDE2DB;
+  --ink:         #0E1A17;
+  --body:        #37423D;
+  --muted:       #6B7671;
+  --rule:        #C3CAC1;
+  --rule-soft:   #D5DBD2;
+  --accent:      #0A6355;
+  --accent-soft: #DCE9E3;
+  --signal:      #A8401B;
+  --signal-soft: #F0DFD6;
+
+  --display: "Bricolage Grotesque", "Helvetica Neue", Arial, sans-serif;
+  --serif:   "Newsreader", Georgia, "Times New Roman", serif;
+  --mono:    "IBM Plex Mono", ui-monospace, "SF Mono", Menlo, monospace;
+
+  --measure: 63ch;
+  --pad: clamp(1.25rem, 5vw, 4rem);
+}
+
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --ground:      #0C1312;
+    --surface:     #141D1B;
+    --surface-2:   #1C2724;
+    --ink:         #E9EDE7;
+    --body:        #B3BDB7;
+    --muted:       #7E8A85;
+    --rule:        #26322E;
+    --rule-soft:   #1E2926;
+    --accent:      #4FBBA6;
+    --accent-soft: #16302B;
+    --signal:      #E08355;
+    --signal-soft: #2E1E17;
+  }
+}
+
+:root[data-theme="dark"] {
+  --ground:      #0C1312;
+  --surface:     #141D1B;
+  --surface-2:   #1C2724;
+  --ink:         #E9EDE7;
+  --body:        #B3BDB7;
+  --muted:       #7E8A85;
+  --rule:        #26322E;
+  --rule-soft:   #1E2926;
+  --accent:      #4FBBA6;
+  --accent-soft: #16302B;
+  --signal:      #E08355;
+  --signal-soft: #2E1E17;
+}
+
+* { box-sizing: border-box; }
+
+body {
+  background: var(--ground);
+  color: var(--body);
+  font-family: var(--serif);
+  font-size: clamp(1.02rem, 0.42vw + 0.94rem, 1.16rem);
+  line-height: 1.62;
+  font-weight: 400;
+  -webkit-font-smoothing: antialiased;
+  margin: 0;
+  padding: 0 var(--pad) 6rem;
+}
+
+.wrap {
+  max-width: 78rem;
+  margin: 0 auto;
+}
+
+p, ul, ol { max-width: var(--measure); }
+p { margin: 0 0 1.1em; }
+
+h1, h2, h3, .eyebrow, .stat-n, .badge, .spec dt {
+  font-family: var(--display);
+  color: var(--ink);
+  text-wrap: balance;
+}
+
+a { color: var(--accent); text-decoration-thickness: 1px; text-underline-offset: 2px; }
+a:focus-visible, summary:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 3px;
+}
+
+strong { color: var(--ink); font-weight: 600; }
+em { font-style: italic; }
+
+/* ---------- masthead ---------- */
+
+.masthead {
+  padding: clamp(3.5rem, 9vw, 7rem) 0 clamp(2.5rem, 5vw, 4rem);
+  border-bottom: 1px solid var(--rule);
+  display: flex;
+  flex-direction: column;
+  gap: 1.75rem;
+}
+
+.slug {
+  font-family: var(--mono);
+  font-size: 0.72rem;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: var(--muted);
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem 1.5rem;
+}
+.slug span:first-child { color: var(--accent); }
+
+h1 {
+  font-size: clamp(2.9rem, 8.5vw, 6.4rem);
+  line-height: 0.94;
+  letter-spacing: -0.035em;
+  font-weight: 800;
+  margin: 0;
+  max-width: 15ch;
+}
+
+.standfirst {
+  font-size: clamp(1.15rem, 1vw + 0.95rem, 1.5rem);
+  line-height: 1.45;
+  color: var(--body);
+  max-width: 46ch;
+  font-weight: 300;
+  margin: 0;
+}
+.standfirst b { color: var(--ink); font-weight: 600; }
+
+/* ---------- sections ---------- */
+
+section { padding: clamp(3rem, 6vw, 5rem) 0; border-bottom: 1px solid var(--rule-soft); }
+section:last-of-type { border-bottom: 0; }
+
+.eyebrow {
+  font-family: var(--mono);
+  font-size: 0.72rem;
+  font-weight: 600;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: var(--accent);
+  display: flex;
+  align-items: center;
+  gap: 0.85rem;
+  margin: 0 0 1.5rem;
+}
+.eyebrow::after {
+  content: "";
+  flex: 1;
+  height: 1px;
+  background: var(--rule);
+  max-width: 10rem;
+}
+
+h2 {
+  font-size: clamp(1.85rem, 3.2vw, 2.9rem);
+  line-height: 1.06;
+  letter-spacing: -0.028em;
+  font-weight: 700;
+  margin: 0 0 1.5rem;
+  max-width: 20ch;
+}
+
+h3 {
+  font-family: var(--display);
+  font-size: 1.06rem;
+  font-weight: 700;
+  letter-spacing: -0.01em;
+  margin: 2.2rem 0 0.7rem;
+}
+
+/* ---------- the three facts ---------- */
+
+.facts {
+  display: grid;
+  gap: 1px;
+  background: var(--rule);
+  border: 1px solid var(--rule);
+  margin-top: 2.5rem;
+}
+@media (min-width: 60rem) { .facts { grid-template-columns: repeat(3, 1fr); } }
+
+.fact { background: var(--surface); padding: 1.9rem 1.6rem 2.1rem; }
+.fact p { max-width: none; font-size: 0.97rem; margin: 0; }
+.fact h3 { margin: 0 0 0.7rem; font-size: 1.14rem; line-height: 1.25; }
+.fact .stat-n {
+  font-family: var(--mono);
+  font-size: 0.72rem;
+  letter-spacing: 0.16em;
+  color: var(--muted);
+  display: block;
+  margin-bottom: 1.1rem;
+}
+
+/* ---------- filter list ---------- */
+
+.filter { list-style: none; padding: 0; margin: 2rem 0 0; max-width: 60rem; }
+.filter li {
+  display: grid;
+  grid-template-columns: 1.6rem 1fr;
+  gap: 0 1rem;
+  padding: 1rem 0;
+  border-top: 1px solid var(--rule-soft);
+  font-size: 1rem;
+}
+.filter li:last-child { border-bottom: 1px solid var(--rule-soft); }
+.filter li::before {
+  content: "";
+  width: 9px; height: 9px;
+  margin-top: 0.55em;
+  background: var(--accent);
+  transform: rotate(45deg);
+}
+.filter b { display: block; color: var(--ink); font-family: var(--display); font-weight: 700; font-size: 1rem; }
+
+/* ---------- plays ---------- */
+
+.play { display: grid; gap: clamp(1.75rem, 3vw, 3rem); align-items: start; }
+@media (min-width: 62rem) {
+  .play { grid-template-columns: minmax(0, 1fr) 19rem; }
+}
+
+.play-body > *:first-child { margin-top: 0; }
+
+.badge {
+  display: inline-flex;
+  align-items: baseline;
+  gap: 0.6rem;
+  font-family: var(--mono);
+  font-size: 0.7rem;
+  font-weight: 600;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: var(--accent);
+  background: var(--accent-soft);
+  padding: 0.4rem 0.75rem;
+  margin-bottom: 1.1rem;
+}
+
+.spec {
+  background: var(--surface);
+  border: 1px solid var(--rule);
+  padding: 1.4rem 1.4rem 1.6rem;
+  margin: 0;
+  font-size: 0.9rem;
+  position: sticky;
+  top: 1.5rem;
+}
+.spec dt {
+  font-family: var(--mono);
+  font-size: 0.66rem;
+  font-weight: 600;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--muted);
+  margin-bottom: 0.3rem;
+}
+.spec dd {
+  margin: 0 0 1.15rem;
+  line-height: 1.4;
+  color: var(--body);
+  font-variant-numeric: tabular-nums;
+}
+.spec dd:last-child { margin-bottom: 0; }
+.spec dd b { color: var(--ink); font-weight: 600; }
+.spec .hot { color: var(--signal); }
+
+@media (max-width: 61.99rem) { .spec { position: static; } }
+
+.split { display: grid; gap: 1px; background: var(--rule); border: 1px solid var(--rule); margin: 2rem 0 0; }
+@media (min-width: 48rem) { .split { grid-template-columns: 1fr 1fr; } }
+.split > div { background: var(--surface); padding: 1.5rem; }
+.split h3 { margin-top: 0; }
+.split p { max-width: none; font-size: 0.96rem; }
+.split p:last-child { margin-bottom: 0; }
+
+/* ---------- callout ---------- */
+
+.callout {
+  border-left: 3px solid var(--signal);
+  background: var(--signal-soft);
+  padding: 1.35rem 1.5rem;
+  margin: 2.25rem 0;
+  max-width: 60rem;
+}
+.callout p { max-width: none; margin: 0; font-size: 0.99rem; }
+.callout p + p { margin-top: 0.8em; }
+.callout .eyebrow { color: var(--signal); margin-bottom: 0.7rem; }
+.callout .eyebrow::after { background: currentColor; opacity: 0.28; max-width: 5rem; }
+
+/* ---------- steps ---------- */
+
+.steps { counter-reset: step; list-style: none; padding: 0; margin: 2rem 0 0; max-width: 62rem; }
+.steps li {
+  counter-increment: step;
+  display: grid;
+  grid-template-columns: 2.6rem 1fr;
+  gap: 0 1.1rem;
+  padding: 1.05rem 0;
+  border-top: 1px solid var(--rule-soft);
+  font-size: 1rem;
+}
+.steps li:last-child { border-bottom: 1px solid var(--rule-soft); }
+.steps li::before {
+  content: counter(step, decimal-leading-zero);
+  font-family: var(--mono);
+  font-size: 0.78rem;
+  font-weight: 600;
+  color: var(--accent);
+  padding-top: 0.28em;
+  font-variant-numeric: tabular-nums;
+}
+
+/* ---------- cant-do ---------- */
+
+.cant { list-style: none; padding: 0; margin: 1.5rem 0 0; max-width: 60rem; }
+.cant li {
+  padding: 0.75rem 0 0.75rem 1.75rem;
+  border-top: 1px solid var(--rule-soft);
+  font-size: 0.99rem;
+  position: relative;
+}
+.cant li:last-child { border-bottom: 1px solid var(--rule-soft); }
+.cant li::before {
+  content: "\00d7";
+  position: absolute;
+  left: 0;
+  top: 0.72rem;
+  color: var(--signal);
+  font-family: var(--mono);
+  font-weight: 600;
+}
+
+/* ---------- close ---------- */
+
+.close { padding-top: clamp(3rem, 6vw, 5rem); }
+.close h2 { font-size: clamp(2rem, 4.5vw, 3.4rem); max-width: 16ch; }
+.close .standfirst { max-width: 52ch; }
+
+.sign {
+  font-family: var(--mono);
+  font-size: 0.72rem;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--muted);
+  margin-top: 3rem;
+  padding-top: 1.25rem;
+  border-top: 1px solid var(--rule);
+  max-width: none;
+}
+</style>
+
+<div class="wrap">
+
+<header class="masthead">
+  <div class="slug">
+    <span>Strategy note</span>
+    <span>For Aaron Steele</span>
+    <span>22 August 2026</span>
+  </div>
+  <h1>Distribution Without Ads</h1>
+  <p class="standfirst">You asked how to reach lots of people. I think that is the wrong target, and it is why the last answer came out small. <b>The goal is money, and money does not require reach.</b></p>
+</header>
+
+<section>
+  <p class="eyebrow">The reframe</p>
+  <h2>Reach is the consumer path. It is not the only one.</h2>
+  <p>Last time I heard "marketplace" and gave you products to sell on one. That was answering the example instead of the question. Here is the question underneath it: what do you own, once anyone can build anything?</p>
+  <p>Three things follow from having unlimited agent labour, and together they point somewhere quite different from a big audience.</p>
+
+  <div class="facts">
+    <div class="fact">
+      <span class="stat-n">Fact one</span>
+      <h3>Building is no longer the asset</h3>
+      <p>Anything you can produce, ten thousand other people can now produce by Friday. Production has gone from the scarce thing to the free thing. What stays scarce is a channel that puts the thing in front of someone with a wallet already out.</p>
+    </div>
+    <div class="fact">
+      <span class="stat-n">Fact two</span>
+      <h3>You ruled out every push channel</h3>
+      <p>Ads, cold email, cold DMs, outbound of any shape: all push. What is left is pull. And "build it and they will come" fails for a specific reason worth naming, because it is <em>not</em> the same failure as pull: it tries to create demand out of nothing. Pull intercepts demand that is already moving. Only one of those works without a budget.</p>
+    </div>
+    <div class="fact">
+      <span class="stat-n">Fact three</span>
+      <h3>You do not need lots of people</h3>
+      <p>Revenue is customers multiplied by price. A few hundred customers at fifty to five hundred dollars a month was never viable solo, because serving a tiny niche cost nearly as much as serving a large one. Agent labour is precisely what deletes that cost. Ten narrow products, one hundred and fifty customers each, forty nine dollars a month, is around seventy thousand a month, and not one of them ever had to go viral.</p>
+    </div>
+  </div>
+
+  <p style="margin-top:2.5rem"><strong>So the brief becomes:</strong> find the places where machine scale production is <em>rewarded</em> rather than punished, and where the platform does the reaching for us.</p>
+</section>
+
+<section>
+  <p class="eyebrow">The filter</p>
+  <h2>Five tests everything below had to pass.</h2>
+  <ul class="filter">
+    <li><span><b>Demand already exists, and it is searchable.</b>We intercept, we never create. If the first job is convincing people they have the problem, it is out.</span></li>
+    <li><span><b>The platform does the distribution.</b>Its own search box is our advertising channel, and it costs nothing.</span></li>
+    <li><span><b>Volume helps rather than hurts.</b>This rules out every social channel. Social punishes machine scale by design. Marketplaces, registries and search reward it.</span></li>
+    <li><span><b>The payment rails already exist.</b>Nobody gets invoiced, nobody gets chased, no contract gets negotiated.</span></li>
+    <li><span><b>I can carry ninety percent of it indefinitely.</b>If the plan needs you in the loop weekly, it is not a plan, it is a job.</span></li>
+  </ul>
+</section>
+
+<section>
+  <div class="play">
+    <div class="play-body">
+      <span class="badge">Play A <span aria-hidden="true">&mdash;</span> the revenue engine</span>
+      <h2>Occupy the long tail of a marketplace.</h2>
+      <p>App marketplaces are search engines whose users are already logged in, already paying the host four figures a month, and already have a card on file. HubSpot, Shopify, GitHub, Chrome, WordPress, Zapier, Make, n8n. Nobody buys ads inside them. Ranking is relevance, reviews and installs, and the long tail sits genuinely empty, because one human can only build and maintain one or two apps.</p>
+
+      <h3>Why this needs agents, and is otherwise impossible</h3>
+      <p>The play is not one app. It is twenty. Each listing is a lottery ticket that the platform hands out free and then sells tickets for on your behalf. A solo human holds two. We hold thirty, keep all thirty current through every platform API change, and answer every support ticket inside an hour, forever. Expect seventeen to earn approximately nothing and two or three to carry the whole thing. That asymmetry is not a risk in this plan, it is the mechanism.</p>
+
+      <h3>Where you specifically win, rather than anyone</h3>
+      <p>HubSpot. You have spent a decade watching exactly what breaks in real deployments: records merged on the wrong key, association integrity quietly rotting, line items drifting out of Xero, migrations nobody can reconcile. You found three point eight million dollars of it. That is the difference between guessing at an app and knowing the twenty specific things that cost people real money, which is the entire difference between a listing that sells and a listing that does not.</p>
+      <p>The marketplace is also small enough to rank in. HubSpot has roughly two thousand apps against Shopify's thirteen thousand, and its customers are mid market businesses with budget, not hobbyists.</p>
+
+      <h3>The second front, same play</h3>
+      <p>GitHub Marketplace. Every team that has adopted agent coding now has your exact stated problem: <em>an agent saying done is a claim, not a fact.</em> You already have the method and have proven it twice on your own tools, including the run that found a fake test pipeline and a performance report structurally incapable of failing. One build, one independent adversary that knows nothing about the first. That is a GitHub App with per seat billing in the fastest growing category on the platform, and it is the one product on this page you are already visibly the right person to sell.</p>
+    </div>
+
+    <dl class="spec">
+      <dt>Money arrives as</dt>
+      <dd>Per portal or per seat subscription, <b>$19 to $99 a month</b>, billed by the platform</dd>
+      <dt>Time to first dollar</dt>
+      <dd><b>8 to 14 weeks.</b> App review is the gate, not the build</dd>
+      <dt>My share of the work</dt>
+      <dd>Research, build, listing copy, screenshots, docs, support, updates. <b>Effectively all of it</b></dd>
+      <dt>Your share</dt>
+      <dd class="hot">Developer account enrolment and payout identity checks. A few hours, once</dd>
+      <dt>Main risk</dt>
+      <dd>Platform dependence and review rejection. Mitigated by shipping across three marketplaces, not one</dd>
+    </dl>
+  </div>
+</section>
+
+<section>
+  <div class="play">
+    <div class="play-body">
+      <span class="badge">Play B <span aria-hidden="true">&mdash;</span> the moat</span>
+      <h2>Own a public dataset. Give away the search, sell the watching.</h2>
+      <p>The most durable free distribution left is being <em>the source</em>. Take data that is genuinely public but painfully fragmented, clean it, publish it free, and it becomes the page Google ranks, the page other people link to, and, newly and underrated, the page a language model cites when somebody asks the question. You give away the lookup. You charge the small group whose job depends on knowing first.</p>
+
+      <h3>The concrete one for you: the Australian construction pipeline</h3>
+      <p>Around five hundred and thirty seven councils, plus every state planning portal, publish development approvals as public records, in mutually incompatible formats, with no common identifier. Cordell and BCI Central sell this exact data for thousands a year. Nobody has aggregated the long tail properly, because doing it means writing and then <em>permanently maintaining</em> hundreds of small, constantly breaking scrapers.</p>
+      <p>That maintenance burden is the whole reason the gap exists, and it is the single most agent shaped job I can think of. A council quietly changes its portal and one feed dies; one person cannot hold five hundred of those, a standing fleet can, with a daily verification pass that checks every feed against the council's own site. Which is your method, applied to data instead of code.</p>
+      <p>And the buyers are people you already understand well enough to have built Rain Check for.</p>
+
+      <h3>If construction does not appeal</h3>
+      <p>The shape transfers cleanly to government tenders and grants, professional licensing registers, product recalls, and insolvency notices. Same mechanic every time: fragmented public record, free search as the distribution, paid alerting as the revenue.</p>
+    </div>
+
+    <dl class="spec">
+      <dt>Money arrives as</dt>
+      <dd>Free search. Paid alerts and API at <b>$49 to $199 a month</b>, plus bulk exports</dd>
+      <dt>Time to first dollar</dt>
+      <dd><b>4 to 6 weeks</b> to build. <b>3 to 6 months</b> before organic traffic means anything</dd>
+      <dt>My share of the work</dt>
+      <dd>Source mapping, ingestion, normalisation, verification, the site, the billing</dd>
+      <dt>Your share</dt>
+      <dd class="hot">Be the named human behind it, and rule on the handful of sources whose terms are ambiguous</dd>
+      <dt>Main risk</dt>
+      <dd>Slowest ramp on this page. Per source terms of use. We take public records only, from sources that permit it, and we say who we are</dd>
+    </dl>
+  </div>
+</section>
+
+<section>
+  <div class="play">
+    <div class="play-body">
+      <span class="badge">Play C <span aria-hidden="true">&mdash;</span> the option</span>
+      <h2>Give away the tool. Sell the place it runs.</h2>
+      <p>Open source registries are distribution channels with no gatekeeper and no ad load. npm, PyPI, GitHub, the MCP directories. Developers arrive searching with intent. A genuinely useful free tool collects installs, and the hosted version, the team features and anything that needs a server collect money. You have already shipped two MCP servers, the directories are early enough that the good names are unclaimed, and every agent builder alive is currently searching them.</p>
+      <p>I am ranking this third honestly. It has the best option value and the least reliable revenue on the page.</p>
+
+      <div class="split">
+        <div>
+          <h3>The part I would run regardless</h3>
+          <p>Integration listings are free permanent backlinks. Every SaaS company maintains a "works with" directory. Ship an integration, receive a listed page on their domain forever, plus a discovery surface their own customers browse on purpose.</p>
+          <p>Twenty integrations is twenty authoritative inbound links and twenty front doors, at zero cost. Twenty integrations is about a week of agent time. This is the cheapest distribution on the page and it compounds under whichever play wins.</p>
+        </div>
+        <div>
+          <h3>The sleeper I am not recommending</h3>
+          <p>Agencies with more demand than delivery capacity will pay for capacity today, in cash, this month. It is by a wide margin the fastest money available to you.</p>
+          <p>I have left it off the list because it fails your own test rather than mine: the selling is yours, not mine. Say the word if the timeline matters more than the autonomy, and I will build the machine behind it, but you would be the one on the calls.</p>
+        </div>
+      </div>
+    </div>
+
+    <dl class="spec">
+      <dt>Money arrives as</dt>
+      <dd>Hosted tier and team seats on a free core</dd>
+      <dt>Time to first dollar</dt>
+      <dd class="hot"><b>Unpredictable.</b> Three weeks, or never</dd>
+      <dt>My share of the work</dt>
+      <dd>All of it, and it is cheap. This is the low cost bet you hold alongside a real one</dd>
+      <dt>Main risk</dt>
+      <dd>Adoption is close to a coin flip and does not respond to effort the way the other two do</dd>
+    </dl>
+  </div>
+</section>
+
+<section>
+  <p class="eyebrow">Recommendation</p>
+  <h2>Run A and B at once. You are not required to choose.</h2>
+  <p>Agent parallelism is the entire point of your position, and these two fail for unrelated reasons, which is exactly what you want from a pair of bets. <strong>Play A is the revenue engine</strong>: the platform hands us qualified traffic and we learn within weeks whether anything sticks. <strong>Play B is the moat</strong>: slow to start, but a maintained five hundred source dataset with a daily verification pass is the only thing on this page a competitor cannot copy in a weekend.</p>
+
+  <h3>The first fortnight, if you say go</h3>
+  <ol class="steps">
+    <li>Pull every HubSpot marketplace listing and its recent reviews, and find the twenty places where people are describing your own war stories in one star reviews. Evidence, not my intuition, and it replaces every estimate in this document with a real number.</li>
+    <li>Do the same across GitHub Marketplace's agent tooling category, which is new enough that the gaps are still obvious.</li>
+    <li>Map every Australian council and state development approval source, classify each by access method and terms of use, and stand up ingestion for the fifty largest by approval volume.</li>
+    <li>Ship one HubSpot app and one free approval search page. End to end, real, submitted, not a prototype.</li>
+  </ol>
+  <p style="margin-top:1.75rem">At the end of that we know something. Every decision after it gets made on data instead of on this document.</p>
+</section>
+
+<section>
+  <p class="eyebrow">Honesty</p>
+  <h2>What I cannot do, and what will not happen.</h2>
+  <ul class="cant">
+    <li>Anything requiring identity verification: Stripe, payout accounts, developer program enrolment, ABN and tax. Those need you and a passport.</li>
+    <li>Anything behind two factor authentication tied to you.</li>
+    <li>Sign an agreement, or be the named party in a platform's partner program.</li>
+    <li>Guarantee a timeline. App review queues and search rankings do not run on our schedule.</li>
+    <li>Produce revenue in the first month. On the fastest path the first dollar is eight to fourteen weeks out, and I would rather say that now than manage it later.</li>
+  </ul>
+
+  <div class="callout">
+    <p class="eyebrow">The thing that decides whether this works</p>
+    <p>At agent scale the constraint stops being production and becomes <strong>verification</strong>. Twenty half checked apps get you delisted from a marketplace you cannot re enter. One wrong development approval record gets the whole dataset distrusted, and trust is the only asset Play B has.</p>
+    <p>Which is to say the thing that makes this strategy work rather than fail is the exact thing you already sell: making the agent prove its result against something it does not control. That has to be built into the fleet on day one, as its own standing job, not bolted on when something breaks.</p>
+  </div>
+</section>
+
+<section class="close">
+  <p class="eyebrow">The decision</p>
+  <h2>Tell me which one, and I will start.</h2>
+  <p class="standfirst">If you want my answer rather than the menu: <b>start with the GitHub adversarial review app and the development approval dataset in parallel.</b> The first is the shortest line between what you already do and a platform that bills for you. The second is the only thing here that is still worth something in three years.</p>
+  <p class="sign">Fortnight one is research and two shipped things. Nothing on this page needs a budget, an ad account, or a single cold email.</p>
+</section>
+
+</div>
