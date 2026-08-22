@@ -1,0 +1,236 @@
+<title>What Survives the Constraints</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,700;12..96,800&family=IBM+Plex+Mono:wght@400;500;600&family=Newsreader:ital,opsz,wght@0,6..72,300;0,6..72,400;0,6..72,600&display=swap">
+
+<style>
+:root {
+  --ground:#E7EAE5; --surface:#F4F6F1;
+  --ink:#0E1A17; --body:#37423D; --muted:#6B7671;
+  --rule:#C3CAC1; --rule-soft:#D5DBD2;
+  --accent:#0A6355; --accent-soft:#DCE9E3;
+  --signal:#A8401B; --signal-soft:#F0DFD6;
+  --display:"Bricolage Grotesque","Helvetica Neue",Arial,sans-serif;
+  --serif:"Newsreader",Georgia,"Times New Roman",serif;
+  --mono:"IBM Plex Mono",ui-monospace,"SF Mono",Menlo,monospace;
+  --measure:63ch; --pad:clamp(1.25rem,5vw,4rem);
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --ground:#0C1312; --surface:#141D1B;
+    --ink:#E9EDE7; --body:#B3BDB7; --muted:#7E8A85;
+    --rule:#26322E; --rule-soft:#1E2926;
+    --accent:#4FBBA6; --accent-soft:#16302B;
+    --signal:#E08355; --signal-soft:#2E1E17;
+  }
+}
+:root[data-theme="dark"] {
+  --ground:#0C1312; --surface:#141D1B;
+  --ink:#E9EDE7; --body:#B3BDB7; --muted:#7E8A85;
+  --rule:#26322E; --rule-soft:#1E2926;
+  --accent:#4FBBA6; --accent-soft:#16302B;
+  --signal:#E08355; --signal-soft:#2E1E17;
+}
+* { box-sizing:border-box; }
+body {
+  background:var(--ground); color:var(--body); font-family:var(--serif);
+  font-size:clamp(1.02rem,0.42vw + 0.94rem,1.16rem); line-height:1.62;
+  -webkit-font-smoothing:antialiased; margin:0; padding:0 var(--pad) 5rem;
+}
+.wrap { max-width:70rem; margin:0 auto; }
+p, ul, ol { max-width:var(--measure); }
+p { margin:0 0 1.1em; }
+h1,h2,h3,h4,.eyebrow { font-family:var(--display); color:var(--ink); text-wrap:balance; }
+a { color:var(--accent); text-decoration-thickness:1px; text-underline-offset:2px; }
+a:focus-visible { outline:2px solid var(--accent); outline-offset:3px; }
+strong { color:var(--ink); font-weight:600; }
+code { font-family:var(--mono); font-size:0.88em; }
+
+.masthead { padding:clamp(3rem,8vw,5.5rem) 0 clamp(2.25rem,4vw,3.25rem); border-bottom:1px solid var(--rule); display:flex; flex-direction:column; gap:1.6rem; }
+.slug { font-family:var(--mono); font-size:0.72rem; letter-spacing:0.16em; text-transform:uppercase; color:var(--muted); display:flex; flex-wrap:wrap; gap:0.5rem 1.5rem; }
+.slug span:first-child { color:var(--accent); }
+h1 { font-size:clamp(2.6rem,7.5vw,5.4rem); line-height:0.95; letter-spacing:-0.035em; font-weight:800; margin:0; max-width:14ch; }
+.standfirst { font-size:clamp(1.12rem,0.9vw + 0.92rem,1.42rem); line-height:1.45; max-width:48ch; font-weight:300; margin:0; }
+.standfirst b { color:var(--ink); font-weight:600; }
+
+section { padding:clamp(2.5rem,5vw,4rem) 0; border-bottom:1px solid var(--rule-soft); }
+section:last-of-type { border-bottom:0; }
+.eyebrow { font-family:var(--mono); font-size:0.72rem; font-weight:600; letter-spacing:0.18em; text-transform:uppercase; color:var(--accent); display:flex; align-items:center; gap:0.85rem; margin:0 0 1.4rem; }
+.eyebrow::after { content:""; flex:1; height:1px; background:var(--rule); max-width:10rem; }
+h2 { font-size:clamp(1.75rem,3vw,2.6rem); line-height:1.07; letter-spacing:-0.028em; font-weight:700; margin:0 0 1.4rem; max-width:22ch; }
+h3 { font-size:1.1rem; font-weight:700; letter-spacing:-0.012em; margin:2rem 0 0.6rem; }
+h4 { font-family:var(--mono); font-size:0.7rem; font-weight:600; letter-spacing:0.16em; text-transform:uppercase; color:var(--muted); margin:0 0 0.55rem; }
+
+.tbl-wrap { overflow-x:auto; margin:1.75rem 0 0; border:1px solid var(--rule); background:var(--surface); }
+table { border-collapse:collapse; width:100%; min-width:42rem; font-size:0.92rem; }
+th, td { text-align:left; padding:0.8rem 1.05rem; border-bottom:1px solid var(--rule-soft); vertical-align:top; }
+thead th { font-family:var(--mono); font-size:0.66rem; font-weight:600; letter-spacing:0.13em; text-transform:uppercase; color:var(--muted); border-bottom:1px solid var(--rule); }
+tbody tr:last-child td { border-bottom:0; }
+td b { color:var(--ink); font-weight:600; font-family:var(--display); }
+.yes { color:var(--accent); font-weight:600; }
+.no { color:var(--signal); font-weight:600; }
+
+.callout { border-left:3px solid var(--accent); background:var(--accent-soft); padding:1.25rem 1.4rem; margin:2rem 0; max-width:60rem; }
+.callout.warn { border-left-color:var(--signal); background:var(--signal-soft); }
+.callout p { max-width:none; margin:0; font-size:0.98rem; }
+.callout p + p { margin-top:0.75em; }
+.callout .eyebrow { margin-bottom:0.65rem; }
+.callout.warn .eyebrow { color:var(--signal); }
+.callout .eyebrow::after { background:currentColor; opacity:0.28; max-width:5rem; }
+
+.shots { display:grid; gap:1px; background:var(--rule); border:1px solid var(--rule); margin:1.75rem 0 0; }
+@media (min-width:58rem) { .shots { grid-template-columns:repeat(3,1fr); } }
+.shots > div { background:var(--surface); padding:1.4rem 1.3rem 1.6rem; display:flex; flex-direction:column; }
+.shots h3 { margin:0 0 0.6rem; }
+.shots p { max-width:none; font-size:0.95rem; }
+.shots p:last-of-type { margin-bottom:0; }
+.shots .when { font-family:var(--mono); font-size:0.68rem; letter-spacing:0.13em; text-transform:uppercase; color:var(--accent); margin-top:auto; padding-top:1rem; }
+
+.steps { counter-reset:step; list-style:none; padding:0; margin:1.5rem 0 0; max-width:62rem; }
+.steps li { counter-increment:step; display:grid; grid-template-columns:2.5rem 1fr; gap:0 1rem; padding:0.95rem 0; border-top:1px solid var(--rule-soft); font-size:1rem; }
+.steps li:last-child { border-bottom:1px solid var(--rule-soft); }
+.steps li::before { content:counter(step,decimal-leading-zero); font-family:var(--mono); font-size:0.76rem; font-weight:600; color:var(--accent); padding-top:0.3em; font-variant-numeric:tabular-nums; }
+
+.kill { list-style:none; padding:0; margin:1.3rem 0 0; max-width:60rem; }
+.kill li { padding:0.75rem 0 0.75rem 1.8rem; border-top:1px solid var(--rule-soft); font-size:0.98rem; position:relative; }
+.kill li:last-child { border-bottom:1px solid var(--rule-soft); }
+.kill li::before { content:"\00d7"; position:absolute; left:0; top:0.72rem; color:var(--signal); font-family:var(--mono); font-weight:600; }
+
+.sign { font-family:var(--mono); font-size:0.72rem; letter-spacing:0.14em; text-transform:uppercase; color:var(--muted); margin-top:2.5rem; padding-top:1.2rem; border-top:1px solid var(--rule); max-width:none; }
+.src { font-size:0.85rem; color:var(--muted); }
+.src a { color:var(--muted); }
+</style>
+
+<div class="wrap">
+
+<header class="masthead">
+  <div class="slug">
+    <span>Strategy note, four</span>
+    <span>The operating plan</span>
+    <span>22 August 2026</span>
+  </div>
+  <h1>What Survives the Constraints</h1>
+  <p class="standfirst">No ads, no cold email, no capital, no calls, no waiting to be found. <b>Two marketplaces clear all five, and I can start on the first one today.</b></p>
+</header>
+
+<section>
+  <p class="eyebrow">Where that leaves us</p>
+  <h2>Ruling out capital and conversations removes the two fastest paths.</h2>
+  <p>Acquisition is gone, and it was the fastest legitimate route on the board. The HubSpot shortcut is gone, and it was the highest revenue per customer. I am not going to pretend otherwise: <strong>this is now slower and more probabilistic than the plan in note three</strong>, and the honest first-revenue window moves out to roughly six to fourteen weeks, arriving as a trickle rather than a step change.</p>
+  <p>What is left is genuinely good, though, and it is the thing I should have led with in note one instead of talking about marketplaces in general. The question is not which marketplace has the most customers. It is which marketplace will <em>let a stranger start selling immediately</em>. Only two will.</p>
+
+  <div class="tbl-wrap">
+    <table>
+      <thead><tr><th>Marketplace</th><th>Traction gate</th><th>Collects money for you</th><th>Verdict</th></tr></thead>
+      <tbody>
+        <tr><td><b>Shopify App Store</b></td><td class="yes">None &mdash; approval review only</td><td class="yes">Yes, billed on the merchant's existing Shopify invoice</td><td><b>Primary</b></td></tr>
+        <tr><td><b>Atlassian Marketplace</b></td><td class="yes">None &mdash; approval review only</td><td class="yes">Yes, paid via Atlassian for cloud apps</td><td><b>Secondary</b></td></tr>
+        <tr><td>GitHub Marketplace</td><td class="no">100 installs plus a verified organisation</td><td>Yes, eventually</td><td>Free listing only</td></tr>
+        <tr><td>HubSpot</td><td class="no">3 unaffiliated production installs</td><td class="no">No</td><td>Closed to us now</td></tr>
+        <tr><td>Chrome, VS Code, npm, MCP</td><td class="yes">None</td><td class="no">No &mdash; own billing and licence keys</td><td>Cheap side bets</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <div class="callout">
+    <p class="eyebrow">Why Shopify is the one to lead with</p>
+    <p>Its Billing API puts the charge on the merchant's existing Shopify invoice. No new card, no new account, no checkout to abandon. That is the single biggest conversion advantage available anywhere in this document, and it is the difference between a trial that converts and one that does not.</p>
+    <p>The merchants are also already paying for software monthly and already understand paying for apps, which removes the hardest conversation in software without anyone having to have it.</p>
+  </div>
+</section>
+
+<section>
+  <p class="eyebrow">The cost base</p>
+  <h2>Your break-even is about fifteen dollars a year.</h2>
+  <p>With no capex and free tiers everywhere, infrastructure rounds to nothing: Cloudflare or Vercel free tier, a free-tier database, GitHub free, Shopify Partner account free, Atlassian partner free. The only unavoidable outlays are <strong>a domain at roughly fifteen dollars a year</strong>, and five dollars once if we ever use the Chrome Web Store. Tokens come out of a subscription you already pay for.</p>
+  <p>Which means profitable is not a milestone we work towards. <strong>It is the first sale.</strong> Everything after that is scale, not survival, and we can afford to be patient in a way a funded competitor cannot.</p>
+
+  <div class="callout warn">
+    <p class="eyebrow">Zero capex is not zero admin</p>
+    <p>Three things still need you personally, and no path avoids them: a <strong>Shopify Partner account</strong> in your name, a <strong>Stripe or payout account</strong> with its identity checks, and a domain purchased on your card. Perhaps two hours in total, once.</p>
+    <p>If any of those is also off the table then there is no version of this that ends in money reaching you, and we should talk about that directly rather than my building around it.</p>
+  </div>
+</section>
+
+<section>
+  <p class="eyebrow">The plan</p>
+  <h2>Three shots, running at once.</h2>
+
+  <div class="shots">
+    <div>
+      <h4>Shot one</h4>
+      <h3>A Shopify data integrity app</h3>
+      <p>Duplicate customer detection and safe merge. Merchants accumulate duplicate customer records through guest checkout, changed emails and shared addresses, which quietly corrupts segments, loyalty balances and every report built on them.</p>
+      <p>This is your $3.8&nbsp;million story in a different costume: records merged on the wrong key, nobody able to say why the numbers are wrong. You are unusually qualified to build the one that does it safely, with a reversible merge and a reconciliation report.</p>
+      <p class="when">Submitted in ~3 weeks</p>
+    </div>
+    <div>
+      <h4>Shot two</h4>
+      <h3>Five zero-gate listings</h3>
+      <p>MCP servers, a VS Code extension, npm packages. Minutes to publish, nothing to ask permission for, licence key checked against our own endpoint with Stripe collecting.</p>
+      <p>Individually these are lottery tickets and most will earn nothing. Collectively they are a week of fleet time and they teach us which listings actually get found, which is the thing we most need to learn cheaply.</p>
+      <p class="when">Live in ~2 weeks</p>
+    </div>
+    <div>
+      <h4>Shot three</h4>
+      <h3>The snapshot store, recording</h3>
+      <p>Free tier, half a day of work, no product attached. It simply starts taking dated immutable copies of a chosen public register so that the history exists when we want it.</p>
+      <p>It earns nothing this year. It is the only thing in four documents with a ceiling worth having, and every day it is not running is a day that cannot be recovered later at any price.</p>
+      <p class="when">Running this week</p>
+    </div>
+  </div>
+
+  <h3>The order of work</h3>
+  <ol class="steps">
+    <li><b>Pick the Shopify app precisely</b> by reading the App Store's own reviews and support forums for the gap, rather than my choosing from intuition. Evidence first, same as the register sweep should have been.</li>
+    <li><b>Build it against the GraphQL Admin API</b>, which is now mandatory for new public apps, with the Billing API wired from the first commit rather than bolted on.</li>
+    <li><b>Ship the zero-gate five</b> in parallel, since they need no approval and cost nothing but time.</li>
+    <li><b>Start the snapshot store</b> on whichever register scores highest, before anything else is finished.</li>
+    <li><b>Submit to Shopify</b>, then handle the review feedback loop, which is where most first submissions fail and where a fleet that never gets discouraged is genuinely an advantage.</li>
+    <li><b>Report real numbers</b> against these estimates at day 45, and let the results rather than my predictions choose what happens next.</li>
+  </ol>
+</section>
+
+<section>
+  <p class="eyebrow">Honesty</p>
+  <h2>What I am no longer promising.</h2>
+  <p>Under these constraints the realistic shape is a first sale somewhere between six and fourteen weeks, a few hundred dollars a month by month six if a listing catches, and low thousands a month within a year <em>if</em> one of the shots works. Most will not. That is not pessimism, it is what a portfolio of platform-search bets looks like when you cannot buy attention, buy an asset, or ask anyone for a favour.</p>
+  <p>The compensating advantage is that it costs fifteen dollars a year to keep trying, so we can take a great many shots and only need one.</p>
+
+  <h3>Kill criteria</h3>
+  <ul class="kill">
+    <li><b>Shopify:</b> rejected three times on substance rather than cosmetics means the app concept is wrong, not the submission. Change the app, not the screenshots.</li>
+    <li><b>Zero-gate five:</b> under fifty installs between them in sixty days means discovery does not work on those surfaces for our category, and we stop feeding them.</li>
+    <li><b>Day 90:</b> no revenue at all from any shot. Not a reason to quit, but a reason to stop building and spend a fortnight purely on why nothing is being found.</li>
+    <li><b>Any time:</b> if I am producing strategy documents rather than shipped listings, the plan has failed in the most embarrassing way available. This is the fourth note. It should be the last one before there is something live.</li>
+  </ul>
+</section>
+
+<section>
+  <p class="eyebrow">The sidecar</p>
+  <h2>One option with no distribution problem at all.</h2>
+  <p>Worth naming because it fits every constraint you have set and nothing else does: <strong>coordinated vulnerability disclosure programs publish their scope and pay cash for valid findings.</strong> No audience, no capital, no selling, no marketing, and the demand is posted publicly in advance. You have already demonstrated the skill on a real platform, including the finding that let you log in as somebody else.</p>
+  <p>The honest caveats matter as much as the pitch. Duplicate findings pay nothing, most submissions are rejected, income is lumpy and unpredictable, and mass automated submission breaches most program rules and gets researchers banned rather than paid. It is skilled piecework, not an asset that compounds, and it competes with the fleet's time.</p>
+  <p>I would not run it as the core plan. It is the one thing here that can pay inside a month, so it deserves to be on the table with its risks stated rather than left off because it is untidy.</p>
+</section>
+
+<section>
+  <p class="eyebrow">Next</p>
+  <h2>Say go and the first thing ships this week.</h2>
+  <p class="standfirst">The snapshot store and the first two zero-gate listings need nothing from you at all. <b>The Shopify app needs a partner account and a payout account, and nothing else.</b></p>
+  <p class="sign">Note three assumed capital. This one does not. Nothing after this should be a document.</p>
+</section>
+
+<section style="border-bottom:0;padding-top:1.5rem">
+  <h4>Sources</h4>
+  <p class="src">
+    <a href="https://shopify.dev/docs/apps/launch/shopify-app-store/app-store-requirements">Shopify App Store requirements</a> &middot;
+    <a href="https://shopify.dev/changelog/clearer-standards-for-app-listing-images">Shopify listing image standards, March 2026</a> &middot;
+    <a href="https://developer.atlassian.com/platform/marketplace/pricing-payment-and-billing/">Atlassian pricing, payment and billing</a> &middot;
+    <a href="https://developer.atlassian.com/platform/marketplace/selling-on-marketplace/">Selling on the Atlassian Marketplace</a> &middot;
+    <a href="https://docs.github.com/en/apps/github-marketplace/creating-apps-for-github-marketplace/requirements-for-listing-an-app">GitHub Marketplace listing requirements</a> &middot;
+    <a href="https://developers.hubspot.com/docs/apps/developer-platform/list-apps/apply-for-certification/certification-requirements">HubSpot certification requirements</a>
+  </p>
+</section>
+
+</div>
