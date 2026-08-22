@@ -1,0 +1,539 @@
+<title>The Register Play</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,700;12..96,800&family=IBM+Plex+Mono:wght@400;500;600&family=Newsreader:ital,opsz,wght@0,6..72,300;0,6..72,400;0,6..72,600;1,6..72,400&display=swap">
+
+<style>
+:root {
+  --ground:#E7EAE5; --surface:#F4F6F1; --surface-2:#DDE2DB;
+  --ink:#0E1A17; --body:#37423D; --muted:#6B7671;
+  --rule:#C3CAC1; --rule-soft:#D5DBD2;
+  --accent:#0A6355; --accent-soft:#DCE9E3;
+  --signal:#A8401B; --signal-soft:#F0DFD6;
+  --good:#3E6B22; --good-soft:#E1EAD6;
+  --display:"Bricolage Grotesque","Helvetica Neue",Arial,sans-serif;
+  --serif:"Newsreader",Georgia,"Times New Roman",serif;
+  --mono:"IBM Plex Mono",ui-monospace,"SF Mono",Menlo,monospace;
+  --measure:63ch;
+  --pad:clamp(1.25rem,5vw,4rem);
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --ground:#0C1312; --surface:#141D1B; --surface-2:#1C2724;
+    --ink:#E9EDE7; --body:#B3BDB7; --muted:#7E8A85;
+    --rule:#26322E; --rule-soft:#1E2926;
+    --accent:#4FBBA6; --accent-soft:#16302B;
+    --signal:#E08355; --signal-soft:#2E1E17;
+    --good:#8FC46A; --good-soft:#1B2A16;
+  }
+}
+:root[data-theme="dark"] {
+  --ground:#0C1312; --surface:#141D1B; --surface-2:#1C2724;
+  --ink:#E9EDE7; --body:#B3BDB7; --muted:#7E8A85;
+  --rule:#26322E; --rule-soft:#1E2926;
+  --accent:#4FBBA6; --accent-soft:#16302B;
+  --signal:#E08355; --signal-soft:#2E1E17;
+  --good:#8FC46A; --good-soft:#1B2A16;
+}
+
+* { box-sizing:border-box; }
+body {
+  background:var(--ground); color:var(--body);
+  font-family:var(--serif);
+  font-size:clamp(1.02rem,0.42vw + 0.94rem,1.16rem);
+  line-height:1.62; font-weight:400;
+  -webkit-font-smoothing:antialiased;
+  margin:0; padding:0 var(--pad) 6rem;
+}
+.wrap { max-width:78rem; margin:0 auto; }
+p, ul, ol { max-width:var(--measure); }
+p { margin:0 0 1.1em; }
+h1,h2,h3,h4,.eyebrow,.badge { font-family:var(--display); color:var(--ink); text-wrap:balance; }
+a { color:var(--accent); text-decoration-thickness:1px; text-underline-offset:2px; }
+a:focus-visible { outline:2px solid var(--accent); outline-offset:3px; }
+strong { color:var(--ink); font-weight:600; }
+
+.masthead {
+  padding:clamp(3.5rem,9vw,6.5rem) 0 clamp(2.5rem,5vw,4rem);
+  border-bottom:1px solid var(--rule);
+  display:flex; flex-direction:column; gap:1.75rem;
+}
+.slug {
+  font-family:var(--mono); font-size:0.72rem; letter-spacing:0.16em;
+  text-transform:uppercase; color:var(--muted);
+  display:flex; flex-wrap:wrap; gap:0.5rem 1.5rem;
+}
+.slug span:first-child { color:var(--accent); }
+h1 {
+  font-size:clamp(2.9rem,8.5vw,6.4rem); line-height:0.94;
+  letter-spacing:-0.035em; font-weight:800; margin:0; max-width:14ch;
+}
+.standfirst {
+  font-size:clamp(1.15rem,1vw + 0.95rem,1.5rem); line-height:1.45;
+  max-width:47ch; font-weight:300; margin:0;
+}
+.standfirst b { color:var(--ink); font-weight:600; }
+
+section { padding:clamp(3rem,6vw,5rem) 0; border-bottom:1px solid var(--rule-soft); }
+section:last-of-type { border-bottom:0; }
+.eyebrow {
+  font-family:var(--mono); font-size:0.72rem; font-weight:600;
+  letter-spacing:0.18em; text-transform:uppercase; color:var(--accent);
+  display:flex; align-items:center; gap:0.85rem; margin:0 0 1.5rem;
+}
+.eyebrow::after { content:""; flex:1; height:1px; background:var(--rule); max-width:10rem; }
+h2 {
+  font-size:clamp(1.85rem,3.2vw,2.9rem); line-height:1.06;
+  letter-spacing:-0.028em; font-weight:700; margin:0 0 1.5rem; max-width:22ch;
+}
+h3 { font-size:1.12rem; font-weight:700; letter-spacing:-0.012em; margin:2.3rem 0 0.7rem; }
+h4 {
+  font-family:var(--mono); font-size:0.7rem; font-weight:600; letter-spacing:0.16em;
+  text-transform:uppercase; color:var(--muted); margin:0 0 0.6rem;
+}
+
+/* tables */
+.tbl-wrap { overflow-x:auto; margin:2rem 0 0; border:1px solid var(--rule); background:var(--surface); }
+table { border-collapse:collapse; width:100%; min-width:44rem; font-size:0.92rem; }
+caption { text-align:left; padding:1rem 1.1rem 0; font-family:var(--mono); font-size:0.68rem; letter-spacing:0.14em; text-transform:uppercase; color:var(--muted); }
+th, td { text-align:left; padding:0.85rem 1.1rem; border-bottom:1px solid var(--rule-soft); vertical-align:top; }
+thead th {
+  font-family:var(--mono); font-size:0.66rem; font-weight:600; letter-spacing:0.13em;
+  text-transform:uppercase; color:var(--muted); border-bottom:1px solid var(--rule);
+}
+tbody tr:last-child td { border-bottom:0; }
+td b, th b { color:var(--ink); font-weight:600; font-family:var(--display); }
+.num { font-variant-numeric:tabular-nums; white-space:nowrap; }
+.tag {
+  font-family:var(--mono); font-size:0.64rem; font-weight:600; letter-spacing:0.1em;
+  text-transform:uppercase; padding:0.2rem 0.45rem; white-space:nowrap;
+}
+.tag.shut { background:var(--signal-soft); color:var(--signal); }
+.tag.open { background:var(--good-soft); color:var(--good); }
+.tag.part { background:var(--accent-soft); color:var(--accent); }
+
+/* rubric */
+.rubric { list-style:none; padding:0; margin:2rem 0 0; max-width:66rem; counter-reset:r; }
+.rubric li {
+  counter-increment:r; display:grid; grid-template-columns:2.4rem 1fr;
+  gap:0 1.1rem; padding:1.1rem 0; border-top:1px solid var(--rule-soft); font-size:1rem;
+}
+.rubric li:last-child { border-bottom:1px solid var(--rule-soft); }
+.rubric li::before {
+  content:counter(r,decimal-leading-zero); font-family:var(--mono); font-size:0.76rem;
+  font-weight:600; color:var(--accent); padding-top:0.3em; font-variant-numeric:tabular-nums;
+}
+.rubric b { display:block; font-family:var(--display); font-weight:700; color:var(--ink); font-size:1rem; margin-bottom:0.15rem; }
+.rubric .why { color:var(--muted); font-style:italic; }
+
+/* callouts */
+.callout { border-left:3px solid var(--accent); background:var(--accent-soft); padding:1.35rem 1.5rem; margin:2.25rem 0; max-width:62rem; }
+.callout.warn { border-left-color:var(--signal); background:var(--signal-soft); }
+.callout p { max-width:none; margin:0; font-size:0.99rem; }
+.callout p + p { margin-top:0.8em; }
+.callout .eyebrow { margin-bottom:0.7rem; }
+.callout.warn .eyebrow { color:var(--signal); }
+.callout .eyebrow::after { background:currentColor; opacity:0.28; max-width:5rem; }
+
+/* figure */
+figure { margin:2.5rem 0 0; max-width:none; }
+figure svg { display:block; width:100%; max-width:62rem; height:auto; color:var(--body); }
+figcaption { font-size:0.9rem; color:var(--muted); margin-top:1rem; max-width:58ch; font-style:italic; }
+
+/* grid cards */
+.cards { display:grid; gap:1px; background:var(--rule); border:1px solid var(--rule); margin:2rem 0 0; }
+@media (min-width:52rem) { .cards.two { grid-template-columns:1fr 1fr; } }
+@media (min-width:64rem) { .cards.four { grid-template-columns:repeat(2,1fr); } }
+.cards > div { background:var(--surface); padding:1.5rem 1.4rem 1.7rem; }
+.cards h3 { margin-top:0; }
+.cards p { max-width:none; font-size:0.96rem; }
+.cards p:last-child { margin-bottom:0; }
+
+/* money ladder */
+.ladder { list-style:none; padding:0; margin:2rem 0 0; max-width:66rem; }
+.ladder li {
+  display:grid; gap:0.3rem 1.5rem; padding:1.1rem 0;
+  border-top:1px solid var(--rule-soft); font-size:0.99rem;
+}
+@media (min-width:48rem) { .ladder li { grid-template-columns:9rem 1fr; } }
+.ladder li:last-child { border-bottom:1px solid var(--rule-soft); }
+.ladder .price {
+  font-family:var(--mono); font-size:0.86rem; font-weight:600; color:var(--ink);
+  font-variant-numeric:tabular-nums; padding-top:0.15rem;
+}
+.ladder b { color:var(--ink); font-family:var(--display); }
+
+/* steps + kill */
+.steps { counter-reset:step; list-style:none; padding:0; margin:2rem 0 0; max-width:64rem; }
+.steps li {
+  counter-increment:step; display:grid; grid-template-columns:2.6rem 1fr; gap:0 1.1rem;
+  padding:1.05rem 0; border-top:1px solid var(--rule-soft); font-size:1rem;
+}
+.steps li:last-child { border-bottom:1px solid var(--rule-soft); }
+.steps li::before {
+  content:counter(step,decimal-leading-zero); font-family:var(--mono); font-size:0.78rem;
+  font-weight:600; color:var(--accent); padding-top:0.28em; font-variant-numeric:tabular-nums;
+}
+.kill { list-style:none; padding:0; margin:1.5rem 0 0; max-width:62rem; }
+.kill li { padding:0.8rem 0 0.8rem 1.9rem; border-top:1px solid var(--rule-soft); font-size:0.99rem; position:relative; }
+.kill li:last-child { border-bottom:1px solid var(--rule-soft); }
+.kill li::before {
+  content:"\00d7"; position:absolute; left:0; top:0.78rem; color:var(--signal);
+  font-family:var(--mono); font-weight:600;
+}
+.sign {
+  font-family:var(--mono); font-size:0.72rem; letter-spacing:0.14em; text-transform:uppercase;
+  color:var(--muted); margin-top:3rem; padding-top:1.25rem; border-top:1px solid var(--rule); max-width:none;
+}
+.src { font-size:0.85rem; color:var(--muted); }
+.src a { color:var(--muted); }
+</style>
+
+<div class="wrap">
+
+<header class="masthead">
+  <div class="slug">
+    <span>Strategy note, two of two</span>
+    <span>Companion to &ldquo;Distribution Without Ads&rdquo;</span>
+    <span>22 August 2026</span>
+  </div>
+  <h1>The Register Play</h1>
+  <p class="standfirst">I went and checked whether the development approval version was still open. <b>It is not.</b> That turns out to be the most useful thing I could have found, and it changes where we point this.</p>
+</header>
+
+<section>
+  <p class="eyebrow">What I found</p>
+  <h2>Every tier of the DA market is already occupied.</h2>
+  <p>I pitched you a play. Before unpacking it further I looked for the people already doing it, because the fastest way to waste three months is to build something that exists. All three price points are taken, by three different kinds of operator, on the same underlying public record.</p>
+
+  <div class="tbl-wrap">
+    <table>
+      <caption>The Australian development approval market, August 2026</caption>
+      <thead>
+        <tr><th>Who</th><th>What they have</th><th class="num">Price</th><th>Shape</th></tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><b>PlanningAlerts</b><br><span class="src">OpenAustralia Foundation</span></td>
+          <td>255 planning authorities, 92% of the population, 5&nbsp;million alerts sent, open source, volunteer written scrapers</td>
+          <td class="num">Free</td>
+          <td><span class="tag shut">Civic layer taken</span></td>
+        </tr>
+        <tr>
+          <td><b>DA Leads</b><br><span class="src">daleads.com.au</span></td>
+          <td>842,000+ applications, 365 councils, all states, daily refresh, AI classification into trade categories, geocoded, API, feasibility calculator, and an MCP server for Claude and Cursor</td>
+          <td class="num">$49/mo<br>API $99&ndash;199</td>
+          <td><span class="tag shut">Exactly my pitch, shipped</span></td>
+        </tr>
+        <tr>
+          <td><b>Cordell Connect</b><br><span class="src">CoreLogic / Cotality</span></td>
+          <td>Researched project intelligence, residential through civil, ANZ wide, human verified</td>
+          <td class="num">from $577.50/mo<br>min $6,930/yr</td>
+          <td><span class="tag shut">Incumbent</span></td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <p style="margin-top:2rem">DA Leads is not a rough approximation of what I described. It is the same product, including the two moves I was most pleased with: the trade classification and the MCP server. Someone got there first, and going at them head on means arriving late to a market where they hold three years of records and the search rankings that come with it.</p>
+</section>
+
+<section>
+  <p class="eyebrow">What that actually proves</p>
+  <h2>Three businesses, three price points, one public record. The mechanic works.</h2>
+  <p>The useful reading is not "that idea is dead." It is that a charity, a small operator and a CoreLogic subsidiary all sustain themselves on data that any of us can legally download, and they coexist because <strong>they sell different things on top of the same rows</strong>: the charity sells civic participation, the operator sells filtered leads, the incumbent sells verified certainty. Nobody is really competing on the data. They are competing on what they do to it.</p>
+
+  <p>Then I checked whether the pattern repeats elsewhere. It does, and recently:</p>
+
+  <div class="cards two">
+    <div>
+      <h4>Trade licence registers</h4>
+      <h3>Two aggregators, both new</h3>
+      <p>Eight states and territories, each with its own licence classes and terminology, no national register. WorkClear and TradieVerify have both appeared, normalising 1.6&nbsp;million records behind a single REST API. Occupied.</p>
+    </div>
+    <div>
+      <h4>Mining tenements</h4>
+      <h3>One state covered. Seven are not.</h3>
+      <p>NextMaps runs a live map, due diligence and email alerts for new applications, transfers, surrenders and expiries, for <strong>Western Australia only</strong>. SA, VIC, TAS, QLD, NSW and NT all publish tenement data. No national aggregator exists.</p>
+    </div>
+  </div>
+
+  <div class="callout">
+    <p class="eyebrow">The real finding</p>
+    <p>This is a land grab, and it is roughly eighteen months old. AI enabled solo operators are working through Australia's fragmented public registers one at a time, at $49 to $199 a month, undercutting incumbents charging $7,000 a year. The thesis is not speculative. It is being executed right now by people who are not you.</p>
+    <p>Which means three things: the mechanic is validated, target selection is the entire game, and being second into a register is close to worthless. Speed matters more than polish here, and picking correctly matters more than both.</p>
+  </div>
+</section>
+
+<section>
+  <p class="eyebrow">The unfair advantage of doing this in Australia</p>
+  <h2>Nobody owns a fact, and here they do not own the list either.</h2>
+  <p>This play would be legally hazardous in Europe, which has a specific database right protecting the investment in compiling data even where no creativity exists. Australia deliberately went the other way, twice, at the highest level:</p>
+  <p><strong>IceTV v Nine (2009, High Court)</strong> ended the "sweat of the brow" doctrine here. Effort spent compiling a database does not, by itself, earn copyright. <strong>Telstra v Phone Directories [2010] FCA 44</strong>, upheld on appeal, went further: copyright did not subsist in the White and Yellow Pages at all, because the directories were assembled by an automated system with no identifiable human author making an independent intellectual contribution.</p>
+  <p>Read that second holding again with this business in mind. The Australian courts have said that a machine generated compilation of facts has no copyright owner. That cuts <em>towards</em> us on the source data, and it also means our own compilation is not protected either, which is precisely why the moat has to be something other than the rows themselves. More on that below.</p>
+
+  <div class="callout warn">
+    <p class="eyebrow">Where the actual risk is, and it is not copyright</p>
+    <p>Three separate questions, and copyright is the easy one. <strong>Contract</strong>: a site's terms of use can bind you regardless of copyright, so each source gets classified by its terms before we touch it, and anything that forbids automated access is either negotiated or dropped. <strong>The Privacy Act</strong>: many of these registers carry names and addresses of individuals, and republishing personal information at scale is a live obligation even when the source is public. <strong>Defamation and negligence</strong>: any product that implies a named company is in financial trouble is a legal exposure, not just a technical one.</p>
+    <p>None of that is fatal and all of it is manageable, but it is the one part of this plan where you should spend a few hundred dollars on an actual Australian solicitor rather than take my word for it. I am not one.</p>
+  </div>
+</section>
+
+<section>
+  <p class="eyebrow">Selection</p>
+  <h2>What makes a register worth owning.</h2>
+  <p>This is the transferable part. Everything above is one worked example; the rubric below is the thing you keep, and it is what we score candidates against instead of guessing.</p>
+
+  <ol class="rubric">
+    <li><span><b>Fragmentation</b>How many independent sources must be reconciled to make the whole? <span class="why">One clean national API means no wall and no reason for you to exist. Eight state schemas is a real wall. Five hundred council websites is a fortress.</span></span></li>
+    <li><span><b>Source volatility</b>How often do the sources break? <span class="why">Counterintuitive, and important: breakage is an asset if you can afford the maintenance and a volunteer cannot. PlanningAlerts currently has around seventy of its scrapers marked possibly broken. That is not a criticism of them, it is the moat, measured.</span></span></li>
+    <li><span><b>Unbackfillable history</b>Does the source publish only its current state and overwrite the past? <span class="why">The single most important question on this list. See below.</span></span></li>
+    <li><span><b>Event shape</b>Does something discrete and dated happen that someone needs to know about within hours? <span class="why">A reference table does not sell subscriptions. A stream of dated events does, because alerts are the product and a table cannot be alerted on.</span></span></li>
+    <li><span><b>A buyer with a deadline</b>Whose job or money depends on knowing first? <span class="why">Deadlines beat curiosity every time. Objection periods close, licences expire, tenements lapse, expenditure commitments fall due. Curiosity churns in month two.</span></span></li>
+    <li><span><b>Demonstrated willingness to pay</b>Is somebody already charging real money? <span class="why">An expensive incumbent is good news, not bad. Cordell at $6,930 a year proves the value of the underlying record. An empty market usually means the record is worthless.</span></span></li>
+    <li><span><b>Legal cleanliness</b>Public record, permissive terms, minimal personal information, Australian jurisdiction.</span></li>
+    <li><span><b>Occupancy</b>Has an AI enabled solo already taken it in the last two years? <span class="why">Check this first, not last. I did it fourth and it cost us the original plan.</span></span></li>
+  </ol>
+</section>
+
+<section>
+  <p class="eyebrow">The moat</p>
+  <h2>The only thing here a competitor cannot buy is the past.</h2>
+  <p>Anyone can copy your schema, your pages and your pricing in a weekend, and after Telstra v Phone Directories they can arguably copy your rows too. So the moat cannot be the data. It has to be <strong>a time series that did not exist until you started recording it</strong>.</p>
+  <p>Most government registers publish current state and quietly overwrite. Who holds this tenement. What this licence's status is today. Which applications are currently on exhibition. Query it next year and last year is simply gone. Which means the moment you begin taking a dated, immutable snapshot every day, you start accumulating something no competitor can ever purchase, scrape or catch up on, and the gap widens every single day you keep running. A rival launching in eighteen months starts at zero history against your eighteen months, permanently.</p>
+  <p>And history is where the answerable questions live. Not "who holds this ground" but <em>how often does this holder let ground lapse, which areas have churned three times in five years, whose licences are trending towards expiry, what is the median time from lodgement to decision at this council and is it getting worse.</em> None of those can be answered from a snapshot of today, which is all the register itself offers, and all a new entrant will have.</p>
+
+  <figure>
+    <svg viewBox="0 0 1000 520" role="img" aria-label="Two pipelines compared. The obvious build fetches a source, parses it, stores rows and serves them. The durable build inserts an immutable dated snapshot store before parsing, so history can be replayed when the parser improves, and adds a daily verification step that re-fetches a sample from the source and diffs it against the stored record, publishing the result.">
+      <defs>
+        <marker id="ar" viewBox="0 0 10 8" refX="9" refY="4" markerWidth="8" markerHeight="7" orient="auto">
+          <polygon points="0,0 10,4 0,8" fill="currentColor"/>
+        </marker>
+        <marker id="ar-a" viewBox="0 0 10 8" refX="9" refY="4" markerWidth="8" markerHeight="7" orient="auto">
+          <polygon points="0,0 10,4 0,8" fill="#0A6355"/>
+        </marker>
+      </defs>
+
+      <text x="0" y="20" font-family="IBM Plex Mono, monospace" font-size="12" fill="currentColor" opacity="0.6" letter-spacing="1.4">THE OBVIOUS BUILD &mdash; COPYABLE IN A WEEKEND</text>
+      <g opacity="0.5">
+        <rect x="0" y="40" width="150" height="52" fill="none" stroke="currentColor" stroke-width="1"/>
+        <text x="75" y="70" text-anchor="middle" font-family="Bricolage Grotesque, sans-serif" font-size="13" fill="currentColor">Public register</text>
+        <rect x="210" y="40" width="150" height="52" fill="none" stroke="currentColor" stroke-width="1"/>
+        <text x="285" y="70" text-anchor="middle" font-family="Bricolage Grotesque, sans-serif" font-size="13" fill="currentColor">Scraper</text>
+        <rect x="420" y="40" width="150" height="52" fill="none" stroke="currentColor" stroke-width="1"/>
+        <text x="495" y="70" text-anchor="middle" font-family="Bricolage Grotesque, sans-serif" font-size="13" fill="currentColor">Rows</text>
+        <rect x="630" y="40" width="150" height="52" fill="none" stroke="currentColor" stroke-width="1"/>
+        <text x="705" y="70" text-anchor="middle" font-family="Bricolage Grotesque, sans-serif" font-size="13" fill="currentColor">Website</text>
+        <line x1="152" y1="66" x2="206" y2="66" stroke="currentColor" stroke-width="1" marker-end="url(#ar)"/>
+        <line x1="362" y1="66" x2="416" y2="66" stroke="currentColor" stroke-width="1" marker-end="url(#ar)"/>
+        <line x1="572" y1="66" x2="626" y2="66" stroke="currentColor" stroke-width="1" marker-end="url(#ar)"/>
+        <text x="800" y="70" font-family="IBM Plex Mono, monospace" font-size="11" fill="currentColor">no past, no proof</text>
+      </g>
+
+      <line x1="0" y1="132" x2="1000" y2="132" stroke="currentColor" stroke-width="1" opacity="0.2"/>
+
+      <text x="0" y="168" font-family="IBM Plex Mono, monospace" font-size="12" fill="#0A6355" letter-spacing="1.4">THE DURABLE BUILD &mdash; TWO EXTRA PARTS</text>
+      <rect x="0" y="190" width="150" height="52" fill="none" stroke="currentColor" stroke-width="1"/>
+      <text x="75" y="220" text-anchor="middle" font-family="Bricolage Grotesque, sans-serif" font-size="13" fill="currentColor">Public register</text>
+
+      <rect x="200" y="190" width="180" height="52" fill="none" stroke="#0A6355" stroke-width="2"/>
+      <text x="290" y="214" text-anchor="middle" font-family="Bricolage Grotesque, sans-serif" font-size="13" font-weight="700" fill="#0A6355">Snapshot store</text>
+      <text x="290" y="231" text-anchor="middle" font-family="IBM Plex Mono, monospace" font-size="10" fill="#0A6355">raw &middot; dated &middot; immutable</text>
+
+      <rect x="430" y="190" width="150" height="52" fill="none" stroke="currentColor" stroke-width="1"/>
+      <text x="505" y="220" text-anchor="middle" font-family="Bricolage Grotesque, sans-serif" font-size="13" fill="currentColor">Parse</text>
+
+      <rect x="630" y="190" width="170" height="52" fill="none" stroke="currentColor" stroke-width="1"/>
+      <text x="715" y="214" text-anchor="middle" font-family="Bricolage Grotesque, sans-serif" font-size="13" fill="currentColor">Resolve entities</text>
+      <text x="715" y="231" text-anchor="middle" font-family="IBM Plex Mono, monospace" font-size="10" fill="currentColor" opacity="0.7">the hard part</text>
+
+      <rect x="850" y="190" width="150" height="52" fill="none" stroke="currentColor" stroke-width="1"/>
+      <text x="925" y="220" text-anchor="middle" font-family="Bricolage Grotesque, sans-serif" font-size="13" fill="currentColor">Serve</text>
+
+      <line x1="152" y1="216" x2="196" y2="216" stroke="currentColor" stroke-width="1" marker-end="url(#ar)"/>
+      <line x1="382" y1="216" x2="426" y2="216" stroke="currentColor" stroke-width="1" marker-end="url(#ar)"/>
+      <line x1="582" y1="216" x2="626" y2="216" stroke="currentColor" stroke-width="1" marker-end="url(#ar)"/>
+      <line x1="802" y1="216" x2="846" y2="216" stroke="currentColor" stroke-width="1" marker-end="url(#ar)"/>
+      <text x="75" y="180" text-anchor="middle" font-family="IBM Plex Mono, monospace" font-size="10" fill="currentColor" opacity="0.7">daily</text>
+
+      <path d="M 250 244 L 250 290 L 505 290 L 505 246" fill="none" stroke="#0A6355" stroke-width="1.5" marker-end="url(#ar-a)"/>
+      <text x="378" y="306" text-anchor="middle" font-family="IBM Plex Mono, monospace" font-size="11" fill="#0A6355">replay every stored day when the parser improves</text>
+
+      <path d="M 40 244 L 40 400 L 336 400" fill="none" stroke="currentColor" stroke-width="1.5" stroke-dasharray="5 4" marker-end="url(#ar)"/>
+      <text x="52" y="392" font-family="IBM Plex Mono, monospace" font-size="11" fill="currentColor">re-fetch a sample, daily</text>
+
+      <rect x="340" y="374" width="220" height="52" fill="none" stroke="#0A6355" stroke-width="2"/>
+      <text x="450" y="398" text-anchor="middle" font-family="Bricolage Grotesque, sans-serif" font-size="13" font-weight="700" fill="#0A6355">Verify against source</text>
+      <text x="450" y="415" text-anchor="middle" font-family="IBM Plex Mono, monospace" font-size="10" fill="#0A6355">something we do not control</text>
+
+      <path d="M 715 244 L 715 340 L 450 340 L 450 370" fill="none" stroke="currentColor" stroke-width="1.5" marker-end="url(#ar)"/>
+      <text x="725" y="330" font-family="IBM Plex Mono, monospace" font-size="11" fill="currentColor">our stored record</text>
+
+      <line x1="562" y1="400" x2="646" y2="400" stroke="#0A6355" stroke-width="1.5" marker-end="url(#ar-a)"/>
+      <rect x="650" y="374" width="250" height="52" fill="none" stroke="currentColor" stroke-width="1"/>
+      <text x="775" y="398" text-anchor="middle" font-family="Bricolage Grotesque, sans-serif" font-size="13" fill="currentColor">Public source health page</text>
+      <text x="775" y="415" text-anchor="middle" font-family="IBM Plex Mono, monospace" font-size="10" fill="currentColor" opacity="0.7">every broken feed, named</text>
+
+      <text x="0" y="470" font-family="IBM Plex Mono, monospace" font-size="11" fill="currentColor" opacity="0.55">Two parts in accent are the whole difference. Neither is hard. Both are boring, and that is why nobody bothers.</text>
+    </svg>
+    <figcaption>The obvious build parses straight into rows, so a parser bug silently destroys data you can never recover, and nothing ever checks that the feed is still alive. Storing the raw response first makes history permanent and retroactively fixable; verifying against the source daily is what turns "we have data" into a claim you can prove.</figcaption>
+  </figure>
+
+  <h3>Why the verification loop is not optional</h3>
+  <p>The characteristic failure of this entire category is the silently dead feed. A council changes its portal, a scraper starts returning zero rows, and nothing anywhere reports an error, because zero rows is a perfectly valid answer. Months later somebody notices that a whole region stopped producing applications. PlanningAlerts has around seventy authorities in that state right now, and they are the good guys with ten years of practice.</p>
+  <p>This is your own method, pointed at data instead of code. An agent asserting the pipeline ran is a claim, not a fact. The fact is a second, independent process that re-fetches a random sample straight from the source, diffs it against what we stored, and shouts when they disagree or when a feed's volume falls off its own historical distribution.</p>
+  <p>Then publish it. A page that says <em>we are currently failing to read four of sixty two sources, here they are, here is when each last succeeded</em> is unusual enough to get linked, it is the exact claim the $7,000 incumbent will not make, and it is your brand in a single artefact.</p>
+</section>
+
+<section>
+  <p class="eyebrow">Distribution</p>
+  <h2>Four channels, none of which cost anything.</h2>
+  <p>This was your original question and it deserves the detail. All four are pull, all four reward machine scale, and the fourth one barely existed two years ago.</p>
+
+  <div class="cards two">
+    <div>
+      <h4>Channel one</h4>
+      <h3>Programmatic pages that could not be written by hand</h3>
+      <p>Thin templated pages get penalised now and deserve to. The test that separates the two: <strong>could a competent human write this page without our database?</strong> If yes, it is filler. A page per suburb, per council, per holder, per parcel, carrying counts, medians, trends and a dated history, passes that test because the data does not exist anywhere else in one place.</p>
+      <p>Ten thousand pages that each answer a real question is a moat. Ten thousand pages that each rephrase the same sentence is a penalty.</p>
+    </div>
+    <div>
+      <h4>Channel two</h4>
+      <h3>Being the thing a language model cites</h3>
+      <p>Underrated, and it is where the traffic is going. Models cite sources that are structured, dated, attributable and freely readable. Concretely that means clean semantic HTML, <code>schema.org</code> Dataset markup, stable permanent URLs, an explicit licence on the free tier, and an <code>llms.txt</code>.</p>
+      <p>The real requirement underneath the tactics: <strong>be the only place where the fact exists as one row.</strong> A model cites you when citing you is the shortest path to the answer.</p>
+    </div>
+    <div>
+      <h4>Channel three</h4>
+      <h3>The MCP server as a shelf</h3>
+      <p>You already ship these, which makes this nearly free. Listing in the MCP directories puts you in front of agent builders searching with intent, and every agent that wires you in becomes a recurring query rather than a one-off visit.</p>
+      <p>DA Leads shipped one. That is not a reason to avoid it, it is confirmation that the smartest operator in the adjacent market reached the same conclusion.</p>
+    </div>
+    <div>
+      <h4>Channel four</h4>
+      <h3>The civic layer, which buys the best links in the country</h3>
+      <p>Journalists, researchers, community groups and council staff link to free public interest data. Those are <code>.gov.au</code>, <code>.edu.au</code> and masthead domains, and they are the highest authority links available in Australia at any price.</p>
+      <p>They only arrive if the free tier is genuinely useful rather than a paywall tease. That is the trade: give away the lookup completely, and charge for being told without having to look.</p>
+    </div>
+  </div>
+</section>
+
+<section>
+  <p class="eyebrow">The money</p>
+  <h2>Priced under the incumbent by a factor of five.</h2>
+  <p>Cordell's floor is $577.50 a month for one state and two users. That number is the whole opportunity: it is what the market has agreed the underlying record is worth, and it is far more than most of the people who need it can justify. Undercutting it by five to ten times is the only wedge a small operator ever gets, and it is a wide one.</p>
+
+  <ul class="ladder">
+    <li><span class="price">Free</span><span><b>Search, and one saved alert.</b> This is not a funnel trick, it is the distribution channel. It has to be good enough that somebody links to it.</span></li>
+    <li><span class="price">$39&ndash;79 / mo</span><span><b>Unlimited alerts, filters, saved searches, daily digest.</b> The individual operator: the contractor, the agent, the consultant, the analyst. This tier is the volume.</span></li>
+    <li><span class="price">$149&ndash;249 / mo</span><span><b>API, bulk export, and a direct push into their CRM.</b> Your specific edge, and it is the same mechanic as Doorknock: the data does not arrive in a tab they forget to open, it arrives as records in HubSpot.</span></li>
+    <li><span class="price">$500+ / mo</span><span><b>Data licensing and history access.</b> The tier that only exists because of the snapshot store, sold to people who want the time series rather than today.</span></li>
+  </ul>
+
+  <div class="callout warn">
+    <p class="eyebrow">The arithmetic you should hold me to</p>
+    <p>Two hundred customers at $79 is about $16,000 a month, and that is the realistic shape of a good outcome here, not a million dollar business. But free to paid conversion on a tool like this runs at one to three percent, so two hundred paying subscribers needs somewhere near ten thousand monthly free users, and getting there on organic search alone takes <strong>twelve to eighteen months</strong>, not the three to six I said in the first note.</p>
+    <p>I was too optimistic in that document and I would rather correct it now than have you discover it in month seven. This is a compounding asset, not a business that pays you this year.</p>
+  </div>
+</section>
+
+<section>
+  <p class="eyebrow">Where to point it</p>
+  <h2>My shortlist, and why step one is not building any of them.</h2>
+  <p>These come from about six searches, which is enough to form a view and not enough to bet a year on. The first job is a systematic sweep, and it is a pure agent job: score forty to sixty Australian registers against the rubric, check occupancy on each, and rank them. That takes days, not months, and it replaces my judgement with evidence.</p>
+
+  <div class="tbl-wrap">
+    <table>
+      <caption>Provisional candidates, scored against the rubric</caption>
+      <thead>
+        <tr><th>Register</th><th>Why it scores</th><th>Where it hurts</th><th>Status</th></tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><b>Mining and exploration tenements, national</b><span class="src"><br>The lead candidate</span></td>
+          <td>Eight jurisdictions, no national aggregator, NextMaps holds WA only. Registers publish current holder and status and overwrite, so history is <b>unbackfillable from day one</b>. Hard deadlines everywhere: expenditure commitments, expiry, relinquishment, forfeiture, release areas. Buyers are listed explorers, drillers, surveyors, environmental consultants, pastoralists and investors. Spatial data raises the bar, which deepens the moat.</td>
+          <td>Smaller addressable market than construction. Spatial work is genuinely harder. Commodity cycle affects the buyer's budget.</td>
+          <td><span class="tag open">Open</span></td>
+        </tr>
+        <tr>
+          <td><b>Construction insolvency early warning</b></td>
+          <td>Roughly 4,900 insolvency appointments in FY2024&ndash;25, nearly triple FY2021&ndash;22, construction the worst hit. Subcontractors and suppliers extend credit blind and get destroyed when a builder folds. Signals are public but scattered across ASIC notices, court listings, licence status and payment behaviour. Enormous, urgent, recurring pain.</td>
+          <td><b>The legal exposure is real.</b> A product implying a named solvent company is failing is defamation and negligence territory, and ASIC data carries its own access and licensing conditions. Needs proper advice before a line of code.</td>
+          <td><span class="tag part">High value, high risk</span></td>
+        </tr>
+        <tr>
+          <td><b>Grants and funding for not for profits</b></td>
+          <td>Federal, eight states, hundreds of councils and philanthropic trusts. Genuinely fragmented, deadline driven, and you have real credibility with the sector after the donor migration work.</td>
+          <td>Partly occupied by Our Community and GrantGuru. Buyers are chronically underfunded, which caps price.</td>
+          <td><span class="tag part">Contested</span></td>
+        </tr>
+        <tr>
+          <td><b>Regulatory obligation change monitoring</b></td>
+          <td>Turning legislation into the obligations it creates is literally the National Redress Scheme skill. Incumbents are enterprise priced and enterprise slow.</td>
+          <td>Fails your own test. It needs trust, references and a sales cycle, which means it needs <b>you</b> on calls, not me.</td>
+          <td><span class="tag shut">Wrong shape</span></td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <p style="margin-top:2rem">If you made me choose today: <strong>mining tenements.</strong> It is the only one on the list that is open, deadline driven, unbackfillable, and sitting inside an industry you have spent four years in and a state you live in. That last part matters more than it sounds, because the civic and journalistic link channel needs a real named human who can credibly answer a question about the data.</p>
+</section>
+
+<section>
+  <p class="eyebrow">Discipline</p>
+  <h2>Written before we start, so they still count later.</h2>
+  <p>Kill criteria are worthless if invented after the fact, so here they are now. If any of these hits, we stop and move the fleet to the next register on the list rather than defending a sunk year.</p>
+  <ul class="kill">
+    <li><b>Month 3:</b> no page ranking in the top twenty for any commercial query. The distribution thesis is wrong for this register, not merely early.</li>
+    <li><b>Month 6:</b> fewer than 1,000 monthly free users. The funnel arithmetic cannot reach 200 paying from there, whatever we do next.</li>
+    <li><b>Month 6:</b> source health cannot be held above 95% with agents doing the maintenance. If we cannot beat the volunteers, we do not have a moat, we have a hobby.</li>
+    <li><b>Any time:</b> a well resourced incumbent releases the same thing free. Move, immediately, and take the pipeline with us.</li>
+    <li><b>Any time:</b> the first hundred paying customers churn above 8% a month. The alerts are not tied to a deadline that actually matters.</li>
+  </ul>
+</section>
+
+<section>
+  <p class="eyebrow">Doing it</p>
+  <h2>The first fortnight.</h2>
+  <ol class="steps">
+    <li><b>The sweep.</b> Score forty to sixty Australian public registers against the eight point rubric, including a genuine occupancy check on each. Output is a ranked table with evidence, not opinions. This is the step that would have saved the original plan.</li>
+    <li><b>Pick, and get advice.</b> One register. Then a short, specific brief to an Australian solicitor covering terms of use, personal information, and republication for the chosen dataset. A few hundred dollars against a year of work.</li>
+    <li><b>Start recording before building anything.</b> The snapshot store goes up first and starts taking dated copies on day one, because every day we delay is a day of history we can never have. It costs almost nothing to run and it is the entire moat. Nothing else needs to exist yet.</li>
+    <li><b>Ingest, resolve, verify.</b> One adapter per source, entity resolution across jurisdictions, and the independent verification loop running from the start rather than added after the first silent failure.</li>
+    <li><b>Ship the free layer.</b> Search, the programmatic pages, the public source health page, <code>schema.org</code> markup, and the MCP server. No payment wall yet, nothing to convert, just the thing people can link to.</li>
+    <li><b>Then wait, visibly.</b> Watch rankings and citations weekly. Billing goes in only once there is traffic to charge, because a paywall on an empty site teaches us nothing and costs us the links.</li>
+  </ol>
+
+  <h3>What only you can do</h3>
+  <p>Domain and hosting under your name, Stripe and its identity checks, an ABN if there is not one already, the call on any source whose terms are ambiguous, and being the named human behind a public interest dataset. That last one is not administrative overhead, it is a functional requirement of channel four.</p>
+</section>
+
+<section>
+  <p class="eyebrow">The decision</p>
+  <h2>Say go and I will run the sweep.</h2>
+  <p class="standfirst">The sweep is days of agent time, costs nothing but tokens, and ends with a ranked table of every Australian register worth owning, with the occupancy check already done. <b>We should have started with it.</b></p>
+  <p class="sign">Corrected from note one: twelve to eighteen months to meaningful traffic, not three to six.</p>
+</section>
+
+<section style="border-bottom:0;padding-top:2rem">
+  <h4>Sources</h4>
+  <p class="src">
+    <a href="https://www.planningalerts.org.au/authorities">PlanningAlerts coverage</a> &middot;
+    <a href="https://oaf.org.au/services/planningalerts/">OpenAustralia Foundation</a> &middot;
+    <a href="https://daleads.com.au/">DA Leads</a> &middot;
+    <a href="https://daleads.com.au/api/">DA Leads API</a> &middot;
+    <a href="https://www.corelogic.com.au/products/cordellconnect">Cordell Connect</a> &middot;
+    <a href="https://corestore.corelogic.com.au/product/cordell-connect">Cordell pricing</a> &middot;
+    <a href="https://data.nsw.gov.au/data/dataset/online-da-data-api">NSW Online DA Data API</a> &middot;
+    <a href="https://www.workclear.com.au/">WorkClear</a> &middot;
+    <a href="https://tradieverify.com.au/about/">TradieVerify</a> &middot;
+    <a href="https://www.nextmaps.com.au/">NextMaps</a> &middot;
+    <a href="https://www.minterellison.com/articles/no-copyright-in-white-and-yellow-pages-directories-in-australia-telstras-appeal-fails">Telstra v Phone Directories, MinterEllison</a> &middot;
+    <a href="https://www.mondaq.com/australia/copyright/94168/no-copyright-protection-for-telephone-directories-telstra-v-phone-directories-company">IceTV and sweat of the brow</a> &middot;
+    <a href="https://www.rsm.global/australia/insights/great-construction-collapse-australias-building-industry-crisis">Construction insolvency figures, RSM</a> &middot;
+    <a href="https://www.aicm.com.au/news-item/24155/the-construction-insolvency-crisis">AICM insolvency data</a>
+  </p>
+</section>
+
+</div>
