@@ -1,257 +1,319 @@
-# Selling information to NDIS providers: the test
+# Selling information products: the test
 
-A small paid test of one narrow offer, and the ladder it sits at the bottom of.
-Written before any money is spent, so the pass and fail lines are set by
-something other than how the first week feels.
-
----
-
-## Why this niche and not one of mine
-
-The obvious move was to sell what the portfolio already proves: HubSpot
-migration forensics, or briefing AI coding agents. Both were rejected on
-purpose. The first has an audience of maybe two hundred people in Australia. The
-second is the most crowded shelf on the internet and competing there costs more
-than the test is worth.
-
-This is the market instead.
-
-**Who.** The person inside an Australian NDIS provider who submits the claims.
-Owner-operator of a ten staff provider, or the one finance and admin person
-carrying billing for fifty. There are tens of thousands of registered providers
-and many more unregistered ones.
-
-**What is happening to them.** The National Disability Insurance Scheme
-Amendment (Securing the NDIS for Future Generations) Bill 2026 passed Parliament
-on 19 August 2026. From 1 December 2026 the window to claim a support drops from
-two years to 90 days. Separately, plan funds are now released in funding
-periods, so a plan with money in it can still reject a claim, and the 2026-27
-Pricing Schedule was restructured without republishing the claiming rules for
-non-face-to-face time, provider travel and short notice cancellations.
-
-**Why it converts.** Four things at once, which is rare:
-
-1. A legislated date, roughly a hundred days out. Nobody can wait it out.
-2. The pain is money, not fear. Late claim, no payment.
-3. The buyer already searches for this, in specific language, with the portal's
-   own error codes in the query.
-4. It is the same job I have been doing for a decade. Turning a rule somebody
-   wrote into the decision a system makes, and then building the thing that
-   makes it. The Redress Scheme work was exactly this shape.
-
-**The honest risk.** It is a regulated sector with a real scam problem, and a
-sector where the money is meant to reach disabled people. Everything sold here
-has to be defensible on that basis. Helping a provider claim correctly and on
-time is squarely legitimate. Anything that shades into helping somebody claim
-more than they delivered is not, and there is no version of this worth doing.
+Four candidates, one built and live, and a plan for spending $1,000 that does
+not spread it so thin that nothing can be read.
 
 ---
 
-## The ladder
+## The shortlist, and why this order
 
-Each rung exists to pay for the next one, and no rung gets built before the one
-below it has earned it.
-
-| Step | What | Price | State | Gate to build it |
+| # | Product | Buyer | Price to test | State |
 |---|---|---|---|---|
-| 0 | **The 90 Day Cliff Check** | Free | **Live** | none, it is the bait and it is real |
-| 1 | The Rejection Code Playbook | $79 | Not written | 40 email signups |
-| 2 | The Claim Integrity Toolkit | $349 | Not built | 25 playbook sales |
-| 3 | The Changeover Workshop | $1,200 a seat | Not scheduled | 6 people asking |
-| 4 | Build it into their system | Quoted | This is the actual business | one workshop attendee asking |
+| 1 | **Chargeback Response Builder** | Shopify and Stripe merchants mid dispute | $59 kit | **Free tool live** |
+| 2 | Airbnb Damage Claim Evidence Kit | Hosts with guest damage | $49 kit | Not built. Same engine as #1 |
+| 3 | Renovation Quote Comparison Kit | Homeowners holding 2 to 4 builder quotes | $39 kit | Not built. Different engine |
+| 4 | NDIS 90 Day Cliff Check | Australian NDIS providers | $79 playbook | Free tool live, from the earlier round |
 
-Step 0 is the whole test. It is a working browser tool that reads the provider's
-own claims export, entirely locally, and tells them their median claim lag,
-their exposure under the 90 day window, their unclaimed backlog, and the rows in
-their file the portal would reject. It produces a number about them, which no
-PDF lead magnet can do.
+The thing all four have in common is the only thing that matters for paid
+search: the buyer is holding a mess of evidence, they have one shot at getting
+it right, and they are searching while the deadline runs.
 
-Steps 1 to 4 are named and priced on the page with the words "not written yet"
-and "not built yet" against them, and no money is taken. That is deliberate. A
-pre-order would read the market better, and it also commits to a delivery date
-before knowing whether the thing is worth writing. The gate below is the point
-at which taking money becomes honest.
+**Why #1 goes first.** Business buyer, money at immediate risk, a deadline
+counted in days rather than months, and search intent so specific that people
+type the reason code itself. It also has the least competition at the code
+level, where nobody is bidding.
 
-**When to start charging.** At 40 signups, write the playbook, then sell it to
-the list. Not before. A paid pre-order is only fair once the delivery date is
-one I would bet on.
+**Why #3 runs alongside it.** Not because it is next best, but as insurance and
+as a control. It carries no trademark exposure at all (see below), so if the
+Shopify ads get held up it is not two dead weeks. It is also the only consumer
+one of the three, which separates "this offer works" from "this kind of buyer
+works".
+
+**Why #4 stays.** It is built, it cost nothing to keep, and the 1 December
+deadline gives it a natural run in October and November. It is not competing
+for this thousand dollars.
 
 ---
 
-## The campaign
+## The constraint that is not in the plan yet
 
-Two ad groups, because two different people are searching, and they are worth
-very different amounts.
+Two of the three top picks name somebody else's trademark, and Google does not
+treat that as neutral.
 
-### Group A: the deadline
+Only the brand holder, its resellers, and **informational sites** may use a
+trademark in ad text. The informational site exception applies where the primary
+purpose of the landing page is to provide informative detail about the product
+or service the trademark refers to. Google retired the old third party
+authorisation form and now applies these exceptions directly, so there is nobody
+to ask in advance. Ads that invoke the trademark for competitive purposes, or
+where it is unclear which exception you are relying on, are not allowed.
 
-Someone who has heard the window is changing and is working out what it means.
-Higher volume, colder, cheaper.
+Three consequences, and they change the build rather than just the ads.
+
+1. **The free tool is what makes the ad legal.** A landing page whose primary
+   purpose is a free explanation of how the dispute process works sits squarely
+   inside the informational exception. A page whose primary purpose is a $59
+   checkout does not. Leading with the tool was the honest structure and it
+   happens to be the compliant one as well. Do not reverse them later without
+   re reading this.
+2. **Bidding on the brand term is not restricted, only saying it is.** Worst
+   case, the keywords stay and the ad text loses the word Shopify. Write those
+   headlines now so a disapproval costs an hour rather than a week. Both sets
+   are below.
+3. **#3 has none of this**, which is a real point in its favour for a first
+   test and the reason it is not last.
+
+None of this is legal advice, and Shopify or Airbnb can complain about their
+mark regardless of what Google's policy allows. Keep the disclaimers on the
+pages, keep the pages genuinely informational, and do not use anyone's logo or
+brand colours.
+
+---
+
+## What #2 and #3 actually cost to build
+
+Worth knowing before allocating money, because it is not three products.
+
+**#1 and #2 are the same engine.** Both are: pick which allegation is being
+made, see what that allegation is decided on, say what you hold, get back the
+gaps and an assembled submission. Swap the six card network allegations for the
+damage incident types, swap the network evidence rules for what the platform
+asks a host to provide, and re-skin. The scoring, the checklist, the assembly
+and the whole design system carry over. Days, not weeks.
+
+**#3 is a different engine.** Comparison and normalisation rather than evidence
+assembly: several quotes in, one apples to apples table out, with the omissions
+and the exclusions surfaced. It shares the design system and nothing else. It is
+the biggest build of the three and the reason it runs on a smaller budget first.
+
+Both reuse `public/tools.css`, which is why that was pulled out of the first
+page rather than left inline.
+
+---
+
+## Spending the $1,000
+
+Not three ways. Three hundred dollars buys roughly seventy clicks, which is not
+a signal, it is a rumour.
+
+### Wave one, two weeks, $500
+
+| | Budget | Why |
+|---|---|---|
+| Chargeback Response Builder | $350 | The real test. B2B, highest intent, already built |
+| Renovation Quote Comparison | $150 | Control and insurance. Only runs once the tool exists |
+
+### Wave two, two weeks, $500
+
+Decided by wave one, not before. If the chargeback tool converts, wave two is
+Airbnb at $500 and the engine gets its second skin. If it does not but the
+renovation control does, the problem was the buyer and not the offer, and wave
+two goes to the consumer side. If neither moves, that is a $500 answer and
+worth having.
+
+Run Microsoft Ads alongside at $10 a day on the same copy. Clicks are usually
+cheaper and merchant admin work happens on Windows.
+
+---
+
+## Campaign one: the chargeback builder
+
+### Ad groups
+
+**A. Reason codes.** Tiny volume, almost nobody bidding, and the person typing
+this has the dispute open in another tab. Protect this group if money gets
+tight.
 
 ```
-[ndis 90 day claim rule]
-[ndis claim window change]
-[ndis claiming rules december 2026]
-[ndis 90 days to claim]
-"ndis claim time limit"
-"ndis claiming rules 2026 27"
-"ndis funding periods claiming"
+[chargeback reason code 10.4]
+[visa 13.1 chargeback]
+[mastercard 4855 chargeback]
+[chargeback reason code 4837]
+[chargeback reason codes explained]
+"what does chargeback code mean"
 ```
 
-### Group B: the error codes
-
-Someone with a rejected claim on the screen in front of them right now. Tiny
-volume, enormous intent, and almost nobody is bidding on it. This is the group
-to protect if the budget gets tight.
+**B. Shopify branded.** Higher volume, and the group the trademark note applies
+to.
 
 ```
-[ndis error code v27]
-[ndis error code v11]
-[ndis claim rejected v31]
-[ndis payment request error codes]
-[ndis bulk payment request error]
-"ndis claim rejected reason"
-"why was my ndis claim rejected"
-"ndis insufficient funds in funding period"
+[shopify chargeback]
+[shopify dispute evidence]
+[how to fight a shopify chargeback]
+[shopify chargeback response]
+"shopify dispute deadline"
 ```
 
-### Negatives, which matter more than the keywords
-
-The overwhelming majority of NDIS search volume is participants and families,
-not providers. Without this list the budget goes to the wrong people in a day.
+**C. Generic merchant.** Broadest, most competed, run last.
 
 ```
--participant -"my plan" -"my child" -"for my son" -"for my daughter"
--"plan manager near me" -"support worker" -jobs -salary -vacancies
--course -training -certificate -diploma -"become a provider"
--"how to register" -"worker screening" -sil -vacancy -accommodation
--"price guide pdf" -"ndis contact number" -"ndis login"
+[how to fight a chargeback]
+[chargeback evidence template]
+[chargeback rebuttal letter]
+"how to win a chargeback"
+```
+
+### Negatives
+
+The mirror image of the participant problem in the NDIS campaign: most
+chargeback search volume is cardholders trying to *file* one, and they are worth
+nothing here.
+
+```
+-"how do i dispute" -"dispute a charge" -"file a chargeback" -"get my money back"
+-"chargeback my" -"how to chargeback" -refund -"charged twice by"
+-jobs -salary -course -certification -lawyer -attorney -"class action"
+-bank -"credit card offers" -crypto
 ```
 
 ### Ad copy
 
-Written to the same rule as the page: nothing that the page does not then do.
-Character limits are 30 for headlines and 90 for descriptions, so check each one
-in the editor before saving.
-
-**Headlines**
+Headlines, 30 characters. The first block avoids the trademark entirely and is
+the default; use the second only while approvals hold.
 
 ```
-Two Years Becomes 90 Days
-NDIS Claims: The 90 Day Rule
-Check Your NDIS Claim Lag
-What Would 90 Days Cost?
-NDIS Claim Error Codes
-Why That Claim Was Rejected
+Chargeback Response Builder
+One Submission, No Appeal
+Match Evidence To The Code
+Reason Code 10.4? 13.1?
+Free Chargeback Evidence Tool
 Runs In Your Browser
-Nothing Gets Uploaded
-No Signup, No Sales Call
-Free, And Actually Free
+No Signup. No Sales Call.
+Built By A Business Analyst
+```
+```
+Shopify Chargeback Response
+Fighting A Shopify Dispute?
 ```
 
-**Descriptions**
+Descriptions, 90 characters.
 
 ```
-From 1 Dec, NDIS supports must be claimed within 90 days. See what that costs you.
-Drop your claims export in. It never leaves your browser. No signup, no sales call.
-Your median claim lag, your exposure, and the rows the portal would knock back.
-Every payment rejection code, explained, checked against your own file. Free.
+Six allegations sit behind every reason code. Each needs different evidence. Free.
+Tell it what you hold. It builds the response and names what is missing. Free tool.
+Evidence answering the wrong allegation counts as none. Build the right packet.
+Nothing is uploaded. No signup. The whole thing runs in your own browser.
 ```
 
-**Sitelinks** point at the anchors that already exist on the page: the check
-itself, the receipts, the ladder, and the questions.
+Never write an ad that implies a win rate, a recovery figure, or a guarantee.
+Not because Google will catch it, though it might, but because nobody can know
+it and the page says so out loud.
 
-Do not write an ad that promises recovered revenue. The tool measures exposure,
-it does not recover anything, and Google is entitled to take a dim view of the
-difference. It is also just not true.
+## Campaign two: renovation quote comparison
 
-### Money and time
+Only once the tool exists. No trademark exposure, cheaper clicks, colder buyer.
 
-| | |
-|---|---|
-| Daily budget | $30 AUD |
-| Duration | 14 days |
-| Total | $420 |
-| Expected CPC | $2 to $5, group B at the low end |
-| Expected clicks | 90 to 200 |
-| Where | Google Search, Australia only, English |
-| Bidding | Manual CPC or maximise clicks. Not conversions, there is no conversion history to learn from |
+```
+[compare renovation quotes]
+[how to compare builder quotes]
+[renovation quote comparison]
+[is my renovation quote too high]
+"what should a renovation quote include"
+"builder quote exclusions"
+```
 
-Worth running Microsoft Ads in parallel with the same copy at $10 a day. Clicks
-are usually cheaper and the buyer here is an admin on a work Windows machine,
-which is exactly who is on Bing. Do not bother with LinkedIn at this budget.
+Negatives, because most of this volume is builders wanting to *write* quotes,
+not homeowners comparing them:
+
+```
+-template -software -app -"quoting software" -jobs -course -"how to quote"
+-estimator -takeoff -xero -invoice
+```
 
 ---
 
 ## What counts as a pass
 
-Set now, before the data arrives, so the test cannot be argued into a pass
-afterwards.
+Set now, so it cannot be argued into one later.
 
 | Measure | Fail | Pass |
 |---|---|---|
 | Click through rate | under 2% | over 4% |
-| Ran the tool, of clicks | under 15% | over 30% |
-| Reached a result, of those who ran it | under 50% | over 70% |
-| Email signup, of those who saw a result | under 10% | over 25% |
-| Cost per signup | over $60 | under $25 |
+| Started the tool, of clicks | under 20% | over 40% |
+| Reached a built response | under 50% | over 70% |
+| Email signup, of those who finished | under 10% | over 25% |
+| Cost per signup | over $50 | under $20 |
 
-**What this test can honestly tell you.** With 150 clicks you can tell the
-difference between a page nobody engages with and a page that works. You can
-tell whether group B outperforms group A, which decides where the next dollar
-goes.
+**What $500 can tell you.** Whether a page engages the people who click it,
+whether the code level group beats the branded group, and whether a business
+buyer beats a consumer. All three change where the next dollar goes.
 
-**What it cannot.** It cannot tell you whether anyone will pay $79. Ten or
-fifteen signups is not a market, it is a rounding error, and treating it as
-proof is how people talk themselves into writing a book nobody buys. Reaching
-the 40 signup gate on this budget is unlikely in one fortnight. Expect two or
-three rounds, or a cheaper channel, before that decision is real.
+**What it cannot.** Whether anyone pays $59. Fifteen signups is not a market.
+The gate for writing the kit is 40, and reaching it inside one wave is unlikely.
+Expect to run wave one, learn where the traffic is cheapest, and run again.
 
 **The most useful failure.** If group A converts and group B does not, the
-deadline is the story and the error codes are not, so the playbook is the wrong
-step two and a "get ready for 1 December" checklist is the right one. If the
-reverse, write the code playbook and forget the deadline entirely, because it
-will have passed by the time anything ships.
+buyer is the person who already knows their reason code, the product is a
+reference rather than a kit, and the price is lower than $59. If B converts and
+A does not, the buyer is earlier and more confused, the product is hand holding,
+and the price is higher.
 
 ---
 
 ## Before a single click is bought
 
-1. **Click all five source links on the page.** They were correct when written.
-   Two of them would not respond to an automated fetch, so they have been taken
-   from search results rather than read end to end. Confirm each one says what
-   the page says it says, especially the 1 December date and whether Royal
-   Assent has happened.
-2. **Set the form endpoint.** `data-endpoint` on `#signup` in
-   `public/ndis-claim-check/index.html`. Until it is set the form refuses to
-   submit and tells the visitor so, which is honest but collects nothing, and
-   the entire test measures signups.
-3. **Add analytics and a consent notice.** There is none on the page. The tool
-   already pushes `ndis_file_loaded`, `ndis_result_shown` and `ndis_signup` to
-   `window.dataLayer`, so a container will see them the moment one exists. With
-   no tag installed the test is unmeasurable and the money is wasted.
-4. **Decide whether 30 September is real.** It is printed on the page. If it is
-   not a date you would bet on, change it before anyone reads it.
-5. **Run the tool against a real provider export** if you can get one, ideally
-   from a system that is not the portal. The column mapper handles the shapes
-   that have been tested; the fifth one will find something.
-6. **Check it against the day job.** Nothing here names a client or an employer,
-   and the page says plainly it is not affiliated with the NDIA. Worth reading
-   once more with that hat on before it is public.
+1. **Set the form endpoint** on both live pages. `data-endpoint` on `#signup`.
+   Until it is set the form refuses to submit and says so, which is honest and
+   collects nothing, and signups are what the whole test measures.
+2. **Install analytics and a consent notice.** There is none. Both pages already
+   push events to `window.dataLayer`: `cb_allegation_picked`, `cb_result_shown`,
+   `cb_signup` on the chargeback page, and `ndis_*` equivalents on the other.
+   With no tag installed the money is unmeasurable and therefore wasted.
+3. **Click every source link on both pages.** They were right when written. Some
+   would not respond to an automated fetch and were taken from search results,
+   so confirm them before a stranger does.
+4. **Decide whether 15 October is real** for the kit. It is printed on the page.
+5. **Read the ad text against the trademark note above** and have the non brand
+   headline set loaded and paused, ready to swap.
+6. **Try the builder as somebody who has actually lost a dispute** would, on a
+   phone, and see whether the language matches what Shopify told them.
 
 ---
 
 ## Where the facts came from
 
-- NDIS, [Securing the NDIS for future generations](https://www.ndis.gov.au/ndis-laws/securing-ndis-future-generations)
-- Department of Health, Disability and Ageing, [About the changes to the NDIS](https://www.health.gov.au/our-work/ndis-legislation-changes/amendments/ndis-amendment-securing-the-ndis-for-future-generations-bill-2026/about-the-changes-to-the-ndis)
-- NDIS, [Changes to payments and claims from 1 July 2026](https://www.ndis.gov.au/news/11576-changes-payments-and-claims-1-july-2026)
-- NDIS, [Claims and payments troubleshooting](https://www.ndis.gov.au/providers/working-provider/getting-paid/claims-and-payments-troubleshooting)
-- NDIS, [Bulk Payment Request template](https://www.ndis.gov.au/media/2707/download?attachment=)
-- Rostrel, [NDIS claim error and rejection code lookup](https://rostrel.com.au/ndis-claim-error-codes), a third party list used to cross check the code table in the tool
+- Shopify, [Resolving a chargeback or inquiry](https://help.shopify.com/en/manual/payments/chargebacks/resolve-chargeback)
+- Shopify, [Managing chargebacks in the admin](https://help.shopify.com/en/manual/payments/shopify-payments/managing-chargebacks/chargebacks-shopify-admin)
+- Shopify, [ShopifyPaymentsDisputeEvidence](https://shopify.dev/docs/api/admin-graphql/latest/objects/ShopifyPaymentsDisputeEvidence), the authoritative list of evidence form fields
+- Shopify, [Dispute file upload](https://shopify.dev/docs/api/admin-rest/latest/resources/dispute-file-upload), the file type, size and page limits
+- Redo, [Chargeback reason codes and the evidence that answers each](https://redo.com/resources/articles/chargebacks/chargeback-reason-codes), vendor material, used to cross check the six way grouping and the Visa and Mastercard numbering
+- Chargeflow, [Shopify disputes and chargebacks](https://www.chargeflow.io/chargebacks-101/shopify-dispute), vendor material from a company selling dispute automation
+- Google, [Trademarks in Google Ads](https://support.google.com/adspolicy/answer/6118), the reseller and informational site exceptions
 
-The revenue leakage percentages that circulate in this market, the three to seven
-per cent and the $285k figures, all trace back to software vendor blogs rather
-than to research. None of them appear on the page or in any ad, and they should
-not. The tool computes the provider's own number instead, which is both more
-useful and defensible.
+The card networks' full rulebooks are not public. Nobody writing about reason
+codes, including me and including every vendor above, is reading the primary
+source end to end, and the page says so rather than implying otherwise.
+
+---
+
+## Appendix: the NDIS campaign, still standing
+
+From the earlier round, kept because the tool is live and the deadline gives it
+a natural run through October and November. Not funded out of the $1,000.
+
+The hook: from 1 December 2026 the window to claim an NDIS support drops from
+two years to 90 days, under legislation that passed Parliament on 19 August
+2026. Free tool at `/ndis-claim-check/`.
+
+Two ad groups. The deadline, and the error codes.
+
+```
+[ndis 90 day claim rule]        [ndis error code v27]
+[ndis claim window change]      [ndis error code v11]
+[ndis 90 days to claim]         [ndis payment request error codes]
+"ndis claim time limit"         "why was my ndis claim rejected"
+"ndis funding periods claiming" "ndis insufficient funds in funding period"
+```
+
+Negatives, because most NDIS search volume is participants and families:
+
+```
+-participant -"my plan" -"my child" -"plan manager near me" -"support worker"
+-jobs -salary -course -certificate -"become a provider" -"how to register"
+-"worker screening" -sil -vacancy -"price guide pdf" -"ndis login"
+```
+
+Sources: NDIS [Securing the NDIS for future generations](https://www.ndis.gov.au/ndis-laws/securing-ndis-future-generations),
+Health [About the changes](https://www.health.gov.au/our-work/ndis-legislation-changes/amendments/ndis-amendment-securing-the-ndis-for-future-generations-bill-2026/about-the-changes-to-the-ndis),
+NDIS [Claims and payments troubleshooting](https://www.ndis.gov.au/providers/working-provider/getting-paid/claims-and-payments-troubleshooting),
+NDIS [Bulk Payment Request template](https://www.ndis.gov.au/media/2707/download?attachment=).

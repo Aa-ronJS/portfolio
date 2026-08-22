@@ -28,6 +28,22 @@ across the whole set, all text-free, each tied to the work it sits beside. None
 depicts a real client's product and none stands in for something that must be
 true. See `PREFLIGHT.md` for the table of what each image is doing there.
 
+## The tool pages
+
+`public/tools.css` holds the shared design system, because there is now a family
+of these rather than one. Each tool page is otherwise self contained: no build
+step, no dependencies, and every one of them does its whole job in the reader's
+own browser with nothing uploaded, because they all ask for data the reader has
+good reason not to hand over.
+
+`public/chargeback-response/` is the current one. A Shopify and Stripe merchant
+picks which of the six allegations behind their reason code is being made, says
+what evidence they hold, and gets back the gaps ranked by what the allegation
+turns on, plus the response assembled into the fields Shopify's evidence form
+actually has. `CAMPAIGN.md` holds the test it belongs to, including the
+trademark rule that decides whether the word Shopify can appear in the ad at
+all, and why leading with a free informational tool is what keeps it there.
+
 ## The NDIS claim check
 
 `public/ndis-claim-check/` is a second, self contained page: a free browser tool

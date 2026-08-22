@@ -1,0 +1,1077 @@
+<!doctype html>
+<html lang="en-AU">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>The Chargeback Response Builder | Evidence matched to the reason code</title>
+<meta name="description" content="A chargeback is one of six allegations, and each is judged on different evidence. Tell this page which one you are answering and what you have. It builds the response in the order it gets read and names what is missing. Free, runs in your browser.">
+<meta name="theme-color" content="#12181f">
+<link rel="canonical" href="https://aaronsteele.vercel.app/chargeback-response/">
+<meta property="og:title" content="The Chargeback Response Builder">
+<meta property="og:description" content="Evidence that answers the wrong allegation counts as none. Build the packet the reason code is actually judged against.">
+<meta property="og:type" content="website">
+<link rel="preload" as="font" type="font/woff2" href="/fonts/clash-display-var.woff2" crossorigin>
+<link rel="preload" as="font" type="font/woff2" href="/fonts/satoshi-var.woff2" crossorigin>
+<link rel="stylesheet" href="/tools.css">
+
+<!-- ===========================================================================
+     SET THESE BEFORE ANY MONEY IS SPENT ON CLICKS
+       1. data-endpoint on <form id="signup">   until set, the form refuses to
+                                                submit and says so out loud.
+       2. KIT PRICE   "$59"                     offer card and ladder.
+       3. KIT DATE    "15 October 2026"         offer card and terms.
+       4. ANALYTICS                             none loaded. Events already go
+                                                to window.dataLayer:
+                                                cb_allegation_picked,
+                                                cb_result_shown, cb_signup.
+
+     PRE-FLIGHT (house DESIGN.md section 1)
+
+       Audience   whoever in a small Shopify business just got the dispute
+                  email. Owner of a three person brand, or the ops person who
+                  handles refunds. They are not researching, they are mid task,
+                  they have a deadline in the admin, and they are angry.
+       Register   the parent site's, urgent but not shouty. The reader is
+                  already alarmed; adding to it would be cheap and would also
+                  make the page look like the twenty others they just closed.
+       Reference  the parent site and its sibling tool page. Same fonts, same
+                  amber, same zero radius.
+       Moment     the packet the page builds out of their own answers. Nothing
+                  is allowed to be louder than that.
+       Deviation  one desaturated red as a data mark on evidence that is missing
+                  or fatal, inherited from tools.css and named there.
+       Degraded   no JavaScript, no builder, and the page says so rather than
+                  showing dead controls. No network needed once loaded.
+
+     TRADEMARK NOTE. This page is deliberately, primarily an informational tool
+     about how the dispute process works, not a shop. That is what keeps the
+     word Shopify usable in ad text under Google's informational site
+     exception, and it is also just what the page is.
+     =========================================================================== -->
+
+<style>
+/* ---------- Page specific: the builder ------------------------------------ */
+.steps{counter-reset:step}
+.step{border-top:1px solid var(--bone-line); padding-block:var(--s7)}
+.step:first-child{border-top:0; padding-top:0}
+.step__head{display:flex; align-items:baseline; gap:var(--s4); margin-bottom:var(--s5)}
+.step__n{font-family:var(--mono); font-size:var(--t--1); color:var(--accent); white-space:nowrap}
+.step h3{margin:0}
+.step__note{color:var(--on-bone-dim); font-size:var(--t--1); line-height:1.6; max-inline-size:60ch; margin-bottom:var(--s6)}
+
+.picker{display:grid; gap:var(--s4); grid-template-columns:repeat(auto-fit,minmax(240px,1fr))}
+.pick{
+  display:grid; gap:var(--s3); align-content:start; text-align:left; min-width:0;
+  border:1px solid var(--bone-line); background:oklch(1 0 0 / 0.6); border-radius:var(--r);
+  padding:var(--s5); cursor:pointer; font-family:var(--body); color:var(--on-bone);
+  transition:border-color 160ms var(--ease), background 160ms var(--ease);
+}
+.pick:hover{border-color:var(--amber-deep)}
+.pick[aria-pressed="true"]{border-color:var(--amber-deep); background:oklch(0.760 0.155 58 / 0.12); box-shadow:inset 3px 0 0 0 var(--amber-deep)}
+.pick__t{font-family:var(--display); font-weight:500; font-size:var(--t-1); letter-spacing:-0.022em; line-height:1.05}
+.pick__says{color:var(--on-bone-dim); font-size:var(--t--1); line-height:1.5}
+.pick__code{font-family:var(--mono); font-size:0.6875rem; letter-spacing:0.08em; color:var(--on-bone-mute)}
+
+.byline{display:grid; gap:var(--s4) var(--s6); margin-top:var(--s6); align-items:end}
+@media (min-width:44rem){.byline{grid-template-columns:repeat(2,minmax(0,1fr))}}
+.byline > div{min-width:0; display:grid; gap:var(--s2)}
+.byline label{font-family:var(--mono); font-size:0.6875rem; letter-spacing:0.1em; text-transform:uppercase; color:var(--on-bone-mute)}
+.byline .map__hint{font-size:0.75rem; color:var(--on-bone-mute); line-height:1.5}
+input[type=date]{font-family:var(--body); font-size:var(--t--1); color:var(--on-bone); background:oklch(1 0 0);
+  border:1px solid var(--bone-line); border-radius:var(--r); padding:0 var(--s4); min-height:48px; width:100%}
+.due{font-family:var(--mono); font-size:var(--t--1); line-height:1.6; color:var(--on-bone-dim)}
+.due b{color:var(--on-bone); font-weight:600}
+.due.is-tight b{color:var(--risk)}
+
+.ev{display:grid; gap:var(--s3) var(--s5); border-top:1px solid var(--bone-line); padding-block:var(--s5); align-items:start}
+@media (min-width:52rem){.ev{grid-template-columns:minmax(0,1fr) 15rem}}
+.ev > *{min-width:0}
+.ev__t{font-weight:600; line-height:1.4; font-size:var(--t--1)}
+.ev__tier{font-family:var(--mono); font-size:0.625rem; letter-spacing:0.12em; text-transform:uppercase; color:var(--on-bone-mute); display:block; margin-bottom:var(--s2)}
+.ev__tier.is-key{color:var(--risk)}
+.ev__where{color:var(--on-bone-dim); font-size:0.8125rem; line-height:1.55; margin-top:var(--s2)}
+.seg{display:flex; gap:0; border:1px solid var(--bone-line); width:100%}
+.seg label{position:relative; flex:1 1 0; min-width:0; display:flex; align-items:center; justify-content:center; min-height:44px;
+  font-family:var(--mono); font-size:0.6875rem; letter-spacing:0.04em; color:var(--on-bone-dim);
+  cursor:pointer; text-align:center; padding-inline:var(--s2); border-left:1px solid var(--bone-line)}
+.seg label:first-child{border-left:0}
+.seg input{position:absolute; inset:0; width:100%; height:100%; margin:0; opacity:0; cursor:pointer}
+.seg input:checked + span{color:var(--on-bone); font-weight:500}
+.seg label:has(input:checked){background:var(--bone-2); box-shadow:inset 0 -2px 0 0 var(--amber-deep)}
+.seg label:has(input[value="no"]:checked){box-shadow:inset 0 -2px 0 0 var(--risk)}
+.seg label:focus-within{outline:2px solid var(--amber-deep); outline-offset:2px}
+
+.gauge{display:grid; gap:var(--s2); margin-top:var(--s6)}
+.gauge__track{display:block; height:10px; background:var(--bone-2); overflow:hidden}
+.gauge__fill{display:block; height:100%; width:0; background:var(--amber-deep); transition:width 600ms var(--ease-out)}
+.gauge__fill.is-thin{background:var(--risk)}
+
+.letter{
+  display:block; white-space:pre-wrap; word-break:break-word; font-family:var(--mono);
+  font-size:0.8125rem; line-height:1.75; color:var(--on-bone); background:oklch(1 0 0 / 0.7);
+  border:1px solid var(--bone-line); padding:var(--s5); margin-top:var(--s5); overflow-x:auto;
+}
+.letter mark{background:oklch(0.760 0.155 58 / 0.28); color:inherit; padding:0 2px}
+.hero__aside{border:1px solid var(--ink-line); padding:var(--s6)}
+.hero__aside .clock__n{font-size:clamp(3.4rem,2.4rem + 5vw,5.4rem)}
+</style>
+</head>
+<body>
+
+<header class="mast">
+  <div class="wrap mast__row">
+    <a class="mast__who" href="/"><b>Aaron Steele</b> &nbsp;/&nbsp; back to the portfolio</a>
+    <a href="#receipts">Where these rules come from</a>
+  </div>
+</header>
+
+<main>
+
+<!-- ============================ HERO ==================================== -->
+<section class="act hero">
+  <div class="wrap">
+    <div class="hero__grid">
+      <div>
+        <p class="tag">Free tool &nbsp;&middot;&nbsp; Shopify and Stripe merchants</p>
+        <h1>You get one submission, and the wrong evidence counts as <em>none</em>.</h1>
+        <p class="lede">
+          A chargeback is not one thing. Behind every reason code is one of six
+          allegations, and each is decided on different evidence.
+          <b>Proof of delivery does nothing for "I did not authorise this".
+          Device data does nothing for "it never arrived".</b>
+          Say which allegation you are answering and what you actually hold, and this
+          page assembles the response in the order it gets read, and names what is
+          missing while there is still time to go and get it.
+        </p>
+        <div class="hero__foot">
+          <a class="btn" href="#build">Build my response <span class="btn__arrow" aria-hidden="true">&rarr;</span></a>
+          <a class="btn btn--ghost" href="#receipts">Check the rules first</a>
+        </div>
+        <ul class="assure">
+          <li>Runs in your browser</li>
+          <li>Nothing is uploaded</li>
+          <li>No signup</li>
+          <li>Free</li>
+        </ul>
+      </div>
+
+      <aside class="hero__aside">
+        <span class="clock__n">6</span>
+        <span class="clock__k">
+          allegations sit behind every reason code across Visa, Mastercard, Amex and
+          Discover. <b>A packet built for the wrong one is not weak, it is unresponsive.</b>
+          That is the single most common way a winnable dispute is lost.
+        </span>
+      </aside>
+    </div>
+  </div>
+</section>
+
+<!-- ============================ BUILDER ================================= -->
+<section class="act act--bone" id="build">
+  <div class="wrap">
+    <div class="tool__head">
+      <p class="tag">The builder</p>
+      <h2>Three questions, then the packet.</h2>
+      <p class="lede">
+        Nothing here is sent anywhere. There is no server behind this page, so there is
+        nowhere for an order number or a customer name to go even if you typed one, and
+        the page keeps working with the internet switched off.
+      </p>
+    </div>
+
+    <noscript>
+      <p class="nojs">
+        The builder is JavaScript, and JavaScript is off, so there is nothing here to
+        use. Rather than show you dead controls: the whole thing is a lookup. Pick which
+        of six allegations the reason code represents, tick what evidence you hold, and
+        it lists what the allegation is judged on and orders your response to match.
+        The mapping it uses is in the sources at the foot of this page and you can do it
+        with a pen.
+      </p>
+    </noscript>
+
+    <div id="tool" hidden>
+      <div class="steps">
+
+        <div class="step">
+          <div class="step__head"><span class="step__n">01</span><h3>What are they actually claiming?</h3></div>
+          <p class="step__note">
+            Shopify will have given you a reason. If you have the network code, type it and
+            the right one will be chosen for you. If the wording is vague, pick by what the
+            customer is really saying, because that is what the evidence has to answer.
+          </p>
+          <div class="byline" style="margin-bottom:var(--s6)">
+            <div>
+              <label for="code">I have a reason code</label>
+              <input type="text" id="code" placeholder="10.4, 4855, 13.1, C08" autocomplete="off" spellcheck="false">
+              <span class="map__hint" id="code-hint">Visa, Mastercard, Amex and Discover codes are all recognised.</span>
+            </div>
+          </div>
+          <div class="picker" id="picker"></div>
+        </div>
+
+        <div class="step" id="step-when" hidden>
+          <div class="step__head"><span class="step__n">02</span><h3>When is it due?</h3></div>
+          <p class="step__note">
+            Use the date showing in your Shopify admin, not the one a guide gave you. The
+            networks allow longer at their own level, but the deadline your processor shows
+            is the one that closes the case, and it cannot be extended.
+          </p>
+          <div class="byline">
+            <div>
+              <label for="due">Deadline in your admin</label>
+              <input type="date" id="due">
+            </div>
+            <div><p class="due" id="due-out">No date yet.</p></div>
+          </div>
+        </div>
+
+        <div class="step" id="step-have" hidden>
+          <div class="step__head"><span class="step__n">03</span><h3>What do you actually hold?</h3></div>
+          <p class="step__note" id="have-note"></p>
+          <div class="gauge">
+            <span class="gauge__track"><span class="gauge__fill" id="gauge"></span></span>
+            <span class="small" id="gauge-k">Nothing answered yet.</span>
+          </div>
+          <div id="evidence" style="margin-top:var(--s6)"></div>
+          <div class="map__foot">
+            <p class="small" style="max-inline-size:44ch">
+              Answer honestly. A packet that claims evidence you cannot attach is worse than
+              a short one, and this page has no way of checking you.
+            </p>
+            <button class="btn" type="button" id="run">Build the response <span class="btn__arrow" aria-hidden="true">&rarr;</span></button>
+          </div>
+        </div>
+
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============================ RESULT =================================== -->
+<section class="act act--bone" id="result-act" hidden style="padding-top:0">
+  <div class="wrap">
+    <hr class="rule">
+    <div class="verdict">
+      <p class="tag" id="v-tag">Your packet</p>
+      <p class="verdict__n" id="v-number">&mdash;</p>
+      <p class="verdict__k" id="v-caption"></p>
+    </div>
+
+    <div class="figures" id="v-figures"></div>
+
+    <div class="panel" id="p-missing" hidden>
+      <h3>Go and get these first</h3>
+      <p class="small">Ordered by how much the allegation turns on them. The top of this list is worth more than everything below it put together.</p>
+      <ul class="findings" id="missing"></ul>
+    </div>
+
+    <div class="panel">
+      <h3>The response, in the order it gets read</h3>
+      <p class="small">
+        Paste this into the uncategorised text field of the Shopify evidence form and fill
+        every <mark>highlighted</mark> blank from the order itself. The page does not know your
+        order numbers, and it will not invent them.
+      </p>
+      <code class="letter" id="letter"></code>
+      <div class="res__acts">
+        <button class="btn" type="button" id="copy">Copy the response</button>
+        <button class="btn btn--ghost" type="button" id="print">Save this as a PDF</button>
+        <a class="btn btn--ghost" href="#next">What this does not cover <span class="btn__arrow" aria-hidden="true">&rarr;</span></a>
+      </div>
+    </div>
+
+    <div class="panel">
+      <h3>Attach these, in this form</h3>
+      <ul class="findings" id="attach"></ul>
+      <p class="small" style="margin-top:var(--s6)">
+        Shopify accepts PDF, JPEG and PNG only. Each file must be under 2&nbsp;MB, each PDF
+        under 50 pages and PDF/A compliant, and PDF portfolios are rejected. Merge rather
+        than send many. A file the processor cannot open is a file the bank never sees.
+      </p>
+    </div>
+
+    <p class="small" style="margin-top:var(--s6)">
+      Nothing here has been recorded. Reload the page and it is gone. This builds a better
+      packet than a blank box does; it does not decide the outcome, and anybody who tells
+      you their template wins disputes is selling you something.
+    </p>
+  </div>
+</section>
+
+<!-- ============================ NEXT ===================================== -->
+<section class="act" id="next">
+  <div class="wrap">
+    <p class="tag">What this does not cover</p>
+    <h2>Winning is the smaller half of the problem.</h2>
+    <p class="lede" style="margin-top:var(--s6)">
+      The builder gets one packet into better shape. It does not tell you what a strong
+      answer to each allegation actually reads like, it cannot assemble your files, and it
+      does nothing at all about the disputes you have not received yet. That last one
+      matters more than it sounds: a dispute counts against your monitoring ratio from the
+      day it is filed, whether or not you go on to win it. Here is the rest, priced, and
+      honest about what exists.
+    </p>
+
+    <ul class="ladder">
+      <li class="rung rung--now">
+        <div class="rung__top"><p class="tag">Step one</p><span class="rung__price">Free, now</span></div>
+        <h3>The Response Builder</h3>
+        <p>
+          The tool above. Allegation, deadline, what you hold, what is missing, and the
+          response ordered the way it gets read.
+        </p>
+        <span class="rung__when">Live. You have just used it.</span>
+      </li>
+
+      <li class="rung">
+        <div class="rung__top"><p class="tag">Step two</p><span class="rung__price">$59</span></div>
+        <h3>The Six Allegation Kit</h3>
+        <p>
+          One worked packet per allegation, written out in full, so you can see what a
+          complete answer reads like rather than guessing from a skeleton. Plus the file
+          assembly, the naming, the merge order, and what to do when the decisive piece
+          genuinely does not exist.
+        </p>
+        <span class="rung__when">Not written yet &middot; 15 October 2026</span>
+      </li>
+
+      <li class="rung">
+        <div class="rung__top"><p class="tag">Step three</p><span class="rung__price">$149</span></div>
+        <h3>The Prevention System</h3>
+        <p>
+          The upstream half. Descriptor and receipt wording that stops the unrecognised
+          charge, delivery evidence captured at fulfilment instead of hunted for later,
+          renewal notices that kill the cancelled subscription dispute, and a refund
+          service level that removes the credit not processed one entirely.
+        </p>
+        <span class="rung__when">Not built yet &middot; after step two sells</span>
+      </li>
+
+      <li class="rung">
+        <div class="rung__top"><p class="tag">Step four</p><span class="rung__price">Quoted</span></div>
+        <h3>I wire it into your store</h3>
+        <p>
+          The evidence assembles itself: the order, the tracking, the device and address
+          data and the support thread collected into one packet the moment a dispute
+          opens, instead of four people going looking. This is the actual business, and
+          everything above it exists to find the people who need it.
+        </p>
+        <span class="rung__when">Available now</span>
+      </li>
+    </ul>
+
+    <div class="offer">
+      <div class="offer__grid">
+        <div>
+          <p class="tag">Step two</p>
+          <h3 style="font-size:var(--t-2); margin-block:var(--s4) var(--s5)">Tell me where to send the kit</h3>
+          <p style="color:var(--on-ink-dim)">
+            One email when it is finished, on or before <b style="color:var(--on-ink);font-weight:600">15 October
+            2026</b>, at <b style="color:var(--on-ink);font-weight:600">$59</b>. No money is being taken today,
+            because it is not written yet and selling a date is how these things go wrong.
+            If it slips you will get an email saying it slipped.
+          </p>
+          <ul>
+            <li>A complete worked packet for each of the six allegations, not a skeleton</li>
+            <li>What a decisive piece of evidence looks like, and what only looks decisive</li>
+            <li>File assembly: naming, merge order, and the limits that silently reject a file</li>
+            <li>What to write when the piece the code turns on genuinely does not exist</li>
+            <li>The prior transaction rule for fraud disputes, and when it is worth using</li>
+          </ul>
+        </div>
+
+        <form class="form" id="signup" data-endpoint="" novalidate>
+          <label class="visually-hidden" for="email">Your email address</label>
+          <input type="email" id="email" name="email" placeholder="you@yourstore.com" autocomplete="email" required>
+          <input type="text" name="company" tabindex="-1" autocomplete="off" class="visually-hidden" aria-hidden="true">
+          <button class="btn" type="submit" id="signup-btn">Email me when it is done</button>
+          <p class="form__msg" id="form-msg">
+            One email about the kit, and nothing else unless you ask. No list, no partners,
+            unsubscribe by replying with the word no.
+          </p>
+        </form>
+      </div>
+
+      <p class="terms">
+        Plain terms. The builder is free and always will be. The kit is $59 and does not
+        exist yet; 15 October 2026 is a genuine intention rather than a promise, which is
+        why nobody is being charged in advance. Your email is used to tell you it is ready
+        and for nothing else. Nothing on this page is legal or financial advice, and it is
+        not affiliated with or endorsed by Shopify, Stripe, Visa, Mastercard, American
+        Express or Discover. Those names are their owners' and are used here only to
+        describe whose process this is. No tool can promise you a dispute outcome, this one
+        included, and the rules it works from are linked below so you can check them
+        against the source rather than against me.
+      </p>
+    </div>
+  </div>
+</section>
+
+<!-- ============================ RECEIPTS ================================= -->
+<section class="act act--bone" id="receipts">
+  <div class="wrap wrap--tight">
+    <p class="tag">Receipts</p>
+    <h2>Where the mapping comes from.</h2>
+    <p class="lede" style="margin-top:var(--s6)">
+      The card networks' full rulebooks are not public, so nobody writing about this,
+      including me, is reading the primary source end to end. What follows is what the
+      page is built on, with the vendor material marked as vendor material.
+    </p>
+
+    <ul class="src">
+      <li>
+        <a href="https://help.shopify.com/en/manual/payments/chargebacks/resolve-chargeback" rel="noopener">Shopify, Resolving a chargeback or inquiry</a>
+        <span>The process, the deadline behaviour, and the fact that a missed deadline closes the case with no appeal.</span>
+      </li>
+      <li>
+        <a href="https://help.shopify.com/en/manual/payments/shopify-payments/managing-chargebacks/chargebacks-shopify-admin" rel="noopener">Shopify, Managing chargebacks in the Shopify admin</a>
+        <span>Where the deadline you should actually trust is displayed, and what the evidence form does with what you give it.</span>
+      </li>
+      <li>
+        <a href="https://shopify.dev/docs/api/admin-graphql/latest/objects/ShopifyPaymentsDisputeEvidence" rel="noopener">Shopify, ShopifyPaymentsDisputeEvidence</a>
+        <span>The authoritative list of the fields the evidence form actually has, which is why the response below is grouped the way it is rather than written as a letter.</span>
+      </li>
+      <li>
+        <a href="https://shopify.dev/docs/api/admin-rest/latest/resources/dispute-file-upload" rel="noopener">Shopify, Dispute file upload</a>
+        <span>The file rules: accepted types, size and page limits, and the PDF constraints that reject a file quietly.</span>
+      </li>
+      <li>
+        <a href="https://redo.com/resources/articles/chargeback-reason-codes" rel="noopener">Redo, Chargeback reason codes and the evidence that answers each one</a>
+        <span>Vendor material. Used to cross check the six allegation grouping and the Visa and Mastercard code numbering.</span>
+      </li>
+      <li>
+        <a href="https://www.chargeflow.io/chargebacks-101/shopify-dispute" rel="noopener">Chargeflow, Shopify disputes and chargebacks</a>
+        <span>Vendor material, from a company that sells dispute automation. Used for the deadline ranges and the monitoring ratio point. Read it knowing who wrote it, which goes for this page too.</span>
+      </li>
+    </ul>
+
+    <div class="faq">
+      <p class="tag" style="margin-bottom:var(--s6)">Reasonable questions</p>
+
+      <details>
+        <summary>Will this win my dispute?</summary>
+        <p>
+          No idea, and neither does anyone else selling you something in this category. The
+          outcome is decided by an issuing bank against rules you and I cannot read in full.
+          What this page can honestly claim is narrower: a packet aimed at the allegation
+          actually being made, containing the evidence that allegation turns on, in an order
+          a reviewer can follow, beats a pile of screenshots. That is a real edge and it is
+          not a promise.
+        </p>
+      </details>
+
+      <details>
+        <summary>Does anything I type leave my computer?</summary>
+        <p>
+          No. There is no server behind this page. Everything is a lookup table and some
+          string assembly running in your own browser, which you can confirm by opening your
+          network tab, or by turning the internet off before you start. It will keep working.
+          Given you are about to type an order number and a customer's name into something,
+          that seemed like the only defensible way to build it.
+        </p>
+      </details>
+
+      <details>
+        <summary>Shopify gave me wording, not a code.</summary>
+        <p>
+          Common, and it is why the six choices are written as what the customer is claiming
+          rather than as code numbers. Pick the one that matches what they are really saying.
+          If two seem to fit, pick the one that is harder to answer and build for that; a
+          packet that over answers is not penalised, one that answers the wrong thing is.
+        </p>
+      </details>
+
+      <details>
+        <summary>Why is this free?</summary>
+        <p>
+          Because it is the cheapest honest way to find out whether the $59 kit is worth
+          writing. If enough people use this and ask for the next thing, I write it. If not,
+          nobody has paid for a guess and you still have a better packet than you had.
+        </p>
+      </details>
+
+      <details>
+        <summary>Who are you?</summary>
+        <p>
+          Aaron Steele, a business analyst in South Australia who also builds the systems
+          rather than writing a report about them. A decade of turning rules somebody else
+          wrote into the decisions a system makes, which is exactly what a reason code is.
+          The rest of it, and two other tools you can go and use, are on
+          <a href="/">the portfolio</a>.
+        </p>
+      </details>
+    </div>
+  </div>
+</section>
+
+</main>
+
+<footer class="act foot">
+  <div class="wrap">
+    <div class="foot__grid">
+      <p class="foot__note">
+        Built by Aaron Steele. Not affiliated with or endorsed by Shopify, Stripe or any
+        card network. If one of the rules above has changed, tell me and I will fix it the
+        same week.
+      </p>
+      <div class="links">
+        <a class="link" href="/">The portfolio</a>
+        <a class="link" href="/ndis-claim-check/">The NDIS claim check</a>
+        <a class="link" href="https://github.com/Aa-ronJS" rel="noopener">GitHub</a>
+      </div>
+    </div>
+  </div>
+</footer>
+
+<!-- ANALYTICS: nothing loaded. Events go to window.dataLayer:
+     cb_allegation_picked, cb_result_shown, cb_signup. -->
+
+<script>
+(function () {
+  'use strict';
+  var $ = function (id) { return document.getElementById(id); };
+  var DAY = 86400000;
+  function push(ev, data) {
+    window.dataLayer = window.dataLayer || [];
+    var o = { event: ev }; for (var k in data) if (data.hasOwnProperty(k)) o[k] = data[k];
+    window.dataLayer.push(o);
+  }
+  function esc(s) {
+    return String(s).replace(/[&<>"']/g, function (c) {
+      return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c];
+    });
+  }
+
+  /* =========================================================================
+     The six allegations.
+
+     Every reason code across the networks reduces to one of these, and each is
+     decided on different evidence. Grouping, code numbering and the evidence
+     that answers each one are cross checked against the sources listed on the
+     page. Visa and Mastercard numbering is the verified part; the Amex codes
+     here are the common ones and the matcher says so when it is unsure.
+
+     tier is what the allegation actually turns on:
+       decisive    the case is usually decided on this
+       strong      moves it
+       supporting  helps a human reading it, rarely decides anything
+     ========================================================================= */
+  var ALLEGATIONS = [
+    {
+      id: 'fraud',
+      claim: 'the cardholder did not authorise this transaction.',
+      t: 'They did not authorise it',
+      says: 'The cardholder says somebody else used their card, or they do not recognise the charge.',
+      visa: '10.4', mc: '4837', other: 'Amex F29',
+      codes: ['10.1','10.2','10.3','10.4','10.5','4837','4849','4863','F29','F24','F30','UA01','UA02','UA05'],
+      note: 'This is the hardest of the six and the one most often answered with the wrong evidence. Delivery proof does very little here. What matters is tying the person who placed the order to the cardholder.',
+      ev: [
+        { id:'avs', tier:'decisive', t:'AVS result on the authorisation',
+          where:'Shopify order page, under the payment section. Note whether the billing address matched in full or in part.',
+          line:'The authorisation returned an AVS result of [AVS result], against the billing address the cardholder holds with their bank.' },
+        { id:'cvv', tier:'decisive', t:'CVV or security code match',
+          where:'Same place as AVS on the order. A match means the physical card was in the hands of whoever ordered.',
+          line:'The card security code was entered and returned [CVV result], which requires possession of the card itself.' },
+        { id:'ip', tier:'decisive', t:'The IP address the order came from',
+          where:'Shopify order timeline, or your fraud analysis panel. Worth noting the location it resolves to.',
+          line:'The order was placed from IP address [IP address], resolving to [location], which is [consistent with / the same as] the cardholder’s address on file.' },
+        { id:'device', tier:'decisive', t:'Device identifier or fingerprint',
+          where:'Fraud analysis on the order, or your fraud app. Without something identifying the device, a fraud dispute is very hard to answer.',
+          line:'The order was placed from device [device ID], the same device recorded against [other activity].' },
+        { id:'prior', tier:'decisive', t:'Two earlier undisputed orders on the same card, 120 to 364 days before this one',
+          where:'Search the customer in Shopify by email and by card. You need two that were never disputed, dated in that window, sharing at least two identifiers with this order: IP, device, shipping address or account.',
+          line:'This cardholder placed orders [order 1] on [date] and [order 2] on [date], both undisputed, both between 120 and 364 days before the disputed order, and sharing [which identifiers] with it.' },
+        { id:'account', tier:'strong', t:'A logged in account with history',
+          where:'The customer record. An order placed from an account that existed before this, with its own order history, is not a stranger with a stolen number.',
+          line:'The order was placed from an account created on [date] and used [n] times before this order.' },
+        { id:'delivered_billing', tier:'strong', t:'Delivered to the cardholder’s own billing address',
+          where:'Compare the shipping address on the order to the billing address on the card.',
+          line:'The goods were delivered to [address], which is the cardholder’s own billing address, not a forwarding address.' },
+        { id:'comms_fraud', tier:'supporting', t:'Messages from the customer about this order',
+          where:'Your helpdesk or the Shopify order timeline. Anything where they discuss the order they later said they did not place.', attach:1,
+          line:'The customer corresponded about this order on [date], which is attached.' }
+      ]
+    },
+    {
+      id: 'notreceived',
+      claim: 'the goods were never received.',
+      t: 'It never arrived',
+      says: 'The cardholder accepts they ordered it, and says nothing turned up.',
+      visa: '13.1', mc: '4855', other: 'Amex C08',
+      codes: ['13.1','4855','C08','RG'],
+      note: 'The most winnable of the six, and only if the tracking shows a delivery scan to the address the customer gave. Everything else is decoration.',
+      ev: [
+        { id:'tracking', tier:'decisive', t:'Carrier tracking with a delivery scan',
+          where:'The fulfilment on the order. You need the carrier’s own record showing delivered, not just a label created.', attach:1,
+          line:'Consignment [tracking number] with [carrier] was scanned as delivered on [date] at [time]. The carrier’s tracking record is attached.' },
+        { id:'address_match', tier:'decisive', t:'The delivery address matches the one the customer gave',
+          where:'Compare the carrier’s delivery address to the shipping address on the order, character by character.',
+          line:'It was delivered to [address], which is the shipping address the customer entered at checkout and which appears on their order confirmation.' },
+        { id:'signature', tier:'strong', t:'Signature or a delivery photograph',
+          where:'Carrier portal. Many carriers keep the photo for a limited window, so pull it now rather than later.', attach:1,
+          line:'Delivery was confirmed by [signature / photograph], attached.' },
+        { id:'timing', tier:'strong', t:'Delivered before they raised the dispute',
+          where:'Compare the delivery scan date to the dispute date.',
+          line:'Delivery was completed on [date], [n] days before this dispute was raised on [date].' },
+        { id:'comms_nr', tier:'strong', t:'Any message from them after delivery',
+          where:'A review, a support ticket, a reorder, anything showing they had the goods.', attach:1,
+          line:'After delivery the customer [what they did] on [date], attached.' },
+        { id:'policy_ship', tier:'supporting', t:'The delivery window shown at checkout',
+          where:'Your shipping policy page as it read on the purchase date.', attach:1,
+          line:'The delivery window shown at checkout was [window], and delivery fell inside it.' }
+      ]
+    },
+    {
+      id: 'notasdescribed',
+      claim: 'the goods were not as described, or arrived damaged or faulty.',
+      t: 'It arrived, and it was wrong',
+      says: 'The cardholder says the goods were damaged, faulty, counterfeit, or not what the listing promised.',
+      visa: '13.3', mc: '4853', other: 'Amex C31',
+      codes: ['13.3','13.5','4853','C31','C32','RM'],
+      note: 'This one is decided on what your product page said on the day they bought, not on what it says now. Screenshot it before you change anything.',
+      ev: [
+        { id:'page_asof', tier:'decisive', t:'The product page as it read on the purchase date',
+          where:'If you have changed it since, use the Wayback Machine or your theme version history. A current screenshot of an edited page is worse than nothing.', attach:1,
+          line:'The listing as published on [purchase date] described the item as [description], attached as it appeared on that date.' },
+        { id:'variant', tier:'decisive', t:'The exact variant and specification ordered',
+          where:'The order line itself. Size, colour, model, quantity.',
+          line:'The customer selected [variant] and was shipped [variant], matching the order line exactly.' },
+        { id:'support', tier:'strong', t:'The support thread about the problem',
+          where:'Your helpdesk. Include what you offered, not only what they complained about.', attach:1,
+          line:'The customer raised the issue on [date] and was offered [what you offered] on [date]. The thread is attached.' },
+        { id:'returns', tier:'strong', t:'Your returns policy as shown at checkout, and whether they used it',
+          where:'Policy page plus your returns records.', attach:1,
+          line:'The returns policy shown at checkout allowed [terms]. The customer [did / did not] request a return within that window.' },
+        { id:'condition', tier:'supporting', t:'Evidence of the condition it was sent in',
+          where:'Packing photographs, QC records, batch checks.', attach:1,
+          line:'The item was photographed at packing on [date], attached.' },
+        { id:'notreturned', tier:'supporting', t:'Proof the goods were not returned',
+          where:'Your returns log. If they kept it and were refunded by their bank, say so plainly.',
+          line:'The goods have not been returned. No return was received against this order as at [date].' }
+      ]
+    },
+    {
+      id: 'subscription',
+      claim: 'a recurring charge was taken after cancellation, or was never agreed to.',
+      t: 'They cancelled, and were billed anyway',
+      says: 'The cardholder says the recurring charge should have stopped, or that they never agreed to it.',
+      visa: '13.2', mc: '4841', other: 'Amex C28',
+      codes: ['13.2','4841','C28','AP','RN2'],
+      note: 'Decided almost entirely on what they agreed to at signup and what your own log says about the cancellation. Both are usually easy to produce and rarely attached.',
+      ev: [
+        { id:'terms', tier:'decisive', t:'The terms they accepted at signup, with a timestamp',
+          where:'Your checkout record or subscription app. The wording as it was, plus proof they ticked it and when.', attach:1,
+          line:'On [date] the customer accepted terms stating [renewal terms], recorded at [timestamp]. The wording as shown is attached.' },
+        { id:'cancellog', tier:'decisive', t:'Your cancellation log',
+          where:'Subscription app. Either it shows no cancellation before the charge, or it shows one and this dispute is not worth fighting.',
+          line:'No cancellation was recorded against this subscription before the charge on [date]. The first cancellation recorded is [date / none].' },
+        { id:'notice', tier:'strong', t:'The renewal notice you sent, with its date',
+          where:'Email platform. Include the send record, not just the template.', attach:1,
+          line:'A renewal notice was sent to [email] on [date], [n] days before the charge, and was [delivered / opened].' },
+        { id:'usage', tier:'strong', t:'Account activity after the renewal',
+          where:'Logins, downloads, deliveries taken. Somebody using it after the charge is hard to argue with.',
+          line:'The account was used on [dates] after the disputed charge.' },
+        { id:'canceldisc', tier:'supporting', t:'Cancellation policy disclosure at checkout',
+          where:'The checkout page as it read.', attach:1,
+          line:'The cancellation policy shown at checkout stated [terms].' }
+      ]
+    },
+    {
+      id: 'credit',
+      claim: 'a credit owed to the cardholder was never processed.',
+      t: 'A refund never arrived',
+      says: 'The cardholder says they were promised a credit, or returned the goods, and the money never came back.',
+      visa: '13.6', mc: '4860', other: 'Amex C02',
+      codes: ['13.6','13.7','4860','C02','C05','RN1','CD'],
+      note: 'Answer this one honestly and quickly. If the refund genuinely has not been issued, the cheapest outcome is to issue it and accept the dispute rather than fight and lose the fee as well.',
+      ev: [
+        { id:'refundtx', tier:'decisive', t:'The refund transaction, with timestamp and amount',
+          where:'The order’s refund record. The processor reference matters more than your own note.', attach:1,
+          line:'A refund of [amount] was processed on [date], processor reference [reference], attached.' },
+        { id:'refundpolicy', tier:'decisive', t:'Your refund policy as displayed at purchase',
+          where:'Policy page as it read on the purchase date.', attach:1,
+          line:'The refund policy shown at purchase stated [terms].' },
+        { id:'promise', tier:'strong', t:'What you actually promised, and when',
+          where:'The message where the refund was agreed. If you promised something different from your policy, the promise governs.', attach:1,
+          line:'On [date] the customer was told [what was promised]. The message is attached.' },
+        { id:'settled', tier:'strong', t:'Proof it reached the card, or that it is in flight',
+          where:'Processor record. Bank posting can lag the refund by days, and saying so with a date is a complete answer on its own.',
+          line:'The refund was settled to the card ending [last four] on [date], or was released on [date] and posts within [n] business days.' },
+        { id:'goodsback', tier:'supporting', t:'Whether the goods came back',
+          where:'Returns log.',
+          line:'The goods were [returned on date / not returned], which under the policy above means [consequence].' }
+      ]
+    },
+    {
+      id: 'duplicate',
+      claim: 'this transaction duplicates another for the same purchase.',
+      t: 'They were charged twice',
+      says: 'The cardholder says one purchase produced two charges.',
+      visa: '12.6.1', mc: '4834', other: 'Amex P08',
+      codes: ['12.6','12.6.1','12.6.2','4834','P08','DP'],
+      note: 'Short and usually decisive either way. Two genuine orders, or one order charged twice. Check before you answer, because fighting a real double charge costs you the fee on top of the amount.',
+      ev: [
+        { id:'twoorders', tier:'decisive', t:'Two distinct order records',
+          where:'Both orders side by side. Different order numbers alone are not enough; you want different items, times, or shipping.', attach:1,
+          line:'These are two separate orders: [order 1] placed [date/time] for [items], and [order 2] placed [date/time] for [items].' },
+        { id:'bothfulfilled', tier:'decisive', t:'Both were fulfilled separately',
+          where:'Two fulfilments, ideally two tracking numbers.', attach:1,
+          line:'Both were fulfilled independently, under consignments [tracking 1] and [tracking 2], attached.' },
+        { id:'explain', tier:'strong', t:'An explanation if they really did order twice',
+          where:'Common with a slow checkout or a double tap. If that is what happened, say so and refund one.',
+          line:'The second order was placed [n] minutes after the first from [same/different] session, and [what you did about it].' },
+        { id:'comms_dup', tier:'supporting', t:'Any message about the second order',
+          where:'Helpdesk or order timeline.', attach:1,
+          line:'The customer was contacted about the second order on [date], attached.' }
+      ]
+    }
+  ];
+
+  var TIER_W = { decisive: 3, strong: 2, supporting: 1 };
+  var TIER_LABEL = { decisive: 'Decides it', strong: 'Moves it', supporting: 'Helps' };
+
+  var current = null;
+  var answers = {};
+
+  /* ---- Step one: the picker ------------------------------------------------ */
+  var picker = $('picker');
+  ALLEGATIONS.forEach(function (a) {
+    var b = document.createElement('button');
+    b.type = 'button';
+    b.className = 'pick';
+    b.setAttribute('aria-pressed', 'false');
+    b.setAttribute('data-id', a.id);
+    b.innerHTML = '<span class="pick__t">' + esc(a.t) + '</span>' +
+      '<span class="pick__says">' + esc(a.says) + '</span>' +
+      '<span class="pick__code">Visa ' + esc(a.visa) + ' &nbsp;/&nbsp; Mastercard ' + esc(a.mc) + ' &nbsp;/&nbsp; ' + esc(a.other) + '</span>';
+    b.addEventListener('click', function () { choose(a.id, 'click'); });
+    picker.appendChild(b);
+  });
+
+  function choose(id, how) {
+    current = ALLEGATIONS.filter(function (a) { return a.id === id; })[0] || null;
+    answers = {};
+    Array.prototype.forEach.call(picker.children, function (el) {
+      el.setAttribute('aria-pressed', String(el.getAttribute('data-id') === id));
+    });
+    if (!current) return;
+    $('step-when').hidden = false;
+    $('step-have').hidden = false;
+    $('result-act').hidden = true;
+    $('have-note').textContent = current.note;
+    buildEvidence();
+    updateGauge();
+    push('cb_allegation_picked', { allegation: id, how: how });
+  }
+
+  $('code').addEventListener('input', function (e) {
+    var raw = e.target.value.trim().toUpperCase().replace(/\s+/g, '');
+    var hint = $('code-hint');
+    if (!raw) { hint.textContent = 'Visa and Mastercard codes are matched exactly. Amex and Discover are matched where the code is unambiguous.'; return; }
+    var hit = null;
+    ALLEGATIONS.forEach(function (a) {
+      a.codes.forEach(function (c) { if (!hit && (c === raw || raw.indexOf(c) === 0)) hit = a; });
+    });
+    if (hit) {
+      hint.textContent = raw + ' is a claim that ' + hit.claim + ' Selected below.';
+      if (!current || current.id !== hit.id) choose(hit.id, 'code');
+    } else {
+      hint.textContent = 'That code is not one this page recognises. Pick by what the customer is claiming instead, which is the safer way round anyway.';
+    }
+  });
+
+  /* ---- Step two: the deadline ---------------------------------------------- */
+  $('due').addEventListener('change', function (e) {
+    var out = $('due-out');
+    out.classList.remove('is-tight');
+    if (!e.target.value) { out.textContent = 'No date yet.'; return; }
+    var t = Date.parse(e.target.value + 'T23:59:59');
+    var days = Math.floor((t - Date.now()) / DAY);
+    if (days < 0) { out.innerHTML = '<b>That date has passed.</b> A closed case cannot be reopened by the merchant. Worth building the packet anyway if the processor still shows it as open, and worth checking whether it was auto submitted for you.'; out.classList.add('is-tight'); return; }
+    if (days <= 3) { out.classList.add('is-tight'); }
+    out.innerHTML = '<b>' + days + (days === 1 ? ' day' : ' days') + '</b> left. ' +
+      (days <= 3 ? 'Submit what you have rather than miss it. An incomplete packet is judged; a late one is not judged at all.'
+                 : 'Enough time to go and get the missing pieces before you submit. Submit once, at the end.');
+  });
+
+  /* ---- Step three: the checklist ------------------------------------------- */
+  function buildEvidence() {
+    var host = $('evidence');
+    host.innerHTML = '';
+    current.ev.forEach(function (it) {
+      var row = document.createElement('div');
+      row.className = 'ev';
+      var key = 'ev-' + current.id + '-' + it.id;
+      row.innerHTML =
+        '<div>' +
+          '<span class="ev__tier' + (it.tier === 'decisive' ? ' is-key' : '') + '">' + TIER_LABEL[it.tier] + '</span>' +
+          '<span class="ev__t">' + esc(it.t) + '</span>' +
+          '<p class="ev__where">' + esc(it.where) + '</p>' +
+        '</div>' +
+        '<div class="seg">' +
+          seg(key, 'yes', 'I have it') + seg(key, 'no', 'I do not') + seg(key, 'na', 'Not relevant') +
+        '</div>';
+      host.appendChild(row);
+    });
+    host.addEventListener('change', onAnswer);
+  }
+
+  function seg(name, value, label) {
+    return '<label><input type="radio" name="' + name + '" value="' + value + '"><span>' + label + '</span></label>';
+  }
+
+  function onAnswer(e) {
+    if (!e.target || e.target.type !== 'radio') return;
+    var id = e.target.name.split('-').slice(2).join('-');
+    answers[id] = e.target.value;
+    // :has() does the styling in modern browsers; this keeps older ones honest.
+    var seg = e.target.closest('.seg');
+    if (seg) Array.prototype.forEach.call(seg.querySelectorAll('label'), function (l) {
+      l.classList.toggle('is-on', !!l.querySelector('input:checked'));
+    });
+    updateGauge();
+  }
+
+  function score() {
+    var got = 0, applicable = 0, missing = [], held = [];
+    var decisiveMissing = 0, decisiveTotal = 0, decisiveUnanswered = 0;
+    current.ev.forEach(function (it) {
+      var a = answers[it.id];
+      if (a === 'na') return;
+      var w = TIER_W[it.tier];
+      applicable += w;
+      if (it.tier === 'decisive') decisiveTotal++;
+      if (a === 'yes') { got += w; held.push(it); }
+      else if (a === 'no') { missing.push(it); if (it.tier === 'decisive') decisiveMissing++; }
+      // Silence is not the same as a no, and it is certainly not a yes. An
+      // unanswered decisive line was being read as nothing missing, which let
+      // the page congratulate somebody who had ticked one box.
+      else if (it.tier === 'decisive') decisiveUnanswered++;
+    });
+    var answered = Object.keys(answers).length;
+    return { got: got, applicable: applicable, missing: missing, held: held,
+             decisiveMissing: decisiveMissing, decisiveTotal: decisiveTotal,
+             decisiveUnanswered: decisiveUnanswered, answered: answered };
+  }
+
+  function updateGauge() {
+    var s = score();
+    var pctv = s.applicable > 0 ? Math.round((s.got / s.applicable) * 100) : 0;
+    var fill = $('gauge');
+    fill.style.width = pctv + '%';
+    fill.classList.toggle('is-thin', pctv < 50);
+    $('gauge-k').textContent = s.answered === 0
+      ? 'Nothing answered yet.'
+      : s.answered + ' of ' + current.ev.length + ' answered. Weighted by what the allegation turns on, you hold ' + pctv + '% of what is available to you.';
+  }
+
+  /* ---- Build ---------------------------------------------------------------- */
+  var CLOSE = {
+    fraud: 'Taken together, the above ties the person who placed this order to the cardholder and to this card.',
+    notreceived: 'Taken together, the above shows the goods were delivered to the address the customer supplied, before this dispute was raised.',
+    notasdescribed: 'Taken together, the above shows the goods matched the listing as it stood on the date of purchase.',
+    subscription: 'Taken together, the above shows the charge was authorised by terms the customer accepted, and that no cancellation preceded it.',
+    credit: 'Taken together, the above shows the credit was handled in line with the policy in force at the time of purchase.',
+    duplicate: 'Taken together, the above shows two separate orders, each fulfilled independently.'
+  };
+  var POLICY = {
+    credit: ['Refund policy disclosure', 'Paste your refund policy exactly as it read on the purchase date. Not the current one.'],
+    notasdescribed: ['Refund policy disclosure', 'Paste your returns and refund policy as it read on the purchase date.'],
+    subscription: ['Cancellation policy disclosure', 'Paste the cancellation terms exactly as they appeared at signup.']
+  };
+
+  var RULE = new Array(69).join('-');
+  var LAST = '';
+
+  function fmtDate(d) {
+    return d.getDate() + ' ' + ['January','February','March','April','May','June','July','August','September','October','November','December'][d.getMonth()] + ' ' + d.getFullYear();
+  }
+
+  function buildLetter(s) {
+    var L = [];
+    var due = $('due').value;
+    L.push('SHOPIFY DISPUTE EVIDENCE');
+    L.push(current.t.toUpperCase());
+    L.push('Reason codes: Visa ' + current.visa + ' / Mastercard ' + current.mc + ' / ' + current.other);
+    L.push('Prepared ' + fmtDate(new Date()) + (due ? '. Submission deadline ' + fmtDate(new Date(due + 'T00:00:00')) + '.' : '.'));
+    L.push('');
+    L.push(RULE);
+    L.push('1. UNCATEGORISED TEXT');
+    L.push('   Paste everything down to the next rule into that one field.');
+    L.push(RULE);
+    L.push('');
+    L.push('Order [order number], placed [order date], value [amount].');
+    L.push('');
+    L.push('The dispute alleges that ' + current.claim);
+    L.push('That allegation is answered below, point by point.');
+    L.push('');
+    if (!s.held.length) {
+      L.push('[Nothing was ticked as held, so there is nothing to state here yet. Go back');
+      L.push('and answer the checklist, or go and get the evidence first.]');
+    } else {
+      s.held.forEach(function (it, i) { L.push('  ' + (i + 1) + '. ' + it.line); });
+    }
+    L.push('');
+    L.push(s.decisiveMissing === 0
+      ? CLOSE[current.id]
+      : 'The above is the evidence held for this transaction. [Only claim what you can attach. Do not describe evidence you cannot produce.]');
+    L.push('');
+    L.push(RULE);
+    L.push('2. CUSTOMER DETAILS');
+    L.push('   Separate fields on the evidence form. Fill each from the order itself.');
+    L.push(RULE);
+    L.push('');
+    L.push('Customer name ......... [first and last, as on the order]');
+    L.push('Customer email ........ [as on the order]');
+    L.push('Billing address ....... [as given at checkout]');
+    L.push('Shipping address ...... [as given at checkout]');
+    L.push('');
+    L.push(RULE);
+    L.push('3. PRODUCT DESCRIPTION');
+    L.push(RULE);
+    L.push('');
+    L.push('[What was ordered, in the words your own listing used on the purchase date.');
+    L.push('Include the variant. Do not paraphrase it into something better.]');
+    L.push('');
+    if (POLICY[current.id]) {
+      L.push(RULE);
+      L.push('4. ' + POLICY[current.id][0].toUpperCase());
+      L.push(RULE);
+      L.push('');
+      L.push('[' + POLICY[current.id][1] + ']');
+      L.push('');
+    }
+    var files = s.held.filter(function (it) { return it.attach; });
+    L.push(RULE);
+    L.push((POLICY[current.id] ? '5' : '4') + '. FILES TO ATTACH');
+    L.push(RULE);
+    L.push('');
+    if (files.length) files.forEach(function (it) { L.push('  - ' + it.t); });
+    else L.push('  - [Nothing you ticked is a document. Screenshot what you can: the fraud\n    analysis panel, the order timeline, the carrier record. A packet with no\n    attachment is read as an assertion.]');
+    L.push('');
+    L.push('PDF, JPEG or PNG only. Under 2 MB each, PDFs under 50 pages and PDF/A');
+    L.push('compliant, no PDF portfolios. Merge rather than sending many.');
+    return L.join('\n');
+  }
+
+  function render() {
+    var s = score();
+    LAST = buildLetter(s);
+
+    var tag = $('v-tag'), nEl = $('v-number'), cap = $('v-caption');
+    nEl.classList.remove('is-risk');
+    var unanswered = s.decisiveUnanswered > 0
+      ? ' You have also left ' + s.decisiveUnanswered + ' decisive ' + (s.decisiveUnanswered === 1 ? 'line' : 'lines') +
+        ' unanswered, and this page will not guess at ' + (s.decisiveUnanswered === 1 ? 'it' : 'them') + '.'
+      : '';
+    if (s.decisiveMissing > 0) {
+      tag.textContent = 'Decisive evidence missing';
+      nEl.textContent = String(s.decisiveMissing);
+      nEl.classList.add('is-risk');
+      cap.innerHTML = 'of the ' + s.decisiveTotal + ' things this allegation actually turns on are missing. The response below uses only what you hold. <b>The list under it is what to go and find, and the top of that list is worth more than the rest of the packet put together.</b>' + esc(unanswered);
+    } else if (s.answered === 0) {
+      tag.textContent = 'Nothing answered';
+      nEl.textContent = '0';
+      cap.textContent = 'Answer the checklist above and this will fill in.';
+    } else if (s.decisiveUnanswered > 0) {
+      tag.textContent = 'Decisive lines still unanswered';
+      nEl.textContent = String(s.decisiveUnanswered);
+      cap.innerHTML = 'of the ' + s.decisiveTotal + ' things this allegation turns on have not been answered either way. <b>Nothing you have answered is missing, which is not the same as being finished.</b> The response below uses only what you ticked. Answer the rest and build it again.';
+    } else {
+      tag.textContent = 'Decisive evidence missing';
+      nEl.textContent = 'None';
+      cap.innerHTML = 'You hold every decisive item for this allegation, or have marked it not relevant. <b>That is as strong as this packet gets.</b> What is left is putting it in an order a reviewer can follow, which is below.';
+    }
+
+    var pctv = s.applicable > 0 ? Math.round((s.got / s.applicable) * 100) : 0;
+    var figs = '<div><span class="fig__n">' + pctv + '%</span><span class="fig__k">of the available evidence, weighted by what the allegation turns on</span></div>' +
+      '<div><span class="fig__n">' + s.held.length + '</span><span class="fig__k">statements the response can make on your behalf</span></div>' +
+      '<div><span class="fig__n">' + s.held.filter(function (i) { return i.attach; }).length + '</span><span class="fig__k">files to attach</span></div>' +
+      '<div><span class="fig__n" style="font-size:var(--t-1)">' + esc(current.visa) + ' &middot; ' + esc(current.mc) + '</span><span class="fig__k">the Visa and Mastercard codes for this allegation</span></div>';
+    $('v-figures').innerHTML = figs;
+
+    $('p-missing').hidden = s.missing.length === 0;
+    if (s.missing.length) {
+      var order = { decisive: 0, strong: 1, supporting: 2 };
+      var sorted = s.missing.slice().sort(function (a, b) { return order[a.tier] - order[b.tier]; });
+      $('missing').innerHTML = sorted.map(function (it) {
+        return '<li><h4>' + esc(it.t) + '</h4><p><span class="num">' + TIER_LABEL[it.tier] + '.</span> ' + esc(it.where) + '</p></li>';
+      }).join('');
+    }
+
+    var files = s.held.filter(function (it) { return it.attach; });
+    $('attach').innerHTML = files.length
+      ? files.map(function (it) { return '<li><h4>' + esc(it.t) + '</h4><p>' + esc(it.where) + '</p></li>'; }).join('')
+      : '<li><h4>Nothing to attach yet</h4><p>Nothing you ticked is a document. Screenshot what you can: the fraud analysis panel, the order timeline, the carrier record. A packet with no attachment at all is read as an assertion rather than as evidence.</p></li>';
+
+    $('letter').innerHTML = esc(LAST).replace(/\[([^\]]+)\]/g, '<mark>[$1]</mark>');
+
+    $('result-act').hidden = false;
+    $('result-act').scrollIntoView({ behavior: 'smooth', block: 'start' });
+    push('cb_result_shown', { allegation: current.id, decisive_missing: s.decisiveMissing, pct: pctv });
+  }
+
+  var runErr = document.createElement('p');
+  runErr.className = 'err'; runErr.hidden = true; runErr.style.marginTop = 'var(--s5)';
+  $('step-have').appendChild(runErr);
+
+  $('run').addEventListener('click', function () {
+    if (!current) { return; }
+    var s = score();
+    if (s.answered === 0) {
+      runErr.textContent = 'Answer at least one line above first. The page has nothing to work from otherwise, and it is not going to invent evidence for you.';
+      runErr.hidden = false;
+      return;
+    }
+    runErr.hidden = true;
+    render();
+  });
+
+  $('print').addEventListener('click', function () { window.print(); });
+  $('copy').addEventListener('click', function (e) {
+    var btn = e.currentTarget, original = btn.textContent;
+    var done = function (m) { btn.textContent = m; setTimeout(function () { btn.textContent = original; }, 2200); };
+    if (navigator.clipboard && navigator.clipboard.writeText) {
+      navigator.clipboard.writeText(LAST).then(function () { done('Copied'); }, function () { done('Could not copy'); });
+    } else { done('Not supported here'); }
+  });
+
+  /* ---- The list ------------------------------------------------------------- */
+  var form = $('signup');
+  form.addEventListener('submit', function (e) {
+    e.preventDefault();
+    var msg = $('form-msg'), btn = $('signup-btn');
+    var endpoint = form.getAttribute('data-endpoint');
+    var email = $('email').value.trim();
+    msg.classList.remove('is-err');
+    if (form.querySelector('[name=company]').value) return;
+    if (!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(email)) {
+      msg.textContent = 'That does not look like an email address.'; msg.classList.add('is-err'); return;
+    }
+    if (!endpoint) {
+      msg.textContent = 'This form is not connected to anything yet, so nothing was sent and it would be dishonest to say otherwise. Email me through the portfolio instead.';
+      msg.classList.add('is-err'); return;
+    }
+    btn.disabled = true; btn.textContent = 'Sending';
+    fetch(endpoint, { method: 'POST', headers: { 'Content-Type': 'application/json', 'Accept': 'application/json' },
+      body: JSON.stringify({ email: email, source: 'chargeback-response' }) })
+      .then(function (r) {
+        if (!r.ok) throw new Error(String(r.status));
+        form.innerHTML = '<p class="form__msg">Done. One email when the kit is finished, and nothing else.</p>';
+        push('cb_signup', {});
+      })
+      .catch(function () {
+        btn.disabled = false; btn.textContent = 'Try again';
+        msg.textContent = 'That did not go through. Try again, or email me through the portfolio.';
+        msg.classList.add('is-err');
+      });
+  });
+
+  $('tool').hidden = false;
+})();
+</script>
+
+</body>
+</html>
