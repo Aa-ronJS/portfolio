@@ -28,6 +28,24 @@ across the whole set, all text-free, each tied to the work it sits beside. None
 depicts a real client's product and none stands in for something that must be
 true. See `PREFLIGHT.md` for the table of what each image is doing there.
 
+## The NDIS claim check
+
+`public/ndis-claim-check/` is a second, self contained page: a free browser tool
+for Australian NDIS providers that reads their own claims export and works out
+what the 90 day claiming window starting 1 December 2026 would have cost them.
+It is the free step of a paid information ladder, and `CAMPAIGN.md` holds the
+whole test, the ladder, the keywords, the ad copy, the pass and fail lines set
+before any money is spent, and the six things that have to be done before a
+single click is bought.
+
+It shares the parent site's fonts, palette and rules, and adds one desaturated
+red used only as a data mark on money at risk, named as a deviation in the
+file's own pre-flight. Everything happens in the browser: the file is read
+locally, nothing is uploaded, and there is no server behind the page to upload
+it to. Six defects were found by rendering it rather than reading it, including
+bar fills that collapsed because their track was an inline span, and a rejection
+table whose two most important columns sat off the right edge of a phone.
+
 ## Build and deploy
 
 ```bash

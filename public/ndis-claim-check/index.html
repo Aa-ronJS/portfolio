@@ -1,0 +1,1472 @@
+<!doctype html>
+<html lang="en-AU">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>The 90 Day Cliff Check | Free NDIS claim lag audit</title>
+<meta name="description" content="From 1 December 2026 NDIS claims must be made within 90 days of delivery, down from two years. Drop in your own claims export and see what that rule would have cost you last year. Runs entirely in your browser. Nothing is uploaded.">
+<meta name="theme-color" content="#12181f">
+<meta name="robots" content="index,follow">
+<link rel="canonical" href="https://aaronsteele.vercel.app/ndis-claim-check/">
+<meta property="og:title" content="The 90 Day Cliff Check">
+<meta property="og:description" content="What the new 90 day NDIS claim window would have cost you last year, worked out from your own file, in your own browser.">
+<meta property="og:type" content="website">
+<link rel="preload" as="font" type="font/woff2" href="/fonts/clash-display-var.woff2" crossorigin>
+<link rel="preload" as="font" type="font/woff2" href="/fonts/satoshi-var.woff2" crossorigin>
+
+<!-- ===========================================================================
+     SET THESE BEFORE ANY MONEY IS SPENT ON CLICKS
+     Every value below is deliberately a literal in the markup, not a template,
+     so there is exactly one place to change each one and nothing to build.
+
+       1. data-endpoint on <form id="signup">   the form POST target. Until it
+                                                is set the form refuses to
+                                                submit and says so out loud.
+       2. PLAYBOOK PRICE   "$79"                appears twice: offer card, FAQ.
+       3. PLAYBOOK DATE    "30 September 2026"  appears twice: offer card, terms.
+       4. ANALYTICS                             none is loaded. Add the tag in
+                                                the marked block at the foot if
+                                                and when you want one, and add a
+                                                consent notice with it.
+
+     PRE-FLIGHT (house DESIGN.md section 1, answered before markup)
+
+       Audience   the person inside an Australian NDIS provider who submits the
+                  claims. Owner-operator of a ten staff provider, or the one
+                  finance and admin person carrying billing for fifty. On a
+                  laptop, mid morning, having just been told about a deadline.
+                  They are sceptical, they have been sold to before, and they
+                  have about eight seconds.
+       Register   the parent site's, one notch quieter. This is a tool page, so
+                  the tool is the hero and the writing gets out of its way. No
+                  testimonials, no countdown theatrics beyond the real date, no
+                  claim that is not either their own arithmetic or a link.
+       Reference  the parent site. Same fonts, same amber, same zero radius,
+                  same bone-on-ink rhythm. It should read as the same hand.
+       Accent     unchanged, --brand-h 58.
+       Moment     the number the reader's own file produces. Nothing on this
+                  page is allowed to be louder than that.
+       Deviation  the house rule is one accent hue. This page adds one
+                  desaturated red, used only as a data mark on money that is at
+                  risk or rejected. Encoding risk in the same amber as the
+                  headline would make the chart lie. Recorded here per
+                  DESIGN.md, which says a deviation gets written down.
+       Degraded   no JavaScript, no tool, and the page says so plainly rather
+                  than showing a dead dropzone. No network, still works: the
+                  whole computation is local and there is nothing to fetch.
+     =========================================================================== -->
+
+<style>
+@font-face{font-family:'Clash';src:url('/fonts/clash-display-var.woff2') format('woff2-variations');font-weight:200 700;font-style:normal;font-display:swap}
+@font-face{font-family:'Satoshi';src:url('/fonts/satoshi-var.woff2') format('woff2-variations');font-weight:300 900;font-style:normal;font-display:swap}
+@font-face{font-family:'Mono';src:url('/fonts/ibm-plex-mono-400.woff2') format('woff2');font-weight:400;font-style:normal;font-display:swap}
+@font-face{font-family:'Mono';src:url('/fonts/ibm-plex-mono-500.woff2') format('woff2');font-weight:500;font-style:normal;font-display:swap}
+@font-face{font-family:'Clash Fallback';src:local('Segoe UI Semibold'),local('Helvetica Neue'),local('Arial');size-adjust:94%;ascent-override:96%;descent-override:22%;line-gap-override:0%}
+@font-face{font-family:'Satoshi Fallback';src:local('Segoe UI'),local('Helvetica Neue'),local('Arial');size-adjust:99%;ascent-override:97%;descent-override:24%;line-gap-override:0%}
+
+:root{
+  --brand-h:58; --brand-c:0.155;
+  --ink:       oklch(0.158 0.019 252);
+  --ink-2:     oklch(0.205 0.021 252);
+  --ink-line:  oklch(0.330 0.020 252);
+  --bone:      oklch(0.958 0.008 84);
+  --bone-2:    oklch(0.922 0.010 84);
+  --bone-line: oklch(0.855 0.014 84);
+  --amber:     oklch(0.760 var(--brand-c) var(--brand-h));
+  --amber-deep:oklch(0.590 0.140 calc(var(--brand-h) - 12));
+  --amber-soft:oklch(0.860 0.090 var(--brand-h));
+  /* The one deviation, named in the pre-flight: a data mark for money at risk. */
+  --risk:      oklch(0.585 0.155 27);
+  --risk-dim:  oklch(0.585 0.155 27 / 0.16);
+  --on-ink:      oklch(0.968 0.006 84);
+  --on-ink-dim:  oklch(0.800 0.012 84);
+  --on-ink-mute: oklch(0.645 0.014 252);
+  --on-bone:     oklch(0.205 0.018 252);
+  --on-bone-dim: oklch(0.420 0.016 252);
+  --on-bone-mute:oklch(0.545 0.014 252);
+  --fg:var(--on-ink); --fg-dim:var(--on-ink-dim); --fg-mute:var(--on-ink-mute);
+  --line:var(--ink-line); --accent:var(--amber);
+  --display:'Clash','Clash Fallback',sans-serif;
+  --body:'Satoshi','Satoshi Fallback',system-ui,sans-serif;
+  --mono:'Mono',ui-monospace,Consolas,monospace;
+  --t--1:clamp(0.80rem,0.78rem + 0.10vw,0.875rem);
+  --t-0: clamp(1.06rem,1.00rem + 0.30vw,1.25rem);
+  --t-1: clamp(1.22rem,1.10rem + 0.55vw,1.60rem);
+  --t-2: clamp(1.62rem,1.35rem + 1.30vw,2.75rem);
+  --t-3: clamp(2.00rem,1.50rem + 2.40vw,4.00rem);
+  --t-4: clamp(2.60rem,1.70rem + 4.40vw,6.40rem);
+  --s2:8px; --s3:12px; --s4:16px; --s5:24px; --s6:32px;
+  --s7:48px; --s8:64px; --s9:96px; --s10:128px;
+  --act:clamp(80px,12vh,150px);
+  --gut:clamp(20px,5vw,80px);
+  --r:0px;
+  --ease:cubic-bezier(0.22,1,0.36,1);
+  --ease-out:cubic-bezier(0.16,1,0.3,1);
+}
+*,*::before,*::after{box-sizing:border-box}
+html{-webkit-text-size-adjust:100%}
+html:focus-within{scroll-behavior:smooth}
+body{
+  margin:0; background:var(--ink); color:var(--fg);
+  font-family:var(--body); font-size:var(--t-0); line-height:1.55; font-weight:400;
+  -webkit-font-smoothing:antialiased; overflow-x:hidden; accent-color:var(--amber);
+}
+::selection{background:var(--amber); color:oklch(0.16 0.02 252)}
+h1,h2,h3{font-family:var(--display); font-weight:600; margin:0; line-height:0.96; letter-spacing:-0.026em; text-wrap:balance}
+h1{font-size:clamp(2.3rem,1.45rem + 3.4vw,4.3rem)}
+h2{font-size:var(--t-3)}
+h3{font-size:var(--t-1); line-height:1.05}
+p{margin:0 0 1em; text-wrap:pretty}
+p:last-child{margin-bottom:0}
+a{color:inherit}
+:focus-visible{outline:2px solid var(--amber); outline-offset:3px}
+.tag{font-family:var(--mono); font-size:0.6875rem; font-weight:500; letter-spacing:0.14em; text-transform:uppercase; color:var(--accent); margin:0}
+.wrap{max-width:1180px; margin-inline:auto; padding-inline:var(--gut)}
+.wrap--tight{max-width:900px}
+.act{position:relative; padding-block:var(--act)}
+.act--bone{background:var(--bone); color:var(--on-bone); --fg:var(--on-bone); --fg-dim:var(--on-bone-dim); --fg-mute:var(--on-bone-mute); --line:var(--bone-line); --accent:var(--amber-deep)}
+.lede{font-size:var(--t-1); line-height:1.45; color:var(--fg-dim); max-inline-size:46ch}
+.lede b{color:var(--fg); font-weight:600}
+.rule{height:1px; background:var(--accent); border:0; margin:0}
+.small{font-size:var(--t--1); color:var(--fg-mute); line-height:1.6}
+
+/* ---------- Masthead ------------------------------------------------------ */
+.mast{position:relative; z-index:5; border-bottom:1px solid var(--ink-line)}
+.mast__row{display:flex; align-items:center; justify-content:space-between; gap:var(--s5); padding-block:var(--s4); flex-wrap:wrap}
+.mast a{font-family:var(--mono); font-size:var(--t--1); letter-spacing:0.08em; text-transform:uppercase; text-decoration:none; color:var(--on-ink-dim); min-height:44px; display:inline-flex; align-items:center}
+.mast a:hover{color:var(--amber)}
+.mast__who b{color:var(--on-ink); font-weight:500}
+
+/* ---------- Hero ---------------------------------------------------------- */
+.hero{padding-block:clamp(60px,9vh,120px) var(--act)}
+.hero h1{margin-block:var(--s5) var(--s6)}
+.hero h1 em{font-style:normal; color:var(--amber)}
+.hero__grid{display:grid; gap:var(--s8)}
+@media (min-width:62rem){.hero__grid{grid-template-columns:minmax(0,1.25fr) minmax(0,0.75fr); gap:var(--s10); align-items:end}}
+.hero__grid > *{min-width:0}
+.clock{border:1px solid var(--ink-line); padding:var(--s6)}
+.clock__n{font-family:var(--display); font-weight:500; font-size:clamp(3rem,2rem + 5vw,5rem); line-height:0.9; letter-spacing:-0.03em; color:var(--amber); font-variant-numeric:tabular-nums}
+.clock__k{display:block; margin-top:var(--s4); color:var(--on-ink-dim); font-size:var(--t--1); line-height:1.55}
+.clock__k b{color:var(--on-ink); font-weight:600}
+.btn{
+  display:inline-flex; align-items:center; justify-content:center; gap:0.6em; min-height:54px;
+  padding:0 var(--s6); border-radius:var(--r); text-decoration:none; cursor:pointer;
+  font-family:var(--body); font-weight:700; font-size:var(--t--1); letter-spacing:0.06em; text-transform:uppercase;
+  background:var(--amber); color:oklch(0.16 0.02 252); border:1px solid var(--amber);
+  transition:background 200ms var(--ease), border-color 200ms var(--ease), transform 140ms var(--ease);
+}
+.btn:hover{background:var(--amber-soft); border-color:var(--amber-soft)}
+.btn:active{transform:scale(0.975)}
+.btn:disabled{opacity:0.45; cursor:not-allowed; transform:none}
+.btn--ghost{background:transparent; color:var(--fg); border-color:oklch(1 0 0 / 0.32)}
+.act--bone .btn--ghost{border-color:var(--bone-line); color:var(--on-bone)}
+.btn--ghost:hover{background:oklch(1 0 0 / 0.09); border-color:currentColor}
+.act--bone .btn--ghost:hover{background:oklch(0 0 0 / 0.05)}
+.btn__arrow{transition:transform 220ms var(--ease)}
+.btn:hover .btn__arrow{transform:translateX(5px)}
+.hero__foot{display:flex; flex-wrap:wrap; gap:var(--s4); align-items:center; margin-top:var(--s7)}
+.assure{display:flex; flex-wrap:wrap; gap:var(--s3) var(--s5); margin-top:var(--s6); padding:0; list-style:none; font-family:var(--mono); font-size:var(--t--1); color:var(--on-ink-mute)}
+.assure li{display:inline-flex; align-items:center; gap:var(--s3)}
+.assure li:not(:last-child)::after{content:''; width:4px; height:4px; background:var(--amber); opacity:0.7}
+
+/* ---------- The tool ------------------------------------------------------ */
+.tool__head{display:grid; gap:var(--s5); margin-bottom:var(--s8)}
+.drop{
+  border:1px dashed var(--bone-line); background:var(--bone-2);
+  padding:clamp(28px,5vw,64px); text-align:center; transition:border-color 180ms var(--ease), background 180ms var(--ease);
+}
+.drop.is-over{border-color:var(--amber-deep); background:oklch(0.760 0.155 58 / 0.10)}
+.drop h3{margin-bottom:var(--s3)}
+.drop p{color:var(--on-bone-dim); max-inline-size:52ch; margin-inline:auto}
+.drop__acts{display:flex; flex-wrap:wrap; gap:var(--s4); justify-content:center; margin-top:var(--s6)}
+.panel{border:1px solid var(--bone-line); background:oklch(1 0 0 / 0.55); padding:clamp(20px,3vw,36px); margin-top:var(--s7)}
+.panel > h3{margin-bottom:var(--s5)}
+.panel[hidden]{display:none}
+.map{display:grid; gap:var(--s5) var(--s6)}
+@media (min-width:46rem){.map{grid-template-columns:repeat(2,minmax(0,1fr))}}
+@media (min-width:70rem){.map{grid-template-columns:repeat(3,minmax(0,1fr))}}
+.map > div{min-width:0; display:grid; gap:var(--s2); align-content:start}
+.map label{font-family:var(--mono); font-size:0.6875rem; letter-spacing:0.1em; text-transform:uppercase; color:var(--on-bone-mute)}
+.map label b{color:var(--amber-deep); font-weight:500}
+select,input[type=email],input[type=text]{
+  font-family:var(--body); font-size:var(--t--1); color:var(--on-bone);
+  background:oklch(1 0 0); border:1px solid var(--bone-line); border-radius:var(--r);
+  padding:0 var(--s4); min-height:48px; width:100%; appearance:none;
+}
+select{
+  padding-right:var(--s7);
+  background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3E%3Cpath d='M1 1l5 5 5-5' fill='none' stroke='%23697184' stroke-width='1.6'/%3E%3C/svg%3E");
+  background-repeat:no-repeat; background-position:right var(--s4) center;
+}
+select:focus-visible,input:focus-visible{outline:2px solid var(--amber-deep); outline-offset:2px}
+.map__hint{font-size:0.75rem; color:var(--on-bone-mute); line-height:1.5}
+.map__foot{display:flex; flex-wrap:wrap; gap:var(--s4) var(--s6); align-items:center; margin-top:var(--s7); padding-top:var(--s5); border-top:1px solid var(--bone-line)}
+fieldset{border:0; margin:0; padding:0}
+.radios{display:flex; flex-wrap:wrap; gap:var(--s5)}
+input[type=radio]{width:24px; height:24px; margin:0; flex:0 0 auto}
+.radios label{display:inline-flex; align-items:center; gap:var(--s3); font-family:var(--mono); font-size:var(--t--1); text-transform:none; letter-spacing:0.02em; color:var(--on-bone-dim); cursor:pointer; min-height:44px}
+.note{border-left:2px solid var(--amber-deep); padding-left:var(--s5); color:var(--on-bone-dim); font-size:var(--t--1); line-height:1.6}
+.err{border-left:2px solid var(--risk); padding-left:var(--s5); color:var(--on-bone); font-size:var(--t--1); line-height:1.6}
+
+/* ---------- Results ------------------------------------------------------- */
+.verdict{border-top:2px solid var(--amber-deep); padding-top:var(--s6); margin-top:var(--s8)}
+.verdict__n{margin:0; font-family:var(--display); font-weight:600; font-size:clamp(2.8rem,1.6rem + 6vw,6.4rem); line-height:0.88; letter-spacing:-0.032em; font-variant-numeric:tabular-nums; color:var(--on-bone)}
+.verdict__n.is-risk{color:var(--risk)}
+.verdict__k{font-size:var(--t-1); line-height:1.4; color:var(--on-bone-dim); max-inline-size:40ch; margin-top:var(--s5)}
+.verdict__k b{color:var(--on-bone); font-weight:600}
+.figures{display:grid; gap:var(--s6) var(--s6); margin-top:var(--s8); grid-template-columns:repeat(auto-fit,minmax(150px,1fr))}
+.figures > div{min-width:0; border-top:1px solid var(--bone-line); padding-top:var(--s4)}
+.fig__n{font-family:var(--display); font-weight:500; font-size:var(--t-2); line-height:1; letter-spacing:-0.028em; font-variant-numeric:tabular-nums}
+.fig__k{display:block; margin-top:var(--s3); color:var(--on-bone-dim); font-size:var(--t--1); line-height:1.5}
+.bars{display:grid; gap:var(--s3); margin-top:var(--s6)}
+.bar{display:grid; grid-template-columns:8.5rem 1fr auto; gap:var(--s4); align-items:center; font-size:var(--t--1)}
+@media (max-width:40rem){.bar{grid-template-columns:auto 1fr auto; gap:var(--s3); font-size:0.8rem}
+  .bar__k{white-space:nowrap; font-size:0.72rem}}
+.bar__k{font-family:var(--mono); color:var(--on-bone-dim); font-variant-numeric:tabular-nums}
+.bar__track{display:block; background:var(--bone-2); height:22px; position:relative; overflow:hidden}
+.bar__fill{display:block; height:100%; background:var(--amber-deep); width:0; transition:width 700ms var(--ease-out)}
+.bar.is-risk .bar__fill{background:var(--risk)}
+.bar__v{font-family:var(--mono); font-variant-numeric:tabular-nums; color:var(--on-bone); white-space:nowrap}
+.tbl-scroll{overflow-x:auto; margin-top:var(--s6); -webkit-overflow-scrolling:touch}
+table{border-collapse:collapse; width:100%; font-size:var(--t--1); min-width:36rem}
+th,td{text-align:left; padding:var(--s3) var(--s4); border-bottom:1px solid var(--bone-line); vertical-align:top}
+th{font-family:var(--mono); font-size:0.6875rem; letter-spacing:0.1em; text-transform:uppercase; color:var(--on-bone-mute); font-weight:500; white-space:nowrap}
+td.num{font-family:var(--mono); font-variant-numeric:tabular-nums; white-space:nowrap; text-align:right}
+tr.is-risk td.num{color:var(--risk)}
+code{font-family:var(--mono); font-size:0.85em; background:var(--bone-2); padding:2px 5px}
+/* On a phone the lines and value columns were off the right edge of the scroller,
+   which hid the two numbers the table exists for. Stack it instead. */
+@media (max-width:46rem){
+  table{min-width:0}
+  thead{display:none}
+  tbody tr{display:block; border-bottom:1px solid var(--bone-line); padding-block:var(--s4)}
+  tbody td{display:grid; grid-template-columns:5.5rem minmax(0,1fr); gap:var(--s4); align-items:baseline;
+           border:0; padding:3px 0; text-align:left; white-space:normal}
+  tbody td::before{content:attr(data-label); font-family:var(--mono); font-size:0.625rem; letter-spacing:0.1em;
+                   text-transform:uppercase; color:var(--on-bone-mute)}
+  tbody td.num{text-align:left}
+  tbody td code{justify-self:start}
+}
+.findings{display:grid; gap:var(--s5); margin-top:var(--s6); padding:0; list-style:none}
+.findings li{border-top:1px solid var(--bone-line); padding-top:var(--s4)}
+.findings h4{font-family:var(--display); font-weight:500; font-size:var(--t-1); letter-spacing:-0.022em; margin:0 0 var(--s2); line-height:1.1}
+.findings p{color:var(--on-bone-dim); font-size:var(--t--1); line-height:1.6; margin:0}
+.findings .num{font-family:var(--mono); color:var(--risk)}
+.res__acts{display:flex; flex-wrap:wrap; gap:var(--s4); margin-top:var(--s8); padding-top:var(--s6); border-top:1px solid var(--bone-line)}
+
+/* ---------- Offer --------------------------------------------------------- */
+.ladder{display:grid; gap:var(--s6); margin-top:var(--s9); padding:0; list-style:none}
+@media (min-width:56rem){.ladder{grid-template-columns:repeat(2,minmax(0,1fr)); gap:var(--s7) var(--s8)}}
+.rung{border-top:1px solid var(--ink-line); padding-top:var(--s5); min-width:0}
+.rung--now{border-top-color:var(--amber)}
+.rung__top{display:flex; align-items:baseline; justify-content:space-between; gap:var(--s4); margin-bottom:var(--s3)}
+.rung__price{font-family:var(--mono); font-size:var(--t--1); color:var(--amber); white-space:nowrap}
+.rung h3{margin-bottom:var(--s3)}
+.rung p{color:var(--on-ink-dim); font-size:var(--t--1); line-height:1.6}
+.rung__when{display:block; margin-top:var(--s3); font-family:var(--mono); font-size:0.6875rem; letter-spacing:0.1em; text-transform:uppercase; color:var(--on-ink-mute)}
+.offer{border:1px solid var(--ink-line); padding:clamp(24px,4vw,56px); margin-top:var(--s9)}
+.offer__grid{display:grid; gap:var(--s7)}
+@media (min-width:56rem){.offer__grid{grid-template-columns:minmax(0,1fr) minmax(0,20rem); gap:var(--s9); align-items:start}}
+.offer__grid > *{min-width:0}
+.offer ul{margin:var(--s5) 0 0; padding:0; list-style:none; display:grid; gap:var(--s3)}
+.offer ul li{padding-left:var(--s5); position:relative; color:var(--on-ink-dim); font-size:var(--t--1); line-height:1.6}
+.offer ul li::before{content:''; position:absolute; left:0; top:0.62em; width:8px; height:1px; background:var(--amber)}
+.form{display:grid; gap:var(--s4)}
+.form input[type=email]{background:oklch(1 0 0 / 0.05); border-color:var(--ink-line); color:var(--on-ink)}
+.form input[type=email]::placeholder{color:var(--on-ink-mute)}
+.form__msg{font-size:var(--t--1); line-height:1.6; color:var(--on-ink-dim)}
+.form__msg.is-err{color:oklch(0.72 0.14 27)}
+.terms{margin-top:var(--s7); padding-top:var(--s5); border-top:1px solid var(--ink-line); color:var(--on-ink-mute); font-size:var(--t--1); line-height:1.65; max-inline-size:64ch}
+
+/* ---------- Receipts ------------------------------------------------------ */
+.src{display:grid; gap:var(--s5); margin-top:var(--s8); padding:0; list-style:none}
+.src li{border-top:1px solid var(--bone-line); padding-top:var(--s4); display:grid; gap:var(--s2)}
+.src a{font-family:var(--body); font-weight:500; text-decoration:none; box-shadow:inset 0 -1px 0 0 var(--bone-line); word-break:break-word}
+.src a:hover{color:var(--amber-deep); box-shadow:inset 0 -1px 0 0 var(--amber-deep)}
+.src span{color:var(--on-bone-dim); font-size:var(--t--1); line-height:1.6}
+.faq{margin-top:var(--s9)}
+.faq details{border-top:1px solid var(--bone-line); padding-block:var(--s4)}
+.faq summary{font-family:var(--display); font-weight:500; font-size:var(--t-1); letter-spacing:-0.022em; cursor:pointer; list-style:none; min-height:44px; display:flex; align-items:center; gap:var(--s4)}
+.faq summary::-webkit-details-marker{display:none}
+.faq summary::after{content:'+'; margin-left:auto; font-family:var(--mono); color:var(--amber-deep)}
+.faq details[open] summary::after{content:'\2212'}
+.faq p a{display:inline-block; padding-block:5px; text-decoration:none; box-shadow:inset 0 -1px 0 0 var(--amber-deep)}
+.faq p{color:var(--on-bone-dim); font-size:var(--t--1); line-height:1.65; margin-top:var(--s4); max-inline-size:62ch}
+
+/* ---------- Foot ---------------------------------------------------------- */
+.foot{padding-block:var(--s9) var(--s8)}
+.foot__grid{display:flex; flex-wrap:wrap; gap:var(--s5) var(--s8); justify-content:space-between; align-items:flex-end}
+.foot__note{color:var(--on-ink-mute); font-size:var(--t--1); max-inline-size:52ch; line-height:1.6}
+.links{display:flex; flex-wrap:wrap; gap:var(--s3) var(--s6)}
+.link{text-decoration:none; box-shadow:inset 0 -1px 0 0 var(--ink-line); font-size:var(--t--1); min-height:44px; display:inline-flex; align-items:center}
+.link:hover{color:var(--amber); box-shadow:inset 0 -1px 0 0 var(--amber)}
+
+.nojs{border-left:2px solid var(--amber-deep); padding-left:var(--s5); color:var(--on-bone-dim); font-size:var(--t--1); line-height:1.6}
+.visually-hidden,
+input.visually-hidden,
+select.visually-hidden{position:absolute; width:1px; min-height:0; height:1px; padding:0; margin:-1px; overflow:hidden; clip:rect(0 0 0 0); white-space:nowrap; border:0}
+
+@media (prefers-reduced-motion: reduce){
+  *,*::before,*::after{animation-duration:0.001ms !important; transition-duration:0.001ms !important}
+  html:focus-within{scroll-behavior:auto}
+}
+@media print{
+  body{background:#fff; color:#000}
+  .mast,.hero,.drop,.panel--map,.act:not(#result-act),.foot,.res__acts{display:none !important}
+  .act--bone{background:#fff}
+  .verdict__n{color:#000 !important}
+}
+</style>
+</head>
+<body>
+
+<header class="mast">
+  <div class="wrap mast__row">
+    <a class="mast__who" href="/"><b>Aaron Steele</b> &nbsp;/&nbsp; back to the portfolio</a>
+    <a href="#receipts">Where these numbers come from</a>
+  </div>
+</header>
+
+<main>
+
+<!-- ============================ HERO ==================================== -->
+<section class="act hero">
+  <div class="wrap">
+    <div class="hero__grid">
+      <div>
+        <p class="tag">Free tool &nbsp;&middot;&nbsp; Australian NDIS providers</p>
+        <h1>On 1 December, two years becomes <em>ninety days</em>.</h1>
+        <p class="lede">
+          A support delivered from that date has to be claimed within 90 days of delivery,
+          down from two years. <b>Most providers cannot say what their own claim lag is.</b>
+          Put your claims export in below and this page works out, from your own numbers,
+          what that rule would have cost you over the period in your file.
+        </p>
+        <div class="hero__foot">
+          <a class="btn" href="#check">Check my claims <span class="btn__arrow" aria-hidden="true">&rarr;</span></a>
+          <a class="btn btn--ghost" href="#receipts">Read the legislation first</a>
+        </div>
+        <ul class="assure">
+          <li>Runs in your browser</li>
+          <li>Nothing is uploaded</li>
+          <li>No signup</li>
+          <li>Participant numbers masked</li>
+        </ul>
+      </div>
+
+      <aside class="clock">
+        <span class="clock__n" id="clock-n" data-target="2026-12-01">&mdash;</span>
+        <span class="clock__k">
+          days until <b>1 December 2026</b>, when the claiming window for supports
+          delivered on or after that date drops from two years to 90 days.
+          Supports delivered before it keep the old window.
+        </span>
+      </aside>
+    </div>
+  </div>
+</section>
+
+<!-- ============================ THE TOOL ================================ -->
+<section class="act act--bone" id="check">
+  <div class="wrap">
+
+    <div class="tool__head">
+      <p class="tag">The check</p>
+      <h2>Your file, your arithmetic.</h2>
+      <p class="lede">
+        Export your claims or payment requests from whatever you already use, as CSV.
+        Any layout will do, you tell the page which column is which.
+        The file is read by your own browser and never sent anywhere, which you can
+        confirm by opening your network tab, or by turning the internet off before you
+        drop it in. The page will keep working.
+      </p>
+    </div>
+
+    <noscript>
+      <p class="nojs">
+        This tool is JavaScript, and JavaScript is switched off, so there is nothing here
+        to use. That is the honest version rather than a dropzone that quietly does
+        nothing. Everything the tool would compute is arithmetic on your own file:
+        the gap in days between when a support was delivered and when it was claimed,
+        counted and totalled.
+      </p>
+    </noscript>
+
+    <div id="tool" hidden>
+
+      <div class="drop" id="drop">
+        <h3>Drop a CSV here</h3>
+        <p>
+          A claims export, a payment request file, a service delivery report. If it has a
+          date of support and an amount in it, it will work.
+        </p>
+        <div class="drop__acts">
+          <button class="btn" type="button" id="pick">Choose a file</button>
+          <button class="btn btn--ghost" type="button" id="demo">Use a made up example</button>
+        </div>
+        <input type="file" id="file" accept=".csv,.txt,text/csv,text/plain" class="visually-hidden">
+        <p class="small" style="margin-top:var(--s5)">
+          Up to 50&nbsp;MB. The example is invented data, not anybody's real claims.
+        </p>
+      </div>
+
+      <div class="panel panel--map" id="map-panel" hidden>
+        <h3>Tell it which column is which</h3>
+        <p class="small" id="map-summary"></p>
+
+        <div class="map" id="map" style="margin-top:var(--s6)">
+          <div>
+            <label for="c-service">Date the support was delivered <b>required</b></label>
+            <select id="c-service"></select>
+            <span class="map__hint">In a bulk payment request file this is <code>SupportsDeliveredFrom</code>.</span>
+          </div>
+          <div>
+            <label for="c-claim">Date it was claimed or submitted</label>
+            <select id="c-claim"></select>
+            <span class="map__hint">Without this the page can only measure what is still sitting unclaimed today.</span>
+          </div>
+          <div>
+            <label for="c-amount">Amount <b>required</b></label>
+            <select id="c-amount"></select>
+            <span class="map__hint">Or choose <em>calculate it</em> and give the price and quantity columns instead.</span>
+          </div>
+          <div id="calc-price" hidden>
+            <label for="c-price">Unit price</label>
+            <select id="c-price"></select>
+          </div>
+          <div id="calc-qty" hidden>
+            <label for="c-qty">Hours or quantity</label>
+            <select id="c-qty"></select>
+            <span class="map__hint">Handles <code>7:30</code> as seven and a half hours.</span>
+          </div>
+          <div>
+            <label for="c-status">Status or outcome</label>
+            <select id="c-status"></select>
+            <span class="map__hint">Lets the page separate paid from rejected.</span>
+          </div>
+          <div>
+            <label for="c-reason">Rejection reason or error code</label>
+            <select id="c-reason"></select>
+            <span class="map__hint">Matched against the published portal codes where it can.</span>
+          </div>
+          <div>
+            <label for="c-participant">Participant NDIS number</label>
+            <select id="c-participant"></select>
+            <span class="map__hint">Used to find duplicates. Masked everywhere it appears on screen.</span>
+          </div>
+          <div>
+            <label for="c-item">Support item number</label>
+            <select id="c-item"></select>
+          </div>
+        </div>
+
+        <div class="map__foot">
+          <fieldset>
+            <legend class="visually-hidden">How to read dates</legend>
+            <div class="radios">
+              <label><input type="radio" name="datefmt" value="auto" checked> Detect date order</label>
+              <label><input type="radio" name="datefmt" value="dmy"> Day first</label>
+              <label><input type="radio" name="datefmt" value="mdy"> Month first</label>
+            </div>
+          </fieldset>
+          <button class="btn" type="button" id="run">Work it out <span class="btn__arrow" aria-hidden="true">&rarr;</span></button>
+        </div>
+        <p class="err" id="map-err" hidden style="margin-top:var(--s5)"></p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============================ RESULT =================================== -->
+<section class="act act--bone" id="result-act" hidden style="padding-top:0">
+  <div class="wrap">
+    <hr class="rule">
+    <div class="verdict">
+      <p class="tag" id="v-tag">Your result</p>
+      <p class="verdict__n" id="v-number">&mdash;</p>
+      <p class="verdict__k" id="v-caption"></p>
+    </div>
+
+    <div class="figures" id="v-figures"></div>
+
+    <div class="panel" id="p-lag" hidden>
+      <h3>How long you take to claim</h3>
+      <p class="small">Days between the support being delivered and the claim being made, by value.</p>
+      <div class="bars" id="lag-bars"></div>
+      <p class="small" id="lag-note" style="margin-top:var(--s5)"></p>
+    </div>
+
+    <div class="panel" id="p-backlog" hidden>
+      <h3>Sitting unclaimed right now</h3>
+      <p class="small">Rows with no claim date, aged from the day the support was delivered.</p>
+      <div class="bars" id="backlog-bars"></div>
+    </div>
+
+    <div class="panel" id="p-reject" hidden>
+      <h3>What the portal knocked back</h3>
+      <div class="tbl-scroll">
+        <table id="reject-tbl">
+          <thead><tr><th>Code or reason</th><th>What it means</th><th>Lines</th><th>Value</th></tr></thead>
+          <tbody></tbody>
+        </table>
+      </div>
+      <p class="small" id="reject-note" style="margin-top:var(--s5)"></p>
+    </div>
+
+    <div class="panel" id="p-flags" hidden>
+      <h3>Things this file would trip on</h3>
+      <p class="small">
+        Checked against the portal's published upload and rejection rules. Each one is a
+        row that would come back, or a row that has already come back and nobody noticed.
+      </p>
+      <ul class="findings" id="flags"></ul>
+    </div>
+
+    <div class="res__acts">
+      <button class="btn btn--ghost" type="button" id="print">Save this as a PDF</button>
+      <button class="btn btn--ghost" type="button" id="copy">Copy the summary</button>
+      <a class="btn" href="#next">What to do about it <span class="btn__arrow" aria-hidden="true">&rarr;</span></a>
+    </div>
+    <p class="small" style="margin-top:var(--s5)">
+      Nothing about this result has been recorded. Reload the page and it is gone.
+    </p>
+  </div>
+</section>
+
+<!-- ============================ NEXT ===================================== -->
+<section class="act" id="next">
+  <div class="wrap">
+    <p class="tag">What happens after the number</p>
+    <h2>Knowing the gap is not the same as closing it.</h2>
+    <p class="lede" style="margin-top:var(--s6)">
+      The check above tells you the size of the problem. It does not tell you which of the
+      portal's rejection codes you are actually hitting, which of them are worth fixing
+      first, or how to get the claim out the door inside 90 days every time without
+      hiring somebody. That is the rest of this, and here is exactly what it is and
+      what it costs, including the parts that do not exist yet.
+    </p>
+
+    <ul class="ladder">
+      <li class="rung rung--now">
+        <div class="rung__top"><p class="tag">Step one</p><span class="rung__price">Free, now</span></div>
+        <h3>The 90 Day Cliff Check</h3>
+        <p>
+          The tool at the top of this page. Your claim lag, your exposure under the new
+          window, your unclaimed backlog, and the rows in your own file that would be
+          knocked back on upload.
+        </p>
+        <span class="rung__when">Live. You have just used it.</span>
+      </li>
+
+      <li class="rung">
+        <div class="rung__top"><p class="tag">Step two</p><span class="rung__price">$79</span></div>
+        <h3>The Rejection Code Playbook</h3>
+        <p>
+          Every published payment rejection code and upload error, in plain English: what
+          actually causes it, what to change, whether the line can be resubmitted or is
+          gone, and which ones are the funding period biting rather than your paperwork.
+          Written to be read by the person who submits the claims, not by a consultant.
+        </p>
+        <span class="rung__when">Not written yet &middot; 30 September 2026</span>
+      </li>
+
+      <li class="rung">
+        <div class="rung__top"><p class="tag">Step three</p><span class="rung__price">$349</span></div>
+        <h3>The Claim Integrity Toolkit</h3>
+        <p>
+          The working parts. A pre submission validator you run over the file before it
+          goes to the portal, a reconciliation workbook that matches what you delivered
+          against what you were actually paid, and the written procedure for a claim run
+          that lands inside 90 days every time.
+        </p>
+        <span class="rung__when">Not built yet &middot; after step two sells</span>
+      </li>
+
+      <li class="rung">
+        <div class="rung__top"><p class="tag">Step four</p><span class="rung__price">$1,200 a seat</span></div>
+        <h3>The Changeover Workshop</h3>
+        <p>
+          Half a day, live, six providers at a time, before 1 December. You bring your own
+          export and leave with your own numbers fixed, your claim run rewritten, and the
+          validator running against your data rather than an example.
+        </p>
+        <span class="rung__when">Not scheduled yet &middot; November 2026</span>
+      </li>
+    </ul>
+
+    <div class="offer">
+      <div class="offer__grid">
+        <div>
+          <p class="tag">Step two</p>
+          <h3 style="font-size:var(--t-2); margin-block:var(--s4) var(--s5)">Tell me where to send the playbook</h3>
+          <p style="color:var(--on-ink-dim)">
+            One email when it is finished, on or before <b style="color:var(--on-ink);font-weight:600">30 September
+            2026</b>, at <b style="color:var(--on-ink);font-weight:600">$79</b>. I am not taking your money today,
+            because it is not written yet and I am not going to sell you a date.
+            If it slips, you will get an email saying it slipped.
+          </p>
+          <ul>
+            <li>Every payment rejection code and upload error the portal publishes, with the fix</li>
+            <li>Which rejections can be resubmitted, and which are money you have already lost</li>
+            <li>The funding period trap, which looks like a budget problem and is not</li>
+            <li>A claim run that finishes inside 90 days without another staff member</li>
+            <li>What to do about the claiming rules the 2026-27 schedule has not republished yet</li>
+          </ul>
+        </div>
+
+        <form class="form" id="signup" data-endpoint="" novalidate>
+          <label class="visually-hidden" for="email">Your email address</label>
+          <input type="email" id="email" name="email" placeholder="you@yourprovider.com.au" autocomplete="email" required>
+          <input type="text" name="company" tabindex="-1" autocomplete="off" class="visually-hidden" aria-hidden="true">
+          <button class="btn" type="submit" id="signup-btn">Email me when it is done</button>
+          <p class="form__msg" id="form-msg">
+            One email about the playbook, and nothing else unless you ask. No list, no
+            partners, unsubscribe by replying with the word no.
+          </p>
+        </form>
+      </div>
+
+      <p class="terms">
+        Plain terms, because the page above is about people getting paid properly and it
+        would be poor form to be vague here. The tool is free and always will be. The
+        playbook is $79 and does not exist yet; the date on it is 30 September 2026 and
+        it is a genuine intention rather than a promise, which is why nobody is being
+        charged for it in advance. Your email is used to tell you it is ready and for
+        nothing else. This page is not legal, financial or compliance advice, and it is
+        not affiliated with or endorsed by the NDIA. Every rule it relies on is linked
+        below so you can check it against the source rather than against me.
+      </p>
+    </div>
+  </div>
+</section>
+
+<!-- ============================ RECEIPTS ================================= -->
+<section class="act act--bone" id="receipts">
+  <div class="wrap wrap--tight">
+    <p class="tag">Receipts</p>
+    <h2>Where every number on this page comes from.</h2>
+    <p class="lede" style="margin-top:var(--s6)">
+      Nothing here is a statistic I found in somebody's marketing. The only figures this
+      page produces are the ones your own file produces. The rules it measures you
+      against are these, and they are all somebody else's documents.
+    </p>
+
+    <ul class="src">
+      <li>
+        <a href="https://www.ndis.gov.au/ndis-laws/securing-ndis-future-generations" rel="noopener">
+          NDIS, Securing the NDIS for future generations</a>
+        <span>
+          The reform package containing the change to the claiming window. The
+          Amendment Bill passed Parliament on 19 August 2026. Check this page for its
+          current status before you rely on the date.
+        </span>
+      </li>
+      <li>
+        <a href="https://www.health.gov.au/our-work/ndis-legislation-changes/amendments/ndis-amendment-securing-the-ndis-for-future-generations-bill-2026/about-the-changes-to-the-ndis" rel="noopener">
+          Department of Health, Disability and Ageing, About the changes to the NDIS</a>
+        <span>
+          The Commonwealth explanation of what changes and when, including the reduction
+          of the claiming period from two years to 90 days from 1 December 2026.
+        </span>
+      </li>
+      <li>
+        <a href="https://www.ndis.gov.au/news/11576-changes-payments-and-claims-1-july-2026" rel="noopener">
+          NDIS, Changes to payments and claims from 1 July 2026</a>
+        <span>
+          The changes already in force this financial year, which is the ground the
+          December change lands on.
+        </span>
+      </li>
+      <li>
+        <a href="https://www.ndis.gov.au/providers/working-provider/getting-paid/claims-and-payments-troubleshooting" rel="noopener">
+          NDIS, Claims and payments troubleshooting</a>
+        <span>
+          The official list of what goes wrong with a payment request and what the portal
+          says when it does.
+        </span>
+      </li>
+      <li>
+        <a href="https://www.ndis.gov.au/media/2707/download?attachment=" rel="noopener">
+          NDIS, Bulk Payment Request template</a>
+        <span>
+          The sixteen column CSV the portal accepts. It is the format the tool above
+          recognises without being told anything, and the one the upload checks are
+          written against.
+        </span>
+      </li>
+    </ul>
+
+    <div class="faq">
+      <p class="tag" style="margin-bottom:var(--s6)">Reasonable questions</p>
+
+      <details>
+        <summary>Does my participant data leave my computer?</summary>
+        <p>
+          No. The file is read by your browser with the file reader built into it, and the
+          arithmetic happens on your own machine. There is no server behind this page to
+          send anything to. You do not have to take that on faith: open your browser's
+          network tab and drop the file in, or disconnect from the internet first. The
+          tool will still work, which is the proof. Participant numbers are masked on
+          screen even locally, because there is no reason for them to be readable over
+          your shoulder.
+        </p>
+      </details>
+
+      <details>
+        <summary>My export does not look like the portal's file.</summary>
+        <p>
+          That is expected, every system exports something different. The page reads the
+          header row and asks you which column is which. As long as there is a date the
+          support was delivered and an amount, it can do the main calculation, and every
+          other column you can point it at adds another check.
+        </p>
+      </details>
+
+      <details>
+        <summary>Is 1 December 2026 certain?</summary>
+        <p>
+          The Amendment Bill passed Parliament on 19 August 2026 and 1 December 2026 is
+          the date published for the claiming change. Commencement dates can move, so the
+          two government links above are on this page rather than being summarised by me,
+          and you should click them. What is not in question either way is the direction:
+          the window is being shortened, and knowing your own claim lag is useful whatever
+          date it starts.
+        </p>
+      </details>
+
+      <details>
+        <summary>Why is this free?</summary>
+        <p>
+          Because it is the cheapest honest way for me to find out whether the $79
+          playbook is worth writing. If enough people use this and ask for the next thing,
+          I write it. If they do not, I have not wasted your money and you still have a
+          number you did not have this morning.
+        </p>
+      </details>
+
+      <details>
+        <summary>Who are you?</summary>
+        <p>
+          Aaron Steele, a business analyst in South Australia who also builds the systems.
+          A decade of it in mining, policing, federal service delivery and local
+          government, including designing how a national scheme decided who qualified for
+          it. The rest of that, and two other tools you can go and use, are on
+          <a href="/">the portfolio</a>.
+        </p>
+      </details>
+    </div>
+  </div>
+</section>
+
+</main>
+
+<footer class="act foot">
+  <div class="wrap">
+    <div class="foot__grid">
+      <p class="foot__note">
+        Built by Aaron Steele. Not affiliated with or endorsed by the NDIA. The rules this
+        page checks against are linked above, and if you find one of them out of date,
+        tell me and I will fix it the same week.
+      </p>
+      <div class="links">
+        <a class="link" href="/">The portfolio</a>
+        <a class="link" href="https://github.com/Aa-ronJS" rel="noopener">GitHub</a>
+        <a class="link" href="#check">Run the check</a>
+      </div>
+    </div>
+  </div>
+</footer>
+
+<!-- ANALYTICS: nothing is loaded. If you add a tag here, add a consent notice with it.
+     The tool fires window.dataLayer events already, so a container will see:
+       ndis_file_loaded, ndis_result_shown, ndis_signup  (see the script below). -->
+
+<script>
+(function () {
+  'use strict';
+
+  var $ = function (id) { return document.getElementById(id); };
+  var DAY = 86400000;
+  var CLIFF = '1 December 2026';
+
+  var money0 = new Intl.NumberFormat('en-AU', { style: 'currency', currency: 'AUD', maximumFractionDigits: 0 });
+  var money2 = new Intl.NumberFormat('en-AU', { style: 'currency', currency: 'AUD', minimumFractionDigits: 2, maximumFractionDigits: 2 });
+  var num = new Intl.NumberFormat('en-AU');
+  function fmtMoney(v) { return Math.abs(v) >= 1000 ? money0.format(v) : money2.format(v); }
+  function plural(n, one, many) { return num.format(n) + ' ' + (n === 1 ? one : many); }
+  function pct(a, b) { return b > 0 ? Math.round((a / b) * 1000) / 10 : 0; }
+  function push(ev, data) {
+    window.dataLayer = window.dataLayer || [];
+    var o = { event: ev }; for (var k in data) { if (data.hasOwnProperty(k)) o[k] = data[k]; }
+    window.dataLayer.push(o);
+  }
+
+  /* ---- The published portal codes ------------------------------------------
+     Payment rejection codes and their meaning, from the NDIS claims and payments
+     troubleshooting material. Kept as data so the table is checkable rather than
+     buried in prose. Anything the file contains that is not in here is still
+     counted and shown, just without a translation. */
+  var CODES = {
+    V31: 'The unit price claimed is above the NDIS price limit.',
+    P01: 'The amount is more than the service booking allows.',
+    P03: 'The amount is more than the participant budget.',
+    V27: 'No funds left in the funding period for that support. The plan may still have money in a later period.',
+    V17: 'Not enough funds in the plan budget for the support claimed.',
+    P04: 'A payment request with the same details already exists.',
+    P05: 'Too many claims against the one claim reference number.',
+    C28: 'The claim falls outside the plan dates.',
+    C09: 'Outside the 90 day window from the end of the service booking.',
+    C15: 'Provider is not registered for this support item, or not for those dates.',
+    V11: 'You are not on the participant’s my providers list for that support category or period.',
+    V14: 'Not recorded as the Support Coordinator or Recovery Coach for the period.',
+    V15: 'Not recorded as the Plan Manager for the period.',
+    V16: 'The item has no funding in the plan for the date the support was delivered.',
+    C25: 'No fund management agreement exists for this participant.',
+    C22: 'No plan covers the dates claimed.',
+    C07: 'The participant is not in the selected service booking.',
+    C14: 'No active bank account recorded against the organisation.',
+    V04: 'Identified as a duplicate of a support already claimed.',
+    V19: 'The participant disputed receiving the support.',
+    C33: 'Missing or invalid provider ABN, or exemption reason.',
+    S01: 'No plan matches the NDIS number given.',
+    C02: 'The service booking is still awaiting approval.'
+  };
+
+  /* ---- Countdown ---------------------------------------------------------- */
+  (function () {
+    var el = $('clock-n'); if (!el) return;
+    var t = Date.parse(el.getAttribute('data-target') + 'T00:00:00+11:00');
+    var days = Math.ceil((t - Date.now()) / DAY);
+    el.textContent = days > 0 ? num.format(days) : '0';
+    if (days <= 0) {
+      el.nextElementSibling.innerHTML = 'The 90 day claiming window for supports delivered on or after <b>1 December 2026</b> has started. Supports delivered before it keep the old window.';
+    }
+  })();
+
+  /* ---- CSV ---------------------------------------------------------------- */
+  function parseCSV(text) {
+    if (text.charCodeAt(0) === 0xFEFF) text = text.slice(1);
+    var delim = (function () {
+      var head = text.slice(0, 4000).split(/\r?\n/)[0] || '';
+      var counts = [[',', 0], [';', 0], ['\t', 0], ['|', 0]];
+      var inQ = false;
+      for (var i = 0; i < head.length; i++) {
+        var c = head[i];
+        if (c === '"') inQ = !inQ;
+        else if (!inQ) for (var j = 0; j < counts.length; j++) if (c === counts[j][0]) counts[j][1]++;
+      }
+      counts.sort(function (a, b) { return b[1] - a[1]; });
+      return counts[0][1] > 0 ? counts[0][0] : ',';
+    })();
+
+    var rows = [], row = [], field = '', inQ = false, i = 0;
+    while (i < text.length) {
+      var c = text[i];
+      if (inQ) {
+        if (c === '"') { if (text[i + 1] === '"') { field += '"'; i += 2; continue; } inQ = false; i++; continue; }
+        field += c; i++; continue;
+      }
+      if (c === '"') { inQ = true; i++; continue; }
+      if (c === delim) { row.push(field); field = ''; i++; continue; }
+      if (c === '\n' || c === '\r') {
+        if (c === '\r' && text[i + 1] === '\n') i++;
+        row.push(field); field = '';
+        if (row.length > 1 || row[0] !== '') rows.push(row);
+        row = []; i++; continue;
+      }
+      field += c; i++;
+    }
+    row.push(field);
+    if (row.length > 1 || row[0] !== '') rows.push(row);
+    return rows;
+  }
+
+  /* ---- Values ------------------------------------------------------------- */
+  function parseAmount(s) {
+    if (s == null) return null;
+    s = String(s).trim();
+    if (!s) return null;
+    var neg = /^\(.*\)$/.test(s);
+    s = s.replace(/[()]/g, '').replace(/[^0-9.\-]/g, '');
+    if (!s || s === '-' || s === '.') return null;
+    var v = parseFloat(s);
+    if (!isFinite(v)) return null;
+    return neg ? -v : v;
+  }
+
+  function parseQty(s) {
+    if (s == null) return null;
+    s = String(s).trim();
+    if (!s) return null;
+    var hhmm = s.match(/^(\d{1,3}):([0-5]\d)$/);
+    if (hhmm) return parseInt(hhmm[1], 10) + parseInt(hhmm[2], 10) / 60;
+    return parseAmount(s);
+  }
+
+  var MONTHS = { jan: 1, feb: 2, mar: 3, apr: 4, may: 5, jun: 6, jul: 7, aug: 8, sep: 9, oct: 10, nov: 11, dec: 12 };
+
+  function dateParts(s) {
+    if (s == null) return null;
+    s = String(s).trim();
+    if (!s) return null;
+    var m = s.match(/^(\d{4})[-\/.](\d{1,2})[-\/.](\d{1,2})/);
+    if (m) return { y: +m[1], a: +m[2], b: +m[3], iso: true };
+    m = s.match(/^(\d{1,2})[-\/.](\d{1,2})[-\/.](\d{2,4})/);
+    if (m) { var y = +m[3]; if (y < 100) y += y < 70 ? 2000 : 1900; return { y: y, a: +m[1], b: +m[2], iso: false }; }
+    m = s.match(/^(\d{1,2})[\s-]([A-Za-z]{3,})[\s-](\d{2,4})/);
+    if (m && MONTHS[m[2].slice(0, 3).toLowerCase()]) {
+      var yy = +m[3]; if (yy < 100) yy += 2000;
+      return { y: yy, a: MONTHS[m[2].slice(0, 3).toLowerCase()], b: +m[1], iso: true };
+    }
+    m = s.match(/^([A-Za-z]{3,})[\s-](\d{1,2}),?[\s-](\d{2,4})/);
+    if (m && MONTHS[m[1].slice(0, 3).toLowerCase()]) {
+      var y3 = +m[3]; if (y3 < 100) y3 += 2000;
+      return { y: y3, a: MONTHS[m[1].slice(0, 3).toLowerCase()], b: +m[2], iso: true };
+    }
+    return null;
+  }
+
+  function toDate(s, dayFirst) {
+    var p = dateParts(s);
+    if (!p) return null;
+    var mo, d;
+    if (p.iso) { mo = p.a; d = p.b; }
+    else if (dayFirst) { d = p.a; mo = p.b; }
+    else { mo = p.a; d = p.b; }
+    if (mo < 1 || mo > 12 || d < 1 || d > 31) return null;
+    var t = Date.UTC(p.y, mo - 1, d);
+    return isFinite(t) ? t : null;
+  }
+
+  function detectDayFirst(values) {
+    var aOver = 0, bOver = 0, ambiguous = 0, iso = 0;
+    for (var i = 0; i < values.length; i++) {
+      var p = dateParts(values[i]);
+      if (!p) continue;
+      if (p.iso) { iso++; continue; }
+      ambiguous++;
+      if (p.a > 12) aOver++;
+      if (p.b > 12) bOver++;
+    }
+    // A file of YYYY-MM-DD dates has no order to guess at, which is a different
+    // thing from having guessed and got lucky. Say which one happened.
+    if (!ambiguous && iso) return { dayFirst: true, certain: true, allIso: true };
+    if (aOver && !bOver) return { dayFirst: true, certain: true, allIso: false };
+    if (bOver && !aOver) return { dayFirst: false, certain: true, allIso: false };
+    return { dayFirst: true, certain: false, allIso: false };
+  }
+
+  function maskId(s) {
+    s = String(s || '').replace(/\s/g, '');
+    if (s.length <= 4) return '•'.repeat(s.length);
+    return s.slice(0, 2) + '•'.repeat(Math.max(3, s.length - 4)) + s.slice(-2);
+  }
+
+  /* ---- Header guessing ---------------------------------------------------- */
+  var GUESS = {
+    service:     [/supportsdeliveredfrom/, /^service ?date/, /date of (service|support)/, /support ?date/, /delivered ?(from|on|date)/, /session ?date/, /^start ?date/, /^date$/, /shift ?date/],
+    claim:       [/claim(ed)? ?date/, /date ?claimed/, /submitted/, /submission ?date/, /payment ?request ?date/, /processed/, /invoice ?date/, /^created/, /sent ?date/, /lodged/],
+    amount:      [/^total$/, /total ?(amount|claimed|inc|ex)/, /^amount/, /amount ?(claimed|billed|inc|ex)/, /^value$/, /line ?total/, /invoice ?amount/, /claimed ?amount/],
+    price:       [/unit ?price/, /^price$/, /rate/, /hourly/],
+    qty:         [/^hours?$/, /^quantity$/, /^qty$/, /units?/, /duration/],
+    status:      [/^status/, /outcome/, /claim ?status/, /payment ?status/, /^state$/, /result/],
+    reason:      [/reason/, /error/, /reject/, /decline/, /message/, /^code$/, /error ?code/],
+    participant: [/ndis ?number/, /ndisnumber/, /participant ?(number|id|no)/, /^ndis ?id/, /client ?(number|id)/, /^participant$/, /^client$/, /^ndis$/],
+    item:        [/supportnumber/, /support ?item/, /item ?(number|code)/, /^item$/, /line ?item/]
+  };
+
+  function guess(headers, key) {
+    var pats = GUESS[key];
+    for (var p = 0; p < pats.length; p++) {
+      for (var h = 0; h < headers.length; h++) {
+        var norm = String(headers[h]).toLowerCase().replace(/[_\-]+/g, ' ').replace(/\s+/g, ' ').trim();
+        if (pats[p].test(norm) || pats[p].test(norm.replace(/\s/g, ''))) return h;
+      }
+    }
+    return -1;
+  }
+
+  /* ---- State -------------------------------------------------------------- */
+  var DATA = null;
+
+  var SELECTS = {
+    service: 'c-service', claim: 'c-claim', amount: 'c-amount', price: 'c-price',
+    qty: 'c-qty', status: 'c-status', reason: 'c-reason', participant: 'c-participant', item: 'c-item'
+  };
+
+  function fillSelects(headers) {
+    Object.keys(SELECTS).forEach(function (key) {
+      var sel = $(SELECTS[key]);
+      sel.innerHTML = '';
+      var none = document.createElement('option');
+      none.value = '-1';
+      none.textContent = (key === 'service' || key === 'amount') ? 'Choose a column' : 'Not in my file';
+      sel.appendChild(none);
+      if (key === 'amount') {
+        var calc = document.createElement('option');
+        calc.value = 'calc';
+        calc.textContent = 'Calculate it from price and quantity';
+        sel.appendChild(calc);
+      }
+      headers.forEach(function (h, i) {
+        var o = document.createElement('option');
+        o.value = String(i);
+        o.textContent = h === '' ? '(column ' + (i + 1) + ', no name)' : h;
+        sel.appendChild(o);
+      });
+      var g = guess(headers, key);
+      sel.value = g >= 0 ? String(g) : '-1';
+    });
+
+    // A bulk payment request file has price and quantity but no total. Say so.
+    if ($(SELECTS.amount).value === '-1' && guess(headers, 'price') >= 0 && guess(headers, 'qty') >= 0) {
+      $(SELECTS.amount).value = 'calc';
+    }
+    toggleCalc();
+  }
+
+  function toggleCalc() {
+    var on = $(SELECTS.amount).value === 'calc';
+    $('calc-price').hidden = !on;
+    $('calc-qty').hidden = !on;
+  }
+
+  /* ---- Load --------------------------------------------------------------- */
+  function loadText(text, label) {
+    var rows = parseCSV(text);
+    if (rows.length < 2) return fail('That file has a header row and nothing under it, or it is not a CSV.');
+    var headers = rows[0].map(function (h) { return String(h).trim(); });
+    var body = rows.slice(1).filter(function (r) { return r.some(function (c) { return String(c).trim() !== ''; }); });
+    if (!body.length) return fail('The file has column names but no rows of data.');
+
+    DATA = { headers: headers, rows: body, label: label };
+    fillSelects(headers);
+    $('map-summary').textContent = label + ', ' + num.format(body.length) + ' rows, ' + headers.length + ' columns. Nothing has been sent anywhere.';
+    $('map-panel').hidden = false;
+    $('map-err').hidden = true;
+    $('result-act').hidden = true;
+    $('map-panel').scrollIntoView({ behavior: 'smooth', block: 'start' });
+    push('ndis_file_loaded', { rows: body.length, columns: headers.length });
+  }
+
+  function fail(msg) {
+    DATA = null;
+    $('map-panel').hidden = true;
+    var e = $('map-err');
+    e.textContent = msg;
+    e.hidden = false;
+    $('drop').appendChild(e);
+    return null;
+  }
+
+  function readFile(f) {
+    if (!f) return;
+    if (f.size > 50 * 1024 * 1024) return fail('That file is over 50 MB. Export a narrower date range and try again.');
+    var fr = new FileReader();
+    fr.onerror = function () { fail('Your browser could not read that file.'); };
+    fr.onload = function () { loadText(String(fr.result), f.name); };
+    fr.readAsText(f);
+  }
+
+  /* ---- Analysis ----------------------------------------------------------- */
+  var LAG_BUCKETS = [
+    { k: '0 to 14 days', lo: -1e9, hi: 14, risk: false },
+    { k: '15 to 30 days', lo: 15, hi: 30, risk: false },
+    { k: '31 to 60 days', lo: 31, hi: 60, risk: false },
+    { k: '61 to 90 days', lo: 61, hi: 90, risk: false },
+    { k: '91 to 180 days', lo: 91, hi: 180, risk: true },
+    { k: 'Over 180 days', lo: 181, hi: 1e9, risk: true }
+  ];
+
+  function quantile(sorted, q) {
+    if (!sorted.length) return null;
+    var pos = (sorted.length - 1) * q, base = Math.floor(pos), rest = pos - base;
+    return sorted[base + 1] !== undefined ? sorted[base] + rest * (sorted[base + 1] - sorted[base]) : sorted[base];
+  }
+
+  function analyse() {
+    var m = {};
+    Object.keys(SELECTS).forEach(function (k) { m[k] = $(SELECTS[k]).value; });
+    if (m.service === '-1') return fail2('Choose the column holding the date the support was delivered.');
+    if (m.amount === '-1') return fail2('Choose the amount column, or ask the page to calculate it from price and quantity.');
+    if (m.amount === 'calc' && (m.price === '-1' || m.qty === '-1')) return fail2('To calculate the amount the page needs both a unit price column and an hours or quantity column.');
+    $('map-err').hidden = true;
+
+    var col = function (r, k) { var i = parseInt(m[k], 10); return (i >= 0 && i < r.length) ? r[i] : ''; };
+
+    var fmt = document.querySelector('input[name=datefmt]:checked').value;
+    var sample = DATA.rows.slice(0, 400).map(function (r) { return col(r, 'service'); });
+    var det = detectDayFirst(sample);
+    var dayFirst = fmt === 'auto' ? det.dayFirst : (fmt === 'dmy');
+
+    var today = Date.now();
+    var R = {
+      total: 0, rows: DATA.rows.length, valued: 0,
+      badDate: 0, badAmount: 0, zeroAmount: 0, bothQty: 0, badNdis: 0,
+      lags: [], lagValue: 0, lagCount: 0,
+      lateValue: 0, lateCount: 0,
+      unclaimedValue: 0, unclaimedCount: 0, unclaimedOldValue: 0, unclaimedOldCount: 0,
+      lagBuckets: LAG_BUCKETS.map(function (b) { return { k: b.k, risk: b.risk, v: 0, n: 0 }; }),
+      backBuckets: LAG_BUCKETS.map(function (b) { return { k: b.k, risk: b.risk, v: 0, n: 0 }; }),
+      rejects: {}, rejectValue: 0, rejectCount: 0,
+      dupes: [], oldest: null, newest: null,
+      dayFirst: dayFirst, dateCertain: det.certain || fmt !== 'auto', allIso: det.allIso && fmt === 'auto',
+      hasClaim: m.claim !== '-1', hasStatus: m.status !== '-1', hasReason: m.reason !== '-1'
+    };
+
+    var seen = {}, resolvedKeys = {}, rejectedRows = [];
+
+    for (var i = 0; i < DATA.rows.length; i++) {
+      var r = DATA.rows[i];
+
+      var sd = toDate(col(r, 'service'), dayFirst);
+      if (sd === null) { R.badDate++; continue; }
+      if (R.oldest === null || sd < R.oldest) R.oldest = sd;
+      if (R.newest === null || sd > R.newest) R.newest = sd;
+
+      var amt;
+      if (m.amount === 'calc') {
+        var p = parseAmount(col(r, 'price')), q = parseQty(col(r, 'qty'));
+        amt = (p === null || q === null) ? null : p * q;
+      } else {
+        amt = parseAmount(col(r, 'amount'));
+      }
+      if (amt === null) { R.badAmount++; amt = 0; }
+      else if (amt === 0) { R.zeroAmount++; }
+      else { R.valued++; }
+      R.total += amt;
+
+      if (m.participant !== '-1') {
+        var pid = String(col(r, 'participant')).replace(/\s/g, '');
+        if (pid && !/^\d{9}$/.test(pid)) R.badNdis++;
+      }
+
+      var status = m.status === '-1' ? '' : String(col(r, 'status')).toLowerCase();
+      var reason = m.reason === '-1' ? '' : String(col(r, 'reason')).trim();
+      var isReject = /reject|error|declin|unsuccess|fail|knock|invalid|not paid|unpaid/.test(status) ||
+                     (!!reason && !/^(n\/?a|none|nil|ok|success|paid|-)$/i.test(reason));
+
+      var key = [
+        m.participant === '-1' ? '' : String(col(r, 'participant')).replace(/\s/g, ''),
+        m.item === '-1' ? '' : String(col(r, 'item')).trim(),
+        sd, Math.round(amt * 100)
+      ].join('|');
+
+      if (isReject) {
+        R.rejectCount++; R.rejectValue += amt;
+        rejectedRows.push({ key: key, amt: amt });
+        var code = reason.toUpperCase().match(/\b([VPCS]\d{2})\b/);
+        var label = code ? code[1] : (reason || 'Rejected, no reason given');
+        if (label.length > 90) label = label.slice(0, 87) + '…';
+        if (!R.rejects[label]) R.rejects[label] = { n: 0, v: 0 };
+        R.rejects[label].n++; R.rejects[label].v += amt;
+      } else {
+        resolvedKeys[key] = true;
+      }
+
+      if (m.participant !== '-1' || m.item !== '-1') {
+        if (seen[key]) { seen[key].n++; seen[key].v += amt; }
+        else { seen[key] = { n: 1, v: amt, id: m.participant === '-1' ? '' : String(col(r, 'participant')), sd: sd }; }
+      }
+
+      var cd = R.hasClaim ? toDate(col(r, 'claim'), dayFirst) : null;
+      if (cd !== null) {
+        var lag = Math.round((cd - sd) / DAY);
+        if (lag >= 0 && lag < 3650) {
+          R.lags.push(lag); R.lagCount++; R.lagValue += amt;
+          if (lag > 90) { R.lateValue += amt; R.lateCount++; }
+          for (var b = 0; b < LAG_BUCKETS.length; b++) {
+            if (lag >= LAG_BUCKETS[b].lo && lag <= LAG_BUCKETS[b].hi) { R.lagBuckets[b].v += amt; R.lagBuckets[b].n++; break; }
+          }
+        }
+      } else if (R.hasClaim) {
+        var age = Math.round((today - sd) / DAY);
+        if (age >= 0) {
+          R.unclaimedCount++; R.unclaimedValue += amt;
+          if (age > 90) { R.unclaimedOldCount++; R.unclaimedOldValue += amt; }
+          for (var b2 = 0; b2 < LAG_BUCKETS.length; b2++) {
+            if (age >= LAG_BUCKETS[b2].lo && age <= LAG_BUCKETS[b2].hi) { R.backBuckets[b2].v += amt; R.backBuckets[b2].n++; break; }
+          }
+        }
+      }
+    }
+
+    Object.keys(seen).forEach(function (k) {
+      if (seen[k].n > 1) R.dupes.push({ id: seen[k].id, n: seen[k].n, v: seen[k].v, sd: seen[k].sd });
+    });
+    R.dupes.sort(function (a, b) { return b.v - a.v; });
+
+    R.deadRejects = rejectedRows.filter(function (x) { return !resolvedKeys[x.key]; });
+    R.deadRejectValue = R.deadRejects.reduce(function (s, x) { return s + x.amt; }, 0);
+
+    var sorted = R.lags.slice().sort(function (a, b) { return a - b; });
+    R.median = quantile(sorted, 0.5);
+    R.p90 = quantile(sorted, 0.9);
+    R.worst = sorted.length ? sorted[sorted.length - 1] : null;
+
+    return R;
+  }
+
+  function fail2(msg) {
+    var e = $('map-err'); e.textContent = msg; e.hidden = false;
+    $('map-panel').appendChild(e);
+    return null;
+  }
+
+  /* ---- Render ------------------------------------------------------------- */
+  function bars(host, buckets) {
+    var max = buckets.reduce(function (a, b) { return Math.max(a, b.v); }, 0);
+    host.innerHTML = '';
+    buckets.forEach(function (b) {
+      var row = document.createElement('div');
+      row.className = 'bar' + (b.risk && b.v > 0 ? ' is-risk' : '');
+      row.innerHTML =
+        '<span class="bar__k">' + b.k + '</span>' +
+        '<span class="bar__track"><span class="bar__fill" style="width:' + (max > 0 ? (b.v / max) * 100 : 0) + '%"></span></span>' +
+        '<span class="bar__v">' + fmtMoney(b.v) + '</span>';
+      host.appendChild(row);
+    });
+  }
+
+  function figure(n, k) {
+    return '<div><span class="fig__n">' + n + '</span><span class="fig__k">' + k + '</span></div>';
+  }
+
+  var LAST_SUMMARY = '';
+
+  function render(R) {
+    var tag = $('v-tag'), nEl = $('v-number'), cap = $('v-caption');
+    nEl.classList.remove('is-risk');
+    var lines = [];
+
+    if (R.hasClaim && R.lagCount > 0) {
+      if (R.lateValue > 0) {
+        tag.textContent = 'Money the new rule would have taken';
+        nEl.textContent = fmtMoney(R.lateValue);
+        nEl.classList.add('is-risk');
+        cap.innerHTML = 'of the <b>' + fmtMoney(R.lagValue) + '</b> claimed in this file went in more than 90 days after the support was delivered. That is <b>' +
+          pct(R.lateValue, R.lagValue) + '%</b> of it, across ' + num.format(R.lateCount) + ' lines. For supports delivered from ' + CLIFF + ', money claimed that late is not claimable at all.';
+        lines.push('At risk under the 90 day rule: ' + fmtMoney(R.lateValue) + ' (' + pct(R.lateValue, R.lagValue) + '% of ' + fmtMoney(R.lagValue) + ', ' + num.format(R.lateCount) + ' lines)');
+      } else {
+        tag.textContent = 'Money the new rule would have taken';
+        nEl.textContent = fmtMoney(0);
+        cap.innerHTML = 'Nothing in this file was claimed more than 90 days after the support was delivered. On this sample you are <b>already inside the new window</b>. The rest of the checks below are still worth reading.';
+        lines.push('At risk under the 90 day rule: nothing in this file.');
+      }
+    } else {
+      tag.textContent = 'What this file can and cannot say';
+      nEl.textContent = fmtMoney(R.total);
+      cap.innerHTML = 'across ' + num.format(R.rows) + ' rows. Without a column holding <b>the date each claim was submitted</b>, this page cannot measure your claim lag, which is the number that matters on 1 December. If your system can export a submitted, processed or payment request date, export again with it. Everything below still works.';
+      lines.push('Value in file: ' + fmtMoney(R.total) + ' across ' + num.format(R.rows) + ' rows. No claim date column, so no lag measured.');
+    }
+
+    var figs = '';
+    if (R.median !== null) {
+      figs += figure(num.format(Math.round(R.median)), 'days is your median gap between delivering a support and claiming it');
+      figs += figure(num.format(Math.round(R.p90)), 'days for the slowest tenth. This is the number that breaks first');
+      figs += figure(num.format(R.worst), 'days was the slowest single claim in the file');
+      lines.push('Median lag ' + Math.round(R.median) + ' days, 90th percentile ' + Math.round(R.p90) + ' days, worst ' + R.worst + ' days.');
+    }
+    figs += figure(num.format(R.rows), 'rows read');
+    figs += figure(fmtMoney(R.total), 'total value in the file');
+    if (R.oldest !== null) {
+      var d1 = new Date(R.oldest), d2 = new Date(R.newest);
+      var fmtd = function (d) { return d.getUTCDate() + ' ' + ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'][d.getUTCMonth()] + ' ' + d.getUTCFullYear(); };
+      figs += figure('<span style="font-size:0.5em;line-height:1.3;display:inline-block">' + fmtd(d1) + '<br>to ' + fmtd(d2) + '</span>', 'the span of supports in the file');
+    }
+    $('v-figures').innerHTML = figs;
+
+    $('p-lag').hidden = !(R.lagCount > 0);
+    if (R.lagCount > 0) {
+      bars($('lag-bars'), R.lagBuckets);
+      $('lag-note').textContent = R.allIso
+        ? 'Every date in the file is year first, so there was no ordering to guess at.'
+        : R.dateCertain
+        ? 'Dates read as ' + (R.dayFirst ? 'day first' : 'month first') + ', which the file itself settles.'
+        : 'No date in the file was unambiguous, so they have been read as ' + (R.dayFirst ? 'day first, the Australian order' : 'month first') + '. If that is wrong, change it above and run it again, because it will change these numbers.';
+    }
+
+    $('p-backlog').hidden = !(R.unclaimedCount > 0);
+    if (R.unclaimedCount > 0) bars($('backlog-bars'), R.backBuckets);
+
+    var codes = Object.keys(R.rejects);
+    $('p-reject').hidden = codes.length === 0;
+    if (codes.length) {
+      codes.sort(function (a, b) { return R.rejects[b].v - R.rejects[a].v; });
+      var tb = $('reject-tbl').querySelector('tbody');
+      tb.innerHTML = '';
+      codes.slice(0, 25).forEach(function (c) {
+        var tr = document.createElement('tr');
+        tr.className = 'is-risk';
+        var meaning = CODES[c] || 'Not one of the published portal codes, so this is your own system’s wording.';
+        tr.innerHTML = '<td data-label="Code"><code>' + esc(c) + '</code></td>' +
+          '<td data-label="Means">' + esc(meaning) + '</td>' +
+          '<td data-label="Lines" class="num">' + num.format(R.rejects[c].n) + '</td>' +
+          '<td data-label="Value" class="num">' + fmtMoney(R.rejects[c].v) + '</td>';
+        tb.appendChild(tr);
+      });
+      $('reject-note').textContent = num.format(R.rejectCount) + ' lines worth ' + fmtMoney(R.rejectValue) +
+        ' came back. ' + (codes.length > 25 ? 'The 25 largest are shown. ' : '') +
+        'A rejection is not automatically lost money, most can be fixed and resubmitted, but only inside the window.';
+      lines.push('Rejected: ' + num.format(R.rejectCount) + ' lines worth ' + fmtMoney(R.rejectValue) + ' across ' + codes.length + ' distinct reasons.');
+    }
+
+    var flags = [];
+    if (R.deadRejects.length) flags.push(['Rejected once and never seen again',
+      '<span class="num">' + plural(R.deadRejects.length, 'line', 'lines') + ', ' + fmtMoney(R.deadRejectValue) + '</span> came back rejected, with no matching successful line anywhere else in the file. Either that was fixed somewhere this export cannot see, or nobody went back for it.']);
+    if (R.unclaimedOldCount) flags.push(['Backlog already older than 90 days',
+      '<span class="num">' + plural(R.unclaimedOldCount, 'line', 'lines') + ', ' + fmtMoney(R.unclaimedOldValue) + '</span> carry no claim date, delivered more than 90 days ago. Supports delivered before ' + CLIFF + ' keep the old window, so this is recoverable now and will not be later.']);
+    if (R.dupes.length) {
+      var dupV = R.dupes.reduce(function (s, d) { return s + d.v; }, 0);
+      var sample = R.dupes.slice(0, 3)
+        .filter(function (d) { return String(d.id || '').trim() !== ''; })
+        .map(function (d) { return maskId(d.id) + ' ×' + d.n; }).join(', ');
+      flags.push([R.dupes.length === 1 ? 'A line that looks like a duplicate' : 'Lines that look like duplicates',
+        '<span class="num">' + plural(R.dupes.length, 'group', 'groups') + ', ' + fmtMoney(dupV) + '</span> ' + (R.dupes.length === 1 ? 'repeats' : 'repeat') + ' a participant, an item, a date and an amount. Some of that will be legitimate repeat supports on the same day. The portal calls the rest <code>V04</code> or <code>P04</code>.' + (sample ? ' For example ' + esc(sample) + '.' : '')]);
+    }
+    if (R.badDate) flags.push(['Rows with a date the portal would not read',
+      '<span class="num">' + plural(R.badDate, 'row', 'rows') + '</span> ' + (R.badDate === 1 ? 'has' : 'have') + ' a service date this page could not read, so it is excluded from everything above. The portal wants <code>YYYY-MM-DD</code> and rejects the file, not the row.']);
+    if (R.badAmount) flags.push(['Rows with no readable amount',
+      '<span class="num">' + plural(R.badAmount, 'row', 'rows') + '</span> ' + (R.badAmount === 1 ? 'has' : 'have') + ' an unreadable or missing amount, counted here as zero. A blank or invalid unit price fails the upload outright.']);
+    if (R.zeroAmount) flags.push(['Rows worth nothing',
+      '<span class="num">' + plural(R.zeroAmount, 'row', 'rows') + '</span> ' + (R.zeroAmount === 1 ? 'is' : 'are') + ' a genuine zero. Worth knowing why before they go anywhere near a payment request.']);
+    if (R.badNdis) flags.push(['Participant numbers that are not nine digits',
+      '<span class="num">' + plural(R.badNdis, 'row', 'rows') + '</span> ' + (R.badNdis === 1 ? 'holds' : 'hold') + ' something other than a nine digit NDIS number. This is usually a spreadsheet dropping a leading zero, and it comes back as <code>S01</code>.']);
+    if (R.rows > 5000) flags.push(['Too many rows for one upload',
+      '<span class="num">' + num.format(R.rows) + ' rows</span>. A bulk payment request file is capped at 5,000 payment references, so this needs splitting.']);
+    if (!R.dateCertain && R.lagCount > 0) flags.push(['The date order had to be guessed',
+      'No date in the sample had a day above the twelfth, so day first and month first are indistinguishable. It has been read as ' + (R.dayFirst ? 'day first' : 'month first') + '. If that is wrong every number on this page is wrong, so set it by hand above and run it again.']);
+
+    $('p-flags').hidden = flags.length === 0;
+    $('flags').innerHTML = flags.map(function (f) {
+      return '<li><h4>' + f[0] + '</h4><p>' + f[1] + '</p></li>';
+    }).join('');
+    flags.forEach(function (f) { lines.push('- ' + f[0]); });
+
+    LAST_SUMMARY = ['The 90 Day Cliff Check, ' + (DATA ? DATA.label : 'file'),
+      new Date().toDateString(), ''].concat(lines).concat(['',
+      'Worked out locally at aaronsteele.vercel.app/ndis-claim-check/. No data left the browser.']).join('\n');
+
+    $('result-act').hidden = false;
+    $('result-act').scrollIntoView({ behavior: 'smooth', block: 'start' });
+    push('ndis_result_shown', {
+      rows: R.rows, has_claim_date: R.hasClaim,
+      late_pct: R.lagValue > 0 ? pct(R.lateValue, R.lagValue) : null,
+      reject_lines: R.rejectCount
+    });
+  }
+
+  function esc(s) {
+    return String(s).replace(/[&<>"']/g, function (c) {
+      return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c];
+    });
+  }
+
+  /* ---- Invented example ----------------------------------------------------
+     Not anybody's data. Generated here from a fixed seed so it is the same every
+     time, and shaped to look like a small provider with a real problem: a long
+     tail of late claims, a handful of rejections, one duplicate pair. */
+  function demoCSV() {
+    var seed = 20261201;
+    function rnd() { seed = (seed * 1103515245 + 12345) & 0x7fffffff; return seed / 0x7fffffff; }
+    var items = ['01_011_0107_1_1', '01_013_0107_1_1', '04_104_0125_6_1', '15_056_0128_1_3', '07_001_0106_8_3'];
+    var reasons = new Array(46).join('.').split('.').map(function(){return '';})
+      .concat(['V27', 'V11', 'V31', 'P04', 'C09']);
+    var out = ['RegistrationNumber,NDISNumber,SupportsDeliveredFrom,SupportsDeliveredTo,SupportNumber,ClaimReference,Hours,UnitPrice,SubmittedDate,Status,RejectionCode'];
+    var start = Date.UTC(2025, 7, 1);
+    var dupRow = null;
+    for (var i = 0; i < 240; i++) {
+      var sd = start + Math.floor(rnd() * 330) * DAY;
+      // Most claims go in quickly. A quarter of them do not, and a few are dire.
+      var lag = rnd() < 0.72 ? Math.floor(rnd() * 15) : (rnd() < 0.72 ? 20 + Math.floor(rnd() * 55) : 95 + Math.floor(rnd() * 210));
+      var reason = reasons[Math.floor(rnd() * reasons.length)];
+      var status = reason ? 'Rejected' : 'Paid';
+      var hours = [1, 1.5, 2, 2.5, 3, 4][Math.floor(rnd() * 6)];
+      var price = [67.56, 70.23, 98.42, 193.99, 156.16][Math.floor(rnd() * 5)];
+      var ndis = '43' + String(1000000 + Math.floor(rnd() * 8999999)).slice(0, 7);
+      var d = function (t) { var x = new Date(t); return x.getUTCFullYear() + '-' + String(x.getUTCMonth() + 1).padStart(2, '0') + '-' + String(x.getUTCDate()).padStart(2, '0'); };
+      var row = ['4050001234', ndis, d(sd), d(sd), items[Math.floor(rnd() * items.length)],
+        'INV' + (4200 + i), hours.toFixed(2), price.toFixed(2),
+        rnd() < 0.08 ? '' : d(sd + lag * DAY), rnd() < 0.08 ? 'Not claimed' : status, reason].join(',');
+      out.push(row);
+      if (i === 40) dupRow = row;
+    }
+    if (dupRow) out.push(dupRow);
+    return out.join('\n');
+  }
+
+  /* ---- Wiring ------------------------------------------------------------- */
+  $('tool').hidden = false;
+
+  var drop = $('drop');
+  $('pick').addEventListener('click', function () { $('file').click(); });
+  $('file').addEventListener('change', function (e) { readFile(e.target.files[0]); });
+  $('demo').addEventListener('click', function () { loadText(demoCSV(), 'Invented example, not real data'); });
+
+  ['dragenter', 'dragover'].forEach(function (ev) {
+    drop.addEventListener(ev, function (e) { e.preventDefault(); drop.classList.add('is-over'); });
+  });
+  ['dragleave', 'drop'].forEach(function (ev) {
+    drop.addEventListener(ev, function (e) { e.preventDefault(); drop.classList.remove('is-over'); });
+  });
+  drop.addEventListener('drop', function (e) {
+    if (e.dataTransfer && e.dataTransfer.files && e.dataTransfer.files.length) readFile(e.dataTransfer.files[0]);
+  });
+
+  $(SELECTS.amount).addEventListener('change', toggleCalc);
+  $('run').addEventListener('click', function () {
+    if (!DATA) return;
+    var R = analyse();
+    if (R) render(R);
+  });
+
+  $('print').addEventListener('click', function () { window.print(); });
+  $('copy').addEventListener('click', function (e) {
+    var btn = e.currentTarget, original = btn.textContent;
+    var done = function (msg) { btn.textContent = msg; setTimeout(function () { btn.textContent = original; }, 2200); };
+    if (navigator.clipboard && navigator.clipboard.writeText) {
+      navigator.clipboard.writeText(LAST_SUMMARY).then(function () { done('Copied'); }, function () { done('Could not copy'); });
+    } else { done('Not supported here'); }
+  });
+
+  /* ---- The list ----------------------------------------------------------- */
+  var form = $('signup');
+  form.addEventListener('submit', function (e) {
+    e.preventDefault();
+    var msg = $('form-msg'), btn = $('signup-btn');
+    var endpoint = form.getAttribute('data-endpoint');
+    var email = $('email').value.trim();
+    msg.classList.remove('is-err');
+
+    if (form.querySelector('[name=company]').value) return;
+    if (!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(email)) {
+      msg.textContent = 'That does not look like an email address.';
+      msg.classList.add('is-err');
+      return;
+    }
+    if (!endpoint) {
+      msg.textContent = 'This form is not connected to anything yet, so nothing was sent and it would be dishonest to say otherwise. Email me through the portfolio instead.';
+      msg.classList.add('is-err');
+      return;
+    }
+
+    btn.disabled = true; btn.textContent = 'Sending';
+    fetch(endpoint, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'Accept': 'application/json' },
+      body: JSON.stringify({ email: email, source: 'ndis-claim-check' })
+    }).then(function (r) {
+      if (!r.ok) throw new Error(String(r.status));
+      form.innerHTML = '<p class="form__msg">Done. One email when the playbook is finished, and nothing else.</p>';
+      push('ndis_signup', {});
+    }).catch(function () {
+      btn.disabled = false; btn.textContent = 'Try again';
+      msg.textContent = 'That did not go through. Try again, or email me through the portfolio.';
+      msg.classList.add('is-err');
+    });
+  });
+})();
+</script>
+
+</body>
+</html>
