@@ -22,78 +22,86 @@ public repos; nothing is invented.
 
 ## "How would AI agents save a $50M revenue company money?"
 
-> Three places, in ascending order of value. Most people only chase the first one.
+> Three places, and most people only chase the first one.
 >
-> **1. Time on rule-shaped work.** Invoice matching, quoting, order intake, ticket
-> triage, compliance reporting. A $50M business is usually carrying $8–12M of
-> ops, finance and support overhead. A realistic first pass takes 20–30% of the
-> time out of two or three of those functions. That is real, but it shows up as
-> capacity you don't have to hire, not as a line item that disappears from the
-> P&L — and I would say that before the engagement, not after.
+> The first is time. Invoice matching, quoting, order intake, ticket triage, the
+> monthly compliance pack. A $50M business is usually carrying eight to twelve
+> million in ops, finance and support overhead, and a first pass takes twenty or
+> thirty per cent of the time out of two or three of those functions. That is
+> real money, but it turns up as people you do not have to hire, not as a line
+> that disappears off the P&L, and you should hear that from me before you sign
+> something rather than after.
 >
-> **2. Error and leakage. This is the bigger number and almost nobody has it
-> measured.** Rework, credit notes, missed supplier rebates, wrong pricing,
-> invoices that never went out, records merged on the wrong key. I have seen
-> $3.8M of donation history sitting against the wrong donors because a migration
-> merged records on email address instead of the account number the old system
-> keyed on. Nobody had noticed. That is not a labour saving, it is money that was
-> already gone. At $50M, 1% leakage is $500k a year, and 1% is optimistic for a
-> business that grew fast on spreadsheets.
+> The second is the money already going out the door, and almost nobody has it
+> measured. Rework, credit notes, supplier rebates nobody claimed, pricing that
+> is wrong across a whole segment, invoices that never went out. A charity I
+> worked for had $3.8 million of donation history sitting against the wrong
+> donors, because an earlier migration had merged records on email address
+> instead of the account number their old system used. It had been like that for
+> a year and nobody could say why the numbers were wrong. That is not a saving,
+> it is money that was already gone. At $50 million, one per cent is half a
+> million a year, and one per cent is optimistic for a business that grew fast on
+> spreadsheets.
 >
-> **3. Decisions made sooner.** Quotes out the same day. Every sales call scored
-> the day it happens instead of a QA sample at month end. Cash collected a week
-> earlier. Harder to attribute, compounds fastest.
+> The third is speed. Quotes out the same day. Every sales call scored the day it
+> happens instead of a sample at month end. Cash in a week earlier. Hardest to
+> attribute, compounds the fastest.
 >
-> **How I would approach it.** Two weeks in the business before building
-> anything, sitting with AP, sales admin, and whoever handles the exceptions —
-> the process nobody has written down is where the cost usually is. Rank the
-> candidates on volume × unit cost × how rule-shaped they are, and instrument the
-> baseline *before* touching anything, because you cannot claim a saving you
-> never measured. Then build one thing end to end — intake, rules, the system it
-> lands in, the exceptions, and the reporting somebody actually reads — and prove
-> it against a source I don't control: the ledger, the vendor's own portal, the
-> original data. An agent saying "done" is a claim, not a fact. I have caught one
-> documenting a test pipeline that did not exist and another writing a
-> performance report that was structurally incapable of failing.
+> How I would go about it. Two weeks in the business before I build anything,
+> sitting with accounts payable, sales admin, and whoever handles the exceptions,
+> because the process nobody has written down is usually where the cost is. Then
+> rank what is left on volume, unit cost, and how rule-shaped it is, and measure
+> the baseline before touching it, because you cannot claim a saving you never
+> measured. Then build one thing all the way through: the intake, the rules, the
+> system it lands in, the exceptions, and the reporting somebody actually reads.
+> And check it against something I do not control, the ledger or the supplier's
+> own portal or the original data, because an agent telling you it is finished is
+> a claim, not a fact. I have caught one describing a test pipeline that did not
+> exist, and another writing a performance report that was incapable of failing.
 >
-> **What I would not do.** Run a pilot that never leaves the pilot. Put an agent
-> on top of a broken process, which only makes wrong answers faster. Or stay
-> quiet about the exception rate — if 40% of the volume needs a human anyway, the
-> automation is a rounding error, and you should hear that from me before you pay
-> for it, not six months in.
+> What I would not do is run a pilot that never leaves the pilot, or put an agent
+> on top of a process that is already broken, which only makes the wrong answer
+> arrive faster. And if forty per cent of the volume needs a person anyway, the
+> automation is a rounding error. You should hear that from me before you pay for
+> it, not six months in.
 
-*(~380 words. If the box is tight, cut point 3 and the last paragraph — points 1,
-2 and "how I would approach it" carry the argument.)*
+*(~430 words. If the box is tight, cut the third paragraph and the last one. The
+first two and the method carry it.)*
 
 ---
 
 ## "Briefly describe your most relevant experience or project"
 
-> **National charity, HubSpot migration — technical lead.** Their donation history
-> was coming out wrong and nobody could say why. The earlier migration had merged
-> donor records on email address instead of the account number their old system
-> used, so anyone who had changed their email, or shared one with a partner, was
-> merged into somebody else or lost. Against the charity's own books it was out
-> by around $3.8M. I rebuilt it on the correct key — 37,729 donations re-matched
-> to the right donors across 4 organisations — reconciled it to their accounts,
-> and connected their donation platforms and accounting system so it stays right
-> without anyone retyping it. Four rounds of testing with the charity before go-live.
+> The one I would point at first. A national charity's move onto HubSpot had
+> stalled, their donation history was coming out wrong, and nobody could say why.
+> I came in as technical lead. The earlier migration had merged donors on email
+> address instead of the account number their old system used, so anyone who had
+> changed their email, or shared one with a partner, ended up merged into
+> somebody else or lost. Against the charity's own books it was out by around
+> $3.8 million. I rebuilt it on the right key, 37,729 donations back against the
+> right donors across four organisations, reconciled it to their accounts, and
+> connected their donation platforms and accounting system so it stays right
+> without anyone retyping it. Four rounds of testing with the charity before it
+> went live.
 >
-> **Closest to this role:** I was asked whether an AI-built live shopping platform
-> was safe to put customers on. Rather than read the code and give an opinion, I
-> used the gaps — the old login path was still open, so I signed in as a retailer
-> who was live on air and shut their broadcast down. Nobody had to argue about
-> whether the risk was real; it was closed that week. Four of six findings are
-> properly closed now, two are not, and I said so. I also told them one reported
-> finding was not a real problem, because chasing a phantom costs a team a week.
+> Closest to this role. I was asked whether a live shopping platform, most of it
+> written by AI, was safe to put customers on. Rather than read the code and give
+> an opinion, I used the gaps. A new secure login had been added and it covered
+> one way in, but the old way in was still sitting there, so I signed in as a
+> retailer who was live on air and shut their broadcast down. Nobody had to argue
+> about whether it was real, and it was closed that week. Four of the six are
+> properly closed now. Two are not, and I said so. I also told them one of the
+> reported problems was not a problem at all, because chasing a phantom costs a
+> team a week.
 >
-> **Agents specifically:** two tools I built end to end and gave away, both live
-> and both open source — one tells a trades business whether Thursday's concrete
-> pour will survive the weather; the other reads a company's own website before a
-> salesperson calls them and files what it finds into HubSpot. Both carry a script
-> whose only job is to check the result against something I do not control.
+> On agents specifically, two small tools I built end to end and gave away, both
+> live and both open source. One tells a trades business whether Thursday's
+> concrete pour will survive the weather. The other reads a company's own website
+> before a salesperson rings them and files what it finds into HubSpot. Both
+> carry a script whose only job is to check the answer against something I do not
+> control.
 >
-> Everything above, with the numbers running live: **https://aaronsteele.vercel.app**
+> All of it, with the numbers running live: https://aaronsteele.vercel.app
 
 ---
 
