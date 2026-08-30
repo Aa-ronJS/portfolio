@@ -17,8 +17,7 @@ boil_every: 2
 script: beats.json
 mode: director            # camera/staging inferred; words never invented
 cast:
-  passerby: silhouette    # no drawings yet — explicit stand-in
-  wife: silhouette
+  wife: omit    # author's decision 2026-08-30: the passerby is one person
 
 defaults:
   font: ../fonts/satoshi-var.ttf
@@ -488,14 +487,10 @@ shots:
         at: [0.42, 0.72]
         rotate: 100
       - char: passerby
+        pose: gasp
         at: [0.78, 0.74]
         moves:
           - {type: slide, from: [1.15, 0.74], to: [0.78, 0.74], t: [0, 1.0]}
-      - char: wife
-        at: [0.94, 0.74]
-        size: 0.94
-        moves:
-          - {type: slide, from: [1.3, 0.74], to: [0.94, 0.74], t: [0, 1.0]}
 
   - beat: d22
     bg: backgrounds/park.png
@@ -507,10 +502,9 @@ shots:
       - char: passerby
         at: [0.78, 0.74]
         talk: true
+        alt_pose: up          # arms pump up and down as he speaks
+        alt_period: 0.9
         moves: [{type: bob, amp: 0.004, period: 0.6}]
-      - char: wife
-        at: [0.94, 0.74]
-        size: 0.94
 
   - beat: d23
     bg: backgrounds/park.png
@@ -525,9 +519,6 @@ shots:
         moves: [{type: bob, amp: 0.003, period: 0.8}]
       - char: passerby
         at: [0.78, 0.74]
-      - char: wife
-        at: [0.94, 0.74]
-        size: 0.94
 
   # a13: the passerbys step into the spot...
   - beat: a13
@@ -538,15 +529,9 @@ shots:
         at: [0.42, 0.72]
         rotate: 100
       - char: passerby
-        at: [0.24, 0.74]
+        at: [0.24, 0.78]
         moves:
-          - {type: slide, from: [0.78, 0.74], to: [0.24, 0.74], t: [0, 1.1]}
-          - {type: waddle, amp: 2, period: 0.5}
-      - char: wife
-        at: [0.10, 0.74]
-        size: 0.94
-        moves:
-          - {type: slide, from: [0.94, 0.74], to: [0.10, 0.74], t: [0, 1.2]}
+          - {type: slide, from: [0.78, 0.74], to: [0.24, 0.78], t: [0, 1.1]}
           - {type: waddle, amp: 2, period: 0.5}
 
   # ...and from there, so it is: a dead man in a dog suit.
@@ -556,15 +541,14 @@ shots:
     actors:
       - char: steven
         pose: dead
-        at: [0.55, 0.78]
+        at: [0.62, 0.78]
         size: 1.2
       - char: passerby
-        at: [0.16, 0.74]
+        at: [0.14, 0.78]
         talk: true
+        alt_pose: up
+        alt_period: 0.9
         moves: [{type: bob, amp: 0.004, period: 0.6}]
-      - char: wife
-        at: [0.04, 0.74]
-        size: 0.94
 
   # a14: they stroll off.
   - beat: a14
@@ -576,15 +560,9 @@ shots:
         at: [0.55, 0.78]
         size: 1.2
       - char: passerby
-        at: [-0.2, 0.74]
+        at: [-0.2, 0.78]
         moves:
-          - {type: slide, from: [0.16, 0.74], to: [-0.2, 0.74], t: [0, 1.1]}
-          - {type: waddle, amp: 2, period: 0.5}
-      - char: wife
-        at: [-0.35, 0.74]
-        size: 0.94
-        moves:
-          - {type: slide, from: [0.04, 0.74], to: [-0.35, 0.74], t: [0, 1.2]}
+          - {type: slide, from: [0.14, 0.78], to: [-0.2, 0.78], t: [0, 1.1]}
           - {type: waddle, amp: 2, period: 0.5}
 
   # a15: tim and carly step over steven's body and walk away (gun toss

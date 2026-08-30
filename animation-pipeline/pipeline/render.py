@@ -354,16 +354,26 @@ class EpisodeRenderer:
                 # padding and drawing resolution can't distort scale
                 wh = c.world_height * a.get("size", 1.0)
                 k = (wh * self.human * self.H) / (c.bbox[3] - c.bbox[1])
-            scaled = {}
-            for key, im in imgs.items():
-                if im is None:
-                    scaled[key] = None
-                    continue
-                im = im.resize((round(im.width * k), round(im.height * k)),
-                               Image.LANCZOS)
-                if a.get("flip"):
-                    im = im.transpose(Image.FLIP_LEFT_RIGHT)
-                scaled[key] = im
+            def scale_set(src):
+                out = {}
+                for key, im in src.items():
+                    if im is None:
+                        out[key] = None
+                        continue
+                    im = im.resize((round(im.width * k),
+                                    round(im.height * k)), Image.LANCZOS)
+                    if a.get("flip"):
+                        im = im.transpose(Image.FLIP_LEFT_RIGHT)
+                    out[key] = im
+                return out
+
+            scaled = scale_set(imgs)
+            # alt_pose: the sprite alternates between its pose and this
+            # one on a timer — a two-frame gesture cycle (arm wave, etc.)
+            alt = None
+            if c is not None and a.get("alt_pose"):
+                ab, at_, abl = c.pick(a["alt_pose"])
+                alt = scale_set({"body": ab, "talk": at_, "blink": abl})
             mouth = None
             if a.get("talk") and s["env"] is not None:
                 mouth = mouth_track(
@@ -371,7 +381,9 @@ class EpisodeRenderer:
                     style=a.get("talk_style", self.talk_style),
                     thr=a.get("talk_threshold", 0.28))
             s["sprites"].append({
-                "imgs": scaled, "anchor": anchor, "cfg": a, "mouth": mouth,
+                "imgs": scaled, "alt": alt,
+                "alt_period": a.get("alt_period", 0.8),
+                "anchor": anchor, "cfg": a, "mouth": mouth,
                 "phase": random.Random((i + 1) * 37 + j).random(),
                 "blinks": self._blink_times(s["duration"], (i + 1) * 91 + j)
                           if scaled["blink"] is not None else [],
@@ -401,9 +413,13 @@ class EpisodeRenderer:
             a = sp["cfg"]
             talking = sp["mouth"] is not None and bool(sp["mouth"][f])
             blinking = any(bt <= t < bt + 2.0 / self.fps for bt in sp["blinks"])
-            img = sp["imgs"]["blink"] if (blinking and sp["imgs"]["blink"] is not None) \
-                else (sp["imgs"]["talk"] if (talking and sp["imgs"]["talk"] is not None)
-                      else sp["imgs"]["body"])
+            imgs = sp["imgs"]
+            if sp["alt"] is not None and \
+                    int(t / (sp["alt_period"] / 2)) % 2:
+                imgs = sp["alt"]
+            img = imgs["blink"] if (blinking and imgs["blink"] is not None) \
+                else (imgs["talk"] if (talking and imgs["talk"] is not None)
+                      else imgs["body"])
             dx, dy, rot, smul = move_offset(a.get("moves", []), t,
                                             s["duration"], sp["phase"])
             brng = random.Random((shot_i * 733 + j * 97 + f // self.boil_every))
