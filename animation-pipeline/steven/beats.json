@@ -1,0 +1,336 @@
+[
+ {
+  "id": "s01",
+  "type": "scene",
+  "source": "script",
+  "text": "EXT. CITY PARK - DAY"
+ },
+ {
+  "id": "a01",
+  "type": "action",
+  "source": "script",
+  "text": "A MAN (TIM) and a WOMAN (CARLY) stroll along a winding path. Sunlight filters through the trees. A SMALL FLUFFY DOG trots up to them, tail wagging."
+ },
+ {
+  "id": "a02",
+  "type": "action",
+  "source": "script",
+  "text": "Carly immediately crouches down, delighted."
+ },
+ {
+  "id": "d01",
+  "type": "dialogue",
+  "source": "script",
+  "speaker": "CARLY",
+  "text": "Hello! Aren't you a good boy! Where did you come from?",
+  "performance": null
+ },
+ {
+  "id": "a03",
+  "type": "action",
+  "source": "script",
+  "text": "She glances up, expecting Tim to share her enthusiasm. Instead, Tim studies the dog with concern."
+ },
+ {
+  "id": "d02",
+  "type": "dialogue",
+  "source": "script",
+  "speaker": "CARLY",
+  "text": "What is it?",
+  "performance": null
+ },
+ {
+  "id": "d03",
+  "type": "dialogue",
+  "source": "script",
+  "speaker": "TIM",
+  "text": "Oh, nothing... just surprised...",
+  "performance": null
+ },
+ {
+  "id": "d04",
+  "type": "dialogue",
+  "source": "script",
+  "speaker": "CARLY",
+  "text": "What? Why?",
+  "performance": null
+ },
+ {
+  "id": "d05",
+  "type": "dialogue",
+  "source": "script",
+  "speaker": "TIM",
+  "text": "It's just... you never talk to me like that.",
+  "performance": null
+ },
+ {
+  "id": "a04",
+  "type": "action",
+  "source": "script",
+  "text": "Carly stands."
+ },
+ {
+  "id": "d06",
+  "type": "dialogue",
+  "source": "script",
+  "speaker": "CARLY",
+  "text": "What do you mean, you want me to talk to you like a dog?",
+  "performance": null
+ },
+ {
+  "id": "d07",
+  "type": "dialogue",
+  "source": "script",
+  "speaker": "TIM",
+  "text": "No... of course not.",
+  "performance": null
+ },
+ {
+  "id": "d08",
+  "type": "dialogue",
+  "source": "script",
+  "speaker": "CARLY",
+  "text": "Then what do you mean?",
+  "performance": null
+ },
+ {
+  "id": "d09",
+  "type": "dialogue",
+  "source": "script",
+  "speaker": "TIM",
+  "text": "You actually seem happy to see him.",
+  "performance": null
+ },
+ {
+  "id": "d10",
+  "type": "dialogue",
+  "source": "script",
+  "speaker": "CARLY",
+  "text": "Well of course I do! He's such a good boy!",
+  "performance": null
+ },
+ {
+  "id": "a05",
+  "type": "action",
+  "source": "script",
+  "text": "She scratches the dog's head again."
+ },
+ {
+  "id": "d11",
+  "type": "dialogue",
+  "source": "script",
+  "speaker": "TIM",
+  "text": "Yes, but he's your ex-husband.",
+  "performance": null
+ },
+ {
+  "id": "a06",
+  "type": "action",
+  "source": "script",
+  "text": "A beat."
+ },
+ {
+  "id": "d12",
+  "type": "dialogue",
+  "source": "script",
+  "speaker": "CARLY",
+  "text": "...what?",
+  "performance": null
+ },
+ {
+  "id": "d13",
+  "type": "dialogue",
+  "source": "script",
+  "speaker": "TIM",
+  "text": "Look at the way he's looking at you! That's the look of someone who's been inside you.",
+  "performance": null
+ },
+ {
+  "id": "d14",
+  "type": "dialogue",
+  "source": "script",
+  "speaker": "CARLY",
+  "text": "Tim, don't be ridiculous. It's just a dog.",
+  "performance": null
+ },
+ {
+  "id": "d15",
+  "type": "dialogue",
+  "source": "script",
+  "speaker": "TIM",
+  "text": "He's obviously not *just* a dog though, is he, Carly? This is so typical. How come you never see things from my point of view?",
+  "performance": null
+ },
+ {
+  "id": "d16",
+  "type": "dialogue",
+  "source": "script",
+  "speaker": "CARLY",
+  "text": "I'm not even sure what I'm supposed to say to that.",
+  "performance": null
+ },
+ {
+  "id": "d17",
+  "type": "dialogue",
+  "source": "script",
+  "speaker": "TIM",
+  "text": "Come here! Come and stand exactly where I'm standing and see things from my point of view for a change!",
+  "performance": null
+ },
+ {
+  "id": "d18",
+  "type": "dialogue",
+  "source": "script",
+  "speaker": "CARLY",
+  "text": "...Okay?",
+  "performance": null
+ },
+ {
+  "id": "a07",
+  "type": "action",
+  "source": "script",
+  "text": "Carly steps into Tim's position."
+ },
+ {
+  "id": "d19",
+  "type": "dialogue",
+  "source": "script",
+  "speaker": "CARLY",
+  "text": "Oh my God, Steven!",
+  "performance": null
+ },
+ {
+  "id": "c01",
+  "type": "camera",
+  "source": "script",
+  "text": "ANGLE ON: The dog is now a MAN IN A DOG SUIT, sprawled suggestively"
+ },
+ {
+  "id": "a08",
+  "type": "action",
+  "source": "script",
+  "text": "on the grass, giving Carly a smoldering look."
+ },
+ {
+  "id": "d20",
+  "type": "dialogue",
+  "source": "script",
+  "speaker": "STEVEN",
+  "text": "Oh for fuck's sake, Tim. She doesn't even love you.",
+  "performance": "annoyed"
+ },
+ {
+  "id": "d21",
+  "type": "dialogue",
+  "source": "script",
+  "speaker": "CARLY",
+  "text": "It's true, I do prefer Steven, but Tim has more money... so...",
+  "performance": null
+ },
+ {
+  "id": "a09",
+  "type": "action",
+  "source": "script",
+  "text": "She gives a helpless shrug: *What are you gonna do?*"
+ },
+ {
+  "id": "a10",
+  "type": "action",
+  "source": "script",
+  "text": "They all share a laugh."
+ },
+ {
+  "id": "a11",
+  "type": "action",
+  "source": "script",
+  "text": "Tim draws a gun and shoots Steven dead."
+ },
+ {
+  "id": "a12",
+  "type": "action",
+  "source": "script",
+  "text": "A PASSERBY and his wife gasps."
+ },
+ {
+  "id": "d22",
+  "type": "dialogue",
+  "source": "script",
+  "speaker": "PASSERBY",
+  "text": "You just shot that dog!",
+  "performance": null
+ },
+ {
+  "id": "d23",
+  "type": "dialogue",
+  "source": "script",
+  "speaker": "TIM",
+  "text": "Relax, it's just my girlfriend's ex-husband. Come and stand on that spot and see for yourself.",
+  "performance": null
+ },
+ {
+  "id": "a13",
+  "type": "action",
+  "source": "script",
+  "text": "The passerbys step into the spot."
+ },
+ {
+  "id": "d24",
+  "type": "dialogue",
+  "source": "script",
+  "speaker": "PASSERBY",
+  "text": "Ah, so it is! Haha, no worries.",
+  "performance": null
+ },
+ {
+  "id": "a14",
+  "type": "action",
+  "source": "script",
+  "text": "They strolls off."
+ },
+ {
+  "id": "a15",
+  "type": "action",
+  "source": "script",
+  "text": "Tim and Carly casually step over Steven's body and walk away. Tim tosses the gun aside without looking."
+ },
+ {
+  "id": "a16",
+  "type": "action",
+  "source": "script",
+  "text": "Carly hangs on his arm."
+ },
+ {
+  "id": "d25",
+  "type": "dialogue",
+  "source": "script",
+  "speaker": "CARLY",
+  "text": "I was only joking about the money thing, darling. You know that, don't you?",
+  "performance": null
+ },
+ {
+  "id": "a17",
+  "type": "action",
+  "source": "script",
+  "text": "Tim sighs."
+ },
+ {
+  "id": "d26",
+  "type": "dialogue",
+  "source": "script",
+  "speaker": "TIM",
+  "text": "Yeah, I know.",
+  "performance": null
+ },
+ {
+  "id": "a18",
+  "type": "action",
+  "source": "script",
+  "text": "They disappear down the path, perfectly calm."
+ },
+ {
+  "id": "c02",
+  "type": "camera",
+  "source": "script",
+  "text": "FADE OUT."
+ }
+]

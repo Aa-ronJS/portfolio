@@ -61,10 +61,17 @@ class Character:
         if "body" not in self.layers:
             raise SystemExit(f"{folder} has no body.png")
         self.anchor = (0.5, 1.0)
-        meta = os.path.join(folder, "char.json")
+        self.world_height = None   # physical size in human units (1.0 =
+        meta = os.path.join(folder, "char.json")  # a standing adult)
         if os.path.exists(meta):
             with open(meta) as f:
-                self.anchor = tuple(json.load(f).get("anchor", self.anchor))
+                m = json.load(f)
+            self.anchor = tuple(m.get("anchor", self.anchor))
+            self.world_height = m.get("world_height")
+        # visible bounds: pixel dimensions of the drawing, not the canvas
+        self.bbox = self.layers["body"].getchannel("A") \
+            .point(lambda v: 255 if v > 24 else 0).getbbox() \
+            or (0, 0, self.layers["body"].width, self.layers["body"].height)
 
     def pick(self, pose=None):
         """(body, talk, blink) images for a pose, with fallbacks."""
@@ -77,6 +84,41 @@ class Character:
         blink = (self.layers.get(f"{pose}_blink") if pose else None) \
             or self.layers.get("blink")
         return body, talk, blink
+
+
+def make_silhouette():
+    """Grey stand-in for a scripted character with no drawings yet.
+    An explicit placeholder, never a silent cut."""
+    import math
+    import random as _r
+    rng = _r.Random(11)
+    im = Image.new("RGBA", (560, 1100), (0, 0, 0, 0))
+    d = ImageDraw.Draw(im)
+    grey = (150, 150, 150, 255)
+    ink = (90, 90, 90, 255)
+
+    def blob(box):
+        x0, y0, x1, y1 = box
+        cx, cy, rx, ry = (x0+x1)/2, (y0+y1)/2, (x1-x0)/2, (y1-y0)/2
+        pts = [(cx + math.cos(a/24*2*math.pi)*rx*(1+rng.uniform(-.04, .04)),
+                cy + math.sin(a/24*2*math.pi)*ry*(1+rng.uniform(-.04, .04)))
+               for a in range(24)]
+        d.polygon(pts, fill=grey, outline=ink, width=8)
+    blob((140, 40, 420, 330))     # head
+    blob((100, 340, 460, 900))    # body
+    blob((160, 880, 260, 1080))   # legs
+    blob((300, 880, 400, 1080))
+    d.text((236, 150), "?", fill=ink, font_size=120)
+
+    class Silhouette:
+        layers = {"body": im}
+        anchor = (0.5, 0.98)
+        world_height = 1.0
+        bbox = (100, 40, 460, 1080)
+
+        def pick(self, pose=None):
+            return im, None, None
+    return Silhouette()
 
 
 # ---------------------------------------------------------------- moves
@@ -171,8 +213,32 @@ class EpisodeRenderer:
         self.caption_y = d.get("caption_y", 0.70)
         self.tail = d.get("audio_tail", 0.35)  # silence appended after a line
         self.talk_style = d.get("talk_style", "syllable")
+        # fraction of canvas height a standing adult (world_height 1.0)
+        # occupies; sprite pixel sizes derive from this, never from the
+        # resolution someone happened to draw at
+        self.human = d.get("human_height", 0.42)
+        self.caption_case = d.get("caption_case", "lower")
+        self.cast = {str(k).lower(): str(v)
+                     for k, v in (self.ep.get("cast") or {}).items()}
         self.chars = {}
         self.take_lines = None  # lazy: split of the episode's raw take
+        # authored script: beats are the source of truth for captions,
+        # and preflight refuses to render an episode that drops lines
+        self.beats = None
+        if self.ep.get("script"):
+            with open(self.path(self.ep["script"])) as f:
+                self.beats = {b["id"]: b for b in json.load(f)}
+
+    def run_preflight(self):
+        if not self.beats:
+            return
+        from screenplay import preflight
+        rep = preflight(self.ep, self.root)
+        print(rep.render(), file=sys.stderr)
+        if not rep.ok:
+            raise SystemExit(
+                "preflight failed — the script is authoritative. Stage the "
+                "missing beats (or mark cuts/casting explicitly) and rerun.")
 
     def take_line(self, n):
         """Path to spoken line n (1-based) cut from the episode's raw take.
@@ -217,14 +283,26 @@ class EpisodeRenderer:
         return p if os.path.isabs(p) else os.path.join(self.root, p)
 
     def char(self, name):
+        name = self.cast.get(name.lower(), name)
         if name not in self.chars:
-            self.chars[name] = Character(self.path(os.path.join("characters", name)))
+            if name == "silhouette":
+                self.chars[name] = make_silhouette()
+            else:
+                self.chars[name] = Character(
+                    self.path(os.path.join("characters", name)))
         return self.chars[name]
 
     # -------------------------------------------------- per-shot prep
 
     def prep_shot(self, i, shot):
         s = dict(shot)
+        if s.get("beat") and self.beats:
+            b = self.beats.get(s["beat"])
+            if b and b["type"] == "dialogue":
+                # on-screen text is the author's wording, verbatim
+                # (lowercasing is house style, not a rewrite)
+                s["caption"] = b["text"].lower() \
+                    if self.caption_case == "lower" else b["text"]
         s["env"] = None
         s["pcm"] = np.zeros(0, dtype=np.float32)
         ap = None
@@ -262,11 +340,20 @@ class EpisodeRenderer:
                 imgs = {"body": body, "talk": talk, "blink": blink}
                 anchor = c.anchor
             else:
+                c = None
                 img = Image.open(self.path(a["image"])).convert("RGBA")
                 imgs = {"body": img, "talk": None, "blink": None}
                 anchor = tuple(a.get("anchor", [0.5, 1.0]))
-            h = int(a.get("scale", 0.4) * self.H)
-            k = h / imgs["body"].height
+            if "scale" in a or c is None or c.world_height is None:
+                # legacy sizing: fraction of canvas height, canvas-based
+                h = int(a.get("scale", 0.4) * self.H)
+                k = h / imgs["body"].height
+            else:
+                # world sizing: the character's physical height (human
+                # units) drives pixels via the VISIBLE bounds, so canvas
+                # padding and drawing resolution can't distort scale
+                wh = c.world_height * a.get("size", 1.0)
+                k = (wh * self.human * self.H) / (c.bbox[3] - c.bbox[1])
             scaled = {}
             for key, im in imgs.items():
                 if im is None:
@@ -325,7 +412,7 @@ class EpisodeRenderer:
                 img = img.resize((max(1, round(img.width * smul)),
                                   max(1, round(img.height * smul))),
                                  Image.LANCZOS)
-            angle = rot + brot
+            angle = rot + brot + a.get("rotate", 0)
             if abs(angle) > 0.05:
                 img = img.rotate(-angle, resample=Image.BICUBIC, expand=True)
             ax, ay = sp["anchor"]
@@ -360,7 +447,9 @@ class EpisodeRenderer:
 
     # -------------------------------------------------- output
 
-    def render(self, out_path, only_shot=None):
+    def render(self, out_path, only_shot=None, skip_preflight=False):
+        if not skip_preflight and only_shot is None:
+            self.run_preflight()
         shots = self.ep["shots"]
         idxs = range(len(shots)) if only_shot is None else [only_shot]
         prepped = [self.prep_shot(i, shots[i]) for i in idxs]
@@ -418,6 +507,9 @@ def main():
     ap.add_argument("--shot", type=int, help="render a single shot")
     ap.add_argument("--still", nargs=2, metavar=("T", "PNG"),
                     help="write the frame at time T seconds to PNG")
+    ap.add_argument("--skip-preflight", action="store_true",
+                    help="render even though the script preflight fails "
+                         "(debugging only)")
     args = ap.parse_args()
 
     r = EpisodeRenderer(args.episode, scale=0.5 if args.draft else 1.0)
@@ -426,7 +518,7 @@ def main():
         return
     out = args.out or os.path.splitext(args.episode)[0] + \
         ("-draft.mp4" if args.draft else ".mp4")
-    r.render(out, only_shot=args.shot)
+    r.render(out, only_shot=args.shot, skip_preflight=args.skip_preflight)
 
 
 if __name__ == "__main__":

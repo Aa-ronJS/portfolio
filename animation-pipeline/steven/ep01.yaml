@@ -1,6 +1,12 @@
-# STEVEN THE DOG — from Aaron's script (Steven_the_Dog.pdf).
-# Voice track is espeak placeholder in four voices; replace steven/vo/*.wav
-# with real recordings (same filenames) and re-render.
+# STEVEN THE DOG — staged 1:1 from steven/beats.json (parsed from
+# script.pdf; the script is authoritative). Every dialogue beat is
+# claimed exactly once, in order; captions are filled by the renderer
+# with the beat's verbatim text — no caption is written in this file.
+# Preflight (runs automatically before render) fails the render if any
+# line goes missing.
+#
+# Voice track: espeak placeholder, one wav per beat (vo/d01..d26.wav).
+# Replace with recordings under the same names and re-render.
 
 title: steven the dog
 size: [1080, 1920]
@@ -8,126 +14,242 @@ fps: 12
 boil: 0.0015
 boil_every: 2
 
+script: beats.json
+mode: director            # camera/staging inferred; words never invented
+cast:
+  passerby: silhouette    # no drawings yet — explicit stand-in
+  wife: silhouette
+
 defaults:
   font: ../fonts/satoshi-var.ttf
   caption_size: 0.042
   caption_weight: 700
   caption_color: [26, 26, 26]
   caption_y: 0.86
-  audio_tail: 0.25
+  audio_tail: 0.2
+  human_height: 0.42      # a standing adult (world_height 1.0) is 42%
+                          # of frame height; all sprite sizes derive
+                          # from world_height in char.json, not pixels
 
 shots:
-  # A stroll in the park.
-  - bg: backgrounds/citypark.png
+  # a01: they stroll along a winding path.
+  - beat: a01
+    bg: backgrounds/citypark.png
     duration: 2.4
-    caption: tim and carly take a stroll
     actors:
       - char: tim
         at: [0.30, 0.74]
-        scale: 0.50
         moves:
           - {type: slide, from: [-0.25, 0.74], to: [0.30, 0.74], t: [0, 1.8]}
           - {type: waddle, amp: 2.5, period: 0.5}
           - {type: bob, amp: 0.005, period: 0.5}
       - char: carly
-        at: [0.60, 0.74]
-        scale: 0.50
+        at: [0.58, 0.74]
         moves:
-          - {type: slide, from: [0.05, 0.74], to: [0.60, 0.74], t: [0, 1.8]}
+          - {type: slide, from: [0.03, 0.74], to: [0.58, 0.74], t: [0, 1.8]}
           - {type: waddle, amp: 2.5, period: 0.55}
           - {type: bob, amp: 0.005, period: 0.55}
 
-  # The dog trots up. Carly is delighted.
-  - bg: backgrounds/park.png
-    audio: vo/01_carly_hello.wav
-    caption: hello! aren't you a good boy!
+  # a02: the dog trots up; carly crouches, delighted (approximated:
+  # she leans toward him and bobs).
+  - beat: a02
+    bg: backgrounds/park.png
+    duration: 1.8
     actors:
       - char: tim
-        at: [0.20, 0.74]
-        scale: 0.50
+        at: [0.24, 0.74]
       - char: carly
-        at: [0.46, 0.74]
-        scale: 0.50
-        talk: true
+        at: [0.50, 0.74]
         moves:
-          - {type: bob, amp: 0.004, period: 0.7}
+          - {type: lean, deg: 6, t: [0.3, 1.0]}
+          - {type: bob, amp: 0.005, period: 0.5}
       - char: stevendog
-        at: [0.78, 0.74]
-        scale: 0.55
+        at: [0.80, 0.74]
         moves:
-          - {type: slide, from: [1.25, 0.74], to: [0.78, 0.74], t: [0, 1.3]}
-          - {type: hop, amp: 0.008, period: 0.4}
+          - {type: slide, from: [1.2, 0.74], to: [0.80, 0.74], t: [0, 1.2]}
+          - {type: hop, amp: 0.006, period: 0.4}
 
-  - bg: backgrounds/park.png
-    audio: vo/02_tim_likethat.wav
-    caption: it's just... you never talk to me like that
+  - beat: d01
+    bg: backgrounds/park.png
+    audio: vo/d01.wav
     actors:
       - char: tim
-        at: [0.20, 0.74]
-        scale: 0.50
-        talk: true
-        moves: [{type: bob, amp: 0.003, period: 0.8}]
+        at: [0.24, 0.74]
       - char: carly
-        at: [0.46, 0.74]
-        scale: 0.50
-      - char: stevendog
-        at: [0.78, 0.74]
-        scale: 0.55
-
-  - bg: backgrounds/park.png
-    audio: vo/03_carly_likeadog.wav
-    caption: you want me to talk to you like a dog?
-    actors:
-      - char: tim
-        at: [0.20, 0.74]
-        scale: 0.50
-      - char: carly
-        at: [0.46, 0.74]
-        scale: 0.50
+        at: [0.50, 0.74]
         talk: true
         moves: [{type: bob, amp: 0.004, period: 0.7}]
       - char: stevendog
-        at: [0.78, 0.74]
-        scale: 0.55
+        at: [0.80, 0.74]
+        moves: [{type: hop, amp: 0.005, period: 0.5}]
 
-  - bg: backgrounds/park.png
-    audio: vo/04_tim_happy.wav
-    caption: you actually seem happy to see him
+  # a03: she glances up; tim studies the dog with concern.
+  - beat: a03
+    bg: backgrounds/park.png
+    duration: 1.3
+    zoom: [1.0, 1.03]
     actors:
       - char: tim
-        at: [0.20, 0.74]
-        scale: 0.50
-        talk: true
-        moves: [{type: bob, amp: 0.003, period: 0.8}]
+        at: [0.24, 0.74]
+        moves: [{type: lean, deg: 4, t: [0, 1.0]}]
       - char: carly
-        at: [0.46, 0.74]
-        scale: 0.50
+        at: [0.50, 0.74]
       - char: stevendog
-        at: [0.78, 0.74]
-        scale: 0.55
-        moves: [{type: bob, amp: 0.003, period: 0.9}]
+        at: [0.80, 0.74]
 
-  - bg: backgrounds/park.png
-    audio: vo/05_carly_goodboy.wav
-    caption: well of course i do! he's such a good boy!
+  - beat: d02
+    bg: backgrounds/park.png
+    audio: vo/d02.wav
     actors:
       - char: tim
-        at: [0.20, 0.74]
-        scale: 0.50
+        at: [0.24, 0.74]
       - char: carly
-        at: [0.46, 0.74]
-        scale: 0.50
+        at: [0.50, 0.74]
         talk: true
         moves: [{type: bob, amp: 0.004, period: 0.7}]
       - char: stevendog
-        at: [0.78, 0.74]
-        scale: 0.55
-        moves: [{type: hop, amp: 0.006, period: 0.5}]
+        at: [0.80, 0.74]
 
-  # The accusation. Close on Tim.
-  - bg: backgrounds/park.png
-    audio: vo/06_tim_exhusband.wav
-    caption: yes. but he's your ex-husband
+  - beat: d03
+    bg: backgrounds/park.png
+    audio: vo/d03.wav
+    actors:
+      - char: tim
+        at: [0.24, 0.74]
+        talk: true
+        moves: [{type: bob, amp: 0.003, period: 0.8}]
+      - char: carly
+        at: [0.50, 0.74]
+      - char: stevendog
+        at: [0.80, 0.74]
+
+  - beat: d04
+    bg: backgrounds/park.png
+    audio: vo/d04.wav
+    actors:
+      - char: tim
+        at: [0.24, 0.74]
+      - char: carly
+        at: [0.50, 0.74]
+        talk: true
+        moves: [{type: bob, amp: 0.004, period: 0.7}]
+      - char: stevendog
+        at: [0.80, 0.74]
+
+  - beat: d05
+    bg: backgrounds/park.png
+    audio: vo/d05.wav
+    actors:
+      - char: tim
+        at: [0.24, 0.74]
+        talk: true
+        moves: [{type: bob, amp: 0.003, period: 0.8}]
+      - char: carly
+        at: [0.50, 0.74]
+      - char: stevendog
+        at: [0.80, 0.74]
+
+  # a04: carly stands.
+  - beat: a04
+    bg: backgrounds/park.png
+    duration: 0.9
+    actors:
+      - char: tim
+        at: [0.24, 0.74]
+      - char: carly
+        at: [0.50, 0.74]
+        moves: [{type: hop, amp: 0.006, period: 0.9}]
+      - char: stevendog
+        at: [0.80, 0.74]
+
+  - beat: d06
+    bg: backgrounds/park.png
+    audio: vo/d06.wav
+    actors:
+      - char: tim
+        at: [0.24, 0.74]
+      - char: carly
+        at: [0.50, 0.74]
+        talk: true
+        moves: [{type: bob, amp: 0.004, period: 0.7}]
+      - char: stevendog
+        at: [0.80, 0.74]
+
+  - beat: d07
+    bg: backgrounds/park.png
+    audio: vo/d07.wav
+    actors:
+      - char: tim
+        at: [0.24, 0.74]
+        talk: true
+        moves: [{type: bob, amp: 0.003, period: 0.8}]
+      - char: carly
+        at: [0.50, 0.74]
+      - char: stevendog
+        at: [0.80, 0.74]
+
+  - beat: d08
+    bg: backgrounds/park.png
+    audio: vo/d08.wav
+    actors:
+      - char: tim
+        at: [0.24, 0.74]
+      - char: carly
+        at: [0.50, 0.74]
+        talk: true
+        moves: [{type: bob, amp: 0.004, period: 0.7}]
+      - char: stevendog
+        at: [0.80, 0.74]
+
+  - beat: d09
+    bg: backgrounds/park.png
+    audio: vo/d09.wav
+    actors:
+      - char: tim
+        at: [0.24, 0.74]
+        talk: true
+        moves: [{type: bob, amp: 0.003, period: 0.8}]
+      - char: carly
+        at: [0.50, 0.74]
+      - char: stevendog
+        at: [0.80, 0.74]
+
+  - beat: d10
+    bg: backgrounds/park.png
+    audio: vo/d10.wav
+    actors:
+      - char: tim
+        at: [0.24, 0.74]
+      - char: carly
+        at: [0.50, 0.74]
+        talk: true
+        moves: [{type: bob, amp: 0.004, period: 0.7}]
+      - char: stevendog
+        at: [0.80, 0.74]
+        moves: [{type: hop, amp: 0.006, period: 0.45}]
+
+  # a05: she scratches the dog's head again (approximated: she steps
+  # beside him, both bob).
+  - beat: a05
+    bg: backgrounds/park.png
+    duration: 1.5
+    actors:
+      - char: tim
+        at: [0.24, 0.74]
+      - char: carly
+        at: [0.64, 0.74]
+        moves:
+          - {type: slide, from: [0.50, 0.74], to: [0.64, 0.74], t: [0, 0.6]}
+          - {type: lean, deg: 7, t: [0.5, 1.2]}
+          - {type: bob, amp: 0.004, period: 0.45}
+      - char: stevendog
+        at: [0.80, 0.74]
+        moves: [{type: bob, amp: 0.004, period: 0.45}]
+
+  # The accusation. Close on tim.
+  - beat: d11
+    bg: backgrounds/park.png
+    audio: vo/d11.wav
     zoom: [1.0, 1.05]
     actors:
       - char: tim
@@ -136,11 +258,22 @@ shots:
         talk: true
         moves: [{type: bob, amp: 0.003, period: 0.9}]
 
-  # Close on Carly. Frozen shock.
-  - bg: backgrounds/park.png
-    audio: vo/07_carly_what.wav
-    duration: 1.4
-    caption: what.
+  # a06: a beat. Scripted silence — nobody moves, nobody talks.
+  - beat: a06
+    bg: backgrounds/park.png
+    duration: 1.6
+    actors:
+      - char: tim
+        at: [0.24, 0.74]
+      - char: carly
+        at: [0.50, 0.74]
+      - char: stevendog
+        at: [0.80, 0.74]
+
+  # Close on carly, frozen.
+  - beat: d12
+    bg: backgrounds/park.png
+    audio: vo/d12.wav
     actors:
       - char: carly
         pose: surprised
@@ -149,202 +282,405 @@ shots:
         talk: true
         moves: [{type: bob, amp: 0.002, period: 1.1}]
 
-  - bg: backgrounds/park.png
-    audio: vo/08_tim_look.wav
-    caption: that's the look of someone who's been inside you
+  - beat: d13
+    bg: backgrounds/park.png
+    audio: vo/d13.wav
     actors:
       - char: tim
-        at: [0.20, 0.74]
-        scale: 0.50
+        at: [0.24, 0.74]
         talk: true
         moves: [{type: bob, amp: 0.003, period: 0.8}]
       - char: carly
         pose: surprised
-        at: [0.46, 0.74]
-        scale: 0.50
+        at: [0.50, 0.74]
       - char: stevendog
-        at: [0.78, 0.74]
-        scale: 0.55
+        at: [0.80, 0.74]
         moves: [{type: bob, amp: 0.002, period: 1.3}]
 
-  - bg: backgrounds/park.png
-    audio: vo/09_carly_justadog.wav
-    caption: tim. it's just a dog
+  - beat: d14
+    bg: backgrounds/park.png
+    audio: vo/d14.wav
     actors:
       - char: tim
-        at: [0.20, 0.74]
-        scale: 0.50
+        at: [0.24, 0.74]
       - char: carly
-        at: [0.46, 0.74]
-        scale: 0.50
+        at: [0.50, 0.74]
         talk: true
         moves: [{type: bob, amp: 0.004, period: 0.7}]
       - char: stevendog
-        at: [0.78, 0.74]
-        scale: 0.55
+        at: [0.80, 0.74]
 
-  - bg: backgrounds/park.png
-    audio: vo/10_tim_stand.wav
-    caption: come and stand exactly where i'm standing
+  - beat: d15
+    bg: backgrounds/park.png
+    audio: vo/d15.wav
     actors:
       - char: tim
-        at: [0.20, 0.74]
-        scale: 0.50
+        at: [0.24, 0.74]
         talk: true
         moves:
           - {type: bob, amp: 0.004, period: 0.6}
-          - {type: waddle, amp: 1.5, period: 0.7}
+          - {type: waddle, amp: 1.2, period: 0.8}
       - char: carly
-        at: [0.46, 0.74]
-        scale: 0.50
+        at: [0.50, 0.74]
       - char: stevendog
-        at: [0.78, 0.74]
-        scale: 0.55
+        at: [0.80, 0.74]
 
-  # She stands on the spot.
-  - bg: backgrounds/park.png
-    audio: vo/11_carly_omg.wav
-    caption: oh my god. steven!
+  - beat: d16
+    bg: backgrounds/park.png
+    audio: vo/d16.wav
     actors:
+      - char: tim
+        at: [0.24, 0.74]
+      - char: carly
+        at: [0.50, 0.74]
+        talk: true
+        moves: [{type: bob, amp: 0.004, period: 0.7}]
+      - char: stevendog
+        at: [0.80, 0.74]
+
+  - beat: d17
+    bg: backgrounds/park.png
+    audio: vo/d17.wav
+    actors:
+      - char: tim
+        at: [0.24, 0.74]
+        talk: true
+        moves:
+          - {type: bob, amp: 0.005, period: 0.55}
+          - {type: waddle, amp: 1.8, period: 0.6}
+      - char: carly
+        at: [0.50, 0.74]
+      - char: stevendog
+        at: [0.80, 0.74]
+
+  - beat: d18
+    bg: backgrounds/park.png
+    audio: vo/d18.wav
+    actors:
+      - char: tim
+        at: [0.24, 0.74]
+      - char: carly
+        at: [0.50, 0.74]
+        talk: true
+      - char: stevendog
+        at: [0.80, 0.74]
+
+  # a07: carly steps into tim's position; tim makes room.
+  - beat: a07
+    bg: backgrounds/park.png
+    duration: 1.7
+    actors:
+      - char: tim
+        at: [0.42, 0.74]
+        moves:
+          - {type: slide, from: [0.24, 0.74], to: [0.42, 0.74], t: [0.2, 1.0]}
+          - {type: waddle, amp: 2, period: 0.5}
+      - char: carly
+        at: [0.24, 0.74]
+        moves:
+          - {type: slide, from: [0.50, 0.74], to: [0.24, 0.74], t: [0.2, 1.2]}
+          - {type: waddle, amp: 2, period: 0.5}
+      - char: stevendog
+        at: [0.80, 0.74]
+
+  # From the spot, she sees it.
+  - beat: d19
+    bg: backgrounds/park.png
+    audio: vo/d19.wav
+    actors:
+      - char: tim
+        at: [0.42, 0.74]
       - char: carly
         pose: surprised
-        at: [0.30, 0.74]
-        scale: 0.50
+        at: [0.24, 0.74]
         talk: true
         moves: [{type: shake, amp: 0.002}]
       - char: stevendog
-        at: [0.78, 0.74]
-        scale: 0.55
+        at: [0.80, 0.74]
 
-  # THE REVEAL. From this spot, the dog is a man in a dog suit.
-  - bg: backgrounds/park.png
-    audio: vo/12_steven_ffs.wav
-    caption: oh for fuck's sake tim. she doesn't even love you
-    zoom: [1.0, 1.07]
+  # c01: ANGLE ON — from tim's viewpoint the dog is a man in a dog
+  # suit, sprawled suggestively (a08).
+  - beat: c01
+    bg: backgrounds/park.png
+    duration: 1.8
+    zoom: [1.0, 1.05]
     actors:
       - char: steven
         at: [0.5, 0.76]
-        scale: 0.88
+        size: 1.5
+        moves: [{type: bob, amp: 0.002, period: 1.2}]
+
+  - beat: d20
+    bg: backgrounds/park.png
+    audio: vo/d20.wav
+    zoom: [1.0, 1.04]
+    actors:
+      - char: steven
+        at: [0.5, 0.76]
+        size: 1.5
         talk: true
         moves: [{type: bob, amp: 0.002, period: 1.2}]
 
-  - bg: backgrounds/park.png
-    audio: vo/13_carly_money.wav
-    caption: it's true, i do prefer steven. but tim has more money. so
+  - beat: d21
+    bg: backgrounds/park.png
+    audio: vo/d21.wav
     actors:
       - char: tim
-        at: [0.16, 0.74]
-        scale: 0.48
+        at: [0.20, 0.74]
       - char: carly
-        at: [0.40, 0.74]
-        scale: 0.48
+        at: [0.44, 0.74]
         talk: true
         moves: [{type: bob, amp: 0.004, period: 0.7}]
       - char: steven
-        at: [0.74, 0.76]
-        scale: 0.55
+        at: [0.76, 0.76]
 
-  - bg: backgrounds/park.png
-    audio: vo/14_laugh.wav
-    caption: they all share a laugh
+  # a09: the helpless shrug.
+  - beat: a09
+    bg: backgrounds/park.png
+    duration: 1.1
     actors:
       - char: tim
-        at: [0.16, 0.74]
-        scale: 0.48
+        at: [0.20, 0.74]
+      - char: carly
+        at: [0.44, 0.74]
+        moves: [{type: waddle, amp: 3, period: 0.55}]
+      - char: steven
+        at: [0.76, 0.76]
+
+  # a10: they all share a laugh. (Silent until the foley pass exists —
+  # the laughter is an action, not authored dialogue.)
+  - beat: a10
+    bg: backgrounds/park.png
+    duration: 1.6
+    actors:
+      - char: tim
+        at: [0.20, 0.74]
         moves: [{type: bob, amp: 0.006, period: 0.35}]
       - char: carly
-        at: [0.40, 0.74]
-        scale: 0.48
-        talk: true
+        at: [0.44, 0.74]
         moves: [{type: bob, amp: 0.006, period: 0.32}]
       - char: steven
-        at: [0.74, 0.76]
-        scale: 0.55
+        at: [0.76, 0.76]
         moves: [{type: bob, amp: 0.004, period: 0.38}]
 
-  # Tim has heard enough.
-  - bg: backgrounds/flash.png
+  # a11: tim draws a gun and shoots steven dead. Rendered as a hard
+  # white flash — no on-screen text.
+  - beat: a11
+    bg: backgrounds/flash.png
     duration: 0.5
-    caption: bang.
-    caption_y: 0.5
 
-  # Beat.
+  # The body. Held in silence.
   - bg: backgrounds/park.png
     duration: 1.5
     actors:
       - char: steven
         pose: dead
-        at: [0.55, 0.78]
-        scale: 0.80
+        at: [0.52, 0.78]
+        size: 1.3
 
-  - bg: backgrounds/park.png
-    audio: vo/15_passerby_shot.wav
-    caption: you just shot that dog!
+  # a12: a passerby and his wife gasp — from the ordinary viewpoint
+  # they see a dead DOG (the viewpoint rule holds after death).
+  - beat: a12
+    bg: backgrounds/park.png
+    duration: 1.6
     actors:
-      - char: steven
-        pose: dead
-        at: [0.55, 0.78]
-        scale: 0.80
-      - char: tim
-        at: [0.14, 0.74]
-        scale: 0.48
+      - char: stevendog
+        at: [0.42, 0.72]
+        rotate: 100
+      - char: passerby
+        at: [0.78, 0.74]
+        moves:
+          - {type: slide, from: [1.15, 0.74], to: [0.78, 0.74], t: [0, 1.0]}
+      - char: wife
+        at: [0.94, 0.74]
+        size: 0.94
+        moves:
+          - {type: slide, from: [1.3, 0.74], to: [0.94, 0.74], t: [0, 1.0]}
 
-  - bg: backgrounds/park.png
-    audio: vo/16_tim_relax.wav
-    caption: relax. it's just my girlfriend's ex-husband
+  - beat: d22
+    bg: backgrounds/park.png
+    audio: vo/d22.wav
     actors:
-      - char: steven
-        pose: dead
-        at: [0.55, 0.78]
-        scale: 0.80
+      - char: stevendog
+        at: [0.42, 0.72]
+        rotate: 100
+      - char: passerby
+        at: [0.78, 0.74]
+        talk: true
+        moves: [{type: bob, amp: 0.004, period: 0.6}]
+      - char: wife
+        at: [0.94, 0.74]
+        size: 0.94
+
+  - beat: d23
+    bg: backgrounds/park.png
+    audio: vo/d23.wav
+    actors:
+      - char: stevendog
+        at: [0.42, 0.72]
+        rotate: 100
       - char: tim
-        at: [0.14, 0.74]
-        scale: 0.48
+        at: [0.16, 0.74]
         talk: true
         moves: [{type: bob, amp: 0.003, period: 0.8}]
+      - char: passerby
+        at: [0.78, 0.74]
+      - char: wife
+        at: [0.94, 0.74]
+        size: 0.94
 
-  - bg: backgrounds/park.png
-    audio: vo/17_passerby_ok.wav
-    caption: ah so it is! haha, no worries
+  # a13: the passerbys step into the spot...
+  - beat: a13
+    bg: backgrounds/park.png
+    duration: 1.5
+    actors:
+      - char: stevendog
+        at: [0.42, 0.72]
+        rotate: 100
+      - char: passerby
+        at: [0.24, 0.74]
+        moves:
+          - {type: slide, from: [0.78, 0.74], to: [0.24, 0.74], t: [0, 1.1]}
+          - {type: waddle, amp: 2, period: 0.5}
+      - char: wife
+        at: [0.10, 0.74]
+        size: 0.94
+        moves:
+          - {type: slide, from: [0.94, 0.74], to: [0.10, 0.74], t: [0, 1.2]}
+          - {type: waddle, amp: 2, period: 0.5}
+
+  # ...and from there, so it is: a dead man in a dog suit.
+  - beat: d24
+    bg: backgrounds/park.png
+    audio: vo/d24.wav
     actors:
       - char: steven
         pose: dead
         at: [0.55, 0.78]
-        scale: 0.80
-
-  # They stroll off, perfectly calm.
-  - bg: backgrounds/citypark.png
-    audio: vo/18_carly_joking.wav
-    caption: i was only joking about the money thing, darling
-    actors:
-      - char: tim
-        at: [0.55, 0.74]
-        scale: 0.48
-        moves:
-          - {type: slide, from: [0.25, 0.74], to: [0.55, 0.74], t: [0, 3.0]}
-          - {type: waddle, amp: 2, period: 0.55}
-      - char: carly
-        at: [0.78, 0.74]
-        scale: 0.48
+        size: 1.2
+      - char: passerby
+        at: [0.16, 0.74]
         talk: true
+        moves: [{type: bob, amp: 0.004, period: 0.6}]
+      - char: wife
+        at: [0.04, 0.74]
+        size: 0.94
+
+  # a14: they stroll off.
+  - beat: a14
+    bg: backgrounds/park.png
+    duration: 1.4
+    actors:
+      - char: steven
+        pose: dead
+        at: [0.55, 0.78]
+        size: 1.2
+      - char: passerby
+        at: [-0.2, 0.74]
         moves:
-          - {type: slide, from: [0.48, 0.74], to: [0.78, 0.74], t: [0, 3.0]}
+          - {type: slide, from: [0.16, 0.74], to: [-0.2, 0.74], t: [0, 1.1]}
+          - {type: waddle, amp: 2, period: 0.5}
+      - char: wife
+        at: [-0.35, 0.74]
+        size: 0.94
+        moves:
+          - {type: slide, from: [0.04, 0.74], to: [-0.35, 0.74], t: [0, 1.2]}
           - {type: waddle, amp: 2, period: 0.5}
 
-  - bg: backgrounds/citypark.png
-    audio: vo/19_tim_iknow.wav
-    caption: yeah. i know
+  # a15: tim and carly step over steven's body and walk away (gun toss
+  # approximated away — no gun asset).
+  - beat: a15
+    bg: backgrounds/park.png
+    duration: 2.2
     actors:
+      - char: steven
+        pose: dead
+        at: [0.45, 0.78]
+        size: 1.2
       - char: tim
-        at: [0.88, 0.74]
-        scale: 0.48
-        talk: true
+        at: [0.85, 0.74]
         moves:
-          - {type: slide, from: [0.60, 0.74], to: [0.88, 0.74], t: [0, 1.6]}
+          - {type: slide, from: [0.10, 0.74], to: [0.85, 0.74], t: [0, 1.9]}
+          - {type: hop, amp: 0.012, period: 0.55}
           - {type: waddle, amp: 2, period: 0.55}
       - char: carly
-        at: [1.12, 0.74]
-        scale: 0.48
+        at: [0.99, 0.74]
         moves:
-          - {type: slide, from: [0.82, 0.74], to: [1.12, 0.74], t: [0, 1.6]}
+          - {type: slide, from: [0.24, 0.74], to: [0.99, 0.74], t: [0, 1.9]}
+          - {type: hop, amp: 0.012, period: 0.5}
+          - {type: waddle, amp: 2, period: 0.5}
+
+  # a16: carly hangs on his arm as they go.
+  - beat: a16
+    bg: backgrounds/citypark.png
+    duration: 1.2
+    actors:
+      - char: tim
+        at: [0.40, 0.74]
+        moves:
+          - {type: slide, from: [0.20, 0.74], to: [0.40, 0.74], t: [0, 1.2]}
+          - {type: waddle, amp: 2, period: 0.55}
+      - char: carly
+        at: [0.56, 0.74]
+        moves:
+          - {type: slide, from: [0.36, 0.74], to: [0.56, 0.74], t: [0, 1.2]}
+          - {type: waddle, amp: 2, period: 0.5}
+
+  - beat: d25
+    bg: backgrounds/citypark.png
+    audio: vo/d25.wav
+    actors:
+      - char: tim
+        at: [0.52, 0.74]
+        moves:
+          - {type: slide, from: [0.40, 0.74], to: [0.52, 0.74], t: [0, 3.0]}
+          - {type: waddle, amp: 1.5, period: 0.55}
+      - char: carly
+        at: [0.68, 0.74]
+        talk: true
+        moves:
+          - {type: slide, from: [0.56, 0.74], to: [0.68, 0.74], t: [0, 3.0]}
+          - {type: waddle, amp: 1.5, period: 0.5}
+
+  # a17: tim sighs.
+  - beat: a17
+    bg: backgrounds/citypark.png
+    duration: 1.0
+    actors:
+      - char: tim
+        at: [0.52, 0.74]
+        moves: [{type: bob, amp: 0.004, period: 1.0}]
+      - char: carly
+        at: [0.68, 0.74]
+
+  - beat: d26
+    bg: backgrounds/citypark.png
+    audio: vo/d26.wav
+    actors:
+      - char: tim
+        at: [0.60, 0.74]
+        talk: true
+        moves:
+          - {type: slide, from: [0.52, 0.74], to: [0.60, 0.74], t: [0, 1.5]}
+          - {type: waddle, amp: 1.5, period: 0.55}
+      - char: carly
+        at: [0.76, 0.74]
+        moves:
+          - {type: slide, from: [0.68, 0.74], to: [0.76, 0.74], t: [0, 1.5]}
+          - {type: waddle, amp: 1.5, period: 0.5}
+
+  # a18: they disappear down the path, perfectly calm.
+  - beat: a18
+    bg: backgrounds/citypark.png
+    duration: 2.2
+    actors:
+      - char: tim
+        at: [1.2, 0.74]
+        moves:
+          - {type: slide, from: [0.60, 0.74], to: [1.2, 0.74], t: [0, 1.9]}
+          - {type: waddle, amp: 2, period: 0.55}
+      - char: carly
+        at: [1.36, 0.74]
+        moves:
+          - {type: slide, from: [0.76, 0.74], to: [1.36, 0.74], t: [0, 1.9]}
           - {type: waddle, amp: 2, period: 0.5}

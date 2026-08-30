@@ -47,6 +47,38 @@ python3 pipeline/puppet.py direct take.m4a ep.yaml      # voice-directed
 python3 pipeline/ingest.py photo.jpg characters/x/body.png [--no-crop]
 ```
 
+## The script is authoritative (P0, enforced)
+
+When an episode has a `script:` key, `render.py` runs a preflight that
+BLOCKS rendering if any dialogue beat is unclaimed, claimed twice, out
+of order, silent, or if any shot carries a hand-written caption
+(mode `strict`/`director`). Captions are filled from the beat's verbatim
+text. Workflow:
+
+```bash
+python3 pipeline/screenplay.py parse myshow/script.pdf -o myshow/beats.json
+python3 pipeline/screenplay.py vo myshow/beats.json myshow/vo   # placeholders
+python3 pipeline/screenplay.py preflight myshow/ep.yaml         # standalone
+```
+
+Shots claim beats (`beat: d07`); action beats claimed too = "staged",
+otherwise reported as approximated. Characters without assets are
+ERRORS unless the episode's `cast:` map explicitly says `silhouette`
+(grey stand-in) or `omit`. NEVER abridge, paraphrase, reorder, merge or
+soften dialogue; never turn stage directions into on-screen text;
+parentheticals like (annoyed) pick performance, not captions.
+`steven/ep01.yaml` is the reference implementation (26/26 lines).
+See ROADMAP.md for the full production-review priorities (P1–P4).
+
+## Sprite scale is semantic
+
+`world_height` in char.json (1.0 = standing adult; dog 0.35) plus
+`defaults.human_height` (0.42 of frame) size sprites via their VISIBLE
+bounds — drawing resolution and canvas padding cannot distort scale.
+Per-actor `size:` multiplies it (an authored decision). Legacy `scale:`
+(canvas-fraction) still works and is what close-up framing uses until
+the camera layer (P1) exists.
+
 ## Design decisions a future session should not undo
 
 - **12fps, boil jitter, two-frame mouths are the look**, not a quality
