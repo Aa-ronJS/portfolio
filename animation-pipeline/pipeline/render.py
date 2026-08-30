@@ -15,60 +15,21 @@ Usage:
 """
 
 import argparse
+import hashlib
 import json
 import math
 import os
 import random
-import struct
 import subprocess
 import sys
-import wave
 
 import numpy as np
 import yaml
 from PIL import Image, ImageDraw, ImageFont
 
-AUDIO_SR = 44100          # everything is resampled to this before the mux
-ENV_SR = 16000            # envelope analysis rate
-ENV_WIN = 0.03            # seconds per envelope window
-
-
-# ---------------------------------------------------------------- audio
-
-def decode_audio(path, sr):
-    """Decode any audio file ffmpeg understands to mono float32 at sr."""
-    out = subprocess.run(
-        ["ffmpeg", "-v", "error", "-i", path, "-f", "f32le", "-ac", "1",
-         "-ar", str(sr), "-"],
-        capture_output=True, check=True)
-    return np.frombuffer(out.stdout, dtype=np.float32)
-
-
-def envelope(path):
-    """Loudness envelope of a voice line, normalised to roughly 0..1.
-
-    Returns (values, rate_hz). Sample it at each frame time to decide
-    whether the mouth is open.
-    """
-    pcm = decode_audio(path, ENV_SR)
-    win = max(1, int(ENV_SR * ENV_WIN))
-    n = len(pcm) // win
-    if n == 0:
-        return np.zeros(1), 1.0 / ENV_WIN
-    rms = np.sqrt((pcm[:n * win].reshape(n, win) ** 2).mean(axis=1))
-    peak = np.percentile(rms, 97)
-    if peak > 1e-6:
-        rms = rms / peak
-    return np.clip(rms, 0, 1.5), 1.0 / ENV_WIN
-
-
-def write_wav(path, pcm):
-    pcm16 = (np.clip(pcm, -1, 1) * 32767).astype("<i2")
-    with wave.open(path, "wb") as w:
-        w.setnchannels(1)
-        w.setsampwidth(2)
-        w.setframerate(AUDIO_SR)
-        w.writeframes(pcm16.tobytes())
+sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+from audiolib import (AUDIO_SR, decode_audio, envelope, mouth_track,
+                      split_take, write_wav)
 
 
 # ---------------------------------------------------------------- assets
@@ -197,7 +158,48 @@ class EpisodeRenderer:
         self.caption_color = tuple(d.get("caption_color", [26, 26, 26]))
         self.caption_y = d.get("caption_y", 0.70)
         self.tail = d.get("audio_tail", 0.35)  # silence appended after a line
+        self.talk_style = d.get("talk_style", "syllable")
         self.chars = {}
+        self.take_lines = None  # lazy: split of the episode's raw take
+
+    def take_line(self, n):
+        """Path to spoken line n (1-based) cut from the episode's raw take.
+
+        The split is cached next to the take, keyed by its content, so a
+        re-recorded take invalidates automatically.
+        """
+        if self.take_lines is None:
+            take = self.ep.get("take")
+            if not take:
+                raise SystemExit("shot uses 'line:' but the episode has no "
+                                 "'take:' recording")
+            take = self.path(take)
+            with open(take, "rb") as f:
+                key = hashlib.md5(f.read()).hexdigest()[:12]
+            cache = os.path.join(os.path.dirname(take), f".take-{key}")
+            split_cfg = self.ep.get("split", {})
+            if not os.path.isdir(cache):
+                cuts, spans = split_take(
+                    take,
+                    min_pause=split_cfg.get("min_pause", 0.35),
+                    min_line=split_cfg.get("min_line", 0.25),
+                    pad=split_cfg.get("pad", 0.12))
+                os.makedirs(cache, exist_ok=True)
+                for i, pcm in enumerate(cuts):
+                    write_wav(os.path.join(cache, f"line{i + 1:02d}.wav"),
+                              pcm)
+                print(f"split take into {len(cuts)} lines "
+                      f"(cached in {os.path.relpath(cache, self.root)})",
+                      file=sys.stderr)
+            self.take_lines = sorted(
+                os.path.join(cache, f) for f in os.listdir(cache)
+                if f.endswith(".wav"))
+        if not 1 <= n <= len(self.take_lines):
+            raise SystemExit(f"'line: {n}' but the take has only "
+                             f"{len(self.take_lines)} spoken lines — "
+                             f"listen for missed pauses, or tune 'split:' "
+                             f"(min_pause) in the episode file")
+        return self.take_lines[n - 1]
 
     def path(self, p):
         return p if os.path.isabs(p) else os.path.join(self.root, p)
@@ -213,14 +215,18 @@ class EpisodeRenderer:
         s = dict(shot)
         s["env"] = None
         s["pcm"] = np.zeros(0, dtype=np.float32)
-        if shot.get("audio"):
+        ap = None
+        if shot.get("line"):
+            ap = self.take_line(int(shot["line"]))
+        elif shot.get("audio"):
             ap = self.path(shot["audio"])
+        if ap:
             s["pcm"] = decode_audio(ap, AUDIO_SR)
             s["env"], s["env_rate"] = envelope(ap)
             audio_dur = len(s["pcm"]) / AUDIO_SR
             s["duration"] = shot.get("duration") or (audio_dur + self.tail)
         elif "duration" not in shot:
-            raise SystemExit(f"shot {i}: needs 'audio' or 'duration'")
+            raise SystemExit(f"shot {i}: needs 'audio', 'line' or 'duration'")
         s["frames"] = max(1, round(s["duration"] * self.fps))
         s["duration"] = s["frames"] / self.fps
         # pad / trim audio to the exact shot length
@@ -258,8 +264,14 @@ class EpisodeRenderer:
                 if a.get("flip"):
                     im = im.transpose(Image.FLIP_LEFT_RIGHT)
                 scaled[key] = im
+            mouth = None
+            if a.get("talk") and s["env"] is not None:
+                mouth = mouth_track(
+                    s["env"], s["env_rate"], s["frames"], self.fps,
+                    style=a.get("talk_style", self.talk_style),
+                    thr=a.get("talk_threshold", 0.28))
             s["sprites"].append({
-                "imgs": scaled, "anchor": anchor, "cfg": a,
+                "imgs": scaled, "anchor": anchor, "cfg": a, "mouth": mouth,
                 "phase": random.Random((i + 1) * 37 + j).random(),
                 "blinks": self._blink_times(s["duration"], (i + 1) * 91 + j)
                           if scaled["blink"] is not None else [],
@@ -287,10 +299,7 @@ class EpisodeRenderer:
         frame = s["bg"].copy()
         for j, sp in enumerate(s["sprites"]):
             a = sp["cfg"]
-            talking = False
-            if a.get("talk") and s["env"] is not None:
-                k = min(len(s["env"]) - 1, int(t * s["env_rate"]))
-                talking = s["env"][k] > a.get("talk_threshold", 0.28)
+            talking = sp["mouth"] is not None and bool(sp["mouth"][f])
             blinking = any(bt <= t < bt + 2.0 / self.fps for bt in sp["blinks"])
             img = sp["imgs"]["blink"] if (blinking and sp["imgs"]["blink"] is not None) \
                 else (sp["imgs"]["talk"] if (talking and sp["imgs"]["talk"] is not None)

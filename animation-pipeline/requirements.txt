@@ -2,4 +2,6 @@ pillow
 numpy
 pyyaml
 scipy
+# optional, for auto-captions from your recording:
+# faster-whisper
 # plus ffmpeg on your PATH

@@ -216,6 +216,23 @@ def main():
     mumble(os.path.join(HERE, "vo", "line3.wav"), 9, 3)
     print("vo/line1..3.wav (placeholder mumbles — replace with real voice)")
 
+    # A fake "raw take": the three lines recorded in one go with pauses,
+    # to exercise the puppet/take workflow (episode-take.yaml).
+    import numpy as np
+    sr = 44100
+    parts, gap = [], np.zeros(int(0.7 * sr), dtype=np.int16)
+    for n in (1, 2, 3):
+        with wave.open(os.path.join(HERE, "vo", f"line{n}.wav")) as w:
+            parts.append(np.frombuffer(
+                w.readframes(w.getnframes()), dtype="<i2"))
+        parts.append(gap)
+    with wave.open(os.path.join(HERE, "vo", "take.wav"), "wb") as w:
+        w.setnchannels(1)
+        w.setsampwidth(2)
+        w.setframerate(sr)
+        w.writeframes(np.concatenate(parts).tobytes())
+    print("vo/take.wav (fake single-take recording)")
+
 
 if __name__ == "__main__":
     main()

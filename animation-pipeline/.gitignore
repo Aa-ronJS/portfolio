@@ -1,3 +1,4 @@
 *.mp4
 !demo/episode.mp4
 *.temp.wav
+.take-*/

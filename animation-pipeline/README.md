@@ -25,6 +25,56 @@ The demo art and audio are programmatic stand-ins so the pipeline runs on a
 fresh clone. Every real episode replaces them with your drawings and your
 recorded voice.
 
+## Puppet mode: one raw recording drives the whole episode
+
+The fastest loop. Record the entire episode's voice acting as a single
+take on your phone — every line in order, a beat of silence (~half a
+second) between lines. Then:
+
+```bash
+python3 pipeline/puppet.py scaffold take1.m4a myshow/ep02.yaml \
+    --char gary --bg backgrounds/pub.png
+python3 pipeline/render.py myshow/ep02.yaml --draft
+```
+
+`scaffold` splits the take on silence, makes one shot per spoken line
+(shot length and mouth flap come from your voice automatically), and
+writes an episode file you then edit — recast shots, move people around,
+fix captions. If `faster-whisper` is installed (`pip install
+faster-whisper`, optional), each line is transcribed into its caption;
+otherwise captions are placeholders.
+
+Or keep writing the yaml yourself and just point it at the recording —
+`take:` at the top, `line: N` per shot instead of `audio:`:
+
+```yaml
+take: vo/take1.m4a
+shots:
+  - bg: backgrounds/pub.png
+    line: 1                 # the first thing said in the recording
+    caption: gary has been to the moon apparently
+    actors: [{char: gary, at: [0.5, 0.74], scale: 0.4, talk: true}]
+```
+
+The split is cached next to the take and re-cut automatically when the
+recording changes. If lines get merged or split wrongly, inspect with
+`python3 pipeline/puppet.py split take1.m4a /tmp/lines` and tune
+`split: {min_pause: 0.35}` in the episode file (raise it if your pauses
+are long, lower it if it glues two lines together).
+
+`demo/episode-take.yaml` is the same demo driven this way from
+`demo/vo/take.wav`.
+
+### Mouth styles
+
+`talk_style` — in `defaults:` or per actor:
+
+| style | look |
+|---|---|
+| `syllable` | mouth pops open on each syllable of your voice (default) |
+| `envelope` | open whenever you're loud; long vowels hold open |
+| `alternate` | strict 0101 flap every frame while you're speaking |
+
 ## The workflow, per episode
 
 1. **Write it first.** 3–6 shots, one caption each, under 30 seconds total.
@@ -94,7 +144,8 @@ defaults:
 shots:
   - bg: backgrounds/pub.png
     audio: vo/line1.wav        # shot length = audio + tail...
-    duration: 3.0              # ...or set it explicitly (required if no audio)
+    line: 2                    # ...or spoken line N of the episode 'take:'...
+    duration: 3.0              # ...or set it explicitly (required if neither)
     caption: one line, lowercase, that is the joke or sets it up
     caption_y: 0.84            # per-shot override
     zoom: [1.0, 1.06]          # optional slow push-in
