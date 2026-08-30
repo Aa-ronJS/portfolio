@@ -19,6 +19,8 @@ mode: director            # camera/staging inferred; words never invented
 cast:
   wife: omit    # author's decision 2026-08-30: the passerby is one person
 
+ambience: {file: sfx/ambience_bellbirds.wav, gain: 0.5}
+
 defaults:
   font: ../fonts/satoshi-var.ttf
   caption_size: 0.042
@@ -35,7 +37,22 @@ shots:
   - beat: a01
     bg: backgrounds/citypark.png
     duration: 2.4
+    sfx:
+      - {file: sfx/footsteps_gravel.wav, at: 0.0, dur: 2.4, gain: 2.5}
     actors:
+      - char: bird
+        at: [1.25, 0.16]
+        moves:
+          - {type: slide, from: [-0.15, 0.20], to: [1.25, 0.16], t: [0, 2.4]}
+        alt_pose: flap
+        alt_period: 0.45
+      - char: bird
+        at: [1.3, 0.10]
+        size: 0.7
+        moves:
+          - {type: slide, from: [-0.3, 0.13], to: [1.3, 0.10], t: [0, 2.4]}
+        alt_pose: flap
+        alt_period: 0.38
       - char: tim
         at: [0.30, 0.74]
         moves:
@@ -262,6 +279,12 @@ shots:
     bg: backgrounds/park.png
     duration: 1.6
     actors:
+      - char: bird
+        at: [1.25, 0.14]
+        moves:
+          - {type: slide, from: [-0.2, 0.17], to: [1.25, 0.14], t: [0, 1.6]}
+        alt_pose: flap
+        alt_period: 0.4
       - char: tim
         at: [0.24, 0.74]
       - char: carly
@@ -424,6 +447,13 @@ shots:
     bg: backgrounds/park.png
     audio: vo/d21.wav
     actors:
+      - char: bird
+        at: [-0.2, 0.12]
+        size: 0.8
+        moves:
+          - {type: slide, from: [1.2, 0.15], to: [-0.2, 0.12], t: [0, 3.5]}
+        alt_pose: flap
+        alt_period: 0.5
       - char: tim
         at: [0.20, 0.74]
       - char: carly
@@ -467,6 +497,8 @@ shots:
   - beat: a11
     bg: backgrounds/flash.png
     duration: 0.5
+    sfx:
+      - {file: sfx/gunshot.mp3, at: 0.02, gain: 0.9}
 
   # The body. Held in silence.
   - bg: backgrounds/park.png
@@ -524,6 +556,8 @@ shots:
   - beat: a13
     bg: backgrounds/park.png
     duration: 1.5
+    sfx:
+      - {file: sfx/footsteps_gravel.wav, at: 0.0, dur: 1.5, gain: 2.2}
     actors:
       - char: stevendog
         at: [0.42, 0.72]
@@ -570,6 +604,8 @@ shots:
   - beat: a15
     bg: backgrounds/park.png
     duration: 2.2
+    sfx:
+      - {file: sfx/footsteps_gravel.wav, at: 0.2, dur: 2.0, gain: 2.5}
     actors:
       - char: steven
         pose: dead
@@ -592,6 +628,8 @@ shots:
   - beat: a16
     bg: backgrounds/citypark.png
     duration: 1.2
+    sfx:
+      - {file: sfx/footsteps_gravel.wav, at: 0.0, dur: 1.2, gain: 2.0}
     actors:
       - char: tim
         at: [0.40, 0.74]
@@ -651,6 +689,8 @@ shots:
   - beat: a18
     bg: backgrounds/citypark.png
     duration: 2.2
+    sfx:
+      - {file: sfx/footsteps_gravel.wav, at: 0.0, dur: 2.2, gain: 2.4}
     actors:
       - char: tim
         at: [1.2, 0.74]

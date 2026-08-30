@@ -68,6 +68,10 @@ class Character:
                 m = json.load(f)
             self.anchor = tuple(m.get("anchor", self.anchor))
             self.world_height = m.get("world_height")
+            # which way the DRAWING faces: "left"/"right" for profile
+            # characters (enables auto-facing), absent for front-on ones
+            # (never auto-flipped — mirrored shirt text looks wrong)
+            self.facing = m.get("facing")
         # visible bounds: pixel dimensions of the drawing, not the canvas
         self.bbox = self.layers["body"].getchannel("A") \
             .point(lambda v: 255 if v > 24 else 0).getbbox() \
@@ -333,6 +337,8 @@ class EpisodeRenderer:
         s["bg"] = bg.crop((x, y, x + self.W, y + self.H))
         # pre-scale actor sprites once per shot
         s["sprites"] = []
+        talker = next((x for x in shot.get("actors", [])
+                       if x.get("talk")), None)
         for j, a in enumerate(shot.get("actors", [])):
             if "char" in a:
                 c = self.char(a["char"])
@@ -354,6 +360,29 @@ class EpisodeRenderer:
                 # padding and drawing resolution can't distort scale
                 wh = c.world_height * a.get("size", 1.0)
                 k = (wh * self.human * self.H) / (c.bbox[3] - c.bbox[1])
+            # auto-facing: a profile character turns toward its subject —
+            # the direction it walks, else whoever is speaking. Explicit
+            # flip wins; rotated actors (corpses) keep their native side.
+            facing = getattr(c, "facing", None) if c else None
+            if "flip" in a:
+                do_flip = a["flip"]
+            elif facing in ("left", "right") and "rotate" not in a:
+                ax0 = a.get("at", [0.5, 0.85])[0]
+                slide = next((mv for mv in a.get("moves", [])
+                              if mv.get("type") == "slide"), None)
+                if slide:
+                    want = "right" if slide["to"][0] > slide["from"][0] \
+                        else "left"
+                elif talker is not None and talker is not a and \
+                        abs(talker.get("at", [0.5])[0] - ax0) > 0.03:
+                    want = "left" if talker.get("at", [0.5])[0] < ax0 \
+                        else "right"
+                else:
+                    want = facing
+                do_flip = want != facing
+            else:
+                do_flip = False
+
             def scale_set(src):
                 out = {}
                 for key, im in src.items():
@@ -362,7 +391,7 @@ class EpisodeRenderer:
                         continue
                     im = im.resize((round(im.width * k),
                                     round(im.height * k)), Image.LANCZOS)
-                    if a.get("flip"):
+                    if do_flip:
                         im = im.transpose(Image.FLIP_LEFT_RIGHT)
                     out[key] = im
                 return out
@@ -461,6 +490,52 @@ class EpisodeRenderer:
                    fill=self.caption_color)
             y += lh
 
+    # -------------------------------------------------- audio mix
+
+    def mix_audio(self, prepped):
+        """Dialogue timeline + per-shot foley cues + looped ambience.
+
+        Shot yaml:   sfx: [{file: sfx/gunshot.mp3, at: 0.2, gain: 0.8,
+                            dur: 1.5, loop: false}]
+        Episode yaml: ambience: {file: sfx/birds.wav, gain: 0.2}
+        A cue without dur plays out fully (a gunshot's tail rings into
+        the next shot on purpose); dur cuts it with a short fade.
+        """
+        if not prepped:
+            return np.zeros(1, dtype=np.float32)
+        mix = np.concatenate([s["pcm"] for s in prepped]).copy()
+
+        def add(pcm, start_s, gain):
+            i = int(start_s * AUDIO_SR)
+            if i >= len(mix):
+                return
+            pcm = pcm[:len(mix) - i]
+            mix[i:i + len(pcm)] += pcm * gain
+
+        offset = 0.0
+        for s in prepped:
+            for cue in s.get("sfx") or []:
+                pcm = decode_audio(self.path(cue["file"]), AUDIO_SR)
+                dur = cue.get("dur")
+                if dur:
+                    n = int(dur * AUDIO_SR)
+                    if cue.get("loop") and len(pcm) < n:
+                        pcm = np.tile(pcm, n // len(pcm) + 1)
+                    pcm = pcm[:n].copy()
+                    fade = min(len(pcm), int(0.06 * AUDIO_SR))
+                    if fade:
+                        pcm[-fade:] *= np.linspace(1, 0, fade,
+                                                   dtype=np.float32)
+                add(pcm, offset + cue.get("at", 0.0), cue.get("gain", 1.0))
+            offset += s["duration"]
+
+        amb = self.ep.get("ambience")
+        if amb:
+            pcm = decode_audio(self.path(amb["file"]), AUDIO_SR)
+            reps = len(mix) // len(pcm) + 1
+            add(np.tile(pcm, reps), 0.0, amb.get("gain", 0.2))
+        return np.clip(mix, -1, 1)
+
     # -------------------------------------------------- output
 
     def render(self, out_path, only_shot=None, skip_preflight=False):
@@ -471,8 +546,7 @@ class EpisodeRenderer:
         prepped = [self.prep_shot(i, shots[i]) for i in idxs]
 
         audio_path = out_path + ".temp.wav"
-        write_wav(audio_path, np.concatenate([s["pcm"] for s in prepped])
-                  if prepped else np.zeros(1, dtype=np.float32))
+        write_wav(audio_path, self.mix_audio(prepped))
 
         proc = subprocess.Popen(
             ["ffmpeg", "-y", "-v", "error",

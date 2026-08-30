@@ -109,6 +109,16 @@ captions). Aaron posted the directed one to Instagram as-is; the
 mistranscribed captions ("just one tip", "i am not treated") landed as
 part of the joke, so do not "fix" the committed demo take.
 
+Also landed since: **auto-facing** (char.json `facing: left|right` for
+profile drawings; sprites flip toward their walk direction or the
+shot's talker; front-on characters never flip — mirrored shirt text),
+**alt_pose/alt_period** two-frame gesture cycles (arm waves, bird
+wing flaps), and the first **foley layer**: per-shot `sfx:` cues
+(file/at/gain/dur/loop) and an episode-level looped `ambience:`, mixed
+into the dialogue timeline. Sound files live in `<show>/sfx/` with
+provenance in SOURCES.md; note user-supplied recordings are often
+quiet — check RMS and set gains accordingly (2.0+ is normal).
+
 Since then: **poses** — a character folder can carry extra variants
 (`angry.png`, `angry_talk.png`, ...) selected per shot with
 `pose: angry`. First real ingested character is `demo/characters/tim/`
