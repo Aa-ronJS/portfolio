@@ -2,6 +2,7 @@
 !demo/episode.mp4
 !demo/episode-take.mp4
 !demo/episode-directed.mp4
+!demo/episode-tim.mp4
 *.temp.wav
 .take-*/
 __pycache__/

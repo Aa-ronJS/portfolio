@@ -77,6 +77,17 @@ captions). Aaron posted the directed one to Instagram as-is; the
 mistranscribed captions ("just one tip", "i am not treated") landed as
 part of the joke, so do not "fix" the committed demo take.
 
+Since then: **poses** — a character folder can carry extra variants
+(`angry.png`, `angry_talk.png`, ...) selected per shot with
+`pose: angry`. First real ingested character is `demo/characters/tim/`
+(Aaron's own drawing, four variants); his screen test is
+`demo/episode-tim.yaml` → `demo/episode-tim.mp4`, which also shows the
+mid-sentence punch-in trick: transcribe the voice line with whisper
+word timestamps, cut the audio at the trigger word, one shot per piece.
+
 Discussed but unbuilt: two-drawing walk cycles; per-character close-up
 framing in `char.json` (the directed close-up currently assumes a
-humanoid head at `at: [0.5, 1.35], scale: 1.5`).
+humanoid head at `at: [0.5, 1.35], scale: 1.5`); pose changes and
+camera punch-ins inside a single shot (both currently done with cuts,
+which suits the format anyway); director grammar for poses ("tim
+angrily says...").

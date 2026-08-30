@@ -40,31 +40,43 @@ class Character:
     body.png            required — resting pose, mouth closed
     talk.png            optional — same drawing, mouth open
     blink.png           optional — same drawing, eyes shut
-    char.json           optional — {"anchor": [x, y]} normalised anchor,
-                        default [0.5, 1.0] (feet, bottom-centre)
+    <pose>.png          optional extra poses (angry.png, sad.png, ...)
+    <pose>_talk.png     mouth-open version of a pose
+    <pose>_blink.png    eyes-shut version of a pose
+    char.json           optional — {"anchor": [x, y]} normalised anchor
+                        (default [0.5, 1.0], feet at bottom-centre) and
+                        {"aliases": [...]} for the voice director
+
+    A shot's actor selects a pose with `pose: angry`; talk/blink fall
+    back to the pose-less versions when a pose doesn't provide them.
     """
 
     def __init__(self, folder):
         self.folder = folder
-        self.body = Image.open(os.path.join(folder, "body.png")).convert("RGBA")
-        self.talk = self._opt("talk.png")
-        self.blink = self._opt("blink.png")
+        self.layers = {}
+        for f in sorted(os.listdir(folder)):
+            if f.lower().endswith(".png"):
+                self.layers[os.path.splitext(f)[0]] = \
+                    Image.open(os.path.join(folder, f)).convert("RGBA")
+        if "body" not in self.layers:
+            raise SystemExit(f"{folder} has no body.png")
         self.anchor = (0.5, 1.0)
         meta = os.path.join(folder, "char.json")
         if os.path.exists(meta):
             with open(meta) as f:
                 self.anchor = tuple(json.load(f).get("anchor", self.anchor))
 
-    def _opt(self, name):
-        p = os.path.join(self.folder, name)
-        return Image.open(p).convert("RGBA") if os.path.exists(p) else None
-
-    def frame(self, talking, blinking):
-        if blinking and self.blink is not None:
-            return self.blink
-        if talking and self.talk is not None:
-            return self.talk
-        return self.body
+    def pick(self, pose=None):
+        """(body, talk, blink) images for a pose, with fallbacks."""
+        if pose and pose not in self.layers:
+            raise SystemExit(f"{self.folder}: no {pose}.png for pose "
+                             f"'{pose}' (has: {', '.join(self.layers)})")
+        body = self.layers[pose] if pose else self.layers["body"]
+        talk = (self.layers.get(f"{pose}_talk") if pose else None) \
+            or self.layers.get("talk")
+        blink = (self.layers.get(f"{pose}_blink") if pose else None) \
+            or self.layers.get("blink")
+        return body, talk, blink
 
 
 # ---------------------------------------------------------------- moves
@@ -246,7 +258,8 @@ class EpisodeRenderer:
         for j, a in enumerate(shot.get("actors", [])):
             if "char" in a:
                 c = self.char(a["char"])
-                imgs = {"body": c.body, "talk": c.talk, "blink": c.blink}
+                body, talk, blink = c.pick(a.get("pose"))
+                imgs = {"body": body, "talk": talk, "blink": blink}
                 anchor = c.anchor
             else:
                 img = Image.open(self.path(a["image"])).convert("RGBA")

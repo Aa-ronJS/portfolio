@@ -166,7 +166,12 @@ myshow/
       body.png        required — resting pose
       talk.png        optional — same drawing, mouth open
       blink.png       optional — same drawing, eyes shut
+      angry.png       optional extra poses (any name), plus
+      angry_talk.png  their own mouth-open/eyes-shut variants;
+                      an actor selects one with `pose: angry` and
+                      talk/blink fall back to the plain versions
       char.json       optional — {"anchor": [0.5, 1.0]} (default: feet)
+                      and {"aliases": [...]} for the voice director
   backgrounds/*.png
   vo/*.wav|m4a|mp3    anything ffmpeg reads
 ```
@@ -200,6 +205,7 @@ shots:
         at: [0.34, 0.74]       # anchor position, fractions of the canvas
         scale: 0.34            # character height / canvas height
         flip: true             # mirror
+        pose: angry            # use angry.png / angry_talk.png variants
         talk: true             # mouth flap driven by THIS shot's audio
         talk_threshold: 0.28   # raise if the mouth flaps on breaths
         moves:
