@@ -44,6 +44,52 @@ fix captions. If `faster-whisper` is installed (`pip install
 faster-whisper`, optional), each line is transcribed into its caption;
 otherwise captions are placeholders.
 
+### Directing with your voice
+
+Speak the stage directions into the recording itself and the pipeline
+casts, stages, and animates whoever you name:
+
+    "in the chip shop, dave walks in from the left and says"
+    "large chips please my good man"
+    "the seagull hops in from the right and says"
+    "give me one chip"
+    "close up on dave, he says"
+    "absolutely not"
+    "the seagull leaves"
+
+```bash
+python3 pipeline/puppet.py direct take1.m4a myshow/ep03.yaml
+```
+
+Every direction line is transcribed (needs `pip install faster-whisper`)
+and matched against your cast — the folders in `characters/` plus any
+`"aliases"` list in a `char.json`. Name matching is fuzzy and phonetic,
+so whisper hearing "dayv" still casts dave; if it repeatedly mishears a
+name, add what it hears as an alias. The grammar:
+
+| you say | what happens |
+|---|---|
+| *dave says / asks / shouts / whispers…* | the **next** line you speak is dave's: his mouth puppets to it and it becomes the caption |
+| *dave walks in / enters / hops in / runs in [from the left/right]* | dave joins the stage, animated in; he stays in every shot until he leaves |
+| *dave leaves / exits / storms off* | a short shot of dave leaving |
+| *in the pub / at the beach* | background fuzzy-matched against `backgrounds/*.png` |
+| *close up [on dave]* | the next dialogue shot is framed head-and-shoulders |
+| *new scene / cut / meanwhile* | clears the stage |
+| *beat / pause* | a short silent shot of the current stage |
+
+Directions compose: "dave walks in from the left and says" is one line.
+Characters already on stage just stand there while others talk. A line
+that parses as nothing (or a garbled direction) still plays: a solo
+character speaks it, otherwise it goes to whoever was directed last, or
+runs as voice-over. End direction lines with the speech verb ("…and
+says") — that's also the safety net when a name gets mis-transcribed.
+
+The output is a normal episode yaml with the machine's staging choices
+written out — reposition, recast, and fix captions there rather than
+re-recording. `demo/ep-directed.yaml` was generated this way from
+`demo/vo/directed_take.m4a` (a synthetic robot-voice take, which is why
+its captions are chewed — human recordings transcribe far better).
+
 Or keep writing the yaml yourself and just point it at the recording —
 `take:` at the top, `line: N` per shot instead of `audio:`:
 
