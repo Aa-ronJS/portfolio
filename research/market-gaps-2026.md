@@ -1,183 +1,187 @@
-# Market gaps worth building for — research, August 2026
+# Market gaps backed by money already moving — research v2, August 2026
 
-A survey of currently underserviced problems a solo builder can realistically
-capture, ranked by fit against what already exists in this portfolio: shipped
-MCP servers (Rain Check, Doorknock), end-to-end build capability, QA
-discipline, and a consulting practice.
+## Why v1 was wrong
 
-**The headline finding:** the single best-validated gap in this research is
-one Rain Check is already halfway into. Generic booking and scheduling tools
-cannot handle weather-dependent work — and the tools that can are either
-priced for $3M+ businesses or make crude "is it raining" decisions rather
-than trade-specific ones ("will Thursday's pour survive").
+The first version of this research ranked gaps by fit against an existing
+portfolio, and several of its "validated niches" traced back to SEO
+idea-listicles — which is evidence of demand for content about ideas, not
+demand for products. Willingness-to-pay was assumed, not shown.
 
----
+This version uses a harder filter. A gap only qualifies if at least one of
+these is demonstrably true:
 
-## 1. Weather-decision layer for outdoor work — extend Rain Check
+1. **Spending is legally forced** — a mandate with a deadline and a fine.
+2. **Money is measurably being lost** — and a tool recovers it directly.
+3. **Buyers are already paying painfully** — for incumbents they hate, or
+   for humans doing work software should do.
 
-**The gap.** Booking and scheduling software treats weather as an
-afterthought. Fishing charter and outdoor guide booking is explicitly named
-as an underserved niche *because* generic booking tools "cannot handle
-weather cancellations, trip-type variations, group pricing"
-(Superframeworks, 2026). Skilled-trades management is underserved because
-ServiceTitan-class tools run $250–$500/technician/month — priced for $3M+
-shops, not solo operators still on paper invoices and phone scheduling.
-
-**What exists, and its hole.** Service Autopilot and Fieldproxy do
-mass-reschedule of rained-out jobs — but only inside their own platforms,
-mostly for lawn care, and triggered by crude precipitation. Nobody sells the
-*decision*: trade-specific go/no-go thresholds (concrete cure temperature,
-crane wind limits, spray-painting humidity) as a layer that plugs into
-whatever the business already uses — Jobber, Google Calendar, or text
-messages. That is exactly what Rain Check already answers.
-
-**What to build.** Three concentric options, cheapest first:
-- A **rebooking engine on top of Rain Check**: when the answer is "no, not
-  Thursday", it proposes the next viable slot from the calendar, drafts the
-  customer notification, and handles the deposit/refund policy. Sell to
-  concreters, roofers, painters, crane hire.
-- A **vertical booking product for charters and outdoor guides**: weather
-  cancellation, trip variations, and group pricing as first-class features,
-  where the incumbents are Facebook Messenger and lost customers.
-- A **weather-decision API/MCP server other software consumes** — sell the
-  brain to the scheduling platforms that only have the calendar.
-
-**Why this one.** The product seed exists, the pain is money-adjacent and
-recurring (a blown pour costs real dollars), the audience is reachable
-locally, and the pricing norm for trades tools that understand the workflow
-is $30–$150/month.
+Ranked by strength of payment evidence.
 
 ---
 
-## 2. MCP quality and trust tooling
+## 1. Claim-denial recovery for independent medical practices
 
-**The gap.** MCP servers ship at ecosystem scale (200+ in the main
-directory) but "most MCP servers pass the 'it connected' test and fail the
-'it works' test — the gap between those two is where production incidents
-live" (Stainless, 2026). Well-established eval methodology is still
-evolving; generic AI eval tools aren't tailored to MCP and produce
-UI-based remote reports that can't gate a CI pipeline. On the trust side,
-the tool_call → tool_result cycle runs on an honor system, distribution is
-an unverified network of community registries, and researchers demonstrated
-a working typosquat of the most popular database server
-(`mcp-server-postgress`).
+**The money.** US initial-denial rates hit an estimated 12.6% in 2026 —
+roughly 806 million denied claims a year, ~$262B in system-wide cost.
+Denial rates have risen every year since 2020. The US denial-management
+market is $5.1B (2024) growing ~10%/yr; the software segment alone is
+projected to grow from $1.5B (2026) to $4.5B (2034).
 
-**What exists, and its hole.** mcp-use + pydantic-eval combinations,
-Apify's Tester client (smoke tests only), Arcade Evals (tool selection and
-argument quality, deliberately doesn't execute the tool). Nothing offers a
-local, CI-native verdict on "does this server actually do what its tool
-descriptions claim", and nothing scans a registry entry for trust signals
-before you wire it into an agent with credentials.
+**The gap.** Every funded vendor targets hospitals and health systems.
+Small and independent practices — lean admin teams, no billing department —
+are documented as tracking denials in spreadsheets or not at all, "lacking
+the resources and infrastructure to manage denials." A tool priced for a
+3-physician practice that wins back even a fraction of denied revenue pays
+for itself in the first month, which is the cleanest willingness-to-pay
+argument that exists.
 
-**What to build.** A CI-native MCP test harness: point it at a server, it
-exercises every tool with generated and recorded cases, diffs behavior
-across versions, and fails the build with a local verdict. A companion
-trust scanner (typosquat detection, permission-surface audit,
-description/behavior mismatch) is the security half of the same product.
-Open-source core, paid CI/hosted tier — the standard devtools path.
-
-**Why this one.** It's the intersection of the two things the portfolio
-already claims: building MCP servers and breaking things before customers
-do. Even at modest direct revenue it's a credibility engine that feeds the
-consulting practice. The risk: devtools monetization is slow, and platform
-vendors may absorb the space — move fast or treat it as open-source
-reputation rather than the main income.
+**Why people pay.** This is filter #2 in its purest form: the product's
+value is denominated in recovered dollars, measurable per claim.
 
 ---
 
-## 3. Shadow AI governance, priced for SMBs
+## 2. The VMware exodus — mid-market exit tooling and the post-vSphere gap
 
-**The gap.** 98% of organizations report unsanctioned AI use; unapproved AI
-use on corporate devices tripled in a year (15% → 45% of the workforce);
-only 37% have any governance policy. 80% worry about data leaking through
-generative AI tools and 60% have no strategy for it. Every product serving
-this — Vectra, Mimecast, ArmorCode — is enterprise-priced and
-enterprise-shaped. The consensus prescription for SMBs is "controlled
-enablement, not lockdown", and no affordable tool delivers it.
+**The money.** Broadcom's repricing produced documented increases of
+300–1,050% (AT&T's lawsuit alleged ~1,050%; CISPE members reported
+800–1,500%). Gartner predicts 70% of enterprise VMware customers migrate at
+least half their workloads by 2028. By mid-2026 leaving vSphere is a
+board-level agenda item.
 
-**What to build.** An SMB-priced package: discover which AI tools staff
-actually use (browser/network-level inventory), generate a usage policy
-from templates, and provide a sanctioned, logged front door to the models
-staff were using anyway. Sellable as a product or as a productized audit —
-the audit version needs no code to start and validates demand for the
-product version.
+**The gap.** The big-platform migration paths (Nutanix, OpenShift,
+Hyper-V) are mature. What isn't: the mid-market landing on Proxmox and
+other open alternatives to escape the pricing, then discovering the
+vCenter-grade operations layer — fleet management, HA at scale, backup
+ecosystems, compliance reporting — is thin. Migration tooling, assessment
+automation, and the "enterprise management plane for open hypervisors"
+are all underbuilt relative to the demand wave.
 
-**Why this one.** The buyer (owner/office manager) has a concrete fear,
-compliance pressure is arriving, and the enterprise vendors won't come down
-to $100/month. Pairs naturally with opportunity 4 as the "governance" half
-of the same conversation.
+**Why people pay.** Filter #3: buyers are being invoiced 4–10x more today.
+Anything that gets them off that invoice is funded by the savings, with
+break-even documented at 9–14 months.
 
 ---
 
-## 4. Productized AI implementation for small business
+## 3. E-invoicing mandates — the long-tail integration gap
 
-**The gap.** 60% of SMBs have no in-house expertise to implement AI; 73% of
-those using it say they need more training; roughly half of AI-using firms
-invested nothing in implementation — and outcomes correlate with
-implementation, not adoption. The typical failure mode is "buy ChatGPT Team
-and walk away."
+**The money.** Forced by law, on live deadlines: Poland's KSeF became
+mandatory for large taxpayers in February 2026 and most VAT businesses in
+April 2026; France requires every business to *receive* e-invoices from
+September 1, 2026 (days away) with issuing phased through 2027; Germany
+phases issuing 2027–28. France fines €15 per non-compliant invoice, capped
+at €15,000/year. The e-invoicing market is growing ~28%/yr toward €22–24B
+by 2028.
 
-**What to build.** Not SaaS — a productized service with fixed scope and
-price: pick one workflow, wire AI into it properly (specification,
-verification, integration — the exact discipline the portfolio copy
-describes), train the team, leave behind something measurable. Rain Check
-and Doorknock are the proof artifacts. This is the fastest path to revenue
-of anything on this list because it requires zero new product.
+**The gap.** Not the platform layer — France alone has 100+ approved
+platforms; that fight is over. The gap is the long tail underneath:
+millions of SMEs invoicing from old ERPs, niche vertical software, and
+Excel that must now connect to a certified platform; accountants who must
+make this work for hundreds of clients at once; and every European
+vertical-SaaS vendor whose product emits invoices and now needs compliant
+issuance as a feature — an embedded "e-invoicing API" sold to software
+vendors rather than end businesses.
 
----
-
-## 5. Runner-up verticals (pure micro-SaaS plays)
-
-Validated as underserved with severity 4.0–4.5/5 and fewer than 8
-competitors each (BigIdeasDB / Superframeworks, 2026), but with no special
-fit advantage — pick one only if the goal is a standalone SaaS bet:
-
-- **Home inspector reporting** — Word templates and manual email; incumbents
-  overpriced or "stuck in the early 2000s UI era".
-- **Small-municipality permit tracking** — paper forms and Access databases;
-  civic tech starts at $50K.
-- **Specialty food producer compliance** — nutrition labels and ingredient
-  lot tracking in spreadsheets; food ERP starts at $10K/year.
-- **Pet services / music studios / tattoo studios** — bookings living in
-  Instagram DMs and Venmo; nothing mainstream addresses the workflow.
-
-A note on Doorknock's territory: pre-call sales intelligence is crowded
-(Clay, Apollo, and a wave of AI SDR tools). Doorknock's edge — reading what
-a company already runs from its own website, filed into the CRM — is a
-feature moat, not an open gap. Sell it as part of opportunity 4 rather than
-building it out as a standalone bet against funded incumbents.
+**Why people pay.** Filter #1: the state mandates it, fines attach, and
+the deadlines are this year — the only discretion left is which vendor.
 
 ---
 
-## Recommended sequence
+## 4. EU AI Act technical documentation — the deadline already passed
 
-1. **Now:** package opportunity 4 (implementation service) — it funds
-   everything else and needs nothing built.
-2. **Next build:** opportunity 1 — the Rain Check rebooking engine, sold to
-   local trades first, charters second. It's the best-validated product gap
-   with an existing head start.
-3. **In parallel, as open source:** the MCP test harness (opportunity 2) at
-   whatever pace credibility-building allows.
-4. **Watch:** shadow AI for SMBs (opportunity 3) — start as an audit
-   offering inside opportunity 4's sales conversations; build product only
-   if the audits keep landing.
+**The money.** High-risk obligations (Articles 9–17, 26) became
+enforceable August 2, 2026 — four weeks ago. 78% of organizations had
+taken no meaningful steps; 61% have no process for generating the required
+technical documentation (data governance records, performance metrics,
+human-oversight procedures). Gartner forecasts AI-governance platform
+spend of $492M in 2026, past $1B by 2030.
+
+**The gap.** Governance *platforms* (policy, inventory, risk registers)
+are getting crowded. Thin on the ground: tooling that generates and
+maintains the actual compliance artifacts from a running system — logging
+that satisfies Article 12, automated technical documentation, oversight
+audit trails — especially for mid-market *deployers* of high-risk systems,
+who were never the audience for the enterprise platforms.
+
+**Why people pay.** Filter #1, in its scariest form: the deadline is
+behind them, not ahead. Post-deadline compliance scrambles are historically
+when budgets appear (GDPR 2018 made an industry overnight).
+
+---
+
+## 5. Accounting-firm capacity — firms are refusing revenue
+
+**The money.** 73% of UK accounting firms are turning away clients for
+lack of staff; the same share calls the impact "severe". Firms already pay
+simultaneously for outsourcing, offshore teams, contract staffing, and
+salary inflation — a stacked, painful spend on capacity. Stanford measured
+AI-assisted accountants closing monthly statements 7.5 days faster.
+
+**The gap.** Practice-management incumbents are workflow trackers, not
+capacity multipliers. The unfilled slice is automation of the actual
+grunt-hours: workpaper preparation, client document chasing and
+reconciliation, review-note cycles — sold as "hours returned", priced
+against the offshore-staffing line item it replaces.
+
+**Why people pay.** Filter #3 with a twist: the buyer is literally
+declining revenue. Anything that converts a fixed team into more delivered
+engagements is funded by the fees currently being turned away.
+
+---
+
+## 6. CMS-0057-F — hundreds of payers under a January 2027 API mandate
+
+**The money.** US Medicare Advantage, Medicaid, CHIP, and exchange plans
+must run four FHIR APIs (Patient Access, Provider Access, Payer-to-Payer,
+Prior Authorization) by January 1, 2027, with shortened decision windows
+already in force since January 2026.
+
+**The gap.** National payers have vendors and teams. The long tail —
+regional Medicaid managed-care plans and small MA plans with no FHIR
+engineering capability — faces a hard federal deadline in four months.
+Implementation vendors exist but the deadline crunch outstrips supply;
+this is as much a services gap as a product one.
+
+**Why people pay.** Filter #1: federal mandate, fixed date, no opt-out.
+
+---
+
+## What survives from v1
+
+- **Weather-decision scheduling**: real pain, but the payment evidence is
+  inferred, not shown. Viable as a feature or small vertical product;
+  doesn't belong on a list ranked by proven willingness to pay.
+- **MCP testing tools**: fails the filter — developers expect testing
+  tooling free, and platform vendors will absorb it.
+- **SMB shadow-AI governance**: fails until an insurer or regulator forces
+  it; SMBs don't buy governance from fear alone.
+- **The vertical micro-SaaS listicle niches**: unproven — the sources were
+  content marketing, not demand.
+
+## The honest ranking logic
+
+№1 and №2 lead because the buyer's alternative is quantified ongoing loss.
+№3, №4, №6 are mandate-driven: certain spend, but crowded at the center —
+the opportunity is specifically the underserved tail named in each. №5 is
+the strongest labor-arbitrage signal but the hardest to productize.
 
 ## Sources
 
-- https://superframeworks.com/articles/untapped-underserved-micro-saas-niches
-- https://bigideasdb.com/boring-industries-begging-for-micro-saas
-- https://bigideasdb.com/niche-saas-opportunities-by-industry-2026
-- https://www.stainless.com/mcp/how-to-test-mcp-servers/
-- https://www.arcade.dev/blog/evaluate-mcp-tools/
-- https://medium.com/@MattLeads/6-critical-challenges-facing-the-mcp-in-2026-06258e914402
-- https://workos.com/blog/everything-your-team-needs-to-know-about-mcp-in-2026
-- https://www.vectra.ai/topics/shadow-ai
-- https://optro.ai/blog/shadow-ai-stats
-- https://www.advantechits.com/insights/shadow-ai-the-hidden-ai-risk-most-smbs-already-have
-- https://www.business.com/articles/ai-usage-smb-workplace-study/
-- https://capsulecrm.com/blog/small-business-ai-adoption-statistics/
-- https://www.langchain.com/state-of-agent-engineering
-- https://www.workyard.com/compare/plumbing-software
-- https://knowify.com/resources/best-plumbing-software/
-- https://www.bellafsm.com/lawn-care-rain-delay-scheduling/
-- https://www.fieldproxy.ai/resources/blog/best-landscaping-software-ai-scheduling-2026
+- https://www.rapidclaims.ai/blogs/average-claim-denial-rate-insurance-benchmarks-insights
+- https://www.aptarro.com/insights/us-healthcare-denial-rates-reimbursement-statistics
+- https://www.arizton.com/market-reports/us-healthcare-denial-management-market
+- https://www.fortunebusinessinsights.com/denials-management-software-market-115401
+- https://www.ama-assn.org/practice-management/private-practices/power-your-private-practices-revenue-cycle-management
+- https://redresscompliance.com/broadcom-vmware-pricing-report-2026
+- https://wtit.com/blog/2026/07/31/vmware-alternatives-broadcom-exit-strategy/
+- https://www.cloudmagazin.com/en/2026/03/18/vmware-cost-trap-2026-it-teams-examine-alternatives/
+- https://www.invoicenavigator.eu/deadlines
+- https://www.avalara.com/blog/en/europe/2026/07/french-e-invoicing-mandate-readiness.html
+- https://www.spscommerce.com/community/articles/e-invoicing-mandates-in-europe-the-2026-business-guide
+- https://www.aclegal.website/electronic-invoicing-france-2026-2027/
+- https://labs.cloudsecurityalliance.org/research/csa-research-note-eu-ai-act-high-risk-compliance-deadline-20/
+- https://www.einnews.com/pr_news/903074846/vision-compliance-releases-2026-eu-ai-act-readiness-report-finds-78-of-enterprises-unprepared-for-obligations
+- https://www.hklaw.com/en/insights/publications/2026/04/us-companies-face-eu-ai-acts-possible-august-2026-compliance-deadline
+- https://www.taxcalc.com/blog/uk-accounting-talent-shortage-2026
+- https://www.cpapracticeadvisor.com/2026/08/03/beyond-the-accountant-shortage-the-skills-shortage-facing-cpa-firms/187848/
+- https://www.cms.gov/newsroom/fact-sheets/cms-interoperability-prior-authorization-final-rule-cms-0057-f
+- https://www.health-samurai.io/articles/understanding-the-cms-0057-f-interoperability-and-prior-authorization-final-rule
