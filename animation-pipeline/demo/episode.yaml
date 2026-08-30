@@ -1,0 +1,87 @@
+# Demo episode: "the seagull wants a chip"
+#
+# One file = one video. Everything is normalised: positions are fractions
+# of the canvas (x, y from top-left), scale is character height as a
+# fraction of canvas height, so the same script renders at draft or full
+# resolution identically.
+#
+# Render:   python3 pipeline/render.py demo/episode.yaml
+# Draft:    python3 pipeline/render.py demo/episode.yaml --draft
+# One shot: python3 pipeline/render.py demo/episode.yaml --shot 1
+
+title: the seagull wants a chip
+size: [1080, 1920]
+fps: 12
+
+# hand-made wobble: layers re-jitter every N frames by up to `boil` * height
+boil: 0.0015
+boil_every: 2
+
+defaults:
+  font: ../fonts/satoshi-var.ttf
+  caption_size: 0.042        # fraction of canvas height
+  caption_weight: 700
+  caption_color: [26, 26, 26]
+  caption_y: 0.84            # vertical centre of the caption block
+  audio_tail: 0.35           # seconds of silence after each voice line
+
+shots:
+  # Shot 0 — establishing: stan walks into the chip shop.
+  # No `duration` needed: it comes from the audio file plus audio_tail.
+  - bg: backgrounds/chipshop.png
+    audio: vo/line1.wav
+    caption: stan pops in for his tea
+    actors:
+      - char: stan
+        at: [0.34, 0.74]
+        scale: 0.34
+        talk: true
+        moves:
+          - {type: slide, from: [-0.25, 0.74], to: [0.34, 0.74], t: [0, 1.4]}
+          - {type: waddle, amp: 3, period: 0.5}
+          - {type: bob, amp: 0.006, period: 0.5}
+
+  # Shot 1 — close-up, mouth flap driven by the voice line.
+  - bg: backgrounds/chipshop.png
+    audio: vo/line2.wav
+    caption: large chips please my good man
+    zoom: [1.0, 1.06]
+    actors:
+      - char: stan
+        at: [0.5, 1.35]      # anchor below frame = crop to head & shoulders
+        scale: 1.5
+        talk: true
+        moves:
+          - {type: bob, amp: 0.003, period: 0.9}
+
+  # Shot 2 — the seagull arrives with intent.
+  - bg: backgrounds/chipshop.png
+    audio: vo/line3.wav
+    caption: an enormous seagull has entered the shop
+    actors:
+      - char: stan
+        at: [0.26, 0.74]
+        scale: 0.30
+        flip: true
+      - char: seagull
+        at: [0.72, 0.73]
+        scale: 0.22
+        talk: true
+        moves:
+          - {type: hop, amp: 0.015, period: 0.45}
+          - {type: slide, from: [1.2, 0.73], to: [0.72, 0.73], t: [0, 1.2]}
+
+  # Shot 3 — beat for the punchline. No audio, so duration is explicit.
+  - bg: backgrounds/chipshop.png
+    duration: 2.0
+    caption: stan respects the hustle
+    actors:
+      - char: stan
+        at: [0.26, 0.74]
+        scale: 0.30
+        flip: true
+      - char: seagull
+        at: [0.60, 0.73]
+        scale: 0.26
+        moves:
+          - {type: shake, amp: 0.002}
