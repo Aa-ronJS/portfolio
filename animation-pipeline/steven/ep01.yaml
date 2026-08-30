@@ -1,0 +1,350 @@
+# STEVEN THE DOG — from Aaron's script (Steven_the_Dog.pdf).
+# Voice track is espeak placeholder in four voices; replace steven/vo/*.wav
+# with real recordings (same filenames) and re-render.
+
+title: steven the dog
+size: [1080, 1920]
+fps: 12
+boil: 0.0015
+boil_every: 2
+
+defaults:
+  font: ../fonts/satoshi-var.ttf
+  caption_size: 0.042
+  caption_weight: 700
+  caption_color: [26, 26, 26]
+  caption_y: 0.86
+  audio_tail: 0.25
+
+shots:
+  # A stroll in the park.
+  - bg: backgrounds/citypark.png
+    duration: 2.4
+    caption: tim and carly take a stroll
+    actors:
+      - char: tim
+        at: [0.30, 0.74]
+        scale: 0.50
+        moves:
+          - {type: slide, from: [-0.25, 0.74], to: [0.30, 0.74], t: [0, 1.8]}
+          - {type: waddle, amp: 2.5, period: 0.5}
+          - {type: bob, amp: 0.005, period: 0.5}
+      - char: carly
+        at: [0.60, 0.74]
+        scale: 0.50
+        moves:
+          - {type: slide, from: [0.05, 0.74], to: [0.60, 0.74], t: [0, 1.8]}
+          - {type: waddle, amp: 2.5, period: 0.55}
+          - {type: bob, amp: 0.005, period: 0.55}
+
+  # The dog trots up. Carly is delighted.
+  - bg: backgrounds/park.png
+    audio: vo/01_carly_hello.wav
+    caption: hello! aren't you a good boy!
+    actors:
+      - char: tim
+        at: [0.20, 0.74]
+        scale: 0.50
+      - char: carly
+        at: [0.46, 0.74]
+        scale: 0.50
+        talk: true
+        moves:
+          - {type: bob, amp: 0.004, period: 0.7}
+      - char: stevendog
+        at: [0.78, 0.74]
+        scale: 0.55
+        moves:
+          - {type: slide, from: [1.25, 0.74], to: [0.78, 0.74], t: [0, 1.3]}
+          - {type: hop, amp: 0.008, period: 0.4}
+
+  - bg: backgrounds/park.png
+    audio: vo/02_tim_likethat.wav
+    caption: it's just... you never talk to me like that
+    actors:
+      - char: tim
+        at: [0.20, 0.74]
+        scale: 0.50
+        talk: true
+        moves: [{type: bob, amp: 0.003, period: 0.8}]
+      - char: carly
+        at: [0.46, 0.74]
+        scale: 0.50
+      - char: stevendog
+        at: [0.78, 0.74]
+        scale: 0.55
+
+  - bg: backgrounds/park.png
+    audio: vo/03_carly_likeadog.wav
+    caption: you want me to talk to you like a dog?
+    actors:
+      - char: tim
+        at: [0.20, 0.74]
+        scale: 0.50
+      - char: carly
+        at: [0.46, 0.74]
+        scale: 0.50
+        talk: true
+        moves: [{type: bob, amp: 0.004, period: 0.7}]
+      - char: stevendog
+        at: [0.78, 0.74]
+        scale: 0.55
+
+  - bg: backgrounds/park.png
+    audio: vo/04_tim_happy.wav
+    caption: you actually seem happy to see him
+    actors:
+      - char: tim
+        at: [0.20, 0.74]
+        scale: 0.50
+        talk: true
+        moves: [{type: bob, amp: 0.003, period: 0.8}]
+      - char: carly
+        at: [0.46, 0.74]
+        scale: 0.50
+      - char: stevendog
+        at: [0.78, 0.74]
+        scale: 0.55
+        moves: [{type: bob, amp: 0.003, period: 0.9}]
+
+  - bg: backgrounds/park.png
+    audio: vo/05_carly_goodboy.wav
+    caption: well of course i do! he's such a good boy!
+    actors:
+      - char: tim
+        at: [0.20, 0.74]
+        scale: 0.50
+      - char: carly
+        at: [0.46, 0.74]
+        scale: 0.50
+        talk: true
+        moves: [{type: bob, amp: 0.004, period: 0.7}]
+      - char: stevendog
+        at: [0.78, 0.74]
+        scale: 0.55
+        moves: [{type: hop, amp: 0.006, period: 0.5}]
+
+  # The accusation. Close on Tim.
+  - bg: backgrounds/park.png
+    audio: vo/06_tim_exhusband.wav
+    caption: yes. but he's your ex-husband
+    zoom: [1.0, 1.05]
+    actors:
+      - char: tim
+        at: [0.5, 1.9]
+        scale: 2.27
+        talk: true
+        moves: [{type: bob, amp: 0.003, period: 0.9}]
+
+  # Close on Carly. Frozen shock.
+  - bg: backgrounds/park.png
+    audio: vo/07_carly_what.wav
+    duration: 1.4
+    caption: what.
+    actors:
+      - char: carly
+        pose: surprised
+        at: [0.5, 1.9]
+        scale: 2.27
+        talk: true
+        moves: [{type: bob, amp: 0.002, period: 1.1}]
+
+  - bg: backgrounds/park.png
+    audio: vo/08_tim_look.wav
+    caption: that's the look of someone who's been inside you
+    actors:
+      - char: tim
+        at: [0.20, 0.74]
+        scale: 0.50
+        talk: true
+        moves: [{type: bob, amp: 0.003, period: 0.8}]
+      - char: carly
+        pose: surprised
+        at: [0.46, 0.74]
+        scale: 0.50
+      - char: stevendog
+        at: [0.78, 0.74]
+        scale: 0.55
+        moves: [{type: bob, amp: 0.002, period: 1.3}]
+
+  - bg: backgrounds/park.png
+    audio: vo/09_carly_justadog.wav
+    caption: tim. it's just a dog
+    actors:
+      - char: tim
+        at: [0.20, 0.74]
+        scale: 0.50
+      - char: carly
+        at: [0.46, 0.74]
+        scale: 0.50
+        talk: true
+        moves: [{type: bob, amp: 0.004, period: 0.7}]
+      - char: stevendog
+        at: [0.78, 0.74]
+        scale: 0.55
+
+  - bg: backgrounds/park.png
+    audio: vo/10_tim_stand.wav
+    caption: come and stand exactly where i'm standing
+    actors:
+      - char: tim
+        at: [0.20, 0.74]
+        scale: 0.50
+        talk: true
+        moves:
+          - {type: bob, amp: 0.004, period: 0.6}
+          - {type: waddle, amp: 1.5, period: 0.7}
+      - char: carly
+        at: [0.46, 0.74]
+        scale: 0.50
+      - char: stevendog
+        at: [0.78, 0.74]
+        scale: 0.55
+
+  # She stands on the spot.
+  - bg: backgrounds/park.png
+    audio: vo/11_carly_omg.wav
+    caption: oh my god. steven!
+    actors:
+      - char: carly
+        pose: surprised
+        at: [0.30, 0.74]
+        scale: 0.50
+        talk: true
+        moves: [{type: shake, amp: 0.002}]
+      - char: stevendog
+        at: [0.78, 0.74]
+        scale: 0.55
+
+  # THE REVEAL. From this spot, the dog is a man in a dog suit.
+  - bg: backgrounds/park.png
+    audio: vo/12_steven_ffs.wav
+    caption: oh for fuck's sake tim. she doesn't even love you
+    zoom: [1.0, 1.07]
+    actors:
+      - char: steven
+        at: [0.5, 0.76]
+        scale: 0.88
+        talk: true
+        moves: [{type: bob, amp: 0.002, period: 1.2}]
+
+  - bg: backgrounds/park.png
+    audio: vo/13_carly_money.wav
+    caption: it's true, i do prefer steven. but tim has more money. so
+    actors:
+      - char: tim
+        at: [0.16, 0.74]
+        scale: 0.48
+      - char: carly
+        at: [0.40, 0.74]
+        scale: 0.48
+        talk: true
+        moves: [{type: bob, amp: 0.004, period: 0.7}]
+      - char: steven
+        at: [0.74, 0.76]
+        scale: 0.55
+
+  - bg: backgrounds/park.png
+    audio: vo/14_laugh.wav
+    caption: they all share a laugh
+    actors:
+      - char: tim
+        at: [0.16, 0.74]
+        scale: 0.48
+        moves: [{type: bob, amp: 0.006, period: 0.35}]
+      - char: carly
+        at: [0.40, 0.74]
+        scale: 0.48
+        talk: true
+        moves: [{type: bob, amp: 0.006, period: 0.32}]
+      - char: steven
+        at: [0.74, 0.76]
+        scale: 0.55
+        moves: [{type: bob, amp: 0.004, period: 0.38}]
+
+  # Tim has heard enough.
+  - bg: backgrounds/flash.png
+    duration: 0.5
+    caption: bang.
+    caption_y: 0.5
+
+  # Beat.
+  - bg: backgrounds/park.png
+    duration: 1.5
+    actors:
+      - char: steven
+        pose: dead
+        at: [0.55, 0.78]
+        scale: 0.80
+
+  - bg: backgrounds/park.png
+    audio: vo/15_passerby_shot.wav
+    caption: you just shot that dog!
+    actors:
+      - char: steven
+        pose: dead
+        at: [0.55, 0.78]
+        scale: 0.80
+      - char: tim
+        at: [0.14, 0.74]
+        scale: 0.48
+
+  - bg: backgrounds/park.png
+    audio: vo/16_tim_relax.wav
+    caption: relax. it's just my girlfriend's ex-husband
+    actors:
+      - char: steven
+        pose: dead
+        at: [0.55, 0.78]
+        scale: 0.80
+      - char: tim
+        at: [0.14, 0.74]
+        scale: 0.48
+        talk: true
+        moves: [{type: bob, amp: 0.003, period: 0.8}]
+
+  - bg: backgrounds/park.png
+    audio: vo/17_passerby_ok.wav
+    caption: ah so it is! haha, no worries
+    actors:
+      - char: steven
+        pose: dead
+        at: [0.55, 0.78]
+        scale: 0.80
+
+  # They stroll off, perfectly calm.
+  - bg: backgrounds/citypark.png
+    audio: vo/18_carly_joking.wav
+    caption: i was only joking about the money thing, darling
+    actors:
+      - char: tim
+        at: [0.55, 0.74]
+        scale: 0.48
+        moves:
+          - {type: slide, from: [0.25, 0.74], to: [0.55, 0.74], t: [0, 3.0]}
+          - {type: waddle, amp: 2, period: 0.55}
+      - char: carly
+        at: [0.78, 0.74]
+        scale: 0.48
+        talk: true
+        moves:
+          - {type: slide, from: [0.48, 0.74], to: [0.78, 0.74], t: [0, 3.0]}
+          - {type: waddle, amp: 2, period: 0.5}
+
+  - bg: backgrounds/citypark.png
+    audio: vo/19_tim_iknow.wav
+    caption: yeah. i know
+    actors:
+      - char: tim
+        at: [0.88, 0.74]
+        scale: 0.48
+        talk: true
+        moves:
+          - {type: slide, from: [0.60, 0.74], to: [0.88, 0.74], t: [0, 1.6]}
+          - {type: waddle, amp: 2, period: 0.55}
+      - char: carly
+        at: [1.12, 0.74]
+        scale: 0.48
+        moves:
+          - {type: slide, from: [0.82, 0.74], to: [1.12, 0.74], t: [0, 1.6]}
+          - {type: waddle, amp: 2, period: 0.5}
