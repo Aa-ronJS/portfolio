@@ -440,6 +440,9 @@ class EpisodeRenderer:
         frame = s["bg"].copy()
         for j, sp in enumerate(s["sprites"]):
             a = sp["cfg"]
+            if "appear" in a and not \
+                    (a["appear"][0] <= t <= a["appear"][1]):
+                continue  # e.g. a muzzle flash visible for two frames
             talking = sp["mouth"] is not None and bool(sp["mouth"][f])
             blinking = any(bt <= t < bt + 2.0 / self.fps for bt in sp["blinks"])
             imgs = sp["imgs"]
