@@ -523,23 +523,19 @@ shots:
         at: [0.40, 0.545]
         scale: 0.10
         anchor: [0.15, 0.8]
-      - image: props/bubble_fys.png
-        at: [0.14, 0.31]
-        scale: 0.12
-        anchor: [0.1, 1.0]
       - image: props/fire.png
         at: [0.60, 0.50]
         scale: 0.09
         anchor: [0.5, 0.85]
         rotate: 90
         appear: [0.7, 0.92]
-      - image: props/bullet.png
+      - image: props/bullet_fys.png
         at: [0.655, 0.585]
-        scale: 0.008
+        scale: 0.045
         anchor: [0.5, 0.5]
-        appear: [0.72, 0.95]
+        appear: [0.72, 1.0]
         moves:
-          - {type: slide, from: [0.585, 0.515], to: [0.655, 0.585], t: [0.72, 0.95]}
+          - {type: slide, from: [0.575, 0.51], to: [0.655, 0.585], t: [0.72, 1.0]}
       - image: props/smoke.png
         at: [0.58, 0.44]
         scale: 0.11
