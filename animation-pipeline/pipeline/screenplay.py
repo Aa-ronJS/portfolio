@@ -289,14 +289,16 @@ def make_vo(beats, outdir, voices=None):
     voices = voices or {}
     pool = list(DEFAULT_VOICES)
     for b in beats:
-        if b["type"] != "dialogue":
+        if b["type"] not in ("dialogue", "vocal"):
             continue
         sp = b["speaker"].lower()
         if sp not in voices:
             voices[sp] = pool.pop(0) if pool else DEFAULT_VOICES[0]
         path = os.path.join(outdir, f"{b['id']}.wav")
+        # emphasis marks are formatting, not words — never pronounced
+        tts = b["text"].replace("*", "").replace("_", " ")
         subprocess.run(["espeak-ng", *voices[sp].split(), "-w", path,
-                        b["text"]], check=True)
+                        tts], check=True)
         print(f"{b['id']}  {b['speaker']:9s} {path}")
     print("\nplaceholder voices — replace these wavs with recordings "
           "(same filenames) and re-render")

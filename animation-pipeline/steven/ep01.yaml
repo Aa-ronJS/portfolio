@@ -486,11 +486,15 @@ shots:
       - char: steven
         at: [0.76, 0.76]
 
-  # a10: they all share a laugh. (Silent until the foley pass exists —
-  # the laughter is an action, not authored dialogue.)
+  # a10: they all share a laugh — v01/v02/v03, the authored laughs,
+  # layered together and cut dead at the gunshot 0.7s into a11.
   - beat: a10
     bg: backgrounds/park.png
     duration: 1.6
+    sfx:
+      - {file: vo/v01.wav, at: 0.0, dur: 2.3, gain: 0.8, loop: true}
+      - {file: vo/v02.wav, at: 0.15, dur: 2.15, gain: 0.8, loop: true}
+      - {file: vo/v03.wav, at: 0.3, dur: 2.0, gain: 0.8, loop: true}
     actors:
       - char: tim
         at: [0.20, 0.74]
@@ -533,9 +537,9 @@ shots:
         at: [0.655, 0.585]
         scale: 0.045
         anchor: [0.5, 0.5]
-        appear: [0.72, 1.0]
+        appear: [0.72, 0.88]
         moves:
-          - {type: slide, from: [0.575, 0.51], to: [0.655, 0.585], t: [0.72, 1.0]}
+          - {type: slide, from: [0.575, 0.51], to: [0.655, 0.585], t: [0.72, 0.88]}
       - image: props/smoke.png
         at: [0.58, 0.44]
         scale: 0.11

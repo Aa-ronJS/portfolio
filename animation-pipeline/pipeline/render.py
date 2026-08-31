@@ -304,9 +304,11 @@ class EpisodeRenderer:
             b = self.beats.get(s["beat"])
             if b and b["type"] == "dialogue":
                 # on-screen text is the author's wording, verbatim
-                # (lowercasing is house style, not a rewrite)
-                s["caption"] = b["text"].lower() \
-                    if self.caption_case == "lower" else b["text"]
+                # (lowercasing is house style; emphasis asterisks are
+                # formatting, not words)
+                cap = b["text"].replace("*", "")
+                s["caption"] = cap.lower() \
+                    if self.caption_case == "lower" else cap
         s["env"] = None
         s["pcm"] = np.zeros(0, dtype=np.float32)
         ap = None

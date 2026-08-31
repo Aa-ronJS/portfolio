@@ -240,6 +240,27 @@
   "text": "They all share a laugh."
  },
  {
+  "id": "v01",
+  "type": "vocal",
+  "speaker": "TIM",
+  "text": "Hahahahaha!",
+  "source": "author amendment 2026-08-30"
+ },
+ {
+  "id": "v02",
+  "type": "vocal",
+  "speaker": "CARLY",
+  "text": "Hahahahaha!",
+  "source": "author amendment 2026-08-30"
+ },
+ {
+  "id": "v03",
+  "type": "vocal",
+  "speaker": "STEVEN",
+  "text": "Hahahahaha!",
+  "source": "author amendment 2026-08-30"
+ },
+ {
   "id": "a11",
   "type": "action",
   "source": "script",
