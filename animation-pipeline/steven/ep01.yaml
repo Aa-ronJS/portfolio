@@ -39,6 +39,7 @@ shots:
     duration: 2.4
     sfx:
       - {file: sfx/footsteps_gravel.wav, at: 0.0, dur: 2.4, gain: 2.5}
+      - {file: sfx/music_happy.mp3, at: 0.0, dur: 4.2, gain: 0.35}
     actors:
       - char: bird
         at: [1.25, 0.16]
@@ -87,7 +88,7 @@ shots:
   - beat: d01
     bg: backgrounds/park.png
     audio: vo/d01.wav
-    zoom: [1.0, 1.03]
+    zoom: [1.0, 1.07]
     actors:
       - char: tim
         at: [0.24, 0.74]
@@ -104,7 +105,10 @@ shots:
   - beat: a03
     bg: backgrounds/park.png
     duration: 1.3
-    zoom: [1.0, 1.12]
+    zoom: {from: 1.0, to: 1.28, t: [0, 0.25]}
+    cam_shake: {amp: 0.005, t: [0, 0.5]}
+    sfx:
+      - {file: sfx/whoosh.wav, at: 0.0, gain: 0.8}
     actors:
       - char: tim
         pose: angry
@@ -129,7 +133,7 @@ shots:
   - beat: d03
     bg: backgrounds/park.png
     audio: vo/d03.wav
-    zoom: [1.0, 1.04]
+    zoom: [1.0, 1.08]
     actors:
       - char: tim
         at: [0.24, 0.74]
@@ -158,7 +162,7 @@ shots:
   - beat: d05
     bg: backgrounds/park.png
     audio: vo/d05.wav
-    zoom: [1.0, 1.04]
+    zoom: [1.0, 1.08]
     actors:
       - char: tim
         at: [0.24, 0.74]
@@ -186,7 +190,7 @@ shots:
   - beat: d06
     bg: backgrounds/park.png
     audio: vo/d06.wav
-    zoom: [1.05, 1.0]
+    zoom: [1.09, 1.0]
     actors:
       - char: tim
         at: [0.24, 0.74]
@@ -213,7 +217,7 @@ shots:
   - beat: d08
     bg: backgrounds/park.png
     audio: vo/d08.wav
-    zoom: [1.0, 1.04]
+    zoom: [1.0, 1.08]
     actors:
       - char: tim
         at: [0.24, 0.74]
@@ -240,7 +244,7 @@ shots:
   - beat: d10
     bg: backgrounds/park.png
     audio: vo/d10.wav
-    zoom: [1.05, 1.0]
+    zoom: [1.09, 1.0]
     actors:
       - char: tim
         at: [0.24, 0.74]
@@ -274,7 +278,9 @@ shots:
   - beat: d11
     bg: backgrounds/park.png
     audio: vo/d11.wav
-    zoom: [1.0, 1.05]
+    zoom: {from: 1.0, to: 1.16, t: [0.2, 0.55]}
+    sfx:
+      - {file: sfx/boom.wav, at: 1.3, gain: 0.6}
     actors:
       - char: tim
         at: [0.5, 1.9]
@@ -304,6 +310,10 @@ shots:
   - beat: d12
     bg: backgrounds/park.png
     audio: vo/d12.wav
+    zoom: {from: 1.05, to: 1.32, t: [0, 0.3]}
+    cam_shake: {amp: 0.004, t: [0, 0.45]}
+    sfx:
+      - {file: sfx/whoosh.wav, at: 0.0, gain: 0.7}
     actors:
       - char: carly
         pose: surprised
@@ -316,7 +326,9 @@ shots:
     bg: backgrounds/park.png
     audio: vo/d13.wav
     caption_y: 0.91
-    zoom: [1.0, 1.07]
+    zoom: {from: 1.0, to: 1.22, t: [0, 0.28]}
+    sfx:
+      - {file: sfx/whoosh.wav, at: 0.0, gain: 0.7}
     actors:
       - char: stevendog
         at: [1.07, 0.98]
@@ -326,7 +338,7 @@ shots:
   - beat: d14
     bg: backgrounds/park.png
     audio: vo/d14.wav
-    zoom: [1.0, 1.04]
+    zoom: [1.0, 1.08]
     actors:
       - char: tim
         at: [0.24, 0.74]
@@ -340,7 +352,7 @@ shots:
   - beat: d15
     bg: backgrounds/park.png
     audio: vo/d15.wav
-    zoom: [1.0, 1.09]
+    zoom: [1.0, 1.14]
     actors:
       - char: tim
         at: [0.24, 0.74]
@@ -356,7 +368,7 @@ shots:
   - beat: d16
     bg: backgrounds/park.png
     audio: vo/d16.wav
-    zoom: [1.05, 1.0]
+    zoom: [1.09, 1.0]
     actors:
       - char: tim
         at: [0.24, 0.74]
@@ -370,7 +382,7 @@ shots:
   - beat: d17
     bg: backgrounds/park.png
     audio: vo/d17.wav
-    zoom: [1.0, 1.06]
+    zoom: {from: 1.0, to: 1.13, t: [0, 0.3]}
     actors:
       - char: tim
         at: [0.24, 0.74]
@@ -386,7 +398,7 @@ shots:
   - beat: d18
     bg: backgrounds/park.png
     audio: vo/d18.wav
-    zoom: [1.0, 1.03]
+    zoom: [1.0, 1.07]
     actors:
       - char: tim
         at: [0.24, 0.74]
@@ -418,6 +430,8 @@ shots:
   - beat: d19
     bg: backgrounds/park.png
     audio: vo/d19.wav
+    zoom: {from: 1.0, to: 1.15, t: [0, 0.3]}
+    cam_shake: {amp: 0.004, t: [0, 0.5]}
     actors:
       - char: tim
         at: [0.42, 0.74]
@@ -434,7 +448,9 @@ shots:
   - beat: c01
     bg: backgrounds/park.png
     duration: 1.8
-    zoom: [1.0, 1.05]
+    zoom: {from: 1.0, to: 1.14, t: [0, 0.6]}
+    sfx:
+      - {file: sfx/sting_dundun.wav, at: 0.0, gain: 0.7}
     actors:
       - char: steven
         at: [0.5, 0.76]
@@ -444,7 +460,7 @@ shots:
   - beat: d20
     bg: backgrounds/park.png
     audio: vo/d20.wav
-    zoom: [1.0, 1.04]
+    zoom: [1.02, 1.12]
     actors:
       - char: steven
         at: [0.5, 0.76]
@@ -455,7 +471,7 @@ shots:
   - beat: d21
     bg: backgrounds/park.png
     audio: vo/d21.wav
-    zoom: [1.0, 1.05]
+    zoom: [1.0, 1.09]
     actors:
       - char: bird
         at: [-0.2, 0.12]
@@ -477,6 +493,8 @@ shots:
   - beat: a09
     bg: backgrounds/park.png
     duration: 1.1
+    sfx:
+      - {file: sfx/sad_trombone.wav, at: 0.05, gain: 0.5}
     actors:
       - char: tim
         at: [0.20, 0.74]
@@ -511,6 +529,7 @@ shots:
   - beat: a11
     bg: backgrounds/park.png
     duration: 1.7
+    cam_shake: {amp: 0.007, t: [0.7, 1.25]}
     sfx:
       - {file: sfx/gunshot.mp3, at: 0.7, gain: 0.9}
     actors:
@@ -548,9 +567,12 @@ shots:
         moves:
           - {type: slide, from: [0.60, 0.48], to: [0.58, 0.40], t: [1.0, 1.7]}
 
-  # The body. Held in silence.
+  # The body. Slow push in; one deep hit under the gunshot's tail.
   - bg: backgrounds/park.png
     duration: 1.5
+    zoom: [1.0, 1.1]
+    sfx:
+      - {file: sfx/boom.wav, at: 0.05, gain: 0.8}
     actors:
       - char: steven
         pose: dead
@@ -575,7 +597,7 @@ shots:
   - beat: d22
     bg: backgrounds/park.png
     audio: vo/d22.wav
-    zoom: [1.0, 1.05]
+    zoom: [1.0, 1.09]
     actors:
       - char: stevendog
         at: [0.42, 0.72]
@@ -590,7 +612,7 @@ shots:
   - beat: d23
     bg: backgrounds/park.png
     audio: vo/d23.wav
-    zoom: [1.0, 1.04]
+    zoom: [1.0, 1.08]
     actors:
       - char: stevendog
         at: [0.42, 0.72]
@@ -622,7 +644,7 @@ shots:
   - beat: d24
     bg: backgrounds/park.png
     audio: vo/d24.wav
-    zoom: [1.06, 1.0]
+    zoom: {from: 1.14, to: 1.0, t: [0, 0.3]}
     actors:
       - char: steven
         pose: dead
@@ -689,6 +711,7 @@ shots:
     duration: 1.2
     sfx:
       - {file: sfx/footsteps_gravel.wav, at: 0.0, dur: 1.2, gain: 2.0}
+      - {file: sfx/music_happy.mp3, at: 0.0, gain: 0.4}
     actors:
       - char: tim
         at: [0.40, 0.74]
@@ -704,7 +727,7 @@ shots:
   - beat: d25
     bg: backgrounds/citypark.png
     audio: vo/d25.wav
-    zoom: [1.0, 1.04]
+    zoom: [1.0, 1.08]
     actors:
       - char: tim
         at: [0.52, 0.74]
@@ -732,7 +755,7 @@ shots:
   - beat: d26
     bg: backgrounds/citypark.png
     audio: vo/d26.wav
-    zoom: [1.0, 1.05]
+    zoom: [1.0, 1.09]
     actors:
       - char: tim
         at: [0.60, 0.74]

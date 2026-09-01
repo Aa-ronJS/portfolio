@@ -470,19 +470,51 @@ class EpisodeRenderer:
             x = round((px + dx) * self.W - ax * img.width + bx)
             y = round((py + dy) * self.H - ay * img.height + by)
             frame.paste(img, (x, y), img)
-        zoom = s.get("zoom")
-        if zoom:
-            z0, z1 = zoom
-            z = z0 + (z1 - z0) * (t / s["duration"])
+        z = self.zoom_at(s, t)
+        shake = s.get("cam_shake")
+        ox = oy = 0.0
+        if shake:
+            st = shake.get("t")
+            if st is None or st[0] <= t <= st[1]:
+                amp = shake.get("amp", 0.006)
+                rng = random.Random((shot_i * 977 + f) * 31)
+                ox = rng.uniform(-1, 1) * amp * self.W
+                oy = rng.uniform(-1, 1) * amp * self.H
+                z = max(z, 1.0 + 2.2 * amp)  # room to shake within frame
+        if z > 1.0001 or ox or oy:
             zw, zh = round(self.W / z), round(self.H / z)
-            x = (self.W - zw) // 2
-            y = (self.H - zh) // 2
+            x = int(min(max((self.W - zw) / 2 + ox, 0), self.W - zw))
+            y = int(min(max((self.H - zh) / 2 + oy, 0), self.H - zh))
             frame = frame.crop((x, y, x + zw, y + zh)).resize(
                 (self.W, self.H), Image.LANCZOS)
         cap = s.get("caption")
         if cap:
             self.draw_caption(frame, cap, s.get("caption_y", self.caption_y))
         return frame
+
+    @staticmethod
+    def zoom_at(s, t):
+        """Camera zoom at time t.
+
+        zoom: [z0, z1]                      linear across the shot
+        zoom: {from, to, t: [t0, t1]}       SNAP: eases hard between t0
+                                            and t1, holds outside — the
+                                            punchy meme punch-in
+        """
+        zoom = s.get("zoom")
+        if not zoom:
+            return 1.0
+        if isinstance(zoom, dict):
+            z0, z1 = zoom.get("from", 1.0), zoom.get("to", 1.15)
+            t0, t1 = zoom.get("t", [0, 0.25])
+            if t <= t0:
+                return z0
+            if t >= t1:
+                return z1
+            u = (t - t0) / max(t1 - t0, 1e-6)
+            return z0 + (z1 - z0) * (1 - (1 - u) ** 3)  # hard ease-out
+        z0, z1 = zoom
+        return z0 + (z1 - z0) * (t / s["duration"])
 
     def draw_caption(self, frame, text, y_frac):
         d = ImageDraw.Draw(frame)
