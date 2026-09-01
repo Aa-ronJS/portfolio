@@ -19,7 +19,9 @@ mode: director            # camera/staging inferred; words never invented
 cast:
   wife: omit    # author's decision 2026-08-30: the passerby is one person
 
-ambience: {file: sfx/ambience_bellbirds.wav, gain: 0.5}
+ambience:
+  - {file: sfx/ambience_bellbirds.wav, gain: 0.5}
+  - {file: sfx/music_happy.mp3, gain: 0.3}
 
 defaults:
   font: ../fonts/satoshi-var.ttf
@@ -41,7 +43,6 @@ shots:
     duration: 2.4
     sfx:
       - {file: sfx/footsteps_gravel.wav, at: 0.0, dur: 2.4, gain: 2.5}
-      - {file: sfx/music_happy.mp3, at: 0.0, dur: 4.2, gain: 0.35}
     actors:
       - char: bird
         at: [1.25, 0.16]
@@ -484,9 +485,9 @@ shots:
     bg: backgrounds/park.png
     duration: 1.6
     sfx:
-      - {file: vo/v01.wav, at: 0.0, dur: 2.3, gain: 0.8, loop: true}
-      - {file: vo/v02.wav, at: 0.15, dur: 2.15, gain: 0.8, loop: true}
-      - {file: vo/v03.wav, at: 0.3, dur: 2.0, gain: 0.8, loop: true}
+      - {file: vo/v01.wav, at: 0.0, dur: 1.85, gain: 0.8, loop: true}
+      - {file: vo/v02.wav, at: 0.15, dur: 1.7, gain: 0.8, loop: true}
+      - {file: vo/v03.wav, at: 0.3, dur: 1.55, gain: 0.8, loop: true}
     actors:
       - char: tim
         at: [0.20, 0.74]
@@ -502,11 +503,11 @@ shots:
   # white flash — no on-screen text.
   - beat: a11
     bg: backgrounds/park.png
-    duration: 1.7
-    cam_shake: {amp: 0.007, t: [0.7, 1.25]}
+    duration: 1.4
+    cam_shake: {amp: 0.007, t: [0.25, 0.8]}
     sfx:
-      - {file: sfx/gunshot.mp3, at: 0.7, gain: 0.9}
-      - {file: sfx/wilhelm.wav, at: 0.82, gain: 0.85}
+      - {file: sfx/gunshot.mp3, at: 0.25, gain: 0.9}
+      - {file: sfx/wilhelm.wav, at: 0.37, gain: 0.85}
     actors:
       - char: carly
         at: [0.32, 0.74]
@@ -526,21 +527,21 @@ shots:
         scale: 0.09
         anchor: [0.5, 0.85]
         rotate: 90
-        appear: [0.7, 0.92]
+        appear: [0.25, 0.47]
       - image: props/bullet_fys.png
         at: [0.655, 0.585]
         scale: 0.045
         anchor: [0.5, 0.5]
-        appear: [0.72, 0.88]
+        appear: [0.27, 0.43]
         moves:
-          - {type: slide, from: [0.575, 0.51], to: [0.655, 0.585], t: [0.72, 0.88]}
+          - {type: slide, from: [0.575, 0.51], to: [0.655, 0.585], t: [0.27, 0.43]}
       - image: props/smoke.png
         at: [0.58, 0.44]
         scale: 0.11
         anchor: [0.5, 1.0]
-        appear: [1.0, 1.7]
+        appear: [0.5, 1.4]
         moves:
-          - {type: slide, from: [0.60, 0.48], to: [0.58, 0.40], t: [1.0, 1.7]}
+          - {type: slide, from: [0.60, 0.48], to: [0.58, 0.40], t: [0.5, 1.4]}
 
   # The body. Slow push in; one deep hit under the gunshot's tail.
   - bg: backgrounds/park.png
@@ -687,7 +688,6 @@ shots:
     duration: 1.2
     sfx:
       - {file: sfx/footsteps_gravel.wav, at: 0.0, dur: 1.2, gain: 2.0}
-      - {file: sfx/music_happy.mp3, at: 0.0, gain: 0.4}
     actors:
       - char: tim
         at: [0.40, 0.74]

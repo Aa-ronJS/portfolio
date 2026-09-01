@@ -623,10 +623,10 @@ class EpisodeRenderer:
             offset += s["duration"]
 
         amb = self.ep.get("ambience")
-        if amb:
-            pcm = decode_audio(self.path(amb["file"]), AUDIO_SR)
+        for bed in ([amb] if isinstance(amb, dict) else amb or []):
+            pcm = decode_audio(self.path(bed["file"]), AUDIO_SR)
             reps = len(mix) // len(pcm) + 1
-            add(np.tile(pcm, reps), 0.0, amb.get("gain", 0.2))
+            add(np.tile(pcm, reps), 0.0, bed.get("gain", 0.2))
         return np.clip(mix, -1, 1)
 
     # -------------------------------------------------- output
