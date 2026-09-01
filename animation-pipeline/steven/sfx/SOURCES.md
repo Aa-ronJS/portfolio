@@ -27,3 +27,7 @@ Freesound CC0 (HQ previews), fetched 2026-08-30:
 
 All five replaced the earlier synthesized placeholders — same filenames, licence CC0.
 | wilhelm.wav | 813308 | qubodup | Wilhelm Scream (CC0 re-creation) |
+
+| music_scary.mp3 | 845551 | SkySpeira | CC0 |
+| music_sad.mp3 | 168864 | EKVelika | CC0 |
+| crowd_gasp.wav | 264376 | HowardV | CC0 |

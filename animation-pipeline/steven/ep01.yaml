@@ -21,7 +21,18 @@ cast:
 
 ambience:
   - {file: sfx/ambience_bellbirds.wav, gain: 0.5}
-  - {file: sfx/music_happy.mp3, gain: 0.3}
+
+# Score, cut to the beats (regions span shots; edges are hard cuts):
+music:
+  - {file: sfx/music_happy.mp3, from: a01, to: d10, gain: 0.3}
+  # silence through "Yes, but he's your ex-husband" / the beat / "what?"
+  - {file: sfx/music_scary.mp3, from: d13, to: d13, gain: 0.45}
+  - {file: sfx/music_happy.mp3, from: d14, to: d19, gain: 0.3}
+  - {file: sfx/music_scary.mp3, from: c01, to: d21, gain: 0.45}
+  - {file: sfx/music_happy.mp3, from: a09, to: a11, gain: 0.3}
+  # silence over the body, then:
+  - {file: sfx/music_sad.mp3, from: a12, to: a13, gain: 0.45}
+  - {file: sfx/music_happy.mp3, from: d24, to: c02, gain: 0.3}
 
 defaults:
   font: ../fonts/satoshi-var.ttf
@@ -508,6 +519,7 @@ shots:
     sfx:
       - {file: sfx/gunshot.mp3, at: 0.25, gain: 0.9}
       - {file: sfx/wilhelm.wav, at: 0.37, gain: 0.85}
+      - {file: sfx/crowd_gasp.wav, at: 0.55, gain: 0.9}
     actors:
       - char: carly
         at: [0.32, 0.74]

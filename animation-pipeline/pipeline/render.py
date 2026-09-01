@@ -627,6 +627,32 @@ class EpisodeRenderer:
             pcm = decode_audio(self.path(bed["file"]), AUDIO_SR)
             reps = len(mix) // len(pcm) + 1
             add(np.tile(pcm, reps), 0.0, bed.get("gain", 0.2))
+
+        # music regions: score by beat span. {file, from: beat, to: beat,
+        # gain} — starts with the from-beat's shot, cuts at the end of the
+        # to-beat's shot (short edge fades stop clicks, so a region change
+        # reads as a cut).
+        starts, acc = {}, 0.0
+        ends = {}
+        for s in prepped:
+            b = s.get("beat")
+            if b is not None:
+                starts.setdefault(b, acc)
+                ends[b] = acc + s["duration"]
+            acc += s["duration"]
+        for reg in self.ep.get("music") or []:
+            if reg["from"] not in starts or reg["to"] not in ends:
+                continue  # partial render (--shot) may omit the span
+            t0, t1 = starts[reg["from"]], ends[reg["to"]]
+            n = int((t1 - t0) * AUDIO_SR)
+            pcm = decode_audio(self.path(reg["file"]), AUDIO_SR)
+            if len(pcm) < n:
+                pcm = np.tile(pcm, n // len(pcm) + 1)
+            pcm = pcm[:n].copy()
+            fade = min(len(pcm) // 2, int(0.08 * AUDIO_SR))
+            pcm[:fade] *= np.linspace(0, 1, fade, dtype=np.float32)
+            pcm[-fade:] *= np.linspace(1, 0, fade, dtype=np.float32)
+            add(pcm, t0, reg.get("gain", 0.3))
         return np.clip(mix, -1, 1)
 
     # -------------------------------------------------- output
