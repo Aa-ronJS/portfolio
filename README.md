@@ -28,6 +28,18 @@ across the whole set, all text-free, each tied to the work it sits beside. None
 depicts a real client's product and none stands in for something that must be
 true. See `PREFLIGHT.md` for the table of what each image is doing there.
 
+## The city view (`/city`)
+
+A hand-drawn city scene, animated. The drawing is the backdrop, untouched; the
+companion drawings — two walk-cycle frames, a helicopter, three clouds, a UFO
+with its lights on and off — were cut from their paper backgrounds and layered
+over it. Tiny people stroll the park on staggered loops, helicopters cross the
+sky and wait off-canvas between passes, clouds drift on multi-minute cycles,
+window lights pulse out of phase, and the UFO visits once a minute. All CSS,
+positioned in container-query units so the sprites stay glued to the drawing at
+any size. With `prefers-reduced-motion` it is the drawing as drawn, plus one
+parked helicopter.
+
 ## Build and deploy
 
 ```bash

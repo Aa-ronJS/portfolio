@@ -1,0 +1,197 @@
+<!doctype html>
+<html lang="en-AU">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>City view — Aaron Steele</title>
+<meta name="description" content="A hand-drawn city, brought to life. Tiny people stroll the park, helicopters fly past, clouds drift, windows blink, and now and then a UFO drops in.">
+<meta name="theme-color" content="#c9b294">
+<meta name="robots" content="noindex">
+
+<style>
+/* ===========================================================================
+   CITY VIEW
+   The drawing is the scene, untouched. Everything that moves is one of the
+   companion drawings, cut from its paper and layered over the top. All
+   positions are container-query units, so the sprites stay glued to the
+   drawing at any size. Same contract as the front page: every animation
+   lives behind prefers-reduced-motion, and the fallback is the drawing
+   as drawn — plus one parked helicopter.
+   =========================================================================== */
+
+@font-face{font-family:'Mono';src:url('/fonts/ibm-plex-mono-400.woff2') format('woff2');font-weight:400;font-style:normal;font-display:swap}
+
+:root{
+  --bone: oklch(0.958 0.008 84);
+  --ink:  oklch(0.158 0.019 252);
+  --ink-dim: oklch(0.45 0.02 252);
+  --amber: oklch(0.760 0.155 58);
+}
+
+*{margin:0; padding:0; box-sizing:border-box}
+html,body{height:100%}
+body{
+  background:var(--bone); color:var(--ink);
+  font-family:'Mono', ui-monospace, monospace;
+  display:grid; place-items:center; padding:clamp(12px,3vh,32px);
+}
+main{display:grid; gap:14px; justify-items:center}
+
+.scene{
+  position:relative; overflow:hidden;
+  width:min(680px, 94vw, calc(88svh * 0.7073));
+  aspect-ratio:1080/1527;
+  container-type:inline-size;
+  border-radius:6px;
+  box-shadow:0 1px 2px rgb(0 0 0 / 0.12), 0 12px 40px -12px rgb(0 0 0 / 0.28);
+}
+.scene .bg{position:absolute; inset:0; width:100%; height:100%; object-fit:cover}
+.scene img{user-select:none; -webkit-user-drag:none; pointer-events:none}
+
+/* ---- window lights ------------------------------------------------------ */
+.light{
+  position:absolute; z-index:1;
+  left:var(--x); top:var(--y);
+  width:3.1cqw; height:2cqw;
+  transform:translate(-50%,-50%);
+  border-radius:50%;
+  background:radial-gradient(closest-side, oklch(0.87 0.16 85 / 0.95), oklch(0.85 0.16 80 / 0) 78%);
+  opacity:0.75;
+}
+
+/* ---- clouds ------------------------------------------------------------- */
+.cloud{position:absolute; z-index:2; left:-28%; top:var(--y); width:var(--w);
+  transform:translateX(var(--sx,55cqw))}
+
+/* ---- walkers ------------------------------------------------------------ */
+.walker{position:absolute; z-index:3; left:0; top:var(--y); width:var(--w);
+  transform:translateX(var(--x0))}
+.walker .flip{transform:scaleX(var(--f,1))}
+.walker .gait{position:relative; aspect-ratio:80/140}
+.walker .gait img{position:absolute; inset:0; width:100%}
+.walker .gait .gb{opacity:0}
+
+/* ---- helicopters -------------------------------------------------------- */
+.heli{position:absolute; z-index:4; left:0; top:var(--y); width:var(--w);
+  transform:translateX(var(--txs, var(--tx0)))}
+.heli img{width:100%; transform:scaleX(var(--f,1))}
+
+/* ---- ufo ---------------------------------------------------------------- */
+.ufo{position:absolute; z-index:5; left:0; top:15%; width:15cqw;
+  transform:translate(120cqw,-40cqw)}
+.ufo .hover{position:relative; aspect-ratio:640/222}
+.ufo .hover img{position:absolute; inset:0; width:100%}
+
+/* ---- the moving tier ---------------------------------------------------- */
+@media (prefers-reduced-motion: no-preference){
+
+  .light{animation:glow var(--dur,6s) ease-in-out var(--del,0s) infinite alternate}
+  @keyframes glow{from{opacity:0.08} to{opacity:0.95}}
+
+  .cloud{animation:drift var(--dur) linear var(--del,0s) infinite}
+  @keyframes drift{from{transform:translateX(0)} to{transform:translateX(158cqw)}}
+
+  .walker{animation:stroll var(--dur) linear var(--del,0s) infinite}
+  @keyframes stroll{
+    0%,100%{transform:translateX(var(--x0))}
+    50%{transform:translateX(var(--x1))}
+  }
+  .walker .flip{animation:face var(--dur) steps(1) var(--del,0s) infinite}
+  @keyframes face{
+    0%,100%{transform:scaleX(var(--f,1))}
+    50%{transform:scaleX(calc(-1 * var(--f,1)))}
+  }
+  .walker .gait .ga{animation:step-a var(--step,0.7s) steps(1) infinite}
+  .walker .gait .gb{animation:step-b var(--step,0.7s) steps(1) infinite}
+  @keyframes step-a{0%,100%{opacity:1} 50%{opacity:0}}
+  @keyframes step-b{0%,100%{opacity:0} 50%{opacity:1}}
+
+  /* crosses the sky in ~a third of its cycle, waits out the rest off-canvas */
+  .heli{animation:fly-past var(--dur) linear var(--del,0s) infinite}
+  @keyframes fly-past{
+    0%{transform:translateX(var(--tx0))}
+    36%,100%{transform:translateX(var(--tx1))}
+  }
+  .heli img{animation:heli-bob 2.8s ease-in-out infinite alternate}
+  @keyframes heli-bob{
+    from{transform:scaleX(var(--f,1)) translateY(-0.7cqw) rotate(-2deg)}
+    to{transform:scaleX(var(--f,1)) translateY(0.7cqw) rotate(1deg)}
+  }
+
+  /* hidden for most of the minute; swoops in, hovers, darts off */
+  .ufo{animation:visit 64s linear infinite}
+  @keyframes visit{
+    0%,70%{transform:translate(120cqw,-40cqw); animation-timing-function:cubic-bezier(0.16,1,0.3,1)}
+    75%{transform:translate(27cqw,0)}
+    91%{transform:translate(27cqw,0); animation-timing-function:cubic-bezier(0.7,0,0.84,0)}
+    96%,100%{transform:translate(-60cqw,-45cqw)}
+  }
+  .ufo .hover{animation:ufo-bob 3.2s ease-in-out infinite alternate}
+  @keyframes ufo-bob{from{transform:translateY(-0.6cqw)} to{transform:translateY(0.6cqw)}}
+  .ufo .on{animation:blink 2.1s steps(1) infinite}
+  @keyframes blink{0%,100%{opacity:1} 50%{opacity:0}}
+}
+
+/* ---- caption ------------------------------------------------------------ */
+figcaption{
+  font-size:12px; letter-spacing:0.04em; color:var(--ink-dim);
+  display:flex; gap:10px; align-items:baseline; flex-wrap:wrap; justify-content:center;
+  text-align:center;
+}
+figcaption b{color:var(--ink); font-weight:400}
+figcaption a{color:var(--ink-dim); text-underline-offset:3px}
+figcaption a:hover{color:var(--ink)}
+</style>
+</head>
+<body>
+<main>
+<figure>
+  <div class="scene" aria-label="Animated hand-drawn city scene">
+    <img class="bg" src="img/scene.jpg"
+      alt="Hand-drawn city: a grey skyline with a museum, a green park full of stick figures and trees, a blue pond, and a dark road across the front, all under a wall clock.">
+
+    <!-- window lights, over the drawn window dashes -->
+    <div class="light" style="--x:58.5%; --y:22.4%; --dur:6.5s; --del:-1s"></div>
+    <div class="light" style="--x:57.8%; --y:26.2%; --dur:5s;   --del:-3.4s"></div>
+    <div class="light" style="--x:57%;   --y:30.6%; --dur:7.5s; --del:-5s"></div>
+    <div class="light" style="--x:45.6%; --y:28.8%; --dur:5.6s; --del:-2.2s"></div>
+    <div class="light" style="--x:45.3%; --y:31.4%; --dur:8s;   --del:-6.8s"></div>
+    <div class="light" style="--x:45%;   --y:34%;   --dur:6s;   --del:-0.6s"></div>
+    <div class="light" style="--x:29.8%; --y:33.4%; --dur:7s;   --del:-4.4s"></div>
+    <div class="light" style="--x:74%;   --y:31.6%; --dur:5.4s; --del:-1.8s"></div>
+    <div class="light" style="--x:73.2%; --y:34%;   --dur:6.8s; --del:-5.6s"></div>
+    <div class="light" style="--x:93.6%; --y:33.6%; --dur:7.6s; --del:-3s"></div>
+    <div class="light" style="--x:60%;   --y:45.6%; --dur:6.2s; --del:-2.8s"></div>
+
+    <!-- clouds -->
+    <img class="cloud" style="--y:13.8%; --w:16cqw; --dur:220s; --del:-36s;  --sx:24cqw" src="img/cloud-1.png" alt="">
+    <img class="cloud" style="--y:18.6%; --w:12cqw; --dur:265s; --del:-150s; --sx:58cqw" src="img/cloud-2.png" alt="">
+    <img class="cloud" style="--y:22.8%; --w:18cqw; --dur:185s; --del:-90s;  --sx:88cqw" src="img/cloud-3.png" alt="">
+
+    <!-- walkers in the park; back lane smaller, front lane bigger -->
+    <div class="walker" style="--y:46.2%; --w:1.7cqw; --x0:24cqw; --x1:74cqw; --dur:76s; --del:-12s; --step:0.62s"><div class="flip"><div class="gait"><img class="ga" src="img/walker-a.png" alt=""><img class="gb" src="img/walker-b.png" alt=""></div></div></div>
+    <div class="walker" style="--y:46.6%; --w:1.6cqw; --x0:70cqw; --x1:28cqw; --dur:66s; --del:-40s; --step:0.58s; --f:-1"><div class="flip"><div class="gait"><img class="ga" src="img/walker-a.png" alt=""><img class="gb" src="img/walker-b.png" alt=""></div></div></div>
+    <div class="walker" style="--y:53.4%; --w:2.1cqw; --x0:14cqw;  --x1:44cqw; --dur:48s; --del:-8s;  --step:0.66s"><div class="flip"><div class="gait"><img class="ga" src="img/walker-a.png" alt=""><img class="gb" src="img/walker-b.png" alt=""></div></div></div>
+    <div class="walker" style="--y:54.8%; --w:2.2cqw; --x0:46cqw; --x1:12cqw; --dur:52s; --del:-30s; --step:0.7s;  --f:-1"><div class="flip"><div class="gait"><img class="ga" src="img/walker-a.png" alt=""><img class="gb" src="img/walker-b.png" alt=""></div></div></div>
+    <div class="walker" style="--y:52%;   --w:2cqw;   --x0:55cqw; --x1:67cqw; --dur:30s; --del:-5s;  --step:0.68s"><div class="flip"><div class="gait"><img class="ga" src="img/walker-a.png" alt=""><img class="gb" src="img/walker-b.png" alt=""></div></div></div>
+    <div class="walker" style="--y:56.4%; --w:2.3cqw; --x0:20cqw; --x1:60cqw; --dur:45s; --del:-22s; --step:0.64s"><div class="flip"><div class="gait"><img class="ga" src="img/walker-a.png" alt=""><img class="gb" src="img/walker-b.png" alt=""></div></div></div>
+    <div class="walker" style="--y:59%;   --w:2.7cqw; --x0:10cqw; --x1:62cqw; --dur:58s; --del:-20s; --step:0.72s"><div class="flip"><div class="gait"><img class="ga" src="img/walker-a.png" alt=""><img class="gb" src="img/walker-b.png" alt=""></div></div></div>
+    <div class="walker" style="--y:60.6%; --w:2.9cqw; --x0:58cqw; --x1:14cqw; --dur:64s; --del:-47s; --step:0.76s; --f:-1"><div class="flip"><div class="gait"><img class="ga" src="img/walker-a.png" alt=""><img class="gb" src="img/walker-b.png" alt=""></div></div></div>
+    <div class="walker" style="--y:62%;   --w:3cqw;   --x0:30cqw; --x1:64cqw; --dur:40s; --del:-3s;  --step:0.6s"><div class="flip"><div class="gait"><img class="ga" src="img/walker-a.png" alt=""><img class="gb" src="img/walker-b.png" alt=""></div></div></div>
+
+    <!-- helicopters; the first is the one parked in the sky when motion is off -->
+    <div class="heli" style="--y:14.8%; --w:12cqw; --tx0:-30cqw; --tx1:130cqw; --txs:36cqw; --dur:47s; --del:-9s"><img src="img/heli.png" alt=""></div>
+    <div class="heli" style="--y:23.2%; --w:9cqw;  --tx0:118cqw; --tx1:-42cqw; --dur:63s; --del:-38s; --f:-1"><img src="img/heli.png" alt=""></div>
+
+    <!-- the occasional visitor -->
+    <div class="ufo"><div class="hover"><img class="off" src="img/ufo-off.png" alt=""><img class="on" src="img/ufo-on.png" alt=""></div></div>
+  </div>
+  <figcaption>
+    <b>CITY VIEW</b>
+    <span>drawn by hand · animated in CSS · the UFO is on a 64-second orbit</span>
+    <a href="/">aaronsteele.vercel.app</a>
+  </figcaption>
+</figure>
+</main>
+</body>
+</html>
