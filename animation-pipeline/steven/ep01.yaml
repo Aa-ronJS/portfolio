@@ -26,6 +26,8 @@ defaults:
   caption_size: 0.042
   caption_weight: 700
   caption_color: [26, 26, 26]
+  caption_case: keep        # the script's own capitalisation, verbatim
+  caption_words: 4          # a few words at a time, paced to the line
   caption_y: 0.86
   audio_tail: 0.2
   human_height: 0.42      # a standing adult (world_height 1.0) is 42%
@@ -426,10 +428,11 @@ shots:
   # suit, sprawled suggestively (a08).
   - beat: c01
     bg: backgrounds/park.png
-    duration: 1.8
-    zoom: {from: 1.0, to: 1.14, t: [0, 0.6]}
+    duration: 1.2
+    zoom: {from: 1.24, to: 1.12, t: [0, 0.18]}
+    cam_shake: {amp: 0.006, t: [0, 0.35]}
     sfx:
-      - {file: sfx/sting_dundun.wav, at: 0.0, gain: 0.7}
+      - {file: sfx/sting_dundun.wav, at: 0.0, gain: 0.9}
     actors:
       - char: steven
         at: [0.5, 0.76]
@@ -575,7 +578,6 @@ shots:
     zoom: [1.0, 1.05]
     actors:
       - char: passerby
-        flip: true
         at: [0.5, 1.9]
         scale: 2.27
         talk: true
@@ -622,6 +624,7 @@ shots:
         at: [0.62, 0.78]
         size: 1.2
       - char: passerby
+        flip: true
         at: [0.14, 0.78]
         talk: true
         alt_pose: up

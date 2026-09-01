@@ -219,6 +219,8 @@ class EpisodeRenderer:
             pass
         self.caption_color = tuple(d.get("caption_color", [26, 26, 26]))
         self.caption_y = d.get("caption_y", 0.70)
+        self.caption_words = d.get("caption_words", 4)
+        self.caption_bg = d.get("caption_bg", True)
         self.tail = d.get("audio_tail", 0.35)  # silence appended after a line
         self.talk_style = d.get("talk_style", "syllable")
         # fraction of canvas height a standing adult (world_height 1.0)
@@ -324,11 +326,30 @@ class EpisodeRenderer:
             s["pcm"] = decode_audio(ap, AUDIO_SR)
             s["env"], s["env_rate"] = envelope(ap)
             audio_dur = len(s["pcm"]) / AUDIO_SR
+            s["speech_dur"] = audio_dur
             s["duration"] = shot.get("duration") or (audio_dur + self.tail)
         elif "duration" not in shot:
             raise SystemExit(f"shot {i}: needs 'audio', 'line' or 'duration'")
         s["frames"] = max(1, round(s["duration"] * self.fps))
         s["duration"] = s["frames"] / self.fps
+        # captions show a few words at a time, paced across the spoken
+        # line (proportional by word count; forced alignment comes later)
+        if s.get("caption"):
+            words = s["caption"].split()
+            per = self.caption_words
+            chunks = [words[i:i + per] for i in range(0, len(words), per)]
+            speech_f = s["frames"]
+            if s.get("speech_dur"):
+                speech_f = max(1, min(s["frames"],
+                                      round(s["speech_dur"] * self.fps)))
+            spans, cum = [], 0
+            for ch in chunks:
+                f0 = round(cum / len(words) * speech_f)
+                cum += len(ch)
+                f1 = round(cum / len(words) * speech_f)
+                spans.append([" ".join(ch), f0, max(f1, f0 + 1)])
+            spans[-1][2] = s["frames"]  # last chunk holds through the tail
+            s["caption_chunks"] = spans
         # pad / trim audio to the exact shot length
         want = int(s["duration"] * AUDIO_SR)
         pcm = s["pcm"][:want]
@@ -497,6 +518,9 @@ class EpisodeRenderer:
                 (self.W, self.H), Image.LANCZOS)
         cap = s.get("caption")
         if cap:
+            if s.get("caption_chunks"):
+                cap = next((c for c, f0, f1 in s["caption_chunks"]
+                            if f0 <= f < f1), s["caption_chunks"][-1][0])
             self.draw_caption(frame, cap, s.get("caption_y", self.caption_y))
         iris = s.get("iris")
         if iris:
@@ -542,12 +566,21 @@ class EpisodeRenderer:
     def draw_caption(self, frame, text, y_frac):
         d = ImageDraw.Draw(frame)
         lines = wrap_caption(d, text, self.font, int(self.W * 0.86))
-        lh = int(self.font_size * 1.25)
+        lh = int(self.font_size * 1.3)
         y = int(y_frac * self.H) - (len(lines) * lh) // 2
+        px = int(self.font_size * 0.4)
+        py = int(self.font_size * 0.16)
         for line in lines:
-            w = d.textbbox((0, 0), line, font=self.font)[2]
-            d.text(((self.W - w) // 2, y), line, font=self.font,
-                   fill=self.caption_color)
+            bb = d.textbbox((0, 0), line, font=self.font)
+            w, asc = bb[2], bb[1]
+            x = (self.W - w) // 2
+            if self.caption_bg:
+                d.rounded_rectangle(
+                    [x - px, y + asc - py, x + w + px,
+                     y + bb[3] + py],
+                    radius=int(self.font_size * 0.25),
+                    fill=(255, 255, 255))
+            d.text((x, y), line, font=self.font, fill=self.caption_color)
             y += lh
 
     # -------------------------------------------------- audio mix
