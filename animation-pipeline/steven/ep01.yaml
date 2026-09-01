@@ -119,6 +119,7 @@ shots:
   - beat: d02
     bg: backgrounds/park.png
     audio: vo/d02.wav
+    caption_y: 0.93
     zoom: [1.0, 1.05]
     actors:
       - char: carly
@@ -131,6 +132,7 @@ shots:
   - beat: d03
     bg: backgrounds/park.png
     audio: vo/d03.wav
+    caption_y: 0.93
     zoom: [1.0, 1.05]
     actors:
       - char: tim
@@ -142,6 +144,7 @@ shots:
   - beat: d04
     bg: backgrounds/park.png
     audio: vo/d04.wav
+    caption_y: 0.93
     zoom: [1.0, 1.05]
     actors:
       - char: carly
@@ -154,6 +157,7 @@ shots:
   - beat: d05
     bg: backgrounds/park.png
     audio: vo/d05.wav
+    caption_y: 0.93
     zoom: [1.0, 1.05]
     actors:
       - char: tim
@@ -178,6 +182,7 @@ shots:
   - beat: d06
     bg: backgrounds/park.png
     audio: vo/d06.wav
+    caption_y: 0.93
     zoom: [1.0, 1.05]
     actors:
       - char: carly
@@ -189,6 +194,7 @@ shots:
   - beat: d07
     bg: backgrounds/park.png
     audio: vo/d07.wav
+    caption_y: 0.93
     zoom: [1.0, 1.05]
     actors:
       - char: tim
@@ -200,6 +206,7 @@ shots:
   - beat: d08
     bg: backgrounds/park.png
     audio: vo/d08.wav
+    caption_y: 0.93
     zoom: [1.0, 1.05]
     actors:
       - char: carly
@@ -211,6 +218,7 @@ shots:
   - beat: d09
     bg: backgrounds/park.png
     audio: vo/d09.wav
+    caption_y: 0.93
     zoom: [1.0, 1.05]
     actors:
       - char: tim
@@ -256,6 +264,7 @@ shots:
   - beat: d11
     bg: backgrounds/park.png
     audio: vo/d11.wav
+    caption_y: 0.93
     zoom: {from: 1.0, to: 1.16, t: [0.2, 0.55]}
     sfx:
       - {file: sfx/boom.wav, at: 1.3, gain: 0.6}
@@ -288,6 +297,7 @@ shots:
   - beat: d12
     bg: backgrounds/park.png
     audio: vo/d12.wav
+    caption_y: 0.93
     zoom: {from: 1.05, to: 1.32, t: [0, 0.3]}
     cam_shake: {amp: 0.004, t: [0, 0.45]}
     sfx:
@@ -316,6 +326,7 @@ shots:
   - beat: d14
     bg: backgrounds/park.png
     audio: vo/d14.wav
+    caption_y: 0.93
     zoom: [1.0, 1.05]
     actors:
       - char: carly
@@ -327,6 +338,7 @@ shots:
   - beat: d15
     bg: backgrounds/park.png
     audio: vo/d15.wav
+    caption_y: 0.93
     zoom: [1.0, 1.05]
     actors:
       - char: tim
@@ -338,6 +350,7 @@ shots:
   - beat: d16
     bg: backgrounds/park.png
     audio: vo/d16.wav
+    caption_y: 0.93
     zoom: [1.0, 1.05]
     actors:
       - char: carly
@@ -365,6 +378,7 @@ shots:
   - beat: d18
     bg: backgrounds/park.png
     audio: vo/d18.wav
+    caption_y: 0.93
     zoom: [1.0, 1.05]
     actors:
       - char: carly
@@ -425,6 +439,7 @@ shots:
   - beat: d20
     bg: backgrounds/park.png
     audio: vo/d20.wav
+    caption_y: 0.93
     zoom: [1.0, 1.06]
     actors:
       - char: steven
@@ -436,6 +451,7 @@ shots:
   - beat: d21
     bg: backgrounds/park.png
     audio: vo/d21.wav
+    caption_y: 0.93
     zoom: [1.0, 1.05]
     actors:
       - char: carly
@@ -555,6 +571,7 @@ shots:
   - beat: d22
     bg: backgrounds/park.png
     audio: vo/d22.wav
+    caption_y: 0.93
     zoom: [1.0, 1.05]
     actors:
       - char: passerby
@@ -567,6 +584,7 @@ shots:
   - beat: d23
     bg: backgrounds/park.png
     audio: vo/d23.wav
+    caption_y: 0.93
     zoom: [1.0, 1.05]
     actors:
       - char: tim
@@ -749,7 +767,7 @@ shots:
   - beat: c02
     bg: backgrounds/citypark.png
     duration: 1.8
-    iris: {at: [0.75, 0.5], t: [0.15, 1.5], r0: 1.1, r1: 0.0}
+    iris: {at: [0.75, 0.47], t: [0.15, 1.5], r0: 1.1, r1: 0.0}
     actors:
       - char: tim
         at: [0.72, 0.52]
