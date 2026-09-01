@@ -77,10 +77,18 @@ main{display:grid; gap:14px; justify-items:center}
 .heli img{width:100%; transform:scaleX(var(--f,1))}
 
 /* ---- ufo ---------------------------------------------------------------- */
-.ufo{position:absolute; z-index:5; left:0; top:15%; width:15cqw;
-  transform:translate(120cqw,-40cqw)}
+/* Lives outside the window: its whole flight stays inside the sky band,
+   entering and leaving through the side edges, never across the frame.
+   Distance is scale — small when far, at most ~0.95 when close. */
+.ufo{position:absolute; z-index:5; left:0; top:15%; width:13cqw;
+  transform:translate(130cqw,6cqw) scale(0.5)}
 .ufo .hover{position:relative; aspect-ratio:640/222}
-.ufo .hover img{position:absolute; inset:0; width:100%}
+.ufo .hover .off, .ufo .hover .on{position:absolute; inset:0; width:100%}
+.ufo .beam{position:absolute; left:50%; top:58%; width:74%; height:30cqw;
+  transform:translateX(-50%) scaleY(0); transform-origin:top center}
+
+/* the one who gets taken; walks the park until the ship settles overhead */
+.victim{z-index:6}
 
 /* ---- the moving tier ---------------------------------------------------- */
 @media (prefers-reduced-motion: no-preference){
@@ -118,18 +126,49 @@ main{display:grid; gap:14px; justify-items:center}
     to{transform:scaleX(var(--f,1)) translateY(0.7cqw) rotate(1deg)}
   }
 
-  /* hidden for most of the minute; swoops in, hovers, darts off */
-  .ufo{animation:visit 64s linear infinite}
+  /* the 80-second abduction: hidden, then a lap of the sky with distance
+     changes, settle over the victim, beam, take, and shrink away */
+  .ufo{animation:visit 80s linear infinite}
   @keyframes visit{
-    0%,70%{transform:translate(120cqw,-40cqw); animation-timing-function:cubic-bezier(0.16,1,0.3,1)}
-    75%{transform:translate(27cqw,0)}
-    91%{transform:translate(27cqw,0); animation-timing-function:cubic-bezier(0.7,0,0.84,0)}
-    96%,100%{transform:translate(-60cqw,-45cqw)}
+    0%,50%{transform:translate(130cqw,6cqw) scale(0.5); animation-timing-function:ease-in-out}
+    55%{transform:translate(6cqw,0cqw) scale(0.55); animation-timing-function:ease-in-out}
+    60%{transform:translate(66cqw,12cqw) scale(0.95); animation-timing-function:ease-out}
+    64%,77%{transform:translate(40cqw,34cqw) scale(0.85); animation-timing-function:ease-in}
+    83%{transform:translate(-30cqw,2cqw) scale(0.4)}
+    83.1%,100%{transform:translate(130cqw,6cqw) scale(0.5)}
   }
   .ufo .hover{animation:ufo-bob 3.2s ease-in-out infinite alternate}
   @keyframes ufo-bob{from{transform:translateY(-0.6cqw)} to{transform:translateY(0.6cqw)}}
   .ufo .on{animation:blink 2.1s steps(1) infinite}
   @keyframes blink{0%,100%{opacity:1} 50%{opacity:0}}
+
+  .ufo .beam{animation:beam-on 80s linear infinite}
+  @keyframes beam-on{
+    0%,64.5%{transform:translateX(-50%) scaleY(0)}
+    67%,74.5%{transform:translateX(-50%) scaleY(1)}
+    76.5%,100%{transform:translateX(-50%) scaleY(0)}
+  }
+
+  /* wanders like everyone else, arrives under the ship right on cue,
+     rises with legs still going, and is gone until the loop resets */
+  .victim{animation:victim-path 80s linear infinite}
+  @keyframes victim-path{
+    0%{transform:translateX(30cqw); opacity:0}
+    2%{transform:translateX(31cqw); opacity:1}
+    20%{transform:translateX(58cqw)}
+    40%{transform:translateX(36cqw)}
+    55%{transform:translateX(53cqw)}
+    66%,68%{transform:translateX(45cqw) translateY(0) scale(1); opacity:1}
+    74%{transform:translateX(45cqw) translateY(-27cqw) scale(0.45); opacity:1}
+    75%,100%{transform:translateX(45cqw) translateY(-28cqw) scale(0.4); opacity:0}
+  }
+  .victim .flip{animation:victim-face 80s steps(1) infinite}
+  @keyframes victim-face{
+    0%,100%{transform:scaleX(1)}
+    20%{transform:scaleX(-1)}
+    40%{transform:scaleX(1)}
+    55%{transform:scaleX(-1)}
+  }
 }
 
 /* ---- caption ------------------------------------------------------------ */
@@ -183,12 +222,15 @@ figcaption a:hover{color:var(--ink)}
     <div class="heli" style="--y:14.8%; --w:12cqw; --tx0:-30cqw; --tx1:130cqw; --txs:36cqw; --dur:47s; --del:-9s"><img src="img/heli.png" alt=""></div>
     <div class="heli" style="--y:23.2%; --w:9cqw;  --tx0:118cqw; --tx1:-42cqw; --dur:63s; --del:-38s; --f:-1"><img src="img/heli.png" alt=""></div>
 
+    <!-- the one who gets taken -->
+    <div class="walker victim" style="--y:58.5%; --w:2.8cqw; --x0:30cqw; --step:0.68s"><div class="flip"><div class="gait"><img class="ga" src="img/walker-a.png" alt=""><img class="gb" src="img/walker-b.png" alt=""></div></div></div>
+
     <!-- the occasional visitor -->
-    <div class="ufo"><div class="hover"><img class="off" src="img/ufo-off.png" alt=""><img class="on" src="img/ufo-on.png" alt=""></div></div>
+    <div class="ufo"><div class="hover"><img class="beam" src="img/beam.png" alt=""><img class="off" src="img/ufo-off.png" alt=""><img class="on" src="img/ufo-on.png" alt=""></div></div>
   </div>
   <figcaption>
     <b>CITY VIEW</b>
-    <span>drawn by hand · animated in CSS · the UFO is on a 64-second orbit</span>
+    <span>drawn by hand · animated in CSS · the abduction runs every 80 seconds</span>
     <a href="/">aaronsteele.vercel.app</a>
   </figcaption>
 </figure>
