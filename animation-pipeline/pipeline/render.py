@@ -164,6 +164,10 @@ def move_offset(moves, t, dur, rng_phase):
             amp = m.get("amp", 0.02)
             period = m.get("period", 0.6)
             dy += -abs(math.sin((t / period + rng_phase) * math.pi)) * amp
+        elif kind == "shrink":
+            u = 0.0 if t1 <= t0 else max(0.0, min(1.0, (t - t0) / (t1 - t0)))
+            f0, f1 = m.get("from", 1.0), m.get("to", 0.5)
+            scale *= f0 + (f1 - f0) * ease(u)
         elif kind == "pop":
             t1 = m.get("t", [0, 0.25])[1]
             u = ease(max(0.0, min(1.0, t / max(t1, 1e-6))))
@@ -456,8 +460,12 @@ class EpisodeRenderer:
                       else imgs["body"])
             dx, dy, rot, smul = move_offset(a.get("moves", []), t,
                                             s["duration"], sp["phase"])
-            brng = random.Random((shot_i * 733 + j * 97 + f // self.boil_every))
-            bx, by, brot = self.boil(brng)
+            if a.get("still"):
+                bx = by = brot = 0.0  # the dead do not boil
+            else:
+                brng = random.Random(
+                    (shot_i * 733 + j * 97 + f // self.boil_every))
+                bx, by, brot = self.boil(brng)
             if smul != 1.0:
                 img = img.resize((max(1, round(img.width * smul)),
                                   max(1, round(img.height * smul))),
@@ -490,6 +498,21 @@ class EpisodeRenderer:
         cap = s.get("caption")
         if cap:
             self.draw_caption(frame, cap, s.get("caption_y", self.caption_y))
+        iris = s.get("iris")
+        if iris:
+            # cartoon iris-out: black closes in to a circle on the target
+            t0, t1 = iris.get("t", [0, s["duration"]])
+            u = max(0.0, min(1.0, (t - t0) / max(t1 - t0, 1e-6)))
+            r0, r1 = iris.get("r0", 1.2), iris.get("r1", 0.0)
+            r = (r0 + (r1 - r0) * ease(u)) * self.H
+            cx, cy = iris.get("at", [0.5, 0.5])
+            cx, cy = cx * self.W, cy * self.H
+            mask = Image.new("L", (self.W, self.H), 255)
+            d = ImageDraw.Draw(mask)
+            if r > 1:
+                d.ellipse([cx - r, cy - r, cx + r, cy + r], fill=0)
+            black = Image.new("RGB", (self.W, self.H), (8, 8, 8))
+            frame = Image.composite(black, frame, mask)
         return frame
 
     @staticmethod

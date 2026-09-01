@@ -119,60 +119,48 @@ shots:
   - beat: d02
     bg: backgrounds/park.png
     audio: vo/d02.wav
+    zoom: [1.0, 1.05]
     actors:
-      - char: tim
-        at: [0.24, 0.74]
       - char: carly
         pose: crouch
-        at: [0.56, 0.81]
+        at: [0.5, 1.9]
+        scale: 2.27
         talk: true
-        moves: [{type: bob, amp: 0.004, period: 0.7}]
-      - char: stevendog
-        at: [0.80, 0.74]
+        moves: [{type: bob, amp: 0.002, period: 0.9}]
 
   - beat: d03
     bg: backgrounds/park.png
     audio: vo/d03.wav
-    zoom: [1.0, 1.08]
+    zoom: [1.0, 1.05]
     actors:
       - char: tim
-        at: [0.24, 0.74]
+        at: [0.5, 1.9]
+        scale: 2.27
         talk: true
-        moves: [{type: bob, amp: 0.003, period: 0.8}]
-      - char: carly
-        pose: crouch
-        at: [0.56, 0.81]
-      - char: stevendog
-        at: [0.80, 0.74]
+        moves: [{type: bob, amp: 0.002, period: 0.9}]
 
   - beat: d04
     bg: backgrounds/park.png
     audio: vo/d04.wav
+    zoom: [1.0, 1.05]
     actors:
-      - char: tim
-        at: [0.24, 0.74]
       - char: carly
         pose: crouch
-        at: [0.56, 0.81]
+        at: [0.5, 1.9]
+        scale: 2.27
         talk: true
-        moves: [{type: bob, amp: 0.004, period: 0.7}]
-      - char: stevendog
-        at: [0.80, 0.74]
+        moves: [{type: bob, amp: 0.002, period: 0.9}]
 
   - beat: d05
     bg: backgrounds/park.png
     audio: vo/d05.wav
-    zoom: [1.0, 1.08]
+    zoom: [1.0, 1.05]
     actors:
       - char: tim
-        at: [0.24, 0.74]
+        at: [0.5, 1.9]
+        scale: 2.27
         talk: true
-        moves: [{type: bob, amp: 0.003, period: 0.8}]
-      - char: carly
-        pose: crouch
-        at: [0.56, 0.81]
-      - char: stevendog
-        at: [0.80, 0.74]
+        moves: [{type: bob, amp: 0.002, period: 0.9}]
 
   # a04: carly stands.
   - beat: a04
@@ -190,56 +178,46 @@ shots:
   - beat: d06
     bg: backgrounds/park.png
     audio: vo/d06.wav
-    zoom: [1.09, 1.0]
+    zoom: [1.0, 1.05]
     actors:
-      - char: tim
-        at: [0.24, 0.74]
       - char: carly
-        at: [0.50, 0.74]
+        at: [0.5, 1.9]
+        scale: 2.27
         talk: true
-        moves: [{type: bob, amp: 0.004, period: 0.7}]
-      - char: stevendog
-        at: [0.80, 0.74]
+        moves: [{type: bob, amp: 0.002, period: 0.9}]
 
   - beat: d07
     bg: backgrounds/park.png
     audio: vo/d07.wav
+    zoom: [1.0, 1.05]
     actors:
       - char: tim
-        at: [0.24, 0.74]
+        at: [0.5, 1.9]
+        scale: 2.27
         talk: true
-        moves: [{type: bob, amp: 0.003, period: 0.8}]
-      - char: carly
-        at: [0.50, 0.74]
-      - char: stevendog
-        at: [0.80, 0.74]
+        moves: [{type: bob, amp: 0.002, period: 0.9}]
 
   - beat: d08
     bg: backgrounds/park.png
     audio: vo/d08.wav
-    zoom: [1.0, 1.08]
+    zoom: [1.0, 1.05]
     actors:
-      - char: tim
-        at: [0.24, 0.74]
       - char: carly
-        at: [0.50, 0.74]
+        at: [0.5, 1.9]
+        scale: 2.27
         talk: true
-        moves: [{type: bob, amp: 0.004, period: 0.7}]
-      - char: stevendog
-        at: [0.80, 0.74]
+        moves: [{type: bob, amp: 0.002, period: 0.9}]
 
   - beat: d09
     bg: backgrounds/park.png
     audio: vo/d09.wav
+    zoom: [1.0, 1.05]
     actors:
       - char: tim
-        at: [0.24, 0.74]
+        at: [0.5, 1.9]
+        scale: 2.27
         talk: true
-        moves: [{type: bob, amp: 0.003, period: 0.8}]
-      - char: carly
-        at: [0.50, 0.74]
-      - char: stevendog
-        at: [0.80, 0.74]
+        moves: [{type: bob, amp: 0.002, period: 0.9}]
 
   - beat: d10
     bg: backgrounds/park.png
@@ -338,46 +316,35 @@ shots:
   - beat: d14
     bg: backgrounds/park.png
     audio: vo/d14.wav
-    zoom: [1.0, 1.08]
+    zoom: [1.0, 1.05]
     actors:
-      - char: tim
-        at: [0.24, 0.74]
       - char: carly
-        at: [0.50, 0.74]
+        at: [0.5, 1.9]
+        scale: 2.27
         talk: true
-        moves: [{type: bob, amp: 0.004, period: 0.7}]
-      - char: stevendog
-        at: [0.80, 0.74]
+        moves: [{type: bob, amp: 0.002, period: 0.9}]
 
   - beat: d15
     bg: backgrounds/park.png
     audio: vo/d15.wav
-    zoom: [1.0, 1.14]
+    zoom: [1.0, 1.05]
     actors:
       - char: tim
-        at: [0.24, 0.74]
+        at: [0.5, 1.9]
+        scale: 2.27
         talk: true
-        moves:
-          - {type: bob, amp: 0.004, period: 0.6}
-          - {type: waddle, amp: 1.2, period: 0.8}
-      - char: carly
-        at: [0.50, 0.74]
-      - char: stevendog
-        at: [0.80, 0.74]
+        moves: [{type: bob, amp: 0.002, period: 0.9}]
 
   - beat: d16
     bg: backgrounds/park.png
     audio: vo/d16.wav
-    zoom: [1.09, 1.0]
+    zoom: [1.0, 1.05]
     actors:
-      - char: tim
-        at: [0.24, 0.74]
       - char: carly
-        at: [0.50, 0.74]
+        at: [0.5, 1.9]
+        scale: 2.27
         talk: true
-        moves: [{type: bob, amp: 0.004, period: 0.7}]
-      - char: stevendog
-        at: [0.80, 0.74]
+        moves: [{type: bob, amp: 0.002, period: 0.9}]
 
   - beat: d17
     bg: backgrounds/park.png
@@ -398,15 +365,13 @@ shots:
   - beat: d18
     bg: backgrounds/park.png
     audio: vo/d18.wav
-    zoom: [1.0, 1.07]
+    zoom: [1.0, 1.05]
     actors:
-      - char: tim
-        at: [0.24, 0.74]
       - char: carly
-        at: [0.50, 0.74]
+        at: [0.5, 1.9]
+        scale: 2.27
         talk: true
-      - char: stevendog
-        at: [0.80, 0.74]
+        moves: [{type: bob, amp: 0.002, period: 0.9}]
 
   # a07: carly steps into tim's position; tim makes room.
   - beat: a07
@@ -460,34 +425,24 @@ shots:
   - beat: d20
     bg: backgrounds/park.png
     audio: vo/d20.wav
-    zoom: [1.02, 1.12]
+    zoom: [1.0, 1.06]
     actors:
       - char: steven
-        at: [0.5, 0.76]
-        size: 1.5
+        at: [1.03, 0.95]
+        scale: 2.0
         talk: true
-        moves: [{type: bob, amp: 0.002, period: 1.2}]
+        moves: [{type: bob, amp: 0.002, period: 0.9}]
 
   - beat: d21
     bg: backgrounds/park.png
     audio: vo/d21.wav
-    zoom: [1.0, 1.09]
+    zoom: [1.0, 1.05]
     actors:
-      - char: bird
-        at: [-0.2, 0.12]
-        size: 0.8
-        moves:
-          - {type: slide, from: [1.2, 0.15], to: [-0.2, 0.12], t: [0, 3.5]}
-        alt_pose: flap
-        alt_period: 0.5
-      - char: tim
-        at: [0.20, 0.74]
       - char: carly
-        at: [0.44, 0.74]
+        at: [0.5, 1.9]
+        scale: 2.27
         talk: true
-        moves: [{type: bob, amp: 0.004, period: 0.7}]
-      - char: steven
-        at: [0.76, 0.76]
+        moves: [{type: bob, amp: 0.002, period: 0.9}]
 
   # a09: the helpless shrug.
   - beat: a09
@@ -532,6 +487,7 @@ shots:
     cam_shake: {amp: 0.007, t: [0.7, 1.25]}
     sfx:
       - {file: sfx/gunshot.mp3, at: 0.7, gain: 0.9}
+      - {file: sfx/wilhelm.wav, at: 0.82, gain: 0.85}
     actors:
       - char: carly
         at: [0.32, 0.74]
@@ -576,6 +532,7 @@ shots:
     actors:
       - char: steven
         pose: dead
+        still: true
         at: [0.52, 0.78]
         size: 1.3
 
@@ -588,6 +545,7 @@ shots:
       - char: stevendog
         at: [0.42, 0.72]
         rotate: 100
+        still: true
       - char: passerby
         pose: gasp
         at: [0.78, 0.74]
@@ -597,32 +555,25 @@ shots:
   - beat: d22
     bg: backgrounds/park.png
     audio: vo/d22.wav
-    zoom: [1.0, 1.09]
+    zoom: [1.0, 1.05]
     actors:
-      - char: stevendog
-        at: [0.42, 0.72]
-        rotate: 100
       - char: passerby
-        at: [0.78, 0.74]
+        flip: true
+        at: [0.5, 1.9]
+        scale: 2.27
         talk: true
-        alt_pose: up          # arms pump up and down as he speaks
-        alt_period: 0.9
-        moves: [{type: bob, amp: 0.004, period: 0.6}]
+        moves: [{type: bob, amp: 0.002, period: 0.9}]
 
   - beat: d23
     bg: backgrounds/park.png
     audio: vo/d23.wav
-    zoom: [1.0, 1.08]
+    zoom: [1.0, 1.05]
     actors:
-      - char: stevendog
-        at: [0.42, 0.72]
-        rotate: 100
       - char: tim
-        at: [0.16, 0.74]
+        at: [0.5, 1.9]
+        scale: 2.27
         talk: true
-        moves: [{type: bob, amp: 0.003, period: 0.8}]
-      - char: passerby
-        at: [0.78, 0.74]
+        moves: [{type: bob, amp: 0.002, period: 0.9}]
 
   # a13: the passerbys step into the spot...
   - beat: a13
@@ -634,6 +585,7 @@ shots:
       - char: stevendog
         at: [0.42, 0.72]
         rotate: 100
+        still: true
       - char: passerby
         at: [0.24, 0.78]
         moves:
@@ -648,6 +600,7 @@ shots:
     actors:
       - char: steven
         pose: dead
+        still: true
         at: [0.62, 0.78]
         size: 1.2
       - char: passerby
@@ -664,6 +617,7 @@ shots:
     actors:
       - char: steven
         pose: dead
+        still: true
         at: [0.55, 0.78]
         size: 1.2
       - char: passerby
@@ -682,6 +636,7 @@ shots:
     actors:
       - char: steven
         pose: dead
+        still: true
         at: [0.45, 0.78]
         size: 1.2
       - image: props/gun.png
@@ -769,20 +724,38 @@ shots:
           - {type: slide, from: [0.68, 0.74], to: [0.76, 0.74], t: [0, 1.5]}
           - {type: waddle, amp: 1.5, period: 0.5}
 
-  # a18: they disappear down the path, perfectly calm.
+  # a18: they disappear down the path, perfectly calm — up and away,
+  # shrinking with distance.
   - beat: a18
     bg: backgrounds/citypark.png
-    duration: 2.2
+    duration: 2.6
     sfx:
-      - {file: sfx/footsteps_gravel.wav, at: 0.0, dur: 2.2, gain: 2.4}
+      - {file: sfx/footsteps_gravel.wav, at: 0.0, dur: 2.6, gain: 1.6}
     actors:
       - char: tim
-        at: [1.2, 0.74]
+        at: [0.72, 0.52]
         moves:
-          - {type: slide, from: [0.60, 0.74], to: [1.2, 0.74], t: [0, 1.9]}
+          - {type: slide, from: [0.60, 0.74], to: [0.72, 0.52], t: [0, 2.3]}
+          - {type: shrink, from: 1.0, to: 0.34, t: [0, 2.3]}
           - {type: waddle, amp: 2, period: 0.55}
       - char: carly
-        at: [1.36, 0.74]
+        at: [0.79, 0.53]
         moves:
-          - {type: slide, from: [0.76, 0.74], to: [1.36, 0.74], t: [0, 1.9]}
+          - {type: slide, from: [0.76, 0.74], to: [0.79, 0.53], t: [0, 2.3]}
+          - {type: shrink, from: 1.0, to: 0.34, t: [0, 2.3]}
           - {type: waddle, amp: 2, period: 0.5}
+
+  # c02: FADE OUT — cartoon iris closing to a circle around the couple.
+  - beat: c02
+    bg: backgrounds/citypark.png
+    duration: 1.8
+    iris: {at: [0.75, 0.5], t: [0.15, 1.5], r0: 1.1, r1: 0.0}
+    actors:
+      - char: tim
+        at: [0.72, 0.52]
+        size: 0.34
+        moves: [{type: waddle, amp: 1.5, period: 0.6}]
+      - char: carly
+        at: [0.79, 0.53]
+        size: 0.34
+        moves: [{type: waddle, amp: 1.5, period: 0.6}]

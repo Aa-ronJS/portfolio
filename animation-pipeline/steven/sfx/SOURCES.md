@@ -26,3 +26,4 @@ Freesound CC0 (HQ previews), fetched 2026-08-30:
 | music_happy.mp3 | 666720 | Seth_Makes_Sounds | Freesound - Cute Happy Background Music |
 
 All five replaced the earlier synthesized placeholders — same filenames, licence CC0.
+| wilhelm.wav | 813308 | qubodup | Wilhelm Scream (CC0 re-creation) |
