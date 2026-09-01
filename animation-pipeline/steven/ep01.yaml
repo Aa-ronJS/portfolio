@@ -26,9 +26,9 @@ ambience:
 music:
   - {file: sfx/music_happy.mp3, from: a01, to: d10, gain: 0.3}
   # silence through "Yes, but he's your ex-husband" / the beat / "what?"
-  - {file: sfx/music_scary.mp3, from: d13, to: d13, gain: 0.45}
+  - {file: sfx/music_scary.mp3, from: d13, to: d13, gain: 0.6}
   - {file: sfx/music_happy.mp3, from: d14, to: d19, gain: 0.3}
-  - {file: sfx/music_scary.mp3, from: c01, to: d21, gain: 0.45}
+  - {file: sfx/music_scary.mp3, from: c01, to: d21, gain: 0.6}
   - {file: sfx/music_happy.mp3, from: a09, to: a11, gain: 0.3}
   # silence over the body, then:
   - {file: sfx/music_sad.mp3, from: a12, to: a13, gain: 0.45}
