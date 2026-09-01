@@ -31,3 +31,4 @@ All five replaced the earlier synthesized placeholders — same filenames, licen
 | music_scary.mp3 | 845551 | SkySpeira | CC0 |
 | music_sad.mp3 | 168864 | EKVelika | CC0 |
 | crowd_gasp.wav | 264376 | HowardV | CC0 |
+| music_scary.mp3 (replaced) | 378458 | Cunningar0807 | Violins Suspense 2 — CC0 |
