@@ -490,8 +490,27 @@ class EpisodeRenderer:
             if specs:
                 rig = c.rig
                 can_blink = "blink" in c.layers or face.get("eyes")
+                # props ride a bone: a gun in the hand, a rope round the
+                # whole body (bone: root). imgs+period makes a two-frame
+                # prop cycle (the skipping rope's up/down)
+                props = []
+                for pr in a.get("props") or []:
+                    files = pr.get("imgs") or [pr["img"]]
+                    props.append({
+                        "imgs": [Image.open(self.path(f)).convert("RGBA")
+                                 for f in files],
+                        "period": pr.get("period", 0.5),
+                        "bone": pr.get("bone", "root"),
+                        "at": pr.get("at", [0.5, 0.5]),
+                        "anchor": pr.get("anchor", [0.5, 0.5]),
+                        "size": pr.get("size", 0.2),
+                        "rot": pr.get("rot", 0.0),
+                        "t": pr.get("t"),
+                        "follow": pr.get("follow", True),
+                    })
                 s["sprites"].append({
                     "imgs": None, "rig": rig, "specs": specs, "char": c,
+                    "props": props,
                     "k": k, "flip": do_flip, "cache": {},
                     "base": a.get("pose") or "body", "face": face,
                     # anchor restated for the padded pose canvas
@@ -605,13 +624,23 @@ class EpisodeRenderer:
             and face.get("eyes")
         overlay_talk = talking and not sheet("talk") and face \
             and face.get("mouth")
+        # which props are live this frame (and which cycle frame each is on)
+        prop_state = []
+        for i, pr in enumerate(sp.get("props") or []):
+            t0, t1 = pr["t"] or (0.0, float("inf"))
+            if not t0 <= t <= t1:
+                continue
+            n = len(pr["imgs"])
+            fi = int(t / (pr["period"] / n)) % n if n > 1 else 0
+            prop_state.append((i, fi))
         key = (tuple(sorted(
                    (b, tuple(sorted(
                        (k2, v if isinstance(v, str) else round(v, 2))
                        for k2, v in ch.items())))
                    for b, ch in pose.items())),
                tuple(sorted(variant_for.items())),
-               bool(overlay_blink), bool(overlay_talk))
+               bool(overlay_blink), bool(overlay_talk),
+               tuple(prop_state))
         img = sp["cache"].get(key)
         if img is None:
             canvas, _pad = rig.pose(pose, variant_for)
@@ -621,6 +650,39 @@ class EpisodeRenderer:
                     transform=lambda at: rig.anchor_world(
                         at, head_bone, pose),
                     feat_h=rig.H)
+            elif prop_state:
+                canvas = canvas.copy()  # never draw on the rig's cache
+            for i, fi in prop_state:
+                pr = sp["props"][i]
+                pim = pr["imgs"][fi]
+                kp = pr["size"] * rig.rest_h / pim.height
+                pim = pim.resize((max(1, round(pim.width * kp)),
+                                  max(1, round(pim.height * kp))),
+                                 Image.LANCZOS)
+                ang = rig.bone_state(pr["bone"], pose)[0] \
+                    if pr["follow"] else 0.0
+                total = ang + pr["rot"]
+                ax, ay = rig.anchor_world(pr["at"], pr["bone"], pose)
+                px = pr["anchor"][0] * pim.width
+                py = pr["anchor"][1] * pim.height
+                if abs(total) > 0.05:
+                    w0, h0 = pim.size
+                    pim = pim.rotate(-total, resample=Image.BICUBIC,
+                                     expand=True)
+                    th = math.radians(total)
+                    rx, ry = px - w0 / 2, py - h0 / 2
+                    px = rx * math.cos(th) - ry * math.sin(th) \
+                        + pim.width / 2
+                    py = rx * math.sin(th) + ry * math.cos(th) \
+                        + pim.height / 2
+                x = int(round(ax - px))
+                y = int(round(ay - py))
+                sx, sy = max(-x, 0), max(-y, 0)
+                ex = min(pim.width, canvas.width - x)
+                ey = min(pim.height, canvas.height - y)
+                if ex > sx and ey > sy:
+                    canvas.alpha_composite(pim.crop((sx, sy, ex, ey)),
+                                           (x + sx, y + sy))
             k = sp["k"]
             img = canvas.resize((round(canvas.width * k),
                                  round(canvas.height * k)), Image.LANCZOS)

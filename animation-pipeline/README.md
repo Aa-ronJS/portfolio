@@ -147,7 +147,9 @@ Once the rig exists:
   window automatically. An actor that also has a `waddle` keeps the
   author's old-style walk instead; `no_walk: true` opts out entirely.
 - **clips are stock and reusable** — `pipeline/clips/*.json` ships
-  `walk`, `idle`, `wave`, `nod`, `shake`, and they play on any rigged
+  `walk`, `run`, `idle`, `wave`, `nod`, `shake`, `point`,
+  `jump`, `sit`, `kneel`, `skip`, `climb`, `cartwheel`, `backflip`,
+  `aim`/`aim2` (gun up, one hand / both), `fry`, and they play on any rigged
   character whose bones use the canonical names (`torso`, `head`,
   `arm_l`, `leg_r`, … one-piece, or `arm_l_upper`/`arm_l_lower` for
   elbows and knees — a clip keyed on `arm_l_upper` lands on a one-piece
@@ -391,6 +393,13 @@ shots:
                                # or clips: [{name, t, amp, period}, ...]
         shapes: {arm_l: pocket}  # pin a kit part shape for the shot
         no_walk: true          # suppress the automatic walk on a slide
+        props:                 # images riding a bone (rigged actors)
+          - img: props/gun.png # or imgs: [a.png, b.png] + period for
+            bone: arm_l        #   a cycling prop (the skipping rope)
+            at: [0.40, 0.65]   # rest-pose point it pins to (body coords)
+            anchor: [0.8, 0.4] # the point in the prop image that pins
+            size: 0.13         # prop height / character height
+            rot: -90           # extra rotation on top of the bone's
         moves:
           - {type: slide, from: [-0.2, 0.74], to: [0.34, 0.74], t: [0, 1.4]}
           - {type: waddle, amp: 3, period: 0.5}

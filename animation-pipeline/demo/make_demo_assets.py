@@ -322,6 +322,82 @@ def make_doug():
           "(torso, head, head_talk, 4 arms, 2 legs)")
 
 
+# ---------------------------------------------------------------- props
+# Placeholder hand props for the movement clips: a prop rides a bone
+# (actor `props:`), so these get replaced by ingested drawings like
+# everything else. Drawn pointing/opening screen-LEFT, matching an arm
+# rotated +90.
+
+def prop_gun():
+    im = Image.new("RGBA", (420, 260), (0, 0, 0, 0))
+    d = ImageDraw.Draw(im)
+    grey = (120, 122, 128, 255)
+    d.rectangle([20, 60, 330, 120], fill=grey)              # barrel
+    d.polygon([(260, 120), (330, 120), (350, 230), (285, 230)],
+              fill=grey)                                    # grip
+    stroke(d, [(20, 60), (330, 60), (330, 120), (350, 230),
+               (285, 230), (260, 120), (20, 120), (20, 60)], width=8)
+    stroke(d, [(225, 120), (245, 175), (265, 170)], width=7)  # trigger
+    return im
+
+
+def prop_pan():
+    im = Image.new("RGBA", (620, 240), (0, 0, 0, 0))
+    d = ImageDraw.Draw(im)
+    iron = (60, 58, 62, 255)
+    d.rectangle([330, 95, 600, 130], fill=iron)             # handle
+    blob(d, (20, 110, 360, 200), iron, squish=0.25)         # pan
+    stroke(d, [(330, 95), (600, 95), (600, 130), (355, 130)], width=8)
+    # the egg, mid-fry
+    blob(d, (90, 60, 270, 150), (246, 244, 238, 255), width=6)
+    blob(d, (150, 85, 215, 130), (240, 190, 60, 255), width=5)
+    return im
+
+
+def prop_rope(up):
+    im = Image.new("RGBA", (900, 1400), (0, 0, 0, 0))
+    d = ImageDraw.Draw(im)
+    if up:
+        pts = [(120, 690), (170, 300), (450, 60), (730, 300), (780, 690)]
+    else:
+        pts = [(120, 690), (170, 1080), (450, 1330), (730, 1080),
+               (780, 690)]
+    stroke(d, pts, width=26)
+    for x, y in ((120, 690), (780, 690)):                   # handles
+        d.rectangle([x - 22, y - 60, x + 22, y + 60],
+                    fill=(150, 60, 40, 255))
+        stroke(d, [(x - 22, y - 60), (x + 22, y - 60), (x + 22, y + 60),
+                   (x - 22, y + 60), (x - 22, y - 60)], width=7)
+    return im
+
+
+def prop_ladder():
+    im = Image.new("RGBA", (460, 1700), (0, 0, 0, 0))
+    d = ImageDraw.Draw(im)
+    wood = (168, 128, 82, 255)
+    for x in (40, 380):
+        d.rectangle([x, 20, x + 40, 1680], fill=wood)
+        stroke(d, [(x, 20), (x + 40, 20), (x + 40, 1680), (x, 1680),
+                   (x, 20)], width=8)
+    for y in range(120, 1680, 200):
+        d.rectangle([80, y, 380, y + 36], fill=wood)
+        stroke(d, [(80, y), (380, y), (380, y + 36), (80, y + 36),
+                   (80, y)], width=7)
+    return im
+
+
+def make_props():
+    pdir = os.path.join(HERE, "props")
+    os.makedirs(pdir, exist_ok=True)
+    rng.seed(hash("props") & 0xffff)
+    prop_gun().save(os.path.join(pdir, "gun.png"))
+    prop_pan().save(os.path.join(pdir, "pan.png"))
+    prop_rope(True).save(os.path.join(pdir, "rope_up.png"))
+    prop_rope(False).save(os.path.join(pdir, "rope_down.png"))
+    prop_ladder().save(os.path.join(pdir, "ladder.png"))
+    print("props: gun, pan, rope_up/down, ladder")
+
+
 # ---------------------------------------------------------------- background
 
 def chipshop():
@@ -392,6 +468,7 @@ def main():
         print(f"characters/{name}: {', '.join(variants)}")
 
     make_doug()
+    make_props()
 
     os.makedirs(os.path.join(HERE, "backgrounds"), exist_ok=True)
     chipshop().save(os.path.join(HERE, "backgrounds", "chipshop.png"))

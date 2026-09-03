@@ -506,9 +506,14 @@ class Rig:
         def shape_for(name):
             shapes = self.parts[name]
             want = bonevals.get(name, {}).get("shape")
+            # a missing exotic shape degrades toward bent, then rest —
+            # a clip asking for leg_kneel works on a kit without one;
+            # no wanted shape at all means the rest drawing
             if want in shapes:
                 return want
-            for fb in ("straight", "default"):
+            chain = ("bent", "straight", "default") if want \
+                else ("straight", "default")
+            for fb in chain:
                 if fb in shapes:
                     return fb
             return next(iter(shapes))
@@ -559,6 +564,14 @@ class Rig:
             self._pose_cache.clear()
         self._pose_cache[key] = (canvas, pad)
         return canvas, pad
+
+    def bone_state(self, bone, bonevals):
+        """(accumulated angle deg, world pivot, rest head) for a bone —
+        what a prop pinned to that bone needs."""
+        world = self._world(bonevals)
+        if bone not in world:
+            return 0.0, (0.0, 0.0), (0.0, 0.0)
+        return world[bone]
 
     def anchor_world(self, at, bone, bonevals):
         """Where a rest-pose point riding a bone ends up, in padded coords."""
