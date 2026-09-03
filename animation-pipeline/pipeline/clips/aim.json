@@ -1,17 +1,18 @@
 {
-  "period": 1.2,
+  "period": 1.0,
   "loop": true,
   "interp": "step",
+  "name": "aim",
   "channels": {
-    "arm_l_upper": {
+    "arm_r_upper": {
       "rot": [
         [
           0.0,
-          88
+          -88
         ],
         [
           0.5,
-          91
+          -91
         ]
       ],
       "shape": [
@@ -25,7 +26,7 @@
       "rot": [
         [
           0.0,
-          3
+          4
         ]
       ]
     },
@@ -33,10 +34,9 @@
       "rot": [
         [
           0.0,
-          -3
+          3
         ]
       ]
     }
-  },
-  "name": "aim"
+  }
 }

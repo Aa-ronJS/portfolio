@@ -539,15 +539,31 @@ class EpisodeRenderer:
                     for e in entries:
                         if isinstance(e, str):
                             e = {"img": e}
-                        frames.append({
-                            "im": Image.open(
-                                self.path(e["img"])).convert("RGBA"),
-                            "z": e.get("z", "front")})
+                        pim = Image.open(
+                            self.path(e["img"])).convert("RGBA")
+                        # flip: mirror the art so the object points the
+                        # way its holder faces (the pan's bowl and the
+                        # gun's barrel go where the shoes go). anchor
+                        # and at-points are then given in the flipped
+                        # orientation — what you see is what you name.
+                        if pr.get("flip"):
+                            pim = pim.transpose(Image.FLIP_LEFT_RIGHT)
+                        frames.append({"im": pim,
+                                       "z": e.get("z", "front")})
+                    bone = pr.get("bone", "root")
+                    at = pr.get("at")
+                    if at is None and bone in rig.bones:
+                        # a held prop defaults to the holder's OWN hand
+                        # (the bone tail) — a picked-up object must
+                        # touch the hand that holds it, and a pin tuned
+                        # for one character floats on another
+                        tl = rig.bones[bone].tail
+                        at = [tl[0] / rig.W, tl[1] / rig.H]
                     props.append({
                         "imgs": frames,
                         "period": pr.get("period", 0.5),
-                        "bone": pr.get("bone", "root"),
-                        "at": pr.get("at", [0.5, 0.5]),
+                        "bone": bone,
+                        "at": at or [0.5, 0.5],
                         "anchor": pr.get("anchor", [0.5, 0.5]),
                         "size": pr.get("size", 0.2),
                         "rot": pr.get("rot", 0.0),

@@ -400,11 +400,20 @@ shots:
         no_walk: true          # suppress the automatic walk on a slide
         props:                 # images riding a bone (rigged actors)
           - img: props/gun.png # or imgs: [...] + period for a cycling
-            bone: arm_l        #   prop; an entry may be {img, z: behind}
-            at: [0.40, 0.65]   #   to pass BEHIND the character (the
-            anchor: [0.8, 0.4] #   skipping rope's back half)
-            size: 0.13         # prop height / character height
-            rot: -90           # extra rotation on top of the bone's
+            bone: arm_r        #   prop; an entry may be {img, z: behind}
+            anchor: [0.2, 0.4] #   to pass BEHIND the character (the
+            size: 0.13         #   skipping rope's back half)
+            rot: 90            # extra rotation on top of the bone's
+            flip: true         # mirror the art so the object points the
+                               #   way its holder faces (barrel and pan
+                               #   bowl go the same way as the shoes);
+                               #   anchor/at are given in the flipped
+                               #   orientation
+                               # `at` (a rest-canvas point) is OPTIONAL:
+                               #   a held prop defaults to the carrying
+                               #   bone's tail — the holder's own hand —
+                               #   so a picked-up object touches the
+                               #   hand that holds it on ANY character
             drop: {at: 1.2, spin: 300}  # released: falls to the floor,
                                #   tumbling, and stays where it lands
         reach:                 # a hand that uses something touches it:

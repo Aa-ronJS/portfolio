@@ -3,7 +3,7 @@
   "loop": true,
   "interp": "step",
   "channels": {
-    "arm_l_upper": {
+    "arm_r_upper": {
       "rot": [
         [
           0.0,
@@ -37,19 +37,11 @@
         ]
       ]
     },
-    "arm_r_upper": {
-      "rot": [
-        [
-          0.0,
-          -8
-        ]
-      ]
-    },
     "head": {
       "rot": [
         [
           0.0,
-          -10
+          10
         ]
       ]
     },

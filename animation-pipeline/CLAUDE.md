@@ -415,6 +415,33 @@ bang come from make_demo_assets `duel_fx()`. Note the deliberate
 comedy physics: sugar's stacked kneel+aim points the gun slightly
 high, so his shot goes over the rolling doug — keep it.
 
+Aaron's prop round ("doug picked up the gun and it wasn't connected
+to his hand; the pan pointed opposite to his shoes"):
+- A held prop's `at` now DEFAULTS to the carrying bone's tail — the
+  holder's own hand — so a pickup touches the hand that holds it on
+  any character. The bug: the duel's handoff reused SUGAR's tuned pin
+  on DOUG's arm; a pin tuned for one character floats on another.
+  Omit `at` for anything held; only non-hand pins (the rope on root)
+  need an explicit point.
+- Objects point the way the shoes point. Sugar's (and the kit's) rest
+  shoes face screen-RIGHT, so screen-right is "front", matching the
+  authored-facing-right house rule. The natural forward arm is
+  ARM_R (the front-side shoulder; arm_l crosses the body to reach
+  forward), and NEGATIVE arm rot swings toward screen-right/front,
+  positive toward screen-left/back — the old aim/aim2/fry drove
+  arm_l positive, i.e. the back arm pointing backwards. All three
+  clips now drive arm_r negative, and the gun/pan props use the new
+  prop `flip: true` (mirror the art so barrel/bowl go the shoes' way;
+  anchor and prop-reach points are then given in the FLIPPED
+  orientation). Staging faces characters with flips: the duel mirrors
+  sugar (flip: true) so his shoes agree with his leftward aim, and
+  doug plays unflipped when his target is to his right.
+- Sign crib, settled empirically (unflipped, y-down, verified by
+  posing the rig directly): arm rot − = toward screen-right (front),
+  + = screen-left (back); head/torso rot + tilts screen-right,
+  − screen-left. When in doubt, pose the rig and LOOK — two of these
+  signs were misremembered twice this session.
+
 Discussed but unbuilt: per-character close-up
 framing in `char.json` (the directed close-up currently assumes a
 humanoid head at `at: [0.5, 1.35], scale: 1.5`); pose changes and

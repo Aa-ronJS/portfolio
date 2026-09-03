@@ -148,11 +148,11 @@ shots:
         clip: aim
         props:
           - img: props/gun.png
-            bone: arm_l
-            at: [0.395, 0.648]
-            anchor: [0.78, 0.42]
+            flip: true           # barrel points the way the shoes point
+            bone: arm_r          # the FRONT arm; no `at` = pinned to the hand
+            anchor: [0.22, 0.42]
             size: 0.13
-            rot: -90
+            rot: 90
 
   # 10 — armed, both hands: same gun, bladed stance — and the support
   # hand actually GRIPS it: the reach targets a point on the prop
@@ -166,16 +166,16 @@ shots:
         at: [0.55, 0.76]
         scale: 0.46
         clip: aim2
-        shapes: {arm_r: point}
+        shapes: {arm_l: point}
         reach:
-          - {bone: arm_r, to: {prop: 0, at: [0.72, 0.70]}}
+          - {bone: arm_l, to: {prop: 0, at: [0.28, 0.70]}}
         props:
           - img: props/gun.png
-            bone: arm_l
-            at: [0.395, 0.648]
-            anchor: [0.78, 0.42]
+            flip: true           # barrel points the way the shoes point
+            bone: arm_r          # the FRONT arm; no `at` = pinned to the hand
+            anchor: [0.22, 0.42]
             size: 0.13
-            rot: -90
+            rot: 90
 
   # 11 — frying an egg: bent arm holds the pan (egg included), the
   # clip jiggles it; he watches the egg like it owes him money.
@@ -189,11 +189,11 @@ shots:
         clip: fry
         props:
           - img: props/pan.png
-            bone: arm_l
-            at: [0.398, 0.629]
-            anchor: [0.88, 0.5]
+            flip: true           # bowl forward, same way as the shoes
+            bone: arm_r
+            anchor: [0.12, 0.5]
             size: 0.115
-            rot: 50
+            rot: 53
 
   # 12 — the door: he walks up, his hand goes to the handle (reaching
   # and stretching until it touches), he slides it open — hand still on
@@ -232,11 +232,11 @@ shots:
         clip: fry
         props:
           - img: props/pan.png
-            bone: arm_l
-            at: [0.398, 0.629]
-            anchor: [0.88, 0.5]
+            flip: true           # bowl forward, same way as the shoes
+            bone: arm_r
+            anchor: [0.12, 0.5]
             size: 0.115
-            rot: 50
+            rot: 53
             drop: {at: 1.1, spin: 300}
 
   # 14 — attention: whoever talks gets looked at, automatically.
