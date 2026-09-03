@@ -304,6 +304,42 @@ expression would flicker away every flap) — the pose head holds and
 the stock overlays provide the mouth flap and blink instead. Drawn
 `angry_talk`/`angry_blink` parts still win when they exist.
 
+Transparent-shirt round (2026-09-03): sugar's torso and two head
+variants shipped ~2/3 transparent — his outlines don't quite close, so
+the sheet-level hole-fill leaked out through the gaps and the interior
+alpha binarised away. Fixed twice: his committed parts were repaired
+in place (binary_closing it=12 + fill_holes per part; newly filled
+near-black pixels get paper colour so line gaps don't become black
+slabs), and kit ingest now runs that same per-part seal-and-fill for
+every future character. When checking a kit character, composite a
+part over magenta — "looks white over white" hides missing alpha.
+
+**Fights** (same session): two rigged actors each carry
+`fight: {with: <other's index>, t, seed, beat}` and read one shared
+seeded beat sheet (who swings when — jab/cross/kick — whether the
+other ducks or leans, and the ~30% that land). `_fight_pose` authors
+everything in body space facing the opponent (the face-each-other
+flip squares both sides up, so one sign set serves both): guard with
+fists up + toe bounce, windup, then the strike window where fists and
+the kicking foot are REACH-SOLVED onto the opponent (stopping at the
+near cheek — `dirn` — not their centre line; punches may rubber-hose
+to max 3.0), a lunge dx carries the body in, and recovery eases out.
+Dodges: duck is a real knee-fold crouch on two-piece legs (root drop
+sized to what the folded legs give up, feet stay planted); a
+one-piece rig can't fold so it bobs less and ducks with torso+head.
+A landed hit snaps the victim's head back and staggers the root.
+Fight channels are written into the RESOLVED pose, after
+resolve_channels — so `_fight_pose`/reach get the bones dict and do
+their own `_upper`→whole-leg fallback (that's how doug kicks at all;
+without it his kicks silently vanished). Auto-gaze is disabled for
+combatants. Verify a fight against its beat sheet: print the seeded
+beats (who/atk/strike-window), render stills INSIDE each window, and
+check contact against a ground line — the first render had doug never
+visibly attacking and nobody noticed from evenly-spaced frames.
+`demo/episode-fight.yaml` → `demo/episode-fight.mp4` (seed 1 was
+picked by scanning seeds for balance: both fighters kick, two hits,
+spread out).
+
 Discussed but unbuilt: per-character close-up
 framing in `char.json` (the directed close-up currently assumes a
 humanoid head at `at: [0.5, 1.35], scale: 1.5`); pose changes and

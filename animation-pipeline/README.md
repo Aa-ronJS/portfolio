@@ -416,6 +416,14 @@ shots:
                                #   cap at arm's length.
         look: false            # opt out of auto-gaze: characters turn
                                #   their heads toward whoever talks
+        fight: {with: 1}       # brawl with actor 1 (who carries
+                               #   fight: {with: 0}): a seeded
+                               #   choreography trades jabs, crosses and
+                               #   kicks — fists and feet reach-solved
+                               #   onto the opponent, dodged by ducking
+                               #   or leaning, landed hits stagger.
+                               #   knobs: t: [start, end], seed, beat
+                               #   (seconds per exchange, default 0.55)
         moves:
           - {type: slide, from: [-0.2, 0.74], to: [0.34, 0.74], t: [0, 1.4]}
           - {type: waddle, amp: 3, period: 0.5}
@@ -452,6 +460,10 @@ from the loudness envelope of the shot's audio — no keyframing, ever.
   white shirts, plain paper inside an outline). If a drawing has a gap
   that should stay see-through — a hand on a hip forming a loop — pass
   `--no-fill-holes`.
+- Kit ingest additionally seals each part after slicing: small gaps in an
+  outline are closed and the interior filled, so a white shirt whose
+  outline doesn't quite meet still comes out solid instead of
+  transparent.
 
 ## Production cadence (how this becomes an account, not a hobby)
 

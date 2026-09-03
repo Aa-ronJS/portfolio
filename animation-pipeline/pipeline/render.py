@@ -419,8 +419,10 @@ class EpisodeRenderer:
                 anchor = tuple(a.get("anchor", [0.5, 1.0]))
             # a rigged character plays clips (explicit, or a walk cycle
             # implied by a slide); everything else takes the flat path
+            rigged_ok = c is not None and getattr(c, "rig", None)
             specs = self._clip_specs(c, a, s["duration"]) \
-                if c is not None and getattr(c, "rig", None) else []
+                if rigged_ok else []
+            fighting = rigged_ok and a.get("fight") is not None
             if rig_pose and not specs:
                 raise SystemExit(
                     f"pose '{rig_pose}' lives on {c.folder}'s kit head, "
@@ -446,6 +448,10 @@ class EpisodeRenderer:
                                if mv.get("type") == "slide"), None)
             if "flip" in a:
                 do_flip = a["flip"]
+            elif a.get("fight") is not None:
+                # combatants square up: face each other
+                do_flip = a.get("at", [0.5])[0] > shot["actors"][
+                    a["fight"]["with"]].get("at", [0.5])[0]
             elif c is not None and getattr(c, "flip_to_walk", False) \
                     and "rotate" not in a:
                 # mirror toward the walk; standing still means unflipped
@@ -487,7 +493,7 @@ class EpisodeRenderer:
                     s["env"], s["env_rate"], s["frames"], self.fps,
                     style=a.get("talk_style", self.talk_style),
                     thr=a.get("talk_threshold", 0.28))
-            if specs:
+            if specs or fighting:
                 rig = c.rig
                 can_blink = "blink" in c.layers or face.get("eyes")
                 # props ride a bone: a gun in the hand, a rope round the
@@ -547,9 +553,33 @@ class EpisodeRenderer:
                         - a.get("at", [0.5])[0]
                     if abs(dxt) > 0.03:
                         gaze = 5.5 if dxt > 0 else -5.5
+                # a fight pairs two rigged actors: shared seeded
+                # choreography, each side computes its own role
+                fight = None
+                if fighting:
+                    fcfg = a["fight"]
+                    pair = tuple(sorted((j, fcfg["with"])))
+                    fights = s.setdefault("_fights", {})
+                    if pair not in fights:
+                        fights[pair] = self._make_fight(
+                            fcfg, s["duration"])
+                    opp = shot["actors"][fcfg["with"]]
+                    fight = {
+                        "beats": fights[pair],
+                        "beat": fcfg.get("beat", 0.55),
+                        "me": 0 if j == pair[0] else 1,
+                        "opp_at": opp.get("at", [0.5, 0.85]),
+                        "opp_scale": opp.get("scale", 0.4),
+                        # which way the opponent is (punches stop at
+                        # their near cheek, not their centre line)
+                        "dirn": 1 if opp.get("at", [0.5])[0]
+                        >= a.get("at", [0.5])[0] else -1,
+                    }
+                    gaze = 0.0   # fighters watch fists, not talkers
                 s["sprites"].append({
                     "imgs": None, "rig": rig, "specs": specs, "char": c,
                     "props": props, "reach": reach, "gaze": gaze,
+                    "fight": fight,
                     "k": k, "flip": do_flip, "cache": {},
                     "base": a.get("pose") or "body", "face": face,
                     # anchor restated for the padded pose canvas
@@ -618,6 +648,141 @@ class EpisodeRenderer:
             t += rng.uniform(1.8, 4.0)
         return out
 
+    # -------------------------------------------------- fights
+
+    @staticmethod
+    def _make_fight(cfg, dur):
+        """Seeded choreography both combatants read: who swings when,
+        with what, whether the other sees it coming."""
+        rng = random.Random(cfg.get("seed", 5))
+        B = cfg.get("beat", 0.55)
+        t0, t1 = cfg.get("t") or (0.0, dur)
+        beats, tcur = [], t0 + 0.35
+        who = rng.randint(0, 1)
+        while tcur + B <= t1:
+            beats.append({"t": tcur, "who": who,
+                          "atk": rng.choice(["jab", "cross", "kick"]),
+                          "dodge": rng.choice(["duck", "lean"]),
+                          "hit": rng.random() < 0.3})
+            if rng.random() < 0.75:
+                who = 1 - who
+            tcur += B * rng.uniform(1.05, 1.4)
+        return beats
+
+    def _fight_pose(self, fight, t, pose, bones):
+        """This combatant's channels for the moment t. Everything is in
+        body space facing the opponent (the flip squares them up), so
+        one set of signs serves both sides. Returns punch reaches —
+        the fist must land on (or exactly where the dodge just left)
+        the opponent's face."""
+        B = fight["beat"]
+
+        def add(bone, **ch):
+            # channels are authored for two-piece legs; a one-piece rig
+            # takes the _upper channel on the whole leg and has no shin
+            if bone not in bones:
+                if bone.endswith("_lower"):
+                    return
+                if bone.endswith("_upper"):
+                    bone = bone[:-6]
+                    if bone not in bones:
+                        return
+            slot = pose.setdefault(bone, {})
+            for k2, v in ch.items():
+                if isinstance(v, str):
+                    slot[k2] = v
+                else:
+                    slot[k2] = slot.get(k2, 0.0) + v
+
+        # guard: fists up, slight crouch, bouncing on the toes
+        add("arm_l", rot=-52, shape="bent")
+        add("arm_r", rot=-30, shape="bent")
+        add("torso", rot=4)
+        add("root", dy=0.012 + 0.010 * math.sin(t * 22))
+        add("leg_l_upper", rot=-6)
+        add("leg_r_upper", rot=8)
+        reaches = []
+        beat = next((b for b in fight["beats"]
+                     if b["t"] <= t < b["t"] + B), None)
+        if beat is None:
+            return reaches
+        p = (t - beat["t"]) / B
+        if beat["who"] == fight["me"]:      # attacking
+            if beat["atk"] == "kick":
+                if p < 0.25:
+                    add("root", dy=0.03 * (p / 0.25))
+                elif p < 0.7:
+                    add("leg_l_upper", rot=-84, shape="straight")
+                    add("leg_l_lower", rot=-6)
+                    add("torso", rot=-14)
+                    add("root", dx=0.14, dy=-0.01)
+                    # the foot must arrive ON them, same as a fist
+                    reaches.append({
+                        "bone": "leg_l_lower", "shape": "straight",
+                        "max": 1.7,
+                        "_target": [fight["opp_at"][0]
+                                    - fight["dirn"] * 0.09
+                                    * fight["opp_scale"],
+                                    fight["opp_at"][1]
+                                    - 0.32 * fight["opp_scale"]]})
+                else:
+                    q = 1 - (p - 0.7) / 0.3
+                    add("leg_l_upper", rot=-84 * q)
+                    add("torso", rot=-14 * q)
+                    add("root", dx=0.14 * q)
+            else:
+                arm = "arm_l" if beat["atk"] == "jab" else "arm_r"
+                if p < 0.25:                 # cock the fist
+                    add(arm, rot=28 * (p / 0.25))
+                    add("torso", rot=-5)
+                elif p < 0.7:                # lunge + the punch reaches
+                    ty = -0.63 if beat["atk"] == "jab" else -0.50
+                    reaches.append({
+                        "bone": arm, "shape": "straight", "max": 3.0,
+                        "_target": [fight["opp_at"][0]
+                                    - fight["dirn"] * 0.14
+                                    * fight["opp_scale"],
+                                    fight["opp_at"][1]
+                                    + ty * fight["opp_scale"]]})
+                    add(arm, shape="straight")
+                    add("torso", rot=9)
+                    add("root", dx=0.10)
+                else:
+                    q = 1 - (p - 0.7) / 0.3
+                    add("torso", rot=6 * q)
+                    add("root", dx=0.10 * q)
+        elif beat["hit"]:                    # taking it
+            if p >= 0.4:
+                q = max(0.0, 1 - (p - 0.4) / 0.55)
+                add("head", rot=-24 * q, dx=-0.02 * q)
+                add("root", dx=-0.075 * q)
+                add("torso", rot=-10 * q)
+        elif 0.2 <= p <= 0.75:               # saw it coming
+            if beat["dodge"] == "duck":
+                # a real crouch: knees bend, feet stay planted — the
+                # root drop matches what the folded legs give up. A
+                # one-piece leg can't fold, so that rig bobs less and
+                # ducks mostly with the torso and head.
+                add("torso", rot=14)
+                add("head", rot=10)
+                if "leg_l_lower" in bones:
+                    add("root", dy=0.05)
+                    add("leg_l_upper", rot=-40, shape="bent")
+                    add("leg_l_lower", rot=46)
+                    add("leg_r_upper", rot=-36, shape="bent")
+                    add("leg_r_lower", rot=42)
+                else:
+                    add("root", dy=0.035, dx=-0.03)
+                    add("torso", rot=4)
+                    add("head", rot=4)
+                    add("leg_l_upper", rot=-14, shape="bent")
+                    add("leg_r_upper", rot=16, shape="bent")
+            else:                            # lean back out of range
+                add("torso", rot=-20)
+                add("root", dx=-0.06)
+                add("head", rot=-8)
+        return reaches
+
     # -------------------------------------------------- frame drawing
 
     def _rig_frame(self, sp, t, talking, blinking, placement=(0.5, 0.85, 1.0)):
@@ -640,14 +805,20 @@ class EpisodeRenderer:
             slot = pose.setdefault("head", {})
             slot["rot"] = slot.get("rot", 0.0) \
                 + sp["gaze"] * (-1 if sp["flip"] else 1)
+        reaches = list(sp.get("reach") or [])
+        if sp.get("fight"):
+            reaches += self._fight_pose(sp["fight"], t, pose, rig.bones)
         # reach: solve the arm so the hand lands ON the target, frame
         # by frame — rotating toward it and stretching when it is out
         # of arm's length. The character can move; the grip holds.
-        for rc in sp.get("reach") or []:
+        for rc in reaches:
             t0, t1 = rc.get("t") or (0.0, float("inf"))
             if not t0 <= t <= t1:
                 continue
             bone = rc["bone"]
+            if bone not in rig.bones and bone.rsplit("_", 1)[-1] in \
+                    ("upper", "lower"):
+                bone = bone.rsplit("_", 1)[0]   # one-piece leg stands in
             if bone not in rig.bones:
                 continue
             cx = rc["_target"][0] * self.W
@@ -671,7 +842,8 @@ class EpisodeRenderer:
             slot = pose[bone] = dict(pose.get(bone) or {})
             slot["rot"] = round(need, 1)
             if rc.get("stretch", True):
-                s_ = max(0.5, min(2.4, math.hypot(bx - piv[0],
+                cap = rc.get("max", 2.4)
+                s_ = max(0.5, min(cap, math.hypot(bx - piv[0],
                                                   by - piv[1]) / L))
                 slot["stretch"] = round(s_ - 1.0, 2)
         base, face = sp["base"], sp["face"]

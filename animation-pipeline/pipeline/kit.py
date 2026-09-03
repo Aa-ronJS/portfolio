@@ -417,6 +417,19 @@ def cmd_ingest(args):
         cx1 = min(cell.width, xs.max() + 1 + pad)
         cy1 = min(cell.height, ys.max() + 1 + pad)
         part = cell.crop((cx0, cy0, cx1, cy1))
+        # seal small outline gaps and fill the interior — a leaky
+        # outline otherwise leaves the inside of the drawing
+        # transparent (a shirt you can see the wall through)
+        pa = np.array(part)
+        al = pa[..., 3] > 128
+        closed = ndimage.binary_closing(al, np.ones((3, 3)),
+                                        iterations=12)
+        newpx = ndimage.binary_fill_holes(closed) & ~al
+        if newpx.any():
+            dark = pa[..., :3].sum(axis=2) < 60
+            pa[..., 3][newpx] = 255
+            pa[..., :3][newpx & dark] = (245, 245, 242)
+            part = Image.fromarray(pa)
         A, B = cell_dots(name)
         pivots[name] = {
             "a": [round((A[0] - x0 - cx0) / part.width, 4),
