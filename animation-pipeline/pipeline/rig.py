@@ -628,9 +628,15 @@ def draw_closed_eye(img, cx, cy, r, style="arc", colours=None):
 
 
 def draw_open_mouth(img, cx, cy, w, colours=None):
-    """Stamp a dark open mouth — the stock flap for talk.png-less faces."""
-    _, ink = colours or _sample_colours(img, cx, cy, w * 0.7)
+    """Stamp a dark open mouth — the stock flap for talk.png-less faces.
+
+    A skin-coloured patch goes down first so the face's DRAWN closed
+    mouth disappears under the open one instead of peeking past it.
+    """
+    fill, ink = colours or _sample_colours(img, cx, cy, w * 0.7)
     d = ImageDraw.Draw(img)
+    d.ellipse([cx - 0.85 * w, cy - 0.62 * w, cx + 0.85 * w,
+               cy + 0.62 * w], fill=fill)
     h = w * 0.72
     d.ellipse([cx - w / 2, cy - h / 2, cx + w / 2, cy + h / 2],
               fill=(30, 22, 22, 255), outline=ink,

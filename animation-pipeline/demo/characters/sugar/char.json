@@ -3,5 +3,6 @@
     0.5,
     0.973
   ],
-  "world_height": 1.0
+  "world_height": 1.0,
+  "flip_to_walk": true
 }

@@ -74,6 +74,10 @@ class Character:
             # characters (enables auto-facing), absent for front-on ones
             # (never auto-flipped — mirrored shirt text looks wrong)
             self.facing = m.get("facing")
+            # front-on characters that should mirror toward their walk
+            # direction anyway (kit characters default to this; mirrored
+            # shirt text is the cost, the owner decides)
+            self.flip_to_walk = m.get("flip_to_walk", False)
             # declared eyes/mouth: stock blinks and mouth flaps get
             # stamped onto the drawing, no blink.png/talk.png needed
             self.face = m.get("face")
@@ -438,8 +442,15 @@ class EpisodeRenderer:
             # the direction it walks, else whoever is speaking. Explicit
             # flip wins; rotated actors (corpses) keep their native side.
             facing = getattr(c, "facing", None) if c else None
+            walk_slide = next((mv for mv in a.get("moves", [])
+                               if mv.get("type") == "slide"), None)
             if "flip" in a:
                 do_flip = a["flip"]
+            elif c is not None and getattr(c, "flip_to_walk", False) \
+                    and "rotate" not in a:
+                # mirror toward the walk; standing still means unflipped
+                do_flip = bool(walk_slide) and \
+                    walk_slide["to"][0] < walk_slide["from"][0]
             elif facing in ("left", "right") and "rotate" not in a:
                 ax0 = a.get("at", [0.5, 0.85])[0]
                 slide = next((mv for mv in a.get("moves", [])

@@ -341,6 +341,11 @@ def cmd_ingest(args):
         x0, y0, x1, y1 = inner(CELLS[name][0])
         keep[y0:y1, x0:x1] = True
     alpha[~keep] = 0
+    # scissor cut: a pixel is in the drawing or it isn't. Soft shading,
+    # ghost tint bleeding through light digital paint, and drop-shadow
+    # halos otherwise survive as translucent veils that let the episode
+    # background show through the character.
+    alpha = np.where(alpha > 110, 255, 0).astype(np.uint8)
     cleaned.putalpha(Image.fromarray(alpha))
 
     os.makedirs(os.path.join(args.character, "parts"), exist_ok=True)
@@ -371,15 +376,41 @@ def cmd_ingest(args):
             raise SystemExit(f"the {need} box looks empty — it's "
                              f"required. Redraw or retake the photo "
                              f"(brighter, flatter) and rerun.")
+    import copy
+    bones = copy.deepcopy(BONES)
     with open(os.path.join(args.character, "rig.json"), "w") as f:
-        json.dump({"joint_radius": 0.0, "bones": BONES, "face": FACE,
+        json.dump({"joint_radius": 0.0, "bones": bones, "face": FACE,
                    "parts": pivots}, f, indent=2)
 
-    # assemble body.png by posing the kit at rest
+    # fit the shoulders to the torso that was actually drawn: the
+    # canonical attach points assume the ghost's width, and a narrower
+    # torso leaves the arms (and their pocket stubs) floating in air
     from rig import Rig
     stub = Image.new("RGBA", (BODY_W, BODY_H), (0, 0, 0, 0))
     stub.save(os.path.join(args.character, "body.png"))
     rig = Rig(args.character, {"body": stub})
+    timg, (tox, toy) = rig.parts["torso"]["default"]["body"]
+    ta = np.array(timg.getchannel("A")) > 24
+    sh_y = int(0.442 * BODY_H) - toy
+    band = ta[max(0, sh_y - 20):sh_y + 20]
+    if band.any():
+        cols = np.nonzero(band.any(axis=0))[0]
+        left, right = tox + cols.min(), tox + cols.max()
+        w = right - left
+        if w > 0.12 * BODY_W:
+            for b in bones:
+                if b["name"].startswith("arm"):
+                    old = b["head"][0]
+                    new = (left + 0.15 * w if b["name"] == "arm_l"
+                           else right - 0.15 * w) / BODY_W
+                    b["head"][0] = round(new, 4)
+                    b["tail"][0] = round(b["tail"][0] + new - old, 4)
+            with open(os.path.join(args.character, "rig.json"), "w") as f:
+                json.dump({"joint_radius": 0.0, "bones": bones,
+                           "face": FACE, "parts": pivots}, f, indent=2)
+            rig = Rig(args.character, {"body": stub})
+
+    # assemble body.png by posing the kit at rest
     posed, pad = rig.pose({})
     body = posed.crop((pad, pad, pad + BODY_W, pad + BODY_H))
     body.save(os.path.join(args.character, "body.png"))
@@ -387,8 +418,8 @@ def cmd_ingest(args):
     ys, xs = np.nonzero(a > 24)
     anchor_y = round(float(ys.max()) / BODY_H, 3) if len(ys) else 1.0
     with open(os.path.join(args.character, "char.json"), "w") as f:
-        json.dump({"anchor": [0.5, anchor_y], "world_height": 1.0},
-                  f, indent=2)
+        json.dump({"anchor": [0.5, anchor_y], "world_height": 1.0,
+                   "flip_to_walk": True}, f, indent=2)
     name = os.path.basename(args.character.rstrip("/"))
     print(f"wrote {args.character}: parts {', '.join(wrote)}"
           + (f" (skipped empty: {', '.join(skipped)})" if skipped else ""),

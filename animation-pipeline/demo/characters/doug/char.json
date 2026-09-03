@@ -6,5 +6,6 @@
   "world_height": 1.0,
   "aliases": [
     "dougie"
-  ]
+  ],
+  "flip_to_walk": true
 }

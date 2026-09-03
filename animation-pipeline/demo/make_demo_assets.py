@@ -289,6 +289,7 @@ def doug_meta(folder):
         json.dump(rig, f, indent=2)
     with open(os.path.join(folder, "char.json"), "w") as f:
         json.dump({"anchor": [0.5, 0.941], "world_height": 1.0,
+                   "flip_to_walk": True,
                    "aliases": ["dougie"]}, f, indent=2)
 
 

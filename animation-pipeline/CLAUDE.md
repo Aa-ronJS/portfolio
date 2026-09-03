@@ -203,6 +203,23 @@ against a simulated photo (doug's parts composited into the template,
 perspective-warped onto a table, colour cast, JPEG'd) — keep that bar
 for layout changes: regenerate the PDF and re-run the round trip.
 
+Aaron's frame-by-frame review of Sugar's first render fixed five
+things at once (2026-09-03, "flamingo legs" round): the walk clip's
+bent-leg phase now coincides with the forward swing — a bent shape
+held on a backward-rotated leg reads as standing on one leg; kit
+ingest binarises alpha inside the draw areas ("scissor cut" — soft
+shading and ghost tint bleeding through light digital paint otherwise
+become translucent veils over the background); kit ingest measures the
+DRAWN torso's width at shoulder height and moves the arm bones to fit
+(canonical attach points on a narrower torso leave pocket stubs
+floating in air); the stock open-mouth overlay lays a sampled skin
+patch down first so a drawn closed mouth can't peek past it; and
+char.json `flip_to_walk: true` (kit ingest writes it by default)
+mirrors a front-on character toward its slide direction — mirrored
+shirt text is the accepted cost, the owner decides. When reviewing
+motion, extract actual frames and read the channel values alongside
+them; the flamingo was invisible in stills picked at random.
+
 **Sugar** (`demo/characters/sugar/`) is the first REAL kit character:
 Aaron drew all eleven boxes (source: `sheet.jpg` in his folder,
 ingested by `kit.py ingest`), screen test `demo/episode-sugar.yaml` →
