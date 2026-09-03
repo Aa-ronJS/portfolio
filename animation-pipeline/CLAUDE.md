@@ -220,6 +220,16 @@ shirt text is the accepted cost, the owner decides. When reviewing
 motion, extract actual frames and read the channel values alongside
 them; the flamingo was invisible in stills picked at random.
 
+Second review round (pelvis + dots): the template torso is now "torso
++ hips" — its ghost carries a pelvis wrapping past the hip dot, and
+kit ingest tucks the leg bones up behind the drawn torso's bottom edge
+and fits their spread to its width (legs draw before the torso, so the
+joint hides). Dot scrubbing is colour-agnostic: a dot's position is
+known exactly, so anything inside the disc that DIFFERS from the
+disc's surrounding colour is the dot — bright red on paper, maroon
+under translucent paint, near-black after line-snap all get inpainted
+from the surroundings. Never assume a printed dot photographs red.
+
 **Sugar** (`demo/characters/sugar/`) is the first REAL kit character:
 Aaron drew all eleven boxes (source: `sheet.jpg` in his folder,
 ingested by `kit.py ingest`), screen test `demo/episode-sugar.yaml` →

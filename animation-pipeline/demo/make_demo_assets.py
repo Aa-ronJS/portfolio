@@ -159,7 +159,8 @@ def doug_torso():
     im = Image.new("RGBA", (420, 420), (0, 0, 0, 0))
     d = ImageDraw.Draw(im)
     blob(d, (140, 55, 280, 130), D_SKIN)          # neck stub
-    blob(d, (90, 95, 330, 390), D_SHIRT)
+    blob(d, (90, 95, 330, 375), D_SHIRT)
+    blob(d, (105, 350, 315, 418), D_TROUSER)      # pelvis: legs tuck under
     stroke(d, [(150, 130), (210, 165), (270, 130)], width=7)  # collar
     reg_dot(d, 210, 60)     # neck
     reg_dot(d, 210, 380)    # hips
@@ -234,10 +235,12 @@ def doug_body():
     im = Image.new("RGBA", (700, 1100), (0, 0, 0, 0))
     d = ImageDraw.Draw(im)
     # legs (shoes point outward, like the mirrored kit)
-    blob(d, (255, 690, 320, 1010), D_TROUSER)
-    blob(d, (215, 985, 350, 1035), D_SHOE)
-    blob(d, (380, 690, 445, 1010), D_TROUSER)
-    blob(d, (350, 985, 485, 1035), D_SHOE)
+    blob(d, (255, 653, 320, 973), D_TROUSER)
+    blob(d, (215, 948, 350, 998), D_SHOE)
+    blob(d, (380, 653, 445, 973), D_TROUSER)
+    blob(d, (350, 948, 485, 998), D_SHOE)
+    # pelvis over the leg tops, then neck + torso
+    blob(d, (260, 640, 440, 712), D_TROUSER)
     # neck + torso
     blob(d, (300, 405, 400, 470), D_SKIN)
     blob(d, (251, 460, 449, 708), D_SHIRT)
@@ -275,10 +278,10 @@ def doug_meta(folder):
              "tail": [0.331, 0.629], "parent": "torso"},
             {"name": "arm_r", "head": [0.637, 0.442],
              "tail": [0.669, 0.629], "parent": "torso"},
-            {"name": "leg_l", "head": [0.414, 0.641],
-             "tail": [0.407, 0.927]},
-            {"name": "leg_r", "head": [0.586, 0.641],
-             "tail": [0.593, 0.927]},
+            {"name": "leg_l", "head": [0.414, 0.617],
+             "tail": [0.407, 0.903]},
+            {"name": "leg_r", "head": [0.586, 0.617],
+             "tail": [0.593, 0.903]},
         ],
         "face": {"bone": "head",
                  "eyes": [{"at": [0.4424, 0.2613], "r": 0.017},

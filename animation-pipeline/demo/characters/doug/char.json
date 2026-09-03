@@ -4,8 +4,8 @@
     0.941
   ],
   "world_height": 1.0,
+  "flip_to_walk": true,
   "aliases": [
     "dougie"
-  ],
-  "flip_to_walk": true
+  ]
 }

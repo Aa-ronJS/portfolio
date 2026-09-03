@@ -62,7 +62,7 @@ CELLS = {
 }
 
 TITLES = {
-    "torso": "torso — no head, no limbs",
+    "torso": "torso + hips — no head, no limbs",
     "head": "head — mouth closed",
     "head_talk": "head — mouth OPEN (optional)",
     "arm_straight": "LEFT arm — relaxed",
@@ -133,13 +133,18 @@ def draw_ghost(d, name, A, B):
     cx = A[0]
     F, L = GHOST_FILL, GHOST_LINE
     if name == "torso":
-        # neck stub above the top dot, shoulders, body down to the hips
+        # neck stub above the top dot, body, and a pelvis wrapping past
+        # the hip dot — the legs tuck up behind it, so their joints and
+        # tops never show while they swing
         d.rounded_rectangle([cx - 0.16 * span, A[1] - 0.10 * span,
                              cx + 0.16 * span, A[1] + 0.06 * span],
                             radius=20, fill=F)
         d.rounded_rectangle([cx - 0.42 * span, A[1] + 0.04 * span,
-                             cx + 0.42 * span, B[1] + 0.02 * span],
+                             cx + 0.42 * span, B[1] - 0.02 * span],
                             radius=80, fill=F, outline=L, width=3)
+        d.rounded_rectangle([cx - 0.36 * span, B[1] - 0.06 * span,
+                             cx + 0.36 * span, B[1] + 0.13 * span],
+                            radius=60, fill=F, outline=L, width=3)
     elif name.startswith("head"):
         d.ellipse([cx - 0.36 * span, A[1] + 0.04 * span,
                    cx + 0.36 * span, B[1] - 0.03 * span],
@@ -222,8 +227,8 @@ def cmd_template(args):
            fill=(20, 20, 20))
     tips = ("draw ONE character into the boxes, thick marker, flat colour"
             "  ·  the red dots are the joints: draw around them, never "
-            "move them  ·  the pale blue ghost is proportions, not style"
-            "  ·  LEFT arm and leg only (the right is mirrored)  ·  "
+            "move them  ·  give the torso hips — the legs tuck up behind "
+            "them  ·  LEFT arm and leg only (the right is mirrored)  ·  "
             "boxes marked optional may stay empty  ·  photograph flat, "
             "all four black squares in frame, then:  python3 "
             "pipeline/kit.py ingest photo.jpg characters/<name>")
@@ -308,26 +313,33 @@ def cmd_ingest(args):
     bpx = int(A4H * 0.02)
     paper = np.median(np.concatenate([
         arr[:bpx].reshape(-1, 3), arr[-bpx:].reshape(-1, 3)]), axis=0)
-    # scrub the printed red dots (only red-ish pixels: a dot drawn over
-    # in marker is the artist's ink and stays) and any surviving ghost
-    # blue, replacing both with paper
     r, g, b2 = arr[..., 0], arr[..., 1], arr[..., 2]
-    reddish = (r > 0.45) & (r - np.maximum(g, b2) > 0.16)
-    dotmask = np.zeros(arr.shape[:2], dtype=bool)
-    yy, xx = np.mgrid[0:A4H, 0:A4W]
-    for name in CELLS:
-        for (px, py) in cell_dots(name):
-            dotmask |= (xx - px) ** 2 + (yy - py) ** 2 < (2.2 * DOT_R) ** 2
     lum = arr @ np.array([0.299, 0.587, 0.114], dtype=np.float32)
     ghostish = (lum > 0.68) & (b2 - r > 0.03) & \
                (arr.max(axis=2) - arr.min(axis=2) < 0.30)
     arr[ghostish] = paper
-    # a printed dot the artist coloured over is gone already; one still
-    # visible gets filled from its surroundings (ink if it sits inside a
-    # drawing, paper if it sits on paper) — never a white hole
-    dots = reddish & dotmask
+    # scrub the printed dots. A dot's exact position is known; what
+    # colour it comes out is not — bright red on paper, maroon under
+    # translucent paint, near-black in a photo's shadow — so inside
+    # each dot disc, anything that DIFFERS from the disc's surrounding
+    # colour is the dot, and gets filled from those surroundings (ink
+    # if it sits inside a drawing, paper if on paper). Ink drawn over a
+    # dot matches its surroundings and stays.
+    from scipy import ndimage
+    dots = np.zeros(arr.shape[:2], dtype=bool)
+    R = int(3.4 * DOT_R) + 2
+    for name in CELLS:
+        for (px, py) in cell_dots(name):
+            x0, y0 = int(px) - R, int(py) - R
+            win = arr[y0:y0 + 2 * R, x0:x0 + 2 * R]
+            wy, wx = np.mgrid[0:win.shape[0], 0:win.shape[1]]
+            d2 = (wx - (px - x0)) ** 2 + (wy - (py - y0)) ** 2
+            disc = d2 < (2.0 * DOT_R) ** 2
+            ring = (d2 >= (2.2 * DOT_R) ** 2) & (d2 < (3.4 * DOT_R) ** 2)
+            m = np.median(win[ring], axis=0)
+            off = np.linalg.norm(win - m, axis=2) > 0.17
+            dots[y0:y0 + 2 * R, x0:x0 + 2 * R] |= disc & off
     if dots.any():
-        from scipy import ndimage
         dots = ndimage.binary_dilation(dots, iterations=2)
         _, idx = ndimage.distance_transform_edt(dots, return_indices=True)
         arr[dots] = arr[idx[0][dots], idx[1][dots]]
@@ -393,11 +405,13 @@ def cmd_ingest(args):
     ta = np.array(timg.getchannel("A")) > 24
     sh_y = int(0.442 * BODY_H) - toy
     band = ta[max(0, sh_y - 20):sh_y + 20]
+    refit = False
     if band.any():
         cols = np.nonzero(band.any(axis=0))[0]
         left, right = tox + cols.min(), tox + cols.max()
         w = right - left
         if w > 0.12 * BODY_W:
+            refit = True
             for b in bones:
                 if b["name"].startswith("arm"):
                     old = b["head"][0]
@@ -405,10 +419,36 @@ def cmd_ingest(args):
                            else right - 0.15 * w) / BODY_W
                     b["head"][0] = round(new, 4)
                     b["tail"][0] = round(b["tail"][0] + new - old, 4)
-            with open(os.path.join(args.character, "rig.json"), "w") as f:
-                json.dump({"joint_radius": 0.0, "bones": bones,
-                           "face": FACE, "parts": pivots}, f, indent=2)
-            rig = Rig(args.character, {"body": stub})
+    # tuck the legs up behind the torso's drawn bottom edge: without a
+    # shared pelvis the leg tops (and their joints) show in every step
+    rows = np.nonzero(ta.any(axis=1))[0]
+    if len(rows):
+        bot = toy + rows.max()
+        # measure above the bottom taper — rounded corners lie about
+        # the torso's true width
+        band2 = ta[max(0, rows.max() - 90):max(1, rows.max() - 15)]
+        cols2 = np.nonzero(band2.any(axis=0))[0]
+        if len(cols2):
+            l2, r2 = tox + cols2.min(), tox + cols2.max()
+            w2 = r2 - l2
+            if w2 > 0.12 * BODY_W and bot > 0.4 * BODY_H:
+                refit = True
+                new_y = (bot - 0.02 * BODY_H) / BODY_H
+                for b in bones:
+                    if b["name"].startswith("leg"):
+                        dy = new_y - b["head"][1]
+                        b["head"][1] = round(new_y, 4)
+                        b["tail"][1] = round(b["tail"][1] + dy, 4)
+                        newx = (l2 + 0.24 * w2 if b["name"] == "leg_l"
+                                else r2 - 0.24 * w2) / BODY_W
+                        dx = newx - b["head"][0]
+                        b["head"][0] = round(newx, 4)
+                        b["tail"][0] = round(b["tail"][0] + dx, 4)
+    if refit:
+        with open(os.path.join(args.character, "rig.json"), "w") as f:
+            json.dump({"joint_radius": 0.0, "bones": bones,
+                       "face": FACE, "parts": pivots}, f, indent=2)
+        rig = Rig(args.character, {"body": stub})
 
     # assemble body.png by posing the kit at rest
     posed, pad = rig.pose({})
