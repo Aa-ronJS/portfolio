@@ -17,9 +17,12 @@ and an assembled body.png. The character walks immediately:
 
     python3 pipeline/rig.py preview myshow/characters/gary walk.gif
 
-Boxes marked optional may stay empty — they are skipped. Draw the LEFT
-arm and leg only; the right side is mirrored. Keep drawings inside
-their boxes and leave the red dots where they are: they are the joints.
+Boxes marked optional may stay empty — they are skipped. Nothing is
+mirrored: an empty right-side box means the LEFT drawing stands in for
+that side verbatim ("kit.py mirror <character>" builds mirrored right
+ARMS as a stopgap — never legs, whose knees would bend backward). Keep
+drawings inside their boxes and leave the red dots where they are:
+they are the joints.
 """
 
 import argparse
@@ -509,6 +512,45 @@ def cmd_ingest(args):
           f"{args.character} {name}-walk.gif --clip walk", file=sys.stderr)
 
 
+
+def cmd_mirror(args):
+    """Create explicit right-ARM files by mirroring the left drawings.
+
+    The stopgap until the right-side boxes get drawn: a mirrored arm
+    curves correctly toward its own side of the body. Legs are left
+    alone on purpose — a mirrored leg bends its knee backward and
+    points its shoe against the walk, which is why nothing mirrors
+    automatically. Re-run this after re-ingesting a sheet (ingest
+    rewrites rig.json and would orphan the mirrored pivots).
+    """
+    pdir = os.path.join(args.character, "parts")
+    rp = os.path.join(args.character, "rig.json")
+    with open(rp) as f:
+        rig = json.load(f)
+    parts = rig.setdefault("parts", {})
+    made = []
+    for fn in sorted(os.listdir(pdir)):
+        stem = os.path.splitext(fn)[0]
+        t = stem.split("_")
+        if t[0] != "arm" or (len(t) > 1 and t[1] in ("l", "r")):
+            continue
+        if stem not in parts:
+            raise SystemExit(f"{stem} has no pivots in rig.json — this "
+                             f"command only works on ingested kits")
+        shape = "_".join(t[1:]) or "straight"
+        dst = f"arm_r_{shape}"
+        Image.open(os.path.join(pdir, fn)) \
+            .transpose(Image.FLIP_LEFT_RIGHT) \
+            .save(os.path.join(pdir, dst + ".png"))
+        e = parts[stem]
+        parts[dst] = {"a": [round(1 - e["a"][0], 4), e["a"][1]],
+                      "b": [round(1 - e["b"][0], 4), e["b"][1]]}
+        made.append(dst)
+    with open(rp, "w") as f:
+        json.dump(rig, f, indent=2)
+    print(f"mirrored {', '.join(made) or 'nothing (no left arm parts)'}",
+          file=sys.stderr)
+
 def main():
     ap = argparse.ArgumentParser(description=__doc__,
         formatter_class=argparse.RawDescriptionHelpFormatter)
@@ -522,6 +564,11 @@ def main():
     g.add_argument("character", help="character folder to create")
     g.add_argument("--paper-cut", type=float, default=0.14)
     g.set_defaults(fn=cmd_ingest)
+    m = sub.add_parser("mirror",
+                       help="mirror left arms into explicit right-arm "
+                            "files (stopgap until they are drawn)")
+    m.add_argument("character", help="ingested character folder")
+    m.set_defaults(fn=cmd_mirror)
     args = ap.parse_args()
     args.fn(args)
 
