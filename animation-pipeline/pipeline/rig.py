@@ -90,7 +90,8 @@ class Clip:
             return Clip(json.load(f), os.path.splitext(os.path.basename(path))[0])
 
     def _key(self, keys, phase):
-        if self.interp == "linear":
+        numeric = all(isinstance(k[1], (int, float)) for k in keys)
+        if self.interp == "linear" and numeric:
             ks = keys + [[keys[0][0] + 1.0, keys[0][1]]] if self.loop else keys
             for (t0, v0), (t1, v1) in zip(ks, ks[1:]):
                 if t0 <= phase <= t1:
@@ -158,7 +159,10 @@ def pose_at(clip_specs, t):
         for bone, chans in clip.sample(local).items():
             slot = pose.setdefault(bone, {})
             for k, v in chans.items():
-                slot[k] = slot.get(k, 0.0) + v * amp
+                if isinstance(v, str):     # part-shape switch: last wins
+                    slot[k] = v
+                else:
+                    slot[k] = slot.get(k, 0.0) + v * amp
     return pose
 
 
@@ -223,7 +227,15 @@ class Rig:
                           int(xs.max()) + 1, int(ys.max()) + 1)
         self.rest_h = self.rest_bbox[3] - self.rest_bbox[1]
         self.pad = int(round(0.3 * self.H))
-        self.parts = self._cut(layers)
+        # parts: {bone: {shape: {variant: (img, (ox, oy))}}} in source
+        # pixel space. A drawn kit (parts/ folder) replaces the auto-cut
+        # entirely; otherwise every sheet is cut along the bones.
+        kit_dir = os.path.join(folder, "parts")
+        if os.path.isdir(kit_dir):
+            self.parts = self._load_kit(kit_dir, data.get("parts") or {})
+        else:
+            self.parts = {b: {"default": v}
+                          for b, v in self._cut(layers).items()}
         self._pose_cache = {}
 
     def _default_order(self):
@@ -286,6 +298,144 @@ class Rig:
             parts[n] = variants
         return parts
 
+    # ------------------------------------------------------ drawn kits
+
+    @staticmethod
+    def _find_dots(arr):
+        """Locate and erase the two red registration dots in a part.
+
+        Returns ((x, y), (x, y)) sorted top-first, and scrubs the dots
+        by filling them from the nearest non-dot pixels (works whether
+        a dot sits on the artwork or floats beside it).
+        """
+        from scipy import ndimage
+        r = arr[..., 0].astype(int)
+        gb = np.maximum(arr[..., 1], arr[..., 2]).astype(int)
+        mask = (arr[..., 3] > 96) & (r > 130) & (r - gb > 55)
+        lab, n = ndimage.label(mask)
+        if n < 2:
+            return None
+        sizes = ndimage.sum(mask, lab, range(1, n + 1))
+        top = np.argsort(sizes)[::-1][:2]
+        if sizes[top[1]] < 4:
+            return None
+        dots = []
+        scrub = np.zeros(mask.shape, dtype=bool)
+        for i in top:
+            ys, xs = np.nonzero(lab == i + 1)
+            dots.append((float(xs.mean()), float(ys.mean())))
+            scrub[ys, xs] = True
+        scrub = ndimage.binary_dilation(scrub, iterations=2)
+        _, idx = ndimage.distance_transform_edt(scrub, return_indices=True)
+        arr[scrub] = arr[idx[0][scrub], idx[1][scrub]]
+        return tuple(sorted(dots, key=lambda p: p[1]))
+
+    def _register(self, img, dots, bone):
+        """Scale+rotate a drawn part so its dots land on a bone at rest.
+
+        The dot nearer the top of the part pairs with whichever bone end
+        is higher at rest (limbs hang down, heads and torsos stand up —
+        drawn the way they sit on the character, this always matches).
+        Returns (img, (ox, oy)) in source space, same shape the auto-cut
+        produces, so posing needs no special case.
+        """
+        (hx, hy), (tx, ty) = bone.head, bone.tail
+        if hy <= ty:
+            d_head, d_tail = dots
+        else:
+            d_tail, d_head = dots
+        bv = (tx - hx, ty - hy)
+        dv = (d_tail[0] - d_head[0], d_tail[1] - d_head[1])
+        s = math.hypot(*bv) / max(math.hypot(*dv), 1e-6)
+        delta = math.degrees(math.atan2(bv[1], bv[0])
+                             - math.atan2(dv[1], dv[0]))
+        w0, h0 = img.size
+        img = img.resize((max(1, round(w0 * s)), max(1, round(h0 * s))),
+                         Image.LANCZOS)
+        px, py = d_head[0] * s, d_head[1] * s
+        if abs(delta) > 0.05:
+            sw, sh = img.size
+            img = img.rotate(-delta, resample=Image.BICUBIC, expand=True)
+            th = math.radians(delta)
+            rx, ry = px - sw / 2, py - sh / 2
+            px = rx * math.cos(th) - ry * math.sin(th) + img.width / 2
+            py = rx * math.sin(th) + ry * math.cos(th) + img.height / 2
+        return img, (int(round(hx - px)), int(round(hy - py)))
+
+    def _load_kit(self, kit_dir, pivots):
+        """Load parts/<part>.png drawn separately: no cutting, no tearing.
+
+        Naming:  torso.png   head.png (+ head_talk / head_blink /
+                 head_<pose>[_talk] variants)
+                 arm_<shape>.png  leg_<shape>.png — drawn as the LEFT
+                 limb, mirrored automatically for the right; a file
+                 named arm_r_<shape>.png overrides the mirror.
+        Registration: two red dots per drawing (see _find_dots), or a
+        rig.json "parts" entry {"<file>": {"a": [x,y], "b": [x,y]}}
+        with coordinates normalised to that part image.
+        """
+        if any(b.endswith(("_upper", "_lower")) for b in self.bones):
+            raise SystemExit(
+                "drawn kits support one-piece limbs only (arm_l, leg_r "
+                "...); this rig has _upper/_lower bones")
+        raw = {}
+        for f in sorted(os.listdir(kit_dir)):
+            if not f.lower().endswith(".png"):
+                continue
+            stem = os.path.splitext(f)[0]
+            img = Image.open(os.path.join(kit_dir, f)).convert("RGBA")
+            arr = np.array(img)
+            if stem in pivots:
+                p = pivots[stem]
+                dots = tuple(sorted(
+                    [(p["a"][0] * img.width, p["a"][1] * img.height),
+                     (p["b"][0] * img.width, p["b"][1] * img.height)],
+                    key=lambda q: q[1]))
+            else:
+                dots = self._find_dots(arr)
+                if dots is None:
+                    raise SystemExit(
+                        f"{kit_dir}/{f}: can't find the two red "
+                        f"registration dots (or add a rig.json "
+                        f"\"parts\" entry for it)")
+                img = Image.fromarray(arr, "RGBA")
+            raw[stem] = (img, dots)
+
+        parts = {}
+
+        def put(bone, shape, variant, img, dots, mirror=False):
+            if bone not in self.bones:
+                return
+            if mirror:
+                img = img.transpose(Image.FLIP_LEFT_RIGHT)
+                dots = tuple((img.width - 1 - x, y) for x, y in dots)
+            reg = self._register(img, dots, self.bones[bone])
+            parts.setdefault(bone, {}).setdefault(shape, {})[variant] = reg
+
+        for stem, (img, dots) in raw.items():
+            t = stem.split("_")
+            if t[0] == "torso":
+                put("torso", "default", "_".join(t[1:]) or "body",
+                    img, dots)
+            elif t[0] == "head":
+                put("head", "default", "_".join(t[1:]) or "body",
+                    img, dots)
+            elif t[0] in ("arm", "leg"):
+                side = t[1] if len(t) > 1 and t[1] in ("l", "r") else None
+                shape = "_".join(t[2:] if side else t[1:]) or "straight"
+                if side:
+                    # explicit-side art is drawn as that side: no mirror
+                    put(f"{t[0]}_{side}", shape, "body", img, dots)
+                else:
+                    put(f"{t[0]}_l", shape, "body", img, dots)
+                    if f"{t[0]}_r_{shape}" not in raw:
+                        put(f"{t[0]}_r", shape, "body", img, dots,
+                            mirror=True)
+        for need in ("torso", "head"):
+            if need in self.bones and need not in parts:
+                raise SystemExit(f"{kit_dir}: a kit needs {need}.png")
+        return parts
+
     # ------------------------------------------------------ kinematics
 
     def _world(self, pose):
@@ -331,8 +481,9 @@ class Rig:
         head part onto the artist's mouth-open sheet.
         """
         key = (tuple(sorted(
-                   (b, tuple(sorted((k, round(v, 2))
-                                    for k, v in ch.items())))
+                   (b, tuple(sorted(
+                       (k, v if isinstance(v, str) else round(v, 2))
+                       for k, v in ch.items())))
                    for b, ch in bonevals.items() if ch)),
                tuple(sorted((variant_for or {}).items())))
         got = self._pose_cache.get(key)
@@ -345,7 +496,10 @@ class Rig:
         for name in self.order:
             if name not in self.parts:
                 continue
-            variants = self.parts[name]
+            shapes = self.parts[name]
+            want = bonevals.get(name, {}).get("shape")
+            variants = shapes.get(want) or shapes.get("straight") \
+                or shapes.get("default") or next(iter(shapes.values()))
             sheet = (variant_for or {}).get(name, "body")
             img, (ox, oy) = variants.get(sheet) or variants["body"]
             ang, piv, rest = world[name]
@@ -396,7 +550,10 @@ def resolve_channels(pose, bones):
     """
     def merge(dst, ch):
         for k, v in ch.items():
-            dst[k] = dst.get(k, 0.0) + v
+            if isinstance(v, str):
+                dst[k] = v
+            else:
+                dst[k] = dst.get(k, 0.0) + v
 
     out = {}
     for name, ch in pose.items():
@@ -529,7 +686,10 @@ def cmd_sheet(args):
             continue
         col = palette[i % len(palette)]
         b = rig.bones[name]
-        crop, (ox, oy) = rig.parts[name]["body"]
+        shapes = rig.parts[name]
+        variants = shapes.get("straight") or shapes.get("default") \
+            or next(iter(shapes.values()))
+        crop, (ox, oy) = variants["body"]
         d.rectangle([ox, oy, ox + crop.width, oy + crop.height],
                     outline=col + (140,), width=3)
         d.line([b.head, b.tail], fill=col + (255,), width=8)

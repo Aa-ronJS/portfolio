@@ -137,6 +137,184 @@ def seagull(variant):
     return im
 
 
+# ---------------------------------------------------------------- doug
+# The reference "parts kit" character: every limb its own drawing with
+# two red registration dots (the joint and the reach), mirrored to the
+# right side automatically. body.png is only the flat-path fallback and
+# the sheet the skeleton is defined on; the kit does the animating.
+
+D_SKIN = (205, 170, 140, 255)
+D_SHIRT = (95, 125, 170, 255)
+D_TROUSER = (78, 70, 62, 255)
+D_SHOE = (56, 56, 60, 255)
+D_HAIR = (32, 26, 22, 255)
+RED = (230, 20, 20, 255)
+
+
+def reg_dot(d, x, y):
+    d.ellipse([x - 8, y - 8, x + 8, y + 8], fill=RED)
+
+
+def doug_torso():
+    im = Image.new("RGBA", (420, 420), (0, 0, 0, 0))
+    d = ImageDraw.Draw(im)
+    blob(d, (140, 55, 280, 130), D_SKIN)          # neck stub
+    blob(d, (90, 95, 330, 390), D_SHIRT)
+    stroke(d, [(150, 130), (210, 165), (270, 130)], width=7)  # collar
+    reg_dot(d, 210, 60)     # neck
+    reg_dot(d, 210, 380)    # hips
+    return im
+
+
+def doug_head(variant):
+    im = Image.new("RGBA", (400, 460), (0, 0, 0, 0))
+    d = ImageDraw.Draw(im)
+    blob(d, (60, 60, 340, 400), D_SKIN)
+    d.polygon(wob([(70, 150), (95, 65), (305, 65), (330, 150),
+                   (250, 115), (150, 115)], amp=5), fill=D_HAIR)
+    stroke(d, [(70, 150), (95, 65), (305, 65), (330, 150)], width=7)
+    for cx in (140, 255):
+        d.ellipse([cx - 28, 172, cx + 28, 228], fill=(250, 250, 246, 255))
+        stroke(d, [(cx - 28, 200), (cx - 27, 199)], width=5)
+        d.ellipse([cx - 9, 188, cx + 9, 212], fill=INK)
+        stroke(d, [(cx - 30, 158), (cx + 30, 152)], width=8)  # brow
+    stroke(d, [(197, 210), (188, 280), (207, 292)], width=7)  # nose
+    if variant == "talk":
+        blob(d, (160, 310, 245, 365), (44, 24, 24, 255), width=7)
+    else:
+        stroke(d, [(165, 332), (235, 328)], width=7)
+    reg_dot(d, 200, 435)    # neck joint (floats below the chin)
+    reg_dot(d, 200, 30)     # crown (floats above the hair)
+    return im
+
+
+def doug_arm(shape):
+    im = Image.new("RGBA", (260, 440), (0, 0, 0, 0))
+    d = ImageDraw.Draw(im)
+    if shape == "straight":
+        blob(d, (55, 55, 110, 385), D_SKIN)
+        blob(d, (60, 385, 105, 425), D_SKIN)               # mitten
+    elif shape == "point":
+        blob(d, (55, 55, 110, 385), D_SKIN)
+        blob(d, (60, 380, 105, 415), D_SKIN)
+        d.polygon(wob([(70, 405), (82, 455), (94, 405)], amp=2),
+                  fill=D_SKIN)
+        stroke(d, [(70, 405), (82, 455), (94, 405)], width=5)  # finger
+    elif shape == "bent":
+        blob(d, (55, 55, 110, 240), D_SKIN)                # upper arm
+        blob(d, (65, 195, 230, 250), D_SKIN)               # forearm across
+        blob(d, (205, 190, 255, 250), D_SKIN)              # fist
+    elif shape == "pocket":
+        blob(d, (55, 55, 110, 250), D_SKIN)                # into the pocket
+        stroke(d, [(50, 245), (115, 250)], width=7)        # pocket edge
+    blob(d, (42, 42, 122, 140), D_SHIRT)                   # sleeve on top
+    reg_dot(d, 82, 45)      # shoulder
+    reg_dot(d, 82, 385)     # reach (same span for every shape)
+    return im
+
+
+def doug_leg(shape):
+    im = Image.new("RGBA", (260, 440), (0, 0, 0, 0))
+    d = ImageDraw.Draw(im)
+    if shape == "bent":
+        blob(d, (60, 40, 130, 230), D_TROUSER)             # thigh forward
+        blob(d, (75, 195, 175, 250), D_TROUSER)
+        blob(d, (130, 230, 195, 375), D_TROUSER)           # shin back down
+        blob(d, (120, 360, 235, 410), D_SHOE)              # shoe
+    else:
+        blob(d, (60, 35, 125, 380), D_TROUSER)
+        blob(d, (55, 355, 190, 410), D_SHOE)               # shoe points out
+    reg_dot(d, 92, 40)      # hip
+    reg_dot(d, 92, 375)     # reach
+    return im
+
+
+def doug_body():
+    """Assembled reference drawing, matched to the kit's proportions."""
+    im = Image.new("RGBA", (700, 1100), (0, 0, 0, 0))
+    d = ImageDraw.Draw(im)
+    # legs (shoes point outward, like the mirrored kit)
+    blob(d, (255, 690, 320, 1010), D_TROUSER)
+    blob(d, (215, 985, 350, 1035), D_SHOE)
+    blob(d, (380, 690, 445, 1010), D_TROUSER)
+    blob(d, (350, 985, 485, 1035), D_SHOE)
+    # neck + torso
+    blob(d, (300, 405, 400, 470), D_SKIN)
+    blob(d, (251, 460, 449, 708), D_SHIRT)
+    stroke(d, [(300, 480), (350, 508), (400, 480)], width=7)
+    # arms at the sides
+    blob(d, (198, 489, 232, 688), D_SKIN)
+    blob(d, (201, 688, 228, 712), D_SKIN)
+    blob(d, (190, 481, 238, 540), D_SHIRT)
+    blob(d, (468, 489, 502, 688), D_SKIN)
+    blob(d, (472, 688, 499, 712), D_SKIN)
+    blob(d, (462, 481, 510, 540), D_SHIRT)
+    # head, matched to the kit head's mapping (s=0.671 about the neck)
+    blob(d, (256, 193, 444, 422), D_SKIN)
+    d.polygon(wob([(263, 253), (280, 197), (420, 197), (437, 253),
+                   (383, 230), (317, 230)], amp=4), fill=D_HAIR)
+    stroke(d, [(263, 253), (280, 197), (420, 197), (437, 253)], width=7)
+    for cx in (310, 387):
+        d.ellipse([cx - 19, 268, cx + 19, 306], fill=(250, 250, 246, 255))
+        d.ellipse([cx - 6, 279, cx + 6, 295], fill=INK)
+        stroke(d, [(cx - 20, 258), (cx + 20, 254)], width=7)
+    stroke(d, [(348, 276), (342, 323), (355, 331)], width=6)
+    stroke(d, [(327, 358), (373, 355)], width=6)
+    return im
+
+
+def doug_meta(folder):
+    import json
+    rig = {
+        "joint_radius": 0.0,
+        "bones": [
+            {"name": "torso", "head": [0.5, 0.636], "tail": [0.5, 0.395]},
+            {"name": "head", "head": [0.5, 0.395], "tail": [0.5, 0.164],
+             "parent": "torso"},
+            {"name": "arm_l", "head": [0.363, 0.442],
+             "tail": [0.331, 0.629], "parent": "torso"},
+            {"name": "arm_r", "head": [0.637, 0.442],
+             "tail": [0.669, 0.629], "parent": "torso"},
+            {"name": "leg_l", "head": [0.414, 0.641],
+             "tail": [0.407, 0.927]},
+            {"name": "leg_r", "head": [0.586, 0.641],
+             "tail": [0.593, 0.927]},
+        ],
+        "face": {"bone": "head",
+                 "eyes": [{"at": [0.4424, 0.2613], "r": 0.017},
+                          {"at": [0.5527, 0.2613], "r": 0.017}],
+                 "mouth": {"at": [0.5, 0.3405], "w": 0.055}},
+    }
+    with open(os.path.join(folder, "rig.json"), "w") as f:
+        json.dump(rig, f, indent=2)
+    with open(os.path.join(folder, "char.json"), "w") as f:
+        json.dump({"anchor": [0.5, 0.941], "world_height": 1.0,
+                   "aliases": ["dougie"]}, f, indent=2)
+
+
+def make_doug():
+    folder = os.path.join(HERE, "characters", "doug")
+    pdir = os.path.join(folder, "parts")
+    os.makedirs(pdir, exist_ok=True)
+    rng.seed(hash("doug") & 0xffff)
+    doug_body().save(os.path.join(folder, "body.png"))
+    rng.seed(hash("doug") & 0xffff)
+    doug_torso().save(os.path.join(pdir, "torso.png"))
+    for v in ("body", "talk"):
+        rng.seed(hash("doughead") & 0xffff)
+        doug_head(v).save(os.path.join(
+            pdir, "head.png" if v == "body" else f"head_{v}.png"))
+    for shape in ("straight", "bent", "point", "pocket"):
+        rng.seed(hash("dougarm" + shape) & 0xffff)
+        doug_arm(shape).save(os.path.join(pdir, f"arm_{shape}.png"))
+    for shape in ("straight", "bent"):
+        rng.seed(hash("dougleg" + shape) & 0xffff)
+        doug_leg(shape).save(os.path.join(pdir, f"leg_{shape}.png"))
+    doug_meta(folder)
+    print("characters/doug: body + parts kit "
+          "(torso, head, head_talk, 4 arms, 2 legs)")
+
+
 # ---------------------------------------------------------------- background
 
 def chipshop():
@@ -205,6 +383,8 @@ def main():
             rng.seed(hash(name) & 0xffff)  # same wobble across variants
             fn(v).save(os.path.join(folder, f"{v}.png"))
         print(f"characters/{name}: {', '.join(variants)}")
+
+    make_doug()
 
     os.makedirs(os.path.join(HERE, "backgrounds"), exist_ok=True)
     chipshop().save(os.path.join(HERE, "backgrounds", "chipshop.png"))

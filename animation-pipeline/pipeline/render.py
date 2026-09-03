@@ -540,14 +540,23 @@ class EpisodeRenderer:
         """
         rig, c = sp["rig"], sp["char"]
         pose = resolve_channels(pose_at(sp["specs"], t), rig.bones)
+        # actor-pinned part shapes (shapes: {arm_r: point}) beat a clip's
+        # shape channel: the author holds that pose for the whole shot
+        for bone, shp in (sp["cfg"].get("shapes") or {}).items():
+            pose.setdefault(bone, {})["shape"] = shp
         base, face = sp["base"], sp["face"]
+        head_bone = face.get("bone", "head") if face else "head"
+        # a drawn kit keeps its face variants on the head part
+        # (head_talk.png -> "talk"), a cut rig on the full sheets
+        head_avail = set(c.layers)
+        for variants in rig.parts.get(head_bone, {}).values():
+            head_avail |= set(variants)
 
         def sheet(kind):
-            if base != "body" and f"{base}_{kind}" in c.layers:
+            if base != "body" and f"{base}_{kind}" in head_avail:
                 return f"{base}_{kind}"
-            return kind if kind in c.layers else None
+            return kind if kind in head_avail else None
 
-        head_bone = face.get("bone", "head") if face else "head"
         variant_for = {b: base for b in rig.parts} if base != "body" else {}
         if talking and sheet("talk"):
             variant_for[head_bone] = sheet("talk")
@@ -559,8 +568,9 @@ class EpisodeRenderer:
         overlay_talk = talking and not sheet("talk") and face \
             and face.get("mouth")
         key = (tuple(sorted(
-                   (b, tuple(sorted((k2, round(v, 2))
-                                    for k2, v in ch.items())))
+                   (b, tuple(sorted(
+                       (k2, v if isinstance(v, str) else round(v, 2))
+                       for k2, v in ch.items())))
                    for b, ch in pose.items())),
                tuple(sorted(variant_for.items())),
                bool(overlay_blink), bool(overlay_talk))
