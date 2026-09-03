@@ -47,32 +47,46 @@ GHOST_LINE = (188, 219, 231)
 LABEL_INK = (110, 110, 110)
 
 # name -> (outer box, optional). Inner draw area trims the label strip.
+# Every RIGHT-side box is optional: nothing is ever mirrored, so an
+# empty right box means the left drawing stands in for it verbatim.
 CELLS = {
-    "torso":        ((100, 300, 840, 1400), False),
-    "head":         ((870, 300, 1610, 1400), False),
-    "head_talk":    ((1640, 300, 2380, 1400), True),
-    "arm_straight": ((100, 1450, 640, 2450), False),
-    "arm_bent":     ((680, 1450, 1220, 2450), True),
-    "arm_point":    ((1260, 1450, 1800, 2450), True),
-    "arm_pocket":   ((1840, 1450, 2380, 2450), True),
-    "leg_straight": ((100, 2500, 640, 3310), False),
-    "leg_bent":     ((680, 2500, 1220, 3310), False),
-    "head_blink":   ((1260, 2500, 1800, 3310), True),
-    "head_angry":   ((1840, 2500, 2380, 3310), True),
+    "torso":          ((100, 290, 660, 1080), False),
+    "head":           ((690, 290, 1090, 1080), False),
+    "head_talk":      ((1120, 290, 1520, 1080), True),
+    "head_blink":     ((1550, 290, 1950, 1080), True),
+    "head_angry":     ((1980, 290, 2380, 1080), True),
+    "arm_straight":   ((100, 1110, 640, 1840), False),
+    "arm_bent":       ((680, 1110, 1220, 1840), True),
+    "arm_point":      ((1260, 1110, 1800, 1840), True),
+    "arm_pocket":     ((1840, 1110, 2380, 1840), True),
+    "arm_r_straight": ((100, 1870, 640, 2600), True),
+    "arm_r_bent":     ((680, 1870, 1220, 2600), True),
+    "arm_r_point":    ((1260, 1870, 1800, 2600), True),
+    "arm_r_pocket":   ((1840, 1870, 2380, 2600), True),
+    "leg_straight":   ((100, 2630, 640, 3310), False),
+    "leg_bent":       ((680, 2630, 1220, 3310), False),
+    "leg_r_straight": ((1260, 2630, 1800, 3310), True),
+    "leg_r_bent":     ((1840, 2630, 2380, 3310), True),
 }
 
 TITLES = {
-    "torso": "torso + hips — no head, no limbs",
+    "torso": "torso + hips — no head/limbs",
     "head": "head — mouth closed",
-    "head_talk": "head — mouth OPEN (optional)",
+    "head_talk": "head — talk (optional)",
+    "head_blink": "head — blink (optional)",
+    "head_angry": "head — angry (optional)",
     "arm_straight": "LEFT arm — relaxed",
-    "arm_bent": "LEFT arm — elbow bent (optional)",
+    "arm_bent": "LEFT arm — bent (optional)",
     "arm_point": "LEFT arm — pointing (optional)",
     "arm_pocket": "LEFT arm — in pocket (optional)",
+    "arm_r_straight": "RIGHT arm — relaxed (optional)",
+    "arm_r_bent": "RIGHT arm — bent (optional)",
+    "arm_r_point": "RIGHT arm — pointing (optional)",
+    "arm_r_pocket": "RIGHT arm — in pocket (optional)",
     "leg_straight": "LEFT leg — standing",
     "leg_bent": "LEFT leg — knee bent",
-    "head_blink": "head — eyes shut (optional)",
-    "head_angry": "head — angry (optional)",
+    "leg_r_straight": "RIGHT leg — standing (optional)",
+    "leg_r_bent": "RIGHT leg — knee bent (optional)",
 }
 
 # the character every sheet maps onto (bones normalised to body.png)
@@ -106,9 +120,13 @@ def cell_dots(name):
     if name == "torso":
         return (x0 + w / 2, y0 + 0.10 * h), (x0 + w / 2, y0 + 0.88 * h)
     if name.startswith("head"):
-        return (x0 + w / 2, y0 + 0.06 * h), (x0 + w / 2, y0 + 0.94 * h)
+        # span capped by the cell's width so the face ghost fits
+        half = min(0.44 * h, 0.62 * w)
+        cy = y0 + 0.5 * h
+        return (x0 + w / 2, cy - half), (x0 + w / 2, cy + half)
     if name.startswith("arm"):
-        return (x0 + 0.45 * w, y0 + 0.08 * h), (x0 + 0.45 * w, y0 + 0.78 * h)
+        dx = 0.55 * w if "_r_" in name else 0.45 * w  # room to curve in
+        return (x0 + dx, y0 + 0.08 * h), (x0 + dx, y0 + 0.78 * h)
     return (x0 + 0.45 * w, y0 + 0.08 * h), (x0 + 0.45 * w, y0 + 0.80 * h)
 
 
@@ -172,12 +190,16 @@ def draw_ghost(d, name, A, B):
             d.line([cx - mw / 2, my, cx + mw / 2, my], fill=L, width=4)
     elif name.startswith("arm"):
         r = 0.085 * span
-        if name == "arm_bent":
+        # a bent forearm crosses TOWARD the body: screen-right for the
+        # left arm, screen-left for the right arm (nothing is mirrored,
+        # so each side's ghost shows its own curve)
+        sgn = -1 if "_r_" in name else 1
+        if name.endswith("bent"):
             elbow = (cx, A[1] + 0.55 * span)
             _capsule(d, A, elbow, r, F, L)
-            _capsule(d, elbow, (cx + 0.5 * span, A[1] + 0.62 * span),
-                     r, F, L)
-        elif name == "arm_pocket":
+            _capsule(d, elbow, (cx + sgn * 0.5 * span,
+                                A[1] + 0.62 * span), r, F, L)
+        elif name.endswith("pocket"):
             _capsule(d, A, (cx, A[1] + 0.55 * span), r, F, L)
             d.line([cx - 2.2 * r, A[1] + 0.56 * span,
                     cx + 2.2 * r, A[1] + 0.58 * span], fill=L, width=5)
@@ -186,13 +208,13 @@ def draw_ghost(d, name, A, B):
             hand = (B[0], B[1] + 0.09 * span)
             d.ellipse([hand[0] - 1.2 * r, B[1],
                        hand[0] + 1.2 * r, hand[1] + 0.02 * span], fill=F)
-            if name == "arm_point":
+            if name.endswith("point"):
                 d.polygon([(hand[0] - 0.6 * r, hand[1]),
                            (hand[0], hand[1] + 0.14 * span),
                            (hand[0] + 0.6 * r, hand[1])], fill=F)
-    else:  # legs
+    else:  # legs — same direction on BOTH sides: knee and toe forward
         r = 0.10 * span
-        if name == "leg_bent":
+        if name.endswith("bent"):
             knee = (cx + 0.30 * span, A[1] + 0.48 * span)
             _capsule(d, A, knee, r, F, L)
             _capsule(d, knee, (cx + 0.10 * span, B[1]), r, F, L)
@@ -229,8 +251,8 @@ def cmd_template(args):
     tips = ("draw ONE character into the boxes, thick marker, flat colour"
             "  ·  the red dots are the joints: draw around them, never "
             "move them  ·  give the torso hips — the legs tuck up behind "
-            "them  ·  LEFT arm and leg only (the right is mirrored)  ·  "
-            "boxes marked optional may stay empty  ·  photograph flat, "
+            "them  ·  nothing is mirrored: an empty optional box means "
+            "the LEFT drawing stands in as-is  ·  photograph flat, "
             "all four black squares in frame, then:  python3 "
             "pipeline/kit.py ingest photo.jpg characters/<name>")
     import textwrap
@@ -240,7 +262,7 @@ def cmd_template(args):
     for name, (box, optional) in CELLS.items():
         x0, y0, x1, y1 = box
         d.rounded_rectangle(box, radius=18, outline=GHOST_LINE, width=4)
-        d.text((x0 + 18, y0 + 16), TITLES[name], font=_font(34),
+        d.text((x0 + 18, y0 + 18), TITLES[name], font=_font(29),
                fill=LABEL_INK)
         A, B = cell_dots(name)
         draw_ghost(d, name, A, B)

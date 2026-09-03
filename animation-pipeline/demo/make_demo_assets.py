@@ -287,6 +287,9 @@ def doug_meta(folder):
                  "eyes": [{"at": [0.4424, 0.2613], "r": 0.017},
                           {"at": [0.5527, 0.2613], "r": 0.017}],
                  "mouth": {"at": [0.5, 0.3405], "w": 0.055}},
+        # aim the pocket stubs into the torso (kit.py ingest computes
+        # this from the drawn torso; doug's is hand-set to match)
+        "shape_rot": {"arm_l": {"pocket": -8}, "arm_r": {"pocket": 8}},
     }
     with open(os.path.join(folder, "rig.json"), "w") as f:
         json.dump(rig, f, indent=2)

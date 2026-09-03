@@ -96,5 +96,13 @@
       ],
       "w": 0.055
     }
+  },
+  "shape_rot": {
+    "arm_l": {
+      "pocket": -8
+    },
+    "arm_r": {
+      "pocket": 8
+    }
   }
 }

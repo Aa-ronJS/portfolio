@@ -226,8 +226,12 @@ straight leg for a bent one. The dots may float off the drawing (a
 bent arm doesn't reach its second dot — correct), and they're erased
 automatically on load.
 
-**The list.** Left limbs only, drawn hanging straight down as worn;
-the right side is mirrored automatically.
+**The list.** Limbs are drawn hanging straight down as worn, knees
+and toes pointing the walk direction. **Nothing is ever mirrored** —
+a mirrored limb bends its joints backward — so the template carries
+optional RIGHT-side boxes for every arm and leg shape
+(`arm_r_<shape>.png`, `leg_r_<shape>.png`); leave any of them empty
+and the LEFT drawing stands in for that side verbatim.
 
 Required — this is a walking, talking, blinking character (5 drawings):
 
@@ -263,8 +267,10 @@ Rules that make it work:
 - `body.png` (the assembled figure) is still required — it's the flat
   fallback, the sheet the skeleton is clicked onto in the rig editor,
   and the proportions reference.
-- A right side that genuinely differs (a watch, a tattoo) gets its own
-  `arm_r_<shape>.png` — drawn as the right arm, no mirroring.
+- Right-side drawings matter most where the limb curves toward the
+  body — a bent or pocket arm; a hanging straight arm barely differs,
+  so its right box is the safest to skip. (Pocket arms are also aimed
+  into the torso automatically, whichever art they use.)
 - Drawing digitally? Skip the dots and declare pivots in rig.json:
   `"parts": {"arm_bent": {"a": [x, y], "b": [x, y]}}` (normalised to
   that part's image).

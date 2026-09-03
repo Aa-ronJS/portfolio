@@ -220,6 +220,16 @@ shirt text is the accepted cost, the owner decides. When reviewing
 motion, extract actual frames and read the channel values alongside
 them; the flamingo was invisible in stills picked at random.
 
+Third round, at Aaron's call: **nothing is mirrored, ever**. The
+template grew explicit RIGHT arm and leg boxes (17 cells; all right
+boxes optional — an empty one means the LEFT art stands in verbatim),
+right-arm ghosts curve toward the body, and the kit loader's last
+mirror is gone. Mirroring was the root cause of backward knees and
+disagreeing shoes; do not reintroduce it. Pocket arms are aimed into
+the torso by rig.json `shape_rot` (computed by kit ingest from the
+measured pelvis; the rig applies it whenever that shape is active),
+so even a left pocket stub standing in on the right lands correctly.
+
 Second review round (pelvis + dots): the template torso is now "torso
 + hips" — its ghost carries a pelvis wrapping past the hip dot, and
 kit ingest tucks the leg bones up behind the drawn torso's bottom edge

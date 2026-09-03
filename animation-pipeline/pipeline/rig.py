@@ -432,18 +432,18 @@ class Rig:
                 side = t[1] if len(t) > 1 and t[1] in ("l", "r") else None
                 shape = "_".join(t[2:] if side else t[1:]) or "straight"
                 if side:
-                    # explicit-side art is drawn as that side: no mirror
+                    # explicit-side art, used verbatim
                     put(f"{t[0]}_{side}", shape, "body", img, dots)
                 else:
+                    # NOTHING is ever mirrored: a mirrored limb bends
+                    # its joints backward and points its shoe against
+                    # the walk. A sideless drawing is the left limb,
+                    # and stands in AS-IS for a right limb that has no
+                    # explicit art; flip_to_walk turns the whole
+                    # character for the other travel direction.
                     put(f"{t[0]}_l", shape, "body", img, dots)
                     if f"{t[0]}_r_{shape}" not in raw:
-                        # arms mirror; legs DON'T — a mirrored right
-                        # leg bends its knee backward and points its
-                        # shoe against the walk. Both legs wear the
-                        # drawn art; flip_to_walk turns the whole
-                        # character for the other direction.
-                        put(f"{t[0]}_r", shape, "body", img, dots,
-                            mirror=(t[0] == "arm"))
+                        put(f"{t[0]}_r", shape, "body", img, dots)
         for need in ("torso", "head"):
             if need in self.bones and need not in parts:
                 raise SystemExit(f"{kit_dir}: a kit needs {need}.png")
