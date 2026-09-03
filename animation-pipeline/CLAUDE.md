@@ -476,6 +476,31 @@ small until he has drawn right arms); gun-holding hands use the
 sugar's kneeling face sits at canvas y≈0.55 (measured, not the
 estimated 0.48 — kneel drops more than back-of-envelope says).
 
+The fight legibility round (2026-09-03, resumed session): the
+every-frame standard applied to episode-fight found the two failures
+the duel audit predicted. (1) A landed blow read WEAKER than a dodge —
+the victim's head snap (-24) was invisible at phone scale while ducks
+and leans were big moves. Hits now rock the victim: head -44, whole
+body tilting through root rot -7, a real stagger (root dx -0.16) and
+the guard arms knocked open, all peaking at p=0.4 with the thwack.
+(2) The fixed lunge (root dx 0.10 punch / 0.14 kick) drove the
+attacker's face INTO a closely-staged opponent's head. Fight dicts now
+carry `adv_max` — the staged gap in standing-height units minus 0.52
+clearance (covers the attacker's forward lean and the defender's
+dodge) — and lunges clamp to it (kicks get +0.06 back; their torso
+leans away). At episode-fight's staging that zeroes the punch lunge:
+the reach-stretched arm sells the punch alone, which is the point —
+the fist still lands, the faces never touch. The duck was rebuilt to
+go DOWN, not forward: shallow bow (torso 6 — a 14° bow put the ducked
+head against the attacker's chin), deeper knee fold (-52/58) with root
+dy 0.074 tuned so the feet stay planted — verified by measuring the
+lowest shoe pixel against the standing baseline (1505 vs 1505; boil
+gives ±4px), not by eye. Known ambiguity, left deliberately: a duck
+drops INTO a mid-body kick's line, so a dodged kick can still show
+contact — a kick is dodged convincingly only by lean, and the beat
+sheet doesn't know that yet; flag for a future round if it bothers
+anyone in motion.
+
 Discussed but unbuilt: per-character close-up
 framing in `char.json` (the directed close-up currently assumes a
 humanoid head at `at: [0.5, 1.35], scale: 1.5`); pose changes and

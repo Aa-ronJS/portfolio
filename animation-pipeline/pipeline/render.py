@@ -639,6 +639,17 @@ class EpisodeRenderer:
                         # their near cheek, not their centre line)
                         "dirn": 1 if opp.get("at", [0.5])[0]
                         >= a.get("at", [0.5])[0] else -1,
+                        # how far the root may advance (standing-height
+                        # units) before the heads collide: the audit
+                        # found a fixed lunge mashes faces together
+                        # when the actors are staged close. Clearance
+                        # covers the attacker's forward lean AND the
+                        # defender's duck bowing toward them; the punch
+                        # still lands — reach stretches the arm.
+                        "adv_max": max(0.0, abs(
+                            opp.get("at", [0.5])[0]
+                            - a.get("at", [0.5])[0]) * self.W
+                            / (a.get("scale", 0.4) * self.H) - 0.52),
                     }
                     gaze = 0.0   # fighters watch fists, not talkers
                 s["sprites"].append({
@@ -821,6 +832,11 @@ class EpisodeRenderer:
             return reaches
         p = (t - beat["t"]) / B
         if beat["who"] == fight["me"]:      # attacking
+            # lunges cap at adv_max so the attacker never occupies the
+            # opponent's space; kicks get a little extra because the
+            # torso leans back out of head range
+            adv_p = min(0.10, fight.get("adv_max", 0.10))
+            adv_k = min(0.14, fight.get("adv_max", 0.14) + 0.06)
             if beat["atk"] == "kick":
                 if p < 0.25:
                     add("root", dy=0.03 * (p / 0.25))
@@ -828,7 +844,7 @@ class EpisodeRenderer:
                     add("leg_l_upper", rot=-84, shape="straight")
                     add("leg_l_lower", rot=-6)
                     add("torso", rot=-14)
-                    add("root", dx=0.14, dy=-0.01)
+                    add("root", dx=adv_k, dy=-0.01)
                     # the foot must arrive ON them, same as a fist
                     reaches.append({
                         "bone": "leg_l_lower", "shape": "straight",
@@ -842,7 +858,7 @@ class EpisodeRenderer:
                     q = 1 - (p - 0.7) / 0.3
                     add("leg_l_upper", rot=-84 * q)
                     add("torso", rot=-14 * q)
-                    add("root", dx=0.14 * q)
+                    add("root", dx=adv_k * q)
             else:
                 arm = "arm_l" if beat["atk"] == "jab" else "arm_r"
                 if p < 0.25:                 # cock the fist
@@ -859,33 +875,41 @@ class EpisodeRenderer:
                                     + ty * fight["opp_scale"]]})
                     add(arm, shape="straight")
                     add("torso", rot=9)
-                    add("root", dx=0.10)
+                    add("root", dx=adv_p)
                 else:
                     q = 1 - (p - 0.7) / 0.3
                     add("torso", rot=6 * q)
-                    add("root", dx=0.10 * q)
+                    add("root", dx=adv_p * q)
         elif beat["hit"]:                    # taking it
+            # the audit's verdict: a landed blow read WEAKER than a
+            # dodge. Snap hard at impact and ease back — big head
+            # snap, whole-body tilt, a real stagger, the guard arms
+            # knocked off their line
             if p >= 0.4:
                 q = max(0.0, 1 - (p - 0.4) / 0.55)
-                add("head", rot=-24 * q, dx=-0.02 * q)
-                add("root", dx=-0.075 * q)
-                add("torso", rot=-10 * q)
+                add("head", rot=-44 * q, dx=-0.03 * q)
+                add("root", dx=-0.16 * q, rot=-7 * q)
+                add("torso", rot=-18 * q)
+                add("arm_l", rot=34 * q)
+                add("arm_r", rot=52 * q)
         elif 0.2 <= p <= 0.75:               # saw it coming
             if beat["dodge"] == "duck":
                 # a real crouch: knees bend, feet stay planted — the
                 # root drop matches what the folded legs give up. A
                 # one-piece leg can't fold, so that rig bobs less and
-                # ducks mostly with the torso and head.
-                add("torso", rot=14)
-                add("head", rot=10)
+                # ducks mostly with the torso and head. The bow stays
+                # shallow: at close staging a deep bow put the ducked
+                # head against the attacker's chin (the audit round).
+                add("torso", rot=6)
+                add("head", rot=8)
                 if "leg_l_lower" in bones:
-                    add("root", dy=0.05)
-                    add("leg_l_upper", rot=-40, shape="bent")
-                    add("leg_l_lower", rot=46)
-                    add("leg_r_upper", rot=-36, shape="bent")
-                    add("leg_r_lower", rot=42)
+                    add("root", dy=0.074)
+                    add("leg_l_upper", rot=-52, shape="bent")
+                    add("leg_l_lower", rot=58)
+                    add("leg_r_upper", rot=-48, shape="bent")
+                    add("leg_r_lower", rot=54)
                 else:
-                    add("root", dy=0.035, dx=-0.03)
+                    add("root", dy=0.05, dx=-0.03)
                     add("torso", rot=4)
                     add("head", rot=4)
                     add("leg_l_upper", rot=-14, shape="bent")
