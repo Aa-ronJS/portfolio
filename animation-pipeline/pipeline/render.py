@@ -30,6 +30,7 @@ from PIL import Image, ImageDraw, ImageFont
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 from audiolib import (AUDIO_SR, decode_audio, envelope, mouth_track,
                       split_take, write_wav)
+from rig import Rig, face_variant, find_clip, pose_at, resolve_channels
 
 
 # ---------------------------------------------------------------- assets
@@ -63,6 +64,7 @@ class Character:
         self.anchor = (0.5, 1.0)
         self.world_height = None   # physical size in human units (1.0 =
         meta = os.path.join(folder, "char.json")  # a standing adult)
+        self.face = None
         if os.path.exists(meta):
             with open(meta) as f:
                 m = json.load(f)
@@ -72,6 +74,15 @@ class Character:
             # characters (enables auto-facing), absent for front-on ones
             # (never auto-flipped — mirrored shirt text looks wrong)
             self.facing = m.get("facing")
+            # declared eyes/mouth: stock blinks and mouth flaps get
+            # stamped onto the drawing, no blink.png/talk.png needed
+            self.face = m.get("face")
+        # rig.json puts a skeleton over the drawing: parts are cut from
+        # the sheets once, clips (walk, wave, ...) pose them per frame
+        self.rig = Rig(folder, self.layers) \
+            if os.path.exists(os.path.join(folder, "rig.json")) else None
+        if self.face is None and self.rig is not None:
+            self.face = self.rig.face
         # visible bounds: pixel dimensions of the drawing, not the canvas
         self.bbox = self.layers["body"].getchannel("A") \
             .point(lambda v: 255 if v > 24 else 0).getbbox() \
@@ -371,14 +382,28 @@ class EpisodeRenderer:
                 c = self.char(a["char"])
                 body, talk, blink = c.pick(a.get("pose"))
                 imgs = {"body": body, "talk": talk, "blink": blink}
+                # declared eyes/mouth stand in for missing sheets: the
+                # stock blink / mouth flap is stamped onto the drawing
+                face = getattr(c, "face", None) or {}
+                if imgs["blink"] is None and face.get("eyes"):
+                    imgs["blink"] = face_variant(body, face, blink=True)
+                if imgs["talk"] is None and a.get("talk") \
+                        and face.get("mouth"):
+                    imgs["talk"] = face_variant(body, face, talk=True)
                 anchor = c.anchor
             else:
                 c = None
                 img = Image.open(self.path(a["image"])).convert("RGBA")
                 imgs = {"body": img, "talk": None, "blink": None}
                 anchor = tuple(a.get("anchor", [0.5, 1.0]))
+            # a rigged character plays clips (explicit, or a walk cycle
+            # implied by a slide); everything else takes the flat path
+            specs = self._clip_specs(c, a, s["duration"]) \
+                if c is not None and getattr(c, "rig", None) else []
             if "scale" in a or c is None or c.world_height is None:
                 # legacy sizing: fraction of canvas height, canvas-based
+                # (a rigged actor's k means the same — its posed canvas
+                # is padded but stays at source pixel scale)
                 h = int(a.get("scale", 0.4) * self.H)
                 k = h / imgs["body"].height
             else:
@@ -423,6 +448,31 @@ class EpisodeRenderer:
                     out[key] = im
                 return out
 
+            mouth = None
+            if a.get("talk") and s["env"] is not None:
+                mouth = mouth_track(
+                    s["env"], s["env_rate"], s["frames"], self.fps,
+                    style=a.get("talk_style", self.talk_style),
+                    thr=a.get("talk_threshold", 0.28))
+            if specs:
+                rig = c.rig
+                can_blink = "blink" in c.layers or face.get("eyes")
+                s["sprites"].append({
+                    "imgs": None, "rig": rig, "specs": specs, "char": c,
+                    "k": k, "flip": do_flip, "cache": {},
+                    "base": a.get("pose") or "body", "face": face,
+                    # anchor restated for the padded pose canvas
+                    "anchor": ((rig.pad + anchor[0] * rig.W)
+                               / (rig.W + 2 * rig.pad),
+                               (rig.pad + anchor[1] * rig.H)
+                               / (rig.H + 2 * rig.pad)),
+                    "cfg": a, "mouth": mouth,
+                    "phase": random.Random((i + 1) * 37 + j).random(),
+                    "blinks": self._blink_times(s["duration"],
+                                                (i + 1) * 91 + j)
+                              if can_blink else [],
+                })
+                continue
             scaled = scale_set(imgs)
             # alt_pose: the sprite alternates between its pose and this
             # one on a timer — a two-frame gesture cycle (arm wave, etc.)
@@ -430,12 +480,6 @@ class EpisodeRenderer:
             if c is not None and a.get("alt_pose"):
                 ab, at_, abl = c.pick(a["alt_pose"])
                 alt = scale_set({"body": ab, "talk": at_, "blink": abl})
-            mouth = None
-            if a.get("talk") and s["env"] is not None:
-                mouth = mouth_track(
-                    s["env"], s["env_rate"], s["frames"], self.fps,
-                    style=a.get("talk_style", self.talk_style),
-                    thr=a.get("talk_threshold", 0.28))
             s["sprites"].append({
                 "imgs": scaled, "alt": alt,
                 "alt_period": a.get("alt_period", 0.8),
@@ -445,6 +489,34 @@ class EpisodeRenderer:
                           if scaled["blink"] is not None else [],
             })
         return s
+
+    def _clip_specs(self, c, a, dur):
+        """Resolve an actor's clips. A slide with no explicit clip on a
+        rigged character implies a walk cycle over the slide's window —
+        the two-drawing waddle, retired."""
+        roots = [os.path.join(c.folder, "clips"),
+                 os.path.join(self.root, "clips")]
+        raw = a.get("clips") or ([a["clip"]] if a.get("clip") else [])
+        specs = []
+        for item in raw:
+            if isinstance(item, str):
+                item = {"name": item}
+            spec = {"clip": find_clip(item["name"], roots)}
+            for key in ("t", "amp", "period"):
+                if key in item:
+                    spec[key] = item[key]
+            specs.append(spec)
+        if not specs and not a.get("no_walk"):
+            # a waddle is the author's explicit old-style walk: respect
+            # it rather than stacking leg swings on top
+            moves = a.get("moves", [])
+            slide = next((m for m in moves
+                          if m.get("type") == "slide"), None)
+            if slide is not None and \
+                    not any(m.get("type") == "waddle" for m in moves):
+                specs = [{"clip": find_clip("walk", roots),
+                          "t": slide.get("t", [0, dur])}]
+        return specs
 
     @staticmethod
     def _blink_times(dur, seed):
@@ -456,6 +528,60 @@ class EpisodeRenderer:
         return out
 
     # -------------------------------------------------- frame drawing
+
+    def _rig_frame(self, sp, t, talking, blinking):
+        """The posed, scaled, flipped sprite for a rigged actor at t.
+
+        The pose comes from the actor's clips; talk and blink prefer the
+        artist's sheets (swapped onto the head part alone) and fall back
+        to the stock overlays at the face anchors, carried through the
+        skeleton so a nodding head keeps its blink. Poses repeat every
+        clip cycle, so nearly every frame is a cache hit.
+        """
+        rig, c = sp["rig"], sp["char"]
+        pose = resolve_channels(pose_at(sp["specs"], t), rig.bones)
+        base, face = sp["base"], sp["face"]
+
+        def sheet(kind):
+            if base != "body" and f"{base}_{kind}" in c.layers:
+                return f"{base}_{kind}"
+            return kind if kind in c.layers else None
+
+        head_bone = face.get("bone", "head") if face else "head"
+        variant_for = {b: base for b in rig.parts} if base != "body" else {}
+        if talking and sheet("talk"):
+            variant_for[head_bone] = sheet("talk")
+        blink_sheet = blinking and sheet("blink")
+        if blink_sheet:
+            variant_for[head_bone] = sheet("blink")
+        overlay_blink = blinking and not blink_sheet and face \
+            and face.get("eyes")
+        overlay_talk = talking and not sheet("talk") and face \
+            and face.get("mouth")
+        key = (tuple(sorted(
+                   (b, tuple(sorted((k2, round(v, 2))
+                                    for k2, v in ch.items())))
+                   for b, ch in pose.items())),
+               tuple(sorted(variant_for.items())),
+               bool(overlay_blink), bool(overlay_talk))
+        img = sp["cache"].get(key)
+        if img is None:
+            canvas, _pad = rig.pose(pose, variant_for)
+            if overlay_blink or overlay_talk:
+                canvas = face_variant(
+                    canvas, face, blink=overlay_blink, talk=overlay_talk,
+                    transform=lambda at: rig.anchor_world(
+                        at, head_bone, pose),
+                    feat_h=rig.H)
+            k = sp["k"]
+            img = canvas.resize((round(canvas.width * k),
+                                 round(canvas.height * k)), Image.LANCZOS)
+            if sp["flip"]:
+                img = img.transpose(Image.FLIP_LEFT_RIGHT)
+            if len(sp["cache"]) > 48:
+                sp["cache"].clear()
+            sp["cache"][key] = img
+        return img
 
     def boil(self, rng):
         return (rng.uniform(-1, 1) * self.boil_px * self.H,
@@ -472,13 +598,18 @@ class EpisodeRenderer:
                 continue  # e.g. a muzzle flash visible for two frames
             talking = sp["mouth"] is not None and bool(sp["mouth"][f])
             blinking = any(bt <= t < bt + 2.0 / self.fps for bt in sp["blinks"])
-            imgs = sp["imgs"]
-            if sp["alt"] is not None and \
-                    int(t / (sp["alt_period"] / 2)) % 2:
-                imgs = sp["alt"]
-            img = imgs["blink"] if (blinking and imgs["blink"] is not None) \
-                else (imgs["talk"] if (talking and imgs["talk"] is not None)
-                      else imgs["body"])
+            if sp.get("rig") is not None:
+                img = self._rig_frame(sp, t, talking, blinking)
+            else:
+                imgs = sp["imgs"]
+                if sp["alt"] is not None and \
+                        int(t / (sp["alt_period"] / 2)) % 2:
+                    imgs = sp["alt"]
+                img = imgs["blink"] \
+                    if (blinking and imgs["blink"] is not None) \
+                    else (imgs["talk"]
+                          if (talking and imgs["talk"] is not None)
+                          else imgs["body"])
             dx, dy, rot, smul = move_offset(a.get("moves", []), t,
                                             s["duration"], sp["phase"])
             if a.get("still"):

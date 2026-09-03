@@ -1,0 +1,83 @@
+# Rigging screen test. Tim has a skeleton (demo/characters/tim/rig.json)
+# cut from the same single drawing — nothing was redrawn. The walk is the
+# stock clip playing over his slide (any slide on a rigged character walks
+# by itself), the wave and nod are stock clips too, and every blink is the
+# stock overlay stamped at the eyes declared in char.json: tim has no
+# blink.png and never will.
+#
+# Render:   python3 pipeline/render.py demo/episode-rig.yaml
+
+title: tim gets a skeleton
+size: [1080, 1920]
+fps: 12
+boil: 0.0015
+boil_every: 2
+
+defaults:
+  font: ../fonts/satoshi-var.ttf
+  caption_size: 0.042
+  caption_weight: 700
+  caption_color: [26, 26, 26]
+  caption_y: 0.84
+  audio_tail: 0.3
+
+shots:
+  # Walks in on his own legs: the slide implies the walk clip.
+  - bg: backgrounds/chipshop.png
+    duration: 2.2
+    caption: tim has legs now
+    actors:
+      - char: tim
+        at: [0.42, 0.76]
+        scale: 0.50
+        moves:
+          - {type: slide, from: [-0.3, 0.76], to: [0.42, 0.76], t: [0, 1.8]}
+
+  # Stands and talks. The mouth is his own talk.png, swapped onto the
+  # head part alone; the blinks are stock overlays — no blink.png exists.
+  - bg: backgrounds/chipshop.png
+    audio: vo/tim1.wav
+    duration: 3.2
+    caption: he blinks and nobody drew a blink
+    actors:
+      - char: tim
+        at: [0.42, 0.76]
+        scale: 0.50
+        talk: true
+        clip: idle
+
+  # A stock wave. Nobody drew a wave either.
+  - bg: backgrounds/chipshop.png
+    duration: 2.4
+    caption: nobody drew this wave
+    actors:
+      - char: tim
+        at: [0.42, 0.76]
+        scale: 0.50
+        clips:
+          - {name: idle}
+          - {name: wave, t: [0.3, 2.1]}
+
+  # Nods along while talking.
+  - bg: backgrounds/chipshop.png
+    audio: vo/tim3.wav
+    caption: he agrees with himself
+    actors:
+      - char: tim
+        at: [0.42, 0.76]
+        scale: 0.50
+        talk: true
+        clips:
+          - {name: nod, t: [0.4, 1.6], amp: 0.8}
+
+  # Leaves in a hurry: the same walk clip, faster period.
+  - bg: backgrounds/chipshop.png
+    duration: 1.8
+    caption: and off he goes
+    actors:
+      - char: tim
+        at: [-0.35, 0.76]
+        scale: 0.50
+        clip: {name: walk, period: 0.45, t: [0.2, 1.6]}
+        moves:
+          - {type: slide, from: [0.42, 0.76], to: [-0.35, 0.76], t: [0.2, 1.6]}

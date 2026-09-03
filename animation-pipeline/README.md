@@ -121,6 +121,78 @@ are long, lower it if it glues two lines together).
 | `envelope` | open whenever you're loud; long vowels hold open |
 | `alternate` | strict 0101 flap every frame while you're speaking |
 
+## Rigging: real walks and stock blinks, still one drawing
+
+One drawing per character stays the whole asset. Drop a `rig.json` next
+to `body.png` and the pipeline puts a simple skeleton over the drawing:
+each pixel is cut to its nearest bone (overlapping at the joints so
+nothing tears) and the parts swing from reusable keyframed clips. Nobody
+draws walk frames, and nothing gets smooth — a clip holds three or four
+poses per cycle at 12fps, which is the look.
+
+Make a rig by clicking on the drawing: open `tools/rig_editor.html` in
+a browser, drop the character's `body.png` in, click where the joints
+are (skip what the character doesn't have — a bird with no arms still
+walks), click the eyes and mouth, download `rig.json` into the
+character's folder. Then sanity-check the cut and the walk:
+
+```bash
+python3 pipeline/rig.py sheet   characters/gary check.png
+python3 pipeline/rig.py preview characters/gary walk.gif --clip walk
+```
+
+Once the rig exists:
+
+- **any `slide` walks.** The stock walk cycle plays across the slide's
+  window automatically. An actor that also has a `waddle` keeps the
+  author's old-style walk instead; `no_walk: true` opts out entirely.
+- **clips are stock and reusable** — `pipeline/clips/*.json` ships
+  `walk`, `idle`, `wave`, `nod`, `shake`, and they play on any rigged
+  character whose bones use the canonical names (`torso`, `head`,
+  `arm_l`, `leg_r`, … one-piece, or `arm_l_upper`/`arm_l_lower` for
+  elbows and knees — a clip keyed on `arm_l_upper` lands on a one-piece
+  `arm_l` automatically). Channels for bones a character doesn't have
+  are ignored. A `clips/` folder in the show or the character overrides
+  the stock library by name.
+
+  ```yaml
+  actors:
+    - char: gary
+      clip: wave                    # simple
+    - char: gary                    # layered, windowed, tuned:
+      clips:
+        - {name: idle}
+        - {name: nod, t: [0.4, 1.6], amp: 0.8, period: 0.5}
+  ```
+- **talk and blink still prefer your drawn sheets**, swapped onto the
+  head part alone, and fall back to the stock face below.
+
+### Stock blinks and mouth flaps (no rig required)
+
+Stop drawing `blink.png`. Declare where the face is — the rig editor
+writes this for you, or add it to `char.json` by hand:
+
+```json
+"face": {"eyes": [{"at": [0.40, 0.27], "r": 0.02},
+                  {"at": [0.49, 0.27], "r": 0.02}],
+         "mouth": {"at": [0.44, 0.38], "w": 0.08},
+         "bone": "head"}
+```
+
+Coordinates are fractions of the drawing (`r`/`w` fractions of its
+height); `bone` only matters on rigged characters, where the blink rides
+the head through nods and walks. A closed eye is stamped over each open
+one in the drawing's own colours — the lid fill is sampled from around
+the eye, the lid line from its ink — so any character blinks the moment
+its eyes are declared, in any pose sheet, with nothing drawn. A talking
+character with no `talk.png` gets a stock open-mouth flap the same way.
+Drawn sheets always win when they exist.
+
+`demo/episode-rig.yaml` → `demo/episode-rig.mp4` is the screen test:
+Tim walks in on his own legs, blinks with no `blink.png`, waves a wave
+nobody drew, nods along to his own voice line, and leaves at double
+walk speed. His whole asset is still the four sheets he always had.
+
 ## The workflow, per episode
 
 1. **Write it first.** 3–6 shots, one caption each, under 30 seconds total.
@@ -128,7 +200,9 @@ are long, lower it if it glues two lines together).
 2. **Draw the seeds.** Marker on white paper, flat colours, thick outlines.
    One full-body drawing per character. For anyone who speaks, draw the same
    character twice on identically framed sheets: mouth closed (`body`) and
-   mouth open (`talk`). Optionally eyes shut (`blink`). Backgrounds are one
+   mouth open (`talk`). Optionally eyes shut (`blink`) — or draw neither
+   and declare the face instead (rigging section): stock blinks and mouth
+   flaps get stamped on in the drawing's own colours. Backgrounds are one
    drawing too — or a flat colour rectangle, nobody cares.
 3. **Shoot and ingest.** Photograph each sheet in even light, then:
 
@@ -170,8 +244,14 @@ myshow/
       angry_talk.png  their own mouth-open/eyes-shut variants;
                       an actor selects one with `pose: angry` and
                       talk/blink fall back to the plain versions
+      rig.json        optional — skeleton over the drawing (make it
+                      with tools/rig_editor.html); enables clips,
+                      real walks, and face anchors
+      clips/*.json    optional — character-specific clips, override
+                      the stock library by name
       char.json       optional — {"anchor": [0.5, 1.0]} (default: feet)
-                      and {"aliases": [...]} for the voice director
+                      {"aliases": [...]} for the voice director, and
+                      "face" eyes/mouth for stock blinks and flaps
   backgrounds/*.png
   vo/*.wav|m4a|mp3    anything ffmpeg reads
 ```
@@ -208,6 +288,9 @@ shots:
         pose: angry            # use angry.png / angry_talk.png variants
         talk: true             # mouth flap driven by THIS shot's audio
         talk_threshold: 0.28   # raise if the mouth flaps on breaths
+        clip: wave             # stock/override clip (rigged characters);
+                               # or clips: [{name, t, amp, period}, ...]
+        no_walk: true          # suppress the automatic walk on a slide
         moves:
           - {type: slide, from: [-0.2, 0.74], to: [0.34, 0.74], t: [0, 1.4]}
           - {type: waddle, amp: 3, period: 0.5}
@@ -222,15 +305,16 @@ shots:
 |---|---|---|
 | `slide` | eased move between two positions | `from`, `to`, `t: [start, end]` seconds |
 | `bob` | gentle vertical bounce | `amp` (fraction of height), `period` |
-| `waddle` | rocking rotation — combine with slide for a walk | `amp` (degrees), `period` |
+| `waddle` | rocking rotation — the walk for unrigged characters | `amp` (degrees), `period` |
 | `hop` | bigger bounce | `amp`, `period` |
 | `shake` | nervous horizontal tremble | `amp` |
 | `pop` | scale up from nothing at shot start | `t` |
 | `lean` | ease into a tilt | `deg`, `t` |
 
 Everything wobbles slightly anyway (`boil`), and characters blink on their
-own if a `blink.png` exists. Mouth flaps come from the loudness envelope of
-the shot's audio — no keyframing, ever.
+own if a `blink.png` exists — or if their eyes are declared (see the
+rigging section: stock blinks need no drawing at all). Mouth flaps come
+from the loudness envelope of the shot's audio — no keyframing, ever.
 
 ## Ingest tips
 

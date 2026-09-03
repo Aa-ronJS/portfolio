@@ -1,0 +1,14 @@
+{
+  "joint_radius": 0.018,
+  "bones": [
+    {"name": "torso", "head": [0.44, 0.705], "tail": [0.44, 0.462]},
+    {"name": "head", "head": [0.44, 0.462], "tail": [0.445, 0.20],
+     "parent": "torso"},
+    {"name": "arm_l", "head": [0.306, 0.515], "tail": [0.326, 0.712],
+     "parent": "torso"},
+    {"name": "arm_r", "head": [0.579, 0.52], "tail": [0.562, 0.717],
+     "parent": "torso"},
+    {"name": "leg_l", "head": [0.398, 0.715], "tail": [0.389, 0.935]},
+    {"name": "leg_r", "head": [0.491, 0.715], "tail": [0.514, 0.935]}
+  ]
+}
