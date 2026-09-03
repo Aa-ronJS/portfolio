@@ -442,6 +442,40 @@ to his hand; the pan pointed opposite to his shoes"):
   − screen-left. When in doubt, pose the rig and LOOK — two of these
   signs were misremembered twice this session.
 
+The frame-audit round (Aaron: "I suspect you aren't examining each
+frame, because otherwise you would surely know it looks bad"). He was
+right: verification had been 250px thumbnails sampled every ~0.4s,
+graded generously. THE STANDARD NOW: extract EVERY frame of a shot at
+readable size (6-up sheets, ~430px cells) and read them all; measure
+positions with debug crosses instead of estimating; and verify a new
+pose by posing the rig directly BEFORE rendering an episode. That
+pass found, in one 12s episode: knee joints tearing open (split-leg
+overlap was too thin at deep folds — now 0.045H in put_leg), a
+"kneel" that was actually the splits (rewritten: front thigh up +
+foot planted, back knee down + shin flat behind), a roll that was a
+flailing ragdoll ending in a visible REVERSE-flip (the root rot had
+no unwind key, so the clip-window edge ramp scaled 360→0 through
+upside-down — a full-turn channel must step back to 0 inside the
+clip, which is invisible, never be ramped), characters popping out
+of poses at every cut (a clip window that starts or ends at the shot
+edge ramps there — held poses need windows past the edges, [-1, 9]),
+a disarm where a severed forearm floated while the gun teleported
+thigh-to-thigh, a muzzle flash on the victim's hair (image actors
+anchor at BOTTOM-centre by default — set anchor [0.5, 0.5] for
+centred effects), and a corpse with no blood on it.
+
+Mechanics that landed with the fixes: reach/props/shapes now engage
+the rigged path WITHOUT a clip (an actor can hold a gun on someone
+while standing still — previously all three were silently ignored
+unless a clip was playing); a handoff is two reaches and two prop
+windows meeting at one instant, with BOTH hands at the grip when it
+swaps; doug's grab uses arm_l (the verbatim left-art on arm_r
+detaches visibly at big rotations — keep doug's arm_r rotations
+small until he has drawn right arms); gun-holding hands use the
+`straight` shape (the point art's finger pokes past the muzzle);
+sugar's kneeling face sits at canvas y≈0.55 (measured, not the
+estimated 0.48 — kneel drops more than back-of-envelope says).
+
 Discussed but unbuilt: per-character close-up
 framing in `char.json` (the directed close-up currently assumes a
 humanoid head at `at: [0.5, 1.35], scale: 1.5`); pose changes and

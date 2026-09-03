@@ -439,7 +439,11 @@ class Rig:
             class _Span:  # the whole hip->ankle line, for registration
                 head, tail = bu.head, bl.tail
             rimg, (ox, oy) = self._register(img, dots, _Span)
-            ov = int(round(0.022 * self.H))
+            # generous overlap: at a deep knee fold (a kneel's +90
+            # shin) a thin sliver rotates away and the joint tears —
+            # frame-level review caught visible thigh/shin gaps at
+            # 0.022
+            ov = int(round(0.045 * self.H))
             cut_hi = max(1, min(rimg.height - 1,
                                 int(round(bu.tail[1] + ov - oy))))
             cut_lo = max(1, min(rimg.height - 1,

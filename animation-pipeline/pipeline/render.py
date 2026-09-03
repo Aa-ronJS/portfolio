@@ -454,6 +454,13 @@ class EpisodeRenderer:
             specs = self._clip_specs(c, a, s["duration"]) \
                 if rigged_ok else []
             fighting = rigged_ok and j in duels
+            # reach, props and shape pins are rig features: an actor
+            # using any of them takes the rigged path even with no
+            # clip (a character can hold a gun on someone while
+            # standing perfectly still)
+            rig_extras = rigged_ok and (a.get("reach") or
+                                        a.get("props") or
+                                        a.get("shapes"))
             if rig_pose and not specs:
                 raise SystemExit(
                     f"pose '{rig_pose}' lives on {c.folder}'s kit head, "
@@ -525,7 +532,7 @@ class EpisodeRenderer:
                     s["env"], s["env_rate"], s["frames"], self.fps,
                     style=a.get("talk_style", self.talk_style),
                     thr=a.get("talk_threshold", 0.28))
-            if specs or fighting:
+            if specs or fighting or rig_extras:
                 rig = c.rig
                 can_blink = "blink" in c.layers or face.get("eyes")
                 # props ride a bone: a gun in the hand, a rope round the

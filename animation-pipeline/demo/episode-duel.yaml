@@ -1,9 +1,16 @@
 # The duel: sugar kneels and shoots at doug; doug forward-rolls under
-# the shot, takes the gun off him, and ends the argument. Everything is
-# staged from existing machinery — clips stack (kneel + aim), the gun
-# is a prop that changes hands via its t windows across a cut, the
-# muzzle flash is a two-frame `appear`, the fall is a `lean` about the
-# feet, and the blood is a splat (appear + pop) and a pool (pop).
+# the shot, takes the gun off him, and ends the argument. Staged from
+# existing machinery — clips stack (kneel + aim), the gun changes hands
+# via its prop t windows meeting at the grab (both hands are AT the
+# grip when it swaps, so nothing teleports), the muzzle flash is a
+# two-frame `appear`, the fall is a `lean` about the feet, and the
+# blood is a splat riding the victim's torso plus a floor pool.
+#
+# Window habits learned frame-by-frame: a clip window that ends at (or
+# starts at) the shot edge RAMPS there — the character visibly pops out
+# of the pose before the cut. Held poses use windows past the edges
+# ([-1, 9]); a ramp is kept only where the settle is the acting (sugar
+# kneeling down in shot 1, his legs going limp mid-fall in shot 3).
 #
 # Render:   python3 pipeline/render.py demo/episode-duel.yaml
 
@@ -21,7 +28,7 @@ defaults:
   caption_y: 0.84
 
 shots:
-  # 1 — sugar kneels and fires; doug rolls under it.
+  # 1 — sugar kneels, draws, and fires; doug tucks and rolls under it.
   - bg: backgrounds/chipshop.png
     duration: 3.4
     caption: sugar brought a gun
@@ -35,29 +42,32 @@ shots:
         scale: 0.46
         flip: true
         clips:
-          - {name: kneel, t: [0.2, 3.4]}
-          - {name: aim, t: [0.7, 3.4]}
+          - {name: kneel, t: [0.2, 9]}
+          - {name: aim, t: [0.7, 9]}
         props:
           - img: props/gun.png
             flip: true
             bone: arm_r
             anchor: [0.22, 0.42]
-            size: 0.13
+            size: 0.11
             rot: 90
+            t: [0.55, 9]
       - image: props/flash.png
-        at: [0.47, 0.565]
+        at: [0.45, 0.615]
+        anchor: [0.5, 0.5]
         scale: 0.07
         appear: [1.35, 1.55]
       - char: doug
-        at: [0.42, 0.76]
+        at: [0.36, 0.76]
         scale: 0.46
         flip: false
         clip: {name: roll, t: [1.45, 2.5]}
         moves:
-          - {type: slide, from: [0.14, 0.76], to: [0.42, 0.76], t: [1.45, 2.45]}
+          - {type: slide, from: [0.12, 0.76], to: [0.36, 0.76], t: [1.45, 2.45]}
 
-  # 2 — the disarm: doug's hand goes to the gun; the gun changes hands
-  # (prop t windows meeting at the cut of his grab).
+  # 2 — the disarm: doug's hand goes to the gun's grip, and the gun
+  # swaps owners while both hands are on it; he raises it to sugar's
+  # face, stopping short.
   - bg: backgrounds/chipshop.png
     duration: 2.8
     caption: doug relieved him of it
@@ -67,36 +77,37 @@ shots:
         scale: 0.46
         flip: true
         clips:
-          - {name: kneel, t: [0.0, 2.8]}
-          - {name: aim, t: [0.0, 1.15]}
-          - {name: shake, t: [1.5, 2.8]}
+          - {name: kneel, t: [-1, 9]}
+          - {name: aim, t: [-1, 1.5]}
+          - {name: shake, t: [1.6, 9]}
         props:
           - img: props/gun.png
             flip: true
             bone: arm_r
             anchor: [0.22, 0.42]
-            size: 0.13
+            size: 0.11
             rot: 90
             t: [0.0, 1.15]
       - char: doug
-        at: [0.40, 0.76]
+        at: [0.38, 0.76]
         scale: 0.46
         flip: false
-        clips:
-          - {name: aim, t: [1.3, 2.8]}
+        shapes: {arm_l: straight}
         reach:
-          - {bone: arm_r, to: [0.50, 0.50], t: [0.35, 1.15]}
+          - {bone: arm_l, to: [0.505, 0.61], t: [0.35, 1.3]}
+          - {bone: arm_l, to: [0.503, 0.55], t: [1.45, 9]}
         props:
           - img: props/gun.png
             flip: true
-            bone: arm_r
+            bone: arm_l
             anchor: [0.22, 0.42]
-            size: 0.13
+            size: 0.11
             rot: 90
-            t: [1.15, 2.8]
+            t: [1.15, 9]
 
-  # 3 — the argument concludes. splat on the chest, timber about the
-  # feet, camera shake on the bang.
+  # 3 — the argument concludes: bang, splat riding the chest, the limbs
+  # go limp mid-fall (kneel window ends under the lean) so he timbers
+  # straight.
   - bg: backgrounds/chipshop.png
     duration: 3.2
     caption: the argument concluded
@@ -110,17 +121,19 @@ shots:
         at: [0.30, 0.76]
         scale: 0.46
         flip: false
-        clips:
-          - {name: aim, t: [0.0, 3.2]}
+        shapes: {arm_l: straight}
+        reach:
+          - {bone: arm_l, to: [0.543, 0.552], t: [-1, 9]}
         props:
           - img: props/gun.png
             flip: true
-            bone: arm_r
+            bone: arm_l
             anchor: [0.22, 0.42]
-            size: 0.13
+            size: 0.11
             rot: 90
       - image: props/flash.png
-        at: [0.55, 0.545]
+        at: [0.648, 0.545]
+        anchor: [0.5, 0.5]
         scale: 0.07
         appear: [1.05, 1.25]
       - char: sugar
@@ -128,8 +141,8 @@ shots:
         scale: 0.46
         flip: true
         clips:
-          - {name: kneel, t: [0.0, 3.2]}
-          - {name: shake, t: [0.0, 1.1]}
+          - {name: kneel, t: [-1, 1.35]}
+          - {name: shake, t: [-1, 1.1]}
         moves:
           - {type: lean, deg: 84, t: [1.2, 1.8]}
         props:
@@ -139,24 +152,30 @@ shots:
             at: [0.505, 0.52]
             anchor: [0.5, 0.5]
             size: 0.17
-            t: [1.12, 3.2]
+            t: [1.12, 9]
 
-  # 4 — aftermath: the corpse, the pool, the iris.
+  # 4 — aftermath: the corpse (splat still on the shirt), the pool, the
+  # iris.
   - bg: backgrounds/chipshop.png
     duration: 3.0
     caption: doug won the argument
     iris: {t: [1.5, 2.9], at: [0.60, 0.77], r0: 1.15, r1: 0.09}
     actors:
       - image: props/pool.png
-        at: [0.60, 0.815]
-        scale: 0.068
+        at: [0.58, 0.835]
+        scale: 0.095
         moves:
-          - {type: pop, t: [0.2, 1.4]}
+          - {type: pop, t: [0.2, 1.2]}
       - char: sugar
         at: [0.40, 0.785]
         scale: 0.46
         rotate: 84
         still: true
+      - image: props/splat.png
+        at: [0.625, 0.785]
+        anchor: [0.5, 0.5]
+        scale: 0.075
+        rotate: 40
       - char: doug
         at: [0.22, 0.76]
         scale: 0.46
