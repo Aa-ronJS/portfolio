@@ -220,6 +220,25 @@ shirt text is the accepted cost, the owner decides. When reviewing
 motion, extract actual frames and read the channel values alongside
 them; the flamingo was invisible in stills picked at random.
 
+Knees are real (Aaron's call: "just add a knee anchor point"): kit
+BONES carry leg_X_upper/leg_X_lower with the knee at 48% of the
+hip->ankle span (KNEE_F), the template's straight-leg boxes print a
+third knee dot, and the kit loader registers the straight leg onto the
+full span then splits it at the knee line with overlap — bent-leg
+drawings are ignored on two-piece rigs (the joint replaces them; they
+remain the fallback for one-piece rigs, and arms stay one-piece).
+Clips drive knees through the _lower channels (kneel folds the shin
+under, sit hangs shins, run kicks heels); the auto-fit translates each
+leg's upper+lower together. TRAP, learned the hard way: a character's
+committed sheet.jpg matches the TEMPLATE LAYOUT IT WAS DRAWN ON —
+sugar's is the 11-cell v2 — and re-ingesting it after a layout change
+mis-slices every cell. Never re-ingest an old sheet with a newer
+layout; edit the character's rig.json/parts directly instead (the knee
+upgrade was done that way). And CHECK WORK VISUALLY, HARD: full
+frames, several phases per move, a ground line under the feet, zoomed
+joints — Aaron has caught flamingo legs, floating pockets, backwards
+knees and sunk shins from single glances at renders that "passed".
+
 The movement library (2026-09-03, same session): eleven more stock
 clips — run, jump, sit, kneel, skip, climb, cartwheel, backflip, aim,
 aim2, fry — plus bone-attached PROPS (actor `props:`: an image pinned

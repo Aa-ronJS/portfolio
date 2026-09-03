@@ -382,10 +382,17 @@ class Rig:
         rig.json "parts" entry {"<file>": {"a": [x,y], "b": [x,y]}}
         with coordinates normalised to that part image.
         """
-        if any(b.endswith(("_upper", "_lower")) for b in self.bones):
+        if any(b.startswith("arm") and b.endswith(("_upper", "_lower"))
+               for b in self.bones):
             raise SystemExit(
-                "drawn kits support one-piece limbs only (arm_l, leg_r "
-                "...); this rig has _upper/_lower bones")
+                "drawn kits support one-piece ARMS only; this rig has "
+                "arm _upper/_lower bones")
+        # legs MAY be two-piece: leg_l_upper (hip->knee) + leg_l_lower
+        # (knee->ankle). The straight leg drawing is registered onto the
+        # full hip->ankle span and split at the knee line (with overlap
+        # so the joint never tears); other leg shapes are ignored — the
+        # knee makes bent/kneel poses out of the one straight drawing.
+        self._knee_split = "leg_l_upper" in self.bones
         raw = {}
         for f in sorted(os.listdir(kit_dir)):
             if not f.lower().endswith(".png"):
@@ -420,6 +427,29 @@ class Rig:
             reg = self._register(img, dots, self.bones[bone])
             parts.setdefault(bone, {}).setdefault(shape, {})[variant] = reg
 
+        def put_leg(side, shape, img, dots):
+            up, lo = f"leg_{side}_upper", f"leg_{side}_lower"
+            if up not in self.bones:
+                put(f"leg_{side}", shape, "body", img, dots)
+                return
+            if shape != "straight":
+                return  # a real knee replaces the drawn leg shapes
+            bu, bl = self.bones[up], self.bones[lo]
+
+            class _Span:  # the whole hip->ankle line, for registration
+                head, tail = bu.head, bl.tail
+            rimg, (ox, oy) = self._register(img, dots, _Span)
+            ov = int(round(0.022 * self.H))
+            cut_hi = max(1, min(rimg.height - 1,
+                                int(round(bu.tail[1] + ov - oy))))
+            cut_lo = max(1, min(rimg.height - 1,
+                                int(round(bu.tail[1] - ov - oy))))
+            parts.setdefault(up, {}).setdefault("straight", {})["body"] = \
+                (rimg.crop((0, 0, rimg.width, cut_hi)), (ox, oy))
+            parts.setdefault(lo, {}).setdefault("straight", {})["body"] = \
+                (rimg.crop((0, cut_lo, rimg.width, rimg.height)),
+                 (ox, oy + cut_lo))
+
         for stem, (img, dots) in raw.items():
             t = stem.split("_")
             if t[0] == "torso":
@@ -433,7 +463,14 @@ class Rig:
                 shape = "_".join(t[2:] if side else t[1:]) or "straight"
                 if side:
                     # explicit-side art, used verbatim
-                    put(f"{t[0]}_{side}", shape, "body", img, dots)
+                    if t[0] == "leg":
+                        put_leg(side, shape, img, dots)
+                    else:
+                        put(f"{t[0]}_{side}", shape, "body", img, dots)
+                elif t[0] == "leg":
+                    put_leg("l", shape, img, dots)
+                    if f"leg_r_{shape}" not in raw:
+                        put_leg("r", shape, img, dots)
                 else:
                     # NOTHING is ever mirrored: a mirrored limb bends
                     # its joints backward and points its shoe against

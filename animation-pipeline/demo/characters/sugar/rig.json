@@ -49,26 +49,50 @@
       "parent": "torso"
     },
     {
-      "name": "leg_l",
+      "name": "leg_l_upper",
       "head": [
         0.4607,
         0.6235
       ],
       "tail": [
-        0.4537,
-        0.9095
+        0.4573,
+        0.7608
       ]
     },
     {
-      "name": "leg_r",
+      "name": "leg_l_lower",
+      "head": [
+        0.4573,
+        0.7608
+      ],
+      "tail": [
+        0.4537,
+        0.9095
+      ],
+      "parent": "leg_l_upper"
+    },
+    {
+      "name": "leg_r_upper",
       "head": [
         0.5679,
         0.6235
       ],
       "tail": [
+        0.5713,
+        0.7608
+      ]
+    },
+    {
+      "name": "leg_r_lower",
+      "head": [
+        0.5713,
+        0.7608
+      ],
+      "tail": [
         0.5749,
         0.9095
-      ]
+      ],
+      "parent": "leg_r_upper"
     }
   ],
   "face": {

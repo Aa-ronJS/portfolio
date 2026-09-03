@@ -102,9 +102,16 @@ BONES = [
      "parent": "torso"},
     {"name": "arm_r", "head": [0.637, 0.442], "tail": [0.669, 0.629],
      "parent": "torso"},
-    {"name": "leg_l", "head": [0.414, 0.641], "tail": [0.407, 0.927]},
-    {"name": "leg_r", "head": [0.586, 0.641], "tail": [0.593, 0.927]},
+    {"name": "leg_l_upper", "head": [0.414, 0.641],
+     "tail": [0.4106, 0.7783]},
+    {"name": "leg_l_lower", "head": [0.4106, 0.7783],
+     "tail": [0.407, 0.927], "parent": "leg_l_upper"},
+    {"name": "leg_r_upper", "head": [0.586, 0.641],
+     "tail": [0.5894, 0.7783]},
+    {"name": "leg_r_lower", "head": [0.5894, 0.7783],
+     "tail": [0.593, 0.927], "parent": "leg_r_upper"},
 ]
+KNEE_F = 0.48   # knee anchor: fraction of the hip->ankle span
 FACE = {"bone": "head",
         "eyes": [{"at": [0.4424, 0.2613], "r": 0.017},
                  {"at": [0.5527, 0.2613], "r": 0.017}],
@@ -131,6 +138,15 @@ def cell_dots(name):
         dx = 0.55 * w if "_r_" in name else 0.45 * w  # room to curve in
         return (x0 + dx, y0 + 0.08 * h), (x0 + dx, y0 + 0.78 * h)
     return (x0 + 0.45 * w, y0 + 0.08 * h), (x0 + 0.45 * w, y0 + 0.80 * h)
+
+
+def cell_extra_dots(name):
+    """The knee anchor on straight-leg boxes: draw the knee AT this dot
+    and the leg splits there into thigh + shin with a real joint."""
+    if name.startswith("leg") and name.endswith("straight"):
+        A, B = cell_dots(name)
+        return [(A[0], A[1] + KNEE_F * (B[1] - A[1]))]
+    return []
 
 
 # ---------------------------------------------------------------- ghosts
@@ -269,7 +285,7 @@ def cmd_template(args):
                fill=LABEL_INK)
         A, B = cell_dots(name)
         draw_ghost(d, name, A, B)
-        for (px, py) in (A, B):
+        for (px, py) in [A, B] + cell_extra_dots(name):
             d.ellipse([px - DOT_R, py - DOT_R, px + DOT_R, py + DOT_R],
                       fill=(225, 30, 30))
     if args.out.lower().endswith(".pdf"):
@@ -355,7 +371,7 @@ def cmd_ingest(args):
     dots = np.zeros(arr.shape[:2], dtype=bool)
     R = int(3.4 * DOT_R) + 2
     for name in CELLS:
-        for (px, py) in cell_dots(name):
+        for (px, py) in list(cell_dots(name)) + cell_extra_dots(name):
             x0, y0 = int(px) - R, int(py) - R
             win = arr[y0:y0 + 2 * R, x0:x0 + 2 * R]
             wy, wx = np.mgrid[0:win.shape[0], 0:win.shape[1]]
@@ -460,17 +476,22 @@ def cmd_ingest(args):
             w2 = r2 - l2
             if w2 > 0.12 * BODY_W and bot > 0.4 * BODY_H:
                 refit = True
+                # translate each leg (upper + lower together) so its
+                # hip lands tucked behind the torso bottom
                 new_y = (bot - 0.02 * BODY_H) / BODY_H
-                for b in bones:
-                    if b["name"].startswith("leg"):
-                        dy = new_y - b["head"][1]
-                        b["head"][1] = round(new_y, 4)
-                        b["tail"][1] = round(b["tail"][1] + dy, 4)
-                        newx = (l2 + 0.24 * w2 if b["name"] == "leg_l"
-                                else r2 - 0.24 * w2) / BODY_W
-                        dx = newx - b["head"][0]
-                        b["head"][0] = round(newx, 4)
-                        b["tail"][0] = round(b["tail"][0] + dx, 4)
+                for side in ("l", "r"):
+                    hip = next(b for b in bones
+                               if b["name"] == f"leg_{side}_upper")
+                    newx = (l2 + 0.24 * w2 if side == "l"
+                            else r2 - 0.24 * w2) / BODY_W
+                    dx = newx - hip["head"][0]
+                    dy = new_y - hip["head"][1]
+                    for b in bones:
+                        if b["name"].startswith(f"leg_{side}"):
+                            b["head"][0] = round(b["head"][0] + dx, 4)
+                            b["head"][1] = round(b["head"][1] + dy, 4)
+                            b["tail"][0] = round(b["tail"][0] + dx, 4)
+                            b["tail"][1] = round(b["tail"][1] + dy, 4)
                 # aim each pocket arm at a pocket anchor on the pelvis,
                 # so the stub swings INTO the torso instead of hanging
                 # in the air beside it

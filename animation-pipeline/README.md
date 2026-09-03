@@ -220,7 +220,11 @@ whole workflow; everything below is what the template is doing for
 you, and how to build a kit freehand without it.
 
 **The one trick: put the two red dots down first, then draw the part
-around them.** Dot 1 is the joint (where the part attaches), dot 2 is
+around them.** Straight-leg boxes carry a THIRD dot — the knee anchor:
+draw the knee at that dot and the leg splits there into a thigh and a
+shin with a real joint, so walks bend knees, kneels fold the shin
+under, and sits drop the shins — all from the one straight drawing
+(the bent-leg boxes then only serve one-piece rigs). Dot 1 is the joint (where the part attaches), dot 2 is
 the reach (where the *straight* version of that limb ends). Use a red
 pen; keep the dots the same distance apart for every version of the
 same limb — that's what keeps proportions steady when the walk swaps a
