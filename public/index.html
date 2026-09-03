@@ -6,6 +6,9 @@
 <title>Aaron Steele</title>
 <meta name="description" content="Business analyst since 2015 who also builds the thing. HubSpot, Salesforce, Zoho, Zapier, Make, n8n and AI agents. Usually this takes two people.">
 <meta name="theme-color" content="#12181f">
+<link rel="manifest" href="/manifest.webmanifest">
+<link rel="icon" type="image/png" sizes="192x192" href="/icons/icon-192.png">
+<link rel="apple-touch-icon" href="/icons/icon-192.png">
 <link rel="preload" as="font" type="font/woff2" href="/fonts/clash-display-var.woff2" crossorigin>
 <link rel="preload" as="font" type="font/woff2" href="/fonts/satoshi-var.woff2" crossorigin>
 <link rel="preload" as="image" href="/img/aaron.jpg" fetchpriority="high">
@@ -864,6 +867,11 @@ a{color:inherit}
         el.textContent = 'did not answer from here';
       });
   });
+
+  /* Offline copy of the whole site, so it installs as an app. */
+  if ('serviceWorker' in navigator) {
+    addEventListener('load', function () { navigator.serviceWorker.register('/sw.js'); });
+  }
 })();
 </script>
 </body>
