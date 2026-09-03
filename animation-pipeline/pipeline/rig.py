@@ -223,8 +223,13 @@ class Rig:
         # rest visible height, for clip dx/dy scaling and stable sizing
         a = np.asarray(body.getchannel("A"), dtype=np.uint8)
         ys, xs = np.nonzero(a > 24)
-        self.rest_bbox = (int(xs.min()), int(ys.min()),
-                          int(xs.max()) + 1, int(ys.max()) + 1)
+        if len(xs) == 0:
+            # a stub body: the kit splitter assembles body.png by
+            # posing the parts, so it hands in a transparent canvas
+            self.rest_bbox = (0, 0, self.W, self.H)
+        else:
+            self.rest_bbox = (int(xs.min()), int(ys.min()),
+                              int(xs.max()) + 1, int(ys.max()) + 1)
         self.rest_h = self.rest_bbox[3] - self.rest_bbox[1]
         self.pad = int(round(0.3 * self.H))
         # parts: {bone: {shape: {variant: (img, (ox, oy))}}} in source

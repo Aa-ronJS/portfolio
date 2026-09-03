@@ -27,14 +27,16 @@ import numpy as np
 from PIL import Image, ImageFilter, ImageOps
 
 
-def ingest(src, dst, max_dim=1600, crop=True, feather=1.2,
-           paper_cut=0.14, line_cut=0.35, fill_holes=True):
-    im = ImageOps.exif_transpose(Image.open(src)).convert("RGB")
-    if max(im.size) > max_dim:
-        k = max_dim / max(im.size)
-        im = im.resize((round(im.width * k), round(im.height * k)),
-                       Image.LANCZOS)
-    a = np.asarray(im).astype(np.float32) / 255.0
+def clean(im, feather=1.2, paper_cut=0.14, line_cut=0.35,
+          fill_holes=True):
+    """The core cleanup: RGB image of a drawing on paper -> RGBA.
+
+    Paper colour is estimated from the border and divided out, paper
+    goes transparent, near-black snaps to ink, colours flatten. Shared
+    by the single-drawing ingest below and the kit-sheet splitter
+    (pipeline/kit.py).
+    """
+    a = np.asarray(im.convert("RGB")).astype(np.float32) / 255.0
 
     # Paper colour = median of the outer 4% border on each side.
     b = max(2, int(min(a.shape[:2]) * 0.04))
@@ -79,6 +81,18 @@ def ingest(src, dst, max_dim=1600, crop=True, feather=1.2,
         al = img.getchannel("A").filter(
             ImageFilter.GaussianBlur(feather))
         img.putalpha(al)
+    return img
+
+
+def ingest(src, dst, max_dim=1600, crop=True, feather=1.2,
+           paper_cut=0.14, line_cut=0.35, fill_holes=True):
+    im = ImageOps.exif_transpose(Image.open(src)).convert("RGB")
+    if max(im.size) > max_dim:
+        k = max_dim / max(im.size)
+        im = im.resize((round(im.width * k), round(im.height * k)),
+                       Image.LANCZOS)
+    img = clean(im, feather=feather, paper_cut=paper_cut,
+                line_cut=line_cut, fill_holes=fill_holes)
 
     if crop:
         bbox = img.getchannel("A").point(lambda v: 255 if v > 24 else 0) \

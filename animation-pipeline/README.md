@@ -198,6 +198,25 @@ deserves a **kit**: each part its own small drawing in a `parts/`
 folder. Nothing is cut, nothing tears, and an expression change only
 needs a new head, not a new body.
 
+**The fast path is the printed template.** Print
+`tools/kit_template.pdf` (A4, 100% scale — or regenerate it with
+`python3 pipeline/kit.py template sheet.pdf`), draw one character into
+the boxes with marker — the red joint dots and pale blue proportion
+ghosts are already placed, boxes marked optional may stay empty —
+photograph it flat with all four corner squares in frame, then:
+
+```bash
+python3 pipeline/kit.py ingest photo.jpg myshow/characters/gary
+python3 pipeline/rig.py preview myshow/characters/gary walk.gif
+```
+
+The photo is straightened off the corner squares, cleaned, and split
+into a complete character folder: `parts/*.png`, `rig.json` (skeleton,
+pivots, face anchors), `char.json`, and an assembled `body.png`. The
+character walks, talks, blinks and points immediately. That is the
+whole workflow; everything below is what the template is doing for
+you, and how to build a kit freehand without it.
+
 **The one trick: put the two red dots down first, then draw the part
 around them.** Dot 1 is the joint (where the part attaches), dot 2 is
 the reach (where the *straight* version of that limb ends). Use a red
