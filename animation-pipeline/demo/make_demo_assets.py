@@ -535,6 +535,68 @@ def fight_foley():
           "(placeholder synths — replace with mouth foley)")
 
 
+def duel_fx():
+    """Placeholder gunfight dressing: blood splat, blood pool, muzzle
+    flash, and a bang. Same rule as everything here — crude stand-ins
+    to be replaced by real drawings and a real recorded bang."""
+    r = random.Random(23)
+    # splat: red starburst, no outline — blood is not a drawn object
+    im = Image.new("RGBA", (420, 420), (0, 0, 0, 0))
+    d = ImageDraw.Draw(im)
+    cx, cy = 210, 210
+    for red, k in (((160, 24, 18, 255), 1.0), ((205, 40, 30, 255), 0.62)):
+        pts = []
+        for i in range(26):
+            a = i / 26 * 2 * math.pi
+            rad = (55 + r.uniform(0, 105) * (i % 2)) * k
+            pts.append((cx + rad * math.cos(a), cy + rad * math.sin(a)))
+        d.polygon(pts, fill=red)
+    for _ in range(9):
+        a = r.uniform(0, 2 * math.pi)
+        dist = r.uniform(120, 190)
+        rad = r.uniform(7, 16)
+        x, y = cx + dist * math.cos(a), cy + dist * math.sin(a)
+        d.ellipse([x - rad, y - rad, x + rad, y + rad],
+                  fill=(160, 24, 18, 255))
+    im.save(os.path.join(HERE, "props", "splat.png"))
+
+    # pool: a flat dark puddle with a wobbled edge
+    im = Image.new("RGBA", (760, 240), (0, 0, 0, 0))
+    d = ImageDraw.Draw(im)
+    pts = []
+    for i in range(34):
+        a = i / 34 * 2 * math.pi
+        rx = 340 + r.uniform(-28, 28)
+        ry = 88 + r.uniform(-14, 14)
+        pts.append((380 + rx * math.cos(a), 120 + ry * math.sin(a)))
+    d.polygon(pts, fill=(120, 16, 12, 255))
+    im.save(os.path.join(HERE, "props", "pool.png"))
+
+    # muzzle flash: two frames of yellow star
+    im = Image.new("RGBA", (260, 260), (0, 0, 0, 0))
+    d = ImageDraw.Draw(im)
+    pts = []
+    for i in range(16):
+        a = i / 16 * 2 * math.pi
+        rad = 120 if i % 2 == 0 else 45
+        pts.append((130 + rad * math.cos(a), 130 + rad * math.sin(a)))
+    d.polygon(pts, fill=(255, 214, 64, 255))
+    d.ellipse([95, 95, 165, 165], fill=(255, 245, 200, 255))
+    im.save(os.path.join(HERE, "props", "flash.png"))
+
+    # bang: crack + boom
+    sr = 44100
+    n = int(0.45 * sr)
+    t = np.arange(n) / sr
+    rr = np.random.default_rng(5)
+    crack = rr.standard_normal(n).astype(np.float32) * np.exp(-t * 34)
+    boom = np.sin(2 * np.pi * (70 - 35 * t / t[-1]) * t) * np.exp(-t * 9)
+    os.makedirs(os.path.join(HERE, "sfx"), exist_ok=True)
+    _wav(os.path.join(HERE, "sfx", "bang.wav"),
+         np.clip(crack * 0.9 + boom * 0.8, -1, 1))
+    print("props: splat, pool, flash; sfx/bang.wav (gunfight placeholders)")
+
+
 def main():
     for name, fn, variants in [
             ("stan", stan, ["body", "talk", "blink"]),
@@ -549,6 +611,7 @@ def main():
     make_doug()
     make_props()
     fight_foley()
+    duel_fx()
 
     os.makedirs(os.path.join(HERE, "backgrounds"), exist_ok=True)
     chipshop().save(os.path.join(HERE, "backgrounds", "chipshop.png"))

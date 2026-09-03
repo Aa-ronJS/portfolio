@@ -154,7 +154,10 @@ shots:
             size: 0.13
             rot: -90
 
-  # 10 — armed, both hands: same gun, bladed stance, support hand up.
+  # 10 — armed, both hands: same gun, bladed stance — and the support
+  # hand actually GRIPS it: the reach targets a point on the prop
+  # itself, so wherever the gun arm sways, the second hand stays on
+  # the grip.
   - bg: backgrounds/chipshop.png
     duration: 2.2
     caption: armed (both hands, serious)
@@ -163,6 +166,9 @@ shots:
         at: [0.55, 0.76]
         scale: 0.46
         clip: aim2
+        shapes: {arm_r: point}
+        reach:
+          - {bone: arm_r, to: {prop: 0, at: [0.72, 0.70]}}
         props:
           - img: props/gun.png
             bone: arm_l
@@ -184,19 +190,21 @@ shots:
         props:
           - img: props/pan.png
             bone: arm_l
-            at: [0.52, 0.565]
+            at: [0.398, 0.629]
             anchor: [0.88, 0.5]
             size: 0.115
-            rot: -30
+            rot: 50
 
   # 12 — the door: he walks up, his hand goes to the handle (reaching
-  # and stretching until it touches), the door slides open, he leaves.
+  # and stretching until it touches), he slides it open — hand still on
+  # it as it starts to move — and walks out through the doorway.
+  # BOTH actors obey the slide rule: `at` equals the last slide's `to`.
   - bg: backgrounds/chipshop.png
     duration: 3.8
     caption: he opens the door by hand
     actors:
       - image: props/door.png
-        at: [0.70, 0.62]
+        at: [1.08, 0.62]
         anchor: [0.5, 0.5]
         scale: 0.72
         moves:
@@ -204,9 +212,11 @@ shots:
       - char: sugar
         at: [1.30, 0.76]
         scale: 0.46
-        clip: {name: walk, t: [0.2, 1.0]}
+        clips:
+          - {name: walk, t: [0.2, 1.0]}
+          - {name: walk, t: [2.5, 3.6]}
         reach:
-          - {bone: arm_l, to: [0.849, 0.627], t: [1.1, 1.9]}
+          - {bone: arm_l, to: [0.849, 0.627], t: [1.1, 2.15]}
         moves:
           - {type: slide, from: [0.15, 0.76], to: [0.60, 0.76], t: [0.2, 1.0]}
           - {type: slide, from: [0.60, 0.76], to: [1.30, 0.76], t: [2.5, 3.6]}
@@ -223,10 +233,10 @@ shots:
         props:
           - img: props/pan.png
             bone: arm_l
-            at: [0.52, 0.565]
+            at: [0.398, 0.629]
             anchor: [0.88, 0.5]
             size: 0.115
-            rot: -30
+            rot: 50
             drop: {at: 1.1, spin: 300}
 
   # 14 — attention: whoever talks gets looked at, automatically.

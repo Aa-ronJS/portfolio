@@ -370,6 +370,51 @@ the silence before it. NOTE: make_demo_assets is NOT re-run-stable
 placeholder PNG with new wobble — when adding a generator, run only
 the new function via importlib and `git checkout --` any art churn.
 
+Aaron's audit round ("the door was absolutely mangled; he fries with
+his arm behind him; the second hand never connected with the gun"):
+- The chained-slide `at` trap bit AGAIN, on the door IMAGE actor this
+  time (it sat at the wrong x all shot; the hand reached for a handle
+  that wasn't there; the door then slid through the standing
+  character). prep_shot now SNAPS a sliding actor's `at` to its last
+  slide's `to`, so the class of bug is gone — the rule no longer
+  needs remembering. The door shot also gained a walk cycle on the
+  exit slide and holds the handle into the door's motion.
+- Arm rotation signs, empirically (unflipped character, canonical
+  clips authored facing right): NEGATIVE arm rot swings the hanging
+  arm toward screen-LEFT and up; the old fry clip's +38..52 held the
+  pan low on the character's back side. Fry is now −46..−58 with the
+  arm shape `point` and the pan pinned at the arm bone's TAIL
+  ([0.398, 0.629] for sugar) — pinning a prop anywhere other than the
+  bone tail only works for the one rotation it was tuned at. Head
+  rot: negative tilts screen-left (fry now −10, watching the egg).
+- Reach targets can now be a point ON ONE OF THE ACTOR'S OWN PROPS
+  ({prop: i, at: [u, v]} in prop-image fractions), solved per frame
+  in body space from the carrying bone's current transform — that is
+  how aim2's support hand actually grips the gun. Cross-actor prop
+  reaches don't exist; a gun changing hands is prop `t:` windows
+  meeting at the moment of the grab (see the duel's disarm).
+- draw_frame rotation (moves rot + `rotate:` + boil) now pivots
+  exactly on the actor's ANCHOR, not the bbox — required for `lean`
+  at 90 degrees (a corpse timbering over its feet). `pop` and `lean`
+  also respect their window's START now (both used to run from shot
+  start); steven/ep01's lean timing shifts slightly on any re-render
+  — the committed mp4 predates the fix, leave it.
+
+The duel (`demo/episode-duel.yaml` → `demo/episode-duel.mp4`) is the
+first scripted ACTION sequence: sugar kneels and fires (kneel + aim
+clips STACK — pose channels are additive), doug forward-rolls under
+the shot (`roll` clip: +360 root rot travelling right; cartwheel's
+−360 travels left), the disarm is a reach to the gun plus the prop
+swapping owners via t windows, the kill is bang + two-frame `appear`
+muzzle flash + cam_shake, blood is a splat PROP riding the victim's
+torso (it must fall WITH him — a static image actor hangs in the air
+when he drops) plus a floor pool with `pop`, the fall is `lean` 84°
+about the feet, and the aftermath shot uses `rotate:` + `still:`
+(corpses don't boil) and the iris-out. Placeholder splat/pool/flash/
+bang come from make_demo_assets `duel_fx()`. Note the deliberate
+comedy physics: sugar's stacked kneel+aim points the gun slightly
+high, so his shot goes over the rolling doug — keep it.
+
 Discussed but unbuilt: per-character close-up
 framing in `char.json` (the directed close-up currently assumes a
 humanoid head at `at: [0.5, 1.35], scale: 1.5`); pose changes and

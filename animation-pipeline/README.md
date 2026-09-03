@@ -149,7 +149,8 @@ Once the rig exists:
 - **clips are stock and reusable** — `pipeline/clips/*.json` ships
   `walk`, `run`, `idle`, `wave`, `nod`, `shake`, `point`,
   `jump`, `sit`, `kneel`, `skip`, `climb`, `cartwheel`, `backflip`,
-  `aim`/`aim2` (gun up, one hand / both), `fry`, and they play on any rigged
+  `roll` (a forward roll — the dodge), `aim`/`aim2` (gun up, one hand /
+  both), `fry`, and they play on any rigged
   character whose bones use the canonical names (`torso`, `head`,
   `arm_l`, `leg_r`, … one-piece, or `arm_l_upper`/`arm_l_lower` for
   elbows and knees — a clip keyed on `arm_l_upper` lands on a one-piece
@@ -409,11 +410,16 @@ shots:
         reach:                 # a hand that uses something touches it:
           - bone: arm_l        #   the arm rotates AND STRETCHES until
             to: [0.85, 0.63]   #   the hand lands on the target — a
-            t: [1.1, 1.9]      #   canvas point, or a point on another
+            t: [1.1, 1.9]      #   canvas point, a point on another
                                #   actor: to: {actor: 0, at: [0.5, 0.3]}
                                #   (rungs, handles; grip holds while the
-                               #   character moves). stretch: false to
-                               #   cap at arm's length.
+                               #   character moves), or a point on one
+                               #   of THIS actor's own props:
+                               #   to: {prop: 0, at: [0.72, 0.70]} —
+                               #   solved per frame, so a support hand
+                               #   stays on the gun wherever the gun
+                               #   arm sways. stretch: false to cap at
+                               #   arm's length.
         look: false            # opt out of auto-gaze: characters turn
                                #   their heads toward whoever talks
         fight: {with: 1}       # brawl with actor 1 (who carries

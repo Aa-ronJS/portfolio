@@ -1,0 +1,161 @@
+# The duel: sugar kneels and shoots at doug; doug forward-rolls under
+# the shot, takes the gun off him, and ends the argument. Everything is
+# staged from existing machinery — clips stack (kneel + aim), the gun
+# is a prop that changes hands via its t windows across a cut, the
+# muzzle flash is a two-frame `appear`, the fall is a `lean` about the
+# feet, and the blood is a splat (appear + pop) and a pool (pop).
+#
+# Render:   python3 pipeline/render.py demo/episode-duel.yaml
+
+title: the duel
+size: [1080, 1920]
+fps: 12
+boil: 0.0015
+boil_every: 2
+
+defaults:
+  font: ../fonts/satoshi-var.ttf
+  caption_size: 0.042
+  caption_weight: 700
+  caption_color: [26, 26, 26]
+  caption_y: 0.84
+
+shots:
+  # 1 — sugar kneels and fires; doug rolls under it.
+  - bg: backgrounds/chipshop.png
+    duration: 3.4
+    caption: sugar brought a gun
+    cam_shake: {amp: 0.008, t: [1.35, 1.6]}
+    sfx:
+      - {file: sfx/bang.wav, at: 1.38}
+      - {file: sfx/fight/whoosh.wav, at: 1.55, gain: 0.8}
+    actors:
+      - char: sugar
+        at: [0.74, 0.76]
+        scale: 0.46
+        clips:
+          - {name: kneel, t: [0.2, 3.4]}
+          - {name: aim, t: [0.7, 3.4]}
+        props:
+          - img: props/gun.png
+            bone: arm_l
+            at: [0.395, 0.648]
+            anchor: [0.78, 0.42]
+            size: 0.13
+            rot: -90
+      - image: props/flash.png
+        at: [0.47, 0.565]
+        scale: 0.07
+        appear: [1.35, 1.55]
+      - char: doug
+        at: [0.42, 0.76]
+        scale: 0.46
+        flip: false
+        clip: {name: roll, t: [1.45, 2.5]}
+        moves:
+          - {type: slide, from: [0.14, 0.76], to: [0.42, 0.76], t: [1.45, 2.45]}
+
+  # 2 — the disarm: doug's hand goes to the gun; the gun changes hands
+  # (prop t windows meeting at the cut of his grab).
+  - bg: backgrounds/chipshop.png
+    duration: 2.8
+    caption: doug relieved him of it
+    actors:
+      - char: sugar
+        at: [0.68, 0.76]
+        scale: 0.46
+        clips:
+          - {name: kneel, t: [0.0, 2.8]}
+          - {name: aim, t: [0.0, 1.15]}
+          - {name: shake, t: [1.5, 2.8]}
+        props:
+          - img: props/gun.png
+            bone: arm_l
+            at: [0.395, 0.648]
+            anchor: [0.78, 0.42]
+            size: 0.13
+            rot: -90
+            t: [0.0, 1.15]
+      - char: doug
+        at: [0.40, 0.76]
+        scale: 0.46
+        flip: true
+        clips:
+          - {name: aim, t: [1.3, 2.8]}
+        reach:
+          - {bone: arm_l, to: [0.50, 0.50], t: [0.35, 1.15]}
+        props:
+          - img: props/gun.png
+            bone: arm_l
+            at: [0.395, 0.648]
+            anchor: [0.78, 0.42]
+            size: 0.13
+            rot: -90
+            t: [1.15, 2.8]
+
+  # 3 — the argument concludes. splat on the chest, timber about the
+  # feet, camera shake on the bang.
+  - bg: backgrounds/chipshop.png
+    duration: 3.2
+    caption: the argument concluded
+    cam_shake: {amp: 0.009, t: [1.05, 1.3]}
+    sfx:
+      - {file: sfx/bang.wav, at: 1.08}
+      - {file: sfx/fight/thud.wav, at: 1.78}
+      - {file: sfx/fight/grunt2.wav, at: 1.22, gain: 0.9}
+    actors:
+      - char: doug
+        at: [0.30, 0.76]
+        scale: 0.46
+        flip: true
+        clips:
+          - {name: aim, t: [0.0, 3.2]}
+        props:
+          - img: props/gun.png
+            bone: arm_l
+            at: [0.395, 0.648]
+            anchor: [0.78, 0.42]
+            size: 0.13
+            rot: -90
+      - image: props/flash.png
+        at: [0.575, 0.545]
+        scale: 0.07
+        appear: [1.05, 1.25]
+      - char: sugar
+        at: [0.72, 0.76]
+        scale: 0.46
+        clips:
+          - {name: kneel, t: [0.0, 3.2]}
+          - {name: shake, t: [0.0, 1.1]}
+        moves:
+          - {type: lean, deg: 84, t: [1.2, 1.8]}
+        props:
+          # the splat rides his torso, so it falls WITH him
+          - img: props/splat.png
+            bone: torso
+            at: [0.505, 0.52]
+            anchor: [0.5, 0.5]
+            size: 0.17
+            t: [1.12, 3.2]
+
+  # 4 — aftermath: the corpse, the pool, the iris.
+  - bg: backgrounds/chipshop.png
+    duration: 3.0
+    caption: doug won the argument
+    iris: {t: [1.5, 2.9], at: [0.60, 0.77], r0: 1.15, r1: 0.09}
+    actors:
+      - image: props/pool.png
+        at: [0.60, 0.815]
+        scale: 0.068
+        moves:
+          - {type: pop, t: [0.2, 1.4]}
+      - char: sugar
+        at: [0.40, 0.785]
+        scale: 0.46
+        rotate: 84
+        still: true
+      - char: doug
+        at: [0.22, 0.76]
+        scale: 0.46
+        flip: true
+        clip: idle

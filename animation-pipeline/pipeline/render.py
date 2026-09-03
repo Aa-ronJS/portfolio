@@ -184,11 +184,12 @@ def move_offset(moves, t, dur, rng_phase):
             f0, f1 = m.get("from", 1.0), m.get("to", 0.5)
             scale *= f0 + (f1 - f0) * ease(u)
         elif kind == "pop":
-            t1 = m.get("t", [0, 0.25])[1]
-            u = ease(max(0.0, min(1.0, t / max(t1, 1e-6))))
+            t0, t1 = m.get("t", [0, 0.25])
+            u = ease(max(0.0, min(1.0, (t - t0) / max(t1 - t0, 1e-6))))
             scale *= 0.2 + 0.8 * u
         elif kind == "lean":
-            rot += m.get("deg", 5.0) * ease(max(0.0, min(1.0, t / max(t1 - t0, 1e-6))))
+            rot += m.get("deg", 5.0) * \
+                ease(max(0.0, min(1.0, (t - t0) / max(t1 - t0, 1e-6))))
     return dx, dy, rot, scale
 
 
@@ -377,6 +378,19 @@ class EpisodeRenderer:
         x = (bg.width - self.W) // 2
         y = (bg.height - self.H) // 2
         s["bg"] = bg.crop((x, y, x + self.W, y + self.H))
+        # slides end where they say they end: slide offsets are deltas
+        # hung off `at`, so `at` must be the last slide's `to`. That
+        # rule has produced mangled shots twice (an actor parked
+        # off-position for the whole shot), so prep now snaps it —
+        # a sliding actor's `at` IS its final destination, and every
+        # consumer (fights, reach targets, gaze) sees the same value.
+        for a2 in shot.get("actors", []):
+            slides = [m for m in a2.get("moves", [])
+                      if m.get("type") == "slide"]
+            if slides:
+                last = max(slides,
+                           key=lambda m: (m.get("t") or [0, 0])[1])
+                a2["at"] = list(last["to"])
         # combat intents. fight: {with: k} is the mutual brawl; attack:
         # {who: k} is one-sided — "sugar wants to punch doug". Either
         # way the TARGET needs no authoring: being on the receiving end
@@ -542,15 +556,22 @@ class EpisodeRenderer:
                         "drop": pr.get("drop"),
                     })
                 # reach: a hand that uses something must touch it. The
-                # target is a canvas point or a point on another actor
+                # target is a canvas point, a point on another actor
                 # (resolved now — targets must be listed BEFORE the
-                # reacher and hold still); the arm rotates and, if
-                # needed, stretches until the hand lands on it.
+                # reacher and hold still), or a point ON ONE OF THIS
+                # ACTOR'S OWN PROPS ({prop: 0, at: [u, v]} in prop-image
+                # fractions, solved per frame — the support hand lands
+                # on the gun wherever the gun arm carries it); the arm
+                # rotates and, if needed, stretches until the hand
+                # lands on it.
                 reach = []
                 for rc in a.get("reach") or []:
                     rc = dict(rc)
                     to = rc["to"]
-                    if isinstance(to, dict):
+                    if isinstance(to, dict) and "prop" in to:
+                        rc["_prop"] = (to["prop"], to["at"][0],
+                                       to["at"][1])
+                    elif isinstance(to, dict):
                         tsp = s["sprites"][to["actor"]]
                         timg = tsp["imgs"]["body"]
                         nx, ny = to["at"]
@@ -890,16 +911,45 @@ class EpisodeRenderer:
                 bone = bone.rsplit("_", 1)[0]   # one-piece leg stands in
             if bone not in rig.bones:
                 continue
-            cx = rc["_target"][0] * self.W
-            cy = rc["_target"][1] * self.H
-            k = sp["k"] * (placement[2] or 1.0)
-            cw = k * (rig.W + 2 * rig.pad)
-            ch = k * (rig.H + 2 * rig.pad)
-            u = (cx - (placement[0] * self.W - sp["anchor"][0] * cw)) / k
-            v = (cy - (placement[1] * self.H - sp["anchor"][1] * ch)) / k
-            if sp["flip"]:
-                u = (rig.W + 2 * rig.pad) - u
-            bx, by = u - rig.pad, v - rig.pad
+            if "_prop" in rc:
+                # a point on one of this actor's own props, wherever
+                # the carrying bone has it this frame (body space, so
+                # flips need no correction) — how a support hand grips
+                # the gun the other hand is aiming
+                pi, pu, pv = rc["_prop"]
+                pr = (sp.get("props") or [None] * (pi + 1))[pi]
+                if pr is None or pr.get("drop"):
+                    continue
+                pt0, pt1 = pr["t"] or (0.0, float("inf"))
+                if not pt0 <= t <= pt1:
+                    continue
+                n = len(pr["imgs"])
+                fi = int(t / (pr["period"] / n)) % n if n > 1 else 0
+                pim = pr["imgs"][fi]["im"]
+                kp = pr["size"] * rig.rest_h / pim.height
+                ang = rig.bone_state(pr["bone"], pose)[0] \
+                    if pr["follow"] else 0.0
+                th = math.radians(ang + pr["rot"])
+                dxp = (pu - pr["anchor"][0]) * pim.width * kp
+                dyp = (pv - pr["anchor"][1]) * pim.height * kp
+                ax, ay = rig.anchor_world(pr["at"], pr["bone"], pose)
+                bx = ax + dxp * math.cos(th) - dyp * math.sin(th) \
+                    - rig.pad
+                by = ay + dxp * math.sin(th) + dyp * math.cos(th) \
+                    - rig.pad
+            else:
+                cx = rc["_target"][0] * self.W
+                cy = rc["_target"][1] * self.H
+                k = sp["k"] * (placement[2] or 1.0)
+                cw = k * (rig.W + 2 * rig.pad)
+                ch = k * (rig.H + 2 * rig.pad)
+                u = (cx - (placement[0] * self.W
+                           - sp["anchor"][0] * cw)) / k
+                v = (cy - (placement[1] * self.H
+                           - sp["anchor"][1] * ch)) / k
+                if sp["flip"]:
+                    u = (rig.W + 2 * rig.pad) - u
+                bx, by = u - rig.pad, v - rig.pad
             wang, piv, _rest = rig.bone_state(bone, pose)
             own = pose.get(bone, {}).get("rot", 0.0)
             b = rig.bones[bone]
@@ -1090,12 +1140,23 @@ class EpisodeRenderer:
                                   max(1, round(img.height * smul))),
                                  Image.LANCZOS)
             angle = rot + brot + a.get("rotate", 0)
-            if abs(angle) > 0.05:
-                img = img.rotate(-angle, resample=Image.BICUBIC, expand=True)
             ax, ay = sp["anchor"]
+            axp, ayp = ax * img.width, ay * img.height
+            if abs(angle) > 0.05:
+                # rotate ABOUT THE ANCHOR: a 90-degree lean (a corpse
+                # timbering over) pivots on the feet, not the bbox
+                w0, h0 = img.size
+                img = img.rotate(-angle, resample=Image.BICUBIC,
+                                 expand=True)
+                th = math.radians(angle)
+                rx, ry = axp - w0 / 2, ayp - h0 / 2
+                axp = rx * math.cos(th) - ry * math.sin(th) \
+                    + img.width / 2
+                ayp = rx * math.sin(th) + ry * math.cos(th) \
+                    + img.height / 2
             px, py = a.get("at", [0.5, 0.85])
-            x = round((px + dx) * self.W - ax * img.width + bx)
-            y = round((py + dy) * self.H - ay * img.height + by)
+            x = round((px + dx) * self.W - axp + bx)
+            y = round((py + dy) * self.H - ayp + by)
             frame.paste(img, (x, y), img)
         z = self.zoom_at(s, t)
         shake = s.get("cam_shake")
