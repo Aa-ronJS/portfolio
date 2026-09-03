@@ -234,11 +234,11 @@ def doug_body():
     """Assembled reference drawing, matched to the kit's proportions."""
     im = Image.new("RGBA", (700, 1100), (0, 0, 0, 0))
     d = ImageDraw.Draw(im)
-    # legs (shoes point outward, like the mirrored kit)
+    # legs (both shoes point the walk direction, like the kit)
     blob(d, (255, 653, 320, 973), D_TROUSER)
-    blob(d, (215, 948, 350, 998), D_SHOE)
+    blob(d, (245, 948, 380, 998), D_SHOE)
     blob(d, (380, 653, 445, 973), D_TROUSER)
-    blob(d, (350, 948, 485, 998), D_SHOE)
+    blob(d, (370, 948, 505, 998), D_SHOE)
     # pelvis over the leg tops, then neck + torso
     blob(d, (260, 640, 440, 712), D_TROUSER)
     # neck + torso

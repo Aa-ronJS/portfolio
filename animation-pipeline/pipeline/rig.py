@@ -202,6 +202,9 @@ class Rig:
         # face may live here instead of char.json (the rig editor
         # exports one file); char.json wins when both declare it
         self.face = data.get("face")
+        # per-shape base rotations, e.g. the kit-computed aim that
+        # swings a pocket arm into the pelvis: {"arm_l": {"pocket": -9}}
+        self.shape_rot = data.get("shape_rot") or {}
         self.bones = {}
         for bd in data.get("bones", []):
             b = Bone(bd, self.W, self.H)
@@ -434,8 +437,13 @@ class Rig:
                 else:
                     put(f"{t[0]}_l", shape, "body", img, dots)
                     if f"{t[0]}_r_{shape}" not in raw:
+                        # arms mirror; legs DON'T — a mirrored right
+                        # leg bends its knee backward and points its
+                        # shoe against the walk. Both legs wear the
+                        # drawn art; flip_to_walk turns the whole
+                        # character for the other direction.
                         put(f"{t[0]}_r", shape, "body", img, dots,
-                            mirror=True)
+                            mirror=(t[0] == "arm"))
         for need in ("torso", "head"):
             if need in self.bones and need not in parts:
                 raise SystemExit(f"{kit_dir}: a kit needs {need}.png")
@@ -494,17 +502,34 @@ class Rig:
         got = self._pose_cache.get(key)
         if got is not None:
             return got
-        world = self._world(bonevals)
+
+        def shape_for(name):
+            shapes = self.parts[name]
+            want = bonevals.get(name, {}).get("shape")
+            if want in shapes:
+                return want
+            for fb in ("straight", "default"):
+                if fb in shapes:
+                    return fb
+            return next(iter(shapes))
+
+        # a shape can carry its own base rotation (the pocket aim)
+        adj = {b: dict(ch) for b, ch in bonevals.items()}
+        for name in self.order:
+            if name not in self.parts:
+                continue
+            delta = (self.shape_rot.get(name) or {}).get(shape_for(name))
+            if delta:
+                slot = adj.setdefault(name, {})
+                slot["rot"] = slot.get("rot", 0.0) + delta
+        world = self._world(adj)
         pad = self.pad
         canvas = Image.new("RGBA", (self.W + 2 * pad, self.H + 2 * pad),
                            (0, 0, 0, 0))
         for name in self.order:
             if name not in self.parts:
                 continue
-            shapes = self.parts[name]
-            want = bonevals.get(name, {}).get("shape")
-            variants = shapes.get(want) or shapes.get("straight") \
-                or shapes.get("default") or next(iter(shapes.values()))
+            variants = self.parts[name][shape_for(name)]
             sheet = (variant_for or {}).get(name, "body")
             img, (ox, oy) = variants.get(sheet) or variants["body"]
             ang, piv, rest = world[name]

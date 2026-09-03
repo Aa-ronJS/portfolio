@@ -200,8 +200,9 @@ def draw_ghost(d, name, A, B):
         else:
             _capsule(d, A, B, r, F, L)
             shoe_x = cx
-        d.ellipse([shoe_x - 0.34 * span, B[1] - 0.02 * span,
-                   shoe_x + 0.14 * span, B[1] + 0.11 * span], fill=F)
+        # toe points the way the knee bends — the walk direction
+        d.ellipse([shoe_x - 0.14 * span, B[1] - 0.02 * span,
+                   shoe_x + 0.34 * span, B[1] + 0.11 * span], fill=F)
 
 
 # ---------------------------------------------------------------- template
@@ -406,6 +407,7 @@ def cmd_ingest(args):
     sh_y = int(0.442 * BODY_H) - toy
     band = ta[max(0, sh_y - 20):sh_y + 20]
     refit = False
+    shape_rot = {}
     if band.any():
         cols = np.nonzero(band.any(axis=0))[0]
         left, right = tox + cols.min(), tox + cols.max()
@@ -444,10 +446,27 @@ def cmd_ingest(args):
                         dx = newx - b["head"][0]
                         b["head"][0] = round(newx, 4)
                         b["tail"][0] = round(b["tail"][0] + dx, 4)
+                # aim each pocket arm at a pocket anchor on the pelvis,
+                # so the stub swings INTO the torso instead of hanging
+                # in the air beside it
+                import math as _m
+                for b in bones:
+                    if not b["name"].startswith("arm"):
+                        continue
+                    sx, sy = b["head"][0] * BODY_W, b["head"][1] * BODY_H
+                    vx = (b["tail"][0] - b["head"][0]) * BODY_W
+                    vy = (b["tail"][1] - b["head"][1]) * BODY_H
+                    tx = l2 + 0.20 * w2 if b["name"] == "arm_l" \
+                        else r2 - 0.20 * w2
+                    ty = bot - 0.06 * BODY_H
+                    delta = _m.degrees(_m.atan2(ty - sy, tx - sx)
+                                       - _m.atan2(vy, vx))
+                    shape_rot[b["name"]] = {"pocket": round(delta, 1)}
     if refit:
         with open(os.path.join(args.character, "rig.json"), "w") as f:
             json.dump({"joint_radius": 0.0, "bones": bones,
-                       "face": FACE, "parts": pivots}, f, indent=2)
+                       "face": FACE, "parts": pivots,
+                       "shape_rot": shape_rot}, f, indent=2)
         rig = Rig(args.character, {"body": stub})
 
     # assemble body.png by posing the kit at rest
