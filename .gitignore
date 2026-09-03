@@ -1,3 +1,5 @@
 .vercel/
 *.log
 node_modules/
+animation/render/
+animation/voice/
