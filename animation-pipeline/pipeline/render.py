@@ -377,6 +377,23 @@ class EpisodeRenderer:
         x = (bg.width - self.W) // 2
         y = (bg.height - self.H) // 2
         s["bg"] = bg.crop((x, y, x + self.W, y + self.H))
+        # combat intents. fight: {with: k} is the mutual brawl; attack:
+        # {who: k} is one-sided — "sugar wants to punch doug". Either
+        # way the TARGET needs no authoring: being on the receiving end
+        # of an intent automatically makes a rigged actor defend
+        # (square up, guard, dodge, stagger when caught). A target with
+        # its own fight/attack keeps its own config; both sides of a
+        # pair must agree on t/seed/beat (the first cfg seen wins the
+        # shared beat sheet).
+        duels = {}
+        for j2, a2 in enumerate(shot.get("actors", [])):
+            cfg = a2.get("fight") or a2.get("attack")
+            if cfg is None:
+                continue
+            opp = cfg["with"] if "with" in cfg else cfg["who"]
+            duels[j2] = {"opp": opp, "cfg": cfg, "attacks": True}
+            duels.setdefault(opp, {"opp": j2, "cfg": cfg,
+                                   "attacks": False})
         # pre-scale actor sprites once per shot
         s["sprites"] = []
         talker = next((x for x in shot.get("actors", [])
@@ -422,7 +439,7 @@ class EpisodeRenderer:
             rigged_ok = c is not None and getattr(c, "rig", None)
             specs = self._clip_specs(c, a, s["duration"]) \
                 if rigged_ok else []
-            fighting = rigged_ok and a.get("fight") is not None
+            fighting = rigged_ok and j in duels
             if rig_pose and not specs:
                 raise SystemExit(
                     f"pose '{rig_pose}' lives on {c.folder}'s kit head, "
@@ -448,10 +465,11 @@ class EpisodeRenderer:
                                if mv.get("type") == "slide"), None)
             if "flip" in a:
                 do_flip = a["flip"]
-            elif a.get("fight") is not None:
+            elif j in duels and c is not None and \
+                    getattr(c, "rig", None):
                 # combatants square up: face each other
                 do_flip = a.get("at", [0.5])[0] > shot["actors"][
-                    a["fight"]["with"]].get("at", [0.5])[0]
+                    duels[j]["opp"]].get("at", [0.5])[0]
             elif c is not None and getattr(c, "flip_to_walk", False) \
                     and "rotate" not in a:
                 # mirror toward the walk; standing still means unflipped
@@ -557,13 +575,16 @@ class EpisodeRenderer:
                 # choreography, each side computes its own role
                 fight = None
                 if fighting:
-                    fcfg = a["fight"]
-                    pair = tuple(sorted((j, fcfg["with"])))
+                    duel = duels[j]
+                    fcfg = duel["cfg"]
+                    pair = tuple(sorted((j, duel["opp"])))
                     fights = s.setdefault("_fights", {})
                     if pair not in fights:
                         fights[pair] = self._make_fight(
-                            fcfg, s["duration"])
-                    opp = shot["actors"][fcfg["with"]]
+                            fcfg, s["duration"],
+                            tuple(side for side, idx in enumerate(pair)
+                                  if duels[idx]["attacks"]))
+                    opp = shot["actors"][duel["opp"]]
                     fight = {
                         "beats": fights[pair],
                         "beat": fcfg.get("beat", 0.55),
@@ -609,7 +630,44 @@ class EpisodeRenderer:
                 "blinks": self._blink_times(s["duration"], (i + 1) * 91 + j)
                           if scaled["blink"] is not None else [],
             })
+        if s.get("_fights"):
+            self._fight_foley(s)
         return s
+
+    def _fight_foley(self, s):
+        """The beat sheet knows every swing, dodge and landed blow, so
+        foley places itself: a whoosh on each swing (a whoosh with no
+        impact IS the miss), a thwack or thud when a punch or kick
+        lands, and a grunt from whoever took it. Sounds come from the
+        show's sfx/fight/ folder — the demo ships crude synth
+        placeholders; record your own (mouth foley is very much the
+        house style) and drop them in under the same names. No folder,
+        no foley."""
+        import glob as _glob
+        fdir = self.path(os.path.join("sfx", "fight"))
+        have = {os.path.basename(p)
+                for p in _glob.glob(os.path.join(fdir, "*.wav"))}
+        grunts = sorted(n for n in have if n.startswith("grunt"))
+        if not have:
+            return
+        cues = s.setdefault("sfx", list(s.get("sfx") or []))
+        for pair, beats in sorted(s["_fights"].items()):
+            rng = random.Random(7777 + 131 * pair[0] + pair[1])
+            for b in beats:
+                B = b.get("_B", 0.55)
+                if "whoosh.wav" in have:
+                    cues.append({"file": "sfx/fight/whoosh.wav",
+                                 "at": b["t"] + 0.25 * B, "gain": 0.9})
+                if b["hit"]:
+                    imp = "thud.wav" if b["atk"] == "kick" \
+                        else "thwack.wav"
+                    if imp in have:
+                        cues.append({"file": f"sfx/fight/{imp}",
+                                     "at": b["t"] + 0.40 * B})
+                    if grunts:
+                        cues.append({
+                            "file": "sfx/fight/" + rng.choice(grunts),
+                            "at": b["t"] + 0.46 * B, "gain": 0.9})
 
     def _clip_specs(self, c, a, dur):
         """Resolve an actor's clips. A slide with no explicit clip on a
@@ -651,20 +709,31 @@ class EpisodeRenderer:
     # -------------------------------------------------- fights
 
     @staticmethod
-    def _make_fight(cfg, dur):
-        """Seeded choreography both combatants read: who swings when,
-        with what, whether the other sees it coming."""
+    def _make_fight(cfg, dur, attackers=(0, 1)):
+        """Seeded beat sheet both combatants read: who swings when,
+        with what, whether the other sees it coming. `attackers` names
+        which pair sides throw (a one-sided attack: intent lives on one
+        actor and beats never flip to the defender). cfg `using` limits
+        the arsenal (punch = jab + cross); the rng draw order must stay
+        stable for the default mutual case — committed demos depend on
+        their seeds."""
         rng = random.Random(cfg.get("seed", 5))
         B = cfg.get("beat", 0.55)
         t0, t1 = cfg.get("t") or (0.0, dur)
+        moves = []
+        for m in cfg.get("using") or ["jab", "cross", "kick"]:
+            moves += {"punch": ["jab", "cross"]}.get(m, [m])
+        both = len(set(attackers)) == 2
         beats, tcur = [], t0 + 0.35
         who = rng.randint(0, 1)
+        if not both:
+            who = attackers[0]
         while tcur + B <= t1:
-            beats.append({"t": tcur, "who": who,
-                          "atk": rng.choice(["jab", "cross", "kick"]),
+            beats.append({"t": tcur, "who": who, "_B": B,
+                          "atk": rng.choice(moves),
                           "dodge": rng.choice(["duck", "lean"]),
                           "hit": rng.random() < 0.3})
-            if rng.random() < 0.75:
+            if rng.random() < 0.75 and both:
                 who = 1 - who
             tcur += B * rng.uniform(1.05, 1.4)
         return beats

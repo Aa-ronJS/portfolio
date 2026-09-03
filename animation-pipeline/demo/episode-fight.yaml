@@ -32,3 +32,19 @@ shots:
         at: [0.68, 0.76]
         scale: 0.46
         fight: {with: 0, t: [0.4, 7.6], seed: 1}
+
+  # one-sided intent: sugar wants to punch doug. Doug carries no
+  # combat key at all — a rigged actor targeted by someone's attack
+  # defends automatically (guards, dodges, staggers when caught) and
+  # never swings back. `using: [punch]` keeps sugar's feet out of it.
+  - bg: backgrounds/chipshop.png
+    duration: 7.0
+    caption: sugar was not finished
+    actors:
+      - char: sugar
+        at: [0.34, 0.76]
+        scale: 0.46
+        attack: {who: 1, t: [0.4, 6.6], seed: 7, using: [punch]}
+      - char: doug
+        at: [0.68, 0.76]
+        scale: 0.46

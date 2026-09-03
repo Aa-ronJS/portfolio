@@ -340,6 +340,36 @@ visibly attacking and nobody noticed from evenly-spaced frames.
 picked by scanning seeds for balance: both fighters kick, two hits,
 spread out).
 
+Combat is INTENTS, not choreography (Aaron's framing: "sugar wants to
+punch doug; doug automatically tries not to get hurt"). `attack:
+{who: k}` on one actor is the whole authoring: the TARGET carries no
+key at all — prep_shot's pre-scan (`duels`) gives any rigged actor on
+the receiving end of someone's intent the defensive half (face the
+attacker, guard, dodge, stagger; never swing). `fight:` is the mutual
+case, and `using: [punch]`/`[jab, kick]` limits an arsenal (punch
+expands to jab+cross). _make_fight takes an `attackers` tuple; its
+rng DRAW ORDER for the default mutual case must never change —
+committed demo mp4s depend on their seeds (a new option must draw
+identically when unused; `who` still burns its randint in one-sided
+mode for exactly this reason). We deliberately did NOT build per-frame
+improvisational AI: a seeded beat sheet from intents keeps takes
+reproducible and the 12fps stepped look intact, while nobody
+hand-keys anything.
+
+Fight foley places itself (`_fight_foley`): the beat sheet knows
+every swing, landed blow and victim, so if the show has `sfx/fight/`
+each swing cues whoosh.wav at strike start (a whoosh with no impact
+IS the miss), landed punches thwack.wav / kicks thud.wav at the
+impact moment, and the victim a seeded pick of grunt*.wav. No folder,
+no foley — and the demo's are numpy synth placeholders from
+make_demo_assets (`fight_foley()`); Aaron recording mouth foley under
+the same names is the intended replacement. Verified numerically:
+extract the mux'd audio and RMS-window each expected cue time against
+the silence before it. NOTE: make_demo_assets is NOT re-run-stable
+(module-level rng + hash() seeding), so regenerating rewrites every
+placeholder PNG with new wobble — when adding a generator, run only
+the new function via importlib and `git checkout --` any art churn.
+
 Discussed but unbuilt: per-character close-up
 framing in `char.json` (the directed close-up currently assumes a
 humanoid head at `at: [0.5, 1.35], scale: 1.5`); pose changes and

@@ -474,6 +474,67 @@ def mumble(path, syllables, seed):
         w.writeframes((np.clip(pcm, -1, 1) * 32767).astype("<i2").tobytes())
 
 
+def _wav(path, pcm, sr=44100):
+    with wave.open(path, "wb") as w:
+        w.setnchannels(1)
+        w.setsampwidth(2)
+        w.setframerate(sr)
+        w.writeframes((np.clip(pcm, -1, 1) * 32767).astype("<i2").tobytes())
+
+
+def fight_foley():
+    """Placeholder fight sounds, auto-placed by the renderer from a
+    fight's beat sheet (sfx/fight/ convention). Crude synth stand-ins —
+    record your own whooshes, thwacks and grunts with your mouth and
+    drop them in under the same names; that will be funnier."""
+    sr = 44100
+    folder = os.path.join(HERE, "sfx", "fight")
+    os.makedirs(folder, exist_ok=True)
+    r = np.random.default_rng(7)
+
+    # whoosh: noise through a sweeping average — air, then gone
+    n = int(0.20 * sr)
+    noise = r.standard_normal(n).astype(np.float32)
+    out = np.copy(noise)
+    for w_ in (3, 9, 21):          # crude lowpass, widening = darkening
+        seg = out[int(n * (w_ - 3) / 24):]
+        seg[:] = np.convolve(seg, np.ones(w_) / w_, "same")
+    env = np.sin(np.pi * np.linspace(0, 1, n)) ** 2.2
+    _wav(os.path.join(folder, "whoosh.wav"), out * env * 0.9)
+
+    # thwack: snappy noise burst over a knuckle-y mid tone
+    n = int(0.11 * sr)
+    t = np.arange(n) / sr
+    burst = r.standard_normal(n).astype(np.float32) * np.exp(-t * 55)
+    tone = np.sin(2 * np.pi * 190 * t) * np.exp(-t * 40)
+    _wav(os.path.join(folder, "thwack.wav"), burst * 0.7 + tone * 0.6)
+
+    # thud: a kick lands lower and rounder
+    n = int(0.22 * sr)
+    t = np.arange(n) / sr
+    tone = np.sin(2 * np.pi * (85 - 30 * t / t[-1]) * t) * np.exp(-t * 16)
+    burst = r.standard_normal(n).astype(np.float32) * np.exp(-t * 70)
+    _wav(os.path.join(folder, "thud.wav"), tone * 0.9 + burst * 0.25)
+
+    # grunts: short pitched "uh"s, same voice as the mumbles (robotic
+    # on purpose — the placeholders must never pass for the format)
+    for i, (f0, f1, dur) in enumerate(
+            [(150, 95, 0.16), (120, 78, 0.22), (175, 120, 0.13)], 1):
+        n = int(dur * sr)
+        t = np.arange(n) / sr
+        f = f0 + (f1 - f0) * t / t[-1]
+        ph = 2 * np.pi * np.cumsum(f) / sr
+        tone = (np.sign(np.sin(ph)) * 0.3 +
+                np.sin(ph * 2.02) * 0.15).astype(np.float32)
+        tone = np.convolve(tone, np.ones(5) / 5, "same")
+        env = np.sin(np.pi * np.linspace(0, 1, n)) ** 0.5
+        g = tone * env
+        _wav(os.path.join(folder, f"grunt{i}.wav"),
+             g * (0.85 / abs(g).max()))
+    print("sfx/fight: whoosh, thwack, thud, grunt1..3 "
+          "(placeholder synths — replace with mouth foley)")
+
+
 def main():
     for name, fn, variants in [
             ("stan", stan, ["body", "talk", "blink"]),
@@ -487,6 +548,7 @@ def main():
 
     make_doug()
     make_props()
+    fight_foley()
 
     os.makedirs(os.path.join(HERE, "backgrounds"), exist_ok=True)
     chipshop().save(os.path.join(HERE, "backgrounds", "chipshop.png"))

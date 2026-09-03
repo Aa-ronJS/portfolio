@@ -423,7 +423,25 @@ shots:
                                #   onto the opponent, dodged by ducking
                                #   or leaning, landed hits stagger.
                                #   knobs: t: [start, end], seed, beat
-                               #   (seconds per exchange, default 0.55)
+                               #   (seconds per exchange, default 0.55),
+                               #   using: [punch] or [jab, kick] to
+                               #   limit the arsenal
+        attack: {who: 1}       # one-sided intent: THIS actor wants to
+                               #   hit actor 1. The target needs no
+                               #   authoring at all — any rigged actor
+                               #   on the receiving end automatically
+                               #   squares up, guards, dodges, and
+                               #   staggers when caught, but never
+                               #   swings back. Same knobs as fight.
+                               # fight sounds place themselves: if the
+                               #   show has an sfx/fight/ folder, every
+                               #   swing gets whoosh.wav (a whoosh with
+                               #   no impact is the miss), landed
+                               #   punches thwack.wav, landed kicks
+                               #   thud.wav, and the victim one of
+                               #   grunt*.wav. The demo ships synth
+                               #   placeholders — record your own mouth
+                               #   foley under the same names.
         moves:
           - {type: slide, from: [-0.2, 0.74], to: [0.34, 0.74], t: [0, 1.4]}
           - {type: waddle, amp: 3, period: 0.5}
