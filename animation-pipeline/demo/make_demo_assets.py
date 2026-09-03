@@ -354,20 +354,37 @@ def prop_pan():
     return im
 
 
-def prop_rope(up):
+def prop_rope(pos):
+    """One revolution in four frames: over the head, down in front,
+    under the feet, up behind (the 'behind' frame renders behind the
+    character via the prop's z)."""
     im = Image.new("RGBA", (900, 1400), (0, 0, 0, 0))
     d = ImageDraw.Draw(im)
-    if up:
-        pts = [(120, 690), (170, 300), (450, 60), (730, 300), (780, 690)]
-    else:
-        pts = [(120, 690), (170, 1080), (450, 1330), (730, 1080),
-               (780, 690)]
-    stroke(d, pts, width=26)
+    mids = {"top": [(170, 300), (450, 60), (730, 300)],
+            "front": [(220, 900), (450, 1010), (680, 900)],
+            "bottom": [(170, 1080), (450, 1330), (730, 1080)],
+            "back": [(230, 860), (450, 950), (670, 860)]}
+    stroke(d, [(120, 690)] + mids[pos] + [(780, 690)], width=26)
     for x, y in ((120, 690), (780, 690)):                   # handles
         d.rectangle([x - 22, y - 60, x + 22, y + 60],
                     fill=(150, 60, 40, 255))
         stroke(d, [(x - 22, y - 60), (x + 22, y - 60), (x + 22, y + 60),
                    (x - 22, y + 60), (x - 22, y - 60)], width=7)
+    return im
+
+
+def prop_door():
+    im = Image.new("RGBA", (520, 1500), (0, 0, 0, 0))
+    d = ImageDraw.Draw(im)
+    wood = (150, 110, 70, 255)
+    d.rectangle([20, 20, 500, 1480], fill=wood)
+    stroke(d, [(20, 20), (500, 20), (500, 1480), (20, 1480), (20, 20)],
+           width=10)
+    stroke(d, [(90, 110), (430, 110), (430, 700), (90, 700), (90, 110)],
+           width=7)                                          # panels
+    stroke(d, [(90, 800), (430, 800), (430, 1390), (90, 1390),
+               (90, 800)], width=7)
+    blob(d, (400, 730, 470, 800), (210, 180, 90, 255), width=6)  # handle
     return im
 
 
@@ -392,10 +409,11 @@ def make_props():
     rng.seed(hash("props") & 0xffff)
     prop_gun().save(os.path.join(pdir, "gun.png"))
     prop_pan().save(os.path.join(pdir, "pan.png"))
-    prop_rope(True).save(os.path.join(pdir, "rope_up.png"))
-    prop_rope(False).save(os.path.join(pdir, "rope_down.png"))
+    for pos in ("top", "front", "bottom", "back"):
+        prop_rope(pos).save(os.path.join(pdir, f"rope_{pos}.png"))
     prop_ladder().save(os.path.join(pdir, "ladder.png"))
-    print("props: gun, pan, rope_up/down, ladder")
+    prop_door().save(os.path.join(pdir, "door.png"))
+    print("props: gun, pan, rope x4, ladder, door")
 
 
 # ---------------------------------------------------------------- background

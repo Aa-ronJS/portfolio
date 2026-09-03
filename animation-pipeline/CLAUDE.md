@@ -220,6 +220,23 @@ shirt text is the accepted cost, the owner decides. When reviewing
 motion, extract actual frames and read the channel values alongside
 them; the flamingo was invisible in stills picked at random.
 
+Physical coherence (Aaron's brief: hands must reach what they use,
+objects occupy space, others react): **reach** solves an arm per frame
+so the hand lands ON a target (canvas point or a point on a listed-
+earlier, unmoving image actor), rotating and rubber-hose STRETCHING
+(rig `stretch` channel, scale along the bone axis about the pivot,
+leaf bones only) — that is how ladder rungs are gripped while the body
+slides past and how door handles are used; **prop z** lets any prop
+frame render behind the character (the rope cycle is top/front/bottom/
+back with back z: behind); **drop** releases a prop into gravity (falls
+from its detach point, spins, lands on the rest-feet line, stays);
+**auto-gaze** tilts every rigged listener's head toward the talker
+(look: false opts out). GOTCHA that cost a broken shot: chained slide
+moves require the actor's `at` to equal the FINAL slide's `to` — every
+pending slide contributes its full offset before its window, so a
+mid-path `at` parks the actor off-canvas (the door scene shipped a
+disembodied arm until caught frame-by-frame).
+
 Knees are real (Aaron's call: "just add a knee anchor point"): kit
 BONES carry leg_X_upper/leg_X_lower with the knee at 48% of the
 hip->ankle span (KNEE_F), the template's straight-leg boxes print a

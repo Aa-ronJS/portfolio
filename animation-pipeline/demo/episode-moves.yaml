@@ -72,7 +72,13 @@ shots:
         scale: 0.46
         clip: skip
         props:
-          - imgs: [props/rope_up.png, props/rope_down.png]
+          # one revolution: over the head, down in FRONT, under the
+          # feet, up BEHIND the character (z: behind)
+          - imgs:
+              - props/rope_top.png
+              - props/rope_front.png
+              - props/rope_bottom.png
+              - {img: props/rope_back.png, z: behind}
             period: 0.5
             bone: root
             at: [0.5, 0.60]
@@ -92,6 +98,14 @@ shots:
         at: [0.55, 0.44]
         scale: 0.40
         clip: climb
+        # his hands actually take the rungs: each reach solves the arm
+        # (stretching if needed) so the hand stays ON the rung while
+        # the body rises past it
+        reach:
+          - {bone: arm_l, to: {actor: 0, at: [0.5, 0.434]}, t: [0.2, 0.9]}
+          - {bone: arm_r, to: {actor: 0, at: [0.5, 0.316]}, t: [0.7, 1.4]}
+          - {bone: arm_l, to: {actor: 0, at: [0.5, 0.199]}, t: [1.0, 1.7]}
+          - {bone: arm_r, to: {actor: 0, at: [0.5, 0.081]}, t: [1.5, 2.3]}
         moves:
           - {type: slide, from: [0.55, 0.88], to: [0.55, 0.44], t: [0.2, 2.3]}
 
@@ -174,3 +188,58 @@ shots:
             anchor: [0.88, 0.5]
             size: 0.115
             rot: -30
+
+  # 12 — the door: he walks up, his hand goes to the handle (reaching
+  # and stretching until it touches), the door slides open, he leaves.
+  - bg: backgrounds/chipshop.png
+    duration: 3.8
+    caption: he opens the door by hand
+    actors:
+      - image: props/door.png
+        at: [0.70, 0.62]
+        anchor: [0.5, 0.5]
+        scale: 0.72
+        moves:
+          - {type: slide, from: [0.70, 0.62], to: [1.08, 0.62], t: [1.9, 2.4]}
+      - char: sugar
+        at: [1.30, 0.76]
+        scale: 0.46
+        clip: {name: walk, t: [0.2, 1.0]}
+        reach:
+          - {bone: arm_l, to: [0.849, 0.627], t: [1.1, 1.9]}
+        moves:
+          - {type: slide, from: [0.15, 0.76], to: [0.60, 0.76], t: [0.2, 1.0]}
+          - {type: slide, from: [0.60, 0.76], to: [1.30, 0.76], t: [2.5, 3.6]}
+
+  # 13 — gravity: he lets go of the pan and it falls to the floor.
+  - bg: backgrounds/chipshop.png
+    duration: 2.6
+    caption: dropped it
+    actors:
+      - char: sugar
+        at: [0.5, 0.76]
+        scale: 0.46
+        clip: fry
+        props:
+          - img: props/pan.png
+            bone: arm_l
+            at: [0.52, 0.565]
+            anchor: [0.88, 0.5]
+            size: 0.115
+            rot: -30
+            drop: {at: 1.1, spin: 300}
+
+  # 14 — attention: whoever talks gets looked at, automatically.
+  - bg: backgrounds/chipshop.png
+    audio: vo/line2.wav
+    caption: he looks at whoever talks
+    actors:
+      - char: doug
+        at: [0.72, 0.76]
+        scale: 0.46
+        talk: true
+        clip: idle
+      - char: sugar
+        at: [0.28, 0.76]
+        scale: 0.46
+        clip: idle

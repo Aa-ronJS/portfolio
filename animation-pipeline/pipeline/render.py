@@ -491,14 +491,22 @@ class EpisodeRenderer:
                 rig = c.rig
                 can_blink = "blink" in c.layers or face.get("eyes")
                 # props ride a bone: a gun in the hand, a rope round the
-                # whole body (bone: root). imgs+period makes a two-frame
-                # prop cycle (the skipping rope's up/down)
+                # whole body (bone: root). imgs entries may set z:
+                # "behind" to pass behind the character (the rope's back
+                # half); drop: {at: t} releases the prop into gravity
                 props = []
                 for pr in a.get("props") or []:
-                    files = pr.get("imgs") or [pr["img"]]
+                    entries = pr.get("imgs") or [pr["img"]]
+                    frames = []
+                    for e in entries:
+                        if isinstance(e, str):
+                            e = {"img": e}
+                        frames.append({
+                            "im": Image.open(
+                                self.path(e["img"])).convert("RGBA"),
+                            "z": e.get("z", "front")})
                     props.append({
-                        "imgs": [Image.open(self.path(f)).convert("RGBA")
-                                 for f in files],
+                        "imgs": frames,
                         "period": pr.get("period", 0.5),
                         "bone": pr.get("bone", "root"),
                         "at": pr.get("at", [0.5, 0.5]),
@@ -507,10 +515,41 @@ class EpisodeRenderer:
                         "rot": pr.get("rot", 0.0),
                         "t": pr.get("t"),
                         "follow": pr.get("follow", True),
+                        "drop": pr.get("drop"),
                     })
+                # reach: a hand that uses something must touch it. The
+                # target is a canvas point or a point on another actor
+                # (resolved now — targets must be listed BEFORE the
+                # reacher and hold still); the arm rotates and, if
+                # needed, stretches until the hand lands on it.
+                reach = []
+                for rc in a.get("reach") or []:
+                    rc = dict(rc)
+                    to = rc["to"]
+                    if isinstance(to, dict):
+                        tsp = s["sprites"][to["actor"]]
+                        timg = tsp["imgs"]["body"]
+                        nx, ny = to["at"]
+                        at2 = tsp["cfg"].get("at", [0.5, 0.85])
+                        rc["_target"] = [
+                            at2[0] + (nx - tsp["anchor"][0])
+                            * timg.width / self.W,
+                            at2[1] + (ny - tsp["anchor"][1])
+                            * timg.height / self.H]
+                    else:
+                        rc["_target"] = list(to)
+                    reach.append(rc)
+                # listeners look at the talker (head tilts their way)
+                gaze = 0.0
+                if talker is not None and talker is not a \
+                        and a.get("look") is not False:
+                    dxt = talker.get("at", [0.5])[0] \
+                        - a.get("at", [0.5])[0]
+                    if abs(dxt) > 0.03:
+                        gaze = 5.5 if dxt > 0 else -5.5
                 s["sprites"].append({
                     "imgs": None, "rig": rig, "specs": specs, "char": c,
-                    "props": props,
+                    "props": props, "reach": reach, "gaze": gaze,
                     "k": k, "flip": do_flip, "cache": {},
                     "base": a.get("pose") or "body", "face": face,
                     # anchor restated for the padded pose canvas
@@ -581,7 +620,7 @@ class EpisodeRenderer:
 
     # -------------------------------------------------- frame drawing
 
-    def _rig_frame(self, sp, t, talking, blinking):
+    def _rig_frame(self, sp, t, talking, blinking, placement=(0.5, 0.85, 1.0)):
         """The posed, scaled, flipped sprite for a rigged actor at t.
 
         The pose comes from the actor's clips; talk and blink prefer the
@@ -596,6 +635,45 @@ class EpisodeRenderer:
         # shape channel: the author holds that pose for the whole shot
         for bone, shp in (sp["cfg"].get("shapes") or {}).items():
             pose.setdefault(bone, {})["shape"] = shp
+        # listeners turn their heads toward whoever is talking
+        if sp.get("gaze"):
+            slot = pose.setdefault("head", {})
+            slot["rot"] = slot.get("rot", 0.0) \
+                + sp["gaze"] * (-1 if sp["flip"] else 1)
+        # reach: solve the arm so the hand lands ON the target, frame
+        # by frame — rotating toward it and stretching when it is out
+        # of arm's length. The character can move; the grip holds.
+        for rc in sp.get("reach") or []:
+            t0, t1 = rc.get("t") or (0.0, float("inf"))
+            if not t0 <= t <= t1:
+                continue
+            bone = rc["bone"]
+            if bone not in rig.bones:
+                continue
+            cx = rc["_target"][0] * self.W
+            cy = rc["_target"][1] * self.H
+            k = sp["k"] * (placement[2] or 1.0)
+            cw = k * (rig.W + 2 * rig.pad)
+            ch = k * (rig.H + 2 * rig.pad)
+            u = (cx - (placement[0] * self.W - sp["anchor"][0] * cw)) / k
+            v = (cy - (placement[1] * self.H - sp["anchor"][1] * ch)) / k
+            if sp["flip"]:
+                u = (rig.W + 2 * rig.pad) - u
+            bx, by = u - rig.pad, v - rig.pad
+            wang, piv, _rest = rig.bone_state(bone, pose)
+            own = pose.get(bone, {}).get("rot", 0.0)
+            b = rig.bones[bone]
+            vx, vy = b.tail[0] - b.head[0], b.tail[1] - b.head[1]
+            alpha = math.degrees(math.atan2(vy, vx))
+            beta = math.degrees(math.atan2(by - piv[1], bx - piv[0]))
+            need = (beta - alpha - (wang - own) + 180) % 360 - 180
+            L = math.hypot(vx, vy) or 1.0
+            slot = pose[bone] = dict(pose.get(bone) or {})
+            slot["rot"] = round(need, 1)
+            if rc.get("stretch", True):
+                s_ = max(0.5, min(2.4, math.hypot(bx - piv[0],
+                                                  by - piv[1]) / L))
+                slot["stretch"] = round(s_ - 1.0, 2)
         base, face = sp["base"], sp["face"]
         head_bone = face.get("bone", "head") if face else "head"
         # a drawn kit keeps its face variants on the head part
@@ -624,7 +702,9 @@ class EpisodeRenderer:
             and face.get("eyes")
         overlay_talk = talking and not sheet("talk") and face \
             and face.get("mouth")
-        # which props are live this frame (and which cycle frame each is on)
+        # which props are live this frame: cycle frame, and for dropped
+        # props the gravity state (position falls, spin, lands on the
+        # ground line and stays put)
         prop_state = []
         for i, pr in enumerate(sp.get("props") or []):
             t0, t1 = pr["t"] or (0.0, float("inf"))
@@ -632,7 +712,24 @@ class EpisodeRenderer:
                 continue
             n = len(pr["imgs"])
             fi = int(t / (pr["period"] / n)) % n if n > 1 else 0
-            prop_state.append((i, fi))
+            dq = ()
+            d = pr.get("drop")
+            if d and t >= d["at"]:
+                if "_detach" not in pr:
+                    pd = resolve_channels(
+                        pose_at(sp["specs"], d["at"]), rig.bones)
+                    ax0, ay0 = rig.anchor_world(pr["at"], pr["bone"], pd)
+                    pr["_detach"] = (ax0, ay0,
+                                     rig.bone_state(pr["bone"], pd)[0])
+                ax0, ay0, ang0 = pr["_detach"]
+                g = d.get("g", 3.4) * rig.rest_h
+                ground = rig.pad + rig.rest_bbox[3] - 0.02 * rig.H
+                tau = min(t - d["at"],
+                          math.sqrt(max(0.0, 2 * (ground - ay0) / g)))
+                dq = (round(ax0),
+                      round(ay0 + 0.5 * g * tau * tau),
+                      round(ang0 + d.get("spin", 260) * tau))
+            prop_state.append((i, fi, dq))
         key = (tuple(sorted(
                    (b, tuple(sorted(
                        (k2, v if isinstance(v, str) else round(v, 2))
@@ -652,17 +749,22 @@ class EpisodeRenderer:
                     feat_h=rig.H)
             elif prop_state:
                 canvas = canvas.copy()  # never draw on the rig's cache
-            for i, fi in prop_state:
+
+            def paste_prop(dst, i, fi, dq):
                 pr = sp["props"][i]
-                pim = pr["imgs"][fi]
+                pim = pr["imgs"][fi]["im"]
                 kp = pr["size"] * rig.rest_h / pim.height
                 pim = pim.resize((max(1, round(pim.width * kp)),
                                   max(1, round(pim.height * kp))),
                                  Image.LANCZOS)
-                ang = rig.bone_state(pr["bone"], pose)[0] \
-                    if pr["follow"] else 0.0
-                total = ang + pr["rot"]
-                ax, ay = rig.anchor_world(pr["at"], pr["bone"], pose)
+                if dq:  # dropped: gravity owns it now
+                    ax, ay = dq[0], dq[1]
+                    total = dq[2] + pr["rot"]
+                else:
+                    ang = rig.bone_state(pr["bone"], pose)[0] \
+                        if pr["follow"] else 0.0
+                    total = ang + pr["rot"]
+                    ax, ay = rig.anchor_world(pr["at"], pr["bone"], pose)
                 px = pr["anchor"][0] * pim.width
                 py = pr["anchor"][1] * pim.height
                 if abs(total) > 0.05:
@@ -678,11 +780,23 @@ class EpisodeRenderer:
                 x = int(round(ax - px))
                 y = int(round(ay - py))
                 sx, sy = max(-x, 0), max(-y, 0)
-                ex = min(pim.width, canvas.width - x)
-                ey = min(pim.height, canvas.height - y)
+                ex = min(pim.width, dst.width - x)
+                ey = min(pim.height, dst.height - y)
                 if ex > sx and ey > sy:
-                    canvas.alpha_composite(pim.crop((sx, sy, ex, ey)),
-                                           (x + sx, y + sy))
+                    dst.alpha_composite(pim.crop((sx, sy, ex, ey)),
+                                        (x + sx, y + sy))
+
+            behind = [ps for ps in prop_state
+                      if sp["props"][ps[0]]["imgs"][ps[1]]["z"] == "behind"]
+            front = [ps for ps in prop_state if ps not in behind]
+            if behind:
+                base = Image.new("RGBA", canvas.size, (0, 0, 0, 0))
+                for i, fi, dq in behind:
+                    paste_prop(base, i, fi, dq)
+                base.alpha_composite(canvas)
+                canvas = base
+            for i, fi, dq in front:
+                paste_prop(canvas, i, fi, dq)
             k = sp["k"]
             img = canvas.resize((round(canvas.width * k),
                                  round(canvas.height * k)), Image.LANCZOS)
@@ -708,8 +822,12 @@ class EpisodeRenderer:
                 continue  # e.g. a muzzle flash visible for two frames
             talking = sp["mouth"] is not None and bool(sp["mouth"][f])
             blinking = any(bt <= t < bt + 2.0 / self.fps for bt in sp["blinks"])
+            dx, dy, rot, smul = move_offset(a.get("moves", []), t,
+                                            s["duration"], sp["phase"])
             if sp.get("rig") is not None:
-                img = self._rig_frame(sp, t, talking, blinking)
+                px0, py0 = a.get("at", [0.5, 0.85])
+                img = self._rig_frame(sp, t, talking, blinking,
+                                      (px0 + dx, py0 + dy, smul))
             else:
                 imgs = sp["imgs"]
                 if sp["alt"] is not None and \
@@ -720,8 +838,6 @@ class EpisodeRenderer:
                     else (imgs["talk"]
                           if (talking and imgs["talk"] is not None)
                           else imgs["body"])
-            dx, dy, rot, smul = move_offset(a.get("moves", []), t,
-                                            s["duration"], sp["phase"])
             if a.get("still"):
                 bx = by = brot = 0.0  # the dead do not boil
             else:

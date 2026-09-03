@@ -398,12 +398,24 @@ shots:
         shapes: {arm_l: pocket}  # pin a kit part shape for the shot
         no_walk: true          # suppress the automatic walk on a slide
         props:                 # images riding a bone (rigged actors)
-          - img: props/gun.png # or imgs: [a.png, b.png] + period for
-            bone: arm_l        #   a cycling prop (the skipping rope)
-            at: [0.40, 0.65]   # rest-pose point it pins to (body coords)
-            anchor: [0.8, 0.4] # the point in the prop image that pins
+          - img: props/gun.png # or imgs: [...] + period for a cycling
+            bone: arm_l        #   prop; an entry may be {img, z: behind}
+            at: [0.40, 0.65]   #   to pass BEHIND the character (the
+            anchor: [0.8, 0.4] #   skipping rope's back half)
             size: 0.13         # prop height / character height
             rot: -90           # extra rotation on top of the bone's
+            drop: {at: 1.2, spin: 300}  # released: falls to the floor,
+                               #   tumbling, and stays where it lands
+        reach:                 # a hand that uses something touches it:
+          - bone: arm_l        #   the arm rotates AND STRETCHES until
+            to: [0.85, 0.63]   #   the hand lands on the target — a
+            t: [1.1, 1.9]      #   canvas point, or a point on another
+                               #   actor: to: {actor: 0, at: [0.5, 0.3]}
+                               #   (rungs, handles; grip holds while the
+                               #   character moves). stretch: false to
+                               #   cap at arm's length.
+        look: false            # opt out of auto-gaze: characters turn
+                               #   their heads toward whoever talks
         moves:
           - {type: slide, from: [-0.2, 0.74], to: [0.34, 0.74], t: [0, 1.4]}
           - {type: waddle, amp: 3, period: 0.5}

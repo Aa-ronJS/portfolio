@@ -565,6 +565,36 @@ class Rig:
                 slot = adj.setdefault(name, {})
                 slot["rot"] = slot.get("rot", 0.0) + delta
         world = self._world(adj)
+
+        def stretch_part(name, img, off, s):
+            """Scale a part along its bone axis about its pivot — the
+            rubber-hose reach: a hand that must touch something farther
+            than the arm is long simply gets a longer arm."""
+            b = self.bones[name]
+            ux, uy = b.tail[0] - b.head[0], b.tail[1] - b.head[1]
+            L = math.hypot(ux, uy) or 1.0
+            ux, uy = ux / L, uy / L
+            k = 1.0 / s - 1.0     # inverse scale along (ux, uy)
+            a00, a01 = 1 + k * ux * ux, k * ux * uy
+            a10, a11 = k * ux * uy, 1 + k * uy * uy
+            f00, f01 = 1 + (s - 1) * ux * ux, (s - 1) * ux * uy
+            f10, f11 = (s - 1) * ux * uy, 1 + (s - 1) * uy * uy
+            px, py = b.head[0] - off[0], b.head[1] - off[1]
+            cs = [(f00 * (x - px) + f01 * (y - py) + px,
+                   f10 * (x - px) + f11 * (y - py) + py)
+                  for x in (0, img.width) for y in (0, img.height)]
+            x0 = int(math.floor(min(c[0] for c in cs)))
+            y0 = int(math.floor(min(c[1] for c in cs)))
+            x1 = int(math.ceil(max(c[0] for c in cs)))
+            y1 = int(math.ceil(max(c[1] for c in cs)))
+            tx = px - (a00 * px + a01 * py)
+            ty = py - (a10 * px + a11 * py)
+            out = img.transform(
+                (max(1, x1 - x0), max(1, y1 - y0)), Image.AFFINE,
+                (a00, a01, a00 * x0 + a01 * y0 + tx,
+                 a10, a11, a10 * x0 + a11 * y0 + ty),
+                resample=Image.BICUBIC)
+            return out, (off[0] + x0, off[1] + y0)
         pad = self.pad
         canvas = Image.new("RGBA", (self.W + 2 * pad, self.H + 2 * pad),
                            (0, 0, 0, 0))
@@ -574,6 +604,9 @@ class Rig:
             variants = self.parts[name][shape_for(name)]
             sheet = (variant_for or {}).get(name, "body")
             img, (ox, oy) = variants.get(sheet) or variants["body"]
+            st = adj.get(name, {}).get("stretch", 0.0)
+            if abs(st) > 0.01:
+                img, (ox, oy) = stretch_part(name, img, (ox, oy), 1.0 + st)
             ang, piv, rest = world[name]
             if abs(ang) > 0.05:
                 w0, h0 = img.size
