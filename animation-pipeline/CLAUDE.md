@@ -495,11 +495,32 @@ go DOWN, not forward: shallow bow (torso 6 — a 14° bow put the ducked
 head against the attacker's chin), deeper knee fold (-52/58) with root
 dy 0.074 tuned so the feet stay planted — verified by measuring the
 lowest shoe pixel against the standing baseline (1505 vs 1505; boil
-gives ±4px), not by eye. Known ambiguity, left deliberately: a duck
-drops INTO a mid-body kick's line, so a dodged kick can still show
-contact — a kick is dodged convincingly only by lean, and the beat
-sheet doesn't know that yet; flag for a future round if it bothers
-anyone in motion.
+gives ±4px), not by eye. Follow-up, at Aaron's call: kicks are now
+always dodged by LEAN in the beat sheet — a duck drops the body INTO
+a mid-body kick's line and reads as a landed hit. The dodge rng is
+still drawn before the override so the frozen draw order holds (only
+beats whose atk is a kick change).
+
+Template hand fix (same day, Aaron's catch: "the elbow bent arm in
+the template is wrong as his hand is cropped out"): the bent-arm
+ghost led the forearm to ~19px from the cell's crop line and, unlike
+the straight-arm ghost, drew NO hand — so a naturally drawn fist got
+sliced off at ingest. Sugar's was: his committed arm_bent ended in a
+vertical cut mid-knuckle. The ghost now stops the forearm at 0.30
+span and draws the hand blob inside the box (both bent cells;
+kit_template.pdf regenerated). Sugar's hand was RECOVERED, not
+redrawn: sheet.jpg is the straightened canonical sheet at 0.4355
+scale and was the actual ingest source (rebuilt cell vs committed
+part: alpha IoU 0.982), so the missing strip was re-extracted with
+the v2 cell geometry from git (ca16d15 — his 11-cell sheet, never
+the current layout), cleaned through the same ghost-scrub + clean +
+binarize path, spliced onto the committed part at its exact right
+edge (part origin sits at canonical (834,1528), dot span 634.2px =
+part pixels), seal-and-filled, and the rig.json a/b fractions
+recomputed for the wider canvas; arm_r_bent is his usual mirrored
+stand-in, refreshed to match. When a kit part touches its image edge
+(`alpha[:, -2:].any()`), suspect the template, and check sheet.jpg
+before declaring the pixels lost.
 
 Discussed but unbuilt: per-character close-up
 framing in `char.json` (the directed close-up currently assumes a

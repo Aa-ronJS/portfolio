@@ -784,9 +784,16 @@ class EpisodeRenderer:
         if not both:
             who = attackers[0]
         while tcur + B <= t1:
-            beats.append({"t": tcur, "who": who, "_B": B,
-                          "atk": rng.choice(moves),
-                          "dodge": rng.choice(["duck", "lean"]),
+            atk = rng.choice(moves)
+            # the dodge is drawn regardless (rng draw order is frozen —
+            # committed demos depend on their seeds) but a kick is only
+            # dodged convincingly by leaning: a duck drops the body
+            # INTO a mid-body kick's line and reads as a landed hit
+            dodge = rng.choice(["duck", "lean"])
+            if atk == "kick":
+                dodge = "lean"
+            beats.append({"t": tcur, "who": who, "_B": B, "atk": atk,
+                          "dodge": dodge,
                           "hit": rng.random() < 0.3})
             if rng.random() < 0.75 and both:
                 who = 1 - who

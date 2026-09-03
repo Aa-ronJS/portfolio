@@ -214,10 +214,19 @@ def draw_ghost(d, name, A, B):
         # so each side's ghost shows its own curve)
         sgn = -1 if "_r_" in name else 1
         if name.endswith("bent"):
+            # the forearm stops well short of the cell edge and the
+            # ghost SHOWS the hand, inside the box — the old ghost led
+            # the forearm to ~19px from the crop line with no hand, so
+            # a naturally drawn fist got sliced off at ingest (sugar's
+            # was, recovered from his sheet on 2026-09-03)
             elbow = (cx, A[1] + 0.55 * span)
+            wrist = (cx + sgn * 0.30 * span, A[1] + 0.62 * span)
             _capsule(d, A, elbow, r, F, L)
-            _capsule(d, elbow, (cx + sgn * 0.5 * span,
-                                A[1] + 0.62 * span), r, F, L)
+            _capsule(d, elbow, wrist, r, F, L)
+            hx = cx + sgn * 0.43 * span
+            hr = 0.10 * span
+            d.ellipse([hx - hr, wrist[1] - hr, hx + hr, wrist[1] + hr],
+                      fill=F, outline=L, width=3)
         elif name.endswith("pocket"):
             _capsule(d, A, (cx, A[1] + 0.55 * span), r, F, L)
             d.line([cx - 2.2 * r, A[1] + 0.56 * span,
