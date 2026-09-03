@@ -380,7 +380,23 @@ class EpisodeRenderer:
         for j, a in enumerate(shot.get("actors", [])):
             if "char" in a:
                 c = self.char(a["char"])
-                body, talk, blink = c.pick(a.get("pose"))
+                # a rigged actor's pose may live on the head part alone
+                # (head_angry.png in a kit) — validate it there, not
+                # against full sheets
+                rig_pose = None
+                if a.get("pose") and getattr(c, "rig", None) and \
+                        a["pose"] not in c.layers:
+                    if any(a["pose"] in v
+                           for sh in c.rig.parts.values()
+                           for v in sh.values()):
+                        rig_pose = a["pose"]
+                    else:
+                        raise SystemExit(
+                            f"{c.folder}: no {a['pose']}.png sheet and "
+                            f"no head_{a['pose']}.png part for pose "
+                            f"'{a['pose']}'")
+                body, talk, blink = c.pick(
+                    None if rig_pose else a.get("pose"))
                 imgs = {"body": body, "talk": talk, "blink": blink}
                 # declared eyes/mouth stand in for missing sheets: the
                 # stock blink / mouth flap is stamped onto the drawing
@@ -393,6 +409,7 @@ class EpisodeRenderer:
                 anchor = c.anchor
             else:
                 c = None
+                rig_pose = None
                 img = Image.open(self.path(a["image"])).convert("RGBA")
                 imgs = {"body": img, "talk": None, "blink": None}
                 anchor = tuple(a.get("anchor", [0.5, 1.0]))
@@ -400,6 +417,11 @@ class EpisodeRenderer:
             # implied by a slide); everything else takes the flat path
             specs = self._clip_specs(c, a, s["duration"]) \
                 if c is not None and getattr(c, "rig", None) else []
+            if rig_pose and not specs:
+                raise SystemExit(
+                    f"pose '{rig_pose}' lives on {c.folder}'s kit head, "
+                    f"which only renders through clips — give the actor "
+                    f"one (clip: idle is enough)")
             if "scale" in a or c is None or c.world_height is None:
                 # legacy sizing: fraction of canvas height, canvas-based
                 # (a rigged actor's k means the same — its posed canvas
@@ -553,8 +575,13 @@ class EpisodeRenderer:
             head_avail |= set(variants)
 
         def sheet(kind):
-            if base != "body" and f"{base}_{kind}" in head_avail:
-                return f"{base}_{kind}"
+            # a posed face never falls back to the NEUTRAL talk/blink —
+            # flickering the expression away reads as a glitch. Without
+            # angry_talk the angry face holds and the stock overlay
+            # provides the flap instead.
+            if base != "body":
+                cand = f"{base}_{kind}"
+                return cand if cand in head_avail else None
             return kind if kind in head_avail else None
 
         variant_for = {b: base for b in rig.parts} if base != "body" else {}

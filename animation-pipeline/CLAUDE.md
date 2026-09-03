@@ -203,6 +203,17 @@ against a simulated photo (doug's parts composited into the template,
 perspective-warped onto a table, colour cast, JPEG'd) — keep that bar
 for layout changes: regenerate the PDF and re-run the round trip.
 
+**Sugar** (`demo/characters/sugar/`) is the first REAL kit character:
+Aaron drew all eleven boxes (source: `sheet.jpg` in his folder,
+ingested by `kit.py ingest`), screen test `demo/episode-sugar.yaml` →
+`demo/episode-sugar.mp4`. Two rules landed with him: a kit pose that
+lives only on a head part (`head_angry.png`) is valid for `pose:` on
+the rigged path (and needs a clip to render — the error says so), and
+a posed face NEVER falls back to the neutral talk/blink head (the
+expression would flicker away every flap) — the pose head holds and
+the stock overlays provide the mouth flap and blink instead. Drawn
+`angry_talk`/`angry_blink` parts still win when they exist.
+
 Discussed but unbuilt: per-character close-up
 framing in `char.json` (the directed close-up currently assumes a
 humanoid head at `at: [0.5, 1.35], scale: 1.5`); pose changes and
