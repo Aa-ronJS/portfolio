@@ -608,6 +608,24 @@ the BLANK template (must error "torso box looks empty" — proves no
 printed mark survives as drawing) and a sheet with a real character's
 parts composited into the cells (must produce a walking rig).
 
+The fellowship (2026-09-04): three characters drawn on the ghost-free
+template on Aaron's phone — wizard, hobbit, nazgul — ingested into
+demo/characters/ and staged in demo/episode-fellowship.yaml (walk in,
+talk over placeholder mumbles, nazgul arrives screaming; hobbit
+world_height 0.6 vs 1.1 — the size contrast is the gag). Ingest grew
+two things for them: ALL printed template text (title, tips, labels)
+and the fiducials are now erased BY POSITION (re-rendered into a mask
+and inpainted from surroundings, same idea as borders/dots), and each
+cell's `capture()` area is wider than `inner()` — label strips are
+drawable, and row-1 cells (torso + heads) reach up into the header,
+because the wizard's hat poked past the box top and the old inner()
+crop beheaded it. inner() still defines the dot geometry: never
+change it. Two lessons from the audit: an enclosed white region in a
+drawing (the hat curl's loop) correctly fills paper-white — that is
+the white-shirt rule, not a bug; and a character whose head part is
+enormous (the nazgul's full-height hood) should carry `look: false` —
+auto-gaze tilts the whole hood and cracks the neck silhouette.
+
 Discussed but unbuilt: per-character close-up
 framing in `char.json` (the directed close-up currently assumes a
 humanoid head at `at: [0.5, 1.35], scale: 1.5`); pose changes and

@@ -59,6 +59,17 @@ DOT_R = 13                     # printed registration dot radius
 BORDER = (185, 185, 185)
 LABEL_INK = (110, 110, 110)
 
+# the header instructions — ingest re-renders this text to erase it by
+# position, so template and ingest MUST share the exact string
+TIPS = ("draw ONE character into the boxes, thick marker, flat colour"
+        "  ·  the red dots are the joints: draw around them, never "
+        "move them  ·  give the torso hips — the legs tuck up behind "
+        "them  ·  nothing is mirrored: an empty optional box means "
+        "the LEFT drawing stands in as-is  ·  draw on this image "
+        "directly (or photograph a print flat, all four black "
+        "squares in frame), then:  python3 pipeline/kit.py "
+        "ingest sheet.jpg characters/<name>")
+
 # name -> (outer box, optional). Inner draw area trims the label strip.
 # Every RIGHT-side box is optional: nothing is ever mirrored, so an
 # empty right box means the left drawing stands in for it verbatim.
@@ -133,6 +144,17 @@ def inner(box):
     return (x0 + 16, y0 + 78, x1 - 16, y1 - 16)
 
 
+def capture(name):
+    """The area ingest actually keeps for a cell. Wider than inner():
+    all printed marks are erased by position, so the label strip is
+    fair game to draw over, and row-1 cells (torso + heads) reach up
+    into the header — a wizard hat may poke past the box top (it did).
+    inner() still defines the dot geometry; never change that."""
+    x0, y0, x1, y1 = CELLS[name][0]
+    top = 150 if y0 == 290 else y0 + 2
+    return (x0 + 16, top, x1 - 16, y1 - 16)
+
+
 def cell_dots(name):
     """The two red dots for a cell, top dot first, in sheet pixels."""
     x0, y0, x1, y1 = inner(CELLS[name][0])
@@ -180,16 +202,8 @@ def cmd_template(args):
                      cx + FID / 2, cy + FID / 2], fill=(10, 10, 10))
     d.text((240, 78), "character kit sheet", font=_font(64),
            fill=(20, 20, 20))
-    tips = ("draw ONE character into the boxes, thick marker, flat colour"
-            "  ·  the red dots are the joints: draw around them, never "
-            "move them  ·  give the torso hips — the legs tuck up behind "
-            "them  ·  nothing is mirrored: an empty optional box means "
-            "the LEFT drawing stands in as-is  ·  draw on this image "
-            "directly (or photograph a print flat, all four black "
-            "squares in frame), then:  python3 pipeline/kit.py "
-            "ingest sheet.jpg characters/<name>")
     import textwrap
-    for i, line in enumerate(textwrap.wrap(tips, 118)):
+    for i, line in enumerate(textwrap.wrap(TIPS, 118)):
         d.text((240, 156 + i * 35), line, font=_font(28),
                fill=(90, 90, 90))
     for name, (box, optional) in CELLS.items():
@@ -307,8 +321,24 @@ def cmd_ingest(args):
     bd = ImageDraw.Draw(bmask)
     for name2, (box2, _) in CELLS.items():
         bd.rounded_rectangle(box2, radius=18, outline=255, width=14)
-    bm = np.array(bmask) > 0
-    arr[bm] = paper
+    # ... and the printed TEXT and fiducials the same way: the capture
+    # areas include the label strips and the header gap (drawings
+    # spill there), so every printed glyph must go. Re-render the
+    # exact text into a mask and inpaint from the surroundings — under
+    # opaque paint the neighbours are paint, on paper they are paper.
+    bd.text((240, 78), "character kit sheet", font=_font(64), fill=255)
+    import textwrap
+    for i, line in enumerate(textwrap.wrap(TIPS, 118)):
+        bd.text((240, 156 + i * 35), line, font=_font(28), fill=255)
+    for name2, (box2, _) in CELLS.items():
+        bd.text((box2[0] + 18, box2[1] + 18), TITLES[name2],
+                font=_font(29), fill=255)
+    for cx, cy in FID_C:
+        bd.rectangle([cx - FID / 2 - 4, cy - FID / 2 - 4,
+                      cx + FID / 2 + 4, cy + FID / 2 + 4], fill=255)
+    bm = ndimage.binary_dilation(np.array(bmask) > 0, iterations=3)
+    _, tidx = ndimage.distance_transform_edt(bm, return_indices=True)
+    arr[bm] = arr[tidx[0][bm], tidx[1][bm]]
     cleaned = clean(Image.fromarray((arr * 255).astype(np.uint8)),
                     paper_cut=args.paper_cut)
     # everything outside the draw areas (labels, borders, fiducials,
@@ -316,7 +346,7 @@ def cmd_ingest(args):
     alpha = np.array(cleaned.getchannel("A"))
     keep = np.zeros(alpha.shape, dtype=bool)
     for name in CELLS:
-        x0, y0, x1, y1 = inner(CELLS[name][0])
+        x0, y0, x1, y1 = capture(name)
         keep[y0:y1, x0:x1] = True
     alpha[~keep] = 0
     # scissor cut: a pixel is in the drawing or it isn't. Soft shading,
@@ -329,7 +359,7 @@ def cmd_ingest(args):
     os.makedirs(os.path.join(args.character, "parts"), exist_ok=True)
     pivots, wrote, skipped = {}, [], []
     for name, (box, optional) in CELLS.items():
-        x0, y0, x1, y1 = inner(box)
+        x0, y0, x1, y1 = capture(name)
         cell = cleaned.crop((x0, y0, x1, y1))
         a = np.array(cell.getchannel("A"))
         if (a > 24).sum() < 0.004 * a.size:
