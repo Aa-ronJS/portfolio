@@ -825,9 +825,12 @@ class EpisodeRenderer:
                 else:
                     slot[k2] = slot.get(k2, 0.0) + v
 
-        # guard: fists up, slight crouch, bouncing on the toes
+        # guard: BOTH fists up, slight crouch, bouncing on the toes.
+        # -30 on the lead arm parked the fist on the hip (rig-posed
+        # sweep, Aaron's catch); -72 holds it at chin height on both
+        # reference rigs — pose the rig before retuning these
         add("arm_l", rot=-52, shape="bent")
-        add("arm_r", rot=-30, shape="bent")
+        add("arm_r", rot=-72, shape="bent")
         add("torso", rot=4)
         add("root", dy=0.012 + 0.010 * math.sin(t * 22))
         add("leg_l_upper", rot=-6)
