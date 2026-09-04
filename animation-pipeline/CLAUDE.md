@@ -569,6 +569,29 @@ and the lessons:
   see a phase; and remember pre-first-key step samples hold the LAST
   key's value (loop wrap), so give channels an explicit 0.0 key.
 
+Uncoloured ghosts (2026-09-04, Aaron: "the outlines shouldn't be
+coloured and shouldn't actually appear in the character either"): the
+printed template WAS appearing in finished characters — the non-photo
+blue survived under translucent marker as a blue cast, every capsule's
+printed centre bone-line ran the length of each limb through the
+paint, and the dot scrub left red asterisk remnants at joints. Three
+fixes: (1) ghosts are now light neutral grey (235), fill-only, no
+centre lines — close enough to paper that ingest's paper cut removes
+them unpainted, and under paint they only nudge it darker; face
+guide lines thickened to stay printable at that lightness; the dot
+scrub got a wider disc (2.5R) and more dilation. (2) Sugar's
+committed parts were repaired in place: known-position scrubs — a
+disc that replaces non-ink pixels differing from the ring's light
+median (plus anything red-cast) at each dot, and a corridor along
+each v2 ghost segment replacing non-ink pixels that differ from the
+row's flank median. TRAP hit and dodged: the knee dot sits ON the
+drawn shorts hem — scrubbing it gouged the boundary; a dot fully
+covered by opaque paint left no remnant and must be SKIPPED, so
+check the part visually before scrubbing each dot position. Right
+arms were verified to be exact mirrors, then regenerated from the
+repaired lefts. (3) episode-fight/dance re-rendered on the clean
+parts; older committed demos left at their render dates as usual.
+
 Discussed but unbuilt: per-character close-up
 framing in `char.json` (the directed close-up currently assumes a
 humanoid head at `at: [0.5, 1.35], scale: 1.5`); pose changes and

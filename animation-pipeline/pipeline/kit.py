@@ -45,8 +45,14 @@ FID_C = [(115, 115), (A4W - 115, 115),
          (115, A4H - 115), (A4W - 115, A4H - 115)]   # centres
 DOT_R = 13                     # printed registration dot radius
 
-GHOST_FILL = (214, 234, 241)   # non-photo blue: vanishes on ingest
-GHOST_LINE = (188, 219, 231)
+# Ghost guides are UNCOLOURED — a light neutral grey close enough to
+# paper that ingest's paper cut removes it wherever it isn't painted
+# over, and where it IS painted over it only nudges the paint darker
+# instead of tinting it blue. The old non-photo blue survived under
+# translucent marker as a visible blue cast, and the capsule centre
+# lines rode into the finished characters (Aaron's catch, 2026-09-04).
+GHOST_FILL = (235, 235, 235)
+GHOST_LINE = (235, 235, 235)
 LABEL_INK = (110, 110, 110)
 
 # name -> (outer box, optional). Inner draw area trims the label strip.
@@ -152,6 +158,8 @@ def cell_extra_dots(name):
 # ---------------------------------------------------------------- ghosts
 
 def _capsule(d, a, b, r, fill, line):
+    # fill only — a printed centre line ends up INSIDE the drawn limb
+    # and shows through light paint in the finished character
     ax, ay = a
     bx, by = b
     import math
@@ -161,7 +169,6 @@ def _capsule(d, a, b, r, fill, line):
                (bx - nx, by - ny), (ax - nx, ay - ny)], fill=fill)
     for cx, cy in (a, b):
         d.ellipse([cx - r, cy - r, cx + r, cy + r], fill=fill)
-    d.line([a, b], fill=line, width=3)
 
 
 def draw_ghost(d, name, A, B):
@@ -192,21 +199,21 @@ def draw_ghost(d, name, A, B):
             r = 0.073 * span
             if name == "head_blink":
                 d.arc([ex - r, ey - r, ex + r, ey + r], 20, 160,
-                      fill=L, width=4)
+                      fill=L, width=6)
             else:
                 d.ellipse([ex - r, ey - r, ex + r, ey + r],
-                          outline=L, width=4)
+                          outline=L, width=6)
             if name == "head_angry":
                 s = -1 if ox < 0 else 1
                 d.line([ex - s * r, ey - 1.5 * r, ex + s * r, ey - 2.1 * r],
-                       fill=L, width=4)
+                       fill=L, width=6)
         my = A[1] + 0.763 * span
         mw = 0.237 * span
         if name == "head_talk":
             d.ellipse([cx - mw / 2, my - 0.06 * span,
-                       cx + mw / 2, my + 0.06 * span], outline=L, width=4)
+                       cx + mw / 2, my + 0.06 * span], outline=L, width=6)
         else:
-            d.line([cx - mw / 2, my, cx + mw / 2, my], fill=L, width=4)
+            d.line([cx - mw / 2, my, cx + mw / 2, my], fill=L, width=6)
     elif name.startswith("arm"):
         r = 0.085 * span
         # a bent forearm crosses TOWARD the body: screen-right for the
@@ -385,13 +392,13 @@ def cmd_ingest(args):
             win = arr[y0:y0 + 2 * R, x0:x0 + 2 * R]
             wy, wx = np.mgrid[0:win.shape[0], 0:win.shape[1]]
             d2 = (wx - (px - x0)) ** 2 + (wy - (py - y0)) ** 2
-            disc = d2 < (2.0 * DOT_R) ** 2
+            disc = d2 < (2.5 * DOT_R) ** 2
             ring = (d2 >= (2.2 * DOT_R) ** 2) & (d2 < (3.4 * DOT_R) ** 2)
             m = np.median(win[ring], axis=0)
             off = np.linalg.norm(win - m, axis=2) > 0.17
             dots[y0:y0 + 2 * R, x0:x0 + 2 * R] |= disc & off
     if dots.any():
-        dots = ndimage.binary_dilation(dots, iterations=2)
+        dots = ndimage.binary_dilation(dots, iterations=3)
         _, idx = ndimage.distance_transform_edt(dots, return_indices=True)
         arr[dots] = arr[idx[0][dots], idx[1][dots]]
     cleaned = clean(Image.fromarray((arr * 255).astype(np.uint8)),
