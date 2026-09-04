@@ -152,7 +152,10 @@ def capture(name):
     inner() still defines the dot geometry; never change that."""
     x0, y0, x1, y1 = CELLS[name][0]
     top = 150 if y0 == 290 else y0 + 2
-    return (x0 + 16, top, x1 - 16, y1 - 16)
+    # the bottom reaches 26px into the inter-row gap: a drawn neck or
+    # shoe that crosses the box edge would otherwise be cut dead flat
+    # (the wizard's chin was guillotined at the cell bottom)
+    return (x0 + 16, top, x1 - 16, y1 + 26)
 
 
 def cell_dots(name):
@@ -404,6 +407,37 @@ def cmd_ingest(args):
             raise SystemExit(f"the {need} box looks empty — it's "
                              f"required. Redraw or retake the photo "
                              f"(brighter, flatter) and rerun.")
+    # normalise head variants to the base head: each drawn head sits a
+    # little differently against its dots, so a raw talk/blink swap
+    # MORPHS the head's size and position every flap (the wizard
+    # strobed). Rewrite each variant's pivots so its visible box lands
+    # exactly where the base head's does, in dot-span units.
+    if "head" in wrote:
+        def _bb(name2):
+            im2 = Image.open(os.path.join(args.character, "parts",
+                                          name2 + ".png"))
+            a2 = np.array(im2.getchannel("A")) > 24
+            ys2, xs2 = np.nonzero(a2)
+            pv2 = pivots[name2]
+            W2, H2 = im2.size
+            span2 = (pv2["b"][1] - pv2["a"][1]) * H2
+            ax2, ay2 = pv2["a"][0] * W2, pv2["a"][1] * H2
+            return (im2.size, span2, (ax2, ay2),
+                    ((xs2.min() + xs2.max()) / 2, (ys2.min() + ys2.max()) / 2),
+                    (ys2.max() - ys2.min()))
+        (_, span0, a0, c0, h0) = _bb("head")
+        u0 = ((c0[0] - a0[0]) / span0, (c0[1] - a0[1]) / span0)
+        r0 = h0 / span0
+        for name2 in list(wrote):
+            if not name2.startswith("head_"):
+                continue
+            ((W2, H2), span2, a2, c2, h2) = _bb(name2)
+            nspan = h2 / r0
+            nax = c2[0] - u0[0] * nspan
+            nay = c2[1] - u0[1] * nspan
+            pivots[name2] = {
+                "a": [round(nax / W2, 4), round(nay / H2, 4)],
+                "b": [round(nax / W2, 4), round((nay + nspan) / H2, 4)]}
     import copy
     bones = copy.deepcopy(BONES)
     with open(os.path.join(args.character, "rig.json"), "w") as f:

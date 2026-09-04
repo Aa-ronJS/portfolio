@@ -663,6 +663,19 @@ facing art steps backward in every clip no matter which way it is
 flipped; the ART must be turned. All three fellowship characters
 were turned and re-checked.
 
+The cursed round (Aaron: "these look fucking cursed" — he was
+right): two ingest defects that only show in MOTION, found by reading
+CONSECUTIVE frames of a talking close-up. (1) Head variants were
+registered only by the dot span, and separately-drawn heads sit
+differently against their dots — so every talk/blink swap MORPHED the
+head's size and position at syllable rate. Ingest now normalises
+every head_* variant to the base head's visible box in dot-span
+units (rewrites the variant's pivots; the flap becomes an expression
+change, not a morph). (2) A chin drawn past the cell bottom was cut
+dead flat mid-neck; captures now reach 26px into the inter-row gap.
+Add to the check habit: pull two CONSECUTIVE frames of each talker
+mid-line — a still can't show a strobe.
+
 Discussed but unbuilt: per-character close-up
 framing in `char.json` (the directed close-up currently assumes a
 humanoid head at `at: [0.5, 1.35], scale: 1.5`); pose changes and
