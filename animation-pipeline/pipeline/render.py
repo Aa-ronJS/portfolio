@@ -825,12 +825,18 @@ class EpisodeRenderer:
                 else:
                     slot[k2] = slot.get(k2, 0.0) + v
 
-        # guard: BOTH fists up, slight crouch, bouncing on the toes.
-        # -30 on the lead arm parked the fist on the hip (rig-posed
-        # sweep, Aaron's catch); -72 holds it at chin height on both
-        # reference rigs — pose the rig before retuning these
-        add("arm_l", rot=-52, shape="bent")
-        add("arm_r", rot=-72, shape="bent")
+        # guard: the old-timey pugilist stance — lead arm (arm_r, the
+        # front shoulder) extended toward the opponent with the hand up
+        # at chin height, rear arm folded across the belly. This is the
+        # ONLY guard the kit art can pose: the bent shape's elbow folds
+        # down/inward, so no rotation of it ever yields forearm-up —
+        # -52 read as arms crossed, -30 as hand-on-hip, -72 as an
+        # upside-down arm (elbow up, knuckles down; Aaron caught all
+        # three). A raised STRAIGHT arm past ~-115 reads as waving.
+        # Verified by posing both reference rigs and reading close-up
+        # crops — do the same before retuning.
+        add("arm_l", rot=-12, shape="bent")
+        add("arm_r", rot=-105, shape="straight")
         add("torso", rot=4)
         add("root", dy=0.012 + 0.010 * math.sin(t * 22))
         add("leg_l_upper", rot=-6)

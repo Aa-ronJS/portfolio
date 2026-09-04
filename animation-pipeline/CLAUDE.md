@@ -319,8 +319,8 @@ part over magenta — "looks white over white" hides missing alpha.
 seeded beat sheet (who swings when — jab/cross/kick — whether the
 other ducks or leans, and the ~30% that land). `_fight_pose` authors
 everything in body space facing the opponent (the face-each-other
-flip squares both sides up, so one sign set serves both): guard with
-fists up + toe bounce, windup, then the strike window where fists and
+flip squares both sides up, so one sign set serves both): a pugilist
+guard (see below) + toe bounce, windup, then the strike window where fists and
 the kicking foot are REACH-SOLVED onto the opponent (stopping at the
 near cheek — `dirn` — not their centre line; punches may rubber-hose
 to max 3.0), a lunge dx carries the body in, and recovery eases out.
@@ -483,6 +483,18 @@ the victim's head snap (-24) was invisible at phone scale while ducks
 and leans were big moves. Hits now rock the victim: head -44, whole
 body tilting through root rot -7, a real stagger (root dx -0.16) and
 the guard arms knocked open, all peaking at p=0.4 with the thwack.
+The guard itself took three visibly-wrong tries (arms crossed, hand
+on hip, upside-down arm — elbow up, knuckles down) before the truth
+surfaced: the kit's bent-arm art folds the elbow down/inward, so NO
+rotation of it can hold a forearm-up boxing guard, and a raised
+straight arm past ~-115 reads as waving. The guard the art CAN pose
+is the old-timey pugilist stance: lead arm (arm_r) straight at -105,
+hand up at chin height toward the opponent; rear arm (arm_l) bent at
+-12, folded across the belly. LESSON, the hard way twice in one day:
+verify poses on CLOSE-UP CROPS at full resolution — name where the
+shoulder, elbow and hand each sit — never on grid thumbnails; a
+thumbnail sold both the hip-hand and the upside-down arm as "fists
+up".
 (2) The fixed lunge (root dx 0.10 punch / 0.14 kick) drove the
 attacker's face INTO a closely-staged opponent's head. Fight dicts now
 carry `adv_max` — the staged gap in standing-height units minus 0.52
