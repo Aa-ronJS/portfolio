@@ -640,6 +640,29 @@ a tan wall" was a transparent robe and a full episode shipped before
 anyone put magenta behind it. The three fellowship characters were
 re-ingested clean.
 
+THE STANDARD POST-INGEST CHECK (Aaron's rule, 2026-09-04 — run it
+after EVERY ingest, before the character is ever staged):
+
+    python3 pipeline/kit.py check characters/<name> check.png
+
+and READ the sheet: every part over magenta (a see-through interior
+is the transparent-clothes bug), rest + three walk phases over a
+per-panel ground line with the walk arrow (toes and bending knees
+must point WITH the arrow), every arm shape raised to -90 (the hand
+must lead, not trail), and the head variants. The fellowship shipped
+walking right with left-pointing feet because nobody looked. If the
+character is drawn FACING LEFT (toes left), fix it with
+
+    python3 pipeline/kit.py turn characters/<name>
+
+which canonicalises the art to face right: mirrors every part, swaps
+left/right part roles, mirrors pivots, face anchors and pocket aims.
+`facing: left` in char.json is NOT the fix for a kit character —
+clip swings track the art's own front through any flip, so left-
+facing art steps backward in every clip no matter which way it is
+flipped; the ART must be turned. All three fellowship characters
+were turned and re-checked.
+
 Discussed but unbuilt: per-character close-up
 framing in `char.json` (the directed close-up currently assumes a
 humanoid head at `at: [0.5, 1.35], scale: 1.5`); pose changes and

@@ -546,6 +546,153 @@ def cmd_mirror(args):
     print(f"mirrored {', '.join(made) or 'nothing (no left arm parts)'}",
           file=sys.stderr)
 
+def cmd_turn(args):
+    """Turn a LEFT-drawn character into the canonical right-facing one.
+
+    Clips are authored for rest art that faces screen-RIGHT, and clip
+    swings always track the art's own front — flips preserve that. So
+    a character drawn facing left steps backward in every clip, both
+    flipped and not; the fix is to canonicalise the ART: mirror every
+    part, swap left/right part roles, mirror the pivots, face anchors
+    and pocket aims, and rebuild the assembled body.
+    """
+    pdir = os.path.join(args.character, "parts")
+    rp = os.path.join(args.character, "rig.json")
+    with open(rp) as f:
+        rig = json.load(f)
+    parts = rig.get("parts", {})
+    pair = {}
+    for shape in ("straight", "bent", "point", "pocket", "kneel"):
+        pair[f"arm_{shape}"] = f"arm_r_{shape}"
+        pair[f"arm_r_{shape}"] = f"arm_{shape}"
+        pair[f"leg_{shape}"] = f"leg_r_{shape}"
+        pair[f"leg_r_{shape}"] = f"leg_{shape}"
+    imgs = {os.path.splitext(f)[0]:
+            Image.open(os.path.join(pdir, f)).convert("RGBA")
+            for f in os.listdir(pdir) if f.endswith(".png")}
+    newimgs, newparts = {}, {}
+    for stem, img in imgs.items():
+        # paired sides swap roles; an unpaired part (or a head/torso)
+        # mirrors in place and keeps serving both sides verbatim
+        dst = pair[stem] if stem in pair and pair[stem] in imgs else stem
+        newimgs[dst] = img.transpose(Image.FLIP_LEFT_RIGHT)
+        pv = parts.get(stem)
+        if pv:
+            newparts[dst] = {
+                "a": [round(1 - pv["a"][0], 4), pv["a"][1]],
+                "b": [round(1 - pv["b"][0], 4), pv["b"][1]]}
+    for stem, img in newimgs.items():
+        img.save(os.path.join(pdir, stem + ".png"))
+    rig["parts"] = newparts
+    face = rig.get("face")
+    if face:
+        eyes = face.get("eyes") or []
+        for e in eyes:
+            e["at"][0] = round(1 - e["at"][0], 4)
+        face["eyes"] = list(reversed(eyes))
+        if "mouth" in face:
+            face["mouth"]["at"][0] = round(1 - face["mouth"]["at"][0], 4)
+    sr = rig.get("shape_rot") or {}
+    swapb = {"arm_l": "arm_r", "arm_r": "arm_l"}
+    rig["shape_rot"] = {swapb.get(b, b): {s: round(-d, 1)
+                                          for s, d in m.items()}
+                        for b, m in sr.items()}
+    with open(rp, "w") as f:
+        json.dump(rig, f, indent=2)
+    cj = os.path.join(args.character, "char.json")
+    with open(cj) as f:
+        c = json.load(f)
+    c["anchor"][0] = round(1 - c["anchor"][0], 4)
+    c.pop("facing", None)
+    with open(cj, "w") as f:
+        json.dump(c, f, indent=2)
+    bp = os.path.join(args.character, "body.png")
+    if os.path.exists(bp):
+        Image.open(bp).transpose(Image.FLIP_LEFT_RIGHT).save(bp)
+    print(f"turned {args.character} to face right "
+          f"({len(newimgs)} parts)", file=sys.stderr)
+
+
+def cmd_check(args):
+    """The post-ingest acceptance sheet — run it after EVERY ingest
+    and READ it before staging the character:
+    - every part over magenta: a see-through interior is the
+      transparent-clothes bug, not pale paint;
+    - rest + three walk phases over a ground line with the walk arrow:
+      toes and bending knees must point WITH the arrow;
+    - each arm shape raised to -90: the hand must lead, not trail;
+    - the drawn head variants.
+    """
+    from rig import Rig, pose_at, resolve_channels, find_clip
+    import rig as rigmod
+    folder = args.character
+    layers = rigmod._load_layers(folder)
+    r = Rig(folder, layers)
+    pdir = os.path.join(folder, "parts")
+    pnames = sorted(os.path.splitext(f)[0]
+                    for f in os.listdir(pdir) if f.endswith(".png"))
+    MAG = (255, 0, 255, 255)
+
+    def panel(img, label, w, h, ground=False):
+        im = img.convert("RGBA")
+        gfrac = None
+        if ground:
+            a = np.array(im.getchannel("A"))
+            ys = np.nonzero(a.max(axis=1) > 24)[0]
+            gfrac = (ys.max() / im.height) if len(ys) else 1.0
+        im.thumbnail((w, h - 22))
+        p = Image.new("RGBA", (w, h), MAG)
+        d = ImageDraw.Draw(p)
+        d.rectangle([0, 0, w, 18], fill=(0, 0, 0))
+        d.text((4, 3), label, fill=(255, 255, 0))
+        p.alpha_composite(im, ((w - im.width) // 2, 22))
+        if gfrac is not None:
+            gy = 22 + int(gfrac * im.height) + 1
+            d.line([(0, gy), (w, gy)], fill=(0, 255, 0), width=2)
+        return p
+
+    rows = []
+    # 1 — every part over magenta
+    prow = [panel(Image.open(os.path.join(pdir, n + ".png")), n, 190, 340)
+            for n in pnames]
+    rows.append(prow)
+    # 2 — rest + walk phases, ground line, direction arrow
+    clip = find_clip("walk", [os.path.join(folder, "clips"),
+                              os.path.join(folder, "..", "clips")])
+    prow = []
+    for lab, t in [("rest", None), ("walk 1", 10.05), ("walk 2", 10.2),
+                   ("walk 3", 10.45)]:
+        pose = {} if t is None else resolve_channels(
+            pose_at([{"clip": clip, "t": None}], t), r.bones)
+        img, pad = r.pose(pose)
+        p = panel(img, lab, 260, 480, ground=True)
+        if t is not None:
+            d = ImageDraw.Draw(p)
+            d.line([(30, 460), (110, 460)], fill=(0, 255, 0), width=4)
+            d.polygon([(110, 452), (130, 460), (110, 468)],
+                      fill=(0, 255, 0))
+        prow.append(p)
+    # 3 — arm shapes at -90: the hand leads
+    shapes = sorted({s for n in pnames if n.startswith("arm_")
+                     for s in [n.replace("arm_r_", "").replace("arm_", "")]})
+    for s in shapes:
+        img, pad = r.pose({"arm_r": {"rot": -90, "shape": s}})
+        prow.append(panel(img, f"arm -90 {s}", 260, 480))
+    rows.append(prow)
+    W = max(sum(p.width for p in row) for row in rows)
+    H = sum(max(p.height for p in row) for row in rows)
+    sheet = Image.new("RGBA", (W, H), MAG)
+    y = 0
+    for row in rows:
+        x = 0
+        for p in row:
+            sheet.alpha_composite(p, (x, y))
+            x += p.width
+        y += max(p.height for p in row)
+    sheet.convert("RGB").save(args.out)
+    print(f"wrote {args.out} — now READ it", file=sys.stderr)
+
+
 def main():
     ap = argparse.ArgumentParser(description=__doc__,
         formatter_class=argparse.RawDescriptionHelpFormatter)
@@ -564,6 +711,17 @@ def main():
                             "files (stopgap until they are drawn)")
     m.add_argument("character", help="ingested character folder")
     m.set_defaults(fn=cmd_mirror)
+    tn = sub.add_parser("turn",
+                        help="canonicalise a LEFT-drawn character to "
+                             "face right (mirror parts, swap sides)")
+    tn.add_argument("character", help="ingested character folder")
+    tn.set_defaults(fn=cmd_turn)
+    ck = sub.add_parser("check",
+                        help="post-ingest acceptance sheet: parts over "
+                             "magenta, walk direction, arm shapes")
+    ck.add_argument("character", help="ingested character folder")
+    ck.add_argument("out", help="output .png to READ")
+    ck.set_defaults(fn=cmd_check)
     args = ap.parse_args()
     args.fn(args)
 
