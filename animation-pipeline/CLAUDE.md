@@ -534,6 +534,41 @@ stand-in, refreshed to match. When a kit part touches its image edge
 (`alpha[:, -2:].any()`), suspect the template, and check sheet.jpg
 before declaring the pixels lost.
 
+Footage-to-choreography (2026-09-04): the first episode staged from
+REFERENCE FOOTAGE. Aaron sends a video link; the session maps its
+motion beats onto clips + an episode. The reference ("How to dance
+with a partner - ballroom dance in 60 seconds", a youtube short) was
+IP-blocked for direct download from this environment (every yt-dlp
+player client 403'd at the media CDN; the EJS challenge solver from
+pip `yt-dlp-ejs` + node got the formats listed) — but the STORYBOARD
+track (`-f sb0`, an mhtml of jpeg grids, parsed with the email
+module) gave 45 frames at ~1.4s spacing, plenty to key a
+choreography: hold, box step, underarm turn, send-out. The result is
+`demo/episode-dance.yaml` → `demo/episode-dance.mp4` (sugar leads,
+doug follows, chip shop, placeholder oom-pah-pah in demo/sfx/
+waltz.wav from make_demo_assets `waltz_music()`), five new stock
+clips (waltz_lead / waltz_follow / turn_lead / turn_follow / bow),
+and the lessons:
+- Two-actor contact is REACH, not pose-tuning: both lead hands
+  reach-solve onto ONE shared canvas point and the hold genuinely
+  joins whatever the arm lengths (sugar's noodle vs doug's stub);
+  during the box the pinned hands + swaying bodies read as a real
+  frame. Same trick overhead for the underarm turn.
+- lead/follow clip pairs author dx with OPPOSITE signs so a flipped
+  follow mirrors into the SAME screen direction — the couple moves
+  as one.
+- A 2D "twirl" is a pass with a direction reversal: the follow walks
+  under the raised joined hands and back; flip_to_walk's mirror at
+  the reversal is the turn. Root-rot spins pivot at the anchor
+  (feet) and read as falling over — don't.
+- An actor who walks then holds a pose KEEPS the walk's auto-flip
+  for the rest of the shot: pin `flip:` explicitly when a backward
+  step precedes a held pose (sugar bowed in mirror-shirt until then).
+- The pose CLI adds +10s (to sit past the edge ramp): a non-loop
+  clip poses at its LAST key for any positive --t — pass (t - 10) to
+  see a phase; and remember pre-first-key step samples hold the LAST
+  key's value (loop wrap), so give channels an explicit 0.0 key.
+
 Discussed but unbuilt: per-character close-up
 framing in `char.json` (the directed close-up currently assumes a
 humanoid head at `at: [0.5, 1.35], scale: 1.5`); pose changes and

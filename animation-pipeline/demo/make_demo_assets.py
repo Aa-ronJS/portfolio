@@ -597,6 +597,43 @@ def duel_fx():
     print("props: splat, pool, flash; sfx/bang.wav (gunfight placeholders)")
 
 
+def waltz_music():
+    """Placeholder oom-pah-pah for episode-dance: 3/4 at a 1.5s bar
+    (matches the waltz clips' period), loop-clean at 24s. A cheap
+    triangle-ish synth — replace with a real recording when there is
+    one, same filename."""
+    sr = 44100
+    bar, bars = 1.5, 16
+    n = int(bar * bars * sr)
+    t = np.arange(n) / sr
+    out = np.zeros(n, dtype=np.float32)
+
+    def pluck(at, freqs, dur, amp):
+        i0 = int(at * sr)
+        m = int(dur * sr)
+        if i0 >= n:
+            return
+        m = min(m, n - i0)
+        tt = np.arange(m) / sr
+        env = np.exp(-tt * 5.5)
+        for f in freqs:
+            out[i0:i0 + m] += amp * env * (
+                np.sin(2 * np.pi * f * tt)
+                + 0.35 * np.sin(2 * np.pi * 2 * f * tt)) / len(freqs)
+
+    A2, E3, A3, Cs4, E4, D3, Fs3, D4 = (110.0, 164.81, 220.0, 277.18,
+                                        329.63, 146.83, 185.0, 293.66)
+    for b in range(bars):
+        t0 = b * bar
+        root, chord = ((A2, (A3, Cs4, E4)) if b % 4 in (0, 1, 3)
+                       else (D3, (A3, D4, Fs3 * 2)))
+        pluck(t0, [root], 0.42, 0.5)                 # OOM
+        pluck(t0 + 0.5, chord, 0.28, 0.30)           # pah
+        pluck(t0 + 1.0, chord, 0.28, 0.30)           # pah
+    _wav(os.path.join(HERE, "sfx", "waltz.wav"), out * 0.8)
+    print("sfx/waltz.wav (placeholder oom-pah-pah, 24s loop)")
+
+
 def main():
     for name, fn, variants in [
             ("stan", stan, ["body", "talk", "blink"]),
@@ -611,6 +648,7 @@ def main():
     make_doug()
     make_props()
     fight_foley()
+    waltz_music()
     duel_fx()
 
     os.makedirs(os.path.join(HERE, "backgrounds"), exist_ok=True)

@@ -12,3 +12,4 @@
 *.temp.wav
 .take-*/
 __pycache__/
+!demo/episode-dance.mp4
