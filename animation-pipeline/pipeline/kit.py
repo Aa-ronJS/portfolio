@@ -1,16 +1,19 @@
 #!/usr/bin/env python3
-"""The character kit sheet: print a template, draw into it, photograph
-it, get a rigged character.
+"""The character kit sheet: draw into the template, ingest the image,
+get a rigged character.
 
-    python3 pipeline/kit.py template mysheet.pdf     # print this (A4)
-    ... draw a character into the boxes, marker on paper ...
-    python3 pipeline/kit.py ingest photo.jpg myshow/characters/gary
+    python3 pipeline/kit.py template mysheet.png     # open on a phone
+    ... draw a character into the boxes (e-pen directly on the image,
+        or marker on a printout) ...
+    python3 pipeline/kit.py ingest mysheet.jpg myshow/characters/gary
 
-The template carries four black corner squares (so the photo can be
-straightened automatically), a pale blue ghost of each part in the
-house proportions (draw over it or just near it — only the dots
-matter), and the red registration dots already placed. `ingest` finds
-the squares, straightens and cleans the photo, cuts out every box,
+The template carries four black corner squares (so a photographed
+print can be straightened; a directly-drawn image passes through) and
+the red registration dots already placed — and NO guide art: the
+sheet is drawn on digitally, so anything printed inside a draw area
+would sit under the strokes and show through semi-transparent paint.
+The dots carry the proportions. `ingest` finds
+the squares, straightens and cleans the image, cuts out every box,
 erases the printed dots, and writes a complete character folder:
 parts/*.png, rig.json (skeleton + pivots + face anchors), char.json,
 and an assembled body.png. The character walks immediately:
@@ -45,14 +48,15 @@ FID_C = [(115, 115), (A4W - 115, 115),
          (115, A4H - 115), (A4W - 115, A4H - 115)]   # centres
 DOT_R = 13                     # printed registration dot radius
 
-# Ghost guides are UNCOLOURED — a light neutral grey close enough to
-# paper that ingest's paper cut removes it wherever it isn't painted
-# over, and where it IS painted over it only nudges the paint darker
-# instead of tinting it blue. The old non-photo blue survived under
-# translucent marker as a visible blue cast, and the capsule centre
-# lines rode into the finished characters (Aaron's catch, 2026-09-04).
-GHOST_FILL = (235, 235, 235)
-GHOST_LINE = (235, 235, 235)
+# There are NO ghost guides. Aaron draws on the template directly on
+# his phone with a pen, so anything printed inside a draw area sits
+# UNDER his strokes and shows through semi-transparent paint — the old
+# non-photo-blue ghosts left a blue cast, centre lines and half-
+# scrubbed dots in finished characters. Only functional marks remain:
+# cell borders and labels (outside the crop), the red joint dots, and
+# the corner fiducials. The dots carry all the proportion information
+# a drawing needs.
+BORDER = (185, 185, 185)
 LABEL_INK = (110, 110, 110)
 
 # name -> (outer box, optional). Inner draw area trims the label strip.
@@ -136,7 +140,7 @@ def cell_dots(name):
     if name == "torso":
         return (x0 + w / 2, y0 + 0.10 * h), (x0 + w / 2, y0 + 0.88 * h)
     if name.startswith("head"):
-        # span capped by the cell's width so the face ghost fits
+        # span capped by the cell's width so a drawn head fits
         half = min(0.44 * h, 0.62 * w)
         cy = y0 + 0.5 * h
         return (x0 + w / 2, cy - half), (x0 + w / 2, cy + half)
@@ -153,113 +157,6 @@ def cell_extra_dots(name):
         A, B = cell_dots(name)
         return [(A[0], A[1] + KNEE_F * (B[1] - A[1]))]
     return []
-
-
-# ---------------------------------------------------------------- ghosts
-
-def _capsule(d, a, b, r, fill, line):
-    # fill only — a printed centre line ends up INSIDE the drawn limb
-    # and shows through light paint in the finished character
-    ax, ay = a
-    bx, by = b
-    import math
-    L = math.hypot(bx - ax, by - ay) or 1.0
-    nx, ny = (by - ay) / L * r, -(bx - ax) / L * r
-    d.polygon([(ax + nx, ay + ny), (bx + nx, by + ny),
-               (bx - nx, by - ny), (ax - nx, ay - ny)], fill=fill)
-    for cx, cy in (a, b):
-        d.ellipse([cx - r, cy - r, cx + r, cy + r], fill=fill)
-
-
-def draw_ghost(d, name, A, B):
-    """Pale silhouette between the dots: proportions, not style."""
-    span = B[1] - A[1]
-    cx = A[0]
-    F, L = GHOST_FILL, GHOST_LINE
-    if name == "torso":
-        # neck stub above the top dot, body, and a pelvis wrapping past
-        # the hip dot — the legs tuck up behind it, so their joints and
-        # tops never show while they swing
-        d.rounded_rectangle([cx - 0.16 * span, A[1] - 0.10 * span,
-                             cx + 0.16 * span, A[1] + 0.06 * span],
-                            radius=20, fill=F)
-        d.rounded_rectangle([cx - 0.42 * span, A[1] + 0.04 * span,
-                             cx + 0.42 * span, B[1] - 0.02 * span],
-                            radius=80, fill=F, outline=L, width=3)
-        d.rounded_rectangle([cx - 0.36 * span, B[1] - 0.06 * span,
-                             cx + 0.36 * span, B[1] + 0.13 * span],
-                            radius=60, fill=F, outline=L, width=3)
-    elif name.startswith("head"):
-        d.ellipse([cx - 0.36 * span, A[1] + 0.04 * span,
-                   cx + 0.36 * span, B[1] - 0.03 * span],
-                  fill=F, outline=L, width=3)
-        ey = A[1] + 0.42 * span
-        for ox in (-0.158, 0.145):
-            ex = cx + ox * span
-            r = 0.073 * span
-            if name == "head_blink":
-                d.arc([ex - r, ey - r, ex + r, ey + r], 20, 160,
-                      fill=L, width=6)
-            else:
-                d.ellipse([ex - r, ey - r, ex + r, ey + r],
-                          outline=L, width=6)
-            if name == "head_angry":
-                s = -1 if ox < 0 else 1
-                d.line([ex - s * r, ey - 1.5 * r, ex + s * r, ey - 2.1 * r],
-                       fill=L, width=6)
-        my = A[1] + 0.763 * span
-        mw = 0.237 * span
-        if name == "head_talk":
-            d.ellipse([cx - mw / 2, my - 0.06 * span,
-                       cx + mw / 2, my + 0.06 * span], outline=L, width=6)
-        else:
-            d.line([cx - mw / 2, my, cx + mw / 2, my], fill=L, width=6)
-    elif name.startswith("arm"):
-        r = 0.085 * span
-        # a bent forearm crosses TOWARD the body: screen-right for the
-        # left arm, screen-left for the right arm (nothing is mirrored,
-        # so each side's ghost shows its own curve)
-        sgn = -1 if "_r_" in name else 1
-        if name.endswith("bent"):
-            # the forearm stops well short of the cell edge and the
-            # ghost SHOWS the hand, inside the box — the old ghost led
-            # the forearm to ~19px from the crop line with no hand, so
-            # a naturally drawn fist got sliced off at ingest (sugar's
-            # was, recovered from his sheet on 2026-09-03)
-            elbow = (cx, A[1] + 0.55 * span)
-            wrist = (cx + sgn * 0.30 * span, A[1] + 0.62 * span)
-            _capsule(d, A, elbow, r, F, L)
-            _capsule(d, elbow, wrist, r, F, L)
-            hx = cx + sgn * 0.43 * span
-            hr = 0.10 * span
-            d.ellipse([hx - hr, wrist[1] - hr, hx + hr, wrist[1] + hr],
-                      fill=F, outline=L, width=3)
-        elif name.endswith("pocket"):
-            _capsule(d, A, (cx, A[1] + 0.55 * span), r, F, L)
-            d.line([cx - 2.2 * r, A[1] + 0.56 * span,
-                    cx + 2.2 * r, A[1] + 0.58 * span], fill=L, width=5)
-        else:
-            _capsule(d, A, B, r, F, L)
-            hand = (B[0], B[1] + 0.09 * span)
-            d.ellipse([hand[0] - 1.2 * r, B[1],
-                       hand[0] + 1.2 * r, hand[1] + 0.02 * span], fill=F)
-            if name.endswith("point"):
-                d.polygon([(hand[0] - 0.6 * r, hand[1]),
-                           (hand[0], hand[1] + 0.14 * span),
-                           (hand[0] + 0.6 * r, hand[1])], fill=F)
-    else:  # legs — same direction on BOTH sides: knee and toe forward
-        r = 0.10 * span
-        if name.endswith("bent"):
-            knee = (cx + 0.30 * span, A[1] + 0.48 * span)
-            _capsule(d, A, knee, r, F, L)
-            _capsule(d, knee, (cx + 0.10 * span, B[1]), r, F, L)
-            shoe_x = cx + 0.10 * span
-        else:
-            _capsule(d, A, B, r, F, L)
-            shoe_x = cx
-        # toe points the way the knee bends — the walk direction
-        d.ellipse([shoe_x - 0.14 * span, B[1] - 0.02 * span,
-                   shoe_x + 0.34 * span, B[1] + 0.11 * span], fill=F)
 
 
 # ---------------------------------------------------------------- template
@@ -287,20 +184,20 @@ def cmd_template(args):
             "  ·  the red dots are the joints: draw around them, never "
             "move them  ·  give the torso hips — the legs tuck up behind "
             "them  ·  nothing is mirrored: an empty optional box means "
-            "the LEFT drawing stands in as-is  ·  photograph flat, "
-            "all four black squares in frame, then:  python3 "
-            "pipeline/kit.py ingest photo.jpg characters/<name>")
+            "the LEFT drawing stands in as-is  ·  draw on this image "
+            "directly (or photograph a print flat, all four black "
+            "squares in frame), then:  python3 pipeline/kit.py "
+            "ingest sheet.jpg characters/<name>")
     import textwrap
     for i, line in enumerate(textwrap.wrap(tips, 118)):
         d.text((240, 156 + i * 35), line, font=_font(28),
                fill=(90, 90, 90))
     for name, (box, optional) in CELLS.items():
         x0, y0, x1, y1 = box
-        d.rounded_rectangle(box, radius=18, outline=GHOST_LINE, width=4)
+        d.rounded_rectangle(box, radius=18, outline=BORDER, width=4)
         d.text((x0 + 18, y0 + 18), TITLES[name], font=_font(29),
                fill=LABEL_INK)
         A, B = cell_dots(name)
-        draw_ghost(d, name, A, B)
         for (px, py) in [A, B] + cell_extra_dots(name):
             d.ellipse([px - DOT_R, py - DOT_R, px + DOT_R, py + DOT_R],
                       fill=(225, 30, 30))
@@ -401,6 +298,17 @@ def cmd_ingest(args):
         dots = ndimage.binary_dilation(dots, iterations=3)
         _, idx = ndimage.distance_transform_edt(dots, return_indices=True)
         arr[dots] = arr[idx[0][dots], idx[1][dots]]
+    # erase the printed cell borders by POSITION before cleaning: a
+    # border dark enough to see forms a closed ink loop, and clean()'s
+    # fill-holes would flood every box interior solid (a blank cell
+    # then reads as a fully-opaque drawing). Position is exact, so the
+    # printed colour no longer matters.
+    bmask = Image.new("L", (A4W, A4H), 0)
+    bd = ImageDraw.Draw(bmask)
+    for name2, (box2, _) in CELLS.items():
+        bd.rounded_rectangle(box2, radius=18, outline=255, width=14)
+    bm = np.array(bmask) > 0
+    arr[bm] = paper
     cleaned = clean(Image.fromarray((arr * 255).astype(np.uint8)),
                     paper_cut=args.paper_cut)
     # everything outside the draw areas (labels, borders, fiducials,
