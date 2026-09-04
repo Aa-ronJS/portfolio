@@ -354,6 +354,13 @@ def cmd_ingest(args):
     # halos otherwise survive as translucent veils that let the episode
     # background show through the character.
     alpha = np.where(alpha > 110, 255, 0).astype(np.uint8)
+    # despeckle: jpeg noise and inpaint crumbs survive as scattered
+    # opaque flecks (worse at a tight --paper-cut); anything smaller
+    # than a marker dot is not a drawing
+    lab, nlab = ndimage.label(alpha > 0)
+    if nlab:
+        sizes = np.bincount(lab.ravel())
+        alpha[(sizes < 50)[lab]] = 0
     cleaned.putalpha(Image.fromarray(alpha))
 
     os.makedirs(os.path.join(args.character, "parts"), exist_ok=True)

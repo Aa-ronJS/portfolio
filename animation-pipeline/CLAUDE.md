@@ -626,6 +626,20 @@ the white-shirt rule, not a bug; and a character whose head part is
 enormous (the nazgul's full-height hood) should carry `look: false` —
 auto-gaze tilts the whole hood and cracks the neck silhouette.
 
+Transparent clothes, round two (same day, Aaron's catch AGAIN): the
+wizard's light-grey robe rendered as outlines with the wall showing
+through — on a DIGITAL sheet the paper is pure white, so pale paint
+sits inside the default paper_cut 0.14 and gets eaten, and an open
+outline (his robe hems) defeats the hole-fill rescue. Screen-drawn
+sheets are ingested with `--paper-cut 0.06` (paper is exactly white;
+anything not white is intentional), plus a despeckle in ingest
+(components under 50px are jpeg noise, not drawing). THE CHECK THAT
+WAS SKIPPED: composite EVERY part over magenta after EVERY ingest —
+not just the heads — before staging a character; "pale robe against
+a tan wall" was a transparent robe and a full episode shipped before
+anyone put magenta behind it. The three fellowship characters were
+re-ingested clean.
+
 Discussed but unbuilt: per-character close-up
 framing in `char.json` (the directed close-up currently assumes a
 humanoid head at `at: [0.5, 1.35], scale: 1.5`); pose changes and
