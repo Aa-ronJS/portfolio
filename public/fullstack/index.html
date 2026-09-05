@@ -1,0 +1,474 @@
+<!doctype html>
+<html lang="en-AU">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Full stack, one person. Aaron Steele</title>
+<meta name="description" content="Eleven years across mining, policing, federal service delivery, local government and charities. One person covering the whole stack: the APIs and the SQL, the front end, the data, the cloud, and the requirements. Everything with a number on this page is real.">
+<meta name="theme-color" content="#12181f">
+<link rel="preload" as="font" type="font/woff2" href="/fonts/clash-display-var.woff2" crossorigin>
+<link rel="preload" as="font" type="font/woff2" href="/fonts/satoshi-var.woff2" crossorigin>
+
+<style>
+/* ===========================================================================
+   Same design system as the main page (see /PREFLIGHT.md in the repo): one
+   amber, Clash over Satoshi, zero radius, dark-first with bone rest acts.
+   This is the industry-agnostic engagement report: the track record, the
+   evidence, and what owning a codebase alone actually covers. It shares its
+   components with /linehaul, which is the technical deep dive it links to.
+   =========================================================================== */
+
+@font-face{font-family:'Clash';src:url('/fonts/clash-display-var.woff2') format('woff2-variations');font-weight:200 700;font-style:normal;font-display:swap}
+@font-face{font-family:'Satoshi';src:url('/fonts/satoshi-var.woff2') format('woff2-variations');font-weight:300 900;font-style:normal;font-display:swap}
+@font-face{font-family:'Mono';src:url('/fonts/ibm-plex-mono-400.woff2') format('woff2');font-weight:400;font-style:normal;font-display:swap}
+@font-face{font-family:'Mono';src:url('/fonts/ibm-plex-mono-500.woff2') format('woff2');font-weight:500;font-style:normal;font-display:swap}
+@font-face{font-family:'Clash Fallback';src:local('Segoe UI Semibold'),local('Helvetica Neue'),local('Arial');size-adjust:94%;ascent-override:96%;descent-override:22%;line-gap-override:0%}
+@font-face{font-family:'Satoshi Fallback';src:local('Segoe UI'),local('Helvetica Neue'),local('Arial');size-adjust:99%;ascent-override:97%;descent-override:24%;line-gap-override:0%}
+
+:root{
+  --brand-h:58; --brand-c:0.155;
+  --ink:oklch(0.158 0.019 252); --ink-2:oklch(0.205 0.021 252); --ink-line:oklch(0.330 0.020 252);
+  --bone:oklch(0.958 0.008 84); --bone-line:oklch(0.855 0.014 84);
+  --amber:oklch(0.760 var(--brand-c) var(--brand-h));
+  --amber-deep:oklch(0.590 0.140 calc(var(--brand-h) - 12));
+  --amber-soft:oklch(0.860 0.090 var(--brand-h));
+  --on-ink:oklch(0.968 0.006 84); --on-ink-dim:oklch(0.800 0.012 84); --on-ink-mute:oklch(0.645 0.014 252);
+  --on-bone:oklch(0.205 0.018 252); --on-bone-dim:oklch(0.420 0.016 252); --on-bone-mute:oklch(0.545 0.014 252);
+  --fg:var(--on-ink); --fg-dim:var(--on-ink-dim); --fg-mute:var(--on-ink-mute);
+  --line:var(--ink-line); --accent:var(--amber);
+  --display:'Clash','Clash Fallback',sans-serif;
+  --body:'Satoshi','Satoshi Fallback',system-ui,sans-serif;
+  --mono:'Mono',ui-monospace,Consolas,monospace;
+  --t--1:clamp(0.80rem,0.78rem + 0.10vw,0.875rem);
+  --t-0:clamp(1.06rem,1.00rem + 0.30vw,1.25rem);
+  --t-1:clamp(1.22rem,1.10rem + 0.55vw,1.60rem);
+  --t-2:clamp(1.62rem,1.35rem + 1.30vw,2.75rem);
+  --t-4:clamp(2.60rem,1.70rem + 4.40vw,6.40rem);
+  --t-5:clamp(2.30rem,1.45rem + 4.00vw,5.40rem);
+  --s2:8px; --s3:12px; --s4:16px; --s5:24px; --s6:32px; --s7:48px; --s8:64px; --s9:96px; --s10:128px;
+  --act:clamp(96px,15vh,190px); --gut:clamp(20px,5vw,80px); --r:0px;
+  --ease:cubic-bezier(0.22,1,0.36,1); --ease-out:cubic-bezier(0.16,1,0.3,1);
+}
+
+*,*::before,*::after{box-sizing:border-box}
+html{-webkit-text-size-adjust:100%}
+html:focus-within{scroll-behavior:smooth}
+body{
+  margin:0; background:var(--ink); color:var(--fg);
+  font-family:var(--body); font-size:var(--t-0); line-height:1.55; font-weight:400;
+  -webkit-font-smoothing:antialiased; overflow-x:hidden; accent-color:var(--amber);
+}
+::selection{background:var(--amber); color:oklch(0.16 0.02 252)}
+img{max-width:100%; display:block}
+h1,h2,h3{font-family:var(--display); font-weight:600; margin:0; line-height:0.96; letter-spacing:-0.026em; text-wrap:balance}
+h1{font-size:var(--t-5)}
+h2{font-size:var(--t-4)}
+h3{font-size:var(--t-2); line-height:0.98}
+p{margin:0 0 1em; text-wrap:pretty}
+p:last-child{margin-bottom:0}
+a{color:inherit}
+:focus-visible{outline:2px solid var(--amber); outline-offset:4px}
+
+.tag{font-family:var(--mono); font-size:0.6875rem; font-weight:500; letter-spacing:0.14em; text-transform:uppercase; color:var(--accent); margin:0}
+.wrap{max-width:1500px; margin-inline:auto; padding-inline:var(--gut)}
+.measure{max-inline-size:22ch}
+.measure-wide{max-inline-size:52ch}
+
+.act{position:relative; padding-block:var(--act)}
+.act--bone{
+  background:var(--bone); color:var(--on-bone);
+  --fg:var(--on-bone); --fg-dim:var(--on-bone-dim); --fg-mute:var(--on-bone-mute);
+  --line:var(--bone-line); --accent:var(--amber-deep);
+}
+.act--deep{background:var(--ink); overflow:clip; isolation:isolate}
+.act--deep::before{
+  content:''; position:absolute; inset:0; z-index:-1; pointer-events:none;
+  background:radial-gradient(120% 85% at 78% 18%, oklch(0.76 0.155 58 / 0.10), transparent 62%);
+}
+
+.crumb{
+  display:inline-flex; align-items:center; gap:0.5em; min-height:32px;
+  font-family:var(--mono); font-size:var(--t--1); text-decoration:none; color:var(--fg-dim);
+}
+.crumb:hover{color:var(--accent)}
+
+.lede{font-size:var(--t-1); line-height:1.44; color:var(--fg-dim); max-inline-size:46ch}
+.lede b{color:var(--fg); font-weight:600}
+
+.chips{display:flex; flex-wrap:wrap; gap:var(--s2); margin:var(--s6) 0 0; padding:0; list-style:none}
+.chips li{font-family:var(--mono); font-size:0.6875rem; letter-spacing:0.06em; padding:7px 11px; border:1px solid var(--line); color:var(--fg-dim)}
+
+.btn{
+  display:inline-flex; align-items:center; gap:0.6em; min-height:54px;
+  padding:0 var(--s6); border-radius:var(--r); text-decoration:none;
+  font-weight:700; font-size:var(--t--1); letter-spacing:0.06em; text-transform:uppercase;
+  background:var(--amber); color:oklch(0.16 0.02 252); border:1px solid var(--amber);
+  transition:background 200ms var(--ease), border-color 200ms var(--ease), transform 140ms var(--ease);
+}
+.btn:hover{background:var(--amber-soft); border-color:var(--amber-soft)}
+.btn:active{transform:scale(0.975)}
+.btn--ghost{background:transparent; color:var(--on-ink); border-color:oklch(1 0 0 / 0.32)}
+.btn--ghost:hover{background:oklch(1 0 0 / 0.09); border-color:var(--on-ink)}
+.btn__arrow{transition:transform 220ms var(--ease)}
+.btn:hover .btn__arrow{transform:translateX(5px)}
+
+.link{
+  display:inline-flex; align-items:center; gap:0.5em; min-height:32px;
+  font-family:var(--mono); font-size:var(--t--1); text-decoration:none; color:var(--fg);
+  box-shadow:inset 0 -1px 0 0 color-mix(in oklch, var(--accent) 55%, transparent);
+  transition:color 180ms var(--ease), box-shadow 180ms var(--ease);
+}
+.link:hover{color:var(--accent); box-shadow:inset 0 -1px 0 0 var(--accent)}
+.links{display:flex; flex-wrap:wrap; gap:var(--s3) var(--s6); align-items:center}
+
+/* Two-column rows: a name on the left, what happened on the right. */
+.map{margin-top:var(--s9); border-top:1px solid var(--line)}
+.map__row{display:grid; gap:var(--s2) var(--s6); padding-block:var(--s5); border-bottom:1px solid var(--line); align-items:baseline}
+@media (min-width:50rem){.map__row{grid-template-columns:minmax(0,20rem) 1fr}}
+.map__row > *{min-width:0}
+.map__ask{font-family:var(--display); font-weight:500; font-size:var(--t-1); letter-spacing:-0.022em; line-height:1.12}
+.map__ask small{display:block; font-family:var(--mono); font-size:0.6875rem; font-weight:500; letter-spacing:0.1em; text-transform:uppercase; color:var(--fg-mute); margin-top:var(--s2)}
+.map__got{color:var(--fg-dim); font-size:var(--t-0); line-height:1.55}
+.map__got b{color:var(--fg); font-weight:600}
+.map__got code{font-family:var(--mono); font-size:0.85em; color:var(--fg)}
+
+.figures{display:grid; gap:var(--s7) var(--s6); margin-top:var(--s9); grid-template-columns:repeat(auto-fit,minmax(170px,1fr))}
+.figures > *{min-width:0}
+.fig__n{
+  font-family:var(--display); font-weight:600; font-size:var(--t-2);
+  line-height:0.88; letter-spacing:-0.045em; font-variant-numeric:tabular-nums;
+  display:block; color:var(--accent);
+}
+.fig__k{display:block; margin-top:var(--s4); color:var(--fg-dim); font-size:var(--t--1); line-height:1.5; max-inline-size:26ch}
+
+.finds{display:grid; gap:var(--s6); margin-top:var(--s9); padding:0; list-style:none}
+@media (min-width:54rem){.finds{grid-template-columns:repeat(2,minmax(0,1fr)); gap:var(--s7) var(--s9)}}
+.finds li{border-top:1px solid var(--line); padding-top:var(--s5); min-width:0}
+.finds h4{font-family:var(--display); font-weight:500; font-size:var(--t-1); line-height:1.1; letter-spacing:-0.022em; margin:0 0 var(--s3)}
+.finds p{color:var(--fg-dim); font-size:var(--t--1); line-height:1.65; margin:0 0 var(--s4)}
+.finds p:last-child{margin-bottom:0}
+
+.shot{margin:var(--s9) 0 0; min-width:0; max-width:960px}
+.shot__frame{
+  border:1px solid var(--line); background:var(--ink-2); overflow:hidden;
+  box-shadow:0.3px 0.6px 0.8px oklch(0.09 0.02 252 / 0.35), 2.1px 4.2px 5.3px oklch(0.09 0.02 252 / 0.35),
+             8px 16px 22px oklch(0.09 0.02 252 / 0.35), 24px 48px 64px oklch(0.09 0.02 252 / 0.35);
+}
+.shot__frame img{width:100%; height:auto}
+.shot figcaption{margin-top:var(--s4); font-family:var(--mono); font-size:var(--t--1); color:var(--fg-mute); line-height:1.5}
+.shot figcaption b{color:var(--fg-dim); font-weight:500}
+
+.checks{margin:var(--s9) 0 0; padding:0; list-style:none; display:grid; gap:var(--s5)}
+.checks > li{min-width:0; padding-left:var(--s6); position:relative; color:var(--fg-dim); line-height:1.6; max-inline-size:56ch}
+.checks > li::before{content:''; position:absolute; left:0; top:0.62em; width:14px; height:1px; background:var(--accent)}
+.checks b{color:var(--fg); font-weight:600}
+
+.rule{height:1px; background:var(--accent); border:0; margin:0}
+.eyebrow{display:flex; align-items:center; gap:var(--s4); margin-bottom:var(--s5)}
+.eyebrow .rule{flex:1; max-width:150px}
+
+.foot{padding-block:var(--s10) var(--s8)}
+.foot__grid{display:flex; flex-wrap:wrap; gap:var(--s6) var(--s9); justify-content:space-between; align-items:flex-end; margin-top:var(--s9); padding-top:var(--s6); border-top:1px solid var(--ink-line)}
+.foot__note{color:var(--on-ink-mute); font-size:var(--t--1); max-inline-size:44ch; line-height:1.6}
+
+@media (prefers-reduced-motion: no-preference){
+  .rise{opacity:0; transform:translate3d(0,28px,0)}
+  .rise.in{opacity:1; transform:none; transition:opacity 640ms var(--ease-out) var(--d,0ms), transform 640ms var(--ease-out) var(--d,0ms)}
+  .wipe{transform:scaleX(0); transform-origin:left}
+  .wipe.in{transform:scaleX(1); transition:transform 900ms var(--ease-out) var(--d,0ms)}
+}
+@media (prefers-reduced-motion: reduce){
+  *,*::before,*::after{animation-duration:1ms !important; animation-iteration-count:1 !important; transition-duration:1ms !important}
+  html:focus-within{scroll-behavior:auto}
+}
+</style>
+</head>
+<body>
+
+<!-- ============================ HERO ============================ -->
+<header class="act act--deep" style="padding-block:clamp(80px,12vh,150px) var(--act)">
+  <div class="wrap">
+    <a class="crumb rise" href="/">&larr; aaronsteele.vercel.app</a>
+    <p class="tag rise" style="margin-top:var(--s7)">Aaron Steele &middot; full stack, contract</p>
+    <h1 class="rise" style="--d:80ms; margin-block:var(--s4) var(--s6)">The whole stack.<br>One person.</h1>
+    <p class="lede rise" style="--d:170ms">
+      Analyst since 2015, building since 2016, across mining, policing, federal service delivery,
+      local government, universities and charities. The industry keeps changing;
+      <b>the job is always the same: work out what the business actually needs, then build all of
+      it</b>, the APIs and the SQL, the front end, the data, the cloud it runs on, and the tests
+      that keep it honest.
+    </p>
+    <ul class="chips rise" style="--d:230ms">
+      <li>C# / .NET</li><li>TypeScript</li><li>React / Next.js</li><li>SQL</li><li>Azure</li>
+      <li>REST APIs</li><li>HubSpot</li><li>Salesforce</li><li>Zoho</li>
+      <li>Zapier / Make / n8n</li><li>AI agents / MCP</li><li>TOGAF</li>
+    </ul>
+    <div class="rise" style="--d:290ms; margin-top:var(--s7); display:flex; flex-wrap:wrap; gap:var(--s4); align-items:center">
+      <a class="btn" href="#evidence">The evidence <span class="btn__arrow" aria-hidden="true">&rarr;</span></a>
+      <a class="btn btn--ghost" href="https://github.com/Aa-ronJS">GitHub</a>
+    </div>
+  </div>
+</header>
+
+<!-- ============================ TRACK RECORD ============================ -->
+<section class="act act--bone">
+  <div class="wrap">
+    <p class="tag rise">Track record</p>
+    <h2 class="rise measure" style="--d:80ms">Eleven years, six industries.</h2>
+    <p class="rise measure-wide" style="--d:150ms; margin-top:var(--s6); color:var(--fg-dim)">
+      Every one of these looked different from the outside and was the same underneath: something
+      nobody could quite explain, rules that only existed in somebody's head, and a system that
+      had to be built anyway. Learning a new domain fast is not a risk with me, it is the résumé.
+    </p>
+
+    <div class="map">
+      <div class="map__row rise">
+        <div class="map__ask">Mining<small>BHP &middot; 2022 to now</small></div>
+        <div class="map__got">Senior business analyst and architect on critical infrastructure.
+          Mentors the junior analysts.</div>
+      </div>
+      <div class="map__row rise" style="--d:60ms">
+        <div class="map__ask">Policing<small>SA Police &middot; 2020 to 2021</small></div>
+        <div class="map__got">Project Shield, rebuilding the systems frontline officers work
+          on.</div>
+      </div>
+      <div class="map__row rise" style="--d:120ms">
+        <div class="map__ask">Federal service delivery<small>Services Australia &middot; 2018 to 2020</small></div>
+        <div class="map__got">National Redress Scheme and veterans' entitlements. Turned
+          legislation into the decisions the system makes about who qualifies, written so the
+          people accountable could read and check them.</div>
+      </div>
+      <div class="map__row rise" style="--d:180ms">
+        <div class="map__ask">Local government<small>City of Marion &middot; 2021 to 2022</small></div>
+        <div class="map__got">Lead analyst on a council-wide asset management platform.</div>
+      </div>
+      <div class="map__row rise" style="--d:240ms">
+        <div class="map__ask">Education and universities<small>SA Dept of Education, DVE, AIB &middot; 2015 to 2020</small></div>
+        <div class="map__got">Led the technology side of the state's vocational education
+          strategy; CRM and ERP rollouts for universities; a new CRM where it all started.</div>
+      </div>
+      <div class="map__row rise" style="--d:300ms">
+        <div class="map__ask">Charities and small business<small>Independent &middot; 2016 to now</small></div>
+        <div class="map__got">CRM rebuilds, end-to-end automation and AI agents, alongside the day
+          job. This is where most of the hands-on building below comes from.</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============================ EVIDENCE ============================ -->
+<section class="act act--deep" id="evidence">
+  <div class="wrap">
+    <div class="eyebrow rise"><span class="tag">Evidence</span><hr class="rule wipe" style="--d:120ms"></div>
+    <h2 class="rise measure" style="--d:80ms">Shipped, and checkable.</h2>
+    <p class="rise measure-wide" style="--d:150ms; margin-top:var(--s6); color:var(--fg-dim)">
+      Four pieces of work, each covering a different part of the stack. Two are live on the
+      internet with public source, one is a public repository you can compile, and one is client
+      work described without names. Everything with a number is real.
+    </p>
+
+    <ul class="finds">
+      <li class="rise">
+        <h4>The data half: a $3.8 million rebuild</h4>
+        <p>A national charity's donation history was out by around $3.8 million after a migration
+           merged donors on email address instead of their account number. As technical lead I
+           found why, rebuilt 1,019 organisations, 19,350 contacts and 37,729 donations on the
+           right key, reconciled it against their books, and connected their donation platforms
+           and accounting system so it stays right.</p>
+      </li>
+      <li class="rise" style="--d:90ms">
+        <h4>The security half: breaking it before customers do</h4>
+        <p>Asked whether a live shopping platform, mostly AI-written, was safe for customers. I
+           proved six gaps by using them, including logging into somebody else's account and
+           shutting down their live broadcast, then re-tested after the fixes: four properly
+           closed, two not, and I said so. I also cleared one reported problem as a phantom.</p>
+      </li>
+      <li class="rise" style="--d:180ms">
+        <h4>The product half: two tools live right now</h4>
+        <p>Rain Check tells a trades business whether Thursday's pour survives the weather;
+           Doorknock researches a company before a salesperson rings and files it in the CRM.
+           Both built end to end, both free, both with public source. TypeScript, serverless,
+           MCP.</p>
+        <p class="links" style="margin:0">
+          <a class="link" href="https://rain-check-mu.vercel.app">Rain Check <span aria-hidden="true">&rarr;</span></a>
+          <a class="link" href="https://doorknock-eight.vercel.app">Doorknock <span aria-hidden="true">&rarr;</span></a>
+        </p>
+      </li>
+      <li class="rise" style="--d:270ms">
+        <h4>The stack half: a platform slice you can compile</h4>
+        <p>Linehaul is a working reference build made when a role named its stack: .NET 9 minimal
+           APIs with Dapper and raw T-SQL, a Next.js and TypeScript dashboard, Azure as Bicep, 52
+           checks passing including a T-SQL parse of every query. The domain is incidental; the
+           point is how fast an unfamiliar stack becomes a working, tested system.</p>
+        <p class="links" style="margin:0">
+          <a class="link" href="/linehaul/">The build report <span aria-hidden="true">&rarr;</span></a>
+          <a class="link" href="https://github.com/Aa-ronJS/portfolio/tree/master/linehaul">Source</a>
+        </p>
+      </li>
+    </ul>
+
+    <div class="figures">
+      <div class="rise"><span class="fig__n" data-count="37729">0</span><span class="fig__k">donations matched back to the right donor in the charity rebuild</span></div>
+      <div class="rise" style="--d:90ms"><span class="fig__n" data-count="6">0</span><span class="fig__k">security gaps proven on a live platform, not argued from a code read</span></div>
+      <div class="rise" style="--d:180ms"><span class="fig__n" data-count="2">0</span><span class="fig__k">tools live on the internet with nothing hidden</span></div>
+      <div class="rise" style="--d:270ms"><span class="fig__n" data-count="52">0</span><span class="fig__k">checks passing in the reference build, SQL parse included</span></div>
+    </div>
+
+    <figure class="shot rise" style="--d:120ms">
+      <div class="shot__frame"><img src="/linehaul/img/dashboard.png" alt="The Linehaul operations dashboard: summary tiles, lane performance with p90 transit hours, and a consignment list with status chips." width="1440" height="960" loading="lazy"></div>
+      <figcaption><b>From the reference build.</b> A real render of the running application, not a
+      mock-up; the build report walks through every decision behind it.</figcaption>
+    </figure>
+  </div>
+</section>
+
+<!-- ============================ WHAT OWNERSHIP COVERS ============================ -->
+<section class="act act--bone">
+  <div class="wrap">
+    <p class="tag rise">The shape of the work</p>
+    <h2 class="rise measure" style="--d:80ms">What one owner covers.</h2>
+    <p class="rise measure-wide" style="--d:150ms; margin-top:var(--s6); color:var(--fg-dim)">
+      Hiring one developer to own a codebase only works if that person genuinely covers all of it.
+      This is the split, and where each part of it has been done for real.
+    </p>
+
+    <div class="map">
+      <div class="map__row rise">
+        <div class="map__ask">The back end</div>
+        <div class="map__got">APIs and data models that survive audits: money as decimal, history
+          that is never updated in place, state machines enforced in code and again in the
+          database, raw SQL in the open rather than behind an ORM. C# and TypeScript, proven in
+          the reference build and a decade of CRM and ERP integration work.</div>
+      </div>
+      <div class="map__row rise" style="--d:60ms">
+        <div class="map__ask">The front end</div>
+        <div class="map__got">React and Next.js under strict TypeScript, including the
+          unglamorous screens operators actually live in: dense tables, filters, timelines,
+          honest empty states. Checked by looking at the rendered page, not the markup.</div>
+      </div>
+      <div class="map__row rise" style="--d:120ms">
+        <div class="map__ask">The data</div>
+        <div class="map__got">Migration, reconciliation and the forensic work when records have
+          been merged on the wrong key for years. The $3.8 million story above is this skill
+          under pressure, reconciled to the client's own books.</div>
+      </div>
+      <div class="map__row rise" style="--d:180ms">
+        <div class="map__ask">The cloud and the pipeline</div>
+        <div class="map__got">Azure as infrastructure-as-code, CI that fails loudly, small cheap
+          tiers first and scaling when measurements say so. Plus the integration plumbing between
+          systems: Zapier, Make and n8n when they are the right tool, real code when they are
+          not.</div>
+      </div>
+      <div class="map__row rise" style="--d:240ms">
+        <div class="map__ask">The breaking of it</div>
+        <div class="map__got">Adversarial testing before customers find the gaps: prove the hole
+          by using it, re-test after the fix, and clear the phantoms so nobody chases them for a
+          week. The live shopping platform review above is the worked example.</div>
+      </div>
+      <div class="map__row rise" style="--d:300ms">
+        <div class="map__ask">The requirements</div>
+        <div class="map__got">The analyst half, and the reason the rest lands: eleven years of
+          pulling the real requirement out of people who disagree with each other, then being the
+          same person who builds it. <b>No handover, so nothing goes missing in one.</b></div>
+      </div>
+      <div class="map__row rise" style="--d:360ms">
+        <div class="map__ask">The leverage</div>
+        <div class="map__got">AI coding agents run like a delivery team: written specifications,
+          adversarial review runs, and proof against sources the agent does not control. It is
+          how one person now ships what used to take a small team, without the claims outrunning
+          the checks.</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============================ HONESTY ============================ -->
+<section class="act act--deep">
+  <div class="wrap">
+    <div class="eyebrow rise"><span class="tag">The fine print, willingly</span><hr class="rule wipe" style="--d:120ms"></div>
+    <h2 class="rise measure" style="--d:80ms">Check any of it.</h2>
+
+    <ul class="checks">
+      <li class="rise"><b>The live tools are live.</b> Open them, use them, read their source.
+        The main page of this site queries both of them from your browser and shows what comes
+        back.</li>
+      <li class="rise" style="--d:60ms"><b>The reference build compiles.</b> Zero warnings, 52
+        passing checks, and a docker compose file that gives you the whole thing locally,
+        database included. Its report separates what was verified from what was not.</li>
+      <li class="rise" style="--d:120ms"><b>The client work is described without names</b>, by
+        choice, and that is the only part of this page you have to take my word for. The numbers
+        in it are the real ones.</li>
+      <li class="rise" style="--d:180ms"><b>The employment history is on the main page</b>, year
+        by year, employer by employer, and stands up to a reference check.</li>
+    </ul>
+  </div>
+</section>
+
+<!-- ============================ FOOT ============================ -->
+<footer class="act foot">
+  <div class="wrap">
+    <p class="tag rise">Available for contract</p>
+    <h2 class="rise measure" style="--d:80ms">Hand me the codebase.</h2>
+
+    <div class="links rise" style="--d:200ms; margin-top:var(--s7)">
+      <a class="link" href="/linehaul/">The reference build <span aria-hidden="true">&rarr;</span></a>
+      <a class="link" href="https://rain-check-mu.vercel.app">Rain Check <span aria-hidden="true">&rarr;</span></a>
+      <a class="link" href="https://doorknock-eight.vercel.app">Doorknock <span aria-hidden="true">&rarr;</span></a>
+      <a class="link" href="https://github.com/Aa-ronJS">GitHub <span aria-hidden="true">&rarr;</span></a>
+      <a class="link" href="/">The rest of my work <span aria-hidden="true">&rarr;</span></a>
+    </div>
+
+    <div class="foot__grid">
+      <p class="foot__note">
+        Remote from South Australia, TOGAF certified, baseline cleared. Comfortable as the only
+        developer, and just as comfortable handing a tidy codebase to the next one.
+      </p>
+      <p class="foot__note">My details are on the application this link came with.</p>
+    </div>
+  </div>
+</footer>
+
+<script>
+(function () {
+  var reduced = matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+  var hero = document.querySelectorAll('header .rise, header .wipe');
+  var rest = document.querySelectorAll('section .rise, section .wipe, footer .rise, footer .wipe');
+
+  requestAnimationFrame(function () { hero.forEach(function (el) { el.classList.add('in'); }); });
+
+  if (reduced || !('IntersectionObserver' in window)) {
+    rest.forEach(function (el) { el.classList.add('in'); });
+  } else {
+    var io = new IntersectionObserver(function (entries) {
+      entries.forEach(function (e) {
+        if (e.isIntersecting) { e.target.classList.add('in'); io.unobserve(e.target); }
+      });
+    }, { rootMargin: '0px 0px -6% 0px', threshold: 0.05 });
+    rest.forEach(function (el) { io.observe(el); });
+  }
+
+  /* Count up. Real numbers only; the final value lives in the markup. */
+  var counters = document.querySelectorAll('[data-count]');
+  function land(el) { el.textContent = Number(el.dataset.count).toLocaleString('en-AU'); }
+  if (reduced || !('IntersectionObserver' in window)) {
+    counters.forEach(land);
+  } else {
+    var co = new IntersectionObserver(function (entries) {
+      entries.forEach(function (e) {
+        if (!e.isIntersecting) return;
+        co.unobserve(e.target);
+        var el = e.target, target = Number(el.dataset.count), t0 = performance.now();
+        (function step(now) {
+          var p = Math.min(1, (now - t0) / 1100);
+          el.textContent = Math.round(target * (1 - Math.pow(1 - p, 4))).toLocaleString('en-AU');
+          if (p < 1) requestAnimationFrame(step); else land(el);
+        })(t0);
+      });
+    }, { threshold: 0.5 });
+    counters.forEach(function (el) { co.observe(el); });
+  }
+})();
+</script>
+</body>
+</html>
