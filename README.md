@@ -5,9 +5,9 @@ self-hosted fonts, no build step and no dependencies.
 
 Two more pages ride along for contract applications:
 
-- https://aaronsteele.vercel.app/fullstack, the industry-agnostic engagement
-  report: track record across six industries, the checkable evidence, and
-  what solo codebase ownership covers.
+- https://aaronsteele.vercel.app/fullstack, the engagement report for
+  contract applications: track record, checkable evidence, and what solo
+  codebase ownership covers.
 - https://aaronsteele.vercel.app/linehaul, the technical deep dive into
   **[Linehaul](linehaul/)**, a working platform reference build (.NET 9
   minimal APIs with Dapper and raw T-SQL, Next.js/TypeScript, Azure as
