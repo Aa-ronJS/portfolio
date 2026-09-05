@@ -75,14 +75,14 @@ PART_B = [
         q="How do you migrate CRMs without losing data?",
         direct="""Decide what records merge on before anything moves, rehearse the migration on
         a copy, and reconcile the result against a source of truth you trust. <b>Skipping
-        that first decision is how a charity ended up $3.8 million out</b>, and finding that
-        was my job.""",
+        that first decision is how migrations quietly corrupt years of records</b>, and
+        cleaning up after exactly that has been my job more than once.""",
         body=[
             ("The decision that matters most",
-             """The merge key. Merge donors on email and everyone who shared or changed one
-             becomes somebody else; that single choice, made casually by a previous migrator,
-             created the $3.8 million discrepancy I later repaired record by record. Choose
-             the stable identifier, not the convenient one."""),
+             """The merge key. Merge contacts on email and everyone who shared or changed
+             one becomes somebody else; that single casual choice is behind most of the
+             migration wreckage I have been called in to repair. Choose the stable
+             identifier, not the convenient one."""),
             ("The method",
              """Map fields explicitly including the awkward ones, migrate a copy, let real
              users try real work on it, fix the mapping, then migrate for real in a quiet
@@ -149,10 +149,11 @@ PART_B = [
              not its sibling, and the manual export somebody edits before importing. Every
              mismatch has a mechanism; "the systems just differ" is a surrender, not an
              answer."""),
-            ("The worst case I have handled",
-             """A charity out by around $3.8 million after donors were merged on email
-             instead of their account number. Found, rebuilt record by record, reconciled
-             against their books. Yours is almost certainly smaller than it feels."""),
+            ("Where the discipline comes from",
+             """Eleven years of records and systems work in places where numbers being wrong
+             has consequences: mining, policing, federal government. The habit transfers
+             whole: trace the mechanism, prove the repair, reconcile against a source you
+             trust. Yours is almost certainly smaller than it feels."""),
             ("What done means",
              """A written explanation of the mechanism, repaired records, totals that agree
              with a source you trust, and the automated join that prevents the rot returning.
@@ -462,7 +463,8 @@ PART_B += [
              smallest. Cleanup of a lived-in CRM depends on how long it has been drifting.
              Migration is the big one, because history must survive the crossing, per
              <a href="/answers/crm-migration-without-losing-data/">migrating without losing
-             data</a>: the $3.8 million story started as a migration done cheap."""),
+             data</a>: every migration horror story I have cleaned up started as one done
+             cheap."""),
             ("What moves the number",
              """Record volume matters less than record mess: duplicates, wrong merges and
              fields nobody trusts all take human judgement to resolve. Integrations are the

@@ -243,7 +243,7 @@ compress under ~200KB; alt text describes what is actually in frame.
 
 ## Honesty notes, before this goes live
 
-- The evidence figures ($3.8m, 37,729, 52 checks, the live tools) are the
+- The evidence figures (the career record, 52 checks, the live tools) are the
   real ones from the portfolio, linked to it. Keep them in sync if the
   portfolio changes.
 - The mobile page commits to cross-platform (React Native on the same

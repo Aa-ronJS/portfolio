@@ -267,11 +267,11 @@ INDUSTRIES = [
              year."""),
         ],
         ink=("The standard", "Reconciled is a habit, not a feature.",
-             """My proudest data job found and repaired a $3.8 million discrepancy and reconciled
-             it against the organisation's own books. That is the standard your stock and sales
-             numbers get held to: not "the import finished", but "the numbers agree with
-             reality, and here is the proof".""",
-             [("That story", "https://aaronsteele.vercel.app/#work"),
+             """Eleven years of records and systems work in places where wrong numbers have
+             consequences (mining, policing, federal government) built one habit that transfers
+             whole: not "the import finished", but "the numbers agree with reality, and here
+             is the proof". That is the standard your stock and sales numbers get held to.""",
+             [("The background", "https://aaronsteele.vercel.app/fullstack/"),
               ("E-commerce work", "/ecommerce/")]),
         faqs=[
             ("The POS and the website disagree about stock.",
@@ -466,14 +466,14 @@ INDUSTRIES = [
         short="Not-for-profits",
         name="Not-for-profits &amp; charities",
         title="Software, CRM &amp; Data for Not-for-Profits | Australia",
-        desc="Donor CRMs cleaned and migrated, receipting and reconciliation automated, grant reporting from real data. By the consultant who found and repaired a charity's $3.8 million discrepancy and reconciled it to their books.",
+        desc="Donor CRMs cleaned and migrated, receipting and reconciliation automated, grant reporting from real data. By an analyst with eleven years in government and community-facing systems, priced for an NFP budget.",
         audience="Not-for-profits and charities",
         h1="Every dollar accounted for. Literally.",
-        lede="""My proudest piece of work is a charity's: their donation history was out by
-        around $3.8 million after donors were merged on the wrong field, and
-        <b>I found why, rebuilt 37,729 donations against the right donors, and reconciled
-        it to their books.</b> If your data is a decade of good intentions, you are my
-        favourite kind of client.""",
+        lede="""Not-for-profits run on trust, volunteers and databases full of good
+        intentions. <b>I spent eleven years doing systems and records work for government
+        and community-facing organisations</b>, including Services Australia, where getting
+        people's records right is the whole job. If your data is a decade of goodwill and
+        chaos, you are my favourite kind of client.""",
         rows=[
             ("Donor data, repaired and reconciled",
              """Duplicates merged on the right key this time, histories rebuilt, totals that
@@ -493,12 +493,13 @@ INDUSTRIES = [
              an NFP can afford: the intake automation, the volunteer roster, the small internal
              tool, at quotes a board can approve without a special meeting."""),
         ],
-        ink=("The evidence", "The $3.8 million rebuild.",
-             """1,019 organisations, 19,350 contacts and 37,729 donations rebuilt on the right
-             key and reconciled against the charity's own books, then their donation platforms
-             and accounting connected so it stays right without anyone retyping. Client unnamed
-             by choice; every number real; the full story is on the portfolio.""",
-             [("The full story", "https://aaronsteele.vercel.app/#work")]),
+        ink=("The evidence", "Vetted where it matters.",
+             """Eleven years inside organisations that check their people properly: BHP's
+             critical infrastructure, SA Police, Services Australia, City of Marion. TOGAF
+             certified, baseline cleared. And the workmanship is public: two live tools with
+             open source and a compilable platform build with 52 passing checks, so a board
+             can verify before it approves.""",
+             [("The record", "https://aaronsteele.vercel.app/fullstack/")]),
         faqs=[
             ("We cannot afford consultants.",
              """You cannot afford the big-firm shape of them. One senior person with AI leverage
@@ -956,11 +957,11 @@ CARDS = {
     "trades": "ServiceM8 to Xero without retyping, quotes that chase themselves, and a live weather tool built for exactly your Thursday problem.",
     "transport": "A working freight platform sits in my public repository: rating, event-logged tracking, POD, lane reporting. Compile it first.",
     "mining": "Day job: critical infrastructure at a major miner. For the contractors who service that world, both dialects spoken.",
-    "retail": "One truth about stock and money across POS, web and marketplaces, reconciled to the standard of a $3.8m repair job.",
+    "retail": "One truth about stock and money across POS, web and marketplaces, reconciled properly and kept that way.",
     "hospitality": "Direct bookings that beat commissions, one calendar across the OTAs, and guests answered at 10pm without inventing policy.",
     "professional-services": "Intake typed once, documents assembled from the file, AI drafting with a professional in the loop. Billable hours, rescued.",
     "health": "NDIS and clinic admin assembled from data you already hold, clinicians approving rather than authoring, privacy as architecture.",
-    "nonprofits": "The $3.8 million donor rebuild is my proudest work. Receipting, reconciliation and grant reporting on a charity budget.",
+    "nonprofits": "Donor data, receipting, reconciliation and grant reporting on a charity budget, by an analyst from government-grade systems work.",
     "real-estate": "Portal enquiries answered in minutes and filed properly, PM admin automated, and nothing touching trust money uninvited.",
     "agriculture": "Weather-aware decisions, compliance without the kitchen-table September, and field tools that survive dead zones.",
     "government": "SA Police, Services Australia and a council platform on the record. Baseline cleared, TOGAF, panel-friendly.",

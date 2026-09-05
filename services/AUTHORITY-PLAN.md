@@ -165,7 +165,8 @@ launch-day effort with a long link tail:
 ## Tier 4: podcasts (the credibility multiplier)
 
 Podcasts are the best authority format for you specifically, because your
-advantages are conversational: the unusual career arc, the $3.8m story,
+advantages are conversational: the unusual career arc (BHP, SA Police,
+federal government, then solo with AI as the crew),
 and a genuinely contrarian-but-honest take on AI. Every episode yields a
 backlink from the show notes, weeks of social material, a listenable
 credential for proposals, and occasionally a client.
@@ -266,8 +267,8 @@ compounds fastest of all because the pond is small:
 - **Meetups and conferences.** Adelaide has an active tech scene: .NET
   and web-dev user groups, AI meetups, and DDD Adelaide as the flagship
   community conference. Attend first, talk later: a lightning talk on
-  "running a one-person AI-leveraged practice" or the $3.8m
-  reconciliation story is exactly conference-shaped. Speaker listings
+  "running a one-person AI-leveraged practice" is exactly
+  conference-shaped. Speaker listings
   are links; the hallway is Tier 2.
 - **Business SA and local business networks.** Membership organisations
   with directories, events and newsletters. Judge by the room, not the
@@ -407,7 +408,7 @@ the bracketed parts or send nothing.
 >    can't do"]
 >
 > Proof I can talk and not just type: [strongest relevant link: the
-> matching systems guide, the $3.8m story, a previous episode once one
+> matching systems guide, the career record, a previous episode once one
 > exists]. Decent mic, quiet room, your format.
 >
 > If it's not a fit, no reply needed and thanks for the show.

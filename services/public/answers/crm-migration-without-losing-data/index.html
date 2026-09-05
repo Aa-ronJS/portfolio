@@ -4,10 +4,10 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>How do you migrate CRMs without losing data? | Aaron Steele</title>
-<meta name="description" content="Decide what records merge on before anything moves, rehearse the migration on a copy, and reconcile the result against a source of truth you trust. Skipping that first decision is how a charity ended up $3.8 million out, and finding that was my job.">
+<meta name="description" content="Decide what records merge on before anything moves, rehearse the migration on a copy, and reconcile the result against a source of truth you trust. Skipping that first decision is how migrations quietly corrupt years of records, and cleaning up after exactly that has been my job more than once.">
 <link rel="canonical" href="https://REPLACE-DOMAIN/answers/crm-migration-without-losing-data/">
 <meta property="og:title" content="How do you migrate CRMs without losing data? | Aaron Steele">
-<meta property="og:description" content="Decide what records merge on before anything moves, rehearse the migration on a copy, and reconcile the result against a source of truth you trust. Skipping that first decision is how a charity ended up $3.8 million out, and finding that was my job.">
+<meta property="og:description" content="Decide what records merge on before anything moves, rehearse the migration on a copy, and reconcile the result against a source of truth you trust. Skipping that first decision is how migrations quietly corrupt years of records, and cleaning up after exactly that has been my job more than once.">
 <meta property="og:type" content="article">
 <meta property="og:image" content="https://REPLACE-DOMAIN/og/answers.png">
 <meta name="twitter:card" content="summary_large_image">
@@ -29,7 +29,7 @@
           "name": "How do you migrate CRMs without losing data?",
           "acceptedAnswer": {
             "@type": "Answer",
-            "text": "Decide what records merge on before anything moves, rehearse the migration on a copy, and reconcile the result against a source of truth you trust. Skipping that first decision is how a charity ended up $3.8 million out, and finding that was my job. The merge key. Merge donors on email and everyone who shared or changed one becomes somebody else; that single choice, made casually by a previous migrator, created the $3.8 million discrepancy I later repaired record by record. Choose the stable identifier, not the convenient one. Map fields explicitly including the awkward ones, migrate a copy, let real users try real work on it, fix the mapping, then migrate for real in a quiet window with the old system frozen. Two rounds of client testing before go-live is my standard, because it was the standard that worked. Not \"the import finished\": counts and totals reconciled against the old system and against accounting, exceptions listed and explained. Full story at CRM & automation."
+            "text": "Decide what records merge on before anything moves, rehearse the migration on a copy, and reconcile the result against a source of truth you trust. Skipping that first decision is how migrations quietly corrupt years of records, and cleaning up after exactly that has been my job more than once. The merge key. Merge contacts on email and everyone who shared or changed one becomes somebody else; that single casual choice is behind most of the migration wreckage I have been called in to repair. Choose the stable identifier, not the convenient one. Map fields explicitly including the awkward ones, migrate a copy, let real users try real work on it, fix the mapping, then migrate for real in a quiet window with the old system frozen. Two rounds of client testing before go-live is my standard, because it was the standard that worked. Not \"the import finished\": counts and totals reconciled against the old system and against accounting, exceptions listed and explained. Full story at CRM & automation."
           }
         }
       ]
@@ -90,8 +90,8 @@
       <p class="lede">
         Decide what records merge on before anything moves, rehearse the migration on
         a copy, and reconcile the result against a source of truth you trust. <b>Skipping
-        that first decision is how a charity ended up $3.8 million out</b>, and finding that
-        was my job.
+        that first decision is how migrations quietly corrupt years of records</b>, and
+        cleaning up after exactly that has been my job more than once.
       </p>
       <div class="cta-row">
         <a class="btn" href="/contact/">Ask about yours</a>
@@ -107,10 +107,10 @@
       <div class="rows">
         <div class="row">
           <h3>The decision that matters most</h3>
-          <div>The merge key. Merge donors on email and everyone who shared or changed one
-             becomes somebody else; that single choice, made casually by a previous migrator,
-             created the $3.8 million discrepancy I later repaired record by record. Choose
-             the stable identifier, not the convenient one.</div>
+          <div>The merge key. Merge contacts on email and everyone who shared or changed
+             one becomes somebody else; that single casual choice is behind most of the
+             migration wreckage I have been called in to repair. Choose the stable
+             identifier, not the convenient one.</div>
         </div>
         <div class="row">
           <h3>The method</h3>

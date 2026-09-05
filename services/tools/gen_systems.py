@@ -25,12 +25,12 @@ GROUPS = {
     "rto": "Training providers",
 }
 
-DEFAULT_PROOF = """Anyone can claim integration experience; checking it is harder. My worst
-        reconciliation is public: a national charity's donation history out by around
-        $3.8 million after records merged on the wrong field, traced to the cause, rebuilt,
-        and reconciled against their books, 37,729 donations matched back to the right
-        donor. The method on this page is that method, at whatever size your version of the
-        problem is."""
+DEFAULT_PROOF = """Anyone can claim integration experience; checking it is harder. Mine
+        was built where they vet people properly: eleven years of systems and process work
+        for BHP's critical infrastructure, SA Police and Services Australia, TOGAF certified,
+        baseline cleared. And the workmanship is checkable today: two tools live on the
+        internet with public source, and a full platform build you can compile yourself,
+        52 checks passing. The method on this page is that method."""
 
 FAVICON = """<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Crect width='100' height='100' fill='%2312181f'/%3E%3Ctext x='50' y='74' font-size='68' font-family='Arial' font-weight='700' text-anchor='middle' fill='%23e0a232'%3EA%3C/text%3E%3C/svg%3E">"""
 

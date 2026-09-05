@@ -45,7 +45,7 @@ enough to deserve it.
 ## 2. The catalogue, mapped to the services
 
 In build order. One kit per service where DIY is honestly viable; no kit
-where it is not (nobody should DIY a $3.8m reconciliation, so data
+where it is not (nobody should DIY a serious reconciliation, so data
 cleanup gets no kit, and the mobile page's honest answer is usually
 "don't build an app", which is a chapter, not a product).
 
