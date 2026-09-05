@@ -1,3 +1,9 @@
+<!-- Live-tested: the full stack was booted under a real Docker daemon, the
+Authentik blueprint auto-registered all 6 OIDC clients, `stackctl user add`
+provisioned one identity across 7 apps in a single command, and a real
+headless-browser run completed the Vikunja→Authentik→Vikunja OIDC login
+(the resulting account reports auth_provider=authentik). -->
+
 # One identity across the stack
 
 Two layers make "one login for everything" real:

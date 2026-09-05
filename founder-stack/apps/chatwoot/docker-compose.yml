@@ -23,7 +23,8 @@ x-chatwoot-env: &chatwoot-env
 
 services:
   db:
-    image: postgres:16-alpine
+    # chatwoot requires the pgvector extension
+    image: pgvector/pgvector:pg16
     restart: unless-stopped
     environment:
       POSTGRES_USER: chatwoot

@@ -18,6 +18,8 @@ services:
       - db
     environment:
       url: https://blog.${BASE_DOMAIN}
+      # listen on IPv4: hosts with IPv6 disabled fail Ghost's '::' default
+      server__host: 0.0.0.0
       database__client: mysql
       database__connection__host: db
       database__connection__user: ghost

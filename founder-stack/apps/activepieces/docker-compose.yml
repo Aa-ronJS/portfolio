@@ -40,6 +40,9 @@ services:
       AP_REDIS_HOST: redis
       AP_REDIS_PORT: 6379
       AP_TELEMETRY_ENABLED: "false"
+      # The image's API binds to IPv6 (::). On a host with IPv6 fully
+      # disabled in the kernel it will fail with EAFNOSUPPORT — enable IPv6
+      # (at minimum loopback ::1, which every mainstream VPS has by default).
     networks:
       - default
       - proxy

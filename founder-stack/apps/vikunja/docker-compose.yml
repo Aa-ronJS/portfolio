@@ -1,8 +1,22 @@
 # Vikunja — tasks & projects (replaces Trello/Asana) -> https://tasks.${BASE_DOMAIN}
 services:
+  # Fresh named volumes are root-owned; vikunja runs as uid 1000 and its image
+  # has no shell to chown from, so a one-shot init fixes ownership first.
+  init:
+    image: busybox
+    user: root
+    command: chown -R 1000:1000 /files /db
+    volumes:
+      - files:/files
+      - db:/db
+    restart: "no"
+
   app:
     image: vikunja/vikunja:latest
     restart: unless-stopped
+    depends_on:
+      init:
+        condition: service_completed_successfully
     environment:
       VIKUNJA_SERVICE_PUBLICURL: https://tasks.${BASE_DOMAIN}
       VIKUNJA_SERVICE_JWTSECRET: ${VIKUNJA_JWT_SECRET}
@@ -38,7 +52,8 @@ configs:
         openid:
           enabled: ${SSO_ENABLED}
           providers:
-            - name: authentik
+            authentik:
+              name: authentik
               authurl: https://auth.${BASE_DOMAIN}/application/o/vikunja/
               clientid: vikunja
               clientsecret: ${VIKUNJA_OIDC_CLIENT_SECRET}

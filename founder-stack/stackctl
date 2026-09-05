@@ -172,7 +172,9 @@ case "$cmd" in
         log "Starting Authentik (sign-on portal: https://auth.$d, user 'akadmin', ADMIN_PASSWORD from .env)"
         compose authentik up -d
         for a in $sso_apps; do
-          [ "$(running_count "$a")" -gt 0 ] && { log "Re-applying $a with SSO..."; compose "$a" up -d; }
+          # --force-recreate: compose does not detect inline-config content
+          # changes (vikunja's OIDC config), only env changes
+          [ "$(running_count "$a")" -gt 0 ] && { log "Re-applying $a with SSO..."; compose "$a" up -d --force-recreate; }
         done
         log "SSO is on. Listmonk + Nextcloud need a one-time manual step: docs/SSO.md"
         ;;
@@ -180,7 +182,7 @@ case "$cmd" in
         set_env SSO_ENABLED false
         set_env DOCUMENSO_OIDC_WELL_KNOWN ""
         for a in $sso_apps; do
-          [ "$(running_count "$a")" -gt 0 ] && compose "$a" up -d
+          [ "$(running_count "$a")" -gt 0 ] && compose "$a" up -d --force-recreate
         done
         log "SSO is off (Authentik left running; stop it with: stackctl down authentik)"
         ;;

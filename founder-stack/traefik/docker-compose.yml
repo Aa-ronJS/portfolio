@@ -1,6 +1,7 @@
 services:
   traefik:
-    image: traefik:v3.1
+    # v3.5+ required: older Traefik docker clients are rejected by Docker 29+
+    image: traefik:v3.6
     restart: unless-stopped
     command:
       - --providers.docker=true

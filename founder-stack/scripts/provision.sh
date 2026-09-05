@@ -28,10 +28,13 @@ note_manual() { PROVISION_MANUAL+=("$1: $2"); }
 app_running() { [ "$(running_count "$1")" -gt 0 ]; }
 
 # http <method> <url> <curl extra args...>  -> body on stdout, HTTP code in $HTTP_CODE
+# STACK_INSECURE=1 enables local/dev mode: accept self-signed certs and skip
+# any HTTP proxy (for LAN installs or before Let's Encrypt has real certs).
 http() {
   local method="$1" url="$2"; shift 2
-  local out
-  out="$(curl -sS -X "$method" -w $'\n%{http_code}' --max-time 30 "$url" "$@" 2>/dev/null)" || { HTTP_CODE=000; return 1; }
+  local out extra=()
+  [ "${STACK_INSECURE:-0}" = 1 ] && extra=(-k --noproxy '*')
+  out="$(curl -sS -X "$method" -w $'\n%{http_code}' --max-time 30 "${extra[@]}" "$url" "$@" 2>/dev/null)" || { HTTP_CODE=000; return 1; }
   HTTP_CODE="${out##*$'\n'}"
   printf '%s' "${out%$'\n'*}"
   [ "${HTTP_CODE:0:1}" = 2 ]
@@ -138,15 +141,29 @@ provision_mattermost() {
 provision_chatwoot() {
   local action="$1" email="$2" pass="$3" user="${2%%@*}"
   app_running chatwoot || { note_manual chatwoot "not running"; return; }
-  local code
+  # rails runner prints deprecation/INFO noise to stderr and can still exit 0,
+  # so success is judged by a sentinel line, not the exit code.
+  local code out
   case "$action" in
-    add) code="u=User.new(name:'$user',email:'$email',password:'$pass',password_confirmation:'$pass'); u.skip_confirmation!; u.save!; AccountUser.create!(account:Account.first,user:u,role: :agent)" ;;
-    passwd) code="u=User.find_by!(email:'$email'); u.update!(password:'$pass',password_confirmation:'$pass')" ;;
-    rm) code="User.find_by!(email:'$email').destroy!" ;;
+    add)
+      # one atomic script: create the account on first run, then the user,
+      # then link them (administrator if first user, else agent)
+      code="a = Account.first || Account.create!(name: 'Founder Stack');
+role = AccountUser.count.zero? ? :administrator : :agent;
+u = User.find_by(email: '$email') || User.new(name: '$user', email: '$email');
+u.password = '$pass'; u.password_confirmation = '$pass'; u.skip_confirmation!; u.save!;
+AccountUser.find_or_create_by!(account: a, user: u) { |au| au.role = role };
+puts 'PROVISION_OK'"
+      ;;
+    passwd) code="u = User.find_by!(email: '$email'); u.update!(password: '$pass', password_confirmation: '$pass'); puts 'PROVISION_OK'" ;;
+    rm) code="u = User.find_by(email: '$email'); u&.destroy!; puts 'PROVISION_OK'" ;;
   esac
-  docker exec fs-chatwoot-rails-1 bundle exec rails runner "$code" >/dev/null 2>&1 \
-    && note_ok chatwoot "chatwoot — $action ok" \
-    || note_fail chatwoot "rails runner failed (no account yet? finish onboarding first)"
+  out="$(docker exec fs-chatwoot-rails-1 bundle exec rails runner "$code" 2>/dev/null)"
+  if printf '%s' "$out" | grep -q PROVISION_OK; then
+    note_ok chatwoot "chatwoot — $action ok"
+  else
+    note_fail chatwoot "rails runner failed (still migrating? retry in a minute)"
+  fi
 }
 
 # ---------- Vikunja (bundled CLI; also covered by real SSO) ----------
@@ -164,21 +181,47 @@ provision_vikunja() {
   esac
 }
 
-# ---------- Listmonk (admin API, basic auth) ----------
+# ---------- Listmonk (admin session; its API rejects password basic-auth) ----------
+listmonk_session() { # <jar> — logs in as admin, cookie lands in jar
+  local jar="$1" base="https://newsletter.$(base_domain)" nonce
+  http GET "$base/admin/login" -c "$jar" >/dev/null || return 1
+  nonce="$(awk '$6=="nonce"{print $7}' "$jar")"
+  [ -n "$nonce" ] || return 1
+  http POST "$base/admin/login" -b "$jar" -c "$jar" \
+    -d "username=$(envval ADMIN_USER)" -d "password=$(envval ADMIN_PASSWORD)" \
+    -d "nonce=$nonce" -d "next=/admin" >/dev/null
+  # login success is a 302 redirect; http() treats non-2xx as failure, so
+  # verify the session directly instead
+  http GET "$base/api/profile" -b "$jar" >/dev/null
+}
 provision_listmonk() {
   local action="$1" email="$2" pass="$3" user="${2%%@*}"
   app_running listmonk || { note_manual listmonk "not running"; return; }
-  local base="https://newsletter.$(base_domain)/api"
-  local admin_auth=(-u "$(envval ADMIN_USER):$(envval ADMIN_PASSWORD)" -H "Content-Type: application/json")
+  local base="https://newsletter.$(base_domain)" jar
+  jar="$(mktemp)"
+  listmonk_session "$jar" || { rm -f "$jar"; note_fail listmonk "admin login failed"; return; }
   case "$action" in
     add)
-      http POST "$base/users" "${admin_auth[@]}" \
-        -d "{\"username\":\"$(json_escape "$user")\",\"email\":\"$(json_escape "$email")\",\"name\":\"$(json_escape "$user")\",\"password\":\"$(json_escape "$pass")\",\"password2\":\"$(json_escape "$pass")\",\"type\":\"user\",\"user_role_id\":1,\"status\":\"enabled\",\"password_login\":true}" >/dev/null \
+      # note: the stock role (id 1) is Super Admin — fine for a small team
+      http POST "$base/api/users" -b "$jar" -H "Content-Type: application/json" \
+        -d "{\"username\":\"$(json_escape "$user")\",\"email\":\"$(json_escape "$email")\",\"name\":\"$(json_escape "$user")\",\"password\":\"$(json_escape "$pass")\",\"password2\":\"$(json_escape "$pass")\",\"type\":\"user\",\"user_role_id\":1,\"list_role_id\":null,\"status\":\"enabled\",\"password_login\":true}" >/dev/null \
         && note_ok listmonk "listmonk — account created" \
         || { note_fail listmonk "API create failed (HTTP $HTTP_CODE)"; note_manual listmonk "Admin → Users → New"; }
       ;;
-    passwd|rm) note_manual listmonk "Admin → Users ($action not scripted)" ;;
+    rm)
+      local uid
+      uid="$(http GET "$base/api/users" -b "$jar" | tr '{' '\n' | grep "\"email\":\"$email\"" | sed -n 's/.*"id":\([0-9]*\).*/\1/p' | head -1)"
+      if [ -n "$uid" ]; then
+        http DELETE "$base/api/users/$uid" -b "$jar" >/dev/null \
+          && note_ok listmonk "listmonk — user removed" \
+          || note_fail listmonk "delete failed (HTTP $HTTP_CODE)"
+      else
+        note_manual listmonk "no such user"
+      fi
+      ;;
+    passwd) note_manual listmonk "Admin → Users (rotate not scripted)" ;;
   esac
+  rm -f "$jar"
 }
 
 # ---------- Umami (REST API as admin) ----------
@@ -186,11 +229,24 @@ provision_umami() {
   local action="$1" email="$2" pass="$3" user="${2%%@*}"
   app_running umami || { note_manual umami "not running"; return; }
   local base="https://analytics.$(base_domain)/api"
-  local tok
+  local admin_pass tok
+  admin_pass="$(envval ADMIN_PASSWORD)"
   tok="$(http POST "$base/auth/login" -H "Content-Type: application/json" \
-    -d "{\"username\":\"$(json_escape "$(envval ADMIN_USER)")\",\"password\":\"$(json_escape "$(envval ADMIN_PASSWORD)")\"}" \
+    -d "{\"username\":\"admin\",\"password\":\"$(json_escape "$admin_pass")\"}" \
     | sed -n 's/.*"token":"\([^"]*\)".*/\1/p')"
-  [ -n "$tok" ] || { note_fail umami "admin login failed — did you change admin/umami to ADMIN_USER/ADMIN_PASSWORD?"; return; }
+  if [ -z "$tok" ]; then
+    # fresh install ships admin/umami — log in with it and immediately
+    # rotate the admin password to ADMIN_PASSWORD from .env
+    tok="$(http POST "$base/auth/login" -H "Content-Type: application/json" \
+      -d '{"username":"admin","password":"umami"}' \
+      | sed -n 's/.*"token":"\([^"]*\)".*/\1/p')"
+    if [ -n "$tok" ]; then
+      http POST "$base/me/password" -H "Authorization: Bearer $tok" -H "Content-Type: application/json" \
+        -d "{\"currentPassword\":\"umami\",\"newPassword\":\"$(json_escape "$admin_pass")\"}" >/dev/null \
+        && note_ok umami "umami — default admin password rotated to ADMIN_PASSWORD"
+    fi
+  fi
+  [ -n "$tok" ] || { note_fail umami "admin login failed (not ADMIN_PASSWORD, not the default)"; return; }
   case "$action" in
     add)
       http POST "$base/users" -H "Authorization: Bearer $tok" -H "Content-Type: application/json" \
@@ -241,6 +297,19 @@ provision_ghost() {
   [ "$action" = add ] || { note_manual ghost "manage staff in Ghost admin"; return; }
   local base="https://blog.$(base_domain)/ghost/api/admin" jar
   jar="$(mktemp)"
+  # zero-touch first run: if Ghost has no owner yet, create one from .env
+  if http GET "$base/authentication/setup/" | grep -q '"status":false'; then
+    http POST "$base/authentication/setup/" -H "Content-Type: application/json" \
+      -d "{\"setup\":[{\"name\":\"$(json_escape "$(envval ADMIN_USER)")\",\"email\":\"$(json_escape "$(envval ADMIN_EMAIL)")\",\"password\":\"$(json_escape "$(envval ADMIN_PASSWORD)")\",\"blogTitle\":\"Blog\"}]}" >/dev/null \
+      && note_ok ghost "ghost — bootstrapped owner account as ADMIN_EMAIL"
+  fi
+  if [ -z "$(envval SMTP_HOST)" ]; then
+    # without SMTP, Ghost 500s on admin login (it emails a sign-in notice)
+    # and on staff invites — nothing more we can script
+    rm -f "$jar"
+    note_manual ghost "no SMTP configured — invite '$email' from Ghost admin → Staff once SMTP is set"
+    return
+  fi
   http POST "$base/session/" -c "$jar" -H "Content-Type: application/json" -H "Origin: https://blog.$(base_domain)" \
     -d "{\"username\":\"$(json_escape "$(envval ADMIN_EMAIL)")\",\"password\":\"$(json_escape "$(envval ADMIN_PASSWORD)")\"}" >/dev/null \
     || { rm -f "$jar"; note_fail ghost "admin login failed (owner account must use ADMIN_EMAIL/ADMIN_PASSWORD)"; return; }
@@ -261,6 +330,11 @@ provision_vaultwarden() {
   local action="$1" email="$2"
   app_running vaultwarden || { note_manual vaultwarden "not running"; return; }
   [ "$action" = add ] || { note_manual vaultwarden "users manage their own master password"; return; }
+  if [ -z "$(envval SMTP_HOST)" ]; then
+    # invites are emailed; without SMTP the API 500s instead of creating the user
+    note_manual vaultwarden "no SMTP configured — signups are open at https://vault.$(base_domain), have them register"
+    return
+  fi
   local base="https://vault.$(base_domain)" jar
   jar="$(mktemp)"
   http POST "$base/admin" -c "$jar" --data-urlencode "token=$(envval VAULTWARDEN_ADMIN_TOKEN)" >/dev/null \
