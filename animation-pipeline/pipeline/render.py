@@ -30,7 +30,8 @@ from PIL import Image, ImageDraw, ImageFont
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 from audiolib import (AUDIO_SR, decode_audio, envelope, mouth_track,
                       split_take, write_wav)
-from rig import Rig, face_variant, find_clip, pose_at, resolve_channels
+from rig import (Rig, draw_pupils, face_variant, find_clip, pose_at,
+                 resolve_channels)
 
 
 # ---------------------------------------------------------------- assets
@@ -652,10 +653,48 @@ class EpisodeRenderer:
                             / (a.get("scale", 0.4) * self.H) - 0.52),
                     }
                     gaze = 0.0   # fighters watch fists, not talkers
+                # where the PUPILS aim. `eyes: [x, y]` directs them at
+                # a canvas point; `eyes: front` (or look: false) holds
+                # the drawn eyes; otherwise the talker's face, or ahead
+                # while walking. Quantised per axis to {-1, 0, 1}: the
+                # look SNAPS, comic-style, instead of tracking.
+                look = None
+                tgt = a.get("eyes")
+                if tgt == "front":
+                    tgt = None
+                elif isinstance(tgt, (list, tuple)):
+                    tgt = list(tgt)
+                elif a.get("look") is False or fighting:
+                    tgt = None
+                elif talker is not None and talker is not a:
+                    tsc = talker.get("scale", 0.4)
+                    tgt = [talker.get("at", [0.5, 0.85])[0],
+                           talker.get("at", [0.5, 0.85])[1] - 0.75 * tsc]
+                elif walk_slide:
+                    look = (1 if walk_slide["to"][0]
+                            > walk_slide["from"][0] else -1, 0)
+                    tgt = None
+                else:
+                    tgt = None
+                if tgt is not None:
+                    at0 = a.get("at", [0.5, 0.85])
+                    fy = at0[1] - 0.72 * a.get("scale", 0.4)
+                    dxe = tgt[0] - at0[0]
+                    dye = tgt[1] - fy
+                    look = ((1 if dxe > 0.02 else
+                             -1 if dxe < -0.02 else 0),
+                            (1 if dye > 0.06 else
+                             -1 if dye < -0.06 else 0))
+                if look:
+                    # the sprite is mirrored after posing, so a flipped
+                    # actor stamps toward the opposite local x
+                    look = ((-look[0] if do_flip else look[0]), look[1])
+                    if look == (0, 0):
+                        look = None
                 s["sprites"].append({
                     "imgs": None, "rig": rig, "specs": specs, "char": c,
                     "props": props, "reach": reach, "gaze": gaze,
-                    "fight": fight,
+                    "look": look, "fight": fight,
                     "k": k, "flip": do_flip, "cache": {},
                     "base": a.get("pose") or "body", "face": face,
                     # anchor restated for the padded pose canvas
@@ -1091,7 +1130,7 @@ class EpisodeRenderer:
                    for b, ch in pose.items())),
                tuple(sorted(variant_for.items())),
                bool(overlay_blink), bool(overlay_talk),
-               tuple(prop_state))
+               sp.get("look"), tuple(prop_state))
         img = sp["cache"].get(key)
         if img is None:
             canvas, _pad = rig.pose(pose, variant_for)
@@ -1101,7 +1140,16 @@ class EpisodeRenderer:
                     transform=lambda at: rig.anchor_world(
                         at, head_bone, pose),
                     feat_h=rig.H)
-            elif prop_state:
+            # dynamic pupils: lift the drawn pupil and re-stamp it
+            # toward the look target (skipped while the eyes are shut)
+            if sp.get("look") and face and face.get("eyes") \
+                    and not blink_sheet and not overlay_blink:
+                canvas = draw_pupils(
+                    canvas, face, sp["look"],
+                    transform=lambda at: rig.anchor_world(
+                        at, head_bone, pose),
+                    feat_h=rig.H)
+            elif prop_state and not (overlay_blink or overlay_talk):
                 canvas = canvas.copy()  # never draw on the rig's cache
 
             def paste_prop(dst, i, fi, dq):

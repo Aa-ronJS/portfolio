@@ -676,6 +676,25 @@ dead flat mid-neck; captures now reach 26px into the inter-row gap.
 Add to the check habit: pull two CONSECUTIVE frames of each talker
 mid-line — a still can't show a strobe.
 
+Dynamic pupils (2026-09-05): rigged characters look around. Per
+frame, `draw_pupils` (rig.py) works at the face eye anchors on the
+POSED canvas: it finds the light eye-white blob at each anchor and
+the compact dark pupil touching it, repaints the pupil with the
+white's own colour, and re-stamps it offset toward the look target —
+travel limited by the white's extent, so a pupil never leaves its
+eye. Detection-gated: an eye without a white-with-a-pupil (the
+nazgul's hood, a drawn blink) is left exactly as drawn, and stamping
+skips while blinking. Look targets (render.py, per actor): `eyes:
+[x, y]` aims at a canvas point, `eyes: front` holds the drawn eyes,
+otherwise the talker's face, else ahead while walking; `look: false`
+turns it off with the head gaze; fighters never auto-look. The
+offset is QUANTISED per axis to {-1, 0, 1} — looks snap comic-style
+rather than track — and a flipped sprite mirrors the x. The check
+sheet grew a pupils row (left/centre/right/down; identical panels =
+detection declined, correct for hoods). Committed demos from before
+this feature are NOT re-rendered (walkers would gain a look-ahead);
+the fellowship episode is the reference.
+
 Discussed but unbuilt: per-character close-up
 framing in `char.json` (the directed close-up currently assumes a
 humanoid head at `at: [0.5, 1.35], scale: 1.5`); pose changes and

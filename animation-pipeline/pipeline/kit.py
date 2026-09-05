@@ -713,6 +713,33 @@ def cmd_check(args):
         img, pad = r.pose({"arm_r": {"rot": -90, "shape": s}})
         prow.append(panel(img, f"arm -90 {s}", 260, 480))
     rows.append(prow)
+    # 4 — dynamic pupils at each look (identical panels mean the eyes
+    # aren't the white-with-a-pupil kind and are left as drawn)
+    from rig import draw_pupils
+    face = r.face
+    if not face:
+        cj = os.path.join(folder, "char.json")
+        if os.path.exists(cj):
+            with open(cj) as f:
+                face = json.load(f).get("face")
+    if face and face.get("eyes"):
+        rest, _ = r.pose({})
+        eyes_px = [r.anchor_world(e["at"], face.get("bone", "head"), {})
+                   for e in face["eyes"]]
+        exs = [p[0] for p in eyes_px]
+        eys = [p[1] for p in eyes_px]
+        rr = max(e.get("r", 0.012) for e in face["eyes"]) * r.H
+        box = (int(min(exs) - 6 * rr), int(min(eys) - 5 * rr),
+               int(max(exs) + 6 * rr), int(max(eys) + 6 * rr))
+        prow = []
+        hb = face.get("bone", "head")
+        for lab, lk in [("look left", (-1, 0)), ("look centre", (0, 0)),
+                        ("look right", (1, 0)), ("look down", (0, 1))]:
+            im2 = draw_pupils(rest, face, lk, feat_h=r.H,
+                              transform=lambda at: r.anchor_world(
+                                  at, hb, {}))
+            prow.append(panel(im2.crop(box), lab, 300, 260))
+        rows.append(prow)
     W = max(sum(p.width for p in row) for row in rows)
     H = sum(max(p.height for p in row) for row in rows)
     sheet = Image.new("RGBA", (W, H), MAG)

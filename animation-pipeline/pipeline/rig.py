@@ -755,6 +755,87 @@ def draw_open_mouth(img, cx, cy, w, colours=None):
               width=max(2, int(w * 0.10)))
 
 
+def draw_pupils(img, face, look, transform=None, feat_h=None):
+    """Copy of img with each DRAWN pupil lifted and re-stamped offset
+    toward `look` — a quantised (dx, dy) with each axis in {-1, 0, 1},
+    already in image space (the caller mirrors dx for flipped sprites).
+
+    Detection-gated per eye: the anchor must sit in (or beside) a
+    light eye-white blob with a compact dark pupil touching it. An eye
+    that isn't drawn that way — a hood, a closed lid, a solid dot with
+    no white — is left exactly as drawn. The travel limit comes from
+    the white's own extent, so the pupil never leaves the eye.
+    """
+    from scipy import ndimage as ndi
+    img = img.copy()
+    W, H = img.size
+    fh = feat_h or H
+    if transform is None:
+        def transform(at):
+            return (at[0] * W, at[1] * H)
+    arr = np.array(img)
+    d = ImageDraw.Draw(img)
+    stamped = []
+    for eye in face.get("eyes", []):
+        cx, cy = transform(eye["at"])
+        r = eye.get("r", 0.012) * fh
+        R = int(4.5 * r)
+        x0, y0 = int(cx) - R, int(cy) - R
+        if x0 < 0 or y0 < 0 or x0 + 2 * R > W or y0 + 2 * R > H:
+            continue
+        win = arr[y0:y0 + 2 * R, x0:x0 + 2 * R]
+        lum = win[..., :3].astype(int).sum(axis=2)
+        op = win[..., 3] > 128
+        lab, n = ndi.label((lum > 560) & op)
+        if not n:
+            continue
+        lcx, lcy = int(cx) - x0, int(cy) - y0
+        li = lab[lcy, lcx]
+        if li == 0:
+            dist, idx = ndi.distance_transform_edt(lab == 0,
+                                                   return_indices=True)
+            if dist[lcy, lcx] > r:
+                continue
+            li = lab[idx[0][lcy, lcx], idx[1][lcy, lcx]]
+        wmask = lab == li
+        wys, wxs = np.nonzero(wmask)
+        wc = (wxs.mean(), wys.mean())
+        dl, dn = ndi.label((lum < 330) & op
+                           & ndi.binary_dilation(wmask, iterations=2))
+        best = None
+        for i in range(1, dn + 1):
+            m = dl == i
+            if not (m & wmask).any():
+                continue
+            if m.sum() > 3.5 * math.pi * r * r:
+                continue          # that's the eye outline, not a pupil
+            ys, xs = np.nonzero(m)
+            d2 = (xs.mean() - wc[0]) ** 2 + (ys.mean() - wc[1]) ** 2
+            if best is None or d2 < best[0]:
+                best = (d2, m)
+        if best is None:
+            continue
+        pmask = best[1]
+        pr = max(2.0, math.sqrt((pmask & wmask).sum() / math.pi))
+        pcol = tuple(np.median(win[pmask][:, :3], axis=0)
+                     .astype(int).tolist()) + (255,)
+        wcol = tuple(np.median(win[wmask][:, :3], axis=0)
+                     .astype(int).tolist()) + (255,)
+        lift = ndi.binary_dilation(pmask, iterations=2) & wmask
+        win[lift] = wcol
+        tx = max(0.0, (wxs.max() - wxs.min()) / 2 - pr - 1)
+        ty = max(0.0, (wys.max() - wys.min()) / 2 - pr - 1)
+        stamped.append((x0 + wc[0] + look[0] * 0.9 * tx,
+                        y0 + wc[1] + look[1] * 0.9 * ty, pr, pcol))
+    if not stamped:
+        return img
+    out = Image.fromarray(arr)
+    d = ImageDraw.Draw(out)
+    for (px, py, pr, pcol) in stamped:
+        d.ellipse([px - pr, py - pr, px + pr, py + pr], fill=pcol)
+    return out
+
+
 def face_variant(img, face, blink=False, talk=False, transform=None,
                  feat_h=None):
     """Copy of img with stock blink and/or mouth flap stamped on.
