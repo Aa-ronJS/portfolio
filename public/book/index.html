@@ -1,0 +1,774 @@
+<!doctype html>
+<html lang="en-AU">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Done, Not Documented — the book</title>
+<meta name="description" content="A short book on getting real automation built in a small business: the one-page spec, the build, the proof, and never being hostage to the person who built it.">
+<meta name="theme-color" content="#12181f">
+<link rel="preload" as="font" type="font/woff2" href="/fonts/clash-display-var.woff2" crossorigin>
+<link rel="preload" as="font" type="font/woff2" href="/fonts/satoshi-var.woff2" crossorigin>
+
+<!-- ===========================================================================
+   THE FUNNEL PAGE. Same skeleton as the direct-response classics — audience
+   callout, problem, story, proof, reveal, objections, disqualification, FAQ,
+   author, guarantee, with the offer repeated between acts — but written in
+   this site's register and carried on its design system. The persuasion is
+   structural; the copy stays honest.
+
+   Every number on this page is a real one from the main site. There is no
+   testimonial section yet: the slot exists further down, commented out, and
+   stays commented out until there are real quotes to put in it.
+
+   EDIT before shipping (search for "EDIT:"):
+     1. CHECKOUT_URL in the script at the bottom — your Stripe/Lemon Squeezy
+        payment link. Until it is set, buy buttons scroll to the offer instead.
+     2. The price, wherever "$9" appears (7 places).
+     3. The refund email address in the guarantee.
+     4. The book itself: title, chapter list, page numbers — once it exists.
+   =========================================================================== -->
+
+<style>
+@font-face{font-family:'Clash';src:url('/fonts/clash-display-var.woff2') format('woff2-variations');font-weight:200 700;font-style:normal;font-display:swap}
+@font-face{font-family:'Satoshi';src:url('/fonts/satoshi-var.woff2') format('woff2-variations');font-weight:300 900;font-style:normal;font-display:swap}
+@font-face{font-family:'Mono';src:url('/fonts/ibm-plex-mono-400.woff2') format('woff2');font-weight:400;font-style:normal;font-display:swap}
+@font-face{font-family:'Mono';src:url('/fonts/ibm-plex-mono-500.woff2') format('woff2');font-weight:500;font-style:normal;font-display:swap}
+@font-face{font-family:'Clash Fallback';src:local('Segoe UI Semibold'),local('Helvetica Neue'),local('Arial');size-adjust:94%;ascent-override:96%;descent-override:22%;line-gap-override:0%}
+@font-face{font-family:'Satoshi Fallback';src:local('Segoe UI'),local('Helvetica Neue'),local('Arial');size-adjust:99%;ascent-override:97%;descent-override:24%;line-gap-override:0%}
+
+:root{
+  --brand-h:58; --brand-c:0.155;
+
+  --ink:        oklch(0.158 0.019 252);
+  --ink-2:      oklch(0.205 0.021 252);
+  --ink-line:   oklch(0.330 0.020 252);
+  --bone:       oklch(0.958 0.008 84);
+  --bone-line:  oklch(0.855 0.014 84);
+
+  --amber:      oklch(0.760 var(--brand-c) var(--brand-h));
+  --amber-deep: oklch(0.590 0.140 calc(var(--brand-h) - 12));
+  --amber-soft: oklch(0.860 0.090 var(--brand-h));
+
+  --on-ink:      oklch(0.968 0.006 84);
+  --on-ink-dim:  oklch(0.800 0.012 84);
+  --on-ink-mute: oklch(0.645 0.014 252);
+  --on-bone:     oklch(0.205 0.018 252);
+  --on-bone-dim: oklch(0.420 0.016 252);
+  --on-bone-mute:oklch(0.545 0.014 252);
+
+  --fg:var(--on-ink); --fg-dim:var(--on-ink-dim); --fg-mute:var(--on-ink-mute);
+  --line:var(--ink-line); --accent:var(--amber);
+
+  --display:'Clash','Clash Fallback',sans-serif;
+  --body:'Satoshi','Satoshi Fallback',system-ui,sans-serif;
+  --mono:'Mono',ui-monospace,Consolas,monospace;
+
+  --t--1:clamp(0.80rem,0.78rem + 0.10vw,0.875rem);
+  --t-0: clamp(1.06rem,1.00rem + 0.30vw,1.25rem);
+  --t-1: clamp(1.22rem,1.10rem + 0.55vw,1.60rem);
+  --t-2: clamp(1.62rem,1.35rem + 1.30vw,2.75rem);
+  --t-3: clamp(2.00rem,1.50rem + 2.40vw,4.00rem);
+  --t-4: clamp(2.60rem,1.70rem + 4.40vw,6.40rem);
+  --t-5: clamp(2.60rem,1.55rem + 4.60vw,6.20rem);
+
+  --s2:8px; --s3:12px; --s4:16px; --s5:24px; --s6:32px;
+  --s7:48px; --s8:64px; --s9:96px; --s10:128px;
+  --act:clamp(96px,15vh,190px);
+  --gut:clamp(20px,5vw,80px);
+  --r:0px;
+
+  --ease:cubic-bezier(0.22,1,0.36,1);
+  --ease-out:cubic-bezier(0.16,1,0.3,1);
+}
+
+*,*::before,*::after{box-sizing:border-box}
+html{-webkit-text-size-adjust:100%}
+html:focus-within{scroll-behavior:smooth}
+body{
+  margin:0; background:var(--ink); color:var(--fg);
+  font-family:var(--body); font-size:var(--t-0); line-height:1.55; font-weight:400;
+  -webkit-font-smoothing:antialiased; overflow-x:hidden; accent-color:var(--amber);
+}
+::selection{background:var(--amber); color:oklch(0.16 0.02 252)}
+img{max-width:100%; display:block}
+
+h1,h2,h3{
+  font-family:var(--display); font-weight:600; margin:0;
+  line-height:0.94; letter-spacing:-0.026em; text-wrap:balance;
+}
+h1{font-size:var(--t-5)}
+h2{font-size:var(--t-4)}
+h3{font-size:var(--t-2); line-height:0.98}
+p{margin:0 0 1em; text-wrap:pretty}
+p:last-child{margin-bottom:0}
+a{color:inherit}
+:focus-visible{outline:2px solid var(--amber); outline-offset:4px}
+
+.tag{
+  font-family:var(--mono); font-size:0.6875rem; font-weight:500;
+  letter-spacing:0.14em; text-transform:uppercase; color:var(--accent); margin:0;
+}
+.wrap{max-width:1500px; margin-inline:auto; padding-inline:var(--gut)}
+.measure{max-inline-size:19ch}
+.measure-wide{max-inline-size:50ch}
+
+.act{position:relative; padding-block:var(--act)}
+.act--bone{
+  background:var(--bone); color:var(--on-bone);
+  --fg:var(--on-bone); --fg-dim:var(--on-bone-dim); --fg-mute:var(--on-bone-mute);
+  --line:var(--bone-line); --accent:var(--amber-deep);
+}
+.act--air{padding-block:clamp(120px,18vh,250px)}
+.act--deep{background:var(--ink); overflow:clip; isolation:isolate; padding-block:clamp(110px,16vh,220px)}
+.act--deep::before{
+  content:''; position:absolute; inset:0; z-index:-1; pointer-events:none;
+  background:radial-gradient(120% 85% at 78% 18%, oklch(0.76 0.155 58 / 0.10), transparent 62%);
+}
+.act--deep + .act--deep{border-top:1px solid var(--ink-line)}
+
+/* ---------- Parallax plates ---------------------------------------------- */
+.plate{overflow:clip; isolation:isolate}
+.plate__media{position:absolute; inset:-14% 0; z-index:-2}
+.plate__media img{width:100%; height:100%; object-fit:cover}
+.plate__veil{
+  position:absolute; inset:0; z-index:-1;
+  background:
+    linear-gradient(to right, oklch(0.125 0.02 252 / 0.96) 0%, oklch(0.125 0.02 252 / 0.86) 46%, oklch(0.125 0.02 252 / 0.55) 100%),
+    linear-gradient(to bottom, oklch(0.125 0.02 252 / 0.90) 0%, transparent 26%, transparent 66%, oklch(0.125 0.02 252 / 0.94) 100%);
+}
+@supports (animation-timeline: view()){
+  @media (prefers-reduced-motion: no-preference){
+    .plate__media{animation:drift linear both; animation-timeline:view(); animation-range:cover 0% cover 100%}
+    @keyframes drift{from{transform:translate3d(0,-7%,0) scale(1.05)} to{transform:translate3d(0,7%,0) scale(1.05)}}
+  }
+}
+
+/* ---------- Hero ---------------------------------------------------------- */
+.hero{min-height:100svh; display:grid; align-items:center; padding-block:var(--s9) var(--s8)}
+.hero .wrap{width:100%}
+.hero__grid{display:grid; gap:var(--s8); align-items:center}
+@media (min-width:64rem){
+  .hero__grid{grid-template-columns:minmax(0,1.18fr) minmax(0,0.82fr); gap:var(--s10)}
+}
+.hero__grid > *{min-width:0}
+.hero h1{margin-block:var(--s4) var(--s6)}
+.hero h1 em{font-style:normal; color:var(--amber)}
+.hero__lede{font-size:var(--t-1); line-height:1.44; color:var(--fg-dim); max-inline-size:42ch}
+.hero__lede b{color:var(--fg); font-weight:600}
+.hero__foot{display:flex; flex-wrap:wrap; gap:var(--s4); align-items:center; margin-top:var(--s7)}
+
+.btn{
+  display:inline-flex; align-items:center; gap:0.6em; min-height:54px;
+  padding:0 var(--s6); border-radius:var(--r); text-decoration:none;
+  font-weight:700; font-size:var(--t--1); letter-spacing:0.06em; text-transform:uppercase;
+  background:var(--amber); color:oklch(0.16 0.02 252); border:1px solid var(--amber);
+  transition:background 200ms var(--ease), border-color 200ms var(--ease), transform 140ms var(--ease);
+}
+.btn:hover{background:var(--amber-soft); border-color:var(--amber-soft)}
+.btn:active{transform:scale(0.975)}
+.btn--ghost{background:transparent; color:var(--fg); border-color:oklch(1 0 0 / 0.32)}
+.act--bone .btn--ghost{border-color:oklch(0 0 0 / 0.28)}
+.btn--ghost:hover{background:oklch(1 0 0 / 0.09); border-color:currentColor}
+.btn__arrow{transition:transform 220ms var(--ease)}
+.btn:hover .btn__arrow{transform:translateX(5px)}
+
+/* The line under every buy button: price, delivery, refund. One component,
+   so the terms can never disagree with themselves between sections. */
+.terms{
+  margin-top:var(--s4); font-family:var(--mono); font-size:var(--t--1);
+  color:var(--fg-mute); display:flex; flex-wrap:wrap; gap:var(--s2) var(--s5);
+}
+.terms span{display:inline-flex; align-items:center; gap:var(--s3)}
+.terms span:not(:last-child)::after{content:''; width:4px; height:4px; background:var(--accent); opacity:0.7}
+
+/* ---------- The book itself ----------------------------------------------- */
+/* No cover artwork exists yet, so the cover is set in type, live, in the same
+   faces as the rest of the site. When a real cover is designed, swap the div
+   for an <img> and keep the frame. */
+.bookwrap{perspective:1200px; display:grid; justify-content:center}
+.book{
+  position:relative; width:min(340px,72vw); aspect-ratio:5/7;
+  background:var(--bone); color:var(--on-bone);
+  transform:rotateX(var(--rx,0deg)) rotateY(var(--ry,-6deg));
+  transition:transform 480ms var(--ease);
+  display:flex; flex-direction:column; justify-content:space-between;
+  padding:clamp(20px,6%,34px);
+  box-shadow:
+    0.3px 0.6px 0.8px oklch(0.08 0.02 252 / 0.45),
+    2.4px 4.8px 6px oklch(0.08 0.02 252 / 0.45),
+    9px 18px 24px oklch(0.08 0.02 252 / 0.45),
+    30px 60px 78px oklch(0.08 0.02 252 / 0.45);
+}
+.book::before{ /* spine */
+  content:''; position:absolute; left:0; top:0; bottom:0; width:10px;
+  background:linear-gradient(to right, oklch(0 0 0 / 0.22), transparent);
+}
+.book::after{ /* the amber hairline, the site's signature, across the cover */
+  content:''; position:absolute; left:clamp(20px,6%,34px); right:clamp(20px,6%,34px);
+  top:34%; height:2px; background:var(--amber-deep);
+}
+.book__kicker{font-family:var(--mono); font-size:0.625rem; letter-spacing:0.16em; text-transform:uppercase; color:var(--on-bone-mute)}
+.book__title{font-family:var(--display); font-weight:600; font-size:clamp(1.7rem,6.4vw,2.5rem); line-height:0.96; letter-spacing:-0.026em; margin-top:38%}
+.book__title em{font-style:normal; color:var(--amber-deep)}
+.book__sub{font-size:var(--t--1); line-height:1.5; color:var(--on-bone-dim); margin-top:var(--s4); max-inline-size:26ch}
+.book__author{font-family:var(--mono); font-size:0.6875rem; letter-spacing:0.14em; text-transform:uppercase; color:var(--on-bone); margin-top:auto}
+@media (hover:hover) and (pointer:fine) and (prefers-reduced-motion: no-preference){.book{transition:transform 200ms var(--ease)}}
+@media (hover:none),(pointer:coarse),(prefers-reduced-motion: reduce){.book{transform:rotateY(-4deg) !important}}
+
+/* ---------- Numbered spine (pillars, chapters) ---------------------------- */
+.caps{margin-top:var(--s10); border-top:1px solid var(--line)}
+.cap{
+  display:grid; gap:var(--s4) var(--s8); padding-block:var(--s8);
+  border-bottom:1px solid var(--line); align-items:start;
+}
+@media (min-width:58rem){.cap{grid-template-columns:5rem minmax(0,1fr) minmax(0,1.15fr); gap:var(--s9)}}
+.cap > *{min-width:0}
+.cap__n{
+  font-family:var(--mono); font-size:var(--t--1); font-weight:500;
+  letter-spacing:0.1em; color:var(--accent); padding-top:0.5em;
+}
+.cap h3{letter-spacing:-0.028em}
+.cap__body{color:var(--fg-dim); line-height:1.62}
+.cap__body b{color:var(--fg); font-weight:600}
+
+/* ---------- Dashed lists (pains, contents, disqualifiers) ----------------- */
+.doable{display:grid; gap:var(--s5) var(--s8); margin:0; padding:0; list-style:none}
+@media (min-width:56rem){.doable{grid-template-columns:repeat(2,minmax(0,1fr))}}
+.doable > li{
+  min-width:0; padding-left:var(--s6); position:relative;
+  color:var(--fg-dim); line-height:1.6; max-inline-size:44ch;
+}
+.doable > li::before{
+  content:''; position:absolute; left:0; top:0.62em;
+  width:14px; height:1px; background:var(--accent);
+}
+.doable b{color:var(--fg); font-weight:600}
+
+/* Contents rows: a page number and what it buys you. */
+.toc{margin:var(--s9) 0 0; padding:0; list-style:none; border-top:1px solid var(--line)}
+.toc li{
+  display:grid; grid-template-columns:5.5rem minmax(0,1fr); gap:var(--s6);
+  padding-block:var(--s5); border-bottom:1px solid var(--line); align-items:baseline;
+}
+.toc .toc__pg{font-family:var(--mono); font-size:var(--t--1); color:var(--accent); letter-spacing:0.08em; white-space:nowrap}
+.toc .toc__what{color:var(--fg-dim); line-height:1.55; max-inline-size:60ch}
+.toc .toc__what b{color:var(--fg); font-weight:600}
+
+/* ---------- Reveal -------------------------------------------------------- */
+@media (prefers-reduced-motion: no-preference){
+  .rise{opacity:0; transform:translate3d(0,28px,0)}
+  .rise.in{opacity:1; transform:none; transition:opacity 640ms var(--ease-out) var(--d,0ms), transform 640ms var(--ease-out) var(--d,0ms)}
+  .wipe{transform:scaleX(0); transform-origin:left}
+  .wipe.in{transform:scaleX(1); transition:transform 900ms var(--ease-out) var(--d,0ms)}
+}
+.rule{height:1px; background:var(--accent); border:0; margin:0}
+
+/* ---------- Figures ------------------------------------------------------- */
+.figures{display:grid; gap:var(--s7) var(--s6); margin-top:var(--s10); grid-template-columns:repeat(auto-fit,minmax(170px,1fr))}
+.figures > *{min-width:0}
+.fig__n{
+  font-family:var(--display); font-weight:600; font-size:var(--t-2);
+  line-height:0.88; letter-spacing:-0.045em; font-variant-numeric:tabular-nums;
+  display:block; color:var(--accent);
+}
+.fig__k{display:block; margin-top:var(--s4); color:var(--fg-dim); font-size:var(--t--1); line-height:1.5; max-inline-size:26ch}
+
+/* ---------- Story / prose blocks ------------------------------------------ */
+.proj__eyebrow{display:flex; align-items:center; gap:var(--s4); margin-bottom:var(--s5)}
+.proj__eyebrow .rule{flex:1; max-width:150px}
+.prose{color:var(--fg-dim); line-height:1.62; max-inline-size:54ch}
+.prose b{color:var(--fg); font-weight:600}
+
+/* ---------- Objections ---------------------------------------------------- */
+.finds{display:grid; gap:var(--s6); margin-top:var(--s9); padding:0; list-style:none}
+@media (min-width:54rem){.finds{grid-template-columns:repeat(2,minmax(0,1fr)); gap:var(--s7) var(--s9)}}
+.finds li{border-top:1px solid var(--line); padding-top:var(--s5); min-width:0}
+.finds h4{font-family:var(--display); font-weight:500; font-size:var(--t-1); line-height:1.1; letter-spacing:-0.022em; margin:0 0 var(--s3)}
+.finds p{color:var(--fg-dim); font-size:var(--t--1); line-height:1.65; margin:0}
+
+/* ---------- FAQ ----------------------------------------------------------- */
+.faq{margin-top:var(--s9); border-top:1px solid var(--line)}
+.faq details{border-bottom:1px solid var(--line)}
+.faq summary{
+  cursor:pointer; list-style:none; padding-block:var(--s5);
+  display:flex; justify-content:space-between; align-items:baseline; gap:var(--s6);
+  font-family:var(--display); font-weight:500; font-size:var(--t-1);
+  line-height:1.15; letter-spacing:-0.022em;
+}
+.faq summary::-webkit-details-marker{display:none}
+.faq summary::after{content:'+'; font-family:var(--mono); color:var(--accent); flex:none}
+.faq details[open] summary::after{content:'\2212'}
+.faq details > p{color:var(--fg-dim); line-height:1.62; max-inline-size:60ch; padding-bottom:var(--s6); margin:0}
+
+/* ---------- CTA band ------------------------------------------------------ */
+.cta{text-align:center; display:grid; justify-items:center; gap:var(--s5)}
+.cta .terms{justify-content:center}
+
+/* ---------- Marquee ------------------------------------------------------- */
+.marq{overflow:hidden; border-block:1px solid var(--ink-line); padding-block:var(--s5); --gap:var(--s7)}
+.marq__row{display:flex; gap:var(--gap); width:max-content}
+@media (prefers-reduced-motion: no-preference){
+  .marq__row{animation:slide 52s linear infinite}
+  .marq:hover .marq__row{animation-play-state:paused}
+  @keyframes slide{to{transform:translateX(calc(-50% - (var(--gap) / 2)))}}
+}
+.marq__row span{font-family:var(--display); font-weight:400; font-size:var(--t-1); letter-spacing:-0.02em; color:var(--on-ink-mute); white-space:nowrap}
+.marq__row span::after{content:'/'; margin-left:var(--gap); color:var(--amber); opacity:0.6}
+
+/* ---------- Author -------------------------------------------------------- */
+.author{display:grid; gap:var(--s8); align-items:center}
+@media (min-width:62rem){.author{grid-template-columns:minmax(0,0.7fr) minmax(0,1.3fr); gap:var(--s10)}}
+.author > *{min-width:0}
+.author__frame{
+  background:var(--bone); padding:clamp(12px,1.4vw,22px) clamp(12px,1.4vw,22px) clamp(38px,3.6vw,58px);
+  max-width:420px; margin:0;
+  box-shadow:9px 18px 24px oklch(0.08 0.02 252 / 0.45), 30px 60px 78px oklch(0.08 0.02 252 / 0.45);
+}
+.author__frame img{width:100%; height:auto; aspect-ratio:4/5; object-fit:cover}
+.author__frame figcaption{
+  margin-top:var(--s3);
+  font-family:var(--mono); font-size:0.625rem; letter-spacing:0.16em;
+  text-transform:uppercase; color:var(--on-bone-mute);
+  display:flex; justify-content:space-between; gap:var(--s4);
+}
+.author__frame figcaption b{color:var(--on-bone); font-weight:500}
+
+.foot{padding-block:var(--s10) var(--s8)}
+.foot__grid{display:flex; flex-wrap:wrap; gap:var(--s6) var(--s9); justify-content:space-between; align-items:flex-end; margin-top:var(--s10); padding-top:var(--s6); border-top:1px solid var(--ink-line)}
+.foot__note{color:var(--on-ink-mute); font-size:var(--t--1); max-inline-size:44ch; line-height:1.6}
+.link{
+  display:inline-flex; align-items:center; gap:0.5em; min-height:32px;
+  font-family:var(--mono); font-size:var(--t--1); text-decoration:none; color:var(--fg);
+  box-shadow:inset 0 -1px 0 0 color-mix(in oklch, var(--accent) 55%, transparent);
+  transition:color 180ms var(--ease), box-shadow 180ms var(--ease);
+}
+.link:hover{color:var(--accent); box-shadow:inset 0 -1px 0 0 var(--accent)}
+
+@media (prefers-reduced-motion: reduce){
+  *,*::before,*::after{animation-duration:1ms !important; animation-iteration-count:1 !important; transition-duration:1ms !important}
+  html:focus-within{scroll-behavior:auto}
+}
+</style>
+</head>
+<body>
+
+<!-- ============================ HERO: THE PROMISE ============================ -->
+<header class="act hero plate">
+  <div class="plate__media"><img src="/img/hero.jpg" alt="" width="1800" height="771" fetchpriority="high"></div>
+  <div class="plate__veil"></div>
+
+  <div class="wrap">
+    <div class="hero__grid">
+      <div>
+        <p class="tag rise">For owners of service businesses</p>
+        <h1 class="rise" style="--d:80ms">Your team retypes the same data five times a day.<br><em>Stop paying for that.</em></h1>
+        <p class="hero__lede rise" style="--d:170ms">
+          A short book on getting automation actually built in a small business: the intake, the
+          rules, the system it lands in, the exceptions. <b>Written by someone who has been doing
+          exactly that since 2016</b> — not selling software, and not selling a course.
+        </p>
+        <div class="hero__foot rise" style="--d:260ms">
+          <a class="btn js-buy" href="#offer">Get the book — $9 <span class="btn__arrow" aria-hidden="true">&rarr;</span></a>
+          <a class="btn btn--ghost" href="#inside">What's inside</a>
+        </div>
+        <p class="terms rise" style="--d:320ms">
+          <span>Instant download</span><span>30-day refund, no questions</span><span>No mailing list required</span>
+        </p>
+      </div>
+
+      <div class="bookwrap rise" style="--d:140ms">
+        <!-- EDIT: typographic stand-in until a real cover exists. -->
+        <div class="book" aria-label="Book cover: Done, Not Documented">
+          <span class="book__kicker">A field guide, not a manifesto</span>
+          <span class="book__title">Done,<br>not <em>documented.</em></span>
+          <span class="book__sub">Getting real automation built in a small business, without hiring a team.</span>
+          <span class="book__author">Aaron Steele</span>
+        </div>
+      </div>
+    </div>
+  </div>
+</header>
+
+<!-- ============================ THE PROBLEM ============================ -->
+<section class="act act--bone act--air">
+  <div class="wrap">
+    <p class="tag rise">Running a service business in 2026</p>
+    <h2 class="rise measure" style="--d:80ms">Everyone is selling you a robot.</h2>
+    <p class="rise measure-wide prose" style="--d:150ms; margin-top:var(--s6)">
+      Every tool you already pay for has had "AI" bolted onto it this year. Every agency wants a
+      discovery workshop before they'll quote. And somehow your people are still copying job details
+      out of one screen into another, and the number in the CRM still doesn't match the number in
+      the accounts.
+    </p>
+
+    <ul class="doable" style="margin-top:var(--s9)">
+      <li class="rise"><b>The quotes don't fit the business.</b> Automation firms price for enterprises.
+          A $40,000 discovery phase is not a serious option when the problem is a booking form.</li>
+      <li class="rise" style="--d:80ms"><b>The demos don't survive contact.</b> The AI demo answers
+          beautifully right up until it meets your actual data, your actual exceptions, and your
+          actual staff on a Tuesday.</li>
+      <li class="rise" style="--d:160ms"><b>The software keeps multiplying.</b> Each new tool fixes one
+          gap and opens two seams, and every seam is somebody retyping something.</li>
+      <li class="rise" style="--d:240ms"><b>The knowledge lives in one head.</b> The rules your business
+          actually runs on are written down nowhere, which is why every system you buy fits badly.</li>
+    </ul>
+
+    <div class="cta" style="margin-top:var(--s10)">
+      <a class="btn js-buy rise" href="#offer">Get the book — $9 <span class="btn__arrow" aria-hidden="true">&rarr;</span></a>
+      <p class="terms rise" style="--d:80ms"><span>Instant download</span><span>30-day refund, no questions</span></p>
+    </div>
+  </div>
+</section>
+
+<!-- ============================ THE STORY ============================ -->
+<section class="act act--deep">
+  <div class="wrap">
+    <div class="proj__eyebrow rise"><span class="tag">Where this comes from</span><hr class="rule wipe" style="--d:120ms"></div>
+    <h2 class="rise measure" style="--d:80ms">I'm usually the second person on the project.</h2>
+    <div class="prose rise" style="--d:170ms; margin-top:var(--s6)">
+      <p>I've been a business analyst since 2015 — mining, policing, federal service delivery, local
+         government — and building the automation myself since 2016. Which means for ten years my job
+         has mostly been arriving <b>after</b> somebody's automation project has stalled, and working
+         out what the first person meant.</p>
+      <p>The pattern is always the same. Nobody wrote down the rules the business really runs on, so
+         the thing that got built runs on guesses. One charity's donor records had been merged on
+         email address instead of their account number, and their donation totals were out by
+         <b>$3.8&nbsp;million</b>. Nobody had worked out why. Finding it took analysis; fixing it took
+         a builder; and the projects that go wrong are the ones where those are two different people
+         with a handover in between.</p>
+      <p>The book is the method I use to be both people at once, written so a business owner can run
+         it — with their own hands, with one contractor, or with an AI coding agent doing the typing.
+         <b>It is the brief I would hand a delivery team, taught.</b></p>
+    </div>
+
+    <div class="figures">
+      <div class="rise"><span class="fig__n" data-count="37729">0</span><span class="fig__k">donations rebuilt against the right donors, by hand and by script</span></div>
+      <div class="rise" style="--d:90ms"><span class="fig__n" data-count="1019">0</span><span class="fig__k">organisations reconciled in that one engagement</span></div>
+      <div class="rise" style="--d:180ms"><span class="fig__n" data-count="10">0</span><span class="fig__k">years building on HubSpot, Salesforce, Zoho, Zapier, Make and n8n</span></div>
+      <div class="rise" style="--d:270ms"><span class="fig__n" data-count="2">0</span><span class="fig__k">live tools on the main site you can open and use right now</span></div>
+    </div>
+
+    <p class="rise" style="--d:200ms; margin-top:var(--s7); font-family:var(--mono); font-size:var(--t--1); color:var(--fg-mute)">
+      Every number above is from real client work, described in full at <a class="link" href="/">aaronsteele.vercel.app</a>.
+    </p>
+  </div>
+</section>
+
+<!--
+  EDIT: TESTIMONIALS. This block stays commented out until there are real,
+  attributable quotes from real readers or clients who agreed to be named.
+  The rest of the page carries proof that can be checked; an invented quote
+  would poison all of it.
+
+  <section class="act act--bone act--air">
+    <div class="wrap">
+      <p class="tag rise">What readers say</p>
+      <ul class="finds">
+        <li class="rise"><h4>[Full name, business]</h4><p>"[Their words, with permission, linked to something checkable.]"</p></li>
+      </ul>
+    </div>
+  </section>
+-->
+
+<div class="marq" aria-hidden="true">
+  <div class="marq__row">
+    <span>HubSpot</span><span>Salesforce</span><span>Zoho</span><span>Zapier</span><span>Make</span><span>n8n</span><span>Claude Code</span><span>Xero</span><span>Stripe</span><span>ServiceM8</span><span>Airtable</span><span>Power Automate</span>
+    <span>HubSpot</span><span>Salesforce</span><span>Zoho</span><span>Zapier</span><span>Make</span><span>n8n</span><span>Claude Code</span><span>Xero</span><span>Stripe</span><span>ServiceM8</span><span>Airtable</span><span>Power Automate</span>
+  </div>
+</div>
+
+<!-- ============================ THE REVEAL ============================ -->
+<section class="act act--bone act--air" id="inside">
+  <div class="wrap">
+    <p class="tag rise">The book</p>
+    <h2 class="rise" style="--d:80ms">Done, not documented.</h2>
+    <p class="rise measure-wide prose" style="--d:150ms; margin-top:var(--s6)">
+      Four parts, in the order the work actually happens. Not theory — each part ends with the
+      artefact you should now be holding: a one-page spec, a working automation, a test that could
+      actually fail, and a system your own people can change.
+    </p>
+
+    <div class="caps">
+      <div class="cap rise">
+        <div class="cap__n">Part 1</div>
+        <h3>The spec: one page, before anything is built.</h3>
+        <div class="cap__body">
+          <p>What the process must do, what it must never do, the exceptions, and what finished looks
+             like — pulled out of the people who actually run it, including the rules that only exist
+             in somebody's head. <b>This page is most of the value</b>, it costs nothing but an
+             afternoon, and it is the part every failed project skipped.</p>
+        </div>
+      </div>
+      <div class="cap rise" style="--d:80ms">
+        <div class="cap__n">Part 2</div>
+        <h3>The build: small, boring, and end to end.</h3>
+        <div class="cap__body">
+          <p>Why the right first automation is the whole of one small process rather than a slice of a
+             big one. Choosing between Zapier, Make and n8n on what actually differs. Where an AI
+             coding agent genuinely replaces a contractor, and the specific ways it will build the
+             wrong thing beautifully if the spec from Part&nbsp;1 doesn't exist.</p>
+        </div>
+      </div>
+      <div class="cap rise" style="--d:160ms">
+        <div class="cap__n">Part 3</div>
+        <h3>The proof: "done" is a claim, not a fact.</h3>
+        <div class="cap__body">
+          <p>How to check the result against something the builder doesn't control — the source
+             system, the accounts, the company's own website — so you never again run for months on a
+             report that is structurally incapable of failing. Includes the test I use that caught an
+             AI agent documenting a pipeline that did not exist.</p>
+        </div>
+      </div>
+      <div class="cap rise" style="--d:240ms">
+        <div class="cap__n">Part 4</div>
+        <h3>The handover that isn't one.</h3>
+        <div class="cap__body">
+          <p>How to keep the rules written down as the system changes, so you are never hostage to
+             the person who built it — including when that person was me, and including when it was
+             an AI. The maintenance habit that takes twenty minutes a month and is the difference
+             between an asset and a time bomb.</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- EDIT: page numbers are placeholders until the manuscript is final. -->
+    <ul class="toc">
+      <li class="rise"><span class="toc__pg">Page 9</span><span class="toc__what"><b>The five-times test</b>: how to find the process worth automating first, in one walk around your own business.</span></li>
+      <li class="rise"><span class="toc__pg">Page 17</span><span class="toc__what">The <b>one-page spec template</b>, filled in twice: once for a booking flow, once for invoice chasing.</span></li>
+      <li class="rise"><span class="toc__pg">Page 31</span><span class="toc__what">Zapier, Make or n8n: <b>the three questions</b> that decide it, and the pricing traps in each.</span></li>
+      <li class="rise"><span class="toc__pg">Page 44</span><span class="toc__what">Working with an AI coding agent: <b>the brief that gets output you ship</b> instead of output you rewrite.</span></li>
+      <li class="rise"><span class="toc__pg">Page 58</span><span class="toc__what"><b>Making it prove its work</b>: reconciliation against a source you don't control, shown on a real $3.8M case.</span></li>
+      <li class="rise"><span class="toc__pg">Page 72</span><span class="toc__what">When to call in help, <b>what a fair quote looks like</b>, and the questions that expose a bad one in ten minutes.</span></li>
+    </ul>
+
+    <div class="cta" style="margin-top:var(--s10)" id="offer">
+      <h3 class="rise">The whole method. Nine dollars.</h3>
+      <p class="rise prose" style="--d:80ms; max-inline-size:44ch; text-align:center">
+        It's priced so that buying it is not a decision. If one afternoon with Part&nbsp;1 doesn't
+        change how you brief your next project, take the refund.
+      </p>
+      <a class="btn js-buy rise" style="--d:140ms" href="#offer">Get the book — $9 <span class="btn__arrow" aria-hidden="true">&rarr;</span></a>
+      <p class="terms rise" style="--d:200ms"><span>Instant download</span><span>PDF + EPUB</span><span>30-day refund, no questions</span></p>
+    </div>
+  </div>
+</section>
+
+<!-- ============================ WHO IT'S NOT FOR ============================ -->
+<section class="act plate">
+  <div class="plate__media"><img src="/img/seam.jpg" alt="" width="1400" height="933" loading="lazy"></div>
+  <div class="plate__veil"></div>
+
+  <div class="wrap">
+    <p class="tag rise">Before you buy</p>
+    <h2 class="rise measure" style="--d:80ms">This is not for everyone.</h2>
+
+    <ul class="doable" style="margin-top:var(--s9)">
+      <li class="rise"><b>Not for enterprises.</b> If you have a change advisory board, you already
+          have people for this. The book is written for businesses of roughly two to fifty.</li>
+      <li class="rise" style="--d:80ms"><b>Not a get-rich book.</b> Nothing in it promises revenue.
+          It removes retyping, reconciliation errors and dependence on whoever built the last thing.</li>
+      <li class="rise" style="--d:160ms"><b>Not a tool tutorial.</b> Screenshots of Zapier's interface
+          age in a month. The method is the point; the tools are examples.</li>
+      <li class="rise" style="--d:240ms"><b>Not magic AI.</b> If you want to hear that an agent will
+          run your business unsupervised, that book is someone else's, and it is wrong.</li>
+    </ul>
+
+    <ul class="finds" style="margin-top:var(--s9)">
+      <li class="rise">
+        <h4>"I don't have time to read a book about this."</h4>
+        <p>It's short on purpose — an evening, cover to cover. The alternative is the time you already
+           lose: the retyping is happening today, on payroll, whether or not you ever measure it.</p>
+      </li>
+      <li class="rise" style="--d:90ms">
+        <h4>"Why is it $9 and not free?"</h4>
+        <p>Free PDFs get skimmed and shelved. A small price means it's read, and it means I owe you a
+           refund if it's not worth it — which keeps me honest in a way a free download doesn't.</p>
+      </li>
+      <li class="rise" style="--d:180ms">
+        <h4>"Is this just a funnel into consulting?"</h4>
+        <p>The last chapter does say what working with me looks like, because some readers will want a
+           builder. But the book is written to make you <b>not</b> need one for your first project —
+           that's the test it has to pass to be worth your nine dollars.</p>
+      </li>
+      <li class="rise" style="--d:270ms">
+        <h4>"Who is Aaron to tell me this?"</h4>
+        <p>Fair question, and the answer is checkable: the main site names the systems, shows two live
+           tools you can use right now, and the code behind them is public. No screenshots of
+           dashboards, no rented Lamborghini.</p>
+      </li>
+    </ul>
+  </div>
+</section>
+
+<!-- ============================ FAQ ============================ -->
+<section class="act act--bone act--air">
+  <div class="wrap">
+    <p class="tag rise">Questions</p>
+    <h2 class="rise measure" style="--d:80ms">Asked and answered.</h2>
+
+    <div class="faq rise" style="--d:160ms">
+      <details>
+        <summary>Do I need to be technical?</summary>
+        <p>No. Part 1 — the part that carries most of the value — is pen and paper. Parts 2 and 3
+           assume you can follow instructions in a web app or sit beside someone who can, and the
+           book tells you honestly when a step is worth handing to a professional instead.</p>
+      </details>
+      <details>
+        <summary>Which tools does it cover?</summary>
+        <p>Zapier, Make and n8n for the plumbing; HubSpot, Salesforce and Zoho where a CRM is
+           involved; Claude Code where an AI agent is doing the building. The method doesn't depend
+           on any of them, and the book says which chapters to skip if your stack differs.</p>
+      </details>
+      <details>
+        <summary>My business is trades / retail / professional services. Does it apply?</summary>
+        <p>The examples are service businesses — bookings, quotes, invoicing, job data — because
+           that's where the retyping lives. If your week involves moving the same information between
+           systems by hand, it applies.</p>
+      </details>
+      <details>
+        <summary>What do I actually get?</summary>
+        <p>The book as PDF and EPUB, plus the one-page spec template from Part 1 as a separate file
+           you can print. No login, no drip-fed "modules", no upsell page between you and the
+           download.</p>
+      </details>
+      <details>
+        <summary>What if it's not for me?</summary>
+        <!-- EDIT: refund address -->
+        <p>Email <a class="link" href="mailto:books@example.com">books@example.com</a> within 30 days
+           and you get your money back, no questions, whether or not you finished it. You don't need
+           to give a reason and you won't be argued with.</p>
+      </details>
+    </div>
+  </div>
+</section>
+
+<!-- ============================ AUTHOR ============================ -->
+<section class="act act--deep">
+  <div class="wrap">
+    <div class="author">
+      <figure class="author__frame rise" style="margin:0">
+        <img src="/img/aaron.jpg" alt="Aaron Steele, looking straight at the camera." width="1080" height="1350" loading="lazy">
+        <figcaption><b>Aaron Steele</b><span>Analyst &amp; builder</span></figcaption>
+      </figure>
+      <div>
+        <p class="tag rise">About the author</p>
+        <h2 class="rise" style="--d:80ms">The person who works out what you need is the person who builds it.</h2>
+        <div class="prose rise" style="--d:170ms; margin-top:var(--s6)">
+          <p>Aaron Steele has been a business analyst since 2015 — mining, policing, federal service
+             delivery, local government — and building automation since 2016, across HubSpot,
+             Salesforce, Zoho, Zapier, Make, n8n and AI agents. TOGAF certified, baseline cleared,
+             based in South Australia.</p>
+          <p>That is normally two people and a handover, and the handover is where the meaning goes
+             missing. The book exists so your project doesn't need the handover either.</p>
+        </div>
+        <div class="hero__foot rise" style="--d:240ms">
+          <a class="btn js-buy" href="#offer">Get the book — $9 <span class="btn__arrow" aria-hidden="true">&rarr;</span></a>
+          <a class="btn btn--ghost" href="/">The full portfolio</a>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============================ FOOT ============================ -->
+<footer class="act foot">
+  <div class="wrap">
+    <p class="tag rise">Last word</p>
+    <h2 class="rise measure" style="--d:80ms">The retyping is happening either way.</h2>
+    <p class="prose rise" style="--d:160ms; margin-top:var(--s6)">
+      Next week your team will copy the same job details between the same screens they copied them
+      between this week. Nine dollars and one evening of reading is the cheapest serious attempt at
+      fixing that you will be offered this year — and if I'm wrong about that, the refund costs you
+      an email.
+    </p>
+    <div class="cta" style="margin-top:var(--s8); justify-items:start; text-align:left">
+      <a class="btn js-buy rise" href="#offer">Get the book — $9 <span class="btn__arrow" aria-hidden="true">&rarr;</span></a>
+      <p class="terms rise" style="--d:80ms"><span>Instant download</span><span>30-day refund, no questions</span></p>
+    </div>
+
+    <div class="foot__grid">
+      <p class="foot__note">
+        The client work referenced on this page is described in full, without naming clients, at
+        <a class="link" href="/">aaronsteele.vercel.app</a> — along with two live tools and their
+        public source code, so the claims here can be checked rather than believed.
+      </p>
+      <p class="foot__note">&copy; Aaron Steele. No cookies, no tracking pixels, no mailing list.</p>
+    </div>
+  </div>
+</footer>
+
+<script>
+(function () {
+  /* EDIT: your payment link (Stripe Payment Link, Lemon Squeezy, etc.).
+     While it is empty, every buy button scrolls to the offer section instead
+     of pretending there is a checkout. */
+  var CHECKOUT_URL = '';
+
+  if (CHECKOUT_URL) {
+    document.querySelectorAll('.js-buy').forEach(function (a) { a.href = CHECKOUT_URL; });
+  }
+
+  var reduced = matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+  var hero = document.querySelectorAll('header .rise, header .wipe');
+  var rest = document.querySelectorAll('section .rise, section .wipe, footer .rise, footer .wipe');
+
+  requestAnimationFrame(function () { hero.forEach(function (el) { el.classList.add('in'); }); });
+
+  if (reduced || !('IntersectionObserver' in window)) {
+    rest.forEach(function (el) { el.classList.add('in'); });
+  } else {
+    var io = new IntersectionObserver(function (entries) {
+      entries.forEach(function (e) {
+        if (e.isIntersecting) { e.target.classList.add('in'); io.unobserve(e.target); }
+      });
+    }, { rootMargin: '0px 0px -6% 0px', threshold: 0.05 });
+    rest.forEach(function (el) { io.observe(el); });
+  }
+
+  /* Count up. Real numbers only; the final value lives in the markup. */
+  var counters = document.querySelectorAll('[data-count]');
+  function land(el) { el.textContent = Number(el.dataset.count).toLocaleString('en-AU'); }
+  if (reduced || !('IntersectionObserver' in window)) {
+    counters.forEach(land);
+  } else {
+    var co = new IntersectionObserver(function (entries) {
+      entries.forEach(function (e) {
+        if (!e.isIntersecting) return;
+        co.unobserve(e.target);
+        var el = e.target, target = Number(el.dataset.count), t0 = performance.now();
+        (function step(now) {
+          var p = Math.min(1, (now - t0) / 1100);
+          el.textContent = Math.round(target * (1 - Math.pow(1 - p, 4))).toLocaleString('en-AU');
+          if (p < 1) requestAnimationFrame(step); else land(el);
+        })(t0);
+      });
+    }, { threshold: 0.5 });
+    counters.forEach(function (el) { co.observe(el); });
+  }
+
+  /* Pointer tilt on the book. Touch gets the resting angle. */
+  if (matchMedia('(hover: hover) and (pointer: fine)').matches && !reduced) {
+    document.querySelectorAll('.book').forEach(function (card) {
+      var frame = null, max = 7;
+      card.addEventListener('pointermove', function (ev) {
+        if (frame) return;
+        frame = requestAnimationFrame(function () {
+          frame = null;
+          var r = card.getBoundingClientRect();
+          var x = (ev.clientX - r.left) / r.width - 0.5;
+          var y = (ev.clientY - r.top) / r.height - 0.5;
+          card.style.setProperty('--ry', (x * max - 6).toFixed(2) + 'deg');
+          card.style.setProperty('--rx', (-y * max).toFixed(2) + 'deg');
+        });
+      });
+      card.addEventListener('pointerleave', function () {
+        card.style.setProperty('--ry', '-6deg');
+        card.style.setProperty('--rx', '0deg');
+      });
+    });
+  }
+})();
+</script>
+</body>
+</html>

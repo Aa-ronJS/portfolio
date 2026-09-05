@@ -3,6 +3,13 @@
 Source of https://aaronsteele.vercel.app. One HTML file, five photographs, three
 self-hosted fonts, no build step and no dependencies.
 
+`/book` is a second page on the same design system: a direct-response funnel for
+a short book, using the classic skeleton (problem, story, proof, reveal,
+objections, disqualification, FAQ, author, guarantee) but with honest copy and
+only checkable numbers. The checkout URL, price, refund address and testimonial
+slot are all marked `EDIT:` in the file; testimonials stay commented out until
+real ones exist.
+
 `PREFLIGHT.md` holds the design pre-flight it was built against, answered in
 writing before any markup, including the deviations from the house playbook and
 the three defects found by looking at the rendered page rather than the markup.
