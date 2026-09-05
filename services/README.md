@@ -16,7 +16,10 @@ problems below, and the positioning is what converts them once they land.
 | Page | The search it answers |
 |---|---|
 | `/` | freelance web developer adelaide, full stack developer australia |
-| `/ai-development/` | ai developer, ai automation consultant, build an app with ai, ai agents for business |
+| `/ai-development/` | ai developer, ai automation consultant, build an app with ai, ai agents for business, chatbot |
+| `/ecommerce/` | shopify developer, woocommerce developer, store slow, shopify xero integration |
+| `/data-and-reporting/` | dashboard developer, excel automation, data cleanup, numbers don't match |
+| `/business-analysis/` | contract business analyst, fractional cto, process improvement consultant, review vendor proposal |
 | `/wordpress/` | wordpress developer, wordpress site slow / hacked / rebuild |
 | `/website-rebuild/` | website redesign without losing seo, rebuild old website |
 | `/full-stack-developer/` | freelance full stack developer, hire .net developer |
@@ -79,6 +82,13 @@ problems below, and the positioning is what converts them once they land.
 - The evidence figures ($3.8m, 37,729, 52 checks, the live tools) are the
   real ones from the portfolio, linked to it. Keep them in sync if the
   portfolio changes.
+- The e-commerce page is written the same capability-forward way as the
+  WordPress one: it claims an approach (both platforms, integration-first,
+  reconciled numbers) and no store portfolio. If your Shopify or WooCommerce
+  history is thinner than the page reads to you, tune it before launch.
+- The business-analysis page is the one place the site sells the day-job CV
+  directly; it is also the page to link on Expert360-style marketplaces,
+  where buyers hire consultants rather than "wordpress devs".
 - The WordPress page claims an approach, not a WordPress portfolio. If you
   have client WordPress work you can show or describe, add it; if your WP
   history is thinner than the page implies to you when you read it, tune
