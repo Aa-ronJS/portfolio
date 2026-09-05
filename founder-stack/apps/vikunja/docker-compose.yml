@@ -1,0 +1,67 @@
+# Vikunja — tasks & projects (replaces Trello/Asana) -> https://tasks.${BASE_DOMAIN}
+services:
+  # Fresh named volumes are root-owned; vikunja runs as uid 1000 and its image
+  # has no shell to chown from, so a one-shot init fixes ownership first.
+  init:
+    image: busybox
+    user: root
+    command: chown -R 1000:1000 /files /db
+    volumes:
+      - files:/files
+      - db:/db
+    restart: "no"
+
+  app:
+    image: vikunja/vikunja:latest
+    restart: unless-stopped
+    depends_on:
+      init:
+        condition: service_completed_successfully
+    environment:
+      VIKUNJA_SERVICE_PUBLICURL: https://tasks.${BASE_DOMAIN}
+      VIKUNJA_SERVICE_JWTSECRET: ${VIKUNJA_JWT_SECRET}
+      VIKUNJA_DATABASE_TYPE: sqlite
+      VIKUNJA_DATABASE_PATH: /db/vikunja.db
+      VIKUNJA_SERVICE_ENABLEREGISTRATION: ${VIKUNJA_REGISTRATION_OPEN:-true}
+      VIKUNJA_MAILER_ENABLED: "false"
+      TZ: ${TZ}
+    configs:
+      - source: vikunja-config
+        target: /etc/vikunja/config.yml
+    volumes:
+      - files:/app/vikunja/files
+      - db:/db
+    networks:
+      - default
+      - proxy
+    labels:
+      traefik.enable: "true"
+      traefik.http.routers.vikunja.rule: Host(`tasks.${BASE_DOMAIN}`)
+      traefik.http.routers.vikunja.entrypoints: websecure
+      traefik.http.routers.vikunja.tls.certresolver: le
+      traefik.http.services.vikunja.loadbalancer.server.port: 3456
+
+# SSO (toggled by `stackctl sso on|off`, which flips SSO_ENABLED in .env).
+# Login with Authentik appears next to local login when enabled.
+configs:
+  vikunja-config:
+    content: |
+      auth:
+        local:
+          enabled: true
+        openid:
+          enabled: ${SSO_ENABLED}
+          providers:
+            authentik:
+              name: authentik
+              authurl: https://auth.${BASE_DOMAIN}/application/o/vikunja/
+              clientid: vikunja
+              clientsecret: ${VIKUNJA_OIDC_CLIENT_SECRET}
+
+volumes:
+  files:
+  db:
+
+networks:
+  proxy:
+    external: true

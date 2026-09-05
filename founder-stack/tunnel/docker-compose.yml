@@ -1,0 +1,17 @@
+# Cloudflare Tunnel — run the stack on hardware with no public IP / closed
+# ports (home server, laptop, CGNAT). cloudflared makes an outbound connection
+# to Cloudflare and serves your subdomains through it; Cloudflare terminates
+# TLS at its edge and forwards to Traefik over the internal network.
+#
+#   ./stackctl tunnel up      (needs CF_TUNNEL_TOKEN in .env; docs/ZERO-COST.md)
+services:
+  cloudflared:
+    image: cloudflare/cloudflared:latest
+    restart: unless-stopped
+    command: tunnel --no-autoupdate run --token ${CF_TUNNEL_TOKEN}
+    networks:
+      - proxy
+
+networks:
+  proxy:
+    external: true

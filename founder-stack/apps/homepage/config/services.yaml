@@ -1,0 +1,173 @@
+- Customers:
+    - CRM:
+        href: https://crm.{{HOMEPAGE_VAR_BASE_DOMAIN}}
+        description: Contacts, deals, pipeline
+        icon: mdi-account-heart
+        server: local
+        container: fs-twenty-server-1
+    - Support desk:
+        href: https://support.{{HOMEPAGE_VAR_BASE_DOMAIN}}
+        description: Helpdesk inbox & website live chat
+        icon: mdi-face-agent
+        server: local
+        container: fs-chatwoot-rails-1
+    - Booking calendar:
+        href: https://cal.{{HOMEPAGE_VAR_BASE_DOMAIN}}
+        description: Let customers book time with you
+        icon: mdi-calendar-clock
+        server: local
+        container: fs-calcom-app-1
+    - Forms:
+        href: https://forms.{{HOMEPAGE_VAR_BASE_DOMAIN}}
+        description: Surveys & intake forms
+        icon: mdi-form-select
+        server: local
+        container: fs-formbricks-app-1
+
+- Money:
+    - Invoices:
+        href: https://invoices.{{HOMEPAGE_VAR_BASE_DOMAIN}}
+        description: Invoices, quotes, payments
+        icon: mdi-file-document-outline
+        server: local
+        container: fs-invoiceninja-app-1
+    - Signatures:
+        href: https://sign.{{HOMEPAGE_VAR_BASE_DOMAIN}}
+        description: E-sign contracts and agreements
+        icon: mdi-draw-pen
+        server: local
+        container: fs-documenso-app-1
+
+- Marketing:
+    - Website:
+        href: https://{{HOMEPAGE_VAR_BASE_DOMAIN}}
+        description: Your public website & online shop
+        icon: mdi-web
+        server: local
+        container: fs-wordpress-app-1
+    - Short links:
+        href: https://links-admin.{{HOMEPAGE_VAR_BASE_DOMAIN}}
+        description: Branded short URLs with click stats
+        icon: mdi-link-variant
+        server: local
+        container: fs-shlink-app-1
+    - Social scheduler:
+        href: https://social.{{HOMEPAGE_VAR_BASE_DOMAIN}}
+        description: Plan & publish social posts
+        icon: mdi-share-variant
+        server: local
+        container: fs-postiz-app-1
+    - Newsletter:
+        href: https://newsletter.{{HOMEPAGE_VAR_BASE_DOMAIN}}
+        description: Email campaigns & subscriber lists
+        icon: mdi-email-newsletter
+        server: local
+        container: fs-listmonk-app-1
+    - Blog:
+        href: https://blog.{{HOMEPAGE_VAR_BASE_DOMAIN}}
+        description: Website, blog, paid newsletter
+        icon: mdi-post-outline
+        server: local
+        container: fs-ghost-app-1
+    - Analytics:
+        href: https://analytics.{{HOMEPAGE_VAR_BASE_DOMAIN}}
+        description: Privacy-friendly website analytics
+        icon: mdi-chart-areaspline
+        server: local
+        container: fs-umami-app-1
+
+- Video:
+    - Video maker:
+        href: https://studio.{{HOMEPAGE_VAR_BASE_DOMAIN}}
+        description: Script in, narrated video out — or an AI presenter
+        icon: mdi-movie-open-edit
+        server: local
+        container: fs-videomaker-app-1
+    - Video hosting:
+        href: https://video.{{HOMEPAGE_VAR_BASE_DOMAIN}}
+        description: Your own video platform & embeds
+        icon: mdi-video-box
+        server: local
+        container: fs-peertube-app-1
+    - Live streaming:
+        href: https://live.{{HOMEPAGE_VAR_BASE_DOMAIN}}
+        description: Live page with chat; stream from OBS
+        icon: mdi-broadcast
+        server: local
+        container: fs-owncast-app-1
+
+- Team:
+    - Meetings:
+        href: https://meet.{{HOMEPAGE_VAR_BASE_DOMAIN}}
+        description: Video calls & screen sharing
+        icon: mdi-video
+        server: local
+        container: fs-jitsi-web-1
+    - Whiteboard:
+        href: https://whiteboard.{{HOMEPAGE_VAR_BASE_DOMAIN}}
+        description: Sketch, diagram, plan together
+        icon: mdi-draw
+        server: local
+        container: fs-excalidraw-app-1
+    - Team chat:
+        href: https://chat.{{HOMEPAGE_VAR_BASE_DOMAIN}}
+        description: Channels, direct messages, calls
+        icon: mdi-chat
+        server: local
+        container: fs-mattermost-app-1
+    - Tasks:
+        href: https://tasks.{{HOMEPAGE_VAR_BASE_DOMAIN}}
+        description: Projects, boards & to-dos
+        icon: mdi-check-circle-outline
+        server: local
+        container: fs-vikunja-app-1
+    - Docs:
+        href: https://docs.{{HOMEPAGE_VAR_BASE_DOMAIN}}
+        description: Wiki & shared documents
+        icon: mdi-book-open-page-variant
+        server: local
+        container: fs-docmost-app-1
+    - Files:
+        href: https://files.{{HOMEPAGE_VAR_BASE_DOMAIN}}
+        description: File storage, sharing & sync
+        icon: mdi-folder-multiple
+        server: local
+        container: fs-nextcloud-app-1
+
+- Operations:
+    - Console:
+        href: https://console.{{HOMEPAGE_VAR_BASE_DOMAIN}}
+        description: Control panel — apps, people, sign-on, backups, settings
+        icon: mdi-tune
+        server: local
+        container: fs-console-app-1
+    - Automations:
+        href: https://automate.{{HOMEPAGE_VAR_BASE_DOMAIN}}
+        description: Connect your apps and automate workflows
+        icon: mdi-robot
+        server: local
+        container: fs-n8n-app-1
+    - AI assistant:
+        href: https://ai.{{HOMEPAGE_VAR_BASE_DOMAIN}}
+        description: Private AI chat on your server
+        icon: mdi-creation
+        server: local
+        container: fs-openwebui-app-1
+    - Passwords:
+        href: https://vault.{{HOMEPAGE_VAR_BASE_DOMAIN}}
+        description: Password manager for the team
+        icon: mdi-shield-key
+        server: local
+        container: fs-vaultwarden-app-1
+    - Status page:
+        href: https://status.{{HOMEPAGE_VAR_BASE_DOMAIN}}
+        description: Uptime monitoring & public status page
+        icon: mdi-heart-pulse
+        server: local
+        container: fs-uptime-kuma-app-1
+    - Sign-on:
+        href: https://auth.{{HOMEPAGE_VAR_BASE_DOMAIN}}
+        description: One login for the whole team
+        icon: mdi-fingerprint
+        server: local
+        container: fs-authentik-server-1

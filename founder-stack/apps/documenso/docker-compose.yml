@@ -1,0 +1,59 @@
+# Documenso — e-signatures (replaces DocuSign) -> https://sign.${BASE_DOMAIN}
+# One manual step before first `up`: generate the document-signing certificate.
+#   See docs/APPS.md ("Documenso") — a two-line openssl command.
+services:
+  db:
+    image: postgres:16-alpine
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: documenso
+      POSTGRES_PASSWORD: ${DOCUMENSO_DB_PASSWORD}
+      POSTGRES_DB: documenso
+    volumes:
+      - db:/var/lib/postgresql/data
+
+  app:
+    image: documenso/documenso:latest
+    restart: unless-stopped
+    depends_on:
+      - db
+    environment:
+      NEXTAUTH_URL: https://sign.${BASE_DOMAIN}
+      NEXTAUTH_SECRET: ${DOCUMENSO_NEXTAUTH_SECRET}
+      NEXT_PUBLIC_WEBAPP_URL: https://sign.${BASE_DOMAIN}
+      NEXT_PRIVATE_ENCRYPTION_KEY: ${DOCUMENSO_ENCRYPTION_KEY}
+      NEXT_PRIVATE_ENCRYPTION_SECONDARY_KEY: ${DOCUMENSO_ENCRYPTION_SECONDARY_KEY}
+      NEXT_PRIVATE_DATABASE_URL: postgresql://documenso:${DOCUMENSO_DB_PASSWORD}@db:5432/documenso
+      NEXT_PRIVATE_DIRECT_DATABASE_URL: postgresql://documenso:${DOCUMENSO_DB_PASSWORD}@db:5432/documenso
+      NEXT_PUBLIC_DISABLE_SIGNUP: ${DOCUMENSO_DISABLE_SIGNUP:-false}
+      NEXT_PRIVATE_SIGNING_TRANSPORT: local
+      NEXT_PRIVATE_SIGNING_LOCAL_FILE_PATH: /opt/documenso/cert.p12
+      # SSO via Authentik. DOCUMENSO_OIDC_WELL_KNOWN is set/cleared by
+      # `stackctl sso on|off`; empty means OIDC login is disabled.
+      NEXT_PRIVATE_OIDC_WELL_KNOWN: ${DOCUMENSO_OIDC_WELL_KNOWN:-}
+      NEXT_PRIVATE_OIDC_CLIENT_ID: documenso
+      NEXT_PRIVATE_OIDC_CLIENT_SECRET: ${DOCUMENSO_OIDC_CLIENT_SECRET}
+      NEXT_PRIVATE_SMTP_TRANSPORT: smtp-auth
+      NEXT_PRIVATE_SMTP_HOST: ${SMTP_HOST}
+      NEXT_PRIVATE_SMTP_PORT: ${SMTP_PORT}
+      NEXT_PRIVATE_SMTP_USERNAME: ${SMTP_USER}
+      NEXT_PRIVATE_SMTP_PASSWORD: ${SMTP_PASSWORD}
+      NEXT_PRIVATE_SMTP_FROM_ADDRESS: ${SMTP_FROM}
+    volumes:
+      - ./cert:/opt/documenso
+    networks:
+      - default
+      - proxy
+    labels:
+      traefik.enable: "true"
+      traefik.http.routers.documenso.rule: Host(`sign.${BASE_DOMAIN}`)
+      traefik.http.routers.documenso.entrypoints: websecure
+      traefik.http.routers.documenso.tls.certresolver: le
+      traefik.http.services.documenso.loadbalancer.server.port: 3000
+
+volumes:
+  db:
+
+networks:
+  proxy:
+    external: true

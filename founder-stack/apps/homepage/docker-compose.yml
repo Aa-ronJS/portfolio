@@ -1,0 +1,27 @@
+# Homepage — the central hub -> https://home.${BASE_DOMAIN} (and https://${BASE_DOMAIN})
+# One page with every app, grouped by job, with live running/stopped status.
+services:
+  app:
+    image: ghcr.io/gethomepage/homepage:v2.2.0
+    restart: unless-stopped
+    environment:
+      HOMEPAGE_ALLOWED_HOSTS: home.${BASE_DOMAIN},${BASE_DOMAIN}
+      HOMEPAGE_VAR_BASE_DOMAIN: ${BASE_DOMAIN}
+      HOMEPAGE_VAR_BRAND_NAME: ${BRAND_NAME}
+      TZ: ${TZ}
+    volumes:
+      - ./config:/app/config
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+    networks:
+      - default
+      - proxy
+    labels:
+      traefik.enable: "true"
+      traefik.http.routers.homepage.rule: Host(`home.${BASE_DOMAIN}`) || Host(`${BASE_DOMAIN}`)
+      traefik.http.routers.homepage.entrypoints: websecure
+      traefik.http.routers.homepage.tls.certresolver: le
+      traefik.http.services.homepage.loadbalancer.server.port: 3000
+
+networks:
+  proxy:
+    external: true

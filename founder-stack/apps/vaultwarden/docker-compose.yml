@@ -1,0 +1,39 @@
+# Vaultwarden — password manager, Bitwarden-compatible (replaces 1Password) -> https://vault.${BASE_DOMAIN}
+services:
+  app:
+    image: vaultwarden/server:latest
+    restart: unless-stopped
+    environment:
+      DOMAIN: https://vault.${BASE_DOMAIN}
+      ADMIN_TOKEN: ${VAULTWARDEN_ADMIN_TOKEN}
+      SIGNUPS_ALLOWED: ${VAULTWARDEN_SIGNUPS_ALLOWED}
+      # SSO via Authentik (upstream marks OIDC support experimental).
+      # Toggled by `stackctl sso on|off` (SSO_ENABLED in .env).
+      SSO_ENABLED: ${SSO_ENABLED}
+      SSO_AUTHORITY: https://auth.${BASE_DOMAIN}/application/o/vaultwarden/
+      SSO_CLIENT_ID: vaultwarden
+      SSO_CLIENT_SECRET: ${VAULTWARDEN_OIDC_CLIENT_SECRET}
+      SMTP_HOST: ${SMTP_HOST}
+      SMTP_PORT: ${SMTP_PORT}
+      SMTP_USERNAME: ${SMTP_USER}
+      SMTP_PASSWORD: ${SMTP_PASSWORD}
+      SMTP_FROM: ${SMTP_FROM}
+      SMTP_SECURITY: starttls
+    volumes:
+      - data:/data
+    networks:
+      - default
+      - proxy
+    labels:
+      traefik.enable: "true"
+      traefik.http.routers.vaultwarden.rule: Host(`vault.${BASE_DOMAIN}`)
+      traefik.http.routers.vaultwarden.entrypoints: websecure
+      traefik.http.routers.vaultwarden.tls.certresolver: le
+      traefik.http.services.vaultwarden.loadbalancer.server.port: 80
+
+volumes:
+  data:
+
+networks:
+  proxy:
+    external: true
