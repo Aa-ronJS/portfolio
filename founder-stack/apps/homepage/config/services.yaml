@@ -79,7 +79,7 @@
 - Video:
     - Video maker:
         href: https://studio.{{HOMEPAGE_VAR_BASE_DOMAIN}}
-        description: Script in, narrated branded video out
+        description: Script in, narrated video out — or an AI presenter
         icon: mdi-movie-open-edit
         server: local
         container: fs-videomaker-app-1

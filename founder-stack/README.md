@@ -27,7 +27,7 @@ with HTTPS everywhere, in one command.
 | Short links | Bitly | `links.yourdomain.com` | Shlink |
 | Domain & DNS | GoDaddy dashboard | console → Domain & DNS | Cloudflare / DuckDNS APIs |
 | Automations | Zapier / Make | `automate.yourdomain.com` | n8n (full community edition); Activepieces as a simpler optional builder |
-| Video maker | HeyGen / Canva video / Descript | `studio.yourdomain.com` | built in: ffmpeg + Kokoro TTS — script → narrated, captioned, branded MP4 |
+| Video maker + AI presenter | HeyGen / Synthesia / Descript | `studio.yourdomain.com` | built in: ffmpeg + Kokoro TTS + SadTalker (Apache-2.0) — script → narrated, captioned, branded MP4; add a photo and that person presents it |
 | Video hosting | Wistia / Vimeo | `video.yourdomain.com` | PeerTube |
 | Live streaming | StreamYard / Restream | `live.yourdomain.com` | Owncast |
 | Meetings | Zoom / Google Meet | `meet.yourdomain.com` | Jitsi Meet |
@@ -60,9 +60,12 @@ Plus two pieces that tie it together:
   finished marketing video on a plain CPU server: each sentence is narrated
   by a local text-to-speech engine and becomes a scene (your images, or
   brand-colour title cards), with captions, intro and outro, as an MP4 you
-  can post anywhere or host on your own Video hosting. Live streaming gives
-  you a live page with chat you stream to from OBS. AI-avatar video (the
-  HeyGen style) needs a GPU and is deliberately not faked here.
+  can post anywhere or host on your own Video hosting. Add a photo of a
+  presenter and you get the HeyGen-style result: that person, lip-synced,
+  delivering your script with captions. Renders run in the background on
+  the CPU (about a minute of rendering per second of speech on 4 cores; a
+  GPU is not required) and everything stays on your server.
+  Live streaming gives you a live page with chat you stream to from OBS.
 - **Domain & DNS, handled** — the console's Domain & DNS tab checks a
   name's availability, links you to at-cost registrars, shows the exact
   records your server needs, verifies what the internet sees, and creates

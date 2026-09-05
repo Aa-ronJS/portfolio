@@ -2,3 +2,4 @@
 backups/
 apps/documenso/cert/
 apps/homepage/config/logs/
+__pycache__/

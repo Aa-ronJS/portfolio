@@ -21,7 +21,7 @@ every included license. Turning it into a product needs a little care.
 
 | License | Apps here | Self-host | Sell setup/course | Host for clients |
 |---|---|---|---|---|
-| MIT / Apache / BSD | Activepieces (CE), Vikunja, Ghost (MIT), Uptime Kuma, Umami, Shlink, Owncast, Excalidraw, Jitsi (Apache), Open WebUI, Ollama, Kokoro TTS | ✅ | ✅ | ✅ |
+| MIT / Apache / BSD | Activepieces (CE), Vikunja, Ghost (MIT), Uptime Kuma, Umami, Shlink, Owncast, Excalidraw, Jitsi (Apache), Open WebUI, Ollama, Kokoro TTS, SadTalker (Apache-2.0, the AI presenter engine) | ✅ | ✅ | ✅ |
 | Sustainable Use License | **n8n** | ✅ | ✅ (teaching/setup) | ❌ not as a paid hosted service — offer Activepieces there instead |
 | AGPLv3 | Cal.com*, Twenty, Listmonk, Formbricks*, Docmost*, Documenso*, Nextcloud, Vaultwarden (GPL/AGPL), PeerTube, Postiz, Invoice Ninja (Elastic**) | ✅ | ✅ | ✅ if you publish source of any modifications |
 | MIT + paid enterprise tiers | Mattermost (team edition), Chatwoot, Rocket.Chat (community) | ✅ | ✅ | ✅ (stay on the open edition) |
@@ -43,6 +43,16 @@ redistributing it commercially. So: it is the default Automations app for
 your own stack and for the course/setup product; if you ever sell managed
 hosting, switch those customers to Activepieces (MIT), which ships in the
 stack as the optional simpler builder.
+
+## The AI presenter, specifically
+
+The talking-head engine is SadTalker (Apache-2.0), chosen over the better
+known Wav2Lip precisely because Wav2Lip's weights are licensed for
+non-commercial research only — unusable in a business product. The
+presenter model weights are downloaded from the projects' own GitHub
+releases on first start. The voice engine (Kokoro) is Apache-2.0 too. Use
+only faces you have the right to use; a customer's own photo or a licensed
+stock presenter, never a public figure.
 
 ## Trademark rules (the part people get sued over)
 

@@ -29,7 +29,7 @@ open the URL creates the admin account** — do it immediately after
 | wordpress | apex, `www.`, `site.` | **Auto-bootstrapped** by `stackctl user add`/deploy (admin = ADMIN_USER); WooCommerce via the Website switch | ~300 MB |
 | n8n | `automate.` | **Auto-bootstrapped** (owner = ADMIN_EMAIL); teammates get an invite link | ~400 MB |
 | activepieces | `flows.` (optional) | First-visit setup | ~500 MB |
-| videomaker | `studio.` | Admin login (HTTP auth); no accounts | ~1 GB (TTS engine) |
+| videomaker | `studio.` | Admin login (HTTP auth); no accounts. AI presenter engine fetches ~1.3 GB of model weights on first start; presenter renders take ~1 min per second of speech on 4 CPU cores (`AVATAR_FRAME_STEP` trades smoothness for speed) | ~2.5 GB (TTS + presenter engines) |
 | peertube | `video.` | **Pre-seeded**: `root` / `ADMIN_PASSWORD` | ~1 GB |
 | owncast | `live.` | **Pre-seeded** admin password + OBS stream key from .env | ~150 MB |
 | jitsi | `meet.` | No accounts (anyone with a room link); open UDP 10000 | ~1.5 GB |

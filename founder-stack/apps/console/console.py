@@ -50,7 +50,7 @@ APPS = {
     "wordpress":       ("Website", "Marketing", "Your public website — pages, blog, and an online shop if you want one", False),
     "shlink":          ("Short links", "Marketing", "Branded short URLs with click stats", False),
     "postiz":          ("Social scheduler", "Marketing", "Plan and publish posts across your social accounts", False),
-    "videomaker":      ("Video maker", "Video", "Type a script, get a narrated, captioned, branded video", False),
+    "videomaker":      ("Video maker", "Video", "Script in, narrated video out; add a photo for an AI presenter", False),
     "peertube":        ("Video hosting", "Video", "Your own video platform — embeds, playlists, stats", False),
     "owncast":         ("Live streaming", "Video", "Your own live page with chat; stream from OBS", False),
     "jitsi":           ("Meetings", "Team", "Video calls & screen sharing, no account needed", False),
@@ -78,6 +78,7 @@ APP_SETTINGS = {
     "rocketchat":   [("ROCKETCHAT_REGISTRATION", "Registration", "select:Public,Disabled,Secret URL", "Who can register directly")],
     "wordpress":    [("WORDPRESS_WOOCOMMERCE", "Online shop (WooCommerce)", B, "Installs and activates the shop on your website")],
     "postiz":       [("POSTIZ_DISABLE_REGISTRATION", "Disable self-registration", B, "On = only people you add")],
+    "videomaker":   [("AVATAR_FRAME_STEP", "AI presenter rendering", "select:2,1,3", "2 = fast (default, half the render time); 1 = smoothest mouth motion, twice as slow; 3 = fastest")],
     "openwebui":    [("OPENWEBUI_SIGNUP", "Allow sign-ups", B, "Off = admin adds people"), ("OPENWEBUI_MODEL", "Default model", "text", "e.g. llama3.2:3b (fast on CPU), llama3.1:8b (needs 16 GB RAM)")],
     "owncast":      [("OWNCAST_STREAM_KEY", "Stream key (paste into OBS)", "text", "rtmp://live.<your domain>:1935/live")],
 }
