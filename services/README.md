@@ -7,6 +7,11 @@ instead of a marketplace. Seven pages, no JavaScript, no build step; each
 page is written for one search intent and answers it properly rather than
 being a doorway page.
 
+The posture is selective, not hungry: the contact page is "work with me",
+an application in both directions, with the yes/no filter published. Every
+enquiry gets a fast straight answer; only a fraction gets taken. Keep that
+true or the page becomes theatre.
+
 The through-line on every page is the actual positioning: one person who
 understands the business and runs AI like a delivery team, so work that used
 to need several people gets specified, built and proven by one. The service
