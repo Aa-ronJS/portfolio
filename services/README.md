@@ -33,6 +33,26 @@ problems below, and the positioning is what converts them once they land.
 | `/project-rescue/` | developer disappeared, take over unfinished website |
 | `/contact/` | (conversion, not ranking) |
 
+## Industry pages
+
+`/industries/` plus twelve sector pages (trades, transport, mining, retail,
+hospitality, professional services, health/NDIS, not-for-profits, real
+estate, agriculture, government, education). Deliberately one substantive
+page per industry rather than an industry-times-service matrix: hundreds of
+thin combination pages read as doorway spam to Google and to buyers, and
+twelve deep pages you can send with a proposal beat them.
+
+Each page names the sector's real systems (ServiceM8, Cliniko, PropertyMe,
+aXcelerate and so on) and calibrates honesty per sector: mining, government,
+education, not-for-profits and transport lean on the actual track record;
+hospitality, real estate, health and agriculture say in plain words that the
+industry is new and the method is not. Keep that calibration when editing;
+it is the credibility mechanism.
+
+Targets per page are the "[industry] + software/automation" and
+"[named system] + integration/automation" long-tails, which have buyers and
+few serious pages competing.
+
 ## Before launch, in order
 
 1. **Buy a domain.** This entire strategy is dead on a `vercel.app`
