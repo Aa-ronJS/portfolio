@@ -30,6 +30,8 @@ services:
       AP_JWT_SECRET: ${ACTIVEPIECES_JWT_SECRET}
       AP_ENVIRONMENT: prod
       AP_EXECUTION_MODE: UNSANDBOXED
+      # Lets `stackctl user add` create accounts via the sign-up API
+      AP_SIGN_UP_ENABLED: "true"
       AP_POSTGRES_HOST: db
       AP_POSTGRES_PORT: 5432
       AP_POSTGRES_DATABASE: activepieces

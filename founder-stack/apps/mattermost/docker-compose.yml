@@ -19,6 +19,8 @@ services:
       MM_SQLSETTINGS_DRIVERNAME: postgres
       MM_SQLSETTINGS_DATASOURCE: postgres://mmuser:${MATTERMOST_DB_PASSWORD}@db:5432/mattermost?sslmode=disable&connect_timeout=10
       MM_SERVICESETTINGS_SITEURL: https://chat.${BASE_DOMAIN}
+      # Lets `stackctl user add` manage accounts via mmctl --local
+      MM_SERVICESETTINGS_ENABLELOCALMODE: "true"
       TZ: ${TZ}
       # SSO via Authentik using Mattermost's GitLab-compatible OAuth
       # (the free edition's supported OIDC path; button reads "GitLab").

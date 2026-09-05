@@ -1,6 +1,52 @@
-# Single sign-on: one account for the stack
+# One identity across the stack
+
+Two layers make "one login for everything" real:
+
+1. **Real SSO (OIDC via Authentik)** for every app whose free edition
+   supports it — `./stackctl sso on`.
+2. **Scripted provisioning** for the rest: `./stackctl user add
+   jane@yourco.com` creates the *same email + same password* account in
+   every running app through its API or container CLI, prints the password
+   once, and you store it in Vaultwarden (whose browser extension then
+   autofills it everywhere — one click to enter any app). `user passwd`
+   rotates, `user rm` deprovisions across the stack the same way.
+
+So onboarding a teammate is genuinely one command, and offboarding is one
+command — which is the part of SSO that actually matters for a business.
+
+```bash
+./stackctl user add jane@yourco.com        # generates a password, provisions everywhere
+./stackctl user passwd jane@yourco.com     # rotate everywhere that supports scripting
+./stackctl user rm jane@yourco.com         # deprovision everywhere (incl. Authentik = SSO dead)
+```
+
+What `user add` does per app:
+
+| App | Mechanism |
+|---|---|
+| Authentik | REST API (bootstrap token) — this is the real SSO account |
+| Nextcloud | `occ user:add` in the container |
+| Mattermost | `mmctl --local user create` in the container |
+| Chatwoot | `rails runner` in the container (agent role) |
+| Vikunja | bundled CLI in the container |
+| Listmonk | admin REST API |
+| Umami | REST API as admin |
+| Activepieces | sign-up API (enabled via `AP_SIGN_UP_ENABLED`) |
+| Cal.com | signup API |
+| Ghost | admin session API → emails a staff invite (needs SMTP) |
+| Vaultwarden | admin API → emails an invite (user picks their own master password — by design: it encrypts their vault) |
+| Twenty, Docmost, Formbricks, Invoice Ninja | no scriptable path on the free tier — use the in-app invite button (the summary output reminds you) |
+| Uptime Kuma | single-admin by design; don't share it |
+
+Every provisioner is best-effort: a failure prints a ✖ with the manual
+fallback and the run continues. Sell this honestly: it's one command and
+one password per person, with true OIDC underneath for half the stack —
+not a magic protocol bridge for apps that don't speak OIDC.
+
+# Single sign-on layer (Authentik)
 
 The `authentik` app is the stack's identity provider at
+
 `https://auth.<BASE_DOMAIN>`. Its blueprint
 (`apps/authentik/blueprints/founder-stack.yaml`) auto-registers an OIDC
 client for every SSO-capable app on first boot, using the client secrets

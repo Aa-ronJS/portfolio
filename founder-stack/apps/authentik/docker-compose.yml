@@ -14,6 +14,8 @@ x-authentik-env: &authentik-env
   # First-boot admin: log in as 'akadmin' with ADMIN_PASSWORD from .env
   AUTHENTIK_BOOTSTRAP_PASSWORD: ${ADMIN_PASSWORD}
   AUTHENTIK_BOOTSTRAP_EMAIL: ${ADMIN_EMAIL}
+  # API token used by `stackctl user` to provision accounts
+  AUTHENTIK_BOOTSTRAP_TOKEN: ${AUTHENTIK_BOOTSTRAP_TOKEN}
   AUTHENTIK_EMAIL__HOST: ${SMTP_HOST}
   AUTHENTIK_EMAIL__PORT: ${SMTP_PORT}
   AUTHENTIK_EMAIL__USERNAME: ${SMTP_USER}

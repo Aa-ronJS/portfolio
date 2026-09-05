@@ -33,10 +33,12 @@ Plus two pieces that tie it together:
   every app as a tile, grouped by job (Customers / Money / Marketing /
   Team / Operations), with a live running-status dot per app and server
   CPU/RAM/disk at the top. Bookmark one URL, reach everything.
-- **Single sign-on** — `auth.yourdomain.com` (Authentik): one account for
-  your whole team across every SSO-capable app, auto-configured by
-  blueprint. Turn it on with `./stackctl sso on`. See
-  [docs/SSO.md](docs/SSO.md) for exactly which apps join automatically.
+- **One identity** — real single sign-on (Authentik at
+  `auth.yourdomain.com`, auto-configured by blueprint, `./stackctl sso on`)
+  for every app that supports OIDC, plus scripted provisioning for the
+  rest: `./stackctl user add jane@yourco.com` creates the same
+  email + password account in every running app in one shot, and
+  `user rm` offboards them everywhere. See [docs/SSO.md](docs/SSO.md).
 
 ## Requirements
 
@@ -59,6 +61,7 @@ sudo ./install.sh          # installs Docker if needed, asks for your domain,
 ./stackctl up calcom listmonk umami    # start what you want...
 ./stackctl up --all                    # ...or everything
 ./stackctl sso on          # optional: one login for the stack (docs/SSO.md)
+./stackctl user add jane@yourco.com    # one command onboards a teammate everywhere
 ./stackctl status
 ```
 

@@ -9,6 +9,7 @@
 #   stackctl backup
 #   stackctl restore <backup-dir>
 #   stackctl sso on|off
+#   stackctl user add <email> [password] | passwd <email> [password] | rm <email>
 set -euo pipefail
 
 ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
@@ -187,8 +188,32 @@ case "$cmd" in
     esac
     ;;
 
+  user)
+    # One identity across the stack: real OIDC where possible, scripted
+    # same-credentials accounts everywhere else. See docs/SSO.md.
+    sub="${1:-}"; email="${2:-}"
+    [ -n "$email" ] || fail "usage: stackctl user add|passwd|rm <email> [password]"
+    case "$email" in *@*) ;; *) fail "'$email' doesn't look like an email" ;; esac
+    . "$ROOT/scripts/provision.sh"
+    case "$sub" in
+      add|passwd)
+        pass="${3:-$(openssl rand -base64 24 | tr -d '/+=' | cut -c1-20)}"
+        log "Provisioning '$email' across running apps..."
+        run_provisioners "$sub" "$email" "$pass"
+        echo
+        log "Password for $email (shown once — store it in Vaultwarden):"
+        printf '    %s\n' "$pass"
+        ;;
+      rm)
+        log "Removing '$email' across running apps..."
+        run_provisioners rm "$email" ""
+        ;;
+      *) fail "usage: stackctl user add|passwd|rm <email> [password]" ;;
+    esac
+    ;;
+
   ""|help|-h|--help)
-    sed -n '2,11p' "$0" | sed 's/^# \{0,1\}//'
+    sed -n '2,12p' "$0" | sed 's/^# \{0,1\}//'
     ;;
   *)
     fail "unknown command '$cmd' (try: stackctl help)"
