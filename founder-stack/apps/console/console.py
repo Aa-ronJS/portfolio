@@ -26,29 +26,30 @@ MAIL_APPS = ["invoiceninja", "listmonk", "chatwoot", "documenso", "ghost", "calc
              "docmost", "vaultwarden", "authentik", "rocketchat", "espocrm"]
 
 # ---- catalogue: what each app is, for the wizard and the Apps tab ----
+# label, group, description, core. Named by job — never by the upstream project.
 APPS = {
     "homepage":        ("Hub", "Operations", "Start page with every app", True),
     "console":         ("Console", "Operations", "This control panel", True),
-    "authentik":       ("Sign-on", "Operations", "One login for the team (SSO)", True),
-    "vaultwarden":     ("Passwords", "Operations", "Password manager (Bitwarden-compatible)", False),
-    "uptime-kuma":     ("Status", "Operations", "Uptime monitoring & status page", False),
-    "activepieces":    ("Automations", "Operations", "Workflows between apps (Zapier)", False),
+    "authentik":       ("Sign-on", "Operations", "One login for the whole team", True),
+    "vaultwarden":     ("Passwords", "Operations", "Password manager for the team", False),
+    "uptime-kuma":     ("Status page", "Operations", "Uptime monitoring & public status page", False),
+    "activepieces":    ("Automations", "Operations", "Connect apps and automate workflows", False),
     "twenty":          ("CRM", "Customers", "Contacts, deals, pipeline", False),
-    "espocrm":         ("CRM", "Customers", "Contacts, deals, pipeline (ARM build)", False),
-    "chatwoot":        ("Support", "Customers", "Helpdesk & website live chat", False),
-    "calcom":          ("Scheduling", "Customers", "Booking pages", False),
-    "easyappointments": ("Scheduling", "Customers", "Booking pages (ARM build)", False),
+    "espocrm":         ("CRM", "Customers", "Contacts, deals, pipeline", False),
+    "chatwoot":        ("Support desk", "Customers", "Helpdesk inbox & website live chat", False),
+    "calcom":          ("Booking calendar", "Customers", "Let customers book time with you", False),
+    "easyappointments": ("Booking calendar", "Customers", "Let customers book time with you", False),
     "formbricks":      ("Forms", "Customers", "Surveys & intake forms", False),
     "invoiceninja":    ("Invoices", "Money", "Invoices, quotes, payments", False),
-    "documenso":       ("Signatures", "Money", "E-sign contracts", False),
-    "listmonk":        ("Newsletter", "Marketing", "Email campaigns", False),
+    "documenso":       ("Signatures", "Money", "E-sign contracts and agreements", False),
+    "listmonk":        ("Newsletter", "Marketing", "Email campaigns & subscriber lists", False),
     "ghost":           ("Blog", "Marketing", "Website, blog, paid newsletter", False),
-    "umami":           ("Analytics", "Marketing", "Privacy-friendly web analytics", False),
-    "mattermost":      ("Chat", "Team", "Team messaging (Slack)", False),
-    "rocketchat":      ("Chat", "Team", "Team messaging (ARM build)", False),
-    "vikunja":         ("Tasks", "Team", "Projects & to-dos", False),
-    "docmost":         ("Docs", "Team", "Wiki & documents (Notion)", False),
-    "nextcloud":       ("Files", "Team", "File storage & sync (Drive)", False),
+    "umami":           ("Analytics", "Marketing", "Privacy-friendly website analytics", False),
+    "mattermost":      ("Team chat", "Team", "Channels, direct messages, calls", False),
+    "rocketchat":      ("Team chat", "Team", "Channels, direct messages, calls", False),
+    "vikunja":         ("Tasks", "Team", "Projects, boards & to-dos", False),
+    "docmost":         ("Docs", "Team", "Wiki & shared documents", False),
+    "nextcloud":       ("Files", "Team", "File storage, sharing & sync", False),
 }
 ARM_PAIRS = {"twenty": "espocrm", "mattermost": "rocketchat", "calcom": "easyappointments"}
 
@@ -191,7 +192,9 @@ def wizard_plan(a):
         env.update({"SMTP_HOST": a["smtp_host"], "SMTP_PORT": a.get("smtp_port") or "587",
                     "SMTP_USER": a.get("smtp_user", ""), "SMTP_PASSWORD": a.get("smtp_password", "")})
     if a.get("tz"): env["TZ"] = a["tz"]
-    notes = [f"{len(apps)} apps for a {'solo' if solo else 'team'} {kind} business",
+    kinds = {"consulting": "consulting", "local": "local services", "shop": "online shop", "saas": "software",
+             "creator": "creator", "nonprofit": "nonprofit", "other": ""}
+    notes = [f"{len(apps)} apps for a {'solo' if solo else 'team'} {kinds.get(kind, kind)} business".replace("  ", " "),
              "Sign-ups closed everywhere you add people from the console; SSO on; brand applied",
              "Email relay: " + ("configured" if a.get("smtp_host") else "not yet — invites/invoices won't send until you add one in Settings")]
     return {"apps": apps, "env": env, "notes": notes}
@@ -377,15 +380,15 @@ pre#out{background:#0b1220;color:#dbe4f0;border:1px solid var(--border);border-r
 <label>Email</label><input id="u_email" type="email" placeholder="jane@yourco.com"><label>Password (blank = generate)</label><input id="u_pass" type="text">
 <div style="margin-top:10px"><button class="b p" onclick="user('add')">Add everywhere</button> <button class="b" onclick="user('passwd')">Rotate password</button> <button class="b" onclick="if(confirm('Remove this person from every app?'))user('rm')">Remove everywhere</button></div></div></section>
 
-<section id="signon"><div class="card"><h2>Single sign-on <span class="pill" id="ssopill"></span></h2><p class="hint">One account for the team via Authentik. Apps that speak OIDC get a sign-on button; the rest use the same email + password People creates.</p>
-<button class="b p" onclick="run(['sso','on'])">Turn on</button> <button class="b" onclick="run(['sso','off'])">Turn off</button> <a class="b" id="authlink" style="display:inline-block;text-decoration:none" target="_blank">Open Authentik →</a></div>
+<section id="signon"><div class="card"><h2>Single sign-on <span class="pill" id="ssopill"></span></h2><p class="hint">One account for the whole team. Apps that support single sign-on get a sign-on button; the rest use the same email + password that People creates.</p>
+<button class="b p" onclick="run(['sso','on'])">Turn on</button> <button class="b" onclick="run(['sso','off'])">Turn off</button> <a class="b" id="authlink" style="display:inline-block;text-decoration:none" target="_blank">Open Sign-on →</a></div>
 <div class="card"><h2>Cloudflare Tunnel <span class="pill" id="tunpill"></span></h2><p class="hint">For a home server with no public IP. Set the token under Settings first.</p><button class="b p" onclick="run(['tunnel','up'])">Start tunnel</button> <button class="b" onclick="run(['tunnel','down'])">Stop tunnel</button></div></section>
 
 <section id="backups"><div class="card"><h2>Backups</h2><p class="hint">Dumps every running database and archives every volume into <code>backups/&lt;timestamp&gt;</code>. Copy that folder off the server.</p>
 <button class="b p" onclick="run(['backup'])">Back up now</button><table style="margin-top:12px"><tbody id="bktbl"></tbody></table></div></section>
 
 <section id="settings">
-<div class="card"><h2>Branding</h2><p class="hint">Applied to the hub, this console, and every app with a branding surface.</p>
+<div class="card"><h2>Branding</h2><p class="hint">Applied to the hub, this console, Sign-on, Files, Team chat, Support desk, Newsletter, Blog and Booking calendar.</p>
 <div class="row"><div><label>Business name</label><input id="b_name"></div><div><label>Accent colour</label><input id="b_color" type="color"></div></div>
 <label>Logo URL (blank = the monogram in <code>brand/logo.svg</code>)</label><input id="b_logo" placeholder="https://…/logo.svg">
 <div style="margin-top:10px"><button class="b p" onclick="saveEnv({BRAND_NAME:v('b_name'),BRAND_COLOR:v('b_color'),BRAND_LOGO_URL:v('b_logo')},'brand')">Save &amp; apply everywhere</button></div></div>
@@ -404,7 +407,7 @@ document.querySelectorAll('nav button').forEach(b=>b.onclick=()=>tab(b.dataset.t
 async function load(first){S=await (await fetch('/api/state')).json();if(first){SEL=new Set(S.apps.map(a=>a.name));tab(S.apps.some(a=>a.state==='running'&&!a.core)?'apps':'setup');}render();}
 function render(){$('dom').textContent=S.domain;$('arch').textContent='('+S.arch+')';$('hublink').href='https://home.'+S.domain;$('authlink').href='https://auth.'+S.domain;
 const groups={};S.apps.forEach(a=>(groups[a.group]??=[]).push(a));
-$('applist').innerHTML=Object.entries(groups).map(([g,list])=>`<div class="group"><h3>${g}</h3>${list.map(a=>`<div class="app"><input type="checkbox" ${SEL.has(a.name)?'checked':''} onchange="tog('${a.name}',this.checked)"><div><span class="dot ${a.state==='running'?'up':''}"></span><span class="n">${a.label}</span> <span class="tag">${a.name}${a.tag?' · '+a.tag:''}</span><div class="d">${a.desc}</div></div><div style="white-space:nowrap">${a.state==='running'?`<a class="b" style="text-decoration:none;display:inline-block" href="${a.url}" target="_blank">Open</a>`:''}${a.configurable?`<button class="b" onclick="cfg('${a.name}')">Configure</button>`:''}${a.state==='running'?`<button class="b" onclick="run(['logs','${a.name}'])">Logs</button><button class="b" onclick="run(['restart','${a.name}'])">Restart</button><button class="b" onclick="run(['down','${a.name}'])">Stop</button>`:`<button class="b p" onclick="run(['deploy','${a.name}'])">Deploy</button>`}</div></div>`).join('')}</div>`).join('');
+$('applist').innerHTML=Object.entries(groups).map(([g,list])=>`<div class="group"><h3>${g}</h3>${list.map(a=>`<div class="app"><input type="checkbox" ${SEL.has(a.name)?'checked':''} onchange="tog('${a.name}',this.checked)"><div><span class="dot ${a.state==='running'?'up':''}"></span><span class="n">${a.label}</span> <span class="tag">${a.url.replace('https://','')}</span><div class="d">${a.desc}</div></div><div style="white-space:nowrap">${a.state==='running'?`<a class="b" style="text-decoration:none;display:inline-block" href="${a.url}" target="_blank">Open</a>`:''}${a.configurable?`<button class="b" onclick="cfg('${a.name}')">Configure</button>`:''}${a.state==='running'?`<button class="b" onclick="run(['logs','${a.name}'])">Logs</button><button class="b" onclick="run(['restart','${a.name}'])">Restart</button><button class="b" onclick="run(['down','${a.name}'])">Stop</button>`:`<button class="b p" onclick="run(['deploy','${a.name}'])">Deploy</button>`}</div></div>`).join('')}</div>`).join('');
 selsum();$('ssopill').textContent=S.sso?'on':'off';$('ssopill').className='pill'+(S.sso?' on':'');$('tunpill').textContent=S.tunnel_configured?'token set':'no token';
 $('bktbl').innerHTML=S.backups.map(b=>`<tr><td>${b}</td><td style="text-align:right"><button class="b" onclick="if(confirm('Restore volumes from ${b}? Stop the apps first.'))run(['restore','${b}'])">Restore</button></td></tr>`).join('')||'<tr><td class="hint">No backups yet.</td></tr>';
 $('b_name').value=S.brand.name;$('b_color').value=S.brand.color;$('b_logo').value=S.brand.logo_url;$('tz').value=S.tz;
@@ -421,9 +424,9 @@ function saveEnv(set,apply){post('/api/env',{set,apply});}
 function saveSmtp(){const set={SMTP_HOST:v('s_host'),SMTP_PORT:v('s_port')||'587',SMTP_USER:v('s_user'),SMTP_FROM:v('s_from')};if(v('s_pass'))set.SMTP_PASSWORD=$('s_pass').value;saveEnv(set,'smtp');}
 // ---- per-app configuration drawer ----
 async function cfg(name){const c=await (await fetch('/api/app/'+name)).json();const d=$('cfg');d.hidden=false;
-d.innerHTML=`<div style="display:flex;justify-content:space-between;align-items:center"><h2 style="margin:0">Configure ${c.label} <span class="tag">${name}</span></h2><button class="b" onclick="$('cfg').hidden=true">Close</button></div>
+d.innerHTML=`<div style="display:flex;justify-content:space-between;align-items:center"><h2 style="margin:0">Configure ${c.label}</h2><button class="b" onclick="$('cfg').hidden=true">Close</button></div>
 ${c.settings.map(s=>`<div class="switch"><div><div style="font-weight:600">${s.label}</div><div class="hint">${s.help}</div></div>${s.type==='bool'?`<input type="checkbox" data-k="${s.key}" ${s.value==='true'?'checked':''}>`:s.type.startsWith('select:')?`<select data-k="${s.key}">${s.type.slice(7).split(',').map(o=>`<option ${o===s.value?'selected':''}>${o}</option>`).join('')}</select>`:`<input data-k="${s.key}" value="${s.value}">`}</div>`).join('')||'<p class="hint">No quick settings for this app — see advanced below.</p>'}
-<details style="margin-top:12px"><summary class="hint" style="cursor:pointer">Advanced: every setting this app reads (${c.raw.length})</summary>${c.raw.map(r=>`<label>${r.key}</label><input data-k="${r.key}" value="${r.value}" ${r.secret?'type="password" placeholder="unchanged"':''}>`).join('')}</details>
+<details style="margin-top:12px"><summary class="hint" style="cursor:pointer">Advanced: every setting this app reads (${c.raw.length}) — internal id <code>${name}</code></summary>${c.raw.map(r=>`<label>${r.key}</label><input data-k="${r.key}" value="${r.value}" ${r.secret?'type="password" placeholder="unchanged"':''}>`).join('')}</details>
 <div style="margin-top:12px"><button class="b p" onclick="saveCfg('${name}')">Save &amp; re-apply ${c.label}</button></div>`;d.scrollIntoView({behavior:'smooth'});}
 function saveCfg(name){const set={};$('cfg').querySelectorAll('[data-k]').forEach(el=>{set[el.dataset.k]=el.type==='checkbox'?String(el.checked):el.value;});post('/api/app/'+name,{set,reup:true});}
 // ---- conversational wizard ----

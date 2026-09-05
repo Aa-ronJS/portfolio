@@ -6,24 +6,30 @@ Founder Stack replaces ~$700+/month of SaaS subscriptions with battle-tested,
 self-hosted open-source equivalents — deployed together, behind one domain,
 with HTTPS everywhere, in one command.
 
-| You'd pay for | Typical cost | You get instead | Your URL |
+| What you get | Replaces | Your address | Under the hood |
 |---|---|---|---|
-| Calendly | $12+/mo | [Cal.com](https://cal.com) | `cal.yourdomain.com` |
-| FreshBooks / QuickBooks | $30+/mo | [Invoice Ninja](https://invoiceninja.com) | `invoices.yourdomain.com` |
-| HubSpot CRM | $20–800/mo | [Twenty](https://twenty.com) | `crm.yourdomain.com` |
-| Zapier | $30+/mo | [Activepieces](https://activepieces.com) | `automate.yourdomain.com` |
-| Mailchimp | $20+/mo | [Listmonk](https://listmonk.app) | `newsletter.yourdomain.com` |
-| Typeform | $29+/mo | [Formbricks](https://formbricks.com) | `forms.yourdomain.com` |
-| Asana / Trello | $11+/user/mo | [Vikunja](https://vikunja.io) | `tasks.yourdomain.com` |
-| Notion / Confluence | $10+/user/mo | [Docmost](https://docmost.com) | `docs.yourdomain.com` |
-| Slack | $8+/user/mo | [Mattermost](https://mattermost.com) | `chat.yourdomain.com` |
-| Zendesk / Intercom | $55+/mo | [Chatwoot](https://chatwoot.com) | `support.yourdomain.com` |
-| DocuSign | $25+/mo | [Documenso](https://documenso.com) | `sign.yourdomain.com` |
-| Google Analytics 360 / Mixpanel | $0–lots | [Umami](https://umami.is) | `analytics.yourdomain.com` |
-| Dropbox / Google Drive | $12+/mo | [Nextcloud](https://nextcloud.com) | `files.yourdomain.com` |
-| 1Password | $8+/mo | [Vaultwarden](https://github.com/dani-garcia/vaultwarden) | `vault.yourdomain.com` |
-| Statuspage / Pingdom | $10+/mo | [Uptime Kuma](https://github.com/louislam/uptime-kuma) | `status.yourdomain.com` |
-| Substack / Wix | 10% / $16+/mo | [Ghost](https://ghost.org) | `blog.yourdomain.com` |
+| Booking calendar | Calendly | `cal.yourdomain.com` | Cal.com |
+| Invoices | FreshBooks / QuickBooks | `invoices.yourdomain.com` | Invoice Ninja |
+| CRM | HubSpot | `crm.yourdomain.com` | Twenty |
+| Automations | Zapier | `automate.yourdomain.com` | Activepieces |
+| Newsletter | Mailchimp | `newsletter.yourdomain.com` | Listmonk |
+| Forms | Typeform | `forms.yourdomain.com` | Formbricks |
+| Tasks | Asana / Trello | `tasks.yourdomain.com` | Vikunja |
+| Docs | Notion / Confluence | `docs.yourdomain.com` | Docmost |
+| Team chat | Slack | `chat.yourdomain.com` | Mattermost |
+| Support desk | Zendesk / Intercom | `support.yourdomain.com` | Chatwoot |
+| Signatures | DocuSign | `sign.yourdomain.com` | Documenso |
+| Analytics | Google Analytics | `analytics.yourdomain.com` | Umami |
+| Files | Dropbox / Google Drive | `files.yourdomain.com` | Nextcloud |
+| Passwords | 1Password | `vault.yourdomain.com` | Vaultwarden |
+| Status page | Statuspage / Pingdom | `status.yourdomain.com` | Uptime Kuma |
+| Blog | Substack / Wix | `blog.yourdomain.com` | Ghost |
+
+Everything is named by what it does — in the hub, the console, the CLI and
+every message. The open-source projects underneath are listed here for
+attribution and licensing (see [docs/SELLING.md](docs/SELLING.md)); nothing a
+user sees mentions them. `stackctl` accepts the function names too:
+`./stackctl up crm chat booking`.
 
 Total replaced: **$700+/month**. Total cost: **one VPS (~$10–40/month)**.
 
@@ -42,13 +48,11 @@ Plus two pieces that tie it together:
   streams its output live; everything `stackctl` does, no shell needed.
 - **One brand** — set your business name, logo and accent colour once (in
   the console or `.env`) and `stackctl brand apply` pushes it into the hub,
-  the console, and every app with a branding surface (Authentik, Nextcloud,
-  Mattermost, Rocket.Chat, Chatwoot, Listmonk, Ghost, Easy!Appointments),
-  so the stack reads as one product.
-- **One identity** — real single sign-on (Authentik at
-  `auth.yourdomain.com`, auto-configured by blueprint, `./stackctl sso on`)
-  for every app that supports OIDC, plus scripted provisioning for the
-  rest: `./stackctl user add jane@yourco.com` creates the same
+  the console, Sign-on, Files, Team chat, Support desk, Newsletter, Blog and
+  Booking calendar, so the stack reads as one product.
+- **One identity** — real single sign-on (`auth.yourdomain.com`,
+  auto-configured, `./stackctl sso on`) for every app that supports it, plus
+  scripted provisioning for the rest: `./stackctl user add jane@yourco.com` creates the same
   email + password account in every running app in one shot, and
   `user rm` offboards them everywhere. See [docs/SSO.md](docs/SSO.md).
 
@@ -98,7 +102,7 @@ Prefer to drive it yourself? Everything is also a command:
 
 ```bash
 ./stackctl deploy                       # the same one-shot, re-runnable any time
-./stackctl up calcom listmonk umami     # or pick apps
+./stackctl up booking newsletter analytics   # or pick apps, by what they do
 ./stackctl user add jane@yourco.com     # one command onboards a teammate everywhere
 ./stackctl status
 ```
@@ -111,11 +115,11 @@ with its admin account pre-seeded or bootstrapped from `.env`
 
 ```bash
 ./stackctl status              # what's running, and where
-./stackctl logs chatwoot       # tail an app's logs
+./stackctl logs support        # tail an app's logs
 ./stackctl backup              # dump every database + volume to ./backups/<timestamp>/
 ./stackctl restore <dir>       # restore a backup
 ./stackctl update              # pull newest images and restart, app by app
-./stackctl down calcom         # stop an app (data is kept)
+./stackctl down booking        # stop an app (data is kept)
 ./stackctl brand apply         # push name/logo/colour into every app
 ```
 

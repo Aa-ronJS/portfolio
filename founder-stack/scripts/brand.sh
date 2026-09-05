@@ -22,7 +22,7 @@ brand_homepage() {
 a:hover { color: var(--brand) !important; }
 EOF
   app_running homepage && compose homepage restart >/dev/null 2>&1
-  note_ok homepage "hub — title + accent applied"
+  note_ok homepage "Hub — title + accent applied"
 }
 
 # ---------- Authentik: brand title, logo, CSS accent ----------
@@ -38,7 +38,7 @@ brand_authentik() {
   [ -n "$uuid" ] || { note_fail authentik "could not read brand (HTTP $HTTP_CODE)"; return; }
   http PATCH "$base/core/brands/$uuid/" -H "Authorization: Bearer $tok" -H "Content-Type: application/json" \
     -d "{\"branding_title\":\"$(json_escape "$(brand_name)")\",\"branding_logo\":\"$(json_escape "$(brand_logo)")\",\"branding_custom_css\":\":root{--pf-global--primary-color--100:$(brand_color);--pf-global--link--Color:$(brand_color);--pf-global--active-color--100:$(brand_color)}\"}" >/dev/null \
-    && note_ok authentik "authentik — title, logo, accent applied" \
+    && note_ok authentik "Sign-on — title, logo, accent applied" \
     || note_fail authentik "brand update failed (HTTP $HTTP_CODE)"
 }
 
@@ -53,7 +53,7 @@ brand_nextcloud() {
     docker cp "$LOGO_FILE" $c:/tmp/brand-logo.svg >/dev/null 2>&1 && docker exec $c chown www-data /tmp/brand-logo.svg &&
     docker exec -u www-data $c php occ theming:config logo /tmp/brand-logo.svg >/dev/null 2>&1
   fi
-  note_ok nextcloud "nextcloud — name, colour, logo applied"
+  note_ok nextcloud "Files — name, colour, logo applied"
 }
 
 # ---------- Mattermost: site name + custom brand text ----------
@@ -64,7 +64,7 @@ brand_mattermost() {
   docker exec $c mmctl --local config set TeamSettings.EnableCustomBrand true >/dev/null 2>&1 &&
   docker exec $c mmctl --local config set TeamSettings.CustomBrandText "Welcome to $(brand_name)" >/dev/null 2>&1 &&
   docker exec $c mmctl --local config set TeamSettings.CustomDescriptionText "$(brand_name) team chat" >/dev/null 2>&1 \
-    && note_ok mattermost "mattermost — site name + brand text applied" \
+    && note_ok mattermost "Team chat — site name + brand text applied" \
     || note_fail mattermost "mmctl config set failed"
 }
 
@@ -83,7 +83,7 @@ brand_rocketchat() {
   http POST "$base/settings/theme-custom-css" "${auth[@]}" -H "Content-Type: application/json" \
     -d "{\"value\":\":root{--rcx-color-button-background-primary-default:$(brand_color);--rcx-color-button-background-primary-hover:$(brand_color);--rcx-color-stroke-highlight:$(brand_color)}\"}" >/dev/null
   [ -f "$LOGO_FILE" ] && http POST "$base/assets.setAsset" "${auth[@]}" -F "assetName=logo" -F "asset=@$LOGO_FILE;type=image/svg+xml" >/dev/null
-  note_ok rocketchat "rocket.chat — name, logo, accent applied"
+  note_ok rocketchat "Team chat — name, logo, accent applied"
 }
 
 # ---------- Chatwoot: installation config ----------
@@ -92,7 +92,7 @@ brand_chatwoot() {
   local out
   out="$(docker exec fs-chatwoot-rails-1 bundle exec rails runner "
 {'BRAND_NAME'=>'$(brand_name)','LOGO'=>'$(brand_logo)','LOGO_THUMBNAIL'=>'$(brand_logo)','LOGO_DARK'=>'$(brand_logo)','BRAND_URL'=>'https://home.$(base_domain)','WIDGET_BRAND_URL'=>'https://home.$(base_domain)','INSTALLATION_NAME'=>'$(brand_name)'}.each{|k,v| InstallationConfig.find_or_initialize_by(name:k).update!(value:v)}; GlobalConfig.clear_cache; puts 'BRAND_OK'" 2>/dev/null)"
-  printf '%s' "$out" | grep -q BRAND_OK && note_ok chatwoot "chatwoot — brand name, logo applied" || note_fail chatwoot "rails runner failed"
+  printf '%s' "$out" | grep -q BRAND_OK && note_ok chatwoot "Support desk — brand name, logo applied" || note_fail chatwoot "rails runner failed"
 }
 
 # ---------- Listmonk: site name, logo, admin custom CSS ----------
@@ -109,7 +109,7 @@ d['app.site_name']='$(brand_name)'; d['app.logo_url']='$(brand_logo)'; d['app.fa
 d['appearance.admin.custom_css']=':root{--primary:$(brand_color);--primary-dark:$(brand_color)} .button.is-primary,a.button.is-primary{background:$(brand_color)!important;border-color:$(brand_color)!important}'
 print(json.dumps(d))")"
   http PUT "$base/api/settings" -b "$jar" -H "Content-Type: application/json" -d "$cur" >/dev/null \
-    && note_ok listmonk "listmonk — name, logo, accent applied (app restarts itself)" \
+    && note_ok listmonk "Newsletter — name, logo, accent applied (app restarts itself)" \
     || note_fail listmonk "settings update failed (HTTP $HTTP_CODE)"
   rm -f "$jar"
 }
@@ -119,7 +119,7 @@ brand_easyappointments() {
   app_running easyappointments || return
   http PUT "https://cal.$(base_domain)/index.php/api/v1/settings/company_name" -u "$(envval ADMIN_USER):$(envval ADMIN_PASSWORD)" \
     -H "Content-Type: application/json" -d "{\"value\":\"$(json_escape "$(brand_name)")\"}" >/dev/null \
-    && note_ok easyappointments "easy!appointments — company name applied" \
+    && note_ok easyappointments "Booking calendar — company name applied" \
     || note_fail easyappointments "settings update failed (HTTP $HTTP_CODE)"
 }
 
@@ -133,7 +133,7 @@ brand_ghost() {
     -d "{\"username\":\"$(json_escape "$(envval ADMIN_EMAIL)")\",\"password\":\"$(json_escape "$(envval ADMIN_PASSWORD)")\"}" >/dev/null || { rm -f "$jar"; note_fail ghost "admin login failed"; return; }
   http PUT "$base/settings/" -b "$jar" -H "Content-Type: application/json" -H "Origin: https://blog.$(base_domain)" \
     -d "{\"settings\":[{\"key\":\"title\",\"value\":\"$(json_escape "$(brand_name)")\"},{\"key\":\"accent_color\",\"value\":\"$(brand_color)\"},{\"key\":\"logo\",\"value\":\"$(json_escape "$(brand_logo)")\"}]}" >/dev/null \
-    && note_ok ghost "ghost — title, accent, logo applied" || note_fail ghost "settings update failed (HTTP $HTTP_CODE)"
+    && note_ok ghost "Blog — title, accent, logo applied" || note_fail ghost "settings update failed (HTTP $HTTP_CODE)"
   rm -f "$jar"
 }
 
@@ -149,7 +149,7 @@ brand_default_logo() {
   <text x="64" y="86" text-anchor="middle" font-family="system-ui,-apple-system,Segoe UI,Roboto,sans-serif" font-weight="700" font-size="72" fill="#fff">${initial:-F}</text>
 </svg>
 LOGOEOF
-  note_ok logo "logo — monogram '$initial' in $(brand_color) (replace brand/logo.svg with your own any time)"
+  note_ok logo "Logo — monogram '$initial' in $(brand_color) (replace brand/logo.svg with your own any time)"
 }
 
 brand_apply() {
@@ -159,8 +159,8 @@ brand_apply() {
   brand_homepage; brand_authentik; brand_nextcloud; brand_mattermost; brand_rocketchat
   brand_chatwoot; brand_listmonk; brand_easyappointments; brand_ghost
   echo
-  echo "Console picks the brand up automatically. Apps without a branding surface (Vikunja, Umami, Uptime Kuma,"
-  echo "Documenso, Formbricks, Vaultwarden, Activepieces) keep their own look; Twenty, Docmost, Invoice Ninja, EspoCRM"
-  echo "take a logo in their own settings."
+  echo "The console picks the brand up automatically. Tasks, Analytics, Status page, Signatures, Forms, Passwords"
+  echo "and Automations have no branding surface and keep their own look; CRM, Docs and Invoices take a logo in"
+  echo "their own settings."
   if [ ${#PROVISION_MANUAL[@]} -gt 0 ]; then echo "Manual:"; printf '  - %s\n' "${PROVISION_MANUAL[@]}"; fi
 }

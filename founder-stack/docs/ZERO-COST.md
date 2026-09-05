@@ -102,11 +102,14 @@ publish arm64 images and run as-is. Three upstreams publish **amd64-only**
 images, so on ARM the stack substitutes a like-for-like open-source
 alternative on the same subdomain:
 
-| amd64-only | ARM alternative | Same job | Notes |
+| Function | amd64 build | ARM build | Notes |
 |---|---|---|---|
-| Cal.com | **Easy!Appointments** | booking pages, calendar sync | lighter; no team round-robin; admin auto-bootstrapped |
-| Twenty CRM | **EspoCRM** | contacts, deals, pipeline, email | more mature; admin pre-seeded from `.env` |
-| Mattermost | **Rocket.Chat** | team chat, channels, DMs, apps | admin pre-seeded; `stackctl user add` supported |
+| Booking calendar | Cal.com | **Easy!Appointments** | lighter; no team round-robin; admin auto-bootstrapped |
+| CRM | Twenty | **EspoCRM** | more mature; admin pre-seeded from `.env` |
+| Team chat | Mattermost | **Rocket.Chat** | admin pre-seeded; `stackctl user add` supported |
+
+Users never see these names — every surface says Booking calendar, CRM,
+Team chat; the swap is invisible.
 
 `stackctl list` marks them. On an amd64 server the originals are used and
 the alternatives are simply available if you prefer them. The pairs share a

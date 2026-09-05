@@ -59,6 +59,42 @@ replaces() { # ARM alternative -> the app it replaces
 }
 is_arm() { case "$(uname -m)" in aarch64|arm64) return 0 ;; *) return 1 ;; esac; }
 
+# What people see: every app is named by its job, never by the upstream project.
+app_label() {
+  case "$1" in
+    homepage) echo "Hub" ;;             console) echo "Console" ;;
+    authentik) echo "Sign-on" ;;        vaultwarden) echo "Passwords" ;;
+    uptime-kuma) echo "Status page" ;;  activepieces) echo "Automations" ;;
+    twenty|espocrm) echo "CRM" ;;       chatwoot) echo "Support desk" ;;
+    calcom|easyappointments) echo "Booking calendar" ;;
+    formbricks) echo "Forms" ;;         invoiceninja) echo "Invoices" ;;
+    documenso) echo "Signatures" ;;     listmonk) echo "Newsletter" ;;
+    ghost) echo "Blog" ;;               umami) echo "Analytics" ;;
+    mattermost|rocketchat) echo "Team chat" ;;
+    vikunja) echo "Tasks" ;;            docmost) echo "Docs" ;;
+    nextcloud) echo "Files" ;;          *) echo "$1" ;;
+  esac
+}
+# Friendly names accepted anywhere an app id is: stackctl up crm chat booking
+app_alias() {
+  local a; a="$(printf '%s' "$1" | tr '[:upper:]' '[:lower:]')"
+  case "$a" in
+    hub|home) echo homepage ;;                 sso|sign-on|signon|login) echo authentik ;;
+    passwords|vault) echo vaultwarden ;;       status|status-page|uptime) echo uptime-kuma ;;
+    automations|automation|automate) echo activepieces ;;
+    crm) is_arm && echo espocrm || echo twenty ;;
+    support|helpdesk|support-desk) echo chatwoot ;;
+    booking|bookings|calendar|scheduling|booking-calendar) is_arm && echo easyappointments || echo calcom ;;
+    forms|surveys) echo formbricks ;;          invoices|invoicing|billing) echo invoiceninja ;;
+    signatures|esign|sign) echo documenso ;;   newsletter|email-marketing) echo listmonk ;;
+    blog|website) echo ghost ;;                analytics) echo umami ;;
+    chat|team-chat) is_arm && echo rocketchat || echo mattermost ;;
+    tasks|projects) echo vikunja ;;            docs|wiki) echo docmost ;;
+    files|storage|drive) echo nextcloud ;;
+    *) echo "$1" ;;
+  esac
+}
+
 all_apps() { ls -1 "$APPS_DIR"; }
 
 # The set `up --all` starts: everything, minus whichever side of each
@@ -92,6 +128,7 @@ resolve_apps() { # expands --all, validates names
   if [ "${1:-}" = "--all" ]; then default_apps; return; fi
   [ $# -gt 0 ] || fail "specify app names or --all (see: stackctl list)"
   local a; for a in "$@"; do
+    a="$(app_alias "$a")"
     [ -d "$APPS_DIR/$a" ] || fail "unknown app '$a' (see: stackctl list)"
     echo "$a"
   done
@@ -120,9 +157,9 @@ wait_ready() { # <app> [seconds] — poll the app's URL until it answers (< 500)
 cmd="${1:-}"; shift || true
 case "$cmd" in
   list)
-    printf '%-17s %-40s %s\n' "APP" "URL" ""
+    printf '%-18s %-38s %-17s %s\n' "APP" "URL" "ID" ""
     for a in $(all_apps); do
-      printf '%-17s %-40s %s\n' "$a" "https://$(subdomain "$a").$(base_domain)" "$(app_tag "$a")"
+      printf '%-18s %-38s %-17s %s\n' "$(app_label "$a")" "https://$(subdomain "$a").$(base_domain)" "$a" "$(app_tag "$a")"
     done
     is_arm && echo && echo "arm64 server detected: 'up --all' uses the ARM alternatives automatically."
     ;;
@@ -130,14 +167,14 @@ case "$cmd" in
   up)
     for a in $(resolve_apps "$@"); do
       if is_arm && [ -n "$(alt_for "$a")" ]; then
-        fail "$a ships an amd64-only image and won't run on this arm64 server — use: stackctl up $(alt_for "$a")"
+        fail "$(app_label "$a") ($a) uses an amd64-only build; on this arm64 server use: stackctl up $(alt_for "$a")"
       fi
       # the two sides of a pair share a subdomain; refuse to run both
       other="$(alt_for "$a")$(replaces "$a")"   # at most one is non-empty
       if [ -n "$other" ] && [ "$(running_count "$other")" -gt 0 ]; then
-        fail "$other is running on the same subdomain as $a — stop it first: stackctl down $other"
+        fail "another $(app_label "$a") ($other) is already running on that address — stop it first: stackctl down $other"
       fi
-      log "Starting $a -> https://$(subdomain "$a").$(base_domain)"
+      log "Starting $(app_label "$a") -> https://$(subdomain "$a").$(base_domain)"
       compose "$a" up -d
     done
     log "Done. First-login steps per app: docs/APPS.md"
@@ -145,7 +182,7 @@ case "$cmd" in
 
   down)
     for a in $(resolve_apps "$@"); do
-      log "Stopping $a (data is kept)"
+      log "Stopping $(app_label "$a") (data is kept)"
       compose "$a" down
     done
     ;;
@@ -161,11 +198,11 @@ case "$cmd" in
     ;;
 
   status)
-    printf '%-17s %-10s %s\n' "APP" "STATE" "URL"
+    printf '%-17s %-10s %-38s %-18s %s\n' "ID" "STATE" "URL" "APP" ""
     for a in $(all_apps); do
       state="stopped"
       [ "$(running_count "$a")" -gt 0 ] && state="running"
-      printf '%-17s %-10s https://%s.%s  %s\n' "$a" "$state" "$(subdomain "$a")" "$(base_domain)" "$(app_tag "$a")"
+      printf '%-17s %-10s %-38s %-18s %s\n' "$a" "$state" "https://$(subdomain "$a").$(base_domain)" "$(app_label "$a")" "$(app_tag "$a")"
     done
     ;;
 
@@ -173,7 +210,7 @@ case "$cmd" in
     apps="$( [ $# -gt 0 ] && resolve_apps "$@" || all_apps )"
     for a in $apps; do
       [ "$(running_count "$a")" -gt 0 ] || continue
-      log "Updating $a..."
+      log "Updating $(app_label "$a")..."
       compose "$a" pull
       compose "$a" up -d
     done
@@ -312,7 +349,7 @@ case "$cmd" in
     log "2/5 Waiting for apps to come up (first boot runs migrations; a few minutes)..."
     for a in $sel; do
       [ "$(running_count "$a")" -gt 0 ] || continue
-      if wait_ready "$a" 420; then printf '  ready   %s\n' "$a"; else printf '  slow    %s (still starting; will settle on its own)\n' "$a"; fi
+      if wait_ready "$a" 420; then printf '  ready   %s\n' "$(app_label "$a")"; else printf '  slow    %s (still starting; will settle on its own)\n' "$(app_label "$a")"; fi
     done
     log "3/5 First-run setup (workspaces, owners, installs) from your .env..."
     "$0" bootstrap

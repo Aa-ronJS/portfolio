@@ -28,7 +28,7 @@ envval() { grep "^$1=" "$ENVFILE" | head -1 | cut -d= -f2-; }
 
 note_ok()     { PROVISION_OK+=("$1"); printf '  \033[1;32m✔\033[0m %s\n' "$2"; }
 note_fail()   { PROVISION_FAILED+=("$1"); printf '  \033[1;31m✖\033[0m %s\n' "$2"; }
-note_manual() { PROVISION_MANUAL+=("$1: $2"); }
+note_manual() { PROVISION_MANUAL+=("$(app_label "$1" 2>/dev/null || echo "$1"): $2"); }
 
 app_running() { [ "$(running_count "$1")" -gt 0 ]; }
 
@@ -73,19 +73,19 @@ provision_authentik() { # <add|passwd|rm> <email> <password>
       http POST "$base/core/users/$pk/set_password/" "${auth[@]}" \
         -d "{\"password\":\"$(json_escape "$pass")\"}" >/dev/null \
         || { note_fail authentik "set password failed (HTTP $HTTP_CODE)"; return; }
-      note_ok authentik "authentik — SSO account (covers every OIDC app)"
+      note_ok authentik "Sign-on — SSO account (covers every OIDC app)"
       ;;
     passwd)
       [ -n "$pk" ] || { note_fail authentik "no such user"; return; }
       http POST "$base/core/users/$pk/set_password/" "${auth[@]}" \
         -d "{\"password\":\"$(json_escape "$pass")\"}" >/dev/null \
-        && note_ok authentik "authentik — password rotated" \
+        && note_ok authentik "Sign-on — password rotated" \
         || note_fail authentik "set password failed (HTTP $HTTP_CODE)"
       ;;
     rm)
       [ -n "$pk" ] || { note_manual authentik "no such user"; return; }
       http DELETE "$base/core/users/$pk/" "${auth[@]}" >/dev/null \
-        && note_ok authentik "authentik — user removed (kills SSO everywhere)" \
+        && note_ok authentik "Sign-on — user removed (kills SSO everywhere)" \
         || note_fail authentik "delete failed (HTTP $HTTP_CODE)"
       ;;
   esac
@@ -100,18 +100,18 @@ provision_nextcloud() {
       docker exec -e OC_PASS="$pass" -u www-data fs-nextcloud-app-1 \
         php occ user:add --password-from-env --display-name "$user" "$user" >/dev/null 2>&1 \
         && docker exec -u www-data fs-nextcloud-app-1 php occ user:setting "$user" settings email "$email" >/dev/null 2>&1 \
-        && note_ok nextcloud "nextcloud — account created" \
+        && note_ok nextcloud "Files — account created" \
         || note_fail nextcloud "occ user:add failed (already exists?)"
       ;;
     passwd)
       docker exec -e OC_PASS="$pass" -u www-data fs-nextcloud-app-1 \
         php occ user:resetpassword --password-from-env "$user" >/dev/null 2>&1 \
-        && note_ok nextcloud "nextcloud — password rotated" \
+        && note_ok nextcloud "Files — password rotated" \
         || note_fail nextcloud "occ resetpassword failed"
       ;;
     rm)
       docker exec -u www-data fs-nextcloud-app-1 php occ user:delete "$user" >/dev/null 2>&1 \
-        && note_ok nextcloud "nextcloud — user removed" \
+        && note_ok nextcloud "Files — user removed" \
         || note_fail nextcloud "occ user:delete failed"
       ;;
   esac
@@ -125,18 +125,18 @@ provision_mattermost() {
     add)
       docker exec fs-mattermost-app-1 mmctl --local user create \
         --email "$email" --username "$user" --password "$pass" --email-verified >/dev/null 2>&1 \
-        && note_ok mattermost "mattermost — account created" \
+        && note_ok mattermost "Team chat — account created" \
         || note_fail mattermost "mmctl user create failed (already exists?)"
       ;;
     passwd)
       docker exec fs-mattermost-app-1 mmctl --local user change-password "$email" \
         --password "$pass" >/dev/null 2>&1 \
-        && note_ok mattermost "mattermost — password rotated" \
+        && note_ok mattermost "Team chat — password rotated" \
         || note_fail mattermost "mmctl change-password failed"
       ;;
     rm)
       docker exec fs-mattermost-app-1 mmctl --local user delete "$email" --confirm >/dev/null 2>&1 \
-        && note_ok mattermost "mattermost — user removed" \
+        && note_ok mattermost "Team chat — user removed" \
         || note_fail mattermost "mmctl user delete failed"
       ;;
   esac
@@ -172,7 +172,7 @@ AccountUser.find_or_create_by!(account: a, user: u) { |au| au.role = :administra
   esac
   out="$(docker exec fs-chatwoot-rails-1 bundle exec rails runner "$code" 2>/dev/null)"
   if printf '%s' "$out" | grep -q PROVISION_OK; then
-    note_ok chatwoot "chatwoot — $action ok"
+    note_ok chatwoot "Support desk — $action ok"
   else
     note_fail chatwoot "rails runner failed (still migrating? retry in a minute)"
   fi
@@ -186,7 +186,7 @@ provision_vikunja() {
     add)
       docker exec fs-vikunja-app-1 /app/vikunja/vikunja user create \
         -u "$user" -e "$email" -p "$pass" >/dev/null 2>&1 \
-        && note_ok vikunja "vikunja — local account created (SSO button also works)" \
+        && note_ok vikunja "Tasks — local account created (SSO button also works)" \
         || note_fail vikunja "CLI create failed (already exists?)"
       ;;
     passwd|rm) note_manual vikunja "use the Authentik SSO login; local $action not scripted" ;;
@@ -217,7 +217,7 @@ provision_listmonk() {
       # note: the stock role (id 1) is Super Admin — fine for a small team
       http POST "$base/api/users" -b "$jar" -H "Content-Type: application/json" \
         -d "{\"username\":\"$(json_escape "$user")\",\"email\":\"$(json_escape "$email")\",\"name\":\"$(json_escape "$user")\",\"password\":\"$(json_escape "$pass")\",\"password2\":\"$(json_escape "$pass")\",\"type\":\"user\",\"user_role_id\":1,\"list_role_id\":null,\"status\":\"enabled\",\"password_login\":true}" >/dev/null \
-        && note_ok listmonk "listmonk — account created" \
+        && note_ok listmonk "Newsletter — account created" \
         || { note_fail listmonk "API create failed (HTTP $HTTP_CODE)"; note_manual listmonk "Admin → Users → New"; }
       ;;
     rm)
@@ -225,7 +225,7 @@ provision_listmonk() {
       uid="$(http GET "$base/api/users" -b "$jar" | tr '{' '\n' | grep "\"email\":\"$email\"" | sed -n 's/.*"id":\([0-9]*\).*/\1/p' | head -1)"
       if [ -n "$uid" ]; then
         http DELETE "$base/api/users/$uid" -b "$jar" >/dev/null \
-          && note_ok listmonk "listmonk — user removed" \
+          && note_ok listmonk "Newsletter — user removed" \
           || note_fail listmonk "delete failed (HTTP $HTTP_CODE)"
       else
         note_manual listmonk "no such user"
@@ -255,16 +255,16 @@ provision_umami() {
     if [ -n "$tok" ]; then
       http POST "$base/me/password" -H "Authorization: Bearer $tok" -H "Content-Type: application/json" \
         -d "{\"currentPassword\":\"umami\",\"newPassword\":\"$(json_escape "$admin_pass")\"}" >/dev/null \
-        && note_ok umami "umami — default admin password rotated to ADMIN_PASSWORD"
+        && note_ok umami "Analytics — default admin password rotated to ADMIN_PASSWORD"
     fi
   fi
   [ -n "$tok" ] || { note_fail umami "admin login failed (not ADMIN_PASSWORD, not the default)"; return; }
-  [ "$action" = bootstrap ] && { note_ok umami "umami — admin ready"; return; }
+  [ "$action" = bootstrap ] && { note_ok umami "Analytics — admin ready"; return; }
   case "$action" in
     add)
       http POST "$base/users" -H "Authorization: Bearer $tok" -H "Content-Type: application/json" \
         -d "{\"username\":\"$(json_escape "$user")\",\"password\":\"$(json_escape "$pass")\",\"role\":\"user\"}" >/dev/null \
-        && note_ok umami "umami — account created (username: $user)" \
+        && note_ok umami "Analytics — account created (username: $user)" \
         || note_fail umami "API create failed (HTTP $HTTP_CODE)"
       ;;
     passwd|rm) note_manual umami "Settings → Users ($action not scripted)" ;;
@@ -280,7 +280,7 @@ provision_activepieces() {
       http POST "https://automate.$(base_domain)/api/v1/authentication/sign-up" \
         -H "Content-Type: application/json" \
         -d "{\"email\":\"$(json_escape "$email")\",\"password\":\"$(json_escape "$pass")\",\"firstName\":\"$(json_escape "$user")\",\"lastName\":\"-\",\"trackEvents\":false,\"newsLetter\":false}" >/dev/null \
-        && note_ok activepieces "activepieces — account created" \
+        && note_ok activepieces "Automations — account created" \
         || { note_fail activepieces "sign-up API failed (HTTP $HTTP_CODE)"; note_manual activepieces "invite from the admin UI"; }
       ;;
     passwd|rm) note_manual activepieces "manage in the admin UI ($action not scripted)" ;;
@@ -296,7 +296,7 @@ provision_calcom() {
       http POST "https://cal.$(base_domain)/api/auth/signup" \
         -H "Content-Type: application/json" \
         -d "{\"email\":\"$(json_escape "$email")\",\"password\":\"$(json_escape "$pass")\",\"username\":\"$(json_escape "$user")\",\"language\":\"en\"}" >/dev/null \
-        && note_ok calcom "cal.com — account created" \
+        && note_ok calcom "Booking calendar — account created" \
         || { note_fail calcom "signup API failed (HTTP $HTTP_CODE)"; note_manual calcom "sign up at https://cal.$(base_domain)/signup"; }
       ;;
     passwd|rm) note_manual calcom "Settings → Security ($action not scripted)" ;;
@@ -314,9 +314,9 @@ provision_ghost() {
   if http GET "$base/authentication/setup/" | grep -q '"status":false'; then
     http POST "$base/authentication/setup/" -H "Content-Type: application/json" \
       -d "{\"setup\":[{\"name\":\"$(json_escape "$(envval ADMIN_USER)")\",\"email\":\"$(json_escape "$(envval ADMIN_EMAIL)")\",\"password\":\"$(json_escape "$(envval ADMIN_PASSWORD)")\",\"blogTitle\":\"Blog\"}]}" >/dev/null \
-      && note_ok ghost "ghost — bootstrapped owner account as ADMIN_EMAIL"
+      && note_ok ghost "Blog — bootstrapped owner account as ADMIN_EMAIL"
   else
-    [ "$action" = bootstrap ] && note_ok ghost "ghost — owner ready"
+    [ "$action" = bootstrap ] && note_ok ghost "Blog — owner ready"
   fi
   [ "$action" = bootstrap ] && { rm -f "$jar"; return; }
   if [ -z "$(envval SMTP_HOST)" ]; then
@@ -334,7 +334,7 @@ provision_ghost() {
     | tr '{' '\n' | grep '"name":"Editor"' | sed -n 's/.*"id":"\([^"]*\)".*/\1/p' | head -1)"
   if [ -n "$role_id" ] && http POST "$base/invites/" -b "$jar" -H "Content-Type: application/json" -H "Origin: https://blog.$(base_domain)" \
       -d "{\"invites\":[{\"email\":\"$(json_escape "$email")\",\"role_id\":\"$role_id\"}]}" >/dev/null; then
-    note_ok ghost "ghost — editor invite emailed (needs SMTP configured)"
+    note_ok ghost "Blog — editor invite emailed (needs SMTP configured)"
   else
     note_fail ghost "invite failed (HTTP $HTTP_CODE)"; note_manual ghost "invite from Ghost admin → Staff"
   fi
@@ -344,7 +344,7 @@ provision_ghost() {
 # ---------- Vaultwarden (admin invite email) ----------
 provision_vaultwarden() {
   local action="$1" email="$2"
-  app_running vaultwarden || { note_manual vaultwarden "not running"; return; }
+  app_running vaultwarden || { note_manual "Passwords" "not running"; return; }
   [ "$action" = add ] || { note_manual vaultwarden "users manage their own master password"; return; }
   if [ -z "$(envval SMTP_HOST)" ]; then
     # invites are emailed; without SMTP the API 500s instead of creating the user
@@ -357,7 +357,7 @@ provision_vaultwarden() {
     || { rm -f "$jar"; note_fail vaultwarden "admin login failed"; return; }
   http POST "$base/admin/invite" -b "$jar" -H "Content-Type: application/json" \
     -d "{\"email\":\"$(json_escape "$email")\"}" >/dev/null \
-    && note_ok vaultwarden "vaultwarden — invite sent (they choose their own master password)" \
+    && note_ok vaultwarden "Passwords — invite sent (they choose their own master password)" \
     || note_fail vaultwarden "invite failed (HTTP $HTTP_CODE)"
   rm -f "$jar"
 }
@@ -377,7 +377,7 @@ provision_rocketchat() {
     add)
       http POST "$base/users.create" "${auth[@]}" \
         -d "{\"email\":\"$(json_escape "$email")\",\"name\":\"$(json_escape "$user")\",\"username\":\"$(json_escape "$user")\",\"password\":\"$(json_escape "$pass")\",\"verified\":true}" >/dev/null \
-        && note_ok rocketchat "rocket.chat — account created" \
+        && note_ok rocketchat "Team chat — account created" \
         || note_fail rocketchat "users.create failed (HTTP $HTTP_CODE)"
       ;;
     passwd)
@@ -386,12 +386,12 @@ provision_rocketchat() {
       local sha; sha="$(printf '%s' "$(envval ADMIN_PASSWORD)" | sha256sum | cut -d' ' -f1)"
       [ -n "$id" ] && http POST "$base/users.update" "${auth[@]}" -H "x-2fa-method: password" -H "x-2fa-code: $sha" \
         -d "{\"userId\":\"$id\",\"data\":{\"password\":\"$(json_escape "$pass")\"}}" >/dev/null \
-        && note_ok rocketchat "rocket.chat — password rotated" \
+        && note_ok rocketchat "Team chat — password rotated" \
         || note_fail rocketchat "users.update failed (HTTP $HTTP_CODE)"
       ;;
     rm)
       http POST "$base/users.delete" "${auth[@]}" -d "{\"username\":\"$(json_escape "$user")\"}" >/dev/null \
-        && note_ok rocketchat "rocket.chat — user removed" \
+        && note_ok rocketchat "Team chat — user removed" \
         || note_fail rocketchat "users.delete failed (HTTP $HTTP_CODE)"
       ;;
   esac
@@ -407,7 +407,7 @@ provision_espocrm() {
     add)
       http POST "$base/User" "${auth[@]}" \
         -d "{\"userName\":\"$(json_escape "$user")\",\"emailAddress\":\"$(json_escape "$email")\",\"firstName\":\"$(json_escape "$user")\",\"type\":\"regular\",\"isActive\":true,\"password\":\"$(json_escape "$pass")\",\"passwordConfirm\":\"$(json_escape "$pass")\"}" >/dev/null \
-        && note_ok espocrm "espocrm — account created" \
+        && note_ok espocrm "CRM — account created" \
         || note_fail espocrm "API create failed (HTTP $HTTP_CODE)"
       ;;
     passwd|rm) note_manual espocrm "Administration → Users ($action not scripted)" ;;
@@ -432,18 +432,18 @@ provision_easyappointments() {
       --data-urlencode "admin[password]=$(envval ADMIN_PASSWORD)" \
       --data-urlencode "company[company_name]=Founder Stack" --data-urlencode "company[company_email]=$(envval ADMIN_EMAIL)" \
       --data-urlencode "company[company_link]=$base" | grep -q '"success":true' \
-      && note_ok easyappointments "easy!appointments — installed, admin = ADMIN_USER" \
+      && note_ok easyappointments "Booking calendar — installed, admin = ADMIN_USER" \
       || { rm -f "$jar"; note_fail easyappointments "install failed (HTTP $HTTP_CODE)"; return; }
     rm -f "$jar"
   else
-    [ "$action" = bootstrap ] && note_ok easyappointments "easy!appointments — already installed"
+    [ "$action" = bootstrap ] && note_ok easyappointments "Booking calendar — already installed"
   fi
   [ "$action" = bootstrap ] && return
   [ "$action" = add ] || { note_manual easyappointments "Users → Providers ($action not scripted)"; return; }
   # new users are "providers" (bookable staff) — created via the REST API as admin
   http POST "$base/index.php/api/v1/providers" -u "$(envval ADMIN_USER):$(envval ADMIN_PASSWORD)" -H "Content-Type: application/json" \
     -d "{\"firstName\":\"$(json_escape "$user")\",\"lastName\":\"-\",\"email\":\"$(json_escape "$email")\",\"services\":[],\"settings\":{\"username\":\"$(json_escape "$user")\",\"password\":\"$(json_escape "$pass")\",\"notifications\":true,\"calendarView\":\"default\"}}" >/dev/null \
-    && note_ok easyappointments "easy!appointments — provider account created" \
+    && note_ok easyappointments "Booking calendar — provider account created" \
     || note_fail easyappointments "API create failed (HTTP $HTTP_CODE)"
 }
 
@@ -459,12 +459,12 @@ provision_docmost() {
       -d "{\"email\":\"$(json_escape "$(envval ADMIN_EMAIL)")\",\"password\":\"$(json_escape "$(envval ADMIN_PASSWORD)")\"}" >/dev/null; then
     http POST "$base/auth/setup" -c "$jar" -H "Content-Type: application/json" \
       -d "{\"workspaceName\":\"Founder Stack\",\"name\":\"$(json_escape "$(envval ADMIN_USER)")\",\"email\":\"$(json_escape "$(envval ADMIN_EMAIL)")\",\"password\":\"$(json_escape "$(envval ADMIN_PASSWORD)")\"}" >/dev/null \
-      && note_ok docmost "docmost — bootstrapped workspace + owner as ADMIN_EMAIL" \
+      && note_ok docmost "Docs — bootstrapped workspace + owner as ADMIN_EMAIL" \
       || { rm -f "$jar"; note_fail docmost "setup/login failed (HTTP $HTTP_CODE)"; return; }
     http POST "$base/auth/login" -c "$jar" -H "Content-Type: application/json" \
       -d "{\"email\":\"$(json_escape "$(envval ADMIN_EMAIL)")\",\"password\":\"$(json_escape "$(envval ADMIN_PASSWORD)")\"}" >/dev/null
   else
-    [ "$action" = bootstrap ] && note_ok docmost "docmost — workspace ready"
+    [ "$action" = bootstrap ] && note_ok docmost "Docs — workspace ready"
   fi
   [ "$action" = bootstrap ] && { rm -f "$jar"; return; }
   if [ -z "$(envval SMTP_HOST)" ]; then
@@ -472,7 +472,7 @@ provision_docmost() {
   fi
   http POST "$base/workspace/invites/create" -b "$jar" -H "Content-Type: application/json" \
     -d "{\"emails\":[\"$(json_escape "$email")\"],\"role\":\"member\"}" >/dev/null \
-    && note_ok docmost "docmost — invite emailed" \
+    && note_ok docmost "Docs — invite emailed" \
     || note_fail docmost "invite failed (HTTP $HTTP_CODE)"
   rm -f "$jar"
 }
@@ -489,7 +489,7 @@ provision_invoiceninja() {
   [ -n "$tok" ] || { note_fail invoiceninja "admin login failed (HTTP $HTTP_CODE)"; return; }
   http POST "$base/users?include=company_user" -H "Content-Type: application/json" -H "X-Api-Token: $tok" -H "X-Requested-With: XMLHttpRequest" \
     -d "{\"first_name\":\"$(json_escape "$user")\",\"last_name\":\"-\",\"email\":\"$(json_escape "$email")\",\"password\":\"$(json_escape "$pass")\",\"company_user\":{\"is_admin\":false,\"permissions\":\"view_client,edit_client,create_client,view_invoice,edit_invoice,create_invoice\"}}" >/dev/null \
-    && note_ok invoiceninja "invoice ninja — account created" \
+    && note_ok invoiceninja "Invoices — account created" \
     || note_fail invoiceninja "API create failed (HTTP $HTTP_CODE)"
 }
 
@@ -519,15 +519,15 @@ provision_twenty() {
     access="$(twenty_gql "{\"query\":\"mutation{getAuthTokensFromLoginToken(loginToken:\\\"$lt\\\",origin:\\\"$o\\\"){tokens{accessOrWorkspaceAgnosticToken{token}}}}\"}" | twenty_tok)"
     [ -n "$access" ] || { note_fail twenty "workspace bootstrap failed (HTTP $HTTP_CODE)"; return; }
     twenty_gql '{"query":"mutation{activateWorkspace(data:{displayName:\"Founder Stack\"}){id}}"}' "$access" >/dev/null
-    note_ok twenty "twenty — bootstrapped workspace + admin as ADMIN_EMAIL"
+    note_ok twenty "CRM — bootstrapped workspace + admin as ADMIN_EMAIL"
   else
-    [ "$action" = bootstrap ] && note_ok twenty "twenty — workspace ready"
+    [ "$action" = bootstrap ] && note_ok twenty "CRM — workspace ready"
   fi
   [ "$action" = bootstrap ] && return
   hash="$(twenty_gql '{"query":"{currentWorkspace{inviteHash}}"}' "$access" | sed -n 's/.*"inviteHash":"\([^"]*\)".*/\1/p' | head -1)"
   [ -n "$hash" ] || { note_fail twenty "could not read workspace invite hash"; return; }
   body="$(twenty_gql "{\"query\":\"mutation{signUpInWorkspace(email:\\\"$(json_escape "$email")\\\",password:\\\"$(json_escape "$pass")\\\",workspaceInviteHash:\\\"$hash\\\"){loginToken{token}}}\"}")"
-  if printf '%s' "$body" | grep -q '"loginToken":{"token"'; then note_ok twenty "twenty — account created and joined workspace"
+  if printf '%s' "$body" | grep -q '"loginToken":{"token"'; then note_ok twenty "CRM — account created and joined workspace"
   else note_fail twenty "sign-up failed: $(printf '%s' "$body" | sed -n 's/.*"message":"\([^"]*\)".*/\1/p' | head -1)"; fi
 }
 
@@ -569,11 +569,11 @@ run_provisioners() { # <add|passwd|rm> <email> <password>
 
   echo
   if [ "$action" = add ]; then
-    printf '\033[1mReal SSO via Authentik\033[0m (this account, "authentik"/OIDC button): tasks, chat, sign, vault'
+    printf '\033[1mSingle sign-on\033[0m covers this account in: Tasks, Team chat, Signatures, Passwords'
     [ "$(envval SSO_ENABLED)" = true ] || printf '  [run: stackctl sso on]'
     echo
-    echo "In-app invite: formbricks (forms) — Organization → Members"
-    echo "Single-admin by design: uptime-kuma (status)"
+    echo "Forms: invite from its Organization → Members page (no API for that)"
+    echo "Status page is single-admin by design"
   fi
   if [ ${#PROVISION_MANUAL[@]} -gt 0 ]; then
     echo "Skipped/manual:"
