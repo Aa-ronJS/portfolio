@@ -3,12 +3,6 @@
 Source of https://aaronsteele.vercel.app. One HTML file, five photographs, three
 self-hosted fonts, no build step and no dependencies.
 
-`/audit` is the one thing on the site with a price on it: a fixed-price HubSpot
-Data Health Check, with a Stripe payment link, an enquiry form and a thank-you
-page that fires the ad conversion. `LAUNCH.md` is the one-day plan for taking it
-from nothing to a first paying customer on a $100 ad budget, including the
-arithmetic on why that mostly does not come from the ads.
-
 `PREFLIGHT.md` holds the design pre-flight it was built against, answered in
 writing before any markup, including the deviations from the house playbook and
 the three defects found by looking at the rendered page rather than the markup.
