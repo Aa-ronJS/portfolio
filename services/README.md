@@ -35,35 +35,48 @@ problems below, and the positioning is what converts them once they land.
 
 ## The live demos (the proof)
 
-Every service page and every industry page carries a working, interactive
-build of the thing it sells, embedded in the page: a visitor uses it,
-with data shaped like their business, before reading a word of claims.
-Twenty-two of them, all vanilla JavaScript on the static site, no build
-step, no external calls:
+Every service page and every industry page carries the finished product it
+sells, working, embedded in the page: a visitor uses it before reading a
+word of claims. Twenty-two of them, all vanilla JavaScript on the static
+site, no build step, no external calls.
 
-- `public/js/demo-core.js` is the tiny framework (element helper, chrome,
-  formatting, seeded random, mount-by-`data-demo`).
-- `public/js/demos-services.js` holds the ten build-type demos (WordPress
-  health check, payout reconciler, enquiry triage assistant, a working
-  field app in a phone, redirect map builder, the reference API with its
-  real status rules, dedupe lab and automation bench, spreadsheet to
-  dashboard plus mismatch finder, ownership audit, process map and spec
-  generator).
-- `public/js/demos-industries.js` holds the twelve sector demos (week vs
-  forecast, consignment board, pre-start gate, one-ledger stock, bookings
-  and covers, time to invoice, waitlist refill, funder acquittal, rent
-  roll, spray windows, application assessment, AVETMISS-clean enrolment).
-- `public/css/demos.css` is the shared chrome; it uses the site tokens so
-  it restyles with the site.
+Each demo renders inside the device it would really live in, styled as
+itself and deliberately not as this site: websites in a browser window
+with their own brand (fonts, colours, layout per business), software in an
+app window with a sidebar and top bar, the field app in a phone, the
+analysis deliverables in a document viewer. The point is that the demo
+looks like the thing you would receive, not like another section of the
+page.
+
+- `public/js/demo-core.js` is the framework: element helper, the four
+  device shells (`browser`, `app`, `phone`, `doc`), `frame()` which puts a
+  device on a stage with a status pill and note, KPI tiles, tables,
+  toasts, icons, mount-by-`data-demo`.
+- `public/js/demos-services.js` holds the ten build-type demos: a
+  re-skinnable small-business website (four brands, desktop or phone), a
+  before/after rebuild slider, a working store with checkout and the
+  back-office activity it triggers, the field app in a phone, a
+  quotes-and-jobs tracker, a CRM pipeline whose stage changes fire
+  automations, a multi-branch dashboard, a customer assistant living on the
+  business's own site, a rescued project as two browser tabs, and the BA
+  deliverable set as documents.
+- `public/js/demos-industries.js` holds the twelve sector demos, each as
+  its own product (SiteBoard, Linehaul, ShiftGate, Stockline, a booking
+  page, Matterly, FrontDesk, Grantwise, RentRoll, Paddock, Assess, an RTO
+  enrolment page).
+- `public/css/demos.css` is the product styling: device chrome, an
+  Inter-based app look with its own tokens (`--p-*`), and a re-map of the
+  site's token names inside `.dv` so demo code inherits the product look
+  rather than the site's. Fonts for the demos (Inter, Nunito, Oswald,
+  Playfair Display) are self-hosted in `public/fonts/`.
 
 Pages mount a demo with `<div class="demo" data-demo="name">` holding a
 static fallback; the industries generator carries its own `DEMOS` map.
-Every demo is pre-loaded so it works at rest, degrades to readable text
-without scripts, respects reduced motion, and is tested in a real browser
-at 1424px and 390px (`test_demos.mjs` in the session scratchpad exercises
-all 22 with clicks and checks for console errors and overflow). The
-numbers inside demos are illustrative fixtures, labelled as such in the
-chrome; they never claim to be client data.
+Every demo works at rest, degrades to readable text without scripts, and
+is tested in a real browser at 1424px and 390px (`test_demos.mjs` in the
+session scratchpad exercises all 22 with clicks and checks for console
+errors and overflow). The numbers inside demos are illustrative fixtures;
+they never claim to be client data.
 
 ## Industry pages
 

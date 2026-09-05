@@ -8,7 +8,7 @@
 
   /* ---------------- TRADES: the week vs the weather ---------------- */
   D.register('trades-schedule', function () {
-    var f = D.frame({ title: 'This week\'s jobs against the forecast', status: 'Sunday night view',
+    var f = D.frame({ kind: 'app', app: { name: 'SiteBoard', mark: 'S', accent: '#EA580C', side: '#1F1712', nav: [['Schedule', 'cal'], ['Jobs', 'clip'], ['Quotes', 'doc'], ['Invoices', 'dollar'], ['Customers', 'users']], active: 0, title: 'This week', user: 'Jo Hargreaves' }, title: 'This week\'s jobs against the forecast', status: 'Sunday night view',
       note: 'Rain Check, one of my live tools, already does the forecast half for Adelaide trades. Joined to your job system, the reshuffle proposes itself before 6am.' });
     var days = [['Mon', 2, 10], ['Tue', 14, 80], ['Wed', 22, 90], ['Thu', 1, 5], ['Fri', 0, 0]];
     var jobs = [
@@ -25,7 +25,7 @@
         var col = h('div', { class: 'demo__panel', style: 'padding:10px' },
           h('div', { style: 'font-weight:800' }, d[0]), h('div', { class: 'dim', style: 'font-size:0.8rem; margin-bottom:8px' }, d[2] + '% · ' + d[1] + 'mm'));
         jobs.filter(function (j) { return j.day === i; }).forEach(function (j) {
-          col.appendChild(h('div', { style: 'border:1.5px solid ' + (risky(j) ? 'oklch(0.55 0.16 30)' : 'var(--line)') + '; padding:6px 8px; margin-top:6px; font-size:0.82rem; background:' + (risky(j) ? 'oklch(0.94 0.05 30)' : 'var(--bone)') },
+          col.appendChild(h('div', { style: 'border:1.5px solid ' + (risky(j) ? '#dc2626' : 'var(--line)') + '; padding:6px 8px; margin-top:6px; font-size:0.82rem; background:' + (risky(j) ? '#fee2e2' : 'var(--bone)') },
             h('b', {}, j.who), h('br'), j.what, ' ', h('span', { class: 'demo__pill demo__pill--dim', style: 'font-size:0.62rem' }, j.out ? 'outdoor' : 'indoor')));
         });
         board.appendChild(col);
@@ -57,7 +57,7 @@
 
   /* ---------------- TRANSPORT: the consignment board ---------------- */
   D.register('transport-board', function () {
-    var f = D.frame({ title: 'Linehaul operations board', status: 'live from the event log',
+    var f = D.frame({ kind: 'app', app: { name: 'Linehaul', mark: 'L', accent: '#2563EB', side: '#0F1B33', nav: [['Operations', 'truck'], ['Consignments', 'box'], ['Lanes', 'map'], ['Reports', 'chart'], ['Settings', 'cog']], active: 0, title: 'Operations board', user: 'Dee Marsh' }, title: 'Linehaul operations board', status: 'live from the event log',
       note: 'This is the reference build\'s dashboard logic, running on fixtures in your browser: derived from the record of what happened, so it cannot drift from the truth. The full build is public and compilable.' });
     var r = D.rng(11), lanes = ['ADL-MEL', 'ADL-PER', 'ADL-SYD', 'MEL-ADL'], now = 0, cons = [];
     for (var i = 0; i < 18; i++) cons.push({ id: 'LH-24' + (100 + i), lane: lanes[i % 4], kg: Math.round(40 + r() * 1200), due: 1 + Math.floor(r() * 4), status: ['Booked', 'PickedUp', 'InTransit', 'InTransit', 'Delivered'][Math.floor(r() * 5)], deliveredAt: null });
@@ -68,7 +68,7 @@
       var late = cons.filter(function (c) { return c.status !== 'Delivered' && c.status !== 'Cancelled' && c.due < now; });
       tiles.innerHTML = '';
       [['Booked', cons.filter(function (c) { return c.status !== 'Cancelled'; }).length], ['Delivered', delivered.length], ['On time', delivered.length ? Math.round(onTime / delivered.length * 100) + '%' : '-'], ['Held', cons.filter(function (c) { return c.status === 'Held'; }).length, 'warn'], ['Overdue', late.length, late.length ? 'bad' : '']].forEach(function (t) {
-        tiles.appendChild(h('div', { class: 'demo__panel' }, h('div', { class: 'demo__big', style: t[2] === 'bad' ? 'color:oklch(0.5 0.16 30)' : t[2] === 'warn' ? 'color:var(--amber-deep)' : '' }, String(t[1])), h('div', { class: 'dim', style: 'font-size:0.82rem' }, t[0])));
+        tiles.appendChild(h('div', { class: 'demo__panel' }, h('div', { class: 'demo__big', style: t[2] === 'bad' ? 'color:#dc2626' : t[2] === 'warn' ? 'color:#d97706' : '' }, String(t[1])), h('div', { class: 'dim', style: 'font-size:0.82rem' }, t[0])));
       });
       chips.innerHTML = '';
       ['', 'Booked', 'PickedUp', 'InTransit', 'Held', 'Delivered'].forEach(function (s) { chips.appendChild(h('button', { class: 'demo__chip', type: 'button', 'aria-pressed': filter === s, onclick: function () { filter = s; draw(); } }, s || 'All')); });
@@ -98,7 +98,7 @@
 
   /* ---------------- MINING: pre-start, permits, sign-off ---------------- */
   D.register('mining-prestart', function () {
-    var f = D.frame({ title: 'Pre-start and permit-to-work, gated', status: 'shift not started',
+    var f = D.frame({ kind: 'app', app: { name: 'ShiftGate', mark: '!', accent: '#F59E0B', side: '#111827', nav: [['Pre-start', 'check'], ['Permits', 'doc'], ['Crew', 'users'], ['Audit trail', 'list'], ['Settings', 'cog']], active: 0, title: 'Pre-start · Day shift · Crew B', user: 'S. Tran' }, title: 'Pre-start and permit-to-work, gated', status: 'shift not started',
       note: 'The rule that matters is the gate: nobody starts until every check passes and every permit is in date, and every tap is in an audit trail with a name and a time. Built the way BHP-grade sites expect, sized for a contractor.' });
     var checks = [['Isolation verified and tagged', null], ['Gas test within 30 min', null], ['Emergency exit route confirmed', null], ['PPE inspected', null], ['Crew fit for work declared', null]];
     var permits = [['Hot work permit HW-2291', 2], ['Confined space CS-0418', 0], ['Working at heights WH-1177', 5]];
@@ -131,7 +131,7 @@
 
   /* ---------------- RETAIL: one stock truth ---------------- */
   D.register('retail-stock', function () {
-    var f = D.frame({ title: 'One shelf, two tills', status: 'single ledger',
+    var f = D.frame({ kind: 'app', app: { name: 'Stockline', mark: 'S', accent: '#7C3AED', side: '#1E1033', nav: [['Products', 'box'], ['Stock', 'list'], ['Orders', 'cart'], ['Channels', 'map'], ['Reports', 'chart']], active: 1, title: 'Stock', user: 'Marco Bell' }, title: 'One shelf, two tills', status: 'single ledger',
       note: 'Your till in store, your shop online, one truth about stock. Flip the switch to see how most shops actually run: two ledgers each certain they are right, and the oversell lands on your busiest Saturday.' });
     var skus = [{ sku: 'TEE-BLK-M', name: 'Black tee, M', stock: 3, reorder: 4 }, { sku: 'CAP-OLV', name: 'Olive cap', stock: 7, reorder: 3 }, { sku: 'MUG-01', name: 'Enamel mug', stock: 1, reorder: 5 }];
     var split = false, shadow = {}, tbl = h('div'), log = h('pre', { class: 'demo__log' });
@@ -167,14 +167,18 @@
 
   /* ---------------- HOSPITALITY: bookings, covers, roster ---------------- */
   D.register('hospo-bookings', function () {
-    var f = D.frame({ title: 'Saturday service: bookings, covers, roster', status: 'take a booking',
+    var f = D.frame({ kind: 'browser', browser: { url: 'bellavistacafe.com.au', path: '/book' }, accent: '#2F6B4F', title: 'Saturday service: bookings, covers, roster', status: 'take a booking',
       note: 'The booking widget is the visible bit; the value is underneath: capacity per slot, kitchen load, and a roster that follows covers instead of guesswork.' });
     var slots = ['17:30', '18:00', '18:30', '19:00', '19:30', '20:00', '20:30'], cap = 36, covers = [10, 18, 30, 34, 26, 14, 6];
     var pick = { slot: '19:00', size: 4, name: 'Nguyen' }, chart = h('div'), out = h('p', { style: 'margin:0; font-size:0.92rem' });
+    f.device.body.insertBefore(h('div', { style: 'font-family:Inter,system-ui,sans-serif; background:#F8F3E8; color:#1E211F' },
+      h('div', { style: 'display:flex; justify-content:space-between; align-items:center; padding:14px 22px; border-bottom:1px solid rgba(0,0,0,0.08)' }, h('b', { style: "font-family:'Playfair Display',Georgia,serif; font-size:20px; font-weight:600" }, 'Bella Vista'), h('span', { style: 'display:flex; gap:18px; font-size:13px' }, h('span', {}, 'Menu'), h('span', {}, 'Functions'), h('b', { style: 'border-bottom:2px solid #2F6B4F' }, 'Book'), h('span', {}, 'Contact'))),
+      h('div', { style: 'padding:22px 22px 0' }, h('h1', { style: "font-family:'Playfair Display',Georgia,serif; font-weight:600; font-size:28px; margin:0 0 4px" }, 'Book a table'), h('p', { style: 'margin:0; font-size:13px; opacity:0.75' }, 'Saturday dinner service. Tables of 2 to 8; larger groups, call us.'))), f.body);
+    f.body.style.background = '#F8F3E8';
     function draw() {
       var W = 620, H = 160, bw = (W - 40) / slots.length;
       var svg = '<svg class="demo__svg" viewBox="0 0 ' + W + ' ' + H + '" role="img" aria-label="Covers per half hour">';
-      slots.forEach(function (s, i) { var c = covers[i], bh = c / cap * (H - 50), over = c > cap * 0.9; svg += '<rect x="' + (20 + i * bw + 6) + '" y="' + (H - 30 - bh) + '" width="' + (bw - 12) + '" height="' + bh + '" fill="' + (c > cap ? 'oklch(0.55 0.16 30)' : over ? 'var(--amber)' : 'var(--green)') + '"></rect><text x="' + (20 + i * bw + bw / 2) + '" y="' + (H - 12) + '" font-size="11" text-anchor="middle" fill="currentColor">' + s + '</text><text x="' + (20 + i * bw + bw / 2) + '" y="' + (H - 36 - bh) + '" font-size="11" text-anchor="middle" fill="currentColor">' + c + '</text>'; });
+      slots.forEach(function (s, i) { var c = covers[i], bh = c / cap * (H - 50), over = c > cap * 0.9; svg += '<rect x="' + (20 + i * bw + 6) + '" y="' + (H - 30 - bh) + '" width="' + (bw - 12) + '" height="' + bh + '" fill="' + (c > cap ? '#dc2626' : over ? 'var(--p-warn)' : 'var(--p-accent)') + '"></rect><text x="' + (20 + i * bw + bw / 2) + '" y="' + (H - 12) + '" font-size="11" text-anchor="middle" fill="currentColor">' + s + '</text><text x="' + (20 + i * bw + bw / 2) + '" y="' + (H - 36 - bh) + '" font-size="11" text-anchor="middle" fill="currentColor">' + c + '</text>'; });
       svg += '<line x1="20" y1="' + (H - 30 - (H - 50)) + '" x2="' + (W - 20) + '" y2="' + (H - 30 - (H - 50)) + '" stroke="currentColor" stroke-dasharray="4 4"></line></svg>';
       chart.innerHTML = svg;
       var total = covers.reduce(function (a, b) { return a + b; }, 0), peak = Math.max.apply(null, covers), foh = Math.ceil(peak / 12), kitchen = Math.ceil(peak / 14);
@@ -198,7 +202,7 @@
 
   /* ---------------- PROFESSIONAL SERVICES: time to invoice ---------------- */
   D.register('pro-timesheet', function () {
-    var f = D.frame({ title: 'Matter time to invoice, fixed fee vs hourly', status: 'WIP loaded',
+    var f = D.frame({ kind: 'app', app: { name: 'Matterly', mark: 'M', accent: '#1E3A8A', side: '#0B1220', nav: [['Matters', 'doc'], ['Time', 'cal'], ['Invoices', 'dollar'], ['Clients', 'users'], ['Reports', 'chart']], active: 2, title: 'Invoice · Shareholders agreement', user: 'A. Whitfield' }, title: 'Matter time to invoice, fixed fee vs hourly', status: 'WIP loaded',
       note: 'Time captured once, priced two ways, invoiced with narrative lines a client will actually pay. The write-off flag is the honest bit most practices avoid looking at.' });
     var rate = 280, fixed = 2400;
     var entries = [['Initial consult and scoping', 1.5], ['Drafting: shareholders agreement', 4.2], ['Client revisions round 1', 1.8], ['Revisions round 2 (scope creep)', 2.6], ['Finalise and send', 0.7]];
@@ -213,7 +217,7 @@
         h('div', { class: 'demo__kv' }, h('span', {}, 'Hours on the matter'), h('b', {}, hours.toFixed(1) + ' h'),
           h('span', {}, mode === 'hourly' ? 'Billed at ' + money(rate) + '/h' : 'Fixed fee agreed'), h('b', {}, money(mode === 'hourly' ? hourly : fixed)),
           h('span', {}, 'Effective rate'), h('b', {}, money((mode === 'hourly' ? hourly : fixed) / hours) + '/h'),
-          h('span', {}, mode === 'fixed' ? 'Write-off vs hourly' : 'Client surprise risk'), h('b', { style: mode === 'fixed' && hourly > fixed ? 'color:oklch(0.5 0.16 30)' : '' }, mode === 'fixed' ? money(Math.max(0, hourly - fixed)) : (hours > 8 ? 'high: no estimate was agreed' : 'low'))),
+          h('span', {}, mode === 'fixed' ? 'Write-off vs hourly' : 'Client surprise risk'), h('b', { style: mode === 'fixed' && hourly > fixed ? 'color:#dc2626' : '' }, mode === 'fixed' ? money(Math.max(0, hourly - fixed)) : (hours > 8 ? 'high: no estimate was agreed' : 'low'))),
         h('p', { style: 'margin:10px 0 0; font-size:0.88rem' }, mode === 'fixed' ? 'The amber row is where fixed fees die: unscoped revisions. The system flags it at 80% of the fee so you can have the conversation before the write-off, not after.' : 'Hourly is honest to the effort and terrifying to the client. The system sends a WIP alert at the estimate so nobody is surprised by the number.'));
       out.appendChild(inv);
       f.status(mode === 'fixed' && hourly > fixed ? 'write-off ' + money(hourly - fixed) : 'invoice ready', mode === 'fixed' && hourly > fixed ? 'warn' : 'ok');
@@ -227,7 +231,7 @@
 
   /* ---------------- HEALTH: cancellations, waitlist, recalls ---------------- */
   D.register('health-waitlist', function () {
-    var f = D.frame({ title: 'Cancellations that fill themselves', status: 'Tuesday, two practitioners',
+    var f = D.frame({ kind: 'app', app: { name: 'FrontDesk', mark: '+', accent: '#0D9488', side: '#0F2E2B', nav: [['Today', 'cal'], ['Waitlist', 'list'], ['Patients', 'users'], ['Recalls', 'bell'], ['Settings', 'cog']], active: 0, title: 'Tuesday', user: 'Reception' }, title: 'Cancellations that fill themselves', status: 'Tuesday, two practitioners',
       note: 'Built onto the practice software you already run: a cancellation frees the slot, the first matching waitlisted patient gets an SMS, the slot fills. The recall list is the quiet revenue most practices never chase.' });
     var appts = [['9:00', 'Dr Rao', 'M. Chen'], ['9:30', 'Dr Rao', 'P. Nair'], ['10:00', 'S. Wells (physio)', 'T. Okafor'], ['10:30', 'Dr Rao', 'J. Hargreaves'], ['11:00', 'S. Wells (physio)', 'L. Tran']];
     var wait = [['A. Whitfield', 'Dr Rao', 'any morning'], ['R. Singh', 'S. Wells (physio)', 'before 11'], ['D. Marsh', 'Dr Rao', 'any']];
@@ -264,7 +268,7 @@
 
   /* ---------------- NOT-FOR-PROFITS: acquittal with provenance ---------------- */
   D.register('nfp-acquittal', function () {
-    var f = D.frame({ title: 'Funder report with provenance, receipting on rails', status: 'program data loaded',
+    var f = D.frame({ kind: 'app', app: { name: 'Grantwise', mark: 'G', accent: '#16A34A', side: '#14291B', nav: [['Programs', 'clip'], ['Acquittals', 'doc'], ['Donations', 'dollar'], ['Contacts', 'users'], ['Reports', 'chart']], active: 1, title: 'Employment Pathways · Q1 acquittal', user: 'K. Lowe' }, title: 'Funder report with provenance, receipting on rails', status: 'program data loaded',
       note: 'Program data captured once becomes the acquittal, and every figure points at its source rows. Receipts issue themselves from the donation record. No volunteer\'s Tuesday required.' });
     var sessions = [['12 Aug', 'Job-ready workshop', 14, 9], ['19 Aug', 'Job-ready workshop', 11, 7], ['21 Aug', 'One-to-one mentoring', 6, 6], ['26 Aug', 'Job-ready workshop', 16, 12], ['28 Aug', 'Employer meet-up', 22, 15]];
     var out = h('div'), rec = h('div');
@@ -296,7 +300,7 @@
 
   /* ---------------- REAL ESTATE: the portfolio view and the owner report ---------------- */
   D.register('re-portfolio', function () {
-    var f = D.frame({ title: 'The rent roll, one level up', status: 'Monday morning',
+    var f = D.frame({ kind: 'app', app: { name: 'RentRoll', mark: 'R', accent: '#9F1239', side: '#2A0A14', nav: [['Portfolio', 'home'], ['Arrears', 'dollar'], ['Leases', 'doc'], ['Owners', 'users'], ['Reports', 'chart']], active: 0, title: 'Portfolio', user: 'Kate Reid' }, title: 'The rent roll, one level up', status: 'Monday morning',
       note: 'Your property platform holds the properties; this layer holds the judgement: arrears by age, leases about to lapse, and an owner report that reads like advice. Data out on a schedule, in your branding, in your accounts.' });
     var props = [['12 Elm St, Prospect', 'Kate', 620, 0, 240], ['4/88 Bay Rd, Glenelg', 'Kate', 540, 16, 61], ['31 Orchard Ave, Unley', 'Dev', 890, 3, 402], ['7 Mill Ct, Norwood', 'Dev', 710, 29, 18], ['2/15 Park Tce, Marion', 'Kate', 480, 0, 88], ['66 Grange Rd, Findon', 'Dev', 595, 44, 130]];
     var mgr = '', tbl = h('div'), tiles = h('div', { class: 'demo__grid', style: 'grid-template-columns:repeat(auto-fit,minmax(140px,1fr))' }), rep = h('div');
@@ -304,7 +308,7 @@
       var rows = props.filter(function (p) { return !mgr || p[1] === mgr; });
       var arr14 = rows.filter(function (p) { return p[3] >= 14 && p[3] < 28; }).length, arr28 = rows.filter(function (p) { return p[3] >= 28; }).length, exp = rows.filter(function (p) { return p[4] <= 90; }).length;
       tiles.innerHTML = '';
-      [['Properties', rows.length], ['Arrears 14-28d', arr14, arr14 ? 'warn' : ''], ['Arrears 28d+', arr28, arr28 ? 'bad' : ''], ['Leases ending <90d', exp, exp ? 'warn' : '']].forEach(function (t) { tiles.appendChild(h('div', { class: 'demo__panel' }, h('div', { class: 'demo__big', style: t[2] === 'bad' ? 'color:oklch(0.5 0.16 30)' : t[2] === 'warn' ? 'color:var(--amber-deep)' : '' }, String(t[1])), h('div', { class: 'dim', style: 'font-size:0.82rem' }, t[0]))); });
+      [['Properties', rows.length], ['Arrears 14-28d', arr14, arr14 ? 'warn' : ''], ['Arrears 28d+', arr28, arr28 ? 'bad' : ''], ['Leases ending <90d', exp, exp ? 'warn' : '']].forEach(function (t) { tiles.appendChild(h('div', { class: 'demo__panel' }, h('div', { class: 'demo__big', style: t[2] === 'bad' ? 'color:#dc2626' : t[2] === 'warn' ? 'color:#d97706' : '' }, String(t[1])), h('div', { class: 'dim', style: 'font-size:0.82rem' }, t[0]))); });
       tbl.innerHTML = '';
       tbl.appendChild(D.table(['Property', 'Manager', 'Rent/wk', 'Arrears', 'Lease ends', ''], rows.map(function (p) {
         return h('tr', { class: p[3] >= 28 ? 'is-bad' : p[3] >= 14 || p[4] <= 90 ? 'is-warn' : '' }, h('td', {}, p[0]), h('td', {}, p[1]), h('td', { class: 'num' }, money(p[2])), h('td', {}, p[3] ? h('span', { class: 'demo__pill demo__pill--' + (p[3] >= 28 ? 'bad' : 'warn') }, p[3] + ' days') : h('span', { class: 'demo__pill demo__pill--ok' }, 'current')), h('td', {}, p[4] + ' days' + (p[4] <= 90 ? ' ⚠' : '')), h('td', {}, D.btn('Owner report', function () { report(p); }, 'demo__btn--small demo__btn--ghost')));
@@ -325,7 +329,7 @@
 
   /* ---------------- AGRICULTURE: spray windows and the compliance record ---------------- */
   D.register('agri-spray', function () {
-    var f = D.frame({ title: 'Spray window finder and the record it writes', status: 'pick a paddock',
+    var f = D.frame({ kind: 'app', app: { name: 'Paddock', mark: 'P', accent: '#4D7C0F', side: '#1A2E05', nav: [['Spray planner', 'cal'], ['Paddocks', 'map'], ['Records', 'doc'], ['Weather', 'chart'], ['Settings', 'cog']], active: 0, title: 'Spray planner · this week', user: 'B. Costa' }, title: 'Spray window finder and the record it writes', status: 'pick a paddock',
       note: 'Forecast plus label rules plus your paddocks: the days you can legally and sensibly spray, the withholding date computed, and the compliance record written as you go. Same shape for harvest windows, irrigation and stock movements.' });
     var days = [['Mon', 12, 0, 24], ['Tue', 22, 0, 27], ['Wed', 8, 6, 19], ['Thu', 6, 0, 21], ['Fri', 18, 0, 29], ['Sat', 4, 0, 22], ['Sun', 9, 12, 17]];
     var paddocks = ['North 40 (wheat)', 'Creek (canola)', 'Back block (barley)'], chems = [['glyphosate', 7], ['fungicide X', 14], ['insecticide Y', 21]];
@@ -348,7 +352,7 @@
 
   /* ---------------- GOVERNMENT: assessment with an audit trail ---------------- */
   D.register('gov-assessment', function () {
-    var f = D.frame({ title: 'Application assessment, defensible by design', status: 'queue: 3 applications',
+    var f = D.frame({ kind: 'app', app: { name: 'Assess', mark: 'A', accent: '#1D4ED8', side: '#1F2937', nav: [['Queue', 'inbox'], ['Assessments', 'clip'], ['Decisions', 'check'], ['Audit trail', 'list'], ['Reports', 'chart']], active: 1, title: 'Assessment', user: 'A. Steele' }, title: 'Application assessment, defensible by design', status: 'queue: 3 applications',
       note: 'The shape of every eligibility, grant and approval workflow I have built inside government: criteria you can point to, a recommendation with reasons, and an audit trail that survives an FOI request. Accessible, boring, correct.' });
     var apps = [['APP-3041', 'Hargreaves Cafe', 'Shopfront activation grant'], ['APP-3042', 'Marion Netball Club', 'Community facilities'], ['APP-3043', 'Okafor Group', 'Shopfront activation grant']];
     var criteria = [['Eligible entity (ABN, in LGA)', 'gate'], ['Application complete', 'gate'], ['Community benefit evidenced', 3], ['Value for money', 3], ['Capability to deliver', 2]];
@@ -383,10 +387,13 @@
 
   /* ---------------- EDUCATION: enrolment that validates at the door ---------------- */
   D.register('edu-enrolment', function () {
-    var f = D.frame({ title: 'Enrolment form that refuses bad AVETMISS data', status: 'try to enrol',
+    var f = D.frame({ kind: 'browser', browser: { url: 'adelaideskills.edu.au', path: '/enrol/CPC30220' }, accent: '#B91C1C', title: 'Enrolment form that refuses bad AVETMISS data', status: 'try to enrol',
       note: 'Every error caught here is one that does not appear in the reporting week. The same checks run weekly against the student system so the deadline finds a clean file. Whatever student system you run, the point of entry is the point.' });
     var v = { name: 'Priya Nair', usi: 'AB12CD34E', pc: '50', fund: '', course: 'CPC30220 · Feb intake' };
     var errs = h('ul', { style: 'margin:0; padding-left:1.1em; font-size:0.88rem; display:grid; gap:4px' }), ok = h('div');
+    f.device.body.insertBefore(h('div', { style: 'font-family:Inter,system-ui,sans-serif' },
+      h('div', { style: 'display:flex; justify-content:space-between; align-items:center; padding:12px 22px; background:#B91C1C; color:#fff' }, h('b', { style: 'font-size:16px; letter-spacing:-0.01em' }, 'Adelaide Skills Institute'), h('span', { style: 'font-size:12px; opacity:0.9' }, 'RTO 40000 · Courses · Enrol · Student portal')),
+      h('div', { style: 'padding:20px 22px 0' }, h('div', { style: 'font-size:11px; letter-spacing:0.1em; text-transform:uppercase; color:#B91C1C; font-weight:600' }, 'Step 2 of 3'), h('h1', { style: 'font-size:24px; margin:4px 0 2px; letter-spacing:-0.01em' }, 'Your details'), h('p', { style: 'margin:0; font-size:13px; color:#6B7280' }, 'We check these as you type so your enrolment is not bounced later.'))), f.body);
     function validate() {
       var e = [];
       if (!/^[A-Z0-9]{10}$/i.test(v.usi)) e.push('USI must be 10 characters (letters and digits). Yours has ' + v.usi.length + '.');
