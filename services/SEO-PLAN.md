@@ -86,7 +86,10 @@ meaningfully; never fake freshness with a date change.
 Rain Check and Doorknock already exist; the pricing calculator is one. One
 or two new free tools a year (a redirect-map generator, an AVETMISS
 validator, a chargeable-weight calculator) each earn links for years.
-Build them when a client problem hands you one.
+Build them when a client problem hands you one. The DIY kits
+(PRODUCTS-PLAN.md) are the paid cousins of this type: the "don't hire me"
+framing is itself linkable, and every kit page gives the cost-question
+answers pages a second honest place to send people.
 
 ## 4. When: the cadence
 

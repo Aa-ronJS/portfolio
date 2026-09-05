@@ -87,6 +87,31 @@ portfolio of that specific pair. Where a page states product behaviour
 before launch against what you currently know; products drift, and these
 pages carry a knowledge date like any expert would.
 
+## The DIY kits
+
+`/diy/` is the product line: written kits sold under the site's own
+honest banner, "don't hire me, here's how to build it yourself".
+PRODUCTS-PLAN.md is the doctrine (catalogue, pricing, red lines,
+sequence); the flagship Website Kit is fully written in
+`products/website-kit/` (six customer documents plus a packaging README)
+with its sales page at `/diy/website-kit/`. The standing promise printed
+everywhere: the kit price comes off the invoice if the buyer later hires
+you for the same job, and refunds are 30 days, no theatre.
+
+Launch steps for the kits, beyond the usual placeholders: create a
+merchant-of-record checkout (Lemon Squeezy or Paddle shaped), build and
+upload the kit files per `products/website-kit/README.md`, set the real
+price, then:
+
+```bash
+grep -rl 'REPLACE-CHECKOUT-URL' public | xargs sed -i 's|REPLACE-CHECKOUT-URL|https://your.checkout/link|g'
+```
+
+Until that runs, the buy buttons on `/diy/website-kit/` point at a dead
+placeholder on purpose; do not launch the page in the sitemap-visible
+site without either wiring checkout or swapping the buttons for a
+contact link.
+
 ## The pricing calculator
 
 `/pricing/` is the conversion engine: pick a service, answer two to four
