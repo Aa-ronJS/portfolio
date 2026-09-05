@@ -4,7 +4,8 @@ What to keep posting, how, and when, for the AI era of Google. This is
 doctrine for the site's content machine (`tools/gen_answers.py` and
 friends), written to be followed weekly, not admired. Sources: Google's own
 AI-content guidance and spam policies; the operational judgement is mine
-and yours.
+and yours. Everything off the domain (links, podcasts, partners, PR) lives
+in AUTHORITY-PLAN.md; the two plans share a calendar but not an hour.
 
 ---
 

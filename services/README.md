@@ -142,7 +142,11 @@ on request); it is linked from every footer and must be kept true. `og/`
 holds six generated share cards wired into every page's `og:image`, so
 links pasted into LinkedIn, Facebook or Slack render branded instead of
 bare. `OUTREACH.md` carries the marketplace bios, proposal templates, the
-one-follow-up email and the Google Business Profile draft.
+one-follow-up email and the Google Business Profile draft. `SEO-PLAN.md`
+is the on-domain content doctrine; `AUTHORITY-PLAN.md` is everything off
+the domain (links, platform partner directories, bookkeeper and agency
+channels, podcasts, reactive PR, the local Adelaide lane), with its own
+templates and weekly cadence.
 
 ## Images
 
