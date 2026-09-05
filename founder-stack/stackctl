@@ -8,6 +8,7 @@
 #   stackctl update [app...]
 #   stackctl backup
 #   stackctl restore <backup-dir>
+#   stackctl sso on|off
 set -euo pipefail
 
 ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
@@ -23,6 +24,7 @@ fail() { printf '\033[1;31mERROR:\033[0m %s\n' "$*" >&2; exit 1; }
 # app -> subdomain (also documented in README/docs)
 subdomain() {
   case "$1" in
+    homepage) echo home ;;      authentik) echo auth ;;
     calcom) echo cal ;;         invoiceninja) echo invoices ;;
     twenty) echo crm ;;         activepieces) echo automate ;;
     listmonk) echo newsletter ;; formbricks) echo forms ;;
@@ -157,8 +159,36 @@ case "$cmd" in
     log "second line of defense; volume restore alone brings databases back."
     ;;
 
+  sso)
+    # Apps whose SSO wiring reads SSO_ENABLED / DOCUMENSO_OIDC_WELL_KNOWN
+    sso_apps="vikunja mattermost documenso vaultwarden"
+    set_env() { sed -i "s|^$1=.*|$1=$2|" "$ENVFILE"; }
+    d="$(base_domain)"
+    case "${1:-}" in
+      on)
+        set_env SSO_ENABLED true
+        set_env DOCUMENSO_OIDC_WELL_KNOWN "https://auth.$d/application/o/documenso/.well-known/openid-configuration"
+        log "Starting Authentik (sign-on portal: https://auth.$d, user 'akadmin', ADMIN_PASSWORD from .env)"
+        compose authentik up -d
+        for a in $sso_apps; do
+          [ "$(running_count "$a")" -gt 0 ] && { log "Re-applying $a with SSO..."; compose "$a" up -d; }
+        done
+        log "SSO is on. Listmonk + Nextcloud need a one-time manual step: docs/SSO.md"
+        ;;
+      off)
+        set_env SSO_ENABLED false
+        set_env DOCUMENSO_OIDC_WELL_KNOWN ""
+        for a in $sso_apps; do
+          [ "$(running_count "$a")" -gt 0 ] && compose "$a" up -d
+        done
+        log "SSO is off (Authentik left running; stop it with: stackctl down authentik)"
+        ;;
+      *) fail "usage: stackctl sso on|off" ;;
+    esac
+    ;;
+
   ""|help|-h|--help)
-    sed -n '2,10p' "$0" | sed 's/^# \{0,1\}//'
+    sed -n '2,11p' "$0" | sed 's/^# \{0,1\}//'
     ;;
   *)
     fail "unknown command '$cmd' (try: stackctl help)"

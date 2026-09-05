@@ -1,0 +1,18 @@
+title: Founder Stack
+description: Your whole business, one server.
+theme: dark
+color: slate
+headerStyle: boxed
+hideVersion: true
+statusStyle: dot
+layout:
+  Customers:
+    columns: 4
+  Money:
+    columns: 4
+  Marketing:
+    columns: 4
+  Team:
+    columns: 4
+  Operations:
+    columns: 4

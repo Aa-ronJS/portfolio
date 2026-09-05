@@ -11,6 +11,9 @@ services:
       VIKUNJA_SERVICE_ENABLEREGISTRATION: "true"
       VIKUNJA_MAILER_ENABLED: "false"
       TZ: ${TZ}
+    configs:
+      - source: vikunja-config
+        target: /etc/vikunja/config.yml
     volumes:
       - files:/app/vikunja/files
       - db:/db
@@ -23,6 +26,22 @@ services:
       traefik.http.routers.vikunja.entrypoints: websecure
       traefik.http.routers.vikunja.tls.certresolver: le
       traefik.http.services.vikunja.loadbalancer.server.port: 3456
+
+# SSO (toggled by `stackctl sso on|off`, which flips SSO_ENABLED in .env).
+# Login with Authentik appears next to local login when enabled.
+configs:
+  vikunja-config:
+    content: |
+      auth:
+        local:
+          enabled: true
+        openid:
+          enabled: ${SSO_ENABLED}
+          providers:
+            - name: authentik
+              authurl: https://auth.${BASE_DOMAIN}/application/o/vikunja/
+              clientid: vikunja
+              clientsecret: ${VIKUNJA_OIDC_CLIENT_SECRET}
 
 volumes:
   files:

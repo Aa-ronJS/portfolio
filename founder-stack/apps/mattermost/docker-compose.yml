@@ -20,6 +20,15 @@ services:
       MM_SQLSETTINGS_DATASOURCE: postgres://mmuser:${MATTERMOST_DB_PASSWORD}@db:5432/mattermost?sslmode=disable&connect_timeout=10
       MM_SERVICESETTINGS_SITEURL: https://chat.${BASE_DOMAIN}
       TZ: ${TZ}
+      # SSO via Authentik using Mattermost's GitLab-compatible OAuth
+      # (the free edition's supported OIDC path; button reads "GitLab").
+      # Toggled by `stackctl sso on|off` (SSO_ENABLED in .env).
+      MM_GITLABSETTINGS_ENABLE: ${SSO_ENABLED}
+      MM_GITLABSETTINGS_ID: mattermost
+      MM_GITLABSETTINGS_SECRET: ${MATTERMOST_OIDC_CLIENT_SECRET}
+      MM_GITLABSETTINGS_AUTHENDPOINT: https://auth.${BASE_DOMAIN}/application/o/authorize/
+      MM_GITLABSETTINGS_TOKENENDPOINT: https://auth.${BASE_DOMAIN}/application/o/token/
+      MM_GITLABSETTINGS_USERAPIENDPOINT: https://auth.${BASE_DOMAIN}/application/o/userinfo/
     volumes:
       - config:/mattermost/config
       - data:/mattermost/data

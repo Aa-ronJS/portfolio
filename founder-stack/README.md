@@ -27,6 +27,17 @@ with HTTPS everywhere, in one command.
 
 Total replaced: **$700+/month**. Total cost: **one VPS (~$10–40/month)**.
 
+Plus two pieces that tie it together:
+
+- **The hub** — `home.yourdomain.com` (and the bare domain): one page with
+  every app as a tile, grouped by job (Customers / Money / Marketing /
+  Team / Operations), with a live running-status dot per app and server
+  CPU/RAM/disk at the top. Bookmark one URL, reach everything.
+- **Single sign-on** — `auth.yourdomain.com` (Authentik): one account for
+  your whole team across every SSO-capable app, auto-configured by
+  blueprint. Turn it on with `./stackctl sso on`. See
+  [docs/SSO.md](docs/SSO.md) for exactly which apps join automatically.
+
 ## Requirements
 
 - A Linux server (Ubuntu 22.04+/Debian 12+ recommended).
@@ -44,8 +55,10 @@ sudo ./install.sh          # installs Docker if needed, asks for your domain,
                            # generates every secret, starts the HTTPS proxy
 
 ./stackctl list            # see the catalog
+./stackctl up homepage     # the hub — bookmark https://home.yourdomain.com
 ./stackctl up calcom listmonk umami    # start what you want...
 ./stackctl up --all                    # ...or everything
+./stackctl sso on          # optional: one login for the stack (docs/SSO.md)
 ./stackctl status
 ```
 

@@ -8,6 +8,8 @@ open the URL creates the admin account** — do it immediately after
 
 | App | Subdomain | Admin account | RAM (approx) |
 |---|---|---|---|
+| homepage | `home.` + apex | None — it's the hub/launchpad (see docs/SSO.md) | ~150 MB |
+| authentik | `auth.` | **Pre-seeded**: `akadmin` / `ADMIN_PASSWORD` | ~1 GB (server+worker) |
 | calcom | `cal.` | First-visit setup (first signup becomes owner) | ~700 MB |
 | invoiceninja | `invoices.` | **Pre-seeded** (`IN_USER_EMAIL`/`IN_PASSWORD` from .env) | ~500 MB |
 | twenty | `crm.` | First-visit setup | ~1 GB (server+worker) |

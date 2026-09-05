@@ -1,0 +1,88 @@
+# Authentik — single sign-on for the whole stack -> https://auth.${BASE_DOMAIN}
+# One account for every SSO-capable app. Providers/apps are auto-created from
+# blueprints/founder-stack.yaml using the client secrets in .env.
+# Enable app logins with: ./stackctl sso on   (see docs/SSO.md)
+x-authentik-env: &authentik-env
+  AUTHENTIK_SECRET_KEY: ${AUTHENTIK_SECRET_KEY}
+  AUTHENTIK_REDIS__HOST: redis
+  AUTHENTIK_POSTGRESQL__HOST: db
+  AUTHENTIK_POSTGRESQL__USER: authentik
+  AUTHENTIK_POSTGRESQL__NAME: authentik
+  AUTHENTIK_POSTGRESQL__PASSWORD: ${AUTHENTIK_DB_PASSWORD}
+  AUTHENTIK_ERROR_REPORTING__ENABLED: "false"
+  AUTHENTIK_DISABLE_UPDATE_CHECK: "true"
+  # First-boot admin: log in as 'akadmin' with ADMIN_PASSWORD from .env
+  AUTHENTIK_BOOTSTRAP_PASSWORD: ${ADMIN_PASSWORD}
+  AUTHENTIK_BOOTSTRAP_EMAIL: ${ADMIN_EMAIL}
+  AUTHENTIK_EMAIL__HOST: ${SMTP_HOST}
+  AUTHENTIK_EMAIL__PORT: ${SMTP_PORT}
+  AUTHENTIK_EMAIL__USERNAME: ${SMTP_USER}
+  AUTHENTIK_EMAIL__PASSWORD: ${SMTP_PASSWORD}
+  AUTHENTIK_EMAIL__USE_TLS: "true"
+  AUTHENTIK_EMAIL__FROM: ${SMTP_FROM}
+  # Used by the blueprint to build redirect URLs + client secrets
+  BASE_DOMAIN: ${BASE_DOMAIN}
+  VIKUNJA_OIDC_CLIENT_SECRET: ${VIKUNJA_OIDC_CLIENT_SECRET}
+  MATTERMOST_OIDC_CLIENT_SECRET: ${MATTERMOST_OIDC_CLIENT_SECRET}
+  DOCUMENSO_OIDC_CLIENT_SECRET: ${DOCUMENSO_OIDC_CLIENT_SECRET}
+  VAULTWARDEN_OIDC_CLIENT_SECRET: ${VAULTWARDEN_OIDC_CLIENT_SECRET}
+  LISTMONK_OIDC_CLIENT_SECRET: ${LISTMONK_OIDC_CLIENT_SECRET}
+  NEXTCLOUD_OIDC_CLIENT_SECRET: ${NEXTCLOUD_OIDC_CLIENT_SECRET}
+
+services:
+  db:
+    image: postgres:16-alpine
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: authentik
+      POSTGRES_PASSWORD: ${AUTHENTIK_DB_PASSWORD}
+      POSTGRES_DB: authentik
+    volumes:
+      - db:/var/lib/postgresql/data
+
+  redis:
+    image: redis:7-alpine
+    restart: unless-stopped
+    volumes:
+      - redis:/data
+
+  server:
+    image: ghcr.io/goauthentik/server:2025.12.6
+    restart: unless-stopped
+    command: server
+    depends_on:
+      - db
+      - redis
+    environment: *authentik-env
+    volumes:
+      - media:/media
+    networks:
+      - default
+      - proxy
+    labels:
+      traefik.enable: "true"
+      traefik.http.routers.authentik.rule: Host(`auth.${BASE_DOMAIN}`)
+      traefik.http.routers.authentik.entrypoints: websecure
+      traefik.http.routers.authentik.tls.certresolver: le
+      traefik.http.services.authentik.loadbalancer.server.port: 9000
+
+  worker:
+    image: ghcr.io/goauthentik/server:2025.12.6
+    restart: unless-stopped
+    command: worker
+    depends_on:
+      - db
+      - redis
+    environment: *authentik-env
+    volumes:
+      - media:/media
+      - ./blueprints:/blueprints/custom:ro
+
+volumes:
+  db:
+  redis:
+  media:
+
+networks:
+  proxy:
+    external: true

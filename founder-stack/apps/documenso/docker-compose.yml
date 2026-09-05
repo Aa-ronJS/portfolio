@@ -27,6 +27,11 @@ services:
       NEXT_PRIVATE_DIRECT_DATABASE_URL: postgresql://documenso:${DOCUMENSO_DB_PASSWORD}@db:5432/documenso
       NEXT_PRIVATE_SIGNING_TRANSPORT: local
       NEXT_PRIVATE_SIGNING_LOCAL_FILE_PATH: /opt/documenso/cert.p12
+      # SSO via Authentik. DOCUMENSO_OIDC_WELL_KNOWN is set/cleared by
+      # `stackctl sso on|off`; empty means OIDC login is disabled.
+      NEXT_PRIVATE_OIDC_WELL_KNOWN: ${DOCUMENSO_OIDC_WELL_KNOWN:-}
+      NEXT_PRIVATE_OIDC_CLIENT_ID: documenso
+      NEXT_PRIVATE_OIDC_CLIENT_SECRET: ${DOCUMENSO_OIDC_CLIENT_SECRET}
       NEXT_PRIVATE_SMTP_TRANSPORT: smtp-auth
       NEXT_PRIVATE_SMTP_HOST: ${SMTP_HOST}
       NEXT_PRIVATE_SMTP_PORT: ${SMTP_PORT}

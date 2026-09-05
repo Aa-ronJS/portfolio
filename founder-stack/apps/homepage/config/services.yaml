@@ -1,0 +1,111 @@
+- Customers:
+    - CRM:
+        href: https://crm.{{HOMEPAGE_VAR_BASE_DOMAIN}}
+        description: Contacts & deals (Twenty)
+        icon: mdi-account-heart
+        server: local
+        container: fs-twenty-server-1
+    - Support:
+        href: https://support.{{HOMEPAGE_VAR_BASE_DOMAIN}}
+        description: Helpdesk & live chat (Chatwoot)
+        icon: mdi-face-agent
+        server: local
+        container: fs-chatwoot-rails-1
+    - Scheduling:
+        href: https://cal.{{HOMEPAGE_VAR_BASE_DOMAIN}}
+        description: Booking links (Cal.com)
+        icon: mdi-calendar-clock
+        server: local
+        container: fs-calcom-app-1
+    - Forms:
+        href: https://forms.{{HOMEPAGE_VAR_BASE_DOMAIN}}
+        description: Surveys & intake forms (Formbricks)
+        icon: mdi-form-select
+        server: local
+        container: fs-formbricks-app-1
+
+- Money:
+    - Invoices:
+        href: https://invoices.{{HOMEPAGE_VAR_BASE_DOMAIN}}
+        description: Invoicing & payments (Invoice Ninja)
+        icon: mdi-file-document-outline
+        server: local
+        container: fs-invoiceninja-app-1
+    - Signatures:
+        href: https://sign.{{HOMEPAGE_VAR_BASE_DOMAIN}}
+        description: Contracts & e-signing (Documenso)
+        icon: mdi-draw-pen
+        server: local
+        container: fs-documenso-app-1
+
+- Marketing:
+    - Newsletter:
+        href: https://newsletter.{{HOMEPAGE_VAR_BASE_DOMAIN}}
+        description: Email campaigns (Listmonk)
+        icon: mdi-email-newsletter
+        server: local
+        container: fs-listmonk-app-1
+    - Blog:
+        href: https://blog.{{HOMEPAGE_VAR_BASE_DOMAIN}}
+        description: Site & paid newsletter (Ghost)
+        icon: mdi-post-outline
+        server: local
+        container: fs-ghost-app-1
+    - Analytics:
+        href: https://analytics.{{HOMEPAGE_VAR_BASE_DOMAIN}}
+        description: Web analytics (Umami)
+        icon: mdi-chart-areaspline
+        server: local
+        container: fs-umami-app-1
+
+- Team:
+    - Chat:
+        href: https://chat.{{HOMEPAGE_VAR_BASE_DOMAIN}}
+        description: Team messaging (Mattermost)
+        icon: mdi-chat
+        server: local
+        container: fs-mattermost-app-1
+    - Tasks:
+        href: https://tasks.{{HOMEPAGE_VAR_BASE_DOMAIN}}
+        description: Projects & to-dos (Vikunja)
+        icon: mdi-check-circle-outline
+        server: local
+        container: fs-vikunja-app-1
+    - Docs:
+        href: https://docs.{{HOMEPAGE_VAR_BASE_DOMAIN}}
+        description: Wiki & documents (Docmost)
+        icon: mdi-book-open-page-variant
+        server: local
+        container: fs-docmost-app-1
+    - Files:
+        href: https://files.{{HOMEPAGE_VAR_BASE_DOMAIN}}
+        description: Storage & sync (Nextcloud)
+        icon: mdi-folder-multiple
+        server: local
+        container: fs-nextcloud-app-1
+
+- Operations:
+    - Automations:
+        href: https://automate.{{HOMEPAGE_VAR_BASE_DOMAIN}}
+        description: Workflows & integrations (Activepieces)
+        icon: mdi-robot
+        server: local
+        container: fs-activepieces-app-1
+    - Passwords:
+        href: https://vault.{{HOMEPAGE_VAR_BASE_DOMAIN}}
+        description: Password manager (Vaultwarden)
+        icon: mdi-shield-key
+        server: local
+        container: fs-vaultwarden-app-1
+    - Status:
+        href: https://status.{{HOMEPAGE_VAR_BASE_DOMAIN}}
+        description: Uptime monitoring (Uptime Kuma)
+        icon: mdi-heart-pulse
+        server: local
+        container: fs-uptime-kuma-app-1
+    - Sign-on:
+        href: https://auth.{{HOMEPAGE_VAR_BASE_DOMAIN}}
+        description: Single sign-on (Authentik)
+        icon: mdi-fingerprint
+        server: local
+        container: fs-authentik-server-1
