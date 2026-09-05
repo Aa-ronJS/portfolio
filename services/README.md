@@ -18,6 +18,7 @@ problems below, and the positioning is what converts them once they land.
 | `/` | freelance web developer adelaide, full stack developer australia |
 | `/ai-development/` | ai developer, ai automation consultant, build an app with ai, ai agents for business, chatbot |
 | `/ecommerce/` | shopify developer, woocommerce developer, store slow, shopify xero integration |
+| `/mobile-apps/` | app developer for business, build an app australia, app cost, turn website into app |
 | `/data-and-reporting/` | dashboard developer, excel automation, data cleanup, numbers don't match |
 | `/business-analysis/` | contract business analyst, fractional cto, process improvement consultant, review vendor proposal |
 | `/wordpress/` | wordpress developer, wordpress site slow / hacked / rebuild |
@@ -82,6 +83,10 @@ problems below, and the positioning is what converts them once they land.
 - The evidence figures ($3.8m, 37,729, 52 checks, the live tools) are the
   real ones from the portfolio, linked to it. Keep them in sync if the
   portfolio changes.
+- The mobile page commits to cross-platform (React Native on the same
+  TypeScript base as the web work) and to the "do you even need an app"
+  advice angle; it deliberately does not claim native Swift/Kotlin work or
+  shipped store apps. Same test as everywhere: defendable on a call.
 - The e-commerce page is written the same capability-forward way as the
   WordPress one: it claims an approach (both platforms, integration-first,
   reconciled numbers) and no store portfolio. If your Shopify or WooCommerce
