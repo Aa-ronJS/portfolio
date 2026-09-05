@@ -3,6 +3,12 @@
 Source of https://aaronsteele.vercel.app. One HTML file, five photographs, three
 self-hosted fonts, no build step and no dependencies.
 
+Also home to **[Linehaul](linehaul/)**, a working logistics platform reference
+build (.NET 9 minimal APIs with Dapper and raw T-SQL, Next.js/TypeScript,
+Azure as Bicep) with its case study at
+https://aaronsteele.vercel.app/linehaul. The main page's rules do not all
+apply in there; its own README does.
+
 `PREFLIGHT.md` holds the design pre-flight it was built against, answered in
 writing before any markup, including the deviations from the house playbook and
 the three defects found by looking at the rendered page rather than the markup.

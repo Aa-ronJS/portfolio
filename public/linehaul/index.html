@@ -1,0 +1,513 @@
+<!doctype html>
+<html lang="en-AU">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Linehaul, a reference build. Aaron Steele</title>
+<meta name="description" content="A working logistics platform slice built to demonstrate one stack end to end: .NET 9 minimal APIs with Dapper and raw T-SQL, Next.js and TypeScript, Azure. Every claim on the page is verified in the repository.">
+<meta name="theme-color" content="#12181f">
+<link rel="preload" as="font" type="font/woff2" href="/fonts/clash-display-var.woff2" crossorigin>
+<link rel="preload" as="font" type="font/woff2" href="/fonts/satoshi-var.woff2" crossorigin>
+
+<style>
+/* ===========================================================================
+   Same design system as the main page (see /PREFLIGHT.md in the repo): one
+   amber, Clash over Satoshi, zero radius, dark-first with bone rest acts.
+   This page's register shifts one notch toward the document: it is a case
+   study with evidence, so it earns code blocks and a requirements table the
+   shop front would never carry. Its imagery is screenshots of the running
+   app, because that is the only photography that would be honest here.
+   =========================================================================== */
+
+@font-face{font-family:'Clash';src:url('/fonts/clash-display-var.woff2') format('woff2-variations');font-weight:200 700;font-style:normal;font-display:swap}
+@font-face{font-family:'Satoshi';src:url('/fonts/satoshi-var.woff2') format('woff2-variations');font-weight:300 900;font-style:normal;font-display:swap}
+@font-face{font-family:'Mono';src:url('/fonts/ibm-plex-mono-400.woff2') format('woff2');font-weight:400;font-style:normal;font-display:swap}
+@font-face{font-family:'Mono';src:url('/fonts/ibm-plex-mono-500.woff2') format('woff2');font-weight:500;font-style:normal;font-display:swap}
+@font-face{font-family:'Clash Fallback';src:local('Segoe UI Semibold'),local('Helvetica Neue'),local('Arial');size-adjust:94%;ascent-override:96%;descent-override:22%;line-gap-override:0%}
+@font-face{font-family:'Satoshi Fallback';src:local('Segoe UI'),local('Helvetica Neue'),local('Arial');size-adjust:99%;ascent-override:97%;descent-override:24%;line-gap-override:0%}
+
+:root{
+  --brand-h:58; --brand-c:0.155;
+  --ink:oklch(0.158 0.019 252); --ink-2:oklch(0.205 0.021 252); --ink-line:oklch(0.330 0.020 252);
+  --bone:oklch(0.958 0.008 84); --bone-line:oklch(0.855 0.014 84);
+  --amber:oklch(0.760 var(--brand-c) var(--brand-h));
+  --amber-deep:oklch(0.590 0.140 calc(var(--brand-h) - 12));
+  --amber-soft:oklch(0.860 0.090 var(--brand-h));
+  --on-ink:oklch(0.968 0.006 84); --on-ink-dim:oklch(0.800 0.012 84); --on-ink-mute:oklch(0.645 0.014 252);
+  --on-bone:oklch(0.205 0.018 252); --on-bone-dim:oklch(0.420 0.016 252); --on-bone-mute:oklch(0.545 0.014 252);
+  --fg:var(--on-ink); --fg-dim:var(--on-ink-dim); --fg-mute:var(--on-ink-mute);
+  --line:var(--ink-line); --accent:var(--amber);
+  --display:'Clash','Clash Fallback',sans-serif;
+  --body:'Satoshi','Satoshi Fallback',system-ui,sans-serif;
+  --mono:'Mono',ui-monospace,Consolas,monospace;
+  --t--1:clamp(0.80rem,0.78rem + 0.10vw,0.875rem);
+  --t-0:clamp(1.06rem,1.00rem + 0.30vw,1.25rem);
+  --t-1:clamp(1.22rem,1.10rem + 0.55vw,1.60rem);
+  --t-2:clamp(1.62rem,1.35rem + 1.30vw,2.75rem);
+  --t-4:clamp(2.60rem,1.70rem + 4.40vw,6.40rem);
+  --t-5:clamp(2.30rem,1.45rem + 4.00vw,5.40rem);
+  --s2:8px; --s3:12px; --s4:16px; --s5:24px; --s6:32px; --s7:48px; --s8:64px; --s9:96px; --s10:128px;
+  --act:clamp(96px,15vh,190px); --gut:clamp(20px,5vw,80px); --r:0px;
+  --ease:cubic-bezier(0.22,1,0.36,1); --ease-out:cubic-bezier(0.16,1,0.3,1);
+}
+
+*,*::before,*::after{box-sizing:border-box}
+html{-webkit-text-size-adjust:100%}
+html:focus-within{scroll-behavior:smooth}
+body{
+  margin:0; background:var(--ink); color:var(--fg);
+  font-family:var(--body); font-size:var(--t-0); line-height:1.55; font-weight:400;
+  -webkit-font-smoothing:antialiased; overflow-x:hidden; accent-color:var(--amber);
+}
+::selection{background:var(--amber); color:oklch(0.16 0.02 252)}
+img{max-width:100%; display:block}
+h1,h2,h3{font-family:var(--display); font-weight:600; margin:0; line-height:0.96; letter-spacing:-0.026em; text-wrap:balance}
+h1{font-size:var(--t-5)}
+h2{font-size:var(--t-4)}
+h3{font-size:var(--t-2); line-height:0.98}
+p{margin:0 0 1em; text-wrap:pretty}
+p:last-child{margin-bottom:0}
+a{color:inherit}
+:focus-visible{outline:2px solid var(--amber); outline-offset:4px}
+
+.tag{font-family:var(--mono); font-size:0.6875rem; font-weight:500; letter-spacing:0.14em; text-transform:uppercase; color:var(--accent); margin:0}
+.wrap{max-width:1500px; margin-inline:auto; padding-inline:var(--gut)}
+.measure{max-inline-size:22ch}
+.measure-wide{max-inline-size:52ch}
+
+.act{position:relative; padding-block:var(--act)}
+.act--bone{
+  background:var(--bone); color:var(--on-bone);
+  --fg:var(--on-bone); --fg-dim:var(--on-bone-dim); --fg-mute:var(--on-bone-mute);
+  --line:var(--bone-line); --accent:var(--amber-deep);
+}
+.act--deep{background:var(--ink); overflow:clip; isolation:isolate}
+.act--deep::before{
+  content:''; position:absolute; inset:0; z-index:-1; pointer-events:none;
+  background:radial-gradient(120% 85% at 78% 18%, oklch(0.76 0.155 58 / 0.10), transparent 62%);
+}
+
+.crumb{
+  display:inline-flex; align-items:center; gap:0.5em; min-height:32px;
+  font-family:var(--mono); font-size:var(--t--1); text-decoration:none; color:var(--fg-dim);
+}
+.crumb:hover{color:var(--accent)}
+
+.lede{font-size:var(--t-1); line-height:1.44; color:var(--fg-dim); max-inline-size:46ch}
+.lede b{color:var(--fg); font-weight:600}
+
+.chips{display:flex; flex-wrap:wrap; gap:var(--s2); margin:var(--s6) 0 0; padding:0; list-style:none}
+.chips li{font-family:var(--mono); font-size:0.6875rem; letter-spacing:0.06em; padding:7px 11px; border:1px solid var(--line); color:var(--fg-dim)}
+
+.btn{
+  display:inline-flex; align-items:center; gap:0.6em; min-height:54px;
+  padding:0 var(--s6); border-radius:var(--r); text-decoration:none;
+  font-weight:700; font-size:var(--t--1); letter-spacing:0.06em; text-transform:uppercase;
+  background:var(--amber); color:oklch(0.16 0.02 252); border:1px solid var(--amber);
+  transition:background 200ms var(--ease), border-color 200ms var(--ease), transform 140ms var(--ease);
+}
+.btn:hover{background:var(--amber-soft); border-color:var(--amber-soft)}
+.btn:active{transform:scale(0.975)}
+.btn--ghost{background:transparent; color:var(--on-ink); border-color:oklch(1 0 0 / 0.32)}
+.btn--ghost:hover{background:oklch(1 0 0 / 0.09); border-color:var(--on-ink)}
+.btn__arrow{transition:transform 220ms var(--ease)}
+.btn:hover .btn__arrow{transform:translateX(5px)}
+
+.link{
+  display:inline-flex; align-items:center; gap:0.5em; min-height:32px;
+  font-family:var(--mono); font-size:var(--t--1); text-decoration:none; color:var(--fg);
+  box-shadow:inset 0 -1px 0 0 color-mix(in oklch, var(--accent) 55%, transparent);
+  transition:color 180ms var(--ease), box-shadow 180ms var(--ease);
+}
+.link:hover{color:var(--accent); box-shadow:inset 0 -1px 0 0 var(--accent)}
+.links{display:flex; flex-wrap:wrap; gap:var(--s3) var(--s6); align-items:center}
+
+/* Requirement rows: their advertisement on the left, this build on the right. */
+.map{margin-top:var(--s9); border-top:1px solid var(--line)}
+.map__row{display:grid; gap:var(--s2) var(--s6); padding-block:var(--s5); border-bottom:1px solid var(--line); align-items:baseline}
+@media (min-width:50rem){.map__row{grid-template-columns:minmax(0,20rem) 1fr}}
+.map__row > *{min-width:0}
+.map__ask{font-family:var(--display); font-weight:500; font-size:var(--t-1); letter-spacing:-0.022em; line-height:1.12}
+.map__got{color:var(--fg-dim); font-size:var(--t-0); line-height:1.55}
+.map__got b{color:var(--fg); font-weight:600}
+.map__got code{font-family:var(--mono); font-size:0.85em; color:var(--fg)}
+
+/* Screenshots: real renders of the running app, framed like the prints on the
+   main page. */
+.shots{display:grid; gap:var(--s7); margin-top:var(--s9)}
+@media (min-width:62rem){.shots{grid-template-columns:repeat(2,minmax(0,1fr)); gap:var(--s7)}}
+.shot{margin:0; min-width:0}
+.shot__frame{
+  border:1px solid var(--line); background:var(--ink-2); overflow:hidden;
+  box-shadow:0.3px 0.6px 0.8px oklch(0.09 0.02 252 / 0.35), 2.1px 4.2px 5.3px oklch(0.09 0.02 252 / 0.35),
+             8px 16px 22px oklch(0.09 0.02 252 / 0.35), 24px 48px 64px oklch(0.09 0.02 252 / 0.35);
+}
+.shot__frame img{width:100%; height:auto}
+.shot figcaption{
+  margin-top:var(--s4); font-family:var(--mono); font-size:var(--t--1);
+  color:var(--fg-mute); line-height:1.5;
+}
+.shot figcaption b{color:var(--fg-dim); font-weight:500}
+
+.figures{display:grid; gap:var(--s7) var(--s6); margin-top:var(--s9); grid-template-columns:repeat(auto-fit,minmax(170px,1fr))}
+.figures > *{min-width:0}
+.fig__n{
+  font-family:var(--display); font-weight:600; font-size:var(--t-2);
+  line-height:0.88; letter-spacing:-0.045em; font-variant-numeric:tabular-nums;
+  display:block; color:var(--accent);
+}
+.fig__k{display:block; margin-top:var(--s4); color:var(--fg-dim); font-size:var(--t--1); line-height:1.5; max-inline-size:26ch}
+
+/* Code: the point of the page, so it gets the full width it needs and no more. */
+.code{margin:var(--s7) 0 0; border:1px solid var(--line)}
+.code__head{
+  display:flex; justify-content:space-between; gap:var(--s4); align-items:baseline;
+  padding:var(--s3) var(--s5); border-bottom:1px solid var(--line);
+  font-family:var(--mono); font-size:0.6875rem; letter-spacing:0.1em; text-transform:uppercase; color:var(--fg-mute);
+}
+.code__head b{color:var(--accent); font-weight:500}
+.code pre{
+  margin:0; padding:var(--s5); overflow-x:auto;
+  font-family:var(--mono); font-size:clamp(0.72rem,0.68rem + 0.22vw,0.85rem); line-height:1.65;
+  color:var(--fg-dim); tab-size:4;
+}
+.code .k{color:var(--accent)}
+.code .c{color:var(--fg-mute)}
+
+.finds{display:grid; gap:var(--s6); margin-top:var(--s9); padding:0; list-style:none}
+@media (min-width:54rem){.finds{grid-template-columns:repeat(2,minmax(0,1fr)); gap:var(--s7) var(--s9)}}
+.finds li{border-top:1px solid var(--line); padding-top:var(--s5); min-width:0}
+.finds h4{font-family:var(--display); font-weight:500; font-size:var(--t-1); line-height:1.1; letter-spacing:-0.022em; margin:0 0 var(--s3)}
+.finds p{color:var(--fg-dim); font-size:var(--t--1); line-height:1.65; margin:0}
+.finds code{font-family:var(--mono); font-size:0.85em}
+
+.checks{margin:var(--s9) 0 0; padding:0; list-style:none; display:grid; gap:var(--s5)}
+.checks > li{min-width:0; padding-left:var(--s6); position:relative; color:var(--fg-dim); line-height:1.6; max-inline-size:56ch}
+.checks > li::before{content:''; position:absolute; left:0; top:0.62em; width:14px; height:1px; background:var(--accent)}
+.checks b{color:var(--fg); font-weight:600}
+
+.rule{height:1px; background:var(--accent); border:0; margin:0}
+.eyebrow{display:flex; align-items:center; gap:var(--s4); margin-bottom:var(--s5)}
+.eyebrow .rule{flex:1; max-width:150px}
+
+.foot{padding-block:var(--s10) var(--s8)}
+.foot__grid{display:flex; flex-wrap:wrap; gap:var(--s6) var(--s9); justify-content:space-between; align-items:flex-end; margin-top:var(--s9); padding-top:var(--s6); border-top:1px solid var(--ink-line)}
+.foot__note{color:var(--on-ink-mute); font-size:var(--t--1); max-inline-size:44ch; line-height:1.6}
+
+@media (prefers-reduced-motion: no-preference){
+  .rise{opacity:0; transform:translate3d(0,28px,0)}
+  .rise.in{opacity:1; transform:none; transition:opacity 640ms var(--ease-out) var(--d,0ms), transform 640ms var(--ease-out) var(--d,0ms)}
+  .wipe{transform:scaleX(0); transform-origin:left}
+  .wipe.in{transform:scaleX(1); transition:transform 900ms var(--ease-out) var(--d,0ms)}
+}
+@media (prefers-reduced-motion: reduce){
+  *,*::before,*::after{animation-duration:1ms !important; animation-iteration-count:1 !important; transition-duration:1ms !important}
+  html:focus-within{scroll-behavior:auto}
+}
+</style>
+</head>
+<body>
+
+<!-- ============================ HERO ============================ -->
+<header class="act act--deep" style="padding-block:clamp(80px,12vh,150px) var(--act)">
+  <div class="wrap">
+    <a class="crumb rise" href="/">&larr; aaronsteele.vercel.app</a>
+    <p class="tag rise" style="margin-top:var(--s7)">Case study &middot; reference build</p>
+    <h1 class="rise" style="--d:80ms; margin-block:var(--s4) var(--s6)">Your stack, standing up<br>and switched on.</h1>
+    <p class="lede rise" style="--d:170ms">
+      Linehaul is a working slice of a logistics platform: consignments, rating, an event-logged
+      delivery lifecycle, an operations dashboard. It exists because a role asked for a precise
+      stack, and <b>a claim you can compile beats a list of keywords on a CV.</b> Every line is
+      public and every number on this page was measured, not asserted.
+    </p>
+    <ul class="chips rise" style="--d:230ms">
+      <li>.NET 9 minimal APIs</li><li>C#</li><li>Dapper</li><li>Raw T-SQL</li>
+      <li>Next.js</li><li>React</li><li>TypeScript</li>
+      <li>Azure App Service</li><li>Functions</li><li>SQL</li><li>Blob Storage</li><li>Bicep</li>
+    </ul>
+    <div class="rise" style="--d:290ms; margin-top:var(--s7); display:flex; flex-wrap:wrap; gap:var(--s4); align-items:center">
+      <a class="btn" href="https://github.com/Aa-ronJS/portfolio/tree/master/linehaul">Read the code <span class="btn__arrow" aria-hidden="true">&rarr;</span></a>
+      <a class="btn btn--ghost" href="#verified">What was verified</a>
+    </div>
+  </div>
+</header>
+
+<!-- ============================ THE BRIEF ============================ -->
+<section class="act act--bone">
+  <div class="wrap">
+    <p class="tag rise">The brief</p>
+    <h2 class="rise measure" style="--d:80ms">Built to an advertisement.</h2>
+    <p class="rise measure-wide" style="--d:150ms; margin-top:var(--s6); color:var(--fg-dim)">
+      A logistics business looking for one developer to own a whole codebase named its stack
+      precisely: .NET 9 minimal APIs with Dapper, comfortable writing raw SQL rather than leaning
+      on an ORM, Next.js and TypeScript in front, Azure underneath. Rather than tell them I could,
+      I built this, in the open, and wrote down what I decided and why.
+    </p>
+
+    <div class="map">
+      <div class="map__row rise">
+        <div class="map__ask">.NET 9 minimal APIs with Dapper</div>
+        <div class="map__got">Seven endpoints across consignments and the dashboard in <code>api/</code>:
+          paged listing, one-round-trip detail via <code>QueryMultiple</code>, transactional
+          booking, guarded status events, SAS-ticketed POD uploads, aggregate summaries.
+          <b>No ORM anywhere in the solution.</b></div>
+      </div>
+      <div class="map__row rise" style="--d:60ms">
+        <div class="map__ask">Comfortable writing raw SQL</div>
+        <div class="map__got">328 lines of T-SQL: hand-written migrations, an effective-dated rate
+          card model, a set-based demo data generator, CTEs, window functions,
+          <code>PERCENTILE_CONT</code>, a filtered index for the overdue sweep. Every statement is
+          parsed by SQL Server's own parser in CI, because <b>no ORM also means no ORM safety
+          net.</b></div>
+      </div>
+      <div class="map__row rise" style="--d:120ms">
+        <div class="map__ask">Next.js / React / TypeScript</div>
+        <div class="map__got">An App Router dashboard in <code>web/</code>, server components
+          fetching from the API, strict TypeScript with <code>noUncheckedIndexedAccess</code>, and
+          an honest demo mode that badges itself when no API is configured.</div>
+      </div>
+      <div class="map__row rise" style="--d:180ms">
+        <div class="map__ask">Azure: App Service, Functions, SQL, Blob Storage</div>
+        <div class="map__got">One Bicep file in <code>infra/</code> standing up all four plus
+          Application Insights, and a timer-triggered isolated-worker Function in
+          <code>functions/</code> that sweeps for consignments past their delivery window every
+          fifteen minutes.</div>
+      </div>
+      <div class="map__row rise" style="--d:240ms">
+        <div class="map__ask">One developer owning the whole codebase</div>
+        <div class="map__got">The repository is arranged for exactly that: migrations a person can
+          read in order, SQL beside the handler that runs it, decisions written down in the README,
+          CI that fails loudly, and nothing clever enough to need its author present.</div>
+      </div>
+      <div class="map__row rise" style="--d:300ms">
+        <div class="map__ask">Logistics and transport sector</div>
+        <div class="map__got">The domain is real road freight: chargeable weight at the standard
+          250 kg/m&sup3; cubic conversion, fuel levies, GST, depot lanes from Kewdale to
+          Kalgoorlie and Port Hedland. Eleven years as an analyst in mining and heavy industry is
+          where that fluency comes from.</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============================ THE BUILD ============================ -->
+<section class="act act--deep">
+  <div class="wrap">
+    <div class="eyebrow rise"><span class="tag">The build</span><hr class="rule wipe" style="--d:120ms"></div>
+    <h2 class="rise measure" style="--d:80ms">A thin slice of everything.</h2>
+    <p class="rise measure-wide" style="--d:150ms; margin-top:var(--s6); color:var(--fg-dim)">
+      Not a mock-up of one screen: a booking flow, a rating engine, a state machine, an event log,
+      a reporting layer and the infrastructure to run them, each kept small enough to read in a
+      sitting. These are screenshots of the running application.
+    </p>
+
+    <div class="shots">
+      <figure class="shot rise" style="--d:120ms">
+        <div class="shot__frame"><img src="/linehaul/img/dashboard.png" alt="The Linehaul operations dashboard: five summary tiles, a lane performance table with average and p90 transit hours, and a consignment list with status chips." width="1440" height="960" loading="lazy"></div>
+        <figcaption><b>Operations.</b> On-time percentage and overdue counts derived from the event
+        log, lane transit times with a p90 so one bad run cannot hide in an average.</figcaption>
+      </figure>
+      <figure class="shot rise" style="--d:200ms">
+        <div class="shot__frame"><img src="/linehaul/img/detail.png" alt="A consignment detail page: charges broken into freight, fuel levy and GST, the freight items, and a delivery history timeline from booking to proof of delivery." width="1440" height="960" loading="lazy"></div>
+        <figcaption><b>One consignment.</b> Charges that reconcile to the cent, and the full
+        journey as an append-only timeline, newest first.</figcaption>
+      </figure>
+    </div>
+
+    <div class="figures">
+      <div class="rise"><span class="fig__n" data-count="1364">0</span><span class="fig__k">lines of C# across the API, the Function and the tests</span></div>
+      <div class="rise" style="--d:90ms"><span class="fig__n" data-count="716">0</span><span class="fig__k">lines of TypeScript and TSX in the dashboard</span></div>
+      <div class="rise" style="--d:180ms"><span class="fig__n" data-count="328">0</span><span class="fig__k">lines of hand-written T-SQL in migrations and seed</span></div>
+      <div class="rise" style="--d:270ms"><span class="fig__n" data-count="52">0</span><span class="fig__k">checks in the test suite, all passing</span></div>
+    </div>
+  </div>
+</section>
+
+<!-- ============================ THE SQL ============================ -->
+<section class="act act--bone">
+  <div class="wrap">
+    <p class="tag rise">The SQL, in the open</p>
+    <h2 class="rise measure" style="--d:80ms">Nothing hides behind an ORM.</h2>
+    <p class="rise measure-wide" style="--d:150ms; margin-top:var(--s6); color:var(--fg-dim)">
+      The queries a product like this lives on are exactly the ones ORMs generate badly and hide
+      while doing it. Here every statement is a constant beside the handler that runs it, or a
+      numbered migration a person can read in order. Two of them, as they appear in the code:
+    </p>
+
+    <div class="code rise" style="--d:120ms">
+      <div class="code__head"><span><b>DashboardSql.LaneStats</b> &middot; api/Linehaul.Api/Data/DashboardSql.cs</span><span>T-SQL</span></div>
+      <pre>WITH legs AS (
+    SELECT o.Code AS OriginCode, d.Code AS DestinationCode,
+           DATEDIFF(MINUTE, pu.OccurredAtUtc, del.OccurredAtUtc) / 60.0 AS TransitHours
+    FROM dbo.Consignment AS c
+    JOIN dbo.Depot AS o ON o.Id = c.OriginDepotId
+    JOIN dbo.Depot AS d ON d.Id = c.DestinationDepotId
+    JOIN dbo.ConsignmentEvent AS pu
+        ON pu.ConsignmentId = c.Id AND pu.Status = @PickedUp
+    JOIN dbo.ConsignmentEvent AS del
+        ON del.ConsignmentId = c.Id AND del.Status = @Delivered
+    WHERE c.Status = @Delivered
+),
+ranked AS (
+    SELECT OriginCode, DestinationCode, TransitHours,
+           PERCENTILE_CONT(0.9) WITHIN GROUP (ORDER BY TransitHours)
+               OVER (PARTITION BY OriginCode, DestinationCode) AS P90
+    FROM legs
+)
+SELECT OriginCode, DestinationCode,
+       COUNT(*) AS DeliveredCount,
+       CAST(AVG(TransitHours) AS decimal(8, 1)) AS AvgTransitHours,
+       CAST(MAX(P90) AS decimal(8, 1)) AS P90TransitHours
+FROM ranked
+GROUP BY OriginCode, DestinationCode
+ORDER BY DeliveredCount DESC, OriginCode, DestinationCode;</pre>
+    </div>
+    <p class="rise measure-wide" style="--d:60ms; margin-top:var(--s5); color:var(--fg-dim); font-size:var(--t--1)">
+      Transit times per lane, measured from the event log rather than trusted from a column, with
+      a p90 because averages are where bad runs go to be forgiven.
+    </p>
+
+    <div class="code rise" style="--d:120ms">
+      <div class="code__head"><span><b>ConsignmentSql.TransitionStatus</b> &middot; the concurrency control</span><span>T-SQL</span></div>
+      <pre>UPDATE dbo.Consignment
+SET Status = @NewStatus, UpdatedAtUtc = SYSUTCDATETIME()
+WHERE Id = @Id AND Status = @ExpectedStatus;</pre>
+    </div>
+    <p class="rise measure-wide" style="--d:60ms; margin-top:var(--s5); color:var(--fg-dim); font-size:var(--t--1)">
+      A compare-and-swap. The state machine in C# refuses illegal transitions first; then this
+      predicate makes the write atomic, so two operators racing each other produce one clean 409
+      instead of a corrupt record. Zero rows affected means somebody else moved it, and the API
+      says so.
+    </p>
+
+    <ul class="finds">
+      <li class="rise">
+        <h4>The SQL is tested the way an ORM never needs</h4>
+        <p>The suite feeds every migration script and all thirteen embedded queries through
+           <code>Microsoft.SqlServer.TransactSql.ScriptDom</code>, the parser SQL Server's own
+           tooling uses: 18 parse checks. A typo in a query fails CI, not a customer request.</p>
+      </li>
+      <li class="rise" style="--d:90ms">
+        <h4>Dynamic filtering without dynamic danger</h4>
+        <p>The listing's WHERE clause is composed from a fixed whitelist of predicates; user input
+           only ever travels as parameters, with LIKE wildcards escaped. There is a test that
+           feeds it a SQL injection and shows the hostile text never reaches the statement.</p>
+      </li>
+      <li class="rise" style="--d:180ms">
+        <h4>Money behaves like an audit is coming</h4>
+        <p>Rate cards are effective-dated and never updated in place, charges are computed once at
+           booking and stored, and the freight, levy and GST components reconcile by construction.
+           There is a test that says so.</p>
+      </li>
+      <li class="rise" style="--d:270ms">
+        <h4>Files never pass through the API</h4>
+        <p>A proof-of-delivery photo gets a fifteen-minute SAS URL and goes straight from the
+           driver's phone to Blob Storage. The API records metadata only, so the App Service stays
+           small and stateless.</p>
+      </li>
+    </ul>
+  </div>
+</section>
+
+<!-- ============================ VERIFIED ============================ -->
+<section class="act act--deep" id="verified">
+  <div class="wrap">
+    <div class="eyebrow rise"><span class="tag">Verified</span><hr class="rule wipe" style="--d:120ms"></div>
+    <h2 class="rise measure" style="--d:80ms">Checked, and said plainly.</h2>
+    <p class="rise measure-wide" style="--d:150ms; margin-top:var(--s6); color:var(--fg-dim)">
+      The main page of this site argues that an AI coding agent is a delivery team that needs a
+      specification and an adversary. This build worked that way, and the same standard applies to
+      the claims on this page: here is what was actually verified, and what was not.
+    </p>
+
+    <ul class="checks">
+      <li class="rise"><b>The solution compiles with zero warnings.</b> Warnings are errors in
+        every project file, so it stays that way.</li>
+      <li class="rise" style="--d:60ms"><b>All 52 tests pass</b>: the rating arithmetic to the
+        cent, every legal and illegal status transition, the filter builder against hostile input,
+        and the full T-SQL parse of every query and migration in the repository.</li>
+      <li class="rise" style="--d:120ms"><b>The front end builds under strict TypeScript</b>,
+        including <code style="font-family:var(--mono); font-size:0.85em">noUncheckedIndexedAccess</code>,
+        which is the flag most codebases turn off first.</li>
+      <li class="rise" style="--d:180ms"><b>The screenshots are real renders</b> of the running
+        application, taken in a browser, and the first set was thrown away: the demo generator
+        marked old consignments as still moving, which made the overdue count read like a crisis.
+        The generator now ages statuses the way a live board would. Looking at the rendered thing
+        catches what reading the code does not.</li>
+      <li class="rise" style="--d:240ms"><b>Not done, and not claimed:</b> this repository has not
+        been deployed to a live Azure subscription and has not been load tested. The Bicep
+        describes the intended topology and is written to be deployed; nobody should read
+        "deployed and humming" into a repo that does not show it.</li>
+    </ul>
+  </div>
+</section>
+
+<!-- ============================ FOOT ============================ -->
+<footer class="act foot">
+  <div class="wrap">
+    <p class="tag rise">Where to from here</p>
+    <h2 class="rise measure" style="--d:80ms">Read it, run it,<br>or hand me yours.</h2>
+
+    <div class="links rise" style="--d:200ms; margin-top:var(--s7)">
+      <a class="link" href="https://github.com/Aa-ronJS/portfolio/tree/master/linehaul">The code <span aria-hidden="true">&rarr;</span></a>
+      <a class="link" href="https://github.com/Aa-ronJS/portfolio/tree/master/linehaul/db">The SQL <span aria-hidden="true">&rarr;</span></a>
+      <a class="link" href="https://github.com/Aa-ronJS/portfolio/blob/master/linehaul/README.md">The decision log <span aria-hidden="true">&rarr;</span></a>
+      <a class="link" href="/">The rest of my work <span aria-hidden="true">&rarr;</span></a>
+    </div>
+
+    <div class="foot__grid">
+      <p class="foot__note">
+        Built as a reference, in the open, by one person with the AI-assisted workflow described on
+        the main page: a written specification, an adversarial pass, and nothing claimed that was
+        not checked. The docker compose file will give you the whole thing locally, database and
+        all, in a few minutes.
+      </p>
+      <p class="foot__note">My details are on the application this link came with.</p>
+    </div>
+  </div>
+</footer>
+
+<script>
+(function () {
+  var reduced = matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+  var hero = document.querySelectorAll('header .rise, header .wipe');
+  var rest = document.querySelectorAll('section .rise, section .wipe, footer .rise, footer .wipe');
+
+  requestAnimationFrame(function () { hero.forEach(function (el) { el.classList.add('in'); }); });
+
+  if (reduced || !('IntersectionObserver' in window)) {
+    rest.forEach(function (el) { el.classList.add('in'); });
+  } else {
+    var io = new IntersectionObserver(function (entries) {
+      entries.forEach(function (e) {
+        if (e.isIntersecting) { e.target.classList.add('in'); io.unobserve(e.target); }
+      });
+    }, { rootMargin: '0px 0px -6% 0px', threshold: 0.05 });
+    rest.forEach(function (el) { io.observe(el); });
+  }
+
+  /* Count up. Real numbers only; the final value lives in the markup. */
+  var counters = document.querySelectorAll('[data-count]');
+  function land(el) { el.textContent = Number(el.dataset.count).toLocaleString('en-AU'); }
+  if (reduced || !('IntersectionObserver' in window)) {
+    counters.forEach(land);
+  } else {
+    var co = new IntersectionObserver(function (entries) {
+      entries.forEach(function (e) {
+        if (!e.isIntersecting) return;
+        co.unobserve(e.target);
+        var el = e.target, target = Number(el.dataset.count), t0 = performance.now();
+        (function step(now) {
+          var p = Math.min(1, (now - t0) / 1100);
+          el.textContent = Math.round(target * (1 - Math.pow(1 - p, 4))).toLocaleString('en-AU');
+          if (p < 1) requestAnimationFrame(step); else land(el);
+        })(t0);
+      });
+    }, { threshold: 0.5 });
+    counters.forEach(function (el) { co.observe(el); });
+  }
+})();
+</script>
+</body>
+</html>

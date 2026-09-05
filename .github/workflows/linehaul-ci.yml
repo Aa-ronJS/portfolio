@@ -1,0 +1,48 @@
+# CI for the Linehaul reference build. Build and test only; deployment to
+# Azure is documented in linehaul/infra/README.md and wired up per
+# environment, because a deploy step that cannot run without secrets is a
+# green tick that proves nothing.
+
+name: linehaul-ci
+
+on:
+  push:
+    branches: [master]
+    paths: ["linehaul/**", ".github/workflows/linehaul-ci.yml"]
+  pull_request:
+    paths: ["linehaul/**", ".github/workflows/linehaul-ci.yml"]
+
+jobs:
+  api:
+    name: API build and tests (.NET 9)
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: linehaul
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: "9.0.x"
+      - run: dotnet build Linehaul.sln --configuration Release
+      # Includes SqlSurfaceTests: every migration script and embedded query is
+      # parsed with Microsoft.SqlServer.TransactSql.ScriptDom, so malformed
+      # T-SQL fails right here.
+      - run: dotnet test Linehaul.sln --configuration Release --no-build
+
+  web:
+    name: Web build and typecheck (Next.js)
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: linehaul/web
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+          cache: npm
+          cache-dependency-path: linehaul/web/package-lock.json
+      - run: npm ci
+      - run: npm run typecheck
+      - run: npm run build
