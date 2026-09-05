@@ -763,10 +763,10 @@ def page_head(title, desc, path, jsonld):
 <meta property="og:image" content="https://REPLACE-DOMAIN/og/industries.png">
 <meta name="twitter:card" content="summary_large_image">
 <meta name="twitter:image" content="https://REPLACE-DOMAIN/og/industries.png">
-<meta name="theme-color" content="#12181f">
+<meta name="theme-color" content="#f8f6f1">
 {FAVICON}
-<link rel="preload" as="font" type="font/woff2" href="/fonts/clash-display-var.woff2" crossorigin>
-<link rel="preload" as="font" type="font/woff2" href="/fonts/satoshi-var.woff2" crossorigin>
+<link rel="preload" as="font" type="font/woff2" href="/fonts/newsreader-var.woff2" crossorigin>
+<link rel="preload" as="font" type="font/woff2" href="/fonts/newsreader-italic-var.woff2" crossorigin>
 <link rel="stylesheet" href="/css/site.css">
 <script type="application/ld+json">
 {jsonld}
