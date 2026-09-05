@@ -1,6 +1,6 @@
 title: Acme Studio
 description: Your whole business, one server.
-theme: dark
+theme: light
 color: slate
 headerStyle: boxed
 hideVersion: true

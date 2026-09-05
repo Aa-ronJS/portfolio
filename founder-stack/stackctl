@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 # stackctl — manage the Founder Stack.
-#   stackctl deploy             (one shot: everything up, bootstrapped, SSO on, branded)
+#   stackctl deploy [app...]    (one shot: up, bootstrapped, SSO on, branded — all apps or just these)
 #   stackctl list | status
 #   stackctl up <app...> | up --all
 #   stackctl down <app...> | down --all
@@ -301,17 +301,23 @@ case "$cmd" in
 
   deploy)
     # The one-click path. Idempotent: safe to re-run any time.
-    log "1/5 Starting every app for this server..."
-    "$0" up --all
+    # With no arguments: every app for this server. With names: just those
+    # (the hub and console always ride along — they're how you drive the rest).
+    if [ $# -gt 0 ]; then sel="homepage console $(resolve_apps "$@" | tr '\n' ' ')"; else sel="$(default_apps | tr '\n' ' ')"; fi
+    sel="$(printf '%s\n' $sel | awk '!seen[$0]++' | tr '\n' ' ')"
+    # running inside the console: leave the console itself alone (recreating it would cut this stream)
+    [ "${STACK_IN_CONSOLE:-0}" = 1 ] && sel="$(printf '%s\n' $sel | grep -vx console | tr '\n' ' ')"
+    log "1/5 Starting: $sel"
+    "$0" up $sel
     log "2/5 Waiting for apps to come up (first boot runs migrations; a few minutes)..."
-    for a in $(default_apps); do
+    for a in $sel; do
       [ "$(running_count "$a")" -gt 0 ] || continue
       if wait_ready "$a" 420; then printf '  ready   %s\n' "$a"; else printf '  slow    %s (still starting; will settle on its own)\n' "$a"; fi
     done
     log "3/5 First-run setup (workspaces, owners, installs) from your .env..."
     "$0" bootstrap
-    log "4/5 Turning on single sign-on..."
-    "$0" sso on
+    if [ "$(running_count authentik)" -gt 0 ]; then log "4/5 Turning on single sign-on..."; "$0" sso on
+    else log "4/5 Single sign-on skipped (authentik not selected)"; fi
     log "5/5 Applying your brand everywhere..."
     "$0" brand apply
     echo

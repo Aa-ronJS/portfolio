@@ -26,6 +26,7 @@ services:
       PG_DATABASE_URL: postgres://twenty:${TWENTY_DB_PASSWORD}@db:5432/default
       REDIS_URL: redis://redis:6379
       STORAGE_TYPE: local
+      IS_SIGN_UP_DISABLED: ${TWENTY_DISABLE_SIGNUP:-false}
     volumes:
       - server-data:/app/packages/twenty-server/.local-storage
     networks:

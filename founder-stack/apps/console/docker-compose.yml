@@ -9,6 +9,7 @@ services:
     restart: unless-stopped
     environment:
       STACK_ROOT: ${STACK_ROOT}
+      STACK_IN_CONSOLE: "1"   # tells stackctl deploy not to recreate the console from inside itself
     volumes:
       # the stack directory at the *same* path as on the host, so compose
       # bind-mounts (./config, ./blueprints, ...) resolve for the host daemon

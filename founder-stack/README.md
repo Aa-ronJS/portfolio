@@ -34,9 +34,12 @@ Plus two pieces that tie it together:
   Team / Operations), with a live running-status dot per app and server
   CPU/RAM/disk at the top. Bookmark one URL, reach everything.
 - **The console** — `console.yourdomain.com`: the hub's control panel.
-  Start/stop/update apps, add or remove teammates everywhere, turn SSO on,
-  run and restore backups, set SMTP and branding — from a browser, with
-  live command output. Everything `stackctl` does, no shell needed.
+  A conversational **Set up** wizard asks about your business and turns the
+  answers into a plan (which apps, sign-ups locked down, brand, email) that
+  deploys with one click. **Apps** is tick-the-boxes → **Deploy selected**,
+  with a Configure panel per app (quick switches plus every setting it
+  reads). People, Sign-on, Backups and Settings round it out. Everything
+  streams its output live; everything `stackctl` does, no shell needed.
 - **One brand** — set your business name, logo and accent colour once (in
   the console or `.env`) and `stackctl brand apply` pushes it into the hub,
   the console, and every app with a branding surface (Authentik, Nextcloud,

@@ -21,6 +21,7 @@ services:
       MM_SERVICESETTINGS_SITEURL: https://chat.${BASE_DOMAIN}
       # Lets `stackctl user add` manage accounts via mmctl --local
       MM_SERVICESETTINGS_ENABLELOCALMODE: "true"
+      MM_TEAMSETTINGS_ENABLEOPENSERVER: ${MATTERMOST_OPEN_SERVER:-false}
       TZ: ${TZ}
       # SSO via Authentik using Mattermost's GitLab-compatible OAuth
       # (the free edition's supported OIDC path; button reads "GitLab").

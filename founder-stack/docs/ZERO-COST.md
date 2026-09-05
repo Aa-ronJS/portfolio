@@ -89,9 +89,7 @@ ssh ubuntu@<server-ip>
 git clone https://github.com/Aa-ronJS/portfolio.git
 cd portfolio/founder-stack
 sudo ./install.sh          # domain: yourbiz.duckdns.org, SMTP from step 3
-./stackctl up --all
-./stackctl sso on
-./stackctl user add you@yourbiz.com
+                           # → answer "Y" to deploy everything, or open the console and use Set up
 ```
 
 `install.sh` detects the ARM server and `up --all` automatically picks the

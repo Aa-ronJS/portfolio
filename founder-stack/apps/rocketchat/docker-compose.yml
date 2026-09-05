@@ -32,6 +32,7 @@ services:
       ADMIN_PASS: ${ADMIN_PASSWORD}
       ADMIN_EMAIL: ${ADMIN_EMAIL}
       OVERWRITE_SETTING_Show_Setup_Wizard: completed
+      OVERWRITE_SETTING_Accounts_RegistrationForm: ${ROCKETCHAT_REGISTRATION:-Public}
     volumes:
       - uploads:/app/uploads
     networks:
