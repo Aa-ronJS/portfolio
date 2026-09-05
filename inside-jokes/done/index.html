@@ -49,16 +49,16 @@
 <script>
 (function () {
   var META_PIXEL = '';   /* same id as CONFIG.metaPixel on the maker page; fires Purchase when ?paid=1 */
-  var PRICE = 14;
+  var PRICE = 19;
   var s = null;
   if (location.hash.length > 1) s = Puzzle.decode(location.hash.slice(1));
-  if (!s) { try { s = JSON.parse(localStorage.getItem('dadsolved') || 'null'); } catch (e) {} }
+  if (!s) { try { s = JSON.parse(localStorage.getItem('insidejokes') || 'null'); } catch (e) {} }
   var entries = s && s.entries ? s.entries.filter(function (e) { return Puzzle.clean(e.answer).length >= 2 && e.clue; }) : [];
   if (entries.length < 2) { document.getElementById('empty').hidden = false; document.getElementById('barmsg').textContent = 'Nothing to print yet.'; return; }
 
   var xw = Puzzle.crossword(entries, s.seed || 1), ws = Puzzle.wordsearch(entries, s.seed || 1);
   var title = Puzzle.esc(s.title || 'A crossword about you'), from = s.from ? 'From ' + Puzzle.esc(s.from) : '';
-  var foot = '<footer><span>' + title + '</span><span>Made with Dad, Solved.</span></footer>';
+  var foot = '<footer><span>' + title + '</span><span>Made at Inside Jokes.</span></footer>';
   var words = entries.map(function (e) { return Puzzle.clean(e.answer); });
 
   document.getElementById('out').innerHTML =
@@ -71,7 +71,7 @@
     + Puzzle.renderWordsearch(ws, false)
     + '<ul class="wordlist">' + words.map(function (w) { return '<li>' + w + '</li>'; }).join('') + '</ul>'
     + foot + '</section>'
-    + '<section class="sheet"><p class="kicker">Answers</p><h1>For when he gives up.</h1><p class="from">Fold this page in half and hide it.</p>'
+    + '<section class="sheet"><p class="kicker">Answers</p><h1>For when they give up.</h1><p class="from">Fold this page in half and hide it.</p>'
     + '<div class="two"><div>' + Puzzle.renderCrossword(xw, 'solved') + '</div><div>' + Puzzle.renderWordsearch(ws, true) + '</div></div>'
     + foot + '</section>';
 

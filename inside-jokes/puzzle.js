@@ -1,4 +1,4 @@
-/* Dad, Solved. Puzzle generation shared by the maker page and the print page.
+/* Inside Jokes. Puzzle generation shared by the maker page and the print page.
    Deterministic for a given seed so the print matches the preview. */
 (function (global) {
   function rng(seed) {

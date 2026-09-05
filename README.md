@@ -3,10 +3,11 @@
 Source of https://aaronsteele.vercel.app. One HTML file, five photographs, three
 self-hosted fonts, no build step and no dependencies.
 
-`dad-solved/` is a separate, standalone product that happens to live in this
+`inside-jokes/` is a separate, standalone product that happens to live in this
 repository: a personalised crossword and word search generator sold as an
-instant printable gift. Deploy it as its own Vercel project from that folder.
-Its `LAUNCH.md` is the plan for selling it on the day it was built.
+instant printable gift for any occasion. Deploy it as its own Vercel project
+from that folder. Its `LAUNCH.md` is the always-on plan: day one, and the daily
+rule that decides whether the ads run again tomorrow.
 
 `PREFLIGHT.md` holds the design pre-flight it was built against, answered in
 writing before any markup, including the deviations from the house playbook and

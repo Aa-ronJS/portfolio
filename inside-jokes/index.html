@@ -3,10 +3,10 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Dad, Solved. A crossword about him, printable in two minutes</title>
-<meta name="description" content="Forgot Father's Day? Type ten things about your dad and get a personalised crossword and word search, with answers, ready to print in two minutes. $14 AUD.">
-<meta property="og:title" content="Dad, Solved. A crossword about him, printable in two minutes">
-<meta property="og:description" content="Ten clues about your dad become a crossword and a word search. Print at home or send the PDF. $14 AUD.">
+<title>Inside Jokes. A crossword made of theirs, printable in two minutes</title>
+<meta name="description" content="Type ten inside jokes about someone and get a personalised crossword and word search about them, answers included, ready to print in two minutes. Birthdays, anniversaries, retirements, farewells. $19 AUD.">
+<meta property="og:title" content="Inside Jokes. A crossword made of theirs">
+<meta property="og:description" content="Ten things only you know about them become a crossword and a word search. Print at home or send the PDF. $19 AUD.">
 <meta property="og:type" content="website">
 <meta name="theme-color" content="#f4eee2">
 <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -64,14 +64,14 @@ footer{padding:var(--s6) 0 var(--s8); font-size:0.85rem; color:var(--mute); bord
 <header class="hero">
   <div class="wrap hero__grid">
     <div>
-      <p class="kicker">Father's Day is today. This takes two minutes.</p>
-      <h1>A crossword <em>about him.</em></h1>
-      <p class="lede" style="margin-top:var(--s4)">Type ten things only your family knows about Dad. Get back a crossword and a word search built from them, answers included, ready to print or send.</p>
-      <div class="price"><b>$<span data-price>14</span></b><span>AUD, ONE PUZZLE PACK, INSTANT</span></div>
+      <p class="kicker" id="kicker">A gift that takes two minutes and cannot be bought twice.</p>
+      <h1 id="h1">A crossword made of <em>your inside jokes.</em></h1>
+      <p class="lede" style="margin-top:var(--s4)">Type ten things only you know about them. Get back a crossword and a word search built from those, answers included, ready to print or send. Birthdays, anniversaries, retirements, the colleague who is leaving on Friday.</p>
+      <div class="price"><b>$<span data-price>19</span></b><span>AUD, ONE PUZZLE PACK, PRINT AS MANY AS YOU LIKE</span></div>
       <ol class="steps">
         <li><b>1</b> Write the clues below. Funny beats accurate. The preview builds as you type.</li>
         <li><b>2</b> Pay once. You land straight on the print-ready pack.</li>
-        <li><b>3</b> Print it, or Save as PDF and text it to him. Answers on the last page, for when he gives up.</li>
+        <li><b>3</b> Print it, or Save as PDF and send it. Answers on the last page, for when they give up.</li>
       </ol>
     </div>
     <aside class="sample" aria-label="Example clues">
@@ -82,23 +82,23 @@ footer{padding:var(--s6) 0 var(--s8); font-size:0.85rem; color:var(--mute); bord
         <li value="7">The one thing nobody but him may touch <em>(10)</em></li>
         <li value="9">Sunday, seven sharp, the whole street knows <em>(5)</em></li>
       </ol>
-      <p class="small" style="margin-top:var(--s3)">BUNNINGS, REMOTE, THERMOSTAT, MOWER. Yours will be better.</p>
+      <p class="small" style="margin-top:var(--s3)">BUNNINGS, REMOTE, THERMOSTAT, MOWER. That one was for a dad. Yours will be about someone else and better.</p>
     </aside>
   </div>
 </header>
 
 <main class="wrap maker">
   <section aria-labelledby="make-h">
-    <h2 id="make-h">Ten things about Dad.</h2>
+    <h2 id="make-h">Ten things about them.</h2>
     <p class="small" style="margin:var(--s3) 0 var(--s5)">One or two words per answer works best. Letters only in the grid; spaces and apostrophes are dropped automatically. Six is enough, ten is better, twelve is the limit.</p>
 
     <div class="field">
       <label for="title">Title on the puzzle</label>
-      <input id="title" value="Happy Father's Day, Dad" maxlength="60">
+      <input id="title" value="Happy Birthday, Sam" maxlength="60">
     </div>
     <div class="field">
       <label for="from">From</label>
-      <input id="from" placeholder="Sam, Ellie and the dog" maxlength="60">
+      <input id="from" placeholder="Ellie, Jack and the dog" maxlength="60">
     </div>
 
     <div class="row" aria-hidden="true"><span></span><span class="rowhead" style="color:var(--mute)">Answer</span><span class="rowhead" style="color:var(--mute)">Clue</span></div>
@@ -121,7 +121,7 @@ footer{padding:var(--s6) 0 var(--s8); font-size:0.85rem; color:var(--mute); bord
       <p class="notice" id="notice" hidden></p>
     </div>
     <div class="buy">
-      <a class="btn" id="pay" href="#" aria-disabled="true"><span>Pay $<span data-price>14</span> and get the pack &rarr;</span></a>
+      <a class="btn" id="pay" href="#" aria-disabled="true"><span>Pay $<span data-price>19</span> and get the pack &rarr;</span></a>
       <p class="small">Stripe handles the card. You come straight back here to the finished pack. Everything you typed stays in this browser and is never sent anywhere except onto your printout.</p>
       <details>
         <summary class="small">Paying on a different device? Take your puzzle code.</summary>
@@ -138,15 +138,15 @@ footer{padding:var(--s6) 0 var(--s8); font-size:0.85rem; color:var(--mute); bord
     <dl>
       <div><dt>What do I actually get?</dt><dd>Three A4 pages: the crossword with clues, a word search of the same answers, and the answer key. On screen in your browser, so you print it or Save as PDF and send it.</dd></div>
       <div><dt>What if a word will not fit?</dt><dd>The preview tells you which one before you pay. Shorten it or change it. Every word that shows in the preview is in the pack.</dd></div>
-      <div><dt>Not Father's Day?</dt><dd>Change the title. Birthdays, retirements, Mother's Day, the grandad who has everything. Same price, same two minutes.</dd></div>
-      <div><dt>Does it work on a phone?</dt><dd>Yes. Making it and paying are fine on a phone. Printing is easier from a laptop, so the pack has a code you can carry across.</dd></div>
+      <div><dt>Who is it for?</dt><dd>Anyone you know well enough to have ten jokes about. A fortieth, a retirement, a farewell card the whole office signs, a wedding table game, the parent who has everything. Change the title and it fits.</dd></div>
+      <div><dt>Does it work on a phone?</dt><dd>Yes. Making it and paying are fine on a phone. Printing is easier from a laptop, so the pack has a code you can carry across. Print as many copies as the party needs.</dd></div>
       <div><dt>Refunds?</dt><dd>If the pack does not render, or something in it is wrong and you tell me within a week, you get the money back. Reply to the Stripe receipt.</dd></div>
-      <div><dt>Who made this?</dt><dd>One person in South Australia who forgot Father's Day once too. ABN on the receipt.</dd></div>
+      <div><dt>Who made this?</dt><dd>One person in South Australia. ABN on the receipt, reply to it and a human answers.</dd></div>
     </dl>
   </div>
 </section>
 
-<footer><div class="wrap">Dad, Solved. Prices in Australian dollars, GST included. Your clues never leave your browser.</div></footer>
+<footer><div class="wrap">Inside Jokes. Prices in Australian dollars, GST included. Your clues never leave your browser.</div></footer>
 <div class="ribbon" id="ribbon" role="status"></div>
 
 <script src="/puzzle.js"></script>
@@ -155,7 +155,7 @@ footer{padding:var(--s6) 0 var(--s8); font-size:0.85rem; color:var(--mute); bord
   /* ---- CONFIG: set before sending traffic. While a placeholder remains the
      ribbon says so and the pay button stays disabled. ---- */
   var CONFIG = {
-    price: 14,
+    price: 19,
     stripeLink: 'https://buy.stripe.com/REPLACE_ME',  /* Payment Link; after payment redirect to https://<host>/done/?paid=1 */
     metaPixel: ''                                      /* Meta Pixel id. Empty means no pixel. */
   };
@@ -196,7 +196,7 @@ footer{padding:var(--s6) 0 var(--s8); font-size:0.85rem; color:var(--mute); bord
     var complete = s.entries.filter(function (e) { return Puzzle.clean(e.answer).length >= 2 && e.clue; });
     inputs.forEach(function (r) { r.a.classList.toggle('bad', r.a.value.trim() !== '' && Puzzle.clean(r.a.value).length < 2); });
     var grid = document.getElementById('grid'), clues = document.getElementById('clues'), stat = document.getElementById('stat'), notice = document.getElementById('notice');
-    try { localStorage.setItem('dadsolved', JSON.stringify(s)); } catch (e) {}
+    try { localStorage.setItem('insidejokes', JSON.stringify(s)); } catch (e) {}
     document.getElementById('code').textContent = Puzzle.encode(s);
     if (complete.length < 2) {
       grid.innerHTML = ''; clues.innerHTML = ''; stat.textContent = complete.length ? 'One more and the grid appears' : 'Waiting for clues';
@@ -232,11 +232,26 @@ footer{padding:var(--s6) 0 var(--s8); font-size:0.85rem; color:var(--mute); bord
   });
   document.getElementById('clear').addEventListener('click', function () { inputs.forEach(function (r) { r.a.value = ''; r.c.value = ''; }); from.value = ''; render(); });
 
+
+  /* Occasion switcher. ?for=birthday|anniversary|retirement|farewell|wedding|dad|mum|christmas
+     changes the headline and default title so the ad and the page say the same thing. */
+  var OCC = {
+    birthday:    ['A birthday present that cannot be bought twice.', 'A crossword made of <em>their inside jokes.</em>', 'Happy Birthday, Sam'],
+    anniversary: ['Ten years of in-jokes, one grid.', 'An anniversary present <em>only you could write.</em>', 'Happy Anniversary, love'],
+    retirement:  ['Thirty years of stories, ten clues.', 'A retirement gift <em>the whole office can sign.</em>', 'Happy Retirement, Margaret'],
+    farewell:    ['Better than a card everyone forgets to sign.', 'A farewell puzzle <em>made of office legends.</em>', 'Good luck, Priya'],
+    wedding:     ['A table game about the two of them.', 'A wedding crossword <em>the guests actually finish.</em>', 'Emma and Tom'],
+    dad:         ['For the dad who has everything.', 'A crossword <em>about him.</em>', 'Happy Birthday, Dad'],
+    mum:         ['For the mum who says not to get her anything.', 'A crossword <em>about her.</em>', 'Happy Birthday, Mum'],
+    christmas:   ['A stocking filler you make in two minutes.', 'A Christmas crossword <em>about them.</em>', 'Merry Christmas, Nan']
+  };
+  var occ = OCC[(new URLSearchParams(location.search).get('for') || '').toLowerCase()];
+  if (occ) { document.getElementById('kicker').textContent = occ[0]; document.getElementById('h1').innerHTML = occ[1]; title.value = occ[2]; }
   /* Restore an unfinished puzzle from this browser. */
   try {
-    var saved = JSON.parse(localStorage.getItem('dadsolved') || 'null');
+    var saved = JSON.parse(localStorage.getItem('insidejokes') || 'null');
     if (saved && saved.entries && saved.entries.length) {
-      title.value = saved.title || title.value; from.value = saved.from || ''; seed = saved.seed || seed;
+      if (!occ) title.value = saved.title || title.value; from.value = saved.from || ''; seed = saved.seed || seed;
       saved.entries.forEach(function (e, i) { if (inputs[i]) { inputs[i].a.value = e.answer || ''; inputs[i].c.value = e.clue || ''; } });
     }
   } catch (e) {}
