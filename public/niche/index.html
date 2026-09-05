@@ -1,0 +1,1037 @@
+<!doctype html>
+<html lang="en-AU">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Niche Check</title>
+<meta name="description" content="Type a passion, hobby or skill. Get how many people look it up each month, what they search for, what they already pay for, and a link to every source. Free, no email gate.">
+<meta name="theme-color" content="#12181f">
+<link rel="preload" as="font" type="font/woff2" href="/fonts/clash-display-var.woff2" crossorigin>
+<link rel="preload" as="font" type="font/woff2" href="/fonts/satoshi-var.woff2" crossorigin>
+
+<style>
+/* ===========================================================================
+   PRE-FLIGHT
+
+   Audience   someone with a hobby or a skill wondering if it could be a
+              business. Probably on a phone, sent here from a social post.
+   Register   the portfolio's shop front, turned into a tool. Same type, same
+              hue, same ground. Denser below the fold because it is a report.
+   The move   the answer is never a bare number. Every figure sits next to the
+              link that produced it, and the score explains itself.
+   Degraded   every source can fail on its own. A failed source says so in its
+              own cell and the score is renormalised over what answered.
+              Nothing is ever estimated to fill a gap.
+   =========================================================================== */
+
+@font-face{font-family:'Clash';src:url('/fonts/clash-display-var.woff2') format('woff2-variations');font-weight:200 700;font-style:normal;font-display:swap}
+@font-face{font-family:'Satoshi';src:url('/fonts/satoshi-var.woff2') format('woff2-variations');font-weight:300 900;font-style:normal;font-display:swap}
+@font-face{font-family:'Mono';src:url('/fonts/ibm-plex-mono-400.woff2') format('woff2');font-weight:400;font-style:normal;font-display:swap}
+@font-face{font-family:'Mono';src:url('/fonts/ibm-plex-mono-500.woff2') format('woff2');font-weight:500;font-style:normal;font-display:swap}
+@font-face{font-family:'Clash Fallback';src:local('Segoe UI Semibold'),local('Helvetica Neue'),local('Arial');size-adjust:94%;ascent-override:96%;descent-override:22%;line-gap-override:0%}
+@font-face{font-family:'Satoshi Fallback';src:local('Segoe UI'),local('Helvetica Neue'),local('Arial');size-adjust:99%;ascent-override:97%;descent-override:24%;line-gap-override:0%}
+
+:root{
+  --brand-h:58; --brand-c:0.155;
+  --ink:oklch(0.158 0.019 252); --ink-2:oklch(0.205 0.021 252); --ink-line:oklch(0.330 0.020 252);
+  --bone:oklch(0.958 0.008 84); --bone-2:oklch(0.930 0.010 84); --bone-line:oklch(0.855 0.014 84);
+  --amber:oklch(0.760 var(--brand-c) var(--brand-h));
+  --amber-deep:oklch(0.590 0.140 calc(var(--brand-h) - 12));
+  --amber-soft:oklch(0.860 0.090 var(--brand-h));
+  --on-ink:oklch(0.968 0.006 84); --on-ink-dim:oklch(0.800 0.012 84); --on-ink-mute:oklch(0.645 0.014 252);
+  --on-bone:oklch(0.205 0.018 252); --on-bone-dim:oklch(0.420 0.016 252); --on-bone-mute:oklch(0.545 0.014 252);
+  --good:oklch(0.62 0.13 150); --bad:oklch(0.60 0.16 25);
+  --fg:var(--on-ink); --fg-dim:var(--on-ink-dim); --fg-mute:var(--on-ink-mute);
+  --line:var(--ink-line); --accent:var(--amber); --panel:var(--ink-2);
+  --display:'Clash','Clash Fallback',sans-serif;
+  --body:'Satoshi','Satoshi Fallback',system-ui,sans-serif;
+  --mono:'Mono',ui-monospace,Consolas,monospace;
+  --t--1:clamp(0.80rem,0.78rem + 0.10vw,0.875rem);
+  --t-0:clamp(1.02rem,0.98rem + 0.25vw,1.18rem);
+  --t-1:clamp(1.22rem,1.10rem + 0.55vw,1.60rem);
+  --t-2:clamp(1.62rem,1.35rem + 1.30vw,2.75rem);
+  --t-3:clamp(2.00rem,1.50rem + 2.40vw,4.00rem);
+  --t-4:clamp(2.40rem,1.60rem + 4.00vw,5.60rem);
+  --s2:8px; --s3:12px; --s4:16px; --s5:24px; --s6:32px; --s7:48px; --s8:64px; --s9:96px; --s10:128px;
+  --gut:clamp(20px,5vw,80px); --r:0px;
+  --ease:cubic-bezier(0.22,1,0.36,1); --ease-out:cubic-bezier(0.16,1,0.3,1);
+}
+*,*::before,*::after{box-sizing:border-box}
+html{-webkit-text-size-adjust:100%}
+html:focus-within{scroll-behavior:smooth}
+body{margin:0;background:var(--ink);color:var(--fg);font-family:var(--body);font-size:var(--t-0);line-height:1.55;-webkit-font-smoothing:antialiased;overflow-x:hidden;accent-color:var(--amber)}
+::selection{background:var(--amber);color:oklch(0.16 0.02 252)}
+h1,h2,h3{font-family:var(--display);font-weight:600;margin:0;line-height:0.96;letter-spacing:-0.026em;text-wrap:balance}
+h1{font-size:var(--t-4)} h2{font-size:var(--t-3)} h3{font-size:var(--t-2);line-height:1}
+h4{font-family:var(--display);font-weight:500;font-size:var(--t-1);line-height:1.1;letter-spacing:-0.022em;margin:0 0 var(--s3)}
+p{margin:0 0 1em;text-wrap:pretty} p:last-child{margin-bottom:0}
+a{color:inherit}
+:focus-visible{outline:2px solid var(--accent);outline-offset:3px}
+button{font:inherit;color:inherit}
+.sr{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}
+
+.tag{font-family:var(--mono);font-size:0.6875rem;font-weight:500;letter-spacing:0.14em;text-transform:uppercase;color:var(--accent);margin:0}
+.wrap{max-width:1180px;margin-inline:auto;padding-inline:var(--gut)}
+.act{position:relative;padding-block:clamp(72px,11vh,140px)}
+.act--bone{background:var(--bone);color:var(--on-bone);--fg:var(--on-bone);--fg-dim:var(--on-bone-dim);--fg-mute:var(--on-bone-mute);--line:var(--bone-line);--accent:var(--amber-deep);--panel:oklch(1 0 0)}
+.act--deep{background:var(--ink);overflow:clip;isolation:isolate}
+.act--deep::before{content:'';position:absolute;inset:0;z-index:-1;pointer-events:none;background:radial-gradient(110% 80% at 80% 10%, oklch(0.76 0.155 58 / 0.12), transparent 60%)}
+
+/* ---------- Top line ------------------------------------------------------- */
+.top{display:flex;justify-content:space-between;align-items:center;gap:var(--s4);font-family:var(--mono);font-size:var(--t--1);color:var(--fg-mute);margin-bottom:clamp(40px,8vh,90px)}
+.top a{text-decoration:none;color:var(--fg-dim);display:inline-flex;align-items:center;min-height:32px} .top a:hover{color:var(--accent)}
+
+/* ---------- Hero ----------------------------------------------------------- */
+.hero{padding-block:var(--s6) clamp(64px,10vh,110px);min-height:88svh;display:grid;align-content:start}
+.hero h1{margin-block:var(--s4) var(--s5);max-inline-size:14ch}
+.hero h1 em{font-style:normal;color:var(--amber)}
+.lede{font-size:var(--t-1);line-height:1.44;color:var(--fg-dim);max-inline-size:46ch}
+.lede b{color:var(--fg);font-weight:600}
+
+.scan{display:flex;flex-wrap:wrap;gap:var(--s3);margin-top:var(--s7);max-width:760px}
+.scan input{flex:1 1 320px;min-width:0;min-height:58px;padding:0 var(--s5);font:inherit;font-size:var(--t-1);color:var(--fg);background:oklch(1 0 0 / 0.05);border:1px solid oklch(1 0 0 / 0.28);border-radius:var(--r);transition:border-color 200ms var(--ease),background 200ms var(--ease)}
+.scan input::placeholder{color:var(--fg-mute)}
+.scan input:focus{outline:none;border-color:var(--amber);background:oklch(1 0 0 / 0.08)}
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:0.6em;min-height:58px;padding:0 var(--s6);border-radius:var(--r);text-decoration:none;cursor:pointer;font-weight:700;font-size:var(--t--1);letter-spacing:0.06em;text-transform:uppercase;background:var(--amber);color:oklch(0.16 0.02 252);border:1px solid var(--amber);transition:background 200ms var(--ease),border-color 200ms var(--ease),transform 140ms var(--ease)}
+.btn:hover{background:var(--amber-soft);border-color:var(--amber-soft)}
+.btn:active{transform:scale(0.975)}
+.btn[disabled]{opacity:0.6;cursor:progress}
+.btn--ghost{background:transparent;color:var(--fg);border-color:color-mix(in oklch,var(--fg) 30%,transparent);min-height:44px;padding:0 var(--s5)}
+.btn--ghost:hover{background:color-mix(in oklch,var(--fg) 8%,transparent);border-color:var(--fg)}
+.btn__arrow{transition:transform 220ms var(--ease)} .btn:hover .btn__arrow{transform:translateX(5px)}
+
+.examples{display:flex;flex-wrap:wrap;align-items:center;gap:var(--s2) var(--s3);margin-top:var(--s5);font-family:var(--mono);font-size:var(--t--1);color:var(--fg-mute)}
+.chip{font-family:var(--mono);font-size:0.75rem;letter-spacing:0.04em;padding:8px 12px;min-height:34px;border:1px solid var(--line);background:transparent;color:var(--fg-dim);cursor:pointer;border-radius:var(--r);transition:border-color 160ms var(--ease),color 160ms var(--ease);text-decoration:none;display:inline-flex;align-items:center;gap:0.5em}
+.chip:hover{border-color:var(--accent);color:var(--fg)}
+.chip[aria-pressed="true"]{border-color:var(--accent);color:var(--fg);box-shadow:inset 0 0 0 1px var(--accent)}
+.chip small{color:var(--fg-mute)}
+.creds{display:flex;flex-wrap:wrap;gap:var(--s3) var(--s5);margin-top:var(--s7);font-family:var(--mono);font-size:var(--t--1);color:var(--fg-mute)}
+.creds span{display:inline-flex;align-items:center;gap:var(--s3)}
+.creds span:not(:last-child)::after{content:'';width:4px;height:4px;background:var(--amber);opacity:0.7}
+.err{margin-top:var(--s4);color:var(--amber-soft);font-size:var(--t--1)}
+
+/* ---------- Progress ------------------------------------------------------- */
+.progress{display:grid;gap:var(--s2);margin:0;padding:0;list-style:none;max-width:560px;font-family:var(--mono);font-size:var(--t--1)}
+.progress li{display:flex;justify-content:space-between;gap:var(--s4);border-top:1px solid var(--line);padding-block:10px;color:var(--fg-dim)}
+.progress li[data-s="ok"] b{color:var(--good)} .progress li[data-s="bad"] b{color:var(--bad)} .progress li[data-s="wait"] b{color:var(--fg-mute)}
+.progress b{font-weight:500}
+
+/* ---------- Tabs and compare ----------------------------------------------- */
+.tabs{display:flex;flex-wrap:wrap;gap:var(--s2);align-items:center;margin-bottom:var(--s6)}
+.tabs .x{border:0;background:none;cursor:pointer;padding:0 2px;color:var(--fg-mute);font-family:var(--mono)} .tabs .x:hover{color:var(--bad)}
+.scroll{overflow-x:auto;-webkit-overflow-scrolling:touch}
+table.data{border-collapse:collapse;width:100%;font-size:var(--t--1);min-width:520px}
+table.data th,table.data td{text-align:left;padding:10px 12px;border-bottom:1px solid var(--line);vertical-align:top}
+table.data th{font-family:var(--mono);font-weight:500;letter-spacing:0.08em;text-transform:uppercase;font-size:0.6875rem;color:var(--fg-mute)}
+table.data td.n,table.data th.n{text-align:right;font-variant-numeric:tabular-nums;white-space:nowrap}
+table.data td b{font-weight:600}
+table.data td a{display:inline-block;padding-block:3px}
+.pillar a{display:inline-block;padding-block:2px}
+table.data tr.total td{font-weight:600;border-bottom:2px solid var(--fg)}
+.cmp{margin-bottom:var(--s8)}
+
+/* ---------- Verdict -------------------------------------------------------- */
+.verdict{display:grid;gap:var(--s6);align-items:center;grid-template-columns:minmax(0,1fr)}
+@media (min-width:52rem){.verdict{grid-template-columns:auto minmax(0,1fr);gap:var(--s8)}}
+.ring{width:clamp(150px,20vw,210px);height:auto;display:block}
+.ring circle{fill:none;stroke-width:9}
+.ring .bg{stroke:var(--line)}
+.ring .fg{stroke:var(--accent);stroke-linecap:butt;transform:rotate(-90deg);transform-origin:50% 50%;transition:stroke-dashoffset 900ms var(--ease-out)}
+.ring text{font-family:var(--display);font-weight:600;letter-spacing:-0.04em;fill:var(--fg)}
+.ring .sub{font-family:var(--mono);font-weight:500;letter-spacing:0.12em;font-size:8px;fill:var(--fg-mute)}
+.verdict h2{margin-block:var(--s3) var(--s4)}
+.verdict__why{margin:var(--s5) 0 0;padding:0;list-style:none;display:grid;gap:var(--s3);max-inline-size:60ch}
+.verdict__why li{padding-left:var(--s6);position:relative;color:var(--fg-dim);line-height:1.5}
+.verdict__why li::before{content:'';position:absolute;left:0;top:0.7em;width:14px;height:1px;background:var(--accent)}
+.verdict__why li.down::before{background:var(--bad)}
+.verdict__why b{color:var(--fg);font-weight:600}
+.actions{display:flex;flex-wrap:wrap;gap:var(--s3);margin-top:var(--s6)}
+
+/* ---------- Pillars -------------------------------------------------------- */
+.pillars{display:grid;gap:var(--s4);margin-top:var(--s8);grid-template-columns:repeat(auto-fit,minmax(220px,1fr))}
+.pillar{background:var(--panel);border:1px solid var(--line);padding:var(--s5);min-width:0}
+.pillar__n{font-family:var(--display);font-weight:600;font-size:var(--t-2);line-height:0.9;letter-spacing:-0.045em;font-variant-numeric:tabular-nums;display:flex;align-items:baseline;gap:6px}
+.pillar__n small{font-family:var(--mono);font-size:0.6875rem;letter-spacing:0.1em;color:var(--fg-mute);font-weight:500}
+.pillar__n.na{font-size:var(--t-1);color:var(--fg-mute)}
+.bar{height:4px;background:var(--line);margin:var(--s4) 0;overflow:hidden}
+.bar i{display:block;height:100%;background:var(--accent);transform-origin:left;transform:scaleX(var(--p,0));transition:transform 900ms var(--ease-out)}
+.pillar ul{margin:0;padding:0;list-style:none;font-size:var(--t--1);color:var(--fg-dim);display:grid;gap:6px;line-height:1.45}
+.pillar ul b{color:var(--fg);font-weight:600;font-variant-numeric:tabular-nums}
+.pillar a{color:inherit;text-decoration-color:color-mix(in oklch,var(--accent) 55%,transparent)} .pillar a:hover{color:var(--accent)}
+
+/* ---------- Blocks --------------------------------------------------------- */
+.blocks{display:grid;gap:var(--s9);margin-top:var(--s9)}
+.block{border-top:1px solid var(--line);padding-top:var(--s5);min-width:0}
+.block__head{display:grid;gap:var(--s3);margin-bottom:var(--s5)}
+@media (min-width:56rem){.block__head{grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:var(--s8);align-items:end}}
+.block__head h3{margin-top:var(--s2)}
+.block__head p{color:var(--fg-dim);font-size:var(--t--1);line-height:1.6;max-inline-size:52ch;margin:0}
+.block__head p b{color:var(--fg);font-weight:600}
+.block__head p a{display:inline-block;padding-block:3px}
+.cols{display:grid;gap:var(--s6);grid-template-columns:repeat(auto-fit,minmax(260px,1fr))}
+.cols > *{min-width:0}
+.plain{margin:0;padding:0;list-style:none;display:grid;gap:8px;font-size:var(--t--1);line-height:1.45}
+.plain li{display:flex;justify-content:space-between;gap:var(--s4);border-bottom:1px solid var(--line);padding-bottom:8px}
+.plain li a{text-decoration:none;color:var(--fg);min-height:24px;display:inline-block;padding-block:2px} .plain li a:hover{color:var(--accent)}
+.plain li span{color:var(--fg-mute);font-family:var(--mono);white-space:nowrap;font-variant-numeric:tabular-nums}
+.chips{display:flex;flex-wrap:wrap;gap:var(--s2);margin:0;padding:0;list-style:none}
+.note{font-family:var(--mono);font-size:var(--t--1);color:var(--fg-mute);line-height:1.6;margin-top:var(--s4)}
+.note a{color:inherit;display:inline-block;padding-block:4px}
+.empty{color:var(--fg-mute);font-size:var(--t--1);font-family:var(--mono)}
+.big{font-family:var(--display);font-weight:600;font-size:var(--t-3);line-height:0.9;letter-spacing:-0.045em;font-variant-numeric:tabular-nums;color:var(--fg);display:block}
+.big small{display:block;font-family:var(--body);font-weight:400;font-size:var(--t--1);letter-spacing:0;color:var(--fg-dim);margin-top:var(--s3);line-height:1.5}
+.big.na{font-family:var(--body);font-size:var(--t-0);font-weight:500;letter-spacing:0;color:var(--fg-mute)}
+
+/* ---------- Sparkline ------------------------------------------------------ */
+.spark{width:100%;height:auto;display:block;overflow:visible}
+.spark .area{fill:var(--accent);opacity:0.14}
+.spark .line{fill:none;stroke:var(--accent);stroke-width:2;stroke-linejoin:round}
+.spark .dot{fill:var(--accent)}
+.spark text{font-family:var(--mono);font-size:10px;fill:var(--fg-mute)}
+.trend{display:grid;gap:var(--s6);grid-template-columns:minmax(0,1fr)}
+@media (min-width:56rem){.trend{grid-template-columns:minmax(0,1.5fr) minmax(0,1fr);align-items:end}}
+.trend .figures{display:grid;gap:var(--s5);grid-template-columns:repeat(auto-fit,minmax(150px,1fr))}
+
+/* ---------- Calculator ----------------------------------------------------- */
+.calc{display:grid;gap:var(--s5);grid-template-columns:repeat(auto-fit,minmax(170px,1fr))}
+.calc label{display:grid;gap:6px;font-family:var(--mono);font-size:0.6875rem;letter-spacing:0.1em;text-transform:uppercase;color:var(--fg-mute)}
+.calc input{font:inherit;font-family:var(--body);font-size:var(--t-1);font-weight:500;color:var(--fg);background:var(--panel);border:1px solid var(--line);padding:10px 12px;min-height:48px;width:100%;border-radius:var(--r);letter-spacing:0;text-transform:none;font-variant-numeric:tabular-nums}
+.calc input:focus{outline:none;border-color:var(--accent)}
+.calc__out{display:grid;gap:var(--s5);grid-template-columns:repeat(auto-fit,minmax(180px,1fr));margin-top:var(--s6);padding-top:var(--s5);border-top:1px solid var(--line)}
+
+/* ---------- Sources -------------------------------------------------------- */
+.src td.s-ok{color:var(--good)} .src td.s-bad{color:var(--bad)}
+.src td a{font-family:var(--mono);font-size:0.75rem;word-break:break-all;display:inline-block;padding-block:3px}
+.empty a{display:inline-block;padding-block:4px}
+
+/* ---------- Static acts ---------------------------------------------------- */
+.caps{margin-top:var(--s8);border-top:1px solid var(--line)}
+.cap{display:grid;gap:var(--s3) var(--s8);padding-block:var(--s6);border-bottom:1px solid var(--line);align-items:start}
+@media (min-width:58rem){.cap{grid-template-columns:5rem minmax(0,1fr) minmax(0,1.15fr);gap:var(--s9)}}
+.cap > *{min-width:0}
+.cap__n{font-family:var(--mono);font-size:var(--t--1);font-weight:500;letter-spacing:0.1em;color:var(--accent);padding-top:0.5em}
+.cap h3{font-size:var(--t-1);letter-spacing:-0.02em;line-height:1.15}
+.cap__body{color:var(--fg-dim);line-height:1.62;font-size:var(--t--1)} .cap__body b{color:var(--fg);font-weight:600}
+.foot{padding-block:var(--s9) var(--s8)}
+.foot__grid{display:flex;flex-wrap:wrap;gap:var(--s6) var(--s9);justify-content:space-between;align-items:flex-end;margin-top:var(--s8);padding-top:var(--s6);border-top:1px solid var(--ink-line)}
+.foot__note{color:var(--on-ink-mute);font-size:var(--t--1);max-inline-size:48ch;line-height:1.6}
+.link{display:inline-flex;align-items:center;gap:0.5em;min-height:32px;font-family:var(--mono);font-size:var(--t--1);text-decoration:none;color:var(--fg);box-shadow:inset 0 -1px 0 0 color-mix(in oklch,var(--accent) 55%,transparent);transition:color 180ms var(--ease)}
+.link:hover{color:var(--accent);box-shadow:inset 0 -1px 0 0 var(--accent)}
+.links{display:flex;flex-wrap:wrap;gap:var(--s3) var(--s6);align-items:center}
+
+@media (prefers-reduced-motion: no-preference){
+  .rise{opacity:0;transform:translate3d(0,22px,0)}
+  .rise.in{opacity:1;transform:none;transition:opacity 600ms var(--ease-out) var(--d,0ms),transform 600ms var(--ease-out) var(--d,0ms)}
+}
+@media (prefers-reduced-motion: reduce){
+  *,*::before,*::after{animation-duration:1ms !important;transition-duration:1ms !important}
+  html:focus-within{scroll-behavior:auto}
+}
+@media print{
+  .hero,.top,#how,.foot,.actions,.tabs{display:none !important}
+  .act--bone{padding:0}
+}
+</style>
+</head>
+<body>
+
+<header class="act act--deep hero">
+  <div class="wrap">
+    <nav class="top" aria-label="Site">
+      <a href="/">&larr; Aaron Steele</a>
+      <span>Niche Check</span>
+    </nav>
+
+    <p class="tag rise">Free niche check. No email gate.</p>
+    <h1 class="rise" style="--d:70ms">Will anyone <em>pay</em> for what you know?</h1>
+    <p class="lede rise" style="--d:140ms">
+      Type a passion, hobby or skill. In about ten seconds you get how many people look it up every
+      month, what they are searching for, what they already pay for, and where they gather.
+      <b>Every number sits next to the link that produced it</b>, so you can check it yourself.
+    </p>
+
+    <form class="scan rise" id="form" style="--d:210ms" autocomplete="off">
+      <label class="sr" for="q">Your passion, hobby or skill</label>
+      <input id="q" name="q" type="text" inputmode="search" maxlength="60" required
+             placeholder="A hobby, a skill, a thing you know" spellcheck="false">
+      <button class="btn" type="submit" id="go">Check it <span class="btn__arrow" aria-hidden="true">&rarr;</span></button>
+    </form>
+    <p class="err" id="formerr" role="alert" hidden></p>
+
+    <p class="examples rise" style="--d:260ms">Try:
+      <button type="button" class="chip" data-ex>dog training</button>
+      <button type="button" class="chip" data-ex>quilting</button>
+      <button type="button" class="chip" data-ex>watercolor painting</button>
+      <button type="button" class="chip" data-ex>sourdough</button>
+      <button type="button" class="chip" data-ex>Magic: The Gathering</button>
+      <button type="button" class="chip" data-ex>kubernetes</button>
+      <button type="button" class="chip" data-ex>ukulele</button>
+    </p>
+    <p class="examples" id="recent" hidden></p>
+
+    <p class="creds rise" style="--d:320ms">
+      <span>Live public data</span><span>Every figure linked</span><span>About ten seconds</span><span>No email, no tracking</span>
+    </p>
+  </div>
+</header>
+
+<section class="act act--bone" id="results" hidden aria-live="polite">
+  <div class="wrap">
+    <div id="tabs" class="tabs" hidden></div>
+    <div id="compare" class="cmp" hidden></div>
+    <div id="progress"></div>
+    <div id="report"></div>
+  </div>
+</section>
+
+<section class="act act--deep" id="how">
+  <div class="wrap">
+    <p class="tag rise">How it works</p>
+    <h2 class="rise" style="--d:70ms; max-inline-size:16ch">Real sources, one score, nothing invented.</h2>
+    <p class="lede rise" style="--d:140ms; margin-top:var(--s5)">
+      Tools like this usually show you a big audience number and ask for your email before they tell
+      you where it came from. This one asks public systems that anybody can query, shows the query,
+      and scores what came back out of 100 on four things a paying market has to have.
+    </p>
+
+    <div class="caps">
+      <div class="cap rise"><div class="cap__n">01</div><h3>Audience. Are people there at all?</h3>
+        <div class="cap__body"><p>How many people read the topic's Wikipedia article each month, how many podcasts are made about it, and how many books have been written on it. Wikipedia pageviews are the most honest public number there is: nobody buys them and nobody bots them for a hobby.</p></div></div>
+      <div class="cap rise" style="--d:60ms"><div class="cap__n">02</div><h3>Demand. Are they looking for help?</h3>
+        <div class="cap__body"><p>Google only autocompletes a phrase when enough people have typed it. So the tool asks nineteen variations, from <b>"how to"</b> to <b>"near me"</b> to <b>"membership"</b>, and counts what Google is willing to finish. A phrase Google completes is a phrase people search.</p></div></div>
+      <div class="cap rise" style="--d:120ms"><div class="cap__n">03</div><h3>Proof of pay. Does money already change hands?</h3>
+        <div class="cap__body"><p>Paid ebooks, audiobooks and apps on the topic in Apple's stores, with their real prices and rating counts, plus how many buying-intent phrases Google completes: course, class, kit, subscription, cost. If nobody sells anything, nobody is buying.</p></div></div>
+      <div class="cap rise" style="--d:180ms"><div class="cap__n">04</div><h3>Momentum. Growing, flat or fading?</h3>
+        <div class="cap__body"><p>The last six months of Wikipedia interest against the six before, and the share of the topic's podcasts that have published an episode in the last year. A big audience that is walking away is a worse bet than a small one arriving.</p></div></div>
+    </div>
+
+    <p class="note" style="margin-top:var(--s6); max-inline-size:60ch">
+      Each part is worth 25. A source that fails to answer is left out and the rest are rescaled,
+      and the report says which. Facebook groups, Discord servers and Skool communities cannot be
+      counted from the outside, so instead of a guess the report gives you the search links to
+      go and look.
+    </p>
+  </div>
+</section>
+
+<footer class="act foot">
+  <div class="wrap">
+    <p class="tag rise">Built by</p>
+    <h2 class="rise" style="--d:70ms; max-inline-size:14ch">Aaron Steele.</h2>
+    <div class="links rise" style="--d:140ms; margin-top:var(--s6)">
+      <a class="link" href="/">Portfolio <span aria-hidden="true">&rarr;</span></a>
+      <a class="link" href="https://github.com/Aa-ronJS/portfolio">Source for this page</a>
+    </div>
+    <div class="foot__grid">
+      <p class="foot__note">
+        Nothing you type here is stored anywhere but your own browser. The only server involved
+        relays two requests, to Google's autocomplete and to Reddit, because those two will not
+        answer a browser directly. Everything else your browser asks for itself.
+      </p>
+      <p class="foot__note">Inspired by the free niche check at membershipworkshop.com, rebuilt so the working is visible.</p>
+    </div>
+  </div>
+</footer>
+
+<script>
+(function () {
+'use strict';
+
+/* ---------- Small helpers ------------------------------------------------- */
+var $ = function (s, el) { return (el || document).querySelector(s); };
+var esc = function (s) { return String(s == null ? '' : s).replace(/[&<>"']/g, function (c) { return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]; }); };
+var clamp = function (n, lo, hi) { return Math.max(lo, Math.min(hi, n)); };
+var fmt = function (n) {
+  if (n == null || isNaN(n)) return 'n/a';
+  if (Math.abs(n) >= 1e6) return (n / 1e6).toFixed(n >= 1e7 ? 0 : 1).replace(/\.0$/, '') + 'm';
+  if (Math.abs(n) >= 1e4) return Math.round(n / 1e3) + 'k';
+  if (Math.abs(n) >= 1e3) return (n / 1e3).toFixed(1).replace(/\.0$/, '') + 'k';
+  return String(Math.round(n));
+};
+var money = function (n) { return n == null ? 'n/a' : (n % 1 === 0 ? '$' + n : '$' + n.toFixed(2)); };
+var pct = function (n) { return (n >= 0 ? '+' : '') + Math.round(n * 100) + '%'; };
+var reduced = matchMedia('(prefers-reduced-motion: reduce)').matches;
+var g = function (u) { return 'https://www.google.com/search?q=' + encodeURIComponent(u); };
+
+function withTimeout(ms) { var c = new AbortController(); setTimeout(function () { c.abort(); }, ms); return c.signal; }
+function getJSON(url, headers, ms) {
+  var t0 = performance.now();
+  return fetch(url, { signal: withTimeout(ms || 10000), headers: headers || {} }).then(function (r) {
+    return r.text().then(function (t) {
+      if (!r.ok) { var e = new Error('HTTP ' + r.status); e.status = r.status; throw e; }
+      try { return JSON.parse(t); } catch (x) { throw new Error('not JSON'); }
+    });
+  }).then(function (d) { return { ok: true, data: d, url: url, ms: Math.round(performance.now() - t0) }; },
+          function (e) { return { ok: false, error: e.name === 'AbortError' ? 'timed out' : e.message, status: e.status, url: url, ms: Math.round(performance.now() - t0) }; });
+}
+
+/* ---------- Topic matching -------------------------------------------------- */
+var STOP = /^(the|a|an|of|and|or|for|to|in|on|with|at|by|my|your|how|what|is|are|&)$/;
+function tokens(q) {
+  var t = q.toLowerCase().split(/[^\p{L}\p{N}+#]+/u).filter(function (w) { return w && !STOP.test(w); });
+  return t.length ? t : [q.toLowerCase()];
+}
+function stem(w) {
+  if (w.length > 5 && /ing$/.test(w)) return w.slice(0, -3);
+  if (w.length > 4 && /ies$/.test(w)) return w.slice(0, -3);
+  if (w.length > 4 && /(es|s)$/.test(w) && !/ss$/.test(w)) return w.replace(/(es|s)$/, '');
+  return w;
+}
+function matcher(q) {
+  var stems = tokens(q).map(stem);
+  var on = function (text) {
+    var h = String(text || '').toLowerCase();
+    return stems.every(function (s) { return h.indexOf(s) !== -1; });
+  };
+  on.times = function (text) {
+    var h = String(text || '').toLowerCase();
+    return stems.reduce(function (m, s) { return Math.min(m, h.split(s).length - 1); }, Infinity);
+  };
+  return on;
+}
+
+/* ---------- Sources --------------------------------------------------------- */
+var SRC = [
+  ['google',  'Google autocomplete'],
+  ['wiki',    'Wikipedia article'],
+  ['views',   'Wikipedia pageviews'],
+  ['podcasts','Apple Podcasts'],
+  ['ebooks',  'Apple Books, ebooks'],
+  ['audio',   'Apple Books, audiobooks'],
+  ['apps',    'App Store'],
+  ['library', 'Open Library'],
+  ['words',   'Datamuse']
+];
+
+function ym(d) { return d.getFullYear() + String(d.getMonth() + 1).padStart(2, '0'); }
+function ymd(d) { return ym(d) + String(d.getDate()).padStart(2, '0'); }
+
+function fetchAll(q, onStep) {
+  var out = {};
+  var step = function (k, r) { out[k] = r; onStep(k, r); return r; };
+  var enc = encodeURIComponent(q);
+
+  var google = getJSON('/api/niche?q=' + enc).then(function (r) {
+    if (r.ok && r.data && r.data.error) { r.ok = false; r.error = r.data.error; }
+    return step('google', r);
+  });
+
+  var wiki = getJSON('https://en.wikipedia.org/w/api.php?action=query&format=json&formatversion=2&origin=*&generator=search&gsrsearch=' + enc + '&gsrlimit=6&gsrnamespace=0&prop=extracts|info|pageprops&exintro=1&explaintext=1&exsentences=2&exlimit=max&inprop=url&ppprop=disambiguation')
+    .then(function (r) {
+      if (r.ok) {
+        var pages = (r.data.query && r.data.query.pages) || [];
+        pages = pages.filter(function (p) { return !(p.pageprops && 'disambiguation' in p.pageprops); })
+                     .sort(function (a, b) { return a.index - b.index; });
+        if (!pages.length) { r.ok = false; r.error = 'no article found'; }
+        else r.data = { article: pages[0], related: pages.slice(1) };
+      }
+      return step('wiki', r);
+    })
+    .then(function (r) {
+      if (!r.ok) return step('views', { ok: false, error: 'skipped, no article', url: '' });
+      var now = new Date(), start = new Date(now.getFullYear(), now.getMonth() - 24, 1);
+      var title = encodeURIComponent(r.data.article.title.replace(/ /g, '_'));
+      var url = 'https://wikimedia.org/api/rest_v1/metrics/pageviews/per-article/en.wikipedia/all-access/user/' + title + '/monthly/' + ym(start) + '01/' + ymd(now);
+      return getJSON(url, { 'Api-User-Agent': 'NicheCheck/1.0 (https://aaronsteele.vercel.app/niche/)' }).then(function (v) {
+        if (v.ok) v.data = (v.data.items || []).map(function (i) { return { m: i.timestamp.slice(0, 6), views: i.views }; });
+        else if (v.status === 404) { v.ok = true; v.data = []; v.note = 'no pageview data'; }
+        return step('views', v);
+      });
+    });
+
+  var apple = function (key, media) {
+    return getJSON('https://itunes.apple.com/search?term=' + enc + '&media=' + media + '&limit=200').then(function (r) {
+      if (r.ok) r.data = r.data.results || [];
+      return step(key, r);
+    });
+  };
+
+  var library = Promise.all([
+    getJSON('https://openlibrary.org/search.json?q=' + enc + '&limit=0', null, 15000),
+    getJSON('https://openlibrary.org/subjects/' + encodeURIComponent(q.replace(/[^\p{L}\p{N}]+/gu, '_')) + '.json?details=true&limit=0', null, 15000)
+  ]).then(function (rs) {
+    var s = rs[0], sub = rs[1];
+    var r = { ok: s.ok || sub.ok, url: s.url, ms: Math.max(s.ms, sub.ms), error: s.ok ? undefined : s.error };
+    r.data = {
+      mentions: s.ok ? s.data.numFound : null,
+      subject: sub.ok ? sub.data.work_count : null,
+      subjectUrl: sub.ok ? 'https://openlibrary.org' + sub.data.key : null,
+      history: sub.ok ? (sub.data.publishing_history || []) : []
+    };
+    return step('library', r);
+  });
+
+  var words = getJSON('https://api.datamuse.com/words?rel_trg=' + enc + '&max=14').then(function (r) {
+    if (r.ok && (!r.data.length) && tokens(q).length > 1) {
+      var longest = tokens(q).sort(function (a, b) { return b.length - a.length; })[0];
+      return getJSON('https://api.datamuse.com/words?rel_trg=' + encodeURIComponent(longest) + '&max=14');
+    }
+    return r;
+  }).then(function (r) { if (r.ok) r.data = r.data.map(function (w) { return w.word; }); return step('words', r); });
+
+  return Promise.all([google, wiki, apple('podcasts', 'podcast'), apple('ebooks', 'ebook'), apple('audio', 'audiobook'), apple('apps', 'software'), library, words])
+    .then(function () { return out; });
+}
+
+/* ---------- Analysis -------------------------------------------------------- */
+var BUY = /\b(course|courses|class|classes|lesson|lessons|membership|memberships|subscription|subscriptions|coach|coaching|tutor|tutoring|workshop|workshops|certification|certificate|program|programme|kit|kits|near me|price|prices|pricing|cost|costs|buy|book|books|retreat|retreats|club|academy|school|training|plan|planner|template|templates|pattern|patterns|supplies|store|stores|shop|shops|for sale|hire|services|guide|masterclass|bootcamp|camp)\b/;
+var QUESTION = /^(how|what|why|is|are|can|does|do|should|when|where|which|who|will)\b/;
+var FICTION = /\b(fiction|romance|mysteries|thrillers|fantasy|sci-fi|erotica|literary|poetry|comics|graphic novels|humor)\b/i;
+
+function analyse(q, src) {
+  var on = matcher(q);
+  var a = { q: q, src: src, when: new Date().toISOString() };
+
+  /* Google */
+  var gd = src.google.ok ? src.google.data : null;
+  a.google = null;
+  if (gd) {
+    var seen = {}, all = [], byGroup = {};
+    Object.keys(gd.suggest).forEach(function (k) {
+      var list = gd.suggest[k];
+      byGroup[k] = list === null ? null : list.filter(on);
+      (list || []).forEach(function (s) { if (on(s) && !seen[s]) { seen[s] = k; all.push(s); } });
+    });
+    var qLower = q.toLowerCase();
+    var segments = (byGroup['for'] || []).filter(function (s) { return s.indexOf(qLower + ' for ') === 0; })
+      .map(function (s) { return s.slice(qLower.length + 5); })
+      .filter(function (s) { return s && !/\b(sale|free|near me|price|cost)\b/.test(s); });
+    var questions = all.filter(function (s) { return QUESTION.test(s); });
+    var buying = all.filter(function (s) { return BUY.test(s) && !QUESTION.test(s); });
+    var local = all.filter(function (s) { return /\bnear me\b/.test(s); });
+    var offers = ['course', 'class', 'online', 'community', 'membership', 'subscription'].filter(function (k) {
+      return (byGroup[k] || []).some(function (s) { return new RegExp('\\b' + k).test(s); });
+    });
+    a.google = {
+      all: all, byGroup: byGroup, base: byGroup.base || [], segments: segments, questions: questions,
+      buying: buying, local: local, offers: offers, failed: gd.errors.google, queried: gd.queried,
+      reddit: gd.reddit === null ? null : gd.reddit.filter(function (r) { return !r.over18 && on(r.name + ' ' + r.title + ' ' + r.description); })
+        .sort(function (x, y) { return y.subscribers - x.subscribers; }),
+      redditError: gd.errors.reddit || null
+    };
+  }
+
+  /* Wikipedia */
+  a.wiki = src.wiki.ok ? src.wiki.data : null;
+  a.views = null;
+  if (src.views.ok && src.views.data.length) {
+    var v = src.views.data, last3 = v.slice(-3), last6 = v.slice(-6), prev6 = v.slice(-12, -6);
+    var avg = function (xs) { return xs.length ? xs.reduce(function (s, x) { return s + x.views; }, 0) / xs.length : null; };
+    a.views = {
+      series: v, monthly: avg(last3),
+      change: (prev6.length === 6 && avg(prev6) > 0) ? (avg(last6) / avg(prev6)) - 1 : null,
+      peak: v.reduce(function (m, x) { return x.views > m.views ? x : m; }, v[0])
+    };
+  }
+
+  /* Apple */
+  var norm = function (key, type) {
+    if (!src[key].ok) return null;
+    return src[key].data.map(function (x) {
+      var price = x.price != null ? x.price : (x.trackPrice != null ? x.trackPrice : x.collectionPrice);
+      return {
+        type: type, name: x.trackName || x.collectionName || '', by: x.artistName || x.sellerName || '',
+        price: typeof price === 'number' ? price : null, ratings: x.userRatingCount || 0,
+        url: x.trackViewUrl || x.collectionViewUrl || '', date: x.releaseDate || '',
+        fiction: FICTION.test((x.genres || []).join(' ') + ' ' + (x.primaryGenreName || '')),
+        named: on([x.trackName, x.collectionName].join(' ')),
+        text: [x.trackName, x.collectionName, x.artistName, x.sellerName, x.description, (x.genres || []).join(' ')].join(' ')
+      };
+    }).filter(function (p) { return p.named || on.times(p.text) >= 2; });
+  };
+  a.podcasts = norm('podcasts', 'podcast');
+  a.ebooks = norm('ebooks', 'ebook');
+  a.audio = norm('audio', 'audiobook');
+  a.apps = norm('apps', 'app');
+  var yearAgo = Date.now() - 365 * 864e5;
+  a.podcastsActive = a.podcasts ? a.podcasts.filter(function (p) { return p.date && Date.parse(p.date) > yearAgo; }).length : null;
+
+  var paidAll = [].concat(a.ebooks || [], a.audio || [], a.apps || []).filter(function (p) { return p.price > 0; });
+  var paid = paidAll.filter(function (p) { return !p.fiction; });
+  a.fiction = paidAll.length - paid.length;
+  paid.sort(function (x, y) { return (y.named - x.named) || (y.ratings - x.ratings) || (x.price - y.price); });
+  var prices = paid.map(function (p) { return p.price; }).sort(function (x, y) { return x - y; });
+  a.paid = paid;
+  a.paidAvailable = !!(a.ebooks || a.audio || a.apps);
+  a.medianPrice = prices.length ? prices[Math.floor(prices.length / 2)] : null;
+  a.appRatings = a.apps ? a.apps.reduce(function (s, p) { return s + p.ratings; }, 0) : null;
+
+  /* Open Library */
+  a.library = src.library.ok ? src.library.data : null;
+  a.words = src.words.ok ? src.words.data.filter(function (w) { return !on(w) && w.length > 2; }).slice(0, 12) : [];
+
+  /* Score */
+  var log = function (n, lo, hi) { return clamp((Math.log10(n + 1) - Math.log10(lo + 1)) / (Math.log10(hi + 1) - Math.log10(lo + 1)) * 25, 0, 25); };
+  var lin = function (n, hi) { return clamp(n / hi * 25, 0, 25); };
+  var pillar = function (parts) {
+    var av = parts.filter(function (p) { return p.v != null; });
+    if (!av.length) return null;
+    var W = av.reduce(function (s, p) { return s + p.w; }, 0);
+    return av.reduce(function (s, p) { return s + p.w * p.v; }, 0) / W;
+  };
+  var gg = a.google;
+  a.pillars = {
+    audience: pillar([
+      { w: 0.5,  v: a.views ? log(a.views.monthly, 300, 300000) : null },
+      { w: 0.25, v: a.podcasts ? log(a.podcasts.length, 0, 100) : null },
+      { w: 0.25, v: a.library && a.library.mentions != null ? log(a.library.mentions, 0, 10000) : null }
+    ]),
+    demand: pillar([
+      { w: 0.6, v: gg ? lin(gg.all.length, 100) : null },
+      { w: 0.2, v: gg ? lin(gg.base.length, 10) : null },
+      { w: 0.2, v: gg ? lin(gg.questions.length, 20) : null }
+    ]),
+    pay: pillar([
+      { w: 0.45, v: a.paidAvailable ? log(paid.length, 0, 200) : null },
+      { w: 0.35, v: gg ? lin(gg.buying.length, 25) : null },
+      { w: 0.2,  v: a.appRatings != null ? log(a.appRatings, 0, 1000000) : null }
+    ]),
+    momentum: pillar([
+      { w: 0.6, v: a.views && a.views.change != null ? clamp(12.5 + 12.5 * Math.log2(1 + a.views.change), 0, 25) : null },
+      { w: 0.4, v: a.podcasts && a.podcasts.length >= 3 ? a.podcastsActive / a.podcasts.length * 25 : null }
+    ])
+  };
+  var keys = Object.keys(a.pillars), have = keys.filter(function (k) { return a.pillars[k] != null; });
+  a.scoredOn = have.length;
+  a.score = have.length ? Math.round(have.reduce(function (s, k) { return s + a.pillars[k]; }, 0) / (25 * have.length) * 100) : null;
+  a.tier = a.score == null ? ['No verdict', 'Nothing answered, so there is nothing to score.'] :
+           a.score >= 75 ? ['Proven market', 'People are there, they are searching for help, and they already pay. The question is not whether, it is what you offer them.'] :
+           a.score >= 55 ? ['Real market', 'There is a paying audience here. It is not huge, or one signal is soft, but a membership does not need huge.'] :
+           a.score >= 35 ? ['Thin but alive', 'Some people care and a little money moves. You would be building the market as well as the offer. Look at the sub-niches below.'] :
+                           ['Not enough evidence', 'The public record does not show a paying audience for this phrase. Try a broader or more common name for the same thing.'];
+  if (a.score != null && have.length <= 2) {
+    if (a.score >= 75) a.tier = ['Real market, probably', 'What answered looks strong, but only ' + have.length + ' of the four signals came back, so treat this as a floor rather than a verdict. Run it again in a minute.'];
+    else a.tier[1] += ' Only ' + have.length + ' of the four signals answered, so read it as a floor.';
+  }
+
+  /* Reasons, best and worst first. */
+  var why = [];
+  if (a.views) why.push({ up: a.views.monthly >= 5000, t: '<b>' + fmt(a.views.monthly) + ' people a month</b> read the Wikipedia article on ' + esc(a.wiki.article.title) + (a.views.change != null ? ', ' + (a.views.change > 0.05 ? 'up ' : a.views.change < -0.05 ? 'down ' : 'flat at ') + (Math.abs(a.views.change) > 0.05 ? Math.round(Math.abs(a.views.change) * 100) + '% on the six months before' : 'the six months before') : '') + '.' });
+  if (gg) why.push({ up: gg.all.length >= 50, t: 'Google finishes <b>' + gg.all.length + ' phrases</b> about it' + (gg.buying.length ? ', <b>' + gg.buying.length + ' of them buying phrases</b> like "' + esc(gg.buying[0]) + '"' : ', none of them about buying') + '.' });
+  if (a.paidAvailable) why.push({ up: paid.length >= 20, t: paid.length ? '<b>' + paid.length + ' paid product' + (paid.length === 1 ? '' : 's') + '</b> on the topic in Apple\'s stores, median <b>' + money(a.medianPrice) + '</b>.' : 'No paid ebook, audiobook or app on the topic in Apple\'s stores.' });
+  if (a.podcasts) why.push({ up: a.podcasts.length >= 10, t: a.podcasts.length ? '<b>' + a.podcasts.length + ' podcast' + (a.podcasts.length === 1 ? '' : 's') + '</b> about it, ' + a.podcastsActive + ' with an episode in the last year.' : 'No podcast with the topic in its name or description.' });
+  if (gg && gg.reddit && gg.reddit.length) why.push({ up: true, t: '<b>' + esc(gg.reddit[0].name) + '</b> has ' + fmt(gg.reddit[0].subscribers) + ' members' + (gg.reddit.length > 1 ? ', and there are ' + (gg.reddit.length - 1) + ' more subreddits' : '') + '.' });
+  a.why = why;
+  return a;
+}
+
+/* ---------- Rendering ------------------------------------------------------- */
+var reports = [], active = -1, scanning = false;
+var el = { results: $('#results'), tabs: $('#tabs'), compare: $('#compare'), progress: $('#progress'), report: $('#report'), form: $('#form'), q: $('#q'), go: $('#go'), err: $('#formerr'), recent: $('#recent') };
+
+function renderProgress(states) {
+  el.progress.innerHTML = '<p class="tag">Scanning ' + esc(states.q) + '</p><ul class="progress" style="margin-top:var(--s5)">' + SRC.map(function (s) {
+    var st = states[s[0]];
+    return '<li data-s="' + (st ? (st.ok ? 'ok' : 'bad') : 'wait') + '"><span>' + esc(s[1]) + '</span><b>' + (st ? (st.ok ? 'answered in ' + st.ms + 'ms' : 'did not answer') : 'asking…') + '</b></li>';
+  }).join('') + '</ul>';
+}
+
+function ring(score) {
+  var r = 46, c = 2 * Math.PI * r, off = score == null ? c : c * (1 - score / 100);
+  return '<svg class="ring" viewBox="0 0 110 110" role="img" aria-label="Score ' + (score == null ? 'not available' : score + ' out of 100') + '">' +
+    '<circle class="bg" cx="55" cy="55" r="' + r + '"/>' +
+    '<circle class="fg" cx="55" cy="55" r="' + r + '" stroke-dasharray="' + c.toFixed(1) + '" stroke-dashoffset="' + (reduced ? off : c).toFixed(1) + '" data-off="' + off.toFixed(1) + '"/>' +
+    '<text x="55" y="58" text-anchor="middle" font-size="34">' + (score == null ? '?' : score) + '</text>' +
+    '<text class="sub" x="55" y="74" text-anchor="middle">OF 100</text></svg>';
+}
+
+function spark(series) {
+  var W = 600, H = 150, padL = 4, padR = 4, padT = 14, padB = 22;
+  var max = Math.max.apply(null, series.map(function (p) { return p.views; })) || 1;
+  var n = series.length, x = function (i) { return padL + (n === 1 ? 0 : i * (W - padL - padR) / (n - 1)); };
+  var y = function (v) { return padT + (H - padT - padB) * (1 - v / max); };
+  var pts = series.map(function (p, i) { return x(i).toFixed(1) + ',' + y(p.views).toFixed(1); });
+  var lab = function (m) { return ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'][Number(m.slice(4, 6)) - 1] + ' ' + m.slice(2, 4); };
+  var peakI = series.reduce(function (b, p, i) { return p.views > series[b].views ? i : b; }, 0);
+  return '<svg class="spark" viewBox="0 0 ' + W + ' ' + H + '" role="img" aria-label="Monthly Wikipedia pageviews over ' + n + ' months">' +
+    '<path class="area" d="M' + pts[0] + ' L' + pts.join(' L') + ' L' + x(n - 1).toFixed(1) + ',' + (H - padB) + ' L' + x(0).toFixed(1) + ',' + (H - padB) + ' Z"/>' +
+    '<polyline class="line" points="' + pts.join(' ') + '"/>' +
+    '<circle class="dot" r="3.5" cx="' + x(peakI).toFixed(1) + '" cy="' + y(series[peakI].views).toFixed(1) + '"/>' +
+    '<text x="' + x(peakI).toFixed(1) + '" y="' + Math.max(10, y(series[peakI].views) - 8).toFixed(1) + '" text-anchor="' + (peakI > n * 0.8 ? 'end' : peakI < n * 0.2 ? 'start' : 'middle') + '">' + fmt(series[peakI].views) + '</text>' +
+    '<text x="' + padL + '" y="' + (H - 6) + '">' + lab(series[0].m) + '</text>' +
+    '<text x="' + (W - padR) + '" y="' + (H - 6) + '" text-anchor="end">' + lab(series[n - 1].m) + '</text></svg>';
+}
+
+function pillarCard(name, sub, val, lines) {
+  return '<div class="pillar"><p class="tag">' + esc(name) + '</p>' +
+    (val == null ? '<div class="pillar__n na" style="margin-top:var(--s3)">no source answered</div>' :
+      '<div class="pillar__n" style="margin-top:var(--s3)">' + Math.round(val) + '<small>/ 25</small></div>') +
+    '<div class="bar"><i style="--p:' + (val == null ? 0 : (val / 25).toFixed(3)) + '"></i></div>' +
+    '<p style="font-size:var(--t--1);color:var(--fg-dim);margin:0 0 var(--s3)">' + esc(sub) + '</p>' +
+    '<ul>' + lines.map(function (l) { return '<li>' + l + '</li>'; }).join('') + '</ul></div>';
+}
+
+function chipList(items, opts) {
+  opts = opts || {};
+  if (!items.length) return '<p class="empty">' + esc(opts.empty || 'Nothing found.') + '</p>';
+  return '<ul class="chips">' + items.map(function (s) {
+    return '<li>' + (opts.scan ? '<button type="button" class="chip" data-scan="' + esc(s) + '">' + esc(s) + ' <small>→</small></button>'
+                               : '<a class="chip" href="' + g(s) + '" target="_blank" rel="noopener">' + esc(s) + '</a>') + '</li>';
+  }).join('') + '</ul>';
+}
+
+function plainList(items, fmtRight) {
+  if (!items.length) return '<p class="empty">Nothing on topic came back.</p>';
+  return '<ul class="plain">' + items.map(function (p) {
+    return '<li><a href="' + esc(p.url) + '" target="_blank" rel="noopener">' + esc(p.name) + (p.by ? ' <span style="color:var(--fg-mute);font-family:var(--body)">' + esc(p.by) + '</span>' : '') + '</a><span>' + fmtRight(p) + '</span></li>';
+  }).join('') + '</ul>';
+}
+
+function renderReport(a) {
+  var gg = a.google, w = a.wiki, v = a.views, lib = a.library;
+  var h = '';
+
+  /* Verdict */
+  h += '<div class="verdict">' + ring(a.score) + '<div>' +
+    '<p class="tag">' + esc(a.q) + (a.scoredOn < 4 && a.score != null ? ' · scored on ' + a.scoredOn + ' of 4 parts' : '') + '</p>' +
+    '<h2>' + esc(a.tier[0]) + '.</h2>' +
+    '<p class="lede" style="max-inline-size:52ch">' + esc(a.tier[1]) + '</p>' +
+    (a.why.length ? '<ul class="verdict__why">' + a.why.map(function (r) { return '<li class="' + (r.up ? 'up' : 'down') + '">' + r.t + '</li>'; }).join('') + '</ul>' : '') +
+    '<div class="actions"><button type="button" class="btn btn--ghost" data-act="link">Copy link</button>' +
+    '<button type="button" class="btn btn--ghost" data-act="md">Copy report as text</button>' +
+    '<button type="button" class="btn btn--ghost" data-act="another">Compare with another niche</button></div>' +
+    '</div></div>';
+
+  /* Pillars */
+  var P = a.pillars;
+  h += '<div class="pillars">' +
+    pillarCard('Audience', 'Are people there?', P.audience, [
+      v ? '<b>' + fmt(v.monthly) + '</b>/month read <a href="' + esc(w.article.fullurl) + '" target="_blank" rel="noopener">' + esc(w.article.title) + '</a> on Wikipedia' : (w ? 'Wikipedia pageviews did not answer' : 'No Wikipedia article matched'),
+      a.podcasts ? '<b>' + a.podcasts.length + '</b> podcasts on the topic' : 'Apple Podcasts did not answer',
+      lib && lib.mentions != null ? '<b>' + fmt(lib.mentions) + '</b> books mention it' + (lib.subject ? ', <b>' + fmt(lib.subject) + '</b> catalogued under it' : '') : 'Open Library did not answer'
+    ]) +
+    pillarCard('Demand', 'Are they looking for help?', P.demand, gg ? [
+      '<b>' + gg.all.length + '</b> phrases Google completes' + (gg.failed ? ' (' + gg.failed + ' of 19 queries failed)' : ''),
+      '<b>' + gg.base.length + '</b> completions for the bare phrase',
+      '<b>' + gg.questions.length + '</b> are questions'
+    ] : ['Google autocomplete did not answer' + (a.src.google.error ? ': ' + esc(a.src.google.error) : '')]) +
+    pillarCard('Proof of pay', 'Does money already move?', P.pay, [
+      a.paidAvailable ? '<b>' + a.paid.length + '</b> paid products, median <b>' + money(a.medianPrice) + '</b>' : 'Apple\'s stores did not answer',
+      gg ? '<b>' + gg.buying.length + '</b> buying phrases completed' : 'Google autocomplete did not answer',
+      a.appRatings != null ? '<b>' + fmt(a.appRatings) + '</b> ratings on apps about it' : 'App Store did not answer'
+    ]) +
+    pillarCard('Momentum', 'Growing or fading?', P.momentum, [
+      v && v.change != null ? 'Interest <b>' + pct(v.change) + '</b>, last six months against the six before' : 'Not enough pageview history',
+      a.podcasts && a.podcasts.length >= 3 ? '<b>' + a.podcastsActive + ' of ' + a.podcasts.length + '</b> podcasts published in the last year' : 'Too few podcasts to judge activity'
+    ]) + '</div>';
+
+  h += '<div class="blocks">';
+
+  /* Trend */
+  h += '<div class="block"><div class="block__head"><div><p class="tag">Audience</p><h3>Who is looking this up.</h3></div>' +
+    '<p>' + (w ? 'The closest Wikipedia article is <a href="' + esc(w.article.fullurl) + '" target="_blank" rel="noopener"><b>' + esc(w.article.title) + '</b></a>. ' + esc(w.article.extract || '') : 'No Wikipedia article matched the phrase, so there is no pageview trend.') + '</p></div>';
+  if (v) {
+    h += '<div class="trend"><div>' + spark(v.series) + '</div><div class="figures">' +
+      '<span class="big">' + fmt(v.monthly) + '<small>readers a month, average of the last three</small></span>' +
+      '<span class="big">' + (v.change == null ? 'n/a' : pct(v.change)) + '<small>last six months against the six before</small></span>' +
+      '<span class="big">' + fmt(v.peak.views) + '<small>best month in the last two years</small></span></div></div>' +
+      '<p class="note">Source: <a href="' + esc(a.src.views.url) + '" target="_blank" rel="noopener">Wikimedia pageviews API</a>, human readers only, all platforms.</p>';
+  } else if (w) {
+    h += '<p class="empty">' + esc(a.src.views.note || ('Wikipedia pageviews did not answer: ' + (a.src.views.error || ''))) + '</p>';
+  }
+  if (w && w.related.length) {
+    h += '<div style="margin-top:var(--s6)"><p class="tag" style="margin-bottom:var(--s3)">Neighbouring topics, tap to scan</p>' +
+      chipList(w.related.map(function (p) { return p.title; }), { scan: true }) + '</div>';
+  }
+  h += '</div>';
+
+  /* Demand */
+  h += '<div class="block"><div class="block__head"><div><p class="tag">Demand</p><h3>What they are typing into Google.</h3></div>' +
+    '<p>Google only completes a phrase when enough people search it. ' + (gg ? 'These are the <b>' + gg.all.length + '</b> on-topic completions from ' + gg.queried.length + ' queries. Tap one to see the results page.' : 'The autocomplete relay did not answer, so this section is empty and the score leaves it out.') + '</p></div>';
+  if (gg) {
+    h += '<div class="cols">' +
+      '<div><h4>Who it is for</h4>' + chipList(gg.segments, { empty: 'Google did not complete "' + a.q + ' for", so no audience segments surfaced.' }) + '</div>' +
+      '<div><h4>Questions they ask</h4>' + chipList(gg.questions.slice(0, 18), { empty: 'No question phrases completed.' }) + '</div>' +
+      '<div><h4>Ready to buy</h4>' + chipList(gg.buying.slice(0, 18), { empty: 'No buying phrases completed. That is the weak spot.' }) +
+        (gg.offers.length ? '<p class="note">Google already completes these offer types: <b>' + gg.offers.map(esc).join(', ') + '</b>.</p>' : '') +
+        (gg.local.length ? '<p class="note">' + gg.local.length + ' "near me" phrases: people pay for this in person.</p>' : '') + '</div>' +
+      '</div>' +
+      '<details style="margin-top:var(--s5)"><summary class="note" style="cursor:pointer">All ' + gg.all.length + ' completions</summary>' + chipList(gg.all) + '</details>';
+  }
+  h += '</div>';
+
+  /* Pay */
+  h += '<div class="block"><div class="block__head"><div><p class="tag">Proof of pay</p><h3>What they already pay for.</h3></div>' +
+    '<p>Paid ebooks, audiobooks and apps in Apple\'s stores whose name or description carries the topic. ' + (a.paidAvailable ? 'Real prices, real rating counts, the ones named after the topic first. <b>' + a.paid.length + '</b> found, median <b>' + money(a.medianPrice) + '</b>.' + (a.fiction ? ' Another ' + a.fiction + ' were novels with the topic in the title, which is not the same as paying to learn, so they are left out.' : '') : 'Apple did not answer.') + '</p></div>';
+  if (a.paidAvailable) {
+    if (a.paid.length) {
+      h += '<div class="scroll"><table class="data"><thead><tr><th>Product</th><th>Type</th><th class="n">Price</th><th class="n">Ratings</th></tr></thead><tbody>' +
+        a.paid.slice(0, 12).map(function (p) {
+          return '<tr><td><a href="' + esc(p.url) + '" target="_blank" rel="noopener">' + esc(p.name) + '</a>' + (p.by ? '<br><span style="color:var(--fg-mute)">' + esc(p.by) + '</span>' : '') + '</td><td>' + p.type + '</td><td class="n">' + money(p.price) + '</td><td class="n">' + (p.ratings ? fmt(p.ratings) : 'none') + '</td></tr>';
+        }).join('') + '</tbody></table></div>';
+      if (a.paid.length > 12) h += '<p class="note">' + (a.paid.length - 12) + ' more not shown.</p>';
+    } else {
+      h += '<p class="empty">Nothing paid on the topic in Apple\'s stores.</p>';
+    }
+  }
+  h += '<p class="note" style="margin-top:var(--s5)">Look for yourself: ' + [
+      ['Udemy', 'https://www.udemy.com/courses/search/?q='], ['Amazon books', 'https://www.amazon.com/s?i=stripbooks&k='], ['Etsy', 'https://www.etsy.com/search?q='],
+      ['Patreon', 'https://www.patreon.com/search?q='], ['Skool', 'https://www.skool.com/discovery?q='], ['Google Trends', 'https://trends.google.com/trends/explore?q=']
+    ].map(function (l) { return '<a href="' + l[1] + encodeURIComponent(a.q) + '" target="_blank" rel="noopener">' + l[0] + '</a>'; }).join(' · ') + '</p></div>';
+
+  /* Gather */
+  h += '<div class="block"><div class="block__head"><div><p class="tag">Where they gather</p><h3>Communities and shows.</h3></div>' +
+    '<p>Podcasts with the topic in their name or description, active ones first. Subreddits when Reddit answers the relay, which it often refuses to. Facebook, Discord and Skool cannot be counted from outside, so those are links to go and look.</p></div>' +
+    '<div class="cols">' +
+    '<div><h4>Podcasts' + (a.podcasts ? ' (' + a.podcasts.length + ')' : '') + '</h4>' + (a.podcasts ? plainList(a.podcasts.slice().sort(function (x, y) { return Date.parse(y.date || 0) - Date.parse(x.date || 0); }).slice(0, 8), function (p) { return p.date ? 'ep. ' + p.date.slice(0, 7) : ''; }) : '<p class="empty">Apple Podcasts did not answer.</p>') + '</div>' +
+    '<div><h4>Subreddits</h4>' + (gg && gg.reddit ? (gg.reddit.length ? plainList(gg.reddit.slice(0, 8), function (r) { return fmt(r.subscribers) + ' members'; }) : '<p class="empty">Reddit answered but nothing on topic came back.</p>') : '<p class="empty">Reddit did not answer the relay' + (gg && gg.redditError ? ' (' + esc(gg.redditError) + ')' : '') + '. <a href="https://www.reddit.com/subreddits/search?q=' + encodeURIComponent(a.q) + '" target="_blank" rel="noopener">Search Reddit yourself.</a></p>') + '</div>' +
+    '<div><h4>Go and count these</h4><ul class="plain">' + [
+      ['Facebook groups', 'https://www.facebook.com/search/groups/?q='], ['YouTube', 'https://www.youtube.com/results?search_query='], ['Meetup', 'https://www.meetup.com/find/?keywords='],
+      ['Discord servers', 'https://disboard.org/search?keyword='], ['Skool communities', 'https://www.skool.com/discovery?q='], ['Reddit', 'https://www.reddit.com/subreddits/search?q=']
+    ].map(function (l) { return '<li><a href="' + l[1] + encodeURIComponent(a.q) + '" target="_blank" rel="noopener">' + l[0] + '</a><span>open →</span></li>'; }).join('') + '</ul></div>' +
+    '</div></div>';
+
+  /* Books */
+  if (lib && (lib.mentions != null || lib.subject != null)) {
+    var hist = lib.history.filter(function (p) { return p[0] >= new Date().getFullYear() - 20; });
+    var recent = hist.filter(function (p) { return p[0] >= new Date().getFullYear() - 5; }).reduce(function (s, p) { return s + p[1]; }, 0);
+    var older = hist.reduce(function (s, p) { return s + p[1]; }, 0) - recent;
+    h += '<div class="block"><div class="block__head"><div><p class="tag">Depth</p><h3>How much has been written.</h3></div>' +
+      '<p>Books are a slow signal but an honest one: somebody thought a paying reader existed. Counts from <a href="' + esc(a.src.library.url) + '" target="_blank" rel="noopener">Open Library</a>' + (lib.subjectUrl ? ' and its <a href="' + esc(lib.subjectUrl) + '" target="_blank" rel="noopener">subject page</a>' : '') + '.</p></div>' +
+      '<div class="figures" style="display:grid;gap:var(--s5);grid-template-columns:repeat(auto-fit,minmax(150px,1fr))">' +
+      '<span class="big">' + fmt(lib.mentions) + '<small>books that mention it</small></span>' +
+      '<span class="big">' + (lib.subject != null ? fmt(lib.subject) : 'n/a') + '<small>catalogued under it as a subject</small></span>' +
+      (hist.length ? '<span class="big">' + fmt(recent) + '<small>of those published in the last five years, against ' + fmt(older) + ' in the fifteen before</small></span>' : '') +
+      '</div></div>';
+  }
+
+  /* Calculator */
+  var reach = v ? Math.round(v.monthly) : 2000;
+  var price = a.medianPrice ? Math.max(9, Math.ceil(a.medianPrice * 2 / 5) * 5) : 29;
+  h += '<div class="block"><div class="block__head"><div><p class="tag">What it could be worth</p><h3>Do the sum yourself.</h3></div>' +
+    '<p>Not a prediction. Four assumptions and a multiplication, with the defaults taken from the data above: reach is the monthly Wikipedia readership, the price is about twice the median paid product. Change any of them.</p></div>' +
+    '<div class="calc" id="calc">' +
+    '<label>People reached a month<input type="number" min="0" step="100" name="reach" value="' + reach + '"></label>' +
+    '<label>Who join, %<input type="number" min="0" max="100" step="0.1" name="rate" value="0.5"></label>' +
+    '<label>Monthly price, $<input type="number" min="0" step="1" name="price" value="' + price + '"></label>' +
+    '<label>Months they stay<input type="number" min="1" step="1" name="stay" value="8"></label>' +
+    '</div><div class="calc__out" id="calcout"></div>' +
+    '<p class="note">Members at steady state = people reached &times; join rate &times; months they stay. Monthly revenue = members &times; price.</p></div>';
+
+  /* Adjacent */
+  var adj = [].concat(gg ? gg.segments.slice(0, 6).map(function (s) { return a.q + ' for ' + s; }) : [], a.words);
+  if (adj.length) {
+    h += '<div class="block"><div class="block__head"><div><p class="tag">Go narrower or sideways</p><h3>Other phrases to check.</h3></div>' +
+      '<p>Audience segments Google completed, and words that turn up alongside the topic in writing. A membership usually lives in one of these, not in the big word.</p></div>' + chipList(adj, { scan: true }) + '</div>';
+  }
+
+  /* Sources */
+  h += '<div class="block"><div class="block__head"><div><p class="tag">Working</p><h3>Every query this report ran.</h3></div>' +
+    '<p>Scanned ' + esc(new Date(a.when).toLocaleString('en-AU', { dateStyle: 'medium', timeStyle: 'short' })) + '. Open any row to see exactly what came back.</p></div>' +
+    '<div class="scroll"><table class="data src"><thead><tr><th>Source</th><th>Status</th><th>Query</th></tr></thead><tbody>' +
+    SRC.map(function (s) {
+      var r = a.src[s[0]];
+      return '<tr><td>' + esc(s[1]) + '</td><td class="' + (r.ok ? 's-ok' : 's-bad') + '">' + (r.ok ? 'answered, ' + r.ms + 'ms' : 'failed: ' + esc(r.error || '')) + '</td><td>' + (r.url ? '<a href="' + esc(r.url) + '" target="_blank" rel="noopener">' + esc(r.url.replace(/^https?:\/\//, '').slice(0, 110)) + (r.url.length > 118 ? '…' : '') + '</a>' : '') + '</td></tr>';
+    }).join('') + '</tbody></table></div>' +
+    (gg ? '<details style="margin-top:var(--s4)"><summary class="note" style="cursor:pointer">The ' + gg.queried.length + ' autocomplete queries</summary><p class="note">' + gg.queried.map(function (p) { return '<a href="' + g(p[1]) + '" target="_blank" rel="noopener">' + esc(p[1]) + '</a>'; }).join(' · ') + '</p></details>' : '') +
+    '</div>';
+
+  h += '</div>';
+  el.report.innerHTML = h;
+
+  requestAnimationFrame(function () {
+    var fg = $('.ring .fg', el.report);
+    if (fg) fg.setAttribute('stroke-dashoffset', fg.dataset.off);
+  });
+  bindCalc();
+}
+
+function bindCalc() {
+  var c = $('#calc'), out = $('#calcout');
+  if (!c) return;
+  var run = function () {
+    var f = function (n) { return Number(c.querySelector('[name="' + n + '"]').value) || 0; };
+    var members = f('reach') * (f('rate') / 100) * f('stay');
+    var monthly = members * f('price');
+    out.innerHTML =
+      '<span class="big">' + fmt(members) + '<small>members at steady state</small></span>' +
+      '<span class="big">' + money(Math.round(monthly)) + '<small>a month</small></span>' +
+      '<span class="big">' + money(Math.round(monthly * 12)) + '<small>a year</small></span>';
+  };
+  c.addEventListener('input', run);
+  run();
+}
+
+function renderTabs() {
+  if (reports.length < 2) { el.tabs.hidden = true; el.compare.hidden = true; el.tabs.innerHTML = ''; el.compare.innerHTML = ''; return; }
+  el.tabs.hidden = false;
+  el.tabs.innerHTML = '<span class="tag" style="margin-right:var(--s2)">Comparing</span>' + reports.map(function (r, i) {
+    return '<button type="button" class="chip" data-tab="' + i + '" aria-pressed="' + (i === active) + '">' + esc(r.q) + ' <small>' + (r.score == null ? 'n/a' : r.score) + '</small></button>' +
+           '<button type="button" class="x" data-rm="' + i + '" aria-label="Remove ' + esc(r.q) + '">×</button>';
+  }).join('');
+
+  var rows = [
+    ['Score', function (r) { return r.score == null ? 'n/a' : '<b>' + r.score + '</b>'; }],
+    ['Audience', function (r) { return r.pillars.audience == null ? 'n/a' : Math.round(r.pillars.audience); }],
+    ['Demand', function (r) { return r.pillars.demand == null ? 'n/a' : Math.round(r.pillars.demand); }],
+    ['Proof of pay', function (r) { return r.pillars.pay == null ? 'n/a' : Math.round(r.pillars.pay); }],
+    ['Momentum', function (r) { return r.pillars.momentum == null ? 'n/a' : Math.round(r.pillars.momentum); }],
+    ['Wikipedia readers a month', function (r) { return r.views ? fmt(r.views.monthly) : 'n/a'; }],
+    ['Six-month change', function (r) { return r.views && r.views.change != null ? pct(r.views.change) : 'n/a'; }],
+    ['Phrases Google completes', function (r) { return r.google ? r.google.all.length : 'n/a'; }],
+    ['Buying phrases', function (r) { return r.google ? r.google.buying.length : 'n/a'; }],
+    ['Paid products', function (r) { return r.paidAvailable ? r.paid.length : 'n/a'; }],
+    ['Median price', function (r) { return money(r.medianPrice); }],
+    ['Podcasts', function (r) { return r.podcasts ? r.podcasts.length : 'n/a'; }]
+  ];
+  el.compare.hidden = false;
+  el.compare.innerHTML = '<div class="scroll"><table class="data"><thead><tr><th></th>' + reports.map(function (r) { return '<th class="n">' + esc(r.q) + '</th>'; }).join('') + '</tr></thead><tbody>' +
+    rows.map(function (row, i) { return '<tr' + (i === 0 ? ' class="total"' : '') + '><td>' + row[0] + '</td>' + reports.map(function (r) { return '<td class="n">' + row[1](r) + '</td>'; }).join('') + '</tr>'; }).join('') +
+    '</tbody></table></div>';
+}
+
+function show(i) {
+  active = i;
+  renderTabs();
+  el.progress.innerHTML = '';
+  renderReport(reports[i]);
+  syncURL();
+}
+
+/* ---------- State: URL, history, clipboard --------------------------------- */
+function syncURL() {
+  var qs = reports.map(function (r) { return r.q; });
+  var u = new URL(location.href);
+  if (qs.length) u.searchParams.set('q', qs.join(',')); else u.searchParams.delete('q');
+  history.replaceState(null, '', u.pathname + (u.search || '') + '#results');
+}
+function remember(a) {
+  try {
+    var list = JSON.parse(localStorage.getItem('niche:recent') || '[]').filter(function (x) { return x.q !== a.q; });
+    list.unshift({ q: a.q, score: a.score, when: a.when });
+    localStorage.setItem('niche:recent', JSON.stringify(list.slice(0, 8)));
+  } catch (e) {}
+  renderRecent();
+}
+function renderRecent() {
+  var list = [];
+  try { list = JSON.parse(localStorage.getItem('niche:recent') || '[]'); } catch (e) {}
+  el.recent.hidden = !list.length;
+  el.recent.innerHTML = list.length ? 'Recent: ' + list.map(function (x) {
+    return '<button type="button" class="chip" data-scan="' + esc(x.q) + '">' + esc(x.q) + ' <small>' + (x.score == null ? 'n/a' : x.score) + '</small></button>';
+  }).join('') : '';
+}
+function copy(text, btn) {
+  var done = function () { var t = btn.textContent; btn.textContent = 'Copied'; setTimeout(function () { btn.textContent = t; }, 1600); };
+  if (navigator.clipboard && navigator.clipboard.writeText) navigator.clipboard.writeText(text).then(done, function () { fallback(); });
+  else fallback();
+  function fallback() {
+    var ta = document.createElement('textarea'); ta.value = text; ta.style.position = 'fixed'; ta.style.opacity = '0';
+    document.body.appendChild(ta); ta.select(); try { document.execCommand('copy'); done(); } catch (e) {} document.body.removeChild(ta);
+  }
+}
+function markdown(a) {
+  var L = [], gg = a.google, v = a.views;
+  L.push('# Niche check: ' + a.q);
+  L.push('Score ' + (a.score == null ? 'n/a' : a.score + '/100') + ' - ' + a.tier[0] + '. ' + a.tier[1]);
+  L.push('Scanned ' + a.when + ' at ' + location.origin + location.pathname + '?q=' + encodeURIComponent(a.q));
+  L.push('');
+  L.push('## Score');
+  ['audience', 'demand', 'pay', 'momentum'].forEach(function (k) { L.push('- ' + k + ': ' + (a.pillars[k] == null ? 'no source answered' : Math.round(a.pillars[k]) + '/25')); });
+  L.push('');
+  L.push('## Audience');
+  if (a.wiki) L.push('- Wikipedia article: ' + a.wiki.article.title + ' <' + a.wiki.article.fullurl + '>');
+  if (v) { L.push('- Readers a month (last three): ' + Math.round(v.monthly)); if (v.change != null) L.push('- Six-month change: ' + pct(v.change)); }
+  if (a.podcasts) L.push('- Podcasts on topic: ' + a.podcasts.length + ' (' + a.podcastsActive + ' active in the last year)');
+  if (a.library && a.library.mentions != null) L.push('- Books mentioning it: ' + a.library.mentions + (a.library.subject ? ', catalogued under it: ' + a.library.subject : ''));
+  L.push('');
+  if (gg) {
+    L.push('## Demand (Google autocomplete, ' + gg.all.length + ' on-topic completions)');
+    L.push('- Who it is for: ' + (gg.segments.join(', ') || 'none'));
+    L.push('- Questions: ' + (gg.questions.slice(0, 12).join('; ') || 'none'));
+    L.push('- Buying phrases: ' + (gg.buying.slice(0, 12).join('; ') || 'none'));
+    L.push('');
+  }
+  if (a.paidAvailable) {
+    L.push('## Proof of pay (' + a.paid.length + ' paid products, median ' + money(a.medianPrice) + ')');
+    a.paid.slice(0, 10).forEach(function (p) { L.push('- ' + p.name + ' (' + p.type + ', ' + money(p.price) + (p.ratings ? ', ' + p.ratings + ' ratings' : '') + ') <' + p.url + '>'); });
+    L.push('');
+  }
+  if (gg && gg.reddit && gg.reddit.length) {
+    L.push('## Subreddits');
+    gg.reddit.slice(0, 8).forEach(function (r) { L.push('- ' + r.name + ': ' + r.subscribers + ' members <' + r.url + '>'); });
+    L.push('');
+  }
+  L.push('## Sources');
+  SRC.forEach(function (s) { var r = a.src[s[0]]; L.push('- ' + s[1] + ': ' + (r.ok ? 'ok' : 'failed (' + (r.error || '') + ')') + (r.url ? ' <' + r.url + '>' : '')); });
+  return L.join('\n');
+}
+
+/* ---------- Scan ------------------------------------------------------------ */
+function validate(q) {
+  q = q.replace(/\s+/g, ' ').trim();
+  if (q.length < 2) return [null, 'Give it at least two characters.'];
+  if (q.length > 60) return [null, 'Keep it under sixty characters. A niche is a phrase, not a paragraph.'];
+  if (!/^[\p{L}\p{N}][\p{L}\p{N} &'’:.+#/-]*$/u.test(q)) return [null, 'Letters, numbers, spaces and a little punctuation only.'];
+  return [q, null];
+}
+
+function scan(raw) {
+  if (scanning) return;
+  var r = validate(raw), q = r[0];
+  el.err.hidden = !r[1]; el.err.textContent = r[1] || '';
+  if (!q) { el.q.focus(); return; }
+  var existing = reports.findIndex(function (x) { return x.q.toLowerCase() === q.toLowerCase(); });
+  if (existing !== -1) { show(existing); el.results.scrollIntoView({ behavior: reduced ? 'auto' : 'smooth' }); return; }
+
+  scanning = true; el.go.disabled = true; el.q.value = q;
+  el.results.hidden = false;
+  el.report.innerHTML = '';
+  var states = { q: q };
+  renderProgress(states);
+  el.results.scrollIntoView({ behavior: reduced ? 'auto' : 'smooth' });
+
+  fetchAll(q, function (k, res) { states[k] = res; renderProgress(states); }).then(function (src) {
+    var a = analyse(q, src);
+    if (reports.length >= 4) reports.shift();
+    reports.push(a);
+    remember(a);
+    show(reports.length - 1);
+  }).catch(function (e) {
+    el.progress.innerHTML = '<p class="err">Something went wrong putting the report together: ' + esc(e.message) + '</p>';
+  }).then(function () { scanning = false; el.go.disabled = false; });
+}
+
+/* ---------- Wiring ---------------------------------------------------------- */
+el.form.addEventListener('submit', function (e) { e.preventDefault(); scan(el.q.value); });
+document.addEventListener('click', function (e) {
+  var t = e.target.closest('button, a');
+  if (!t) return;
+  if (t.hasAttribute('data-ex')) { el.q.value = t.textContent; scan(t.textContent); }
+  else if (t.hasAttribute('data-scan')) { el.q.value = t.getAttribute('data-scan'); scan(t.getAttribute('data-scan')); }
+  else if (t.hasAttribute('data-tab')) show(Number(t.getAttribute('data-tab')));
+  else if (t.hasAttribute('data-rm')) {
+    var i = Number(t.getAttribute('data-rm'));
+    reports.splice(i, 1);
+    if (!reports.length) { el.results.hidden = true; el.report.innerHTML = ''; active = -1; renderTabs(); syncURL(); return; }
+    show(active > i ? active - 1 : Math.min(active, reports.length - 1));
+  }
+  else if (t.getAttribute('data-act') === 'link') copy(location.href, t);
+  else if (t.getAttribute('data-act') === 'md') copy(markdown(reports[active]), t);
+  else if (t.getAttribute('data-act') === 'another') { el.q.value = ''; el.q.focus(); el.q.scrollIntoView({ behavior: reduced ? 'auto' : 'smooth', block: 'center' }); }
+});
+
+/* Reveal */
+var risers = document.querySelectorAll('.rise');
+if (reduced || !('IntersectionObserver' in window)) risers.forEach(function (x) { x.classList.add('in'); });
+else {
+  requestAnimationFrame(function () { document.querySelectorAll('header .rise').forEach(function (x) { x.classList.add('in'); }); });
+  var io = new IntersectionObserver(function (es) { es.forEach(function (x) { if (x.isIntersecting) { x.target.classList.add('in'); io.unobserve(x.target); } }); }, { rootMargin: '0px 0px -6% 0px', threshold: 0.05 });
+  document.querySelectorAll('section .rise, footer .rise').forEach(function (x) { io.observe(x); });
+}
+
+renderRecent();
+
+/* Deep link: ?q=a,b runs each in turn. */
+var initial = (new URL(location.href).searchParams.get('q') || '').split(',').map(function (s) { return s.trim(); }).filter(Boolean).slice(0, 4);
+if (initial.length) {
+  (function next(i) {
+    if (i >= initial.length) return;
+    scan(initial[i]);
+    var wait = setInterval(function () { if (!scanning) { clearInterval(wait); next(i + 1); } }, 200);
+  })(0);
+}
+})();
+</script>
+</body>
+</html>
