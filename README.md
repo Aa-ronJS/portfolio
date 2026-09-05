@@ -3,6 +3,11 @@
 Source of https://aaronsteele.vercel.app. One HTML file, five photographs, three
 self-hosted fonts, no build step and no dependencies.
 
+`services/` is a separate deployable: a static lead-capture site for
+inbound search (WordPress builds and rebuilds, custom software, CRM work,
+project rescues), meant for its own domain and Vercel project. Its README
+covers the launch checklist and the honest version of the SEO strategy.
+
 Two more pages ride along for contract applications:
 
 - https://aaronsteele.vercel.app/fullstack, the engagement report for
