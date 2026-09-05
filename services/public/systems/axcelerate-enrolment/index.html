@@ -1,0 +1,256 @@
+<!doctype html>
+<html lang="en-AU">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>aXcelerate Website Enrolment Integration for RTOs | Australia | Aaron Steele</title>
+<meta name="description" content="Most RTO websites end at an enquiry form, and the office re-keys every student into aXcelerate afterwards, usually chasing the USI by email for a week. aXcelerate's API and web enrolment tooling support a straight-through path: course dates on the website pulled live from aXcelerate, enrolment...">
+<link rel="canonical" href="https://REPLACE-DOMAIN/systems/axcelerate-enrolment/">
+<meta property="og:title" content="aXcelerate Website Enrolment Integration for RTOs | Australia | Aaron Steele">
+<meta property="og:description" content="Most RTO websites end at an enquiry form, and the office re-keys every student into aXcelerate afterwards, usually chasing the USI by email for a week. aXcelerate's API and web enrolment tooling support a straight-through path: course dates on the website pulled live from aXcelerate, enrolment...">
+<meta property="og:type" content="article">
+<meta property="og:image" content="https://REPLACE-DOMAIN/og/services.png">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:image" content="https://REPLACE-DOMAIN/og/services.png">
+<meta name="theme-color" content="#12181f">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Crect width='100' height='100' fill='%2312181f'/%3E%3Ctext x='50' y='74' font-size='68' font-family='Arial' font-weight='700' text-anchor='middle' fill='%23e0a232'%3EA%3C/text%3E%3C/svg%3E">
+<link rel="preload" as="font" type="font/woff2" href="/fonts/clash-display-var.woff2" crossorigin>
+<link rel="preload" as="font" type="font/woff2" href="/fonts/satoshi-var.woff2" crossorigin>
+<link rel="stylesheet" href="/css/site.css">
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@graph": [
+    {
+      "@type": "FAQPage",
+      "mainEntity": [
+        {
+          "@type": "Question",
+          "name": "Can students enrol directly into aXcelerate from our website?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "Yes. aXcelerate exposes the surfaces to list courses and create enrolments, and its own web enrolment tooling covers simpler cases. The build decides how much of your policy the flow encodes; the plumbing is the established part."
+          }
+        },
+        {
+          "@type": "Question",
+          "name": "Will this help with AVETMISS reporting?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "Materially: the reporting pain is usually data captured loosely at enrolment. Validating USI and demographic fields at the source means export time stops being archaeology. There is a VETtrak-flavoured page on this same problem."
+          }
+        },
+        {
+          "@type": "Question",
+          "name": "What about our student portal and LMS?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "Same join, further along: enrolment can provision LMS access automatically. Scope it as a second stage; the enrolment path pays for itself first and proves the plumbing."
+          }
+        }
+      ]
+    },
+    {
+      "@type": "BreadcrumbList",
+      "itemListElement": [
+        {
+          "@type": "ListItem",
+          "position": 1,
+          "name": "Home",
+          "item": "https://REPLACE-DOMAIN/"
+        },
+        {
+          "@type": "ListItem",
+          "position": 2,
+          "name": "System guides",
+          "item": "https://REPLACE-DOMAIN/systems/"
+        },
+        {
+          "@type": "ListItem",
+          "position": 3,
+          "name": "aXcelerate enrolment from your website",
+          "item": "https://REPLACE-DOMAIN/systems/axcelerate-enrolment/"
+        }
+      ]
+    }
+  ]
+}
+</script>
+</head>
+<body>
+
+<header class="top">
+  <div class="wrap">
+    <a class="brand" href="/">Aaron Steele<span>.</span></a>
+    <nav class="nav" aria-label="Site">
+      <a href="/">Home</a>
+      <a href="/ai-development/">AI development</a>
+      <a href="/wordpress/">WordPress</a>
+      <a href="/website-rebuild/">Rebuilds</a>
+      <a href="/full-stack-developer/">Custom software</a>
+      <a href="/crm-automation/">CRM &amp; automation</a>
+      <a href="/industries/">Industries</a>
+      <a href="/answers/">Answers</a>
+      <a href="/pricing/">Pricing</a>
+      <a href="/project-rescue/">Rescues</a>
+      <a href="/contact/">Work with me</a>
+    </nav>
+  </div>
+</header>
+
+<main>
+  <div class="hero">
+    <div class="wrap">
+      <ol class="crumbs"><li><a href="/">Home</a></li><li><a href="/systems/">System guides</a></li><li>Training providers</li></ol>
+      <h1 class="measure-wide" style="max-inline-size:24ch">aXcelerate enrolment from your website</h1>
+      <p class="lede">
+        Most RTO websites end at an enquiry form, and the office re-keys every
+        student into aXcelerate afterwards, usually chasing the USI by email for a week.
+        <b>aXcelerate's API and web enrolment tooling support a straight-through path</b>:
+        course dates on the website pulled live from aXcelerate, enrolment captured once
+        with the compliance fields done properly, payment taken, and the student record
+        created without anyone retyping a thing.
+      </p>
+      <div class="cta-row">
+        <a class="btn" href="/contact/">Describe your setup</a>
+        <a class="btn btn--ghost" href="/pricing/">Get an estimate</a>
+      </div>
+    </div>
+  </div>
+
+  <section class="section">
+    <div class="wrap">
+      <p class="tag">The join</p>
+      <h2 class="measure">How it actually works.</h2>
+      <div class="rows">
+        <div class="row">
+          <h3>Course dates should have one home</h3>
+          <div>If upcoming course dates live in aXcelerate and also, separately, on the
+             website, they disagree within a month and a student books a class that moved.
+             The join pulls scheduled workshops and intakes from aXcelerate onto the site
+             automatically: full classes close themselves, new dates appear when created,
+             and nobody updates a web page on a Friday afternoon again.</div>
+        </div>
+        <div class="row">
+          <h3>Collect the compliance fields once, correctly</h3>
+          <div>An AVETMISS-clean enrolment needs the student's details in a specific shape:
+             USI, and the demographic and background fields the standard requires. A form
+             built for this validates as the student types, checks the USI format on the
+             spot, and writes fields into aXcelerate correctly named and coded, so reporting
+             time is not a cleanup of what the website collected loosely.</div>
+        </div>
+        <div class="row">
+          <h3>Payment belongs in the same motion</h3>
+          <div>An enrolment without payment is an enquiry wearing a costume. Taking payment
+             in the same flow, card for short courses, deposit or funded-place logic where
+             it applies, turns the website into the till, and the reconciliation between
+             enrolments and money becomes a report instead of a hunt across three
+             inboxes.</div>
+        </div>
+        <div class="row">
+          <h3>What happens after submit is half the value</h3>
+          <div>Straight-through means the confirmation email with the right course details
+             sends itself, the trainer's roster updates because the class list is the
+             system's own, and pre-course requirements (LLN, induction, documents) go out on
+             enrolment rather than when someone remembers. The office stops being a
+             transcription service and starts being an admissions team.</div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="section section--ink">
+    <div class="wrap">
+      <p class="tag">The traps</p>
+      <h2 class="measure">Where it goes wrong.</h2>
+      <div class="rows" style="margin-top:var(--s7)">
+        <div class="row">
+          <h3>Funded enrolments are not short-course enrolments</h3>
+          <div>State-funded places carry eligibility checks and evidence that a public web
+             form should not pretend to complete. The honest build routes funded enquiries
+             into a human-led path with the data pre-captured, and lets fee-for-service
+             students go straight through. One form, two exits, no compliance theatre.</div>
+        </div>
+        <div class="row">
+          <h3>The API is not the hard part</h3>
+          <div>The hard part is the enrolment policy nobody wrote down: what happens to an
+             under-18, an international student, a failed payment, a duplicate USI. I ask
+             those questions before writing code, because the eleven years of analysis work
+             is precisely knowing that software encodes decisions, and unmade decisions
+             become support tickets.</div>
+        </div>
+      </div>
+      <p class="measure-wide dim" style="margin-top:var(--s7)">
+        Anyone can claim integration experience; checking it is harder. My worst
+        reconciliation is public: a national charity's donation history out by around
+        $3.8 million after records merged on the wrong field, traced to the cause, rebuilt,
+        and reconciled against their books, 37,729 donations matched back to the right
+        donor. The method on this page is that method, at whatever size your version of the
+        problem is.
+      </p>
+      <div class="cta-row" style="margin-top:var(--s6)">
+        <a class="link" href="https://aaronsteele.vercel.app/#work">The proof, in public <span aria-hidden="true">&rarr;</span></a>
+      </div>
+    </div>
+  </section>
+
+  <section class="section">
+    <div class="wrap">
+      <p class="tag">Fair questions</p>
+      <h2 class="measure">Before you ask.</h2>
+      <div class="faq">
+        <details>
+          <summary>Can students enrol directly into aXcelerate from our website?</summary>
+          <div>Yes. aXcelerate exposes the surfaces to list courses and create enrolments, and its own web enrolment tooling covers simpler cases. The build decides how much of your policy the flow encodes; the plumbing is the established part.</div>
+        </details>
+        <details>
+          <summary>Will this help with AVETMISS reporting?</summary>
+          <div>Materially: the reporting pain is usually data captured loosely at enrolment. Validating USI and demographic fields at the source means export time stops being archaeology. There is a VETtrak-flavoured page on this same problem.</div>
+        </details>
+        <details>
+          <summary>What about our student portal and LMS?</summary>
+          <div>Same join, further along: enrolment can provision LMS access automatically. Scope it as a second stage; the enrolment path pays for itself first and proves the plumbing.</div>
+        </details>
+      </div>
+      <div class="cta-row" style="margin-top:var(--s7)">
+        <a class="link" href="/industries/education/">Education industry page <span aria-hidden="true">&rarr;</span></a>
+        <a class="link" href="/full-stack-developer/">Custom software <span aria-hidden="true">&rarr;</span></a>
+        <a class="link" href="/business-analysis/">Business analysis <span aria-hidden="true">&rarr;</span></a>
+      </div>
+    </div>
+  </section>
+
+  <section class="section section--ink">
+    <div class="wrap">
+      <p class="tag">Adjacent joins</p>
+      <h2 class="measure">Related guides.</h2>
+      <ul class="list" style="margin-top:var(--s7)">
+        <li><a href="/systems/vettrak-avetmiss/" style="color:inherit"><b>VETtrak AVETMISS exports without the week of pain</b></a></li>
+        <li><a href="/systems/cliniko-reminders/" style="color:inherit"><b>Cliniko reminders that actually cut no-shows</b></a></li>
+        <li><a href="/systems/hubspot-to-xero/" style="color:inherit"><b>HubSpot to Xero for services businesses</b></a></li>
+      </ul>
+    </div>
+  </section>
+</main>
+
+<footer class="foot">
+  <div class="wrap">
+    <p class="tag">Room for the right project</p>
+    <h2 class="measure">Tell me what's broken.</h2>
+    <div class="links">
+      <a class="link" href="/contact/">Work with me <span aria-hidden="true">&rarr;</span></a>
+      <a class="link" href="https://aaronsteele.vercel.app">Portfolio <span aria-hidden="true">&rarr;</span></a>
+      <a class="link" href="https://github.com/Aa-ronJS">GitHub <span aria-hidden="true">&rarr;</span></a>
+    </div>
+    <div class="foot__meta">
+      <p>Aaron Steele. Adelaide, South Australia. Remote Australia-wide. Analyst since 2015,
+         building since 2016. TOGAF certified, baseline cleared.</p>
+      <p><a href="/ai-development/" style="color:inherit">AI development</a> &middot; <a href="/wordpress/" style="color:inherit">WordPress</a> &middot; <a href="/ecommerce/" style="color:inherit">E-commerce</a> &middot; <a href="/mobile-apps/" style="color:inherit">Mobile apps</a> &middot; <a href="/website-rebuild/" style="color:inherit">Website rebuilds</a> &middot; <a href="/full-stack-developer/" style="color:inherit">Custom software</a> &middot; <a href="/crm-automation/" style="color:inherit">CRM &amp; automation</a> &middot; <a href="/data-and-reporting/" style="color:inherit">Data &amp; reporting</a> &middot; <a href="/project-rescue/" style="color:inherit">Project rescues</a> &middot; <a href="/business-analysis/" style="color:inherit">Business analysis</a> &middot; <a href="/systems/" style="color:inherit">System guides</a></p>
+      <p>Industries: <a href="/industries/trades/" style="color:inherit">Trades</a> &middot; <a href="/industries/transport/" style="color:inherit">Transport</a> &middot; <a href="/industries/mining/" style="color:inherit">Mining</a> &middot; <a href="/industries/retail/" style="color:inherit">Retail</a> &middot; <a href="/industries/hospitality/" style="color:inherit">Hospitality</a> &middot; <a href="/industries/professional-services/" style="color:inherit">Professional services</a> &middot; <a href="/industries/health/" style="color:inherit">Health</a> &middot; <a href="/industries/nonprofits/" style="color:inherit">Not-for-profits</a> &middot; <a href="/industries/real-estate/" style="color:inherit">Real estate</a> &middot; <a href="/industries/agriculture/" style="color:inherit">Agriculture</a> &middot; <a href="/industries/government/" style="color:inherit">Government</a> &middot; <a href="/industries/education/" style="color:inherit">Education</a></p>
+      <p><a href="/privacy/" style="color:inherit">Privacy</a></p>
+    </div>
+  </div>
+</footer>
+
+</body>
+</html>

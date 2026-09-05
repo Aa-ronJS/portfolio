@@ -68,6 +68,25 @@ a new entry in the generator's content files, regenerated and added to the
 sitemap. Write the answer the way you would say it on the call; the format
 does the rest.
 
+## The system guides
+
+`/systems/` is the rankable long tail from the SEO plan, already written:
+twelve "[System] to [System]" pages (ServiceM8/AroFlo to Xero, Shopify to
+MYOB, WooCommerce fees, Square and Shopify stock, Cliniko reminders,
+Halaxy versus Cliniko, HubSpot to Xero, PropertyMe reports, aXcelerate
+enrolment, VETtrak AVETMISS, simPRO and weather). Buyers type exactly
+these pairs; almost nobody serious writes for them. Same generator
+machinery as answers (`tools/gen_systems.py`, content in
+`tools/systems_a.py` and `tools/systems_b.py`); each page names how the
+join actually works, the traps, and when the native integration means
+they should not hire anyone.
+
+The register is deliberate: method and mechanics, never a claimed
+portfolio of that specific pair. Where a page states product behaviour
+(what ServiceM8's native sync carries, how Halaxy charges), read it once
+before launch against what you currently know; products drift, and these
+pages carry a knowledge date like any expert would.
+
 ## The pricing calculator
 
 `/pricing/` is the conversion engine: pick a service, answer two to four
@@ -206,3 +225,7 @@ compress under ~200KB; alt text describes what is actually in frame.
   the page you could not defend on a call.
 - The FAQ answers avoid invented prices, timeframes and guarantees on
   purpose. Resist adding them until they are real.
+- The system guides describe named products' current behaviour (native
+  integrations, pricing models). That is the one category of claim on the
+  site that can go stale without anyone lying: skim the twelve before
+  launch and after any product's big release, and fix what drifted.

@@ -169,11 +169,11 @@ Project rescue.
 
 **Q&A seeds (post these yourself, answer them yourself; it's allowed and
 expected):**
-1. Do you work outside Adelaide? — Yes, remote Australia-wide; most of my
+1. Do you work outside Adelaide?: Yes, remote Australia-wide; most of my
    career has been distributed delivery.
-2. How do you charge? — Fixed quotes in writing for defined jobs, day rate
+2. How do you charge?: Fixed quotes in writing for defined jobs, day rate
    for open-ended work, always agreed before anything starts.
-3. Can you take over a website from another developer? — Yes, that's a
+3. Can you take over a website from another developer?: Yes, that's a
    speciality; start at the project-rescue page on my site.
 
 **Review ask (send to past clients, personalise the first line):**

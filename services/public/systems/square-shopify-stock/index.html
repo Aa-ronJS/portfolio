@@ -1,0 +1,252 @@
+<!doctype html>
+<html lang="en-AU">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Square POS and Shopify Stock Sync: One Truth for Inventory | Australia | Aaron Steele</title>
+<meta name="description" content="A shop selling in person through Square and online through Shopify has two systems each convinced they own the stock count, and every sale in one makes the other slightly wrong. The durable fix is deciding which system is the single stock ledger, then syncing the other to it; sometimes the...">
+<link rel="canonical" href="https://REPLACE-DOMAIN/systems/square-shopify-stock/">
+<meta property="og:title" content="Square POS and Shopify Stock Sync: One Truth for Inventory | Australia | Aaron Steele">
+<meta property="og:description" content="A shop selling in person through Square and online through Shopify has two systems each convinced they own the stock count, and every sale in one makes the other slightly wrong. The durable fix is deciding which system is the single stock ledger, then syncing the other to it; sometimes the...">
+<meta property="og:type" content="article">
+<meta property="og:image" content="https://REPLACE-DOMAIN/og/services.png">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:image" content="https://REPLACE-DOMAIN/og/services.png">
+<meta name="theme-color" content="#12181f">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Crect width='100' height='100' fill='%2312181f'/%3E%3Ctext x='50' y='74' font-size='68' font-family='Arial' font-weight='700' text-anchor='middle' fill='%23e0a232'%3EA%3C/text%3E%3C/svg%3E">
+<link rel="preload" as="font" type="font/woff2" href="/fonts/clash-display-var.woff2" crossorigin>
+<link rel="preload" as="font" type="font/woff2" href="/fonts/satoshi-var.woff2" crossorigin>
+<link rel="stylesheet" href="/css/site.css">
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@graph": [
+    {
+      "@type": "FAQPage",
+      "mainEntity": [
+        {
+          "@type": "Question",
+          "name": "Can Square and Shopify share inventory?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "Yes, through connector tools matched on SKU, one direction at a time. Whether they should, versus consolidating on one platform's POS and store, is worth an honest hour before any subscription starts."
+          }
+        },
+        {
+          "@type": "Question",
+          "name": "Why does our online store oversell after busy Saturdays?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "Because both systems accept sales against their own count and reconcile later, and Saturday is when the counts diverge fastest. A single ledger, one-way sync and small online buffers on fast movers close most of the gap."
+          }
+        },
+        {
+          "@type": "Question",
+          "name": "What does fixing this look like as a project?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "A catalogue and SKU cleanup, a ledger decision, connector configuration or a small custom sync, and a fortnight of watching the counts reconcile. Fixed quote after seeing your catalogue size and order volume."
+          }
+        }
+      ]
+    },
+    {
+      "@type": "BreadcrumbList",
+      "itemListElement": [
+        {
+          "@type": "ListItem",
+          "position": 1,
+          "name": "Home",
+          "item": "https://REPLACE-DOMAIN/"
+        },
+        {
+          "@type": "ListItem",
+          "position": 2,
+          "name": "System guides",
+          "item": "https://REPLACE-DOMAIN/systems/"
+        },
+        {
+          "@type": "ListItem",
+          "position": 3,
+          "name": "Square and Shopify agreeing about stock",
+          "item": "https://REPLACE-DOMAIN/systems/square-shopify-stock/"
+        }
+      ]
+    }
+  ]
+}
+</script>
+</head>
+<body>
+
+<header class="top">
+  <div class="wrap">
+    <a class="brand" href="/">Aaron Steele<span>.</span></a>
+    <nav class="nav" aria-label="Site">
+      <a href="/">Home</a>
+      <a href="/ai-development/">AI development</a>
+      <a href="/wordpress/">WordPress</a>
+      <a href="/website-rebuild/">Rebuilds</a>
+      <a href="/full-stack-developer/">Custom software</a>
+      <a href="/crm-automation/">CRM &amp; automation</a>
+      <a href="/industries/">Industries</a>
+      <a href="/answers/">Answers</a>
+      <a href="/pricing/">Pricing</a>
+      <a href="/project-rescue/">Rescues</a>
+      <a href="/contact/">Work with me</a>
+    </nav>
+  </div>
+</header>
+
+<main>
+  <div class="hero">
+    <div class="wrap">
+      <ol class="crumbs"><li><a href="/">Home</a></li><li><a href="/systems/">System guides</a></li><li>Stores &amp; the books</li></ol>
+      <h1 class="measure-wide" style="max-inline-size:24ch">Square and Shopify agreeing about stock</h1>
+      <p class="lede">
+        A shop selling in person through Square and online through Shopify has two
+        systems each convinced they own the stock count, and every sale in one makes the
+        other slightly wrong. <b>The durable fix is deciding which system is the single
+        stock ledger</b>, then syncing the other to it; sometimes the honest answer is
+        dropping to one platform, which costs less than the connector subscription and the
+        weekly arguments with the shelf.
+      </p>
+      <div class="cta-row">
+        <a class="btn" href="/contact/">Describe your setup</a>
+        <a class="btn btn--ghost" href="/pricing/">Get an estimate</a>
+      </div>
+    </div>
+  </div>
+
+  <section class="section">
+    <div class="wrap">
+      <p class="tag">The join</p>
+      <h2 class="measure">How it actually works.</h2>
+      <div class="rows">
+        <div class="row">
+          <h3>First question: do you need both platforms at all?</h3>
+          <div>Shopify has its own POS, and Square has its own online store. If either end
+             of your setup is light, collapsing to one platform removes the sync problem
+             instead of managing it, and I will say so even though the build is smaller.
+             Two platforms earn their keep when each side is genuinely strong: established
+             in-store flow on Square, real online trade on Shopify.</div>
+        </div>
+        <div class="row">
+          <h3>SKUs are the join key, so make them real</h3>
+          <div>Every sync between the two matches products by SKU. Items keyed casually
+             into Square with no SKU, or variants (size, colour) flattened on one side,
+             cannot be matched by any tool at any price. A one-time catalogue cleanup, every
+             sellable variant carrying one agreed SKU on both sides, is the unglamorous
+             prerequisite for everything else on this page.</div>
+        </div>
+        <div class="row">
+          <h3>Pick the ledger, sync one direction</h3>
+          <div>One system holds the truth and receives all stock movements: deliveries,
+             stocktakes, adjustments, breakage. The other is a sales channel that reports
+             its sales into the ledger and takes its counts from it. Two-way "both systems
+             are right" syncing is how you oversell during the exact busy weekend the setup
+             was meant to survive.</div>
+        </div>
+        <div class="row">
+          <h3>Accept the oversell window, then shrink it</h3>
+          <div>Even good syncs are near-real-time, not instant: the last unit can sell on
+             both channels within the same minute. Policy handles what software cannot:
+             buffer counts on the last few units of fast movers online, and a defined
+             make-good when it happens. Pretending the window is zero is how it bites.</div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="section section--ink">
+    <div class="wrap">
+      <p class="tag">The traps</p>
+      <h2 class="measure">Where it goes wrong.</h2>
+      <div class="rows" style="margin-top:var(--s7)">
+        <div class="row">
+          <h3>Stocktakes done in the wrong system</h3>
+          <div>A stocktake keyed into the channel instead of the ledger gets overwritten at
+             the next sync and everyone concludes the sync is broken. Adjustments happen in
+             the ledger, full stop. Write it on the wall near the back office computer.</div>
+        </div>
+        <div class="row">
+          <h3>Connector pricing that outgrows the problem</h3>
+          <div>Per-order connector fees on a growing store can quietly exceed the cost of
+             the one-platform consolidation that ends the problem permanently. Do the sums
+             annually; the right answer changes as the shop grows.</div>
+        </div>
+      </div>
+      <p class="measure-wide dim" style="margin-top:var(--s7)">
+        Anyone can claim integration experience; checking it is harder. My worst
+        reconciliation is public: a national charity's donation history out by around
+        $3.8 million after records merged on the wrong field, traced to the cause, rebuilt,
+        and reconciled against their books, 37,729 donations matched back to the right
+        donor. The method on this page is that method, at whatever size your version of the
+        problem is.
+      </p>
+      <div class="cta-row" style="margin-top:var(--s6)">
+        <a class="link" href="https://aaronsteele.vercel.app/#work">The proof, in public <span aria-hidden="true">&rarr;</span></a>
+      </div>
+    </div>
+  </section>
+
+  <section class="section">
+    <div class="wrap">
+      <p class="tag">Fair questions</p>
+      <h2 class="measure">Before you ask.</h2>
+      <div class="faq">
+        <details>
+          <summary>Can Square and Shopify share inventory?</summary>
+          <div>Yes, through connector tools matched on SKU, one direction at a time. Whether they should, versus consolidating on one platform's POS and store, is worth an honest hour before any subscription starts.</div>
+        </details>
+        <details>
+          <summary>Why does our online store oversell after busy Saturdays?</summary>
+          <div>Because both systems accept sales against their own count and reconcile later, and Saturday is when the counts diverge fastest. A single ledger, one-way sync and small online buffers on fast movers close most of the gap.</div>
+        </details>
+        <details>
+          <summary>What does fixing this look like as a project?</summary>
+          <div>A catalogue and SKU cleanup, a ledger decision, connector configuration or a small custom sync, and a fortnight of watching the counts reconcile. Fixed quote after seeing your catalogue size and order volume.</div>
+        </details>
+      </div>
+      <div class="cta-row" style="margin-top:var(--s7)">
+        <a class="link" href="/ecommerce/">E-commerce <span aria-hidden="true">&rarr;</span></a>
+        <a class="link" href="/industries/retail/">Retail industry page <span aria-hidden="true">&rarr;</span></a>
+        <a class="link" href="/full-stack-developer/">Custom software <span aria-hidden="true">&rarr;</span></a>
+      </div>
+    </div>
+  </section>
+
+  <section class="section section--ink">
+    <div class="wrap">
+      <p class="tag">Adjacent joins</p>
+      <h2 class="measure">Related guides.</h2>
+      <ul class="list" style="margin-top:var(--s7)">
+        <li><a href="/systems/shopify-to-myob/" style="color:inherit"><b>Shopify to MYOB, reconciled</b></a></li>
+        <li><a href="/systems/woocommerce-xero-fees-refunds/" style="color:inherit"><b>WooCommerce to Xero: fees and refunds done right</b></a></li>
+        <li><a href="/systems/propertyme-owner-reports/" style="color:inherit"><b>PropertyMe owner reports, automated</b></a></li>
+      </ul>
+    </div>
+  </section>
+</main>
+
+<footer class="foot">
+  <div class="wrap">
+    <p class="tag">Room for the right project</p>
+    <h2 class="measure">Tell me what's broken.</h2>
+    <div class="links">
+      <a class="link" href="/contact/">Work with me <span aria-hidden="true">&rarr;</span></a>
+      <a class="link" href="https://aaronsteele.vercel.app">Portfolio <span aria-hidden="true">&rarr;</span></a>
+      <a class="link" href="https://github.com/Aa-ronJS">GitHub <span aria-hidden="true">&rarr;</span></a>
+    </div>
+    <div class="foot__meta">
+      <p>Aaron Steele. Adelaide, South Australia. Remote Australia-wide. Analyst since 2015,
+         building since 2016. TOGAF certified, baseline cleared.</p>
+      <p><a href="/ai-development/" style="color:inherit">AI development</a> &middot; <a href="/wordpress/" style="color:inherit">WordPress</a> &middot; <a href="/ecommerce/" style="color:inherit">E-commerce</a> &middot; <a href="/mobile-apps/" style="color:inherit">Mobile apps</a> &middot; <a href="/website-rebuild/" style="color:inherit">Website rebuilds</a> &middot; <a href="/full-stack-developer/" style="color:inherit">Custom software</a> &middot; <a href="/crm-automation/" style="color:inherit">CRM &amp; automation</a> &middot; <a href="/data-and-reporting/" style="color:inherit">Data &amp; reporting</a> &middot; <a href="/project-rescue/" style="color:inherit">Project rescues</a> &middot; <a href="/business-analysis/" style="color:inherit">Business analysis</a> &middot; <a href="/systems/" style="color:inherit">System guides</a></p>
+      <p>Industries: <a href="/industries/trades/" style="color:inherit">Trades</a> &middot; <a href="/industries/transport/" style="color:inherit">Transport</a> &middot; <a href="/industries/mining/" style="color:inherit">Mining</a> &middot; <a href="/industries/retail/" style="color:inherit">Retail</a> &middot; <a href="/industries/hospitality/" style="color:inherit">Hospitality</a> &middot; <a href="/industries/professional-services/" style="color:inherit">Professional services</a> &middot; <a href="/industries/health/" style="color:inherit">Health</a> &middot; <a href="/industries/nonprofits/" style="color:inherit">Not-for-profits</a> &middot; <a href="/industries/real-estate/" style="color:inherit">Real estate</a> &middot; <a href="/industries/agriculture/" style="color:inherit">Agriculture</a> &middot; <a href="/industries/government/" style="color:inherit">Government</a> &middot; <a href="/industries/education/" style="color:inherit">Education</a></p>
+      <p><a href="/privacy/" style="color:inherit">Privacy</a></p>
+    </div>
+  </div>
+</footer>
+
+</body>
+</html>

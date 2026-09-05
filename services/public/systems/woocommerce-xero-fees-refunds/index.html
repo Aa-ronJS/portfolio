@@ -1,0 +1,253 @@
+<!doctype html>
+<html lang="en-AU">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>WooCommerce Xero Integration: Fees, Refunds and Rounding Done Right | Aaron Steele</title>
+<meta name="description" content="WooCommerce-to-Xero sync apps, including the official one, move orders into Xero competently. The three things they handle badly are exactly the three that stop your books reconciling: gateway fees invisible in the deposit, refunds that never make it back, and GST rounding that disagrees by one...">
+<link rel="canonical" href="https://REPLACE-DOMAIN/systems/woocommerce-xero-fees-refunds/">
+<meta property="og:title" content="WooCommerce Xero Integration: Fees, Refunds and Rounding Done Right | Aaron Steele">
+<meta property="og:description" content="WooCommerce-to-Xero sync apps, including the official one, move orders into Xero competently. The three things they handle badly are exactly the three that stop your books reconciling: gateway fees invisible in the deposit, refunds that never make it back, and GST rounding that disagrees by one...">
+<meta property="og:type" content="article">
+<meta property="og:image" content="https://REPLACE-DOMAIN/og/services.png">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:image" content="https://REPLACE-DOMAIN/og/services.png">
+<meta name="theme-color" content="#12181f">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Crect width='100' height='100' fill='%2312181f'/%3E%3Ctext x='50' y='74' font-size='68' font-family='Arial' font-weight='700' text-anchor='middle' fill='%23e0a232'%3EA%3C/text%3E%3C/svg%3E">
+<link rel="preload" as="font" type="font/woff2" href="/fonts/clash-display-var.woff2" crossorigin>
+<link rel="preload" as="font" type="font/woff2" href="/fonts/satoshi-var.woff2" crossorigin>
+<link rel="stylesheet" href="/css/site.css">
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@graph": [
+    {
+      "@type": "FAQPage",
+      "mainEntity": [
+        {
+          "@type": "Question",
+          "name": "Does WooCommerce sync with Xero?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "Yes, several mature options exist. Whether your books reconcile afterwards depends on fee handling, refund paths and rounding configuration, which is design work the plugins leave to you."
+          }
+        },
+        {
+          "@type": "Question",
+          "name": "Why is our Xero out by a few dollars every month?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "Cent-level rounding across hundreds of orders, plus refunds that bypassed the store, plus fees booked inconsistently. Each is small; together they compound into a number your accountant cannot sign off. The fix is structural, and it is the same fix every time."
+          }
+        },
+        {
+          "@type": "Question",
+          "name": "Can you audit an existing setup instead of rebuilding it?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "Yes, and that is usually the right first step: a reconciliation of a recent month, deposit by deposit, telling you exactly where the leaks are and what to change. Sometimes the answer is two settings, not a project."
+          }
+        }
+      ]
+    },
+    {
+      "@type": "BreadcrumbList",
+      "itemListElement": [
+        {
+          "@type": "ListItem",
+          "position": 1,
+          "name": "Home",
+          "item": "https://REPLACE-DOMAIN/"
+        },
+        {
+          "@type": "ListItem",
+          "position": 2,
+          "name": "System guides",
+          "item": "https://REPLACE-DOMAIN/systems/"
+        },
+        {
+          "@type": "ListItem",
+          "position": 3,
+          "name": "WooCommerce to Xero: fees and refunds done right",
+          "item": "https://REPLACE-DOMAIN/systems/woocommerce-xero-fees-refunds/"
+        }
+      ]
+    }
+  ]
+}
+</script>
+</head>
+<body>
+
+<header class="top">
+  <div class="wrap">
+    <a class="brand" href="/">Aaron Steele<span>.</span></a>
+    <nav class="nav" aria-label="Site">
+      <a href="/">Home</a>
+      <a href="/ai-development/">AI development</a>
+      <a href="/wordpress/">WordPress</a>
+      <a href="/website-rebuild/">Rebuilds</a>
+      <a href="/full-stack-developer/">Custom software</a>
+      <a href="/crm-automation/">CRM &amp; automation</a>
+      <a href="/industries/">Industries</a>
+      <a href="/answers/">Answers</a>
+      <a href="/pricing/">Pricing</a>
+      <a href="/project-rescue/">Rescues</a>
+      <a href="/contact/">Work with me</a>
+    </nav>
+  </div>
+</header>
+
+<main>
+  <div class="hero">
+    <div class="wrap">
+      <ol class="crumbs"><li><a href="/">Home</a></li><li><a href="/systems/">System guides</a></li><li>Stores &amp; the books</li></ol>
+      <h1 class="measure-wide" style="max-inline-size:24ch">WooCommerce to Xero: fees and refunds done right</h1>
+      <p class="lede">
+        WooCommerce-to-Xero sync apps, including the official one, move orders
+        into Xero competently. <b>The three things they handle badly are exactly the three
+        that stop your books reconciling</b>: gateway fees invisible in the deposit, refunds
+        that never make it back, and GST rounding that disagrees by one cent per order,
+        forever. All three are solvable; none is solved by default.
+      </p>
+      <div class="cta-row">
+        <a class="btn" href="/contact/">Describe your setup</a>
+        <a class="btn btn--ghost" href="/pricing/">Get an estimate</a>
+      </div>
+    </div>
+  </div>
+
+  <section class="section">
+    <div class="wrap">
+      <p class="tag">The join</p>
+      <h2 class="measure">How it actually works.</h2>
+      <div class="rows">
+        <div class="row">
+          <h3>Fees: book the gross, expense the fee</h3>
+          <div>Stripe deposits arrive as sales minus fees; a sync that posts gross invoices
+             straight against the bank never matches the deposit. The structure is the same
+             as every gateway join: invoices post to a Stripe clearing account, the deposit
+             clears it, and a scheduled journal books the fee expense from Stripe's own
+             reports. Your revenue is honest, your fees are visible, and the bank feed
+             matches to the cent.</div>
+        </div>
+        <div class="row">
+          <h3>Refunds: one path, no side doors</h3>
+          <div>A refund issued in WooCommerce must become a credit note against the original
+             Xero invoice, and a refund issued directly in Stripe must be forbidden or
+             detected, because it bypasses the store entirely and leaves an invoice Xero
+             thinks was paid. Partial refunds and re-shipments need the same single path.
+             Most unreconcilable stores have refunds leaking through two doors.</div>
+        </div>
+        <div class="row">
+          <h3>Rounding: take the tax from the source</h3>
+          <div>WooCommerce calculates GST per line and rounds; if the join re-derives tax
+             from totals, one order in three disagrees with Xero by a cent. Cents are the
+             whole game in reconciliation, so the join must carry WooCommerce's tax figures
+             verbatim rather than recalculating. This is a configuration choice in decent
+             sync tools and a code choice in custom feeds.</div>
+        </div>
+        <div class="row">
+          <h3>Decide what Xero is for</h3>
+          <div>High-volume stores do not need forty thousand invoices in Xero; they need
+             honest daily summaries and a store system that holds the detail. Low-volume and
+             B2B stores want real invoices per order. Choosing the grain deliberately keeps
+             Xero useful to the human who reads it, which is the point of books.</div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="section section--ink">
+    <div class="wrap">
+      <p class="tag">The traps</p>
+      <h2 class="measure">Where it goes wrong.</h2>
+      <div class="rows" style="margin-top:var(--s7)">
+        <div class="row">
+          <h3>The plugin update that changes behaviour</h3>
+          <div>Sync plugins ride two moving platforms; a WooCommerce or plugin update can
+             quietly change how refunds or taxes post. A monthly five-minute reconciliation
+             check, deposits against clearing accounts, catches drift while it is one
+             month's work to repair instead of a year's.</div>
+        </div>
+        <div class="row">
+          <h3>History imported on top of history</h3>
+          <div>Connecting a sync tool to a store and a Xero file that both already hold
+             months of the same orders creates duplicates at scale. Pick a cutover date,
+             reconcile up to it by hand once, and let the sync own everything after.</div>
+        </div>
+      </div>
+      <p class="measure-wide dim" style="margin-top:var(--s7)">
+        Anyone can claim integration experience; checking it is harder. My worst
+        reconciliation is public: a national charity's donation history out by around
+        $3.8 million after records merged on the wrong field, traced to the cause, rebuilt,
+        and reconciled against their books, 37,729 donations matched back to the right
+        donor. The method on this page is that method, at whatever size your version of the
+        problem is.
+      </p>
+      <div class="cta-row" style="margin-top:var(--s6)">
+        <a class="link" href="https://aaronsteele.vercel.app/#work">The proof, in public <span aria-hidden="true">&rarr;</span></a>
+      </div>
+    </div>
+  </section>
+
+  <section class="section">
+    <div class="wrap">
+      <p class="tag">Fair questions</p>
+      <h2 class="measure">Before you ask.</h2>
+      <div class="faq">
+        <details>
+          <summary>Does WooCommerce sync with Xero?</summary>
+          <div>Yes, several mature options exist. Whether your books reconcile afterwards depends on fee handling, refund paths and rounding configuration, which is design work the plugins leave to you.</div>
+        </details>
+        <details>
+          <summary>Why is our Xero out by a few dollars every month?</summary>
+          <div>Cent-level rounding across hundreds of orders, plus refunds that bypassed the store, plus fees booked inconsistently. Each is small; together they compound into a number your accountant cannot sign off. The fix is structural, and it is the same fix every time.</div>
+        </details>
+        <details>
+          <summary>Can you audit an existing setup instead of rebuilding it?</summary>
+          <div>Yes, and that is usually the right first step: a reconciliation of a recent month, deposit by deposit, telling you exactly where the leaks are and what to change. Sometimes the answer is two settings, not a project.</div>
+        </details>
+      </div>
+      <div class="cta-row" style="margin-top:var(--s7)">
+        <a class="link" href="/ecommerce/">E-commerce <span aria-hidden="true">&rarr;</span></a>
+        <a class="link" href="/data-and-reporting/">Data &amp; reporting <span aria-hidden="true">&rarr;</span></a>
+        <a class="link" href="/wordpress/">WordPress <span aria-hidden="true">&rarr;</span></a>
+      </div>
+    </div>
+  </section>
+
+  <section class="section section--ink">
+    <div class="wrap">
+      <p class="tag">Adjacent joins</p>
+      <h2 class="measure">Related guides.</h2>
+      <ul class="list" style="margin-top:var(--s7)">
+        <li><a href="/systems/shopify-to-myob/" style="color:inherit"><b>Shopify to MYOB, reconciled</b></a></li>
+        <li><a href="/systems/square-shopify-stock/" style="color:inherit"><b>Square and Shopify agreeing about stock</b></a></li>
+        <li><a href="/systems/servicem8-to-xero/" style="color:inherit"><b>ServiceM8 to Xero without double entry</b></a></li>
+      </ul>
+    </div>
+  </section>
+</main>
+
+<footer class="foot">
+  <div class="wrap">
+    <p class="tag">Room for the right project</p>
+    <h2 class="measure">Tell me what's broken.</h2>
+    <div class="links">
+      <a class="link" href="/contact/">Work with me <span aria-hidden="true">&rarr;</span></a>
+      <a class="link" href="https://aaronsteele.vercel.app">Portfolio <span aria-hidden="true">&rarr;</span></a>
+      <a class="link" href="https://github.com/Aa-ronJS">GitHub <span aria-hidden="true">&rarr;</span></a>
+    </div>
+    <div class="foot__meta">
+      <p>Aaron Steele. Adelaide, South Australia. Remote Australia-wide. Analyst since 2015,
+         building since 2016. TOGAF certified, baseline cleared.</p>
+      <p><a href="/ai-development/" style="color:inherit">AI development</a> &middot; <a href="/wordpress/" style="color:inherit">WordPress</a> &middot; <a href="/ecommerce/" style="color:inherit">E-commerce</a> &middot; <a href="/mobile-apps/" style="color:inherit">Mobile apps</a> &middot; <a href="/website-rebuild/" style="color:inherit">Website rebuilds</a> &middot; <a href="/full-stack-developer/" style="color:inherit">Custom software</a> &middot; <a href="/crm-automation/" style="color:inherit">CRM &amp; automation</a> &middot; <a href="/data-and-reporting/" style="color:inherit">Data &amp; reporting</a> &middot; <a href="/project-rescue/" style="color:inherit">Project rescues</a> &middot; <a href="/business-analysis/" style="color:inherit">Business analysis</a> &middot; <a href="/systems/" style="color:inherit">System guides</a></p>
+      <p>Industries: <a href="/industries/trades/" style="color:inherit">Trades</a> &middot; <a href="/industries/transport/" style="color:inherit">Transport</a> &middot; <a href="/industries/mining/" style="color:inherit">Mining</a> &middot; <a href="/industries/retail/" style="color:inherit">Retail</a> &middot; <a href="/industries/hospitality/" style="color:inherit">Hospitality</a> &middot; <a href="/industries/professional-services/" style="color:inherit">Professional services</a> &middot; <a href="/industries/health/" style="color:inherit">Health</a> &middot; <a href="/industries/nonprofits/" style="color:inherit">Not-for-profits</a> &middot; <a href="/industries/real-estate/" style="color:inherit">Real estate</a> &middot; <a href="/industries/agriculture/" style="color:inherit">Agriculture</a> &middot; <a href="/industries/government/" style="color:inherit">Government</a> &middot; <a href="/industries/education/" style="color:inherit">Education</a></p>
+      <p><a href="/privacy/" style="color:inherit">Privacy</a></p>
+    </div>
+  </div>
+</footer>
+
+</body>
+</html>

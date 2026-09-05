@@ -1,0 +1,255 @@
+<!doctype html>
+<html lang="en-AU">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Shopify to MYOB Integration That Reconciles to the Bank | Australia | Aaron Steele</title>
+<meta name="description" content="There is no first-party Shopify-to-MYOB connection, so this join runs through a connector app or a small custom feed, and most installs are "connected" within an hour. Connected is not the goal; reconciled is: the payout that lands in your bank equals orders minus fees minus refunds across...">
+<link rel="canonical" href="https://REPLACE-DOMAIN/systems/shopify-to-myob/">
+<meta property="og:title" content="Shopify to MYOB Integration That Reconciles to the Bank | Australia | Aaron Steele">
+<meta property="og:description" content="There is no first-party Shopify-to-MYOB connection, so this join runs through a connector app or a small custom feed, and most installs are "connected" within an hour. Connected is not the goal; reconciled is: the payout that lands in your bank equals orders minus fees minus refunds across...">
+<meta property="og:type" content="article">
+<meta property="og:image" content="https://REPLACE-DOMAIN/og/services.png">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:image" content="https://REPLACE-DOMAIN/og/services.png">
+<meta name="theme-color" content="#12181f">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Crect width='100' height='100' fill='%2312181f'/%3E%3Ctext x='50' y='74' font-size='68' font-family='Arial' font-weight='700' text-anchor='middle' fill='%23e0a232'%3EA%3C/text%3E%3C/svg%3E">
+<link rel="preload" as="font" type="font/woff2" href="/fonts/clash-display-var.woff2" crossorigin>
+<link rel="preload" as="font" type="font/woff2" href="/fonts/satoshi-var.woff2" crossorigin>
+<link rel="stylesheet" href="/css/site.css">
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@graph": [
+    {
+      "@type": "FAQPage",
+      "mainEntity": [
+        {
+          "@type": "Question",
+          "name": "Does Shopify integrate with MYOB?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "Not natively; the join runs through connector apps or a custom feed. The tools work; the design decisions, grain, clearing accounts, fee handling and GST treatment are what decide whether it reconciles."
+          }
+        },
+        {
+          "@type": "Question",
+          "name": "Why doesn't our MYOB match our Shopify sales?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "Almost always fees and timing: payouts land net of fees days after the orders, refunds and gift cards muddy the middle, and the join books gross sales straight to the bank. Restructure through clearing accounts and the gap becomes explainable, then zero."
+          }
+        },
+        {
+          "@type": "Question",
+          "name": "Xero instead of MYOB?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "Same shape, same traps, slightly better connector ecosystem. There is a WooCommerce-and-Xero version of this page covering the fee and refund handling in detail."
+          }
+        }
+      ]
+    },
+    {
+      "@type": "BreadcrumbList",
+      "itemListElement": [
+        {
+          "@type": "ListItem",
+          "position": 1,
+          "name": "Home",
+          "item": "https://REPLACE-DOMAIN/"
+        },
+        {
+          "@type": "ListItem",
+          "position": 2,
+          "name": "System guides",
+          "item": "https://REPLACE-DOMAIN/systems/"
+        },
+        {
+          "@type": "ListItem",
+          "position": 3,
+          "name": "Shopify to MYOB, reconciled",
+          "item": "https://REPLACE-DOMAIN/systems/shopify-to-myob/"
+        }
+      ]
+    }
+  ]
+}
+</script>
+</head>
+<body>
+
+<header class="top">
+  <div class="wrap">
+    <a class="brand" href="/">Aaron Steele<span>.</span></a>
+    <nav class="nav" aria-label="Site">
+      <a href="/">Home</a>
+      <a href="/ai-development/">AI development</a>
+      <a href="/wordpress/">WordPress</a>
+      <a href="/website-rebuild/">Rebuilds</a>
+      <a href="/full-stack-developer/">Custom software</a>
+      <a href="/crm-automation/">CRM &amp; automation</a>
+      <a href="/industries/">Industries</a>
+      <a href="/answers/">Answers</a>
+      <a href="/pricing/">Pricing</a>
+      <a href="/project-rescue/">Rescues</a>
+      <a href="/contact/">Work with me</a>
+    </nav>
+  </div>
+</header>
+
+<main>
+  <div class="hero">
+    <div class="wrap">
+      <ol class="crumbs"><li><a href="/">Home</a></li><li><a href="/systems/">System guides</a></li><li>Stores &amp; the books</li></ol>
+      <h1 class="measure-wide" style="max-inline-size:24ch">Shopify to MYOB, reconciled</h1>
+      <p class="lede">
+        There is no first-party Shopify-to-MYOB connection, so this join runs
+        through a connector app or a small custom feed, and most installs are "connected"
+        within an hour. <b>Connected is not the goal; reconciled is</b>: the payout that
+        lands in your bank equals orders minus fees minus refunds across several days, and
+        unless the join accounts for each of those parts, your MYOB will drift from your
+        bank a little every week.
+      </p>
+      <div class="cta-row">
+        <a class="btn" href="/contact/">Describe your setup</a>
+        <a class="btn btn--ghost" href="/pricing/">Get an estimate</a>
+      </div>
+    </div>
+  </div>
+
+  <section class="section">
+    <div class="wrap">
+      <p class="tag">The join</p>
+      <h2 class="measure">How it actually works.</h2>
+      <div class="rows">
+        <div class="row">
+          <h3>Choose the grain: order-level or daily summary</h3>
+          <div>The first design decision is whether every Shopify order becomes an MYOB
+             invoice, or each day becomes one summarised sales journal. Order-level suits
+             low volume and B2B; a daily summary suits volume retail and keeps MYOB fast and
+             clean. Most connector misery comes from picking order-level by default and
+             drowning MYOB in thousands of tiny invoices nobody looks at.</div>
+        </div>
+        <div class="row">
+          <h3>Route takings through a clearing account</h3>
+          <div>Sales should post to a Shopify clearing account, not straight to the bank
+             account. When the payout lands days later, it clears that account, and the gap
+             that remains is exactly fees plus refunds plus timing. This one structural
+             choice is the difference between reconciling in minutes and never quite
+             matching.</div>
+        </div>
+        <div class="row">
+          <h3>Fees and gateways are separate stories</h3>
+          <div>Shopify Payments deducts its fee before paying out; PayPal and Afterpay
+             settle separately on their own schedules with their own fees. Each gateway needs
+             its own clearing account and a fee expense line, taken from the gateway's own
+             settlement report. Skip this and your revenue is overstated by exactly your fee
+             bill, which your accountant discovers at BAS time.</div>
+        </div>
+        <div class="row">
+          <h3>GST, refunds and gift cards, done once, correctly</h3>
+          <div>GST needs to come from Shopify's tax lines, not be recalculated, or rounding
+             will disagree by cents forever, and cents are what reconciliation is. Refunds,
+             including partial refunds, must flow as their own transactions against the
+             original sale. Gift cards are a liability when sold and revenue when redeemed;
+             a join that books them as sales twice inflates your takings and your GST.</div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="section section--ink">
+    <div class="wrap">
+      <p class="tag">The traps</p>
+      <h2 class="measure">Where it goes wrong.</h2>
+      <div class="rows" style="margin-top:var(--s7)">
+        <div class="row">
+          <h3>The payout that spans a weekend</h3>
+          <div>A Monday payout covers Friday-to-Sunday orders at Friday-to-Sunday exchange
+             and fee rates. Joins that assume one payout equals one day never reconcile and
+             everyone blames the connector. The clearing account structure above absorbs
+             this; nothing else really does.</div>
+        </div>
+        <div class="row">
+          <h3>Trusting the connector's defaults</h3>
+          <div>Off-the-shelf connectors are fine tools with default mappings chosen for
+             nobody in particular. The install is not the work; the chart-of-accounts
+             design, tax mapping and first month of parallel reconciliation are. That is
+             the part I do, whichever connector carries the data.</div>
+        </div>
+      </div>
+      <p class="measure-wide dim" style="margin-top:var(--s7)">
+        Anyone can claim integration experience; checking it is harder. My worst
+        reconciliation is public: a national charity's donation history out by around
+        $3.8 million after records merged on the wrong field, traced to the cause, rebuilt,
+        and reconciled against their books, 37,729 donations matched back to the right
+        donor. The method on this page is that method, at whatever size your version of the
+        problem is.
+      </p>
+      <div class="cta-row" style="margin-top:var(--s6)">
+        <a class="link" href="https://aaronsteele.vercel.app/#work">The proof, in public <span aria-hidden="true">&rarr;</span></a>
+      </div>
+    </div>
+  </section>
+
+  <section class="section">
+    <div class="wrap">
+      <p class="tag">Fair questions</p>
+      <h2 class="measure">Before you ask.</h2>
+      <div class="faq">
+        <details>
+          <summary>Does Shopify integrate with MYOB?</summary>
+          <div>Not natively; the join runs through connector apps or a custom feed. The tools work; the design decisions, grain, clearing accounts, fee handling and GST treatment are what decide whether it reconciles.</div>
+        </details>
+        <details>
+          <summary>Why doesn't our MYOB match our Shopify sales?</summary>
+          <div>Almost always fees and timing: payouts land net of fees days after the orders, refunds and gift cards muddy the middle, and the join books gross sales straight to the bank. Restructure through clearing accounts and the gap becomes explainable, then zero.</div>
+        </details>
+        <details>
+          <summary>Xero instead of MYOB?</summary>
+          <div>Same shape, same traps, slightly better connector ecosystem. There is a WooCommerce-and-Xero version of this page covering the fee and refund handling in detail.</div>
+        </details>
+      </div>
+      <div class="cta-row" style="margin-top:var(--s7)">
+        <a class="link" href="/ecommerce/">E-commerce <span aria-hidden="true">&rarr;</span></a>
+        <a class="link" href="/industries/retail/">Retail industry page <span aria-hidden="true">&rarr;</span></a>
+        <a class="link" href="/data-and-reporting/">Data &amp; reporting <span aria-hidden="true">&rarr;</span></a>
+      </div>
+    </div>
+  </section>
+
+  <section class="section section--ink">
+    <div class="wrap">
+      <p class="tag">Adjacent joins</p>
+      <h2 class="measure">Related guides.</h2>
+      <ul class="list" style="margin-top:var(--s7)">
+        <li><a href="/systems/woocommerce-xero-fees-refunds/" style="color:inherit"><b>WooCommerce to Xero: fees and refunds done right</b></a></li>
+        <li><a href="/systems/square-shopify-stock/" style="color:inherit"><b>Square and Shopify agreeing about stock</b></a></li>
+        <li><a href="/systems/hubspot-to-xero/" style="color:inherit"><b>HubSpot to Xero for services businesses</b></a></li>
+      </ul>
+    </div>
+  </section>
+</main>
+
+<footer class="foot">
+  <div class="wrap">
+    <p class="tag">Room for the right project</p>
+    <h2 class="measure">Tell me what's broken.</h2>
+    <div class="links">
+      <a class="link" href="/contact/">Work with me <span aria-hidden="true">&rarr;</span></a>
+      <a class="link" href="https://aaronsteele.vercel.app">Portfolio <span aria-hidden="true">&rarr;</span></a>
+      <a class="link" href="https://github.com/Aa-ronJS">GitHub <span aria-hidden="true">&rarr;</span></a>
+    </div>
+    <div class="foot__meta">
+      <p>Aaron Steele. Adelaide, South Australia. Remote Australia-wide. Analyst since 2015,
+         building since 2016. TOGAF certified, baseline cleared.</p>
+      <p><a href="/ai-development/" style="color:inherit">AI development</a> &middot; <a href="/wordpress/" style="color:inherit">WordPress</a> &middot; <a href="/ecommerce/" style="color:inherit">E-commerce</a> &middot; <a href="/mobile-apps/" style="color:inherit">Mobile apps</a> &middot; <a href="/website-rebuild/" style="color:inherit">Website rebuilds</a> &middot; <a href="/full-stack-developer/" style="color:inherit">Custom software</a> &middot; <a href="/crm-automation/" style="color:inherit">CRM &amp; automation</a> &middot; <a href="/data-and-reporting/" style="color:inherit">Data &amp; reporting</a> &middot; <a href="/project-rescue/" style="color:inherit">Project rescues</a> &middot; <a href="/business-analysis/" style="color:inherit">Business analysis</a> &middot; <a href="/systems/" style="color:inherit">System guides</a></p>
+      <p>Industries: <a href="/industries/trades/" style="color:inherit">Trades</a> &middot; <a href="/industries/transport/" style="color:inherit">Transport</a> &middot; <a href="/industries/mining/" style="color:inherit">Mining</a> &middot; <a href="/industries/retail/" style="color:inherit">Retail</a> &middot; <a href="/industries/hospitality/" style="color:inherit">Hospitality</a> &middot; <a href="/industries/professional-services/" style="color:inherit">Professional services</a> &middot; <a href="/industries/health/" style="color:inherit">Health</a> &middot; <a href="/industries/nonprofits/" style="color:inherit">Not-for-profits</a> &middot; <a href="/industries/real-estate/" style="color:inherit">Real estate</a> &middot; <a href="/industries/agriculture/" style="color:inherit">Agriculture</a> &middot; <a href="/industries/government/" style="color:inherit">Government</a> &middot; <a href="/industries/education/" style="color:inherit">Education</a></p>
+      <p><a href="/privacy/" style="color:inherit">Privacy</a></p>
+    </div>
+  </div>
+</footer>
+
+</body>
+</html>

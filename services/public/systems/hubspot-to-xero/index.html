@@ -1,0 +1,255 @@
+<!doctype html>
+<html lang="en-AU">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>HubSpot to Xero Integration for Services Businesses | Australia | Aaron Steele</title>
+<meta name="description" content="The join everyone wants is simple to say: a deal marked won in HubSpot becomes a draft invoice in Xero without anyone re-keying the amount, and payment status flows back so sales can see who has actually paid. The native HubSpot-Xero app does part of this; the part it does not do is decide your...">
+<link rel="canonical" href="https://REPLACE-DOMAIN/systems/hubspot-to-xero/">
+<meta property="og:title" content="HubSpot to Xero Integration for Services Businesses | Australia | Aaron Steele">
+<meta property="og:description" content="The join everyone wants is simple to say: a deal marked won in HubSpot becomes a draft invoice in Xero without anyone re-keying the amount, and payment status flows back so sales can see who has actually paid. The native HubSpot-Xero app does part of this; the part it does not do is decide your...">
+<meta property="og:type" content="article">
+<meta property="og:image" content="https://REPLACE-DOMAIN/og/services.png">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:image" content="https://REPLACE-DOMAIN/og/services.png">
+<meta name="theme-color" content="#12181f">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Crect width='100' height='100' fill='%2312181f'/%3E%3Ctext x='50' y='74' font-size='68' font-family='Arial' font-weight='700' text-anchor='middle' fill='%23e0a232'%3EA%3C/text%3E%3C/svg%3E">
+<link rel="preload" as="font" type="font/woff2" href="/fonts/clash-display-var.woff2" crossorigin>
+<link rel="preload" as="font" type="font/woff2" href="/fonts/satoshi-var.woff2" crossorigin>
+<link rel="stylesheet" href="/css/site.css">
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@graph": [
+    {
+      "@type": "FAQPage",
+      "mainEntity": [
+        {
+          "@type": "Question",
+          "name": "Does HubSpot integrate with Xero?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "Yes, there is a native app that links contacts and shows invoices against HubSpot records, and deeper flows run through the APIs or middleware. The design decisions above matter more than which pipe carries the data."
+          }
+        },
+        {
+          "@type": "Question",
+          "name": "Can invoices be created automatically when a deal is won?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "Yes, as drafts built from the deal's line items, for a human to approve in Xero. Fully automatic sending is possible and usually unwise; the approval click costs seconds and catches the deal that was marked won by accident."
+          }
+        },
+        {
+          "@type": "Question",
+          "name": "Our HubSpot and Xero are already connected and already a mess.",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "Common, and recoverable: dedupe and merge contacts, reconcile the invoices that doubled, then re-cut the rules for creation and matching. The same record-by-record method as any reconciliation, with a public worst case linked below."
+          }
+        }
+      ]
+    },
+    {
+      "@type": "BreadcrumbList",
+      "itemListElement": [
+        {
+          "@type": "ListItem",
+          "position": 1,
+          "name": "Home",
+          "item": "https://REPLACE-DOMAIN/"
+        },
+        {
+          "@type": "ListItem",
+          "position": 2,
+          "name": "System guides",
+          "item": "https://REPLACE-DOMAIN/systems/"
+        },
+        {
+          "@type": "ListItem",
+          "position": 3,
+          "name": "HubSpot to Xero for services businesses",
+          "item": "https://REPLACE-DOMAIN/systems/hubspot-to-xero/"
+        }
+      ]
+    }
+  ]
+}
+</script>
+</head>
+<body>
+
+<header class="top">
+  <div class="wrap">
+    <a class="brand" href="/">Aaron Steele<span>.</span></a>
+    <nav class="nav" aria-label="Site">
+      <a href="/">Home</a>
+      <a href="/ai-development/">AI development</a>
+      <a href="/wordpress/">WordPress</a>
+      <a href="/website-rebuild/">Rebuilds</a>
+      <a href="/full-stack-developer/">Custom software</a>
+      <a href="/crm-automation/">CRM &amp; automation</a>
+      <a href="/industries/">Industries</a>
+      <a href="/answers/">Answers</a>
+      <a href="/pricing/">Pricing</a>
+      <a href="/project-rescue/">Rescues</a>
+      <a href="/contact/">Work with me</a>
+    </nav>
+  </div>
+</header>
+
+<main>
+  <div class="hero">
+    <div class="wrap">
+      <ol class="crumbs"><li><a href="/">Home</a></li><li><a href="/systems/">System guides</a></li><li>CRM &amp; the office</li></ol>
+      <h1 class="measure-wide" style="max-inline-size:24ch">HubSpot to Xero for services businesses</h1>
+      <p class="lede">
+        The join everyone wants is simple to say: a deal marked won in HubSpot
+        becomes a draft invoice in Xero without anyone re-keying the amount, and payment
+        status flows back so sales can see who has actually paid. <b>The native HubSpot-Xero
+        app does part of this; the part it does not do is decide your rules</b>, and the
+        rules, not the plumbing, are what keep the two systems agreeing.
+      </p>
+      <div class="cta-row">
+        <a class="btn" href="/contact/">Describe your setup</a>
+        <a class="btn btn--ghost" href="/pricing/">Get an estimate</a>
+      </div>
+    </div>
+  </div>
+
+  <section class="section">
+    <div class="wrap">
+      <p class="tag">The join</p>
+      <h2 class="measure">How it actually works.</h2>
+      <div class="rows">
+        <div class="row">
+          <h3>Contacts: two shapes, one join</h3>
+          <div>HubSpot separates people from companies; Xero holds one flat contact that is
+             usually the business. Without a rule, every synced deal risks minting a new
+             Xero contact, and receivables fragment across near-duplicates. The rule that
+             works for services businesses: the Xero contact is the company, one nominated
+             system creates it, and the join matches on ABN or a stored Xero contact ID
+             rather than trusting names.</div>
+        </div>
+        <div class="row">
+          <h3>Deal won to draft invoice, with the amount you meant</h3>
+          <div>The trigger is a deal hitting a chosen stage; the payload is the deal's line
+             items, not its headline value. That means quoting through HubSpot products with
+             real prices and GST treatment, so the draft invoice in Xero carries proper
+             lines, account codes and tax rates. Deals quoted as one free-typed number
+             produce invoices someone must finish by hand, which is the re-keying you were
+             paying to remove.</div>
+        </div>
+        <div class="row">
+          <h3>Payment status is the half sales actually wants</h3>
+          <div>Invoice paid in Xero should stamp the deal and the company record in
+             HubSpot. That single flow ends the weekly "who has paid" spreadsheet, lets
+             renewals and follow-ups key off reality, and quietly stops sales chasing a
+             client whose invoice is sixty days overdue. It is also the half most cheap
+             setups skip, because it flows the unfashionable direction.</div>
+        </div>
+        <div class="row">
+          <h3>Decide what happens to the messy middle</h3>
+          <div>Deposits, part-payments, retainers and credit notes all exist in services
+             work and each needs one agreed path between the systems. This is an hour of
+             decisions with whoever runs the books, written down, then encoded. Every
+             HubSpot-Xero mess I have seen was a missing decision wearing a software
+             costume.</div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="section section--ink">
+    <div class="wrap">
+      <p class="tag">The traps</p>
+      <h2 class="measure">Where it goes wrong.</h2>
+      <div class="rows" style="margin-top:var(--s7)">
+        <div class="row">
+          <h3>The duplicate contact factory</h3>
+          <div>Connecting the sync before deduplicating both systems mints duplicates at
+             the pace of your sales. Dedupe first, agree the creation rule, then connect.
+             The cleanup is the project; the connection is a checkbox.</div>
+        </div>
+        <div class="row">
+          <h3>Automating an unpriced pipeline</h3>
+          <div>If deals carry made-up numbers until the proposal is signed, syncing them
+             into Xero automates fiction. Fix the quoting discipline first or trigger the
+             invoice from a later, truer stage. The books deserve the same honesty as the
+             bank.</div>
+        </div>
+      </div>
+      <p class="measure-wide dim" style="margin-top:var(--s7)">
+        Anyone can claim integration experience; checking it is harder. My worst
+        reconciliation is public: a national charity's donation history out by around
+        $3.8 million after records merged on the wrong field, traced to the cause, rebuilt,
+        and reconciled against their books, 37,729 donations matched back to the right
+        donor. The method on this page is that method, at whatever size your version of the
+        problem is.
+      </p>
+      <div class="cta-row" style="margin-top:var(--s6)">
+        <a class="link" href="https://aaronsteele.vercel.app/#work">The proof, in public <span aria-hidden="true">&rarr;</span></a>
+      </div>
+    </div>
+  </section>
+
+  <section class="section">
+    <div class="wrap">
+      <p class="tag">Fair questions</p>
+      <h2 class="measure">Before you ask.</h2>
+      <div class="faq">
+        <details>
+          <summary>Does HubSpot integrate with Xero?</summary>
+          <div>Yes, there is a native app that links contacts and shows invoices against HubSpot records, and deeper flows run through the APIs or middleware. The design decisions above matter more than which pipe carries the data.</div>
+        </details>
+        <details>
+          <summary>Can invoices be created automatically when a deal is won?</summary>
+          <div>Yes, as drafts built from the deal's line items, for a human to approve in Xero. Fully automatic sending is possible and usually unwise; the approval click costs seconds and catches the deal that was marked won by accident.</div>
+        </details>
+        <details>
+          <summary>Our HubSpot and Xero are already connected and already a mess.</summary>
+          <div>Common, and recoverable: dedupe and merge contacts, reconcile the invoices that doubled, then re-cut the rules for creation and matching. The same record-by-record method as any reconciliation, with a public worst case linked below.</div>
+        </details>
+      </div>
+      <div class="cta-row" style="margin-top:var(--s7)">
+        <a class="link" href="/crm-automation/">CRM &amp; automation <span aria-hidden="true">&rarr;</span></a>
+        <a class="link" href="/industries/professional-services/">Professional services industry page <span aria-hidden="true">&rarr;</span></a>
+        <a class="link" href="/data-and-reporting/">Data &amp; reporting <span aria-hidden="true">&rarr;</span></a>
+      </div>
+    </div>
+  </section>
+
+  <section class="section section--ink">
+    <div class="wrap">
+      <p class="tag">Adjacent joins</p>
+      <h2 class="measure">Related guides.</h2>
+      <ul class="list" style="margin-top:var(--s7)">
+        <li><a href="/systems/servicem8-to-xero/" style="color:inherit"><b>ServiceM8 to Xero without double entry</b></a></li>
+        <li><a href="/systems/halaxy-vs-cliniko/" style="color:inherit"><b>Halaxy versus Cliniko, honestly</b></a></li>
+        <li><a href="/systems/propertyme-owner-reports/" style="color:inherit"><b>PropertyMe owner reports, automated</b></a></li>
+      </ul>
+    </div>
+  </section>
+</main>
+
+<footer class="foot">
+  <div class="wrap">
+    <p class="tag">Room for the right project</p>
+    <h2 class="measure">Tell me what's broken.</h2>
+    <div class="links">
+      <a class="link" href="/contact/">Work with me <span aria-hidden="true">&rarr;</span></a>
+      <a class="link" href="https://aaronsteele.vercel.app">Portfolio <span aria-hidden="true">&rarr;</span></a>
+      <a class="link" href="https://github.com/Aa-ronJS">GitHub <span aria-hidden="true">&rarr;</span></a>
+    </div>
+    <div class="foot__meta">
+      <p>Aaron Steele. Adelaide, South Australia. Remote Australia-wide. Analyst since 2015,
+         building since 2016. TOGAF certified, baseline cleared.</p>
+      <p><a href="/ai-development/" style="color:inherit">AI development</a> &middot; <a href="/wordpress/" style="color:inherit">WordPress</a> &middot; <a href="/ecommerce/" style="color:inherit">E-commerce</a> &middot; <a href="/mobile-apps/" style="color:inherit">Mobile apps</a> &middot; <a href="/website-rebuild/" style="color:inherit">Website rebuilds</a> &middot; <a href="/full-stack-developer/" style="color:inherit">Custom software</a> &middot; <a href="/crm-automation/" style="color:inherit">CRM &amp; automation</a> &middot; <a href="/data-and-reporting/" style="color:inherit">Data &amp; reporting</a> &middot; <a href="/project-rescue/" style="color:inherit">Project rescues</a> &middot; <a href="/business-analysis/" style="color:inherit">Business analysis</a> &middot; <a href="/systems/" style="color:inherit">System guides</a></p>
+      <p>Industries: <a href="/industries/trades/" style="color:inherit">Trades</a> &middot; <a href="/industries/transport/" style="color:inherit">Transport</a> &middot; <a href="/industries/mining/" style="color:inherit">Mining</a> &middot; <a href="/industries/retail/" style="color:inherit">Retail</a> &middot; <a href="/industries/hospitality/" style="color:inherit">Hospitality</a> &middot; <a href="/industries/professional-services/" style="color:inherit">Professional services</a> &middot; <a href="/industries/health/" style="color:inherit">Health</a> &middot; <a href="/industries/nonprofits/" style="color:inherit">Not-for-profits</a> &middot; <a href="/industries/real-estate/" style="color:inherit">Real estate</a> &middot; <a href="/industries/agriculture/" style="color:inherit">Agriculture</a> &middot; <a href="/industries/government/" style="color:inherit">Government</a> &middot; <a href="/industries/education/" style="color:inherit">Education</a></p>
+      <p><a href="/privacy/" style="color:inherit">Privacy</a></p>
+    </div>
+  </div>
+</footer>
+
+</body>
+</html>

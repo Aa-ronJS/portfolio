@@ -1,0 +1,250 @@
+<!doctype html>
+<html lang="en-AU">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>simPRO Scheduling and Weather: Stop Rebuilding the Week by Hand | Australia | Aaron Steele</title>
+<meta name="description" content="simPRO will happily schedule a fortnight of outdoor work; it has no idea rain is coming. So the first wet morning becomes two hours of phone calls, and the schedule gets rebuilt by memory. The forecast is public data and your schedule is in simPRO's API, which means "which booked jobs are...">
+<link rel="canonical" href="https://REPLACE-DOMAIN/systems/simpro-scheduling-weather/">
+<meta property="og:title" content="simPRO Scheduling and Weather: Stop Rebuilding the Week by Hand | Australia | Aaron Steele">
+<meta property="og:description" content="simPRO will happily schedule a fortnight of outdoor work; it has no idea rain is coming. So the first wet morning becomes two hours of phone calls, and the schedule gets rebuilt by memory. The forecast is public data and your schedule is in simPRO's API, which means "which booked jobs are...">
+<meta property="og:type" content="article">
+<meta property="og:image" content="https://REPLACE-DOMAIN/og/services.png">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:image" content="https://REPLACE-DOMAIN/og/services.png">
+<meta name="theme-color" content="#12181f">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Crect width='100' height='100' fill='%2312181f'/%3E%3Ctext x='50' y='74' font-size='68' font-family='Arial' font-weight='700' text-anchor='middle' fill='%23e0a232'%3EA%3C/text%3E%3C/svg%3E">
+<link rel="preload" as="font" type="font/woff2" href="/fonts/clash-display-var.woff2" crossorigin>
+<link rel="preload" as="font" type="font/woff2" href="/fonts/satoshi-var.woff2" crossorigin>
+<link rel="stylesheet" href="/css/site.css">
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@graph": [
+    {
+      "@type": "FAQPage",
+      "mainEntity": [
+        {
+          "@type": "Question",
+          "name": "Can simPRO reschedule jobs based on weather?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "Not by itself; simPRO has no weather awareness. Its API exposes the schedule, though, so a small add-on can flag weather-exposed bookings against the forecast and propose moves for a human to approve."
+          }
+        },
+        {
+          "@type": "Question",
+          "name": "What does something like this cost to build?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "It is a small build, not a platform: one recurring job, one join, one screen or SMS digest. Get a real range from the calculator on this site, and a fixed quote in writing before anything starts."
+          }
+        },
+        {
+          "@type": "Question",
+          "name": "Does this work with ServiceM8 or AroFlo instead?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "Yes. Both expose bookings through their APIs; the weather half is identical. simPRO gets the page because its users schedule furthest ahead, which makes the rain problem worst."
+          }
+        }
+      ]
+    },
+    {
+      "@type": "BreadcrumbList",
+      "itemListElement": [
+        {
+          "@type": "ListItem",
+          "position": 1,
+          "name": "Home",
+          "item": "https://REPLACE-DOMAIN/"
+        },
+        {
+          "@type": "ListItem",
+          "position": 2,
+          "name": "System guides",
+          "item": "https://REPLACE-DOMAIN/systems/"
+        },
+        {
+          "@type": "ListItem",
+          "position": 3,
+          "name": "simPRO scheduling and the weather problem",
+          "item": "https://REPLACE-DOMAIN/systems/simpro-scheduling-weather/"
+        }
+      ]
+    }
+  ]
+}
+</script>
+</head>
+<body>
+
+<header class="top">
+  <div class="wrap">
+    <a class="brand" href="/">Aaron Steele<span>.</span></a>
+    <nav class="nav" aria-label="Site">
+      <a href="/">Home</a>
+      <a href="/ai-development/">AI development</a>
+      <a href="/wordpress/">WordPress</a>
+      <a href="/website-rebuild/">Rebuilds</a>
+      <a href="/full-stack-developer/">Custom software</a>
+      <a href="/crm-automation/">CRM &amp; automation</a>
+      <a href="/industries/">Industries</a>
+      <a href="/answers/">Answers</a>
+      <a href="/pricing/">Pricing</a>
+      <a href="/project-rescue/">Rescues</a>
+      <a href="/contact/">Work with me</a>
+    </nav>
+  </div>
+</header>
+
+<main>
+  <div class="hero">
+    <div class="wrap">
+      <ol class="crumbs"><li><a href="/">Home</a></li><li><a href="/systems/">System guides</a></li><li>Trades &amp; field service</li></ol>
+      <h1 class="measure-wide" style="max-inline-size:24ch">simPRO scheduling and the weather problem</h1>
+      <p class="lede">
+        simPRO will happily schedule a fortnight of outdoor work; it has no idea
+        rain is coming. So the first wet morning becomes two hours of phone calls, and the
+        schedule gets rebuilt by memory. <b>The forecast is public data and your schedule is
+        in simPRO's API</b>, which means "which booked jobs are outdoors on a day now
+        forecast over 10mm" is a question software can ask every morning before you wake.
+      </p>
+      <div class="cta-row">
+        <a class="btn" href="/contact/">Describe your setup</a>
+        <a class="btn btn--ghost" href="/pricing/">Get an estimate</a>
+      </div>
+    </div>
+  </div>
+
+  <section class="section">
+    <div class="wrap">
+      <p class="tag">The join</p>
+      <h2 class="measure">How it actually works.</h2>
+      <div class="rows">
+        <div class="row">
+          <h3>Mark weather exposure where the job lives</h3>
+          <div>The join needs one fact simPRO does not have a field for out of the box:
+             whether a job can proceed in rain. A custom field on the job or job type
+             ("outdoor", "weather-dependent") takes minutes to add and gives every later
+             automation its handle. Roof work is not switchboard work; the schedule should
+             know the difference.</div>
+        </div>
+        <div class="row">
+          <h3>Marry the schedule to the forecast</h3>
+          <div>simPRO's API exposes the schedule; the Bureau of Meteorology publishes
+             forecasts for free. A small job that runs each evening can join the two:
+             weather-exposed bookings in the next few days against rain probability and
+             expected millimetres at each job's location, producing a short list of bookings
+             at risk instead of a surprise.</div>
+        </div>
+        <div class="row">
+          <h3>Reschedule as a batch, notify as you go</h3>
+          <div>The payoff is not the alert; it is what happens next. At-risk jobs get
+             proposed new slots against the same technicians' availability, indoor work moves
+             forward to fill the gap, and affected customers get an SMS the evening before
+             instead of a 7am apology. The scheduler approves the plan; nobody rebuilds it
+             from memory.</div>
+        </div>
+        <div class="row">
+          <h3>I have already built the weather half</h3>
+          <div>Rain Check, one of my live public tools, exists precisely because trades lose
+             mornings to weather they could have seen coming. The simPRO version of the
+             problem is the same join with your schedule on the other side, which is why
+             this page is confident about the shape of the build.</div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="section section--ink">
+    <div class="wrap">
+      <p class="tag">The traps</p>
+      <h2 class="measure">Where it goes wrong.</h2>
+      <div class="rows" style="margin-top:var(--s7)">
+        <div class="row">
+          <h3>Forecasts are probabilities, not permission slips</h3>
+          <div>A 40 per cent chance of 2mm is not a reason to gut Tuesday. The automation
+             should rank risk and propose, never auto-cancel; the human who knows the site
+             and the client makes the call. Software that reschedules on its own authority
+             gets turned off within a month, and deserves it.</div>
+        </div>
+        <div class="row">
+          <h3>Location data that is actually the office</h3>
+          <div>If jobs are geocoded to the billing address instead of the site, the
+             forecast join is confidently wrong. Site address hygiene comes first; it is
+             also what makes travel-time scheduling honest.</div>
+        </div>
+      </div>
+      <p class="measure-wide dim" style="margin-top:var(--s7)">
+        The weather half of this build already exists in public: Rain Check is live
+        on the internet with its source open, built to tell Adelaide trades whether the
+        morning is workable. Check the workmanship there before you ask me about the
+        schedule half.
+      </p>
+      <div class="cta-row" style="margin-top:var(--s6)">
+        <a class="link" href="https://aaronsteele.vercel.app/#work">The proof, in public <span aria-hidden="true">&rarr;</span></a>
+      </div>
+    </div>
+  </section>
+
+  <section class="section">
+    <div class="wrap">
+      <p class="tag">Fair questions</p>
+      <h2 class="measure">Before you ask.</h2>
+      <div class="faq">
+        <details>
+          <summary>Can simPRO reschedule jobs based on weather?</summary>
+          <div>Not by itself; simPRO has no weather awareness. Its API exposes the schedule, though, so a small add-on can flag weather-exposed bookings against the forecast and propose moves for a human to approve.</div>
+        </details>
+        <details>
+          <summary>What does something like this cost to build?</summary>
+          <div>It is a small build, not a platform: one recurring job, one join, one screen or SMS digest. Get a real range from the calculator on this site, and a fixed quote in writing before anything starts.</div>
+        </details>
+        <details>
+          <summary>Does this work with ServiceM8 or AroFlo instead?</summary>
+          <div>Yes. Both expose bookings through their APIs; the weather half is identical. simPRO gets the page because its users schedule furthest ahead, which makes the rain problem worst.</div>
+        </details>
+      </div>
+      <div class="cta-row" style="margin-top:var(--s7)">
+        <a class="link" href="/industries/trades/">Trades industry page <span aria-hidden="true">&rarr;</span></a>
+        <a class="link" href="/ai-development/">AI development <span aria-hidden="true">&rarr;</span></a>
+        <a class="link" href="/full-stack-developer/">Custom software <span aria-hidden="true">&rarr;</span></a>
+      </div>
+    </div>
+  </section>
+
+  <section class="section section--ink">
+    <div class="wrap">
+      <p class="tag">Adjacent joins</p>
+      <h2 class="measure">Related guides.</h2>
+      <ul class="list" style="margin-top:var(--s7)">
+        <li><a href="/systems/servicem8-to-xero/" style="color:inherit"><b>ServiceM8 to Xero without double entry</b></a></li>
+        <li><a href="/systems/aroflo-to-xero/" style="color:inherit"><b>AroFlo to Xero: the field-to-invoice chain</b></a></li>
+        <li><a href="/systems/cliniko-reminders/" style="color:inherit"><b>Cliniko reminders that actually cut no-shows</b></a></li>
+      </ul>
+    </div>
+  </section>
+</main>
+
+<footer class="foot">
+  <div class="wrap">
+    <p class="tag">Room for the right project</p>
+    <h2 class="measure">Tell me what's broken.</h2>
+    <div class="links">
+      <a class="link" href="/contact/">Work with me <span aria-hidden="true">&rarr;</span></a>
+      <a class="link" href="https://aaronsteele.vercel.app">Portfolio <span aria-hidden="true">&rarr;</span></a>
+      <a class="link" href="https://github.com/Aa-ronJS">GitHub <span aria-hidden="true">&rarr;</span></a>
+    </div>
+    <div class="foot__meta">
+      <p>Aaron Steele. Adelaide, South Australia. Remote Australia-wide. Analyst since 2015,
+         building since 2016. TOGAF certified, baseline cleared.</p>
+      <p><a href="/ai-development/" style="color:inherit">AI development</a> &middot; <a href="/wordpress/" style="color:inherit">WordPress</a> &middot; <a href="/ecommerce/" style="color:inherit">E-commerce</a> &middot; <a href="/mobile-apps/" style="color:inherit">Mobile apps</a> &middot; <a href="/website-rebuild/" style="color:inherit">Website rebuilds</a> &middot; <a href="/full-stack-developer/" style="color:inherit">Custom software</a> &middot; <a href="/crm-automation/" style="color:inherit">CRM &amp; automation</a> &middot; <a href="/data-and-reporting/" style="color:inherit">Data &amp; reporting</a> &middot; <a href="/project-rescue/" style="color:inherit">Project rescues</a> &middot; <a href="/business-analysis/" style="color:inherit">Business analysis</a> &middot; <a href="/systems/" style="color:inherit">System guides</a></p>
+      <p>Industries: <a href="/industries/trades/" style="color:inherit">Trades</a> &middot; <a href="/industries/transport/" style="color:inherit">Transport</a> &middot; <a href="/industries/mining/" style="color:inherit">Mining</a> &middot; <a href="/industries/retail/" style="color:inherit">Retail</a> &middot; <a href="/industries/hospitality/" style="color:inherit">Hospitality</a> &middot; <a href="/industries/professional-services/" style="color:inherit">Professional services</a> &middot; <a href="/industries/health/" style="color:inherit">Health</a> &middot; <a href="/industries/nonprofits/" style="color:inherit">Not-for-profits</a> &middot; <a href="/industries/real-estate/" style="color:inherit">Real estate</a> &middot; <a href="/industries/agriculture/" style="color:inherit">Agriculture</a> &middot; <a href="/industries/government/" style="color:inherit">Government</a> &middot; <a href="/industries/education/" style="color:inherit">Education</a></p>
+      <p><a href="/privacy/" style="color:inherit">Privacy</a></p>
+    </div>
+  </div>
+</footer>
+
+</body>
+</html>

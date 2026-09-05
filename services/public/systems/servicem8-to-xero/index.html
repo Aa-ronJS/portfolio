@@ -1,0 +1,257 @@
+<!doctype html>
+<html lang="en-AU">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>ServiceM8 to Xero Integration Without Double Entry | Australia | Aaron Steele</title>
+<meta name="description" content="ServiceM8 has a native Xero integration, and if you only invoice from ServiceM8 it mostly just works: turn it on, map your accounts, done. The double entry that survives it lives around the edges: contacts that duplicate, invoices edited on the wrong side, supplier bills, and payments recorded...">
+<link rel="canonical" href="https://REPLACE-DOMAIN/systems/servicem8-to-xero/">
+<meta property="og:title" content="ServiceM8 to Xero Integration Without Double Entry | Australia | Aaron Steele">
+<meta property="og:description" content="ServiceM8 has a native Xero integration, and if you only invoice from ServiceM8 it mostly just works: turn it on, map your accounts, done. The double entry that survives it lives around the edges: contacts that duplicate, invoices edited on the wrong side, supplier bills, and payments recorded...">
+<meta property="og:type" content="article">
+<meta property="og:image" content="https://REPLACE-DOMAIN/og/services.png">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:image" content="https://REPLACE-DOMAIN/og/services.png">
+<meta name="theme-color" content="#12181f">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Crect width='100' height='100' fill='%2312181f'/%3E%3Ctext x='50' y='74' font-size='68' font-family='Arial' font-weight='700' text-anchor='middle' fill='%23e0a232'%3EA%3C/text%3E%3C/svg%3E">
+<link rel="preload" as="font" type="font/woff2" href="/fonts/clash-display-var.woff2" crossorigin>
+<link rel="preload" as="font" type="font/woff2" href="/fonts/satoshi-var.woff2" crossorigin>
+<link rel="stylesheet" href="/css/site.css">
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@graph": [
+    {
+      "@type": "FAQPage",
+      "mainEntity": [
+        {
+          "@type": "Question",
+          "name": "Does ServiceM8 integrate with Xero out of the box?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "Yes, natively and well, for the invoice-and-payment core. Contacts, invoices and payments sync; quotes, supplier bills and job costing do not. Most trades businesses need the mapping done carefully once, and a few habits agreed, more than they need custom software."
+          }
+        },
+        {
+          "@type": "Question",
+          "name": "Why are there duplicate customers in Xero since we connected ServiceM8?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "Because the sync matches contacts by name, and the same customer exists with two spellings. Dedupe both sides once, then agree where new customers get created and how names are written. It stays clean if the rule survives."
+          }
+        },
+        {
+          "@type": "Question",
+          "name": "Can you fix it if our books are already a mess from a bad sync?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "Yes. That is reconciliation work: trace what doubled, repair the records that matter, reconcile the result against the bank, then re-map the sync so it stays right. It is the same method whatever the size of the mess."
+          }
+        }
+      ]
+    },
+    {
+      "@type": "BreadcrumbList",
+      "itemListElement": [
+        {
+          "@type": "ListItem",
+          "position": 1,
+          "name": "Home",
+          "item": "https://REPLACE-DOMAIN/"
+        },
+        {
+          "@type": "ListItem",
+          "position": 2,
+          "name": "System guides",
+          "item": "https://REPLACE-DOMAIN/systems/"
+        },
+        {
+          "@type": "ListItem",
+          "position": 3,
+          "name": "ServiceM8 to Xero without double entry",
+          "item": "https://REPLACE-DOMAIN/systems/servicem8-to-xero/"
+        }
+      ]
+    }
+  ]
+}
+</script>
+</head>
+<body>
+
+<header class="top">
+  <div class="wrap">
+    <a class="brand" href="/">Aaron Steele<span>.</span></a>
+    <nav class="nav" aria-label="Site">
+      <a href="/">Home</a>
+      <a href="/ai-development/">AI development</a>
+      <a href="/wordpress/">WordPress</a>
+      <a href="/website-rebuild/">Rebuilds</a>
+      <a href="/full-stack-developer/">Custom software</a>
+      <a href="/crm-automation/">CRM &amp; automation</a>
+      <a href="/industries/">Industries</a>
+      <a href="/answers/">Answers</a>
+      <a href="/pricing/">Pricing</a>
+      <a href="/project-rescue/">Rescues</a>
+      <a href="/contact/">Work with me</a>
+    </nav>
+  </div>
+</header>
+
+<main>
+  <div class="hero">
+    <div class="wrap">
+      <ol class="crumbs"><li><a href="/">Home</a></li><li><a href="/systems/">System guides</a></li><li>Trades &amp; field service</li></ol>
+      <h1 class="measure-wide" style="max-inline-size:24ch">ServiceM8 to Xero without double entry</h1>
+      <p class="lede">
+        ServiceM8 has a native Xero integration, and if you only invoice from
+        ServiceM8 it mostly just works: turn it on, map your accounts, done. <b>The double
+        entry that survives it lives around the edges</b>: contacts that duplicate, invoices
+        edited on the wrong side, supplier bills, and payments recorded twice. Fixing those is
+        a mapping and habits job, not a rebuild.
+      </p>
+      <div class="cta-row">
+        <a class="btn" href="/contact/">Describe your setup</a>
+        <a class="btn btn--ghost" href="/pricing/">Get an estimate</a>
+      </div>
+    </div>
+  </div>
+
+  <section class="section">
+    <div class="wrap">
+      <p class="tag">The join</p>
+      <h2 class="measure">How it actually works.</h2>
+      <div class="rows">
+        <div class="row">
+          <h3>The join key is the contact name, so treat it like one</h3>
+          <div>ServiceM8 and Xero do not share a customer ID; the sync matches contacts by
+             name. "Dave Smith", "David Smith" and "Smith, Dave" become three Xero contacts,
+             and your receivables report turns to soup. The fix is a one-time dedupe on both
+             sides, then one rule about who creates customers and how names are written.
+             Boring, and worth more than any software.</div>
+        </div>
+        <div class="row">
+          <h3>Invoices flow one way, and edits must too</h3>
+          <div>An approved ServiceM8 invoice pushes to Xero with your mapped sales account
+             and GST code. The moment someone edits that invoice in Xero, the two systems
+             disagree forever, because nothing flows back. The working rule: invoices are
+             born and edited in ServiceM8, and Xero is where they get paid. Payments recorded
+             in Xero sync back and close the job; payments taken in ServiceM8 (card on site)
+             push the other way. Pick one place to record each thing.</div>
+        </div>
+        <div class="row">
+          <h3>What the native sync does not carry</h3>
+          <div>Quotes, supplier bills for materials, and job costing stay in ServiceM8 or on
+             paper. If your bookkeeper re-keys supplier invoices against jobs, that is the
+             double entry actually costing you hours, and it needs either ServiceM8's
+             materials workflow used properly or a small build against both APIs, which both
+             systems expose properly. This is where I earn a fee and the checkbox does
+             not.</div>
+        </div>
+        <div class="row">
+          <h3>Account and tax mapping, once, correctly</h3>
+          <div>Every ServiceM8 item maps to a Xero account and tax rate. The common mess is
+             everything landing in one "Sales" line with GST on Income, labour
+             indistinguishable from materials, and the accountant reallocating at year end at
+             accountant rates. An hour of mapping labour, materials and callout fees to their
+             own accounts turns Xero into a management report instead of a shoebox.</div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="section section--ink">
+    <div class="wrap">
+      <p class="tag">The traps</p>
+      <h2 class="measure">Where it goes wrong.</h2>
+      <div class="rows" style="margin-top:var(--s7)">
+        <div class="row">
+          <h3>Payments recorded on both sides</h3>
+          <div>Card taken on site in ServiceM8, then the bookkeeper reconciles the bank feed
+             in Xero against the same invoice and records it again. Now the invoice is
+             overpaid, or a credit note appears from nowhere. One rule fixes it: bank feed
+             reconciliation matches, it never creates.</div>
+        </div>
+        <div class="row">
+          <h3>The historical mess nobody wants to open</h3>
+          <div>Turning the sync on over years of duplicated contacts and half-matched
+             invoices does not clean anything; it syncs the mess faster. Reconcile the aged
+             receivables first, merge the duplicates, then connect. I do exactly this kind of
+             record-by-record cleanup, and there is a public account of the worst one I have
+             handled below.</div>
+        </div>
+      </div>
+      <p class="measure-wide dim" style="margin-top:var(--s7)">
+        Anyone can claim integration experience; checking it is harder. My worst
+        reconciliation is public: a national charity's donation history out by around
+        $3.8 million after records merged on the wrong field, traced to the cause, rebuilt,
+        and reconciled against their books, 37,729 donations matched back to the right
+        donor. The method on this page is that method, at whatever size your version of the
+        problem is.
+      </p>
+      <div class="cta-row" style="margin-top:var(--s6)">
+        <a class="link" href="https://aaronsteele.vercel.app/#work">The proof, in public <span aria-hidden="true">&rarr;</span></a>
+      </div>
+    </div>
+  </section>
+
+  <section class="section">
+    <div class="wrap">
+      <p class="tag">Fair questions</p>
+      <h2 class="measure">Before you ask.</h2>
+      <div class="faq">
+        <details>
+          <summary>Does ServiceM8 integrate with Xero out of the box?</summary>
+          <div>Yes, natively and well, for the invoice-and-payment core. Contacts, invoices and payments sync; quotes, supplier bills and job costing do not. Most trades businesses need the mapping done carefully once, and a few habits agreed, more than they need custom software.</div>
+        </details>
+        <details>
+          <summary>Why are there duplicate customers in Xero since we connected ServiceM8?</summary>
+          <div>Because the sync matches contacts by name, and the same customer exists with two spellings. Dedupe both sides once, then agree where new customers get created and how names are written. It stays clean if the rule survives.</div>
+        </details>
+        <details>
+          <summary>Can you fix it if our books are already a mess from a bad sync?</summary>
+          <div>Yes. That is reconciliation work: trace what doubled, repair the records that matter, reconcile the result against the bank, then re-map the sync so it stays right. It is the same method whatever the size of the mess.</div>
+        </details>
+      </div>
+      <div class="cta-row" style="margin-top:var(--s7)">
+        <a class="link" href="/industries/trades/">Trades industry page <span aria-hidden="true">&rarr;</span></a>
+        <a class="link" href="/crm-automation/">CRM &amp; automation <span aria-hidden="true">&rarr;</span></a>
+        <a class="link" href="/data-and-reporting/">Data &amp; reporting <span aria-hidden="true">&rarr;</span></a>
+      </div>
+    </div>
+  </section>
+
+  <section class="section section--ink">
+    <div class="wrap">
+      <p class="tag">Adjacent joins</p>
+      <h2 class="measure">Related guides.</h2>
+      <ul class="list" style="margin-top:var(--s7)">
+        <li><a href="/systems/aroflo-to-xero/" style="color:inherit"><b>AroFlo to Xero: the field-to-invoice chain</b></a></li>
+        <li><a href="/systems/simpro-scheduling-weather/" style="color:inherit"><b>simPRO scheduling and the weather problem</b></a></li>
+        <li><a href="/systems/woocommerce-xero-fees-refunds/" style="color:inherit"><b>WooCommerce to Xero: fees and refunds done right</b></a></li>
+      </ul>
+    </div>
+  </section>
+</main>
+
+<footer class="foot">
+  <div class="wrap">
+    <p class="tag">Room for the right project</p>
+    <h2 class="measure">Tell me what's broken.</h2>
+    <div class="links">
+      <a class="link" href="/contact/">Work with me <span aria-hidden="true">&rarr;</span></a>
+      <a class="link" href="https://aaronsteele.vercel.app">Portfolio <span aria-hidden="true">&rarr;</span></a>
+      <a class="link" href="https://github.com/Aa-ronJS">GitHub <span aria-hidden="true">&rarr;</span></a>
+    </div>
+    <div class="foot__meta">
+      <p>Aaron Steele. Adelaide, South Australia. Remote Australia-wide. Analyst since 2015,
+         building since 2016. TOGAF certified, baseline cleared.</p>
+      <p><a href="/ai-development/" style="color:inherit">AI development</a> &middot; <a href="/wordpress/" style="color:inherit">WordPress</a> &middot; <a href="/ecommerce/" style="color:inherit">E-commerce</a> &middot; <a href="/mobile-apps/" style="color:inherit">Mobile apps</a> &middot; <a href="/website-rebuild/" style="color:inherit">Website rebuilds</a> &middot; <a href="/full-stack-developer/" style="color:inherit">Custom software</a> &middot; <a href="/crm-automation/" style="color:inherit">CRM &amp; automation</a> &middot; <a href="/data-and-reporting/" style="color:inherit">Data &amp; reporting</a> &middot; <a href="/project-rescue/" style="color:inherit">Project rescues</a> &middot; <a href="/business-analysis/" style="color:inherit">Business analysis</a> &middot; <a href="/systems/" style="color:inherit">System guides</a></p>
+      <p>Industries: <a href="/industries/trades/" style="color:inherit">Trades</a> &middot; <a href="/industries/transport/" style="color:inherit">Transport</a> &middot; <a href="/industries/mining/" style="color:inherit">Mining</a> &middot; <a href="/industries/retail/" style="color:inherit">Retail</a> &middot; <a href="/industries/hospitality/" style="color:inherit">Hospitality</a> &middot; <a href="/industries/professional-services/" style="color:inherit">Professional services</a> &middot; <a href="/industries/health/" style="color:inherit">Health</a> &middot; <a href="/industries/nonprofits/" style="color:inherit">Not-for-profits</a> &middot; <a href="/industries/real-estate/" style="color:inherit">Real estate</a> &middot; <a href="/industries/agriculture/" style="color:inherit">Agriculture</a> &middot; <a href="/industries/government/" style="color:inherit">Government</a> &middot; <a href="/industries/education/" style="color:inherit">Education</a></p>
+      <p><a href="/privacy/" style="color:inherit">Privacy</a></p>
+    </div>
+  </div>
+</footer>
+
+</body>
+</html>

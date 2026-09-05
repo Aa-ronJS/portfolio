@@ -1,0 +1,254 @@
+<!doctype html>
+<html lang="en-AU">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Cliniko Reminders and No-Shows: What the Built-In SMS Won't Fix | Aaron Steele</title>
+<meta name="description" content="Cliniko's built-in SMS and email reminders work and you should use them before paying anyone anything. If no-shows persist with reminders on, the gap is around the reminder, not in it: replies nobody actions, cancellations that never become filled slots, and patients who needed a rebooking nudge...">
+<link rel="canonical" href="https://REPLACE-DOMAIN/systems/cliniko-reminders/">
+<meta property="og:title" content="Cliniko Reminders and No-Shows: What the Built-In SMS Won't Fix | Aaron Steele">
+<meta property="og:description" content="Cliniko's built-in SMS and email reminders work and you should use them before paying anyone anything. If no-shows persist with reminders on, the gap is around the reminder, not in it: replies nobody actions, cancellations that never become filled slots, and patients who needed a rebooking nudge...">
+<meta property="og:type" content="article">
+<meta property="og:image" content="https://REPLACE-DOMAIN/og/services.png">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:image" content="https://REPLACE-DOMAIN/og/services.png">
+<meta name="theme-color" content="#12181f">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Crect width='100' height='100' fill='%2312181f'/%3E%3Ctext x='50' y='74' font-size='68' font-family='Arial' font-weight='700' text-anchor='middle' fill='%23e0a232'%3EA%3C/text%3E%3C/svg%3E">
+<link rel="preload" as="font" type="font/woff2" href="/fonts/clash-display-var.woff2" crossorigin>
+<link rel="preload" as="font" type="font/woff2" href="/fonts/satoshi-var.woff2" crossorigin>
+<link rel="stylesheet" href="/css/site.css">
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@graph": [
+    {
+      "@type": "FAQPage",
+      "mainEntity": [
+        {
+          "@type": "Question",
+          "name": "Does Cliniko send appointment reminders automatically?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "Yes, SMS and email both, built in, per appointment type. Turn them on and tune the timing before considering anything custom; the custom work only pays where the built-ins stop."
+          }
+        },
+        {
+          "@type": "Question",
+          "name": "Can patients confirm or cancel by replying to the SMS?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "Patients can reply, and Cliniko shows replies; actioning them is on the practice. The build worth having processes those replies into cancellations and freed slots automatically, then fills the slot from a waitlist."
+          }
+        },
+        {
+          "@type": "Question",
+          "name": "Is patient data safe in a build like this?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "It has to be, structurally: the work runs against Cliniko's API under the practice's own keys, data stays in the practice's accounts, and nothing is copied out beyond what the message itself needs. You own every credential, which is how I build everything."
+          }
+        }
+      ]
+    },
+    {
+      "@type": "BreadcrumbList",
+      "itemListElement": [
+        {
+          "@type": "ListItem",
+          "position": 1,
+          "name": "Home",
+          "item": "https://REPLACE-DOMAIN/"
+        },
+        {
+          "@type": "ListItem",
+          "position": 2,
+          "name": "System guides",
+          "item": "https://REPLACE-DOMAIN/systems/"
+        },
+        {
+          "@type": "ListItem",
+          "position": 3,
+          "name": "Cliniko reminders that actually cut no-shows",
+          "item": "https://REPLACE-DOMAIN/systems/cliniko-reminders/"
+        }
+      ]
+    }
+  ]
+}
+</script>
+</head>
+<body>
+
+<header class="top">
+  <div class="wrap">
+    <a class="brand" href="/">Aaron Steele<span>.</span></a>
+    <nav class="nav" aria-label="Site">
+      <a href="/">Home</a>
+      <a href="/ai-development/">AI development</a>
+      <a href="/wordpress/">WordPress</a>
+      <a href="/website-rebuild/">Rebuilds</a>
+      <a href="/full-stack-developer/">Custom software</a>
+      <a href="/crm-automation/">CRM &amp; automation</a>
+      <a href="/industries/">Industries</a>
+      <a href="/answers/">Answers</a>
+      <a href="/pricing/">Pricing</a>
+      <a href="/project-rescue/">Rescues</a>
+      <a href="/contact/">Work with me</a>
+    </nav>
+  </div>
+</header>
+
+<main>
+  <div class="hero">
+    <div class="wrap">
+      <ol class="crumbs"><li><a href="/">Home</a></li><li><a href="/systems/">System guides</a></li><li>Health practices</li></ol>
+      <h1 class="measure-wide" style="max-inline-size:24ch">Cliniko reminders that actually cut no-shows</h1>
+      <p class="lede">
+        Cliniko's built-in SMS and email reminders work and you should use them
+        before paying anyone anything. <b>If no-shows persist with reminders on, the gap is
+        around the reminder, not in it</b>: replies nobody actions, cancellations that never
+        become filled slots, and patients who needed a rebooking nudge weeks ago. Those are
+        joins and workflows, and Cliniko's API is good enough to build all of them.
+      </p>
+      <div class="cta-row">
+        <a class="btn" href="/contact/">Describe your setup</a>
+        <a class="btn btn--ghost" href="/pricing/">Get an estimate</a>
+      </div>
+    </div>
+  </div>
+
+  <section class="section">
+    <div class="wrap">
+      <p class="tag">The join</p>
+      <h2 class="measure">How it actually works.</h2>
+      <div class="rows">
+        <div class="row">
+          <h3>Use the built-ins to their edge first</h3>
+          <div>Turn on SMS and email reminders, tune the timing (a reminder three days out
+             plus one the afternoon before beats either alone), and write the message so a
+             reply feels expected. This costs SMS credits and an hour. Any consultant who
+             starts you further down this page than that is selling past the answer.</div>
+        </div>
+        <div class="row">
+          <h3>Confirmations need somewhere to land</h3>
+          <div>A patient replying "can't make it" to a reminder has done their part; if
+             that reply sits unread until 9am, the slot dies anyway. The join that pays: a
+             reply handler that marks the appointment cancelled in Cliniko through its API
+             and immediately surfaces the freed slot, instead of relying on whoever checks
+             the inbox.</div>
+        </div>
+        <div class="row">
+          <h3>The waitlist is where the money is</h3>
+          <div>A cancellation is only a loss if the slot stays empty. Cliniko's API exposes
+             appointments and patients, which is enough to keep a real waitlist: when a slot
+             frees inside 48 hours, the next suitable waitlisted patient gets an SMS with a
+             booking link, first-in wins. Practices fill a meaningful share of
+             late-cancelled slots this way, and reception does nothing manual.</div>
+        </div>
+        <div class="row">
+          <h3>Recalls: the no-show that never booked</h3>
+          <div>The quietest revenue leak is the patient whose treatment plan said six weeks
+             and who simply never rebooked. A recurring job against the API, patients whose
+             last appointment is older than their recall interval and who hold no future
+             booking, produces a short weekly list, and a personal SMS from the practice
+             does the rest. This is retention, not marketing, and patients read it that
+             way.</div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="section section--ink">
+    <div class="wrap">
+      <p class="tag">The traps</p>
+      <h2 class="measure">Where it goes wrong.</h2>
+      <div class="rows" style="margin-top:var(--s7)">
+        <div class="row">
+          <h3>Automating past consent</h3>
+          <div>Health messaging has rules and, more binding still, patient trust. Recall
+             and waitlist messages should go only to patients who agreed to them, say who
+             they are from, and stop on request, permanently. An automation that feels like
+             marketing spends trust the practice spent years earning; keep the register of
+             who consented as carefully as the appointment book.</div>
+        </div>
+        <div class="row">
+          <h3>Measuring nothing</h3>
+          <div>If you do not know this month's no-show rate, the project cannot know if it
+             worked. Start with the number, change one thing, watch it. Cliniko's data makes
+             the measurement a query, not a project of its own.</div>
+        </div>
+      </div>
+      <p class="measure-wide dim" style="margin-top:var(--s7)">
+        Anyone can claim integration experience; checking it is harder. My worst
+        reconciliation is public: a national charity's donation history out by around
+        $3.8 million after records merged on the wrong field, traced to the cause, rebuilt,
+        and reconciled against their books, 37,729 donations matched back to the right
+        donor. The method on this page is that method, at whatever size your version of the
+        problem is.
+      </p>
+      <div class="cta-row" style="margin-top:var(--s6)">
+        <a class="link" href="https://aaronsteele.vercel.app/#work">The proof, in public <span aria-hidden="true">&rarr;</span></a>
+      </div>
+    </div>
+  </section>
+
+  <section class="section">
+    <div class="wrap">
+      <p class="tag">Fair questions</p>
+      <h2 class="measure">Before you ask.</h2>
+      <div class="faq">
+        <details>
+          <summary>Does Cliniko send appointment reminders automatically?</summary>
+          <div>Yes, SMS and email both, built in, per appointment type. Turn them on and tune the timing before considering anything custom; the custom work only pays where the built-ins stop.</div>
+        </details>
+        <details>
+          <summary>Can patients confirm or cancel by replying to the SMS?</summary>
+          <div>Patients can reply, and Cliniko shows replies; actioning them is on the practice. The build worth having processes those replies into cancellations and freed slots automatically, then fills the slot from a waitlist.</div>
+        </details>
+        <details>
+          <summary>Is patient data safe in a build like this?</summary>
+          <div>It has to be, structurally: the work runs against Cliniko's API under the practice's own keys, data stays in the practice's accounts, and nothing is copied out beyond what the message itself needs. You own every credential, which is how I build everything.</div>
+        </details>
+      </div>
+      <div class="cta-row" style="margin-top:var(--s7)">
+        <a class="link" href="/industries/health/">Health industry page <span aria-hidden="true">&rarr;</span></a>
+        <a class="link" href="/crm-automation/">CRM &amp; automation <span aria-hidden="true">&rarr;</span></a>
+        <a class="link" href="/ai-development/">AI development <span aria-hidden="true">&rarr;</span></a>
+      </div>
+    </div>
+  </section>
+
+  <section class="section section--ink">
+    <div class="wrap">
+      <p class="tag">Adjacent joins</p>
+      <h2 class="measure">Related guides.</h2>
+      <ul class="list" style="margin-top:var(--s7)">
+        <li><a href="/systems/halaxy-vs-cliniko/" style="color:inherit"><b>Halaxy versus Cliniko, honestly</b></a></li>
+        <li><a href="/systems/simpro-scheduling-weather/" style="color:inherit"><b>simPRO scheduling and the weather problem</b></a></li>
+        <li><a href="/systems/axcelerate-enrolment/" style="color:inherit"><b>aXcelerate enrolment from your website</b></a></li>
+      </ul>
+    </div>
+  </section>
+</main>
+
+<footer class="foot">
+  <div class="wrap">
+    <p class="tag">Room for the right project</p>
+    <h2 class="measure">Tell me what's broken.</h2>
+    <div class="links">
+      <a class="link" href="/contact/">Work with me <span aria-hidden="true">&rarr;</span></a>
+      <a class="link" href="https://aaronsteele.vercel.app">Portfolio <span aria-hidden="true">&rarr;</span></a>
+      <a class="link" href="https://github.com/Aa-ronJS">GitHub <span aria-hidden="true">&rarr;</span></a>
+    </div>
+    <div class="foot__meta">
+      <p>Aaron Steele. Adelaide, South Australia. Remote Australia-wide. Analyst since 2015,
+         building since 2016. TOGAF certified, baseline cleared.</p>
+      <p><a href="/ai-development/" style="color:inherit">AI development</a> &middot; <a href="/wordpress/" style="color:inherit">WordPress</a> &middot; <a href="/ecommerce/" style="color:inherit">E-commerce</a> &middot; <a href="/mobile-apps/" style="color:inherit">Mobile apps</a> &middot; <a href="/website-rebuild/" style="color:inherit">Website rebuilds</a> &middot; <a href="/full-stack-developer/" style="color:inherit">Custom software</a> &middot; <a href="/crm-automation/" style="color:inherit">CRM &amp; automation</a> &middot; <a href="/data-and-reporting/" style="color:inherit">Data &amp; reporting</a> &middot; <a href="/project-rescue/" style="color:inherit">Project rescues</a> &middot; <a href="/business-analysis/" style="color:inherit">Business analysis</a> &middot; <a href="/systems/" style="color:inherit">System guides</a></p>
+      <p>Industries: <a href="/industries/trades/" style="color:inherit">Trades</a> &middot; <a href="/industries/transport/" style="color:inherit">Transport</a> &middot; <a href="/industries/mining/" style="color:inherit">Mining</a> &middot; <a href="/industries/retail/" style="color:inherit">Retail</a> &middot; <a href="/industries/hospitality/" style="color:inherit">Hospitality</a> &middot; <a href="/industries/professional-services/" style="color:inherit">Professional services</a> &middot; <a href="/industries/health/" style="color:inherit">Health</a> &middot; <a href="/industries/nonprofits/" style="color:inherit">Not-for-profits</a> &middot; <a href="/industries/real-estate/" style="color:inherit">Real estate</a> &middot; <a href="/industries/agriculture/" style="color:inherit">Agriculture</a> &middot; <a href="/industries/government/" style="color:inherit">Government</a> &middot; <a href="/industries/education/" style="color:inherit">Education</a></p>
+      <p><a href="/privacy/" style="color:inherit">Privacy</a></p>
+    </div>
+  </div>
+</footer>
+
+</body>
+</html>

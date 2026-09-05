@@ -93,13 +93,18 @@ Designed for one person with AI leverage and a client load. Roughly two
 hours of your ratifying time a week; the drafting is the machine's job.
 
 **Weekly (pick the same day, protect it):**
-- 1 system-pair page (type B), drafted by me, ratified by you, published.
-- 1 answers page (type C) from the capture file. If the file is empty,
-  skip it; do not invent.
-- 1 Google Business Profile post (two sentences + link to this week's
-  page). GBP posts expire; weekly keeps the profile visibly alive.
+- 1 Google Business Profile post (two sentences + link to a page; the 12
+  system guides are 12 ready-made posts). GBP posts expire; weekly keeps
+  the profile visibly alive. Your Google account, so yours.
+- 1 answers page (type C) from the capture file, if it has anything.
+  Forward the question; I write the page. If the file is empty, skip it;
+  do not invent.
 - 15 minutes in Search Console: what earned impressions, what got clicked,
   what to deepen next.
+
+The system-pair line that used to be here is gone because the queue is
+already written (section 7). New type-B batches happen on your one-line
+request, in bulk, not as weekly homework.
 
 **Per finished job (within a fortnight):**
 - 1 work note (type A), plus its paragraph added to the relevant service
@@ -156,7 +161,11 @@ sites earn the scaled-abuse label; do not.
 review asks sent, Request Indexing for the 12 most commercial pages
 (home, pricing, the 10 services).
 
-**Weeks 3 to 14, one per week from this queue (drafted on request):**
+**The 90-day queue: already written.** The twelve system-pair pages this
+section used to promise are built and in the repo at `/systems/`, produced
+through `tools/gen_systems.py` with the content in `tools/systems_a.py`
+and `tools/systems_b.py`:
+
 1. ServiceM8 to Xero without double entry
 2. Shopify to MYOB, reconciled
 3. Cliniko reminders that actually cut no-shows
@@ -170,8 +179,41 @@ review asks sent, Request Indexing for the 12 most commercial pages
 11. VETtrak AVETMISS exports without the week of pain
 12. Halaxy versus Cliniko, honestly
 
-Plus answers from the capture file as they accrue, plus the first work
-note the moment the first engagement closes.
+They ship with the launch set, not as a drip: pre-launch pages are one
+site launch, and Google treats them that way. The drip rules in section 4
+govern what gets **added after** launch. Your part shrinks to the one
+thing that cannot be delegated: the pre-launch claims audit (section 7a),
+because these pages describe named products' behaviour and my knowledge
+of those products has a date on it.
+
+Post-launch additions remain: answers from the capture file as they
+accrue, and the first work note the moment the first engagement closes.
+
+## 7a. The enactment model (what runs without you)
+
+"You ratify everything weekly" was a plan that quietly depended on you
+having a spare two hours every week forever. The honest split:
+
+**Already done, by me, in the repo:** the full system-pair queue above;
+the 40 answers; the 12 industry pages; interlinks, schema, sitemap. When
+you want the next batch (more system pairs, deeper clusters), that is one
+sentence from you, not a weekly meeting: the generators and content files
+are the machine, and any future session can extend them.
+
+**Cannot be delegated, and small:** the pre-launch claims audit (read the
+12 systems pages once against what you know of those products; they state
+how ServiceM8, Cliniko, VETtrak and friends behave, and product behaviour
+drifts); the GBP post (your Google account); GSC (your Google account,
+15 minutes weekly); work notes and captured questions (they are your
+calls and your jobs; I turn them into pages the day you forward them).
+
+**The reconciliation with the "nothing publishes unread" red line:** it
+stands, and it is satisfied by the pre-launch audit rather than a
+page-by-page weekly gate. One honest read of the launch set beats
+fifty-two rushed Friday ratifications. After launch, anything I draft
+for the site sits in the repo unpublished until your next deploy, which
+is itself the read opportunity; the red line is structural, not a
+calendar entry.
 
 ## 8. Red lines, permanent
 

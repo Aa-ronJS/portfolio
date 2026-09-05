@@ -1,0 +1,258 @@
+<!doctype html>
+<html lang="en-AU">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>VETtrak AVETMISS Export Errors: Fix the Data, Not the Deadline | Australia | Aaron Steele</title>
+<meta name="description" content="VETtrak generates the NAT files fine; the week of pain is what validation does to them: hundreds of errors surfacing at reporting deadline, all of them data problems that entered months earlier. The fix is not a better export button; it is moving validation to the moment data is entered, so...">
+<link rel="canonical" href="https://REPLACE-DOMAIN/systems/vettrak-avetmiss/">
+<meta property="og:title" content="VETtrak AVETMISS Export Errors: Fix the Data, Not the Deadline | Australia | Aaron Steele">
+<meta property="og:description" content="VETtrak generates the NAT files fine; the week of pain is what validation does to them: hundreds of errors surfacing at reporting deadline, all of them data problems that entered months earlier. The fix is not a better export button; it is moving validation to the moment data is entered, so...">
+<meta property="og:type" content="article">
+<meta property="og:image" content="https://REPLACE-DOMAIN/og/services.png">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:image" content="https://REPLACE-DOMAIN/og/services.png">
+<meta name="theme-color" content="#12181f">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Crect width='100' height='100' fill='%2312181f'/%3E%3Ctext x='50' y='74' font-size='68' font-family='Arial' font-weight='700' text-anchor='middle' fill='%23e0a232'%3EA%3C/text%3E%3C/svg%3E">
+<link rel="preload" as="font" type="font/woff2" href="/fonts/clash-display-var.woff2" crossorigin>
+<link rel="preload" as="font" type="font/woff2" href="/fonts/satoshi-var.woff2" crossorigin>
+<link rel="stylesheet" href="/css/site.css">
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@graph": [
+    {
+      "@type": "FAQPage",
+      "mainEntity": [
+        {
+          "@type": "Question",
+          "name": "Why does our AVETMISS export have so many errors?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "Because validation happens months after data entry, so every loose USI, unresulted unit and mis-coded funding source accumulates silently until the deadline surfaces them all at once. Move the checks to weekly, then to the point of entry, and the pile stops forming."
+          }
+        },
+        {
+          "@type": "Question",
+          "name": "Can you automate AVETMISS reporting from VETtrak?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "The export itself is VETtrak's job and it does it. What is worth building is the continuous validation and reconciliation around it, so the export runs against clean data. That is a modest build with a very measurable payoff: count this year's deadline-week hours."
+          }
+        },
+        {
+          "@type": "Question",
+          "name": "We use aXcelerate, not VETtrak.",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "The strategy is identical; the checks point at a different system. See the aXcelerate enrolment page for the point-of-entry half of the same story."
+          }
+        }
+      ]
+    },
+    {
+      "@type": "BreadcrumbList",
+      "itemListElement": [
+        {
+          "@type": "ListItem",
+          "position": 1,
+          "name": "Home",
+          "item": "https://REPLACE-DOMAIN/"
+        },
+        {
+          "@type": "ListItem",
+          "position": 2,
+          "name": "System guides",
+          "item": "https://REPLACE-DOMAIN/systems/"
+        },
+        {
+          "@type": "ListItem",
+          "position": 3,
+          "name": "VETtrak AVETMISS exports without the week of pain",
+          "item": "https://REPLACE-DOMAIN/systems/vettrak-avetmiss/"
+        }
+      ]
+    }
+  ]
+}
+</script>
+</head>
+<body>
+
+<header class="top">
+  <div class="wrap">
+    <a class="brand" href="/">Aaron Steele<span>.</span></a>
+    <nav class="nav" aria-label="Site">
+      <a href="/">Home</a>
+      <a href="/ai-development/">AI development</a>
+      <a href="/wordpress/">WordPress</a>
+      <a href="/website-rebuild/">Rebuilds</a>
+      <a href="/full-stack-developer/">Custom software</a>
+      <a href="/crm-automation/">CRM &amp; automation</a>
+      <a href="/industries/">Industries</a>
+      <a href="/answers/">Answers</a>
+      <a href="/pricing/">Pricing</a>
+      <a href="/project-rescue/">Rescues</a>
+      <a href="/contact/">Work with me</a>
+    </nav>
+  </div>
+</header>
+
+<main>
+  <div class="hero">
+    <div class="wrap">
+      <ol class="crumbs"><li><a href="/">Home</a></li><li><a href="/systems/">System guides</a></li><li>Training providers</li></ol>
+      <h1 class="measure-wide" style="max-inline-size:24ch">VETtrak AVETMISS exports without the week of pain</h1>
+      <p class="lede">
+        VETtrak generates the NAT files fine; the week of pain is what validation
+        does to them: hundreds of errors surfacing at reporting deadline, all of them data
+        problems that entered months earlier. <b>The fix is not a better export button; it
+        is moving validation to the moment data is entered</b>, so reporting week finds a
+        clean file because the errors were caught in July, one at a time, by the person who
+        could still remember the student.
+      </p>
+      <div class="cta-row">
+        <a class="btn" href="/contact/">Describe your setup</a>
+        <a class="btn btn--ghost" href="/pricing/">Get an estimate</a>
+      </div>
+    </div>
+  </div>
+
+  <section class="section">
+    <div class="wrap">
+      <p class="tag">The join</p>
+      <h2 class="measure">How it actually works.</h2>
+      <div class="rows">
+        <div class="row">
+          <h3>Name the errors you actually get</h3>
+          <div>Every RTO's error list has a personality: missing or malformed USIs,
+             outcomes left as continuing enrolments past the activity end date, funding
+             source codes that do not match the state contract, postcodes and addresses the
+             standard rejects, and units without results long after delivery ended.
+             Pull your last few validation reports and count; the top five categories are
+             usually eighty per cent of the pain, and each has an upstream cause with a
+             name.</div>
+        </div>
+        <div class="row">
+          <h3>Validate weekly, not annually</h3>
+          <div>The build that ends the deadline week: a scheduled job runs the same checks
+             the validator will, against current VETtrak data, every week, and sends a short
+             list to the right person: "12 enrolments missing USIs, 8 outcomes overdue,
+             entered by, due by". Fifty errors a week is admin; two thousand at deadline is
+             the week of pain. Same errors, different month, entirely different cost.</div>
+        </div>
+        <div class="row">
+          <h3>Push the checks to the point of entry</h3>
+          <div>Better than catching errors weekly is refusing them daily: enrolment forms
+             that validate USI format on the spot (there is an aXcelerate-flavoured page on
+             this), trainer workflows that will not let a class close with unresulted units,
+             checklists that make funding codes a selection, not a memory test. Every check
+             moved upstream deletes a category from the weekly list.</div>
+        </div>
+        <div class="row">
+          <h3>Reconcile before you submit, on purpose</h3>
+          <div>A file that validates can still be wrong: hours that misstate delivery,
+             funded activity that does not match the claim. A pre-submission reconciliation,
+             NAT file totals against enrolment counts and funding schedules, catches the
+             expensive kind of error, the kind auditors find. Reconciliation is the through-
+             line of my data work and the proof below is what it looks like done properly.</div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="section section--ink">
+    <div class="wrap">
+      <p class="tag">The traps</p>
+      <h2 class="measure">Where it goes wrong.</h2>
+      <div class="rows" style="margin-top:var(--s7)">
+        <div class="row">
+          <h3>State flavours are not optional</h3>
+          <div>Each state training authority has its own collection quirks and deadlines on
+             top of the national standard. The weekly checks must encode your actual
+             contracts' rules, not generic AVETMISS, or the file passes national validation
+             and still bounces at the state. Encode the rules you are actually reporting
+             under.</div>
+        </div>
+        <div class="row">
+          <h3>Fixing the file instead of the record</h3>
+          <div>Deadline pressure tempts people to edit exported data until the validator
+             stops complaining. Now the submission and the student management system
+             disagree, and next cycle inherits both the original error and the divergence.
+             Fix records in VETtrak, re-export, always, even in a bad week.</div>
+        </div>
+      </div>
+      <p class="measure-wide dim" style="margin-top:var(--s7)">
+        Anyone can claim integration experience; checking it is harder. My worst
+        reconciliation is public: a national charity's donation history out by around
+        $3.8 million after records merged on the wrong field, traced to the cause, rebuilt,
+        and reconciled against their books, 37,729 donations matched back to the right
+        donor. The method on this page is that method, at whatever size your version of the
+        problem is.
+      </p>
+      <div class="cta-row" style="margin-top:var(--s6)">
+        <a class="link" href="https://aaronsteele.vercel.app/#work">The proof, in public <span aria-hidden="true">&rarr;</span></a>
+      </div>
+    </div>
+  </section>
+
+  <section class="section">
+    <div class="wrap">
+      <p class="tag">Fair questions</p>
+      <h2 class="measure">Before you ask.</h2>
+      <div class="faq">
+        <details>
+          <summary>Why does our AVETMISS export have so many errors?</summary>
+          <div>Because validation happens months after data entry, so every loose USI, unresulted unit and mis-coded funding source accumulates silently until the deadline surfaces them all at once. Move the checks to weekly, then to the point of entry, and the pile stops forming.</div>
+        </details>
+        <details>
+          <summary>Can you automate AVETMISS reporting from VETtrak?</summary>
+          <div>The export itself is VETtrak's job and it does it. What is worth building is the continuous validation and reconciliation around it, so the export runs against clean data. That is a modest build with a very measurable payoff: count this year's deadline-week hours.</div>
+        </details>
+        <details>
+          <summary>We use aXcelerate, not VETtrak.</summary>
+          <div>The strategy is identical; the checks point at a different system. See the aXcelerate enrolment page for the point-of-entry half of the same story.</div>
+        </details>
+      </div>
+      <div class="cta-row" style="margin-top:var(--s7)">
+        <a class="link" href="/industries/education/">Education industry page <span aria-hidden="true">&rarr;</span></a>
+        <a class="link" href="/data-and-reporting/">Data &amp; reporting <span aria-hidden="true">&rarr;</span></a>
+        <a class="link" href="/business-analysis/">Business analysis <span aria-hidden="true">&rarr;</span></a>
+      </div>
+    </div>
+  </section>
+
+  <section class="section section--ink">
+    <div class="wrap">
+      <p class="tag">Adjacent joins</p>
+      <h2 class="measure">Related guides.</h2>
+      <ul class="list" style="margin-top:var(--s7)">
+        <li><a href="/systems/axcelerate-enrolment/" style="color:inherit"><b>aXcelerate enrolment from your website</b></a></li>
+        <li><a href="/systems/propertyme-owner-reports/" style="color:inherit"><b>PropertyMe owner reports, automated</b></a></li>
+        <li><a href="/systems/cliniko-reminders/" style="color:inherit"><b>Cliniko reminders that actually cut no-shows</b></a></li>
+      </ul>
+    </div>
+  </section>
+</main>
+
+<footer class="foot">
+  <div class="wrap">
+    <p class="tag">Room for the right project</p>
+    <h2 class="measure">Tell me what's broken.</h2>
+    <div class="links">
+      <a class="link" href="/contact/">Work with me <span aria-hidden="true">&rarr;</span></a>
+      <a class="link" href="https://aaronsteele.vercel.app">Portfolio <span aria-hidden="true">&rarr;</span></a>
+      <a class="link" href="https://github.com/Aa-ronJS">GitHub <span aria-hidden="true">&rarr;</span></a>
+    </div>
+    <div class="foot__meta">
+      <p>Aaron Steele. Adelaide, South Australia. Remote Australia-wide. Analyst since 2015,
+         building since 2016. TOGAF certified, baseline cleared.</p>
+      <p><a href="/ai-development/" style="color:inherit">AI development</a> &middot; <a href="/wordpress/" style="color:inherit">WordPress</a> &middot; <a href="/ecommerce/" style="color:inherit">E-commerce</a> &middot; <a href="/mobile-apps/" style="color:inherit">Mobile apps</a> &middot; <a href="/website-rebuild/" style="color:inherit">Website rebuilds</a> &middot; <a href="/full-stack-developer/" style="color:inherit">Custom software</a> &middot; <a href="/crm-automation/" style="color:inherit">CRM &amp; automation</a> &middot; <a href="/data-and-reporting/" style="color:inherit">Data &amp; reporting</a> &middot; <a href="/project-rescue/" style="color:inherit">Project rescues</a> &middot; <a href="/business-analysis/" style="color:inherit">Business analysis</a> &middot; <a href="/systems/" style="color:inherit">System guides</a></p>
+      <p>Industries: <a href="/industries/trades/" style="color:inherit">Trades</a> &middot; <a href="/industries/transport/" style="color:inherit">Transport</a> &middot; <a href="/industries/mining/" style="color:inherit">Mining</a> &middot; <a href="/industries/retail/" style="color:inherit">Retail</a> &middot; <a href="/industries/hospitality/" style="color:inherit">Hospitality</a> &middot; <a href="/industries/professional-services/" style="color:inherit">Professional services</a> &middot; <a href="/industries/health/" style="color:inherit">Health</a> &middot; <a href="/industries/nonprofits/" style="color:inherit">Not-for-profits</a> &middot; <a href="/industries/real-estate/" style="color:inherit">Real estate</a> &middot; <a href="/industries/agriculture/" style="color:inherit">Agriculture</a> &middot; <a href="/industries/government/" style="color:inherit">Government</a> &middot; <a href="/industries/education/" style="color:inherit">Education</a></p>
+      <p><a href="/privacy/" style="color:inherit">Privacy</a></p>
+    </div>
+  </div>
+</footer>
+
+</body>
+</html>
