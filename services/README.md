@@ -68,6 +68,31 @@ a new entry in the generator's content files, regenerated and added to the
 sitemap. Write the answer the way you would say it on the call; the format
 does the rest.
 
+## The pricing calculator
+
+`/pricing/` is the conversion engine: pick a service, answer two to four
+questions, leave email and phone, get an estimate range immediately, book a
+time. Three launch steps beyond the usual placeholders:
+
+1. **Tune the numbers.** Every range lives in one commented config at the
+   top of the page's script, labelled TUNE BEFORE LAUNCH. They are
+   typical-market AUD ex GST ranges today; make them numbers you would say
+   on the phone, because the page promises exactly that.
+2. **Set `LEAD_WEBHOOK_URL`** in the Vercel project's environment. Leads
+   POST to `/api/lead` (a serverless function in `api/`), which forwards to
+   that webhook: point it at Make/Zapier/n8n into your CRM and inbox. Until
+   it is set, leads appear in Vercel function logs only. The calculator
+   reveals the estimate even if the endpoint fails; a lead is never
+   punished for our plumbing.
+3. **Replace `REPLACE-BOOKING-URL`** in the page script with your Calendly
+   (or equivalent) link. Until then the book button falls back to the
+   contact page.
+
+Honesty contract on this page: estimates are labelled typical ranges, never
+quotes; the gate copy promises at most one follow-up and no list, so keep
+that true; and several paths deliberately point at cheaper options. This is
+the one page on the site with JavaScript.
+
 ## Images
 
 No image key exists in the build environment, so `IMAGES.md` holds the full
