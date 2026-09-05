@@ -684,9 +684,17 @@ CHEEK of every guide-less drawing. Both the check-sheet panels and
 the episode were "verified" by eye and passed — the reviewer saw the
 movement he expected. Three rules came out of it: A/B pixel-diff a
 new visual feature against a disabled render (0 changed px = it does
-not exist); the check sheet prints a MEASURED verdict, never a
-judgement call; and motion claims are proven with an eye-region
-FILMSTRIP of consecutive frames plus per-frame diff counts.
+not exist) — over a RANGE of frames, because a single still can
+legitimately collide (a blink frame suspends stamping on both sides);
+the check sheet prints a MEASURED verdict, never a judgement call;
+and motion claims are proven with an eye-region FILMSTRIP of
+consecutive FINAL-FILE frames. Round two of the same failure: the
+fixed detector then picked the dark fragment NEAREST the white's
+centre — an antialiased 6px sliver — stamping an invisible dot while
+the drawn pupil stayed put, and the lift intersected the pupil mask
+with the WHITE mask (disjoint again), so nothing was ever erased.
+The pupil is the UNION of plausible dark blobs inside the filled
+white, and the lift erases that union within the filled white.
 
 Dynamic pupils (2026-09-05): rigged characters look around. Per
 frame, `draw_pupils` (rig.py) works at the face eye anchors on the

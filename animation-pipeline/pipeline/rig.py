@@ -875,10 +875,15 @@ def draw_pupils(img, face, look, transform=None, feat_h=None):
         # itself). Filling the dilated white also catches a pupil that
         # touches the eye outline; a thin outline sliver that sneaks
         # in fails the bbox-fill test.
+        # the pupil is ALL the plausible dark inside the filled white,
+        # unioned: a posed canvas fragments the drawn pupil into
+        # several blobs plus antialiased outline slivers, and picking
+        # one nearest-the-centre fragment once stamped an invisible
+        # 3px dot while leaving the drawn pupil in place
         dl, dn = ndi.label(
             (lum < 330) & op & ndi.binary_fill_holes(
                 ndi.binary_dilation(wmask, iterations=2)))
-        best = None
+        comps = []
         for i in range(1, dn + 1):
             m = dl == i
             a2 = m.sum()
@@ -888,18 +893,25 @@ def draw_pupils(img, face, look, transform=None, feat_h=None):
             bw = (xs.max() - xs.min() + 1) * (ys.max() - ys.min() + 1)
             if bw > 4 * a2:
                 continue          # ring-shaped: the eye outline
-            d2 = (xs.mean() - wc[0]) ** 2 + (ys.mean() - wc[1]) ** 2
-            if best is None or d2 < best[0]:
-                best = (d2, m)
-        if best is None:
+            comps.append((a2, m))
+        if not comps:
             continue
-        pmask = best[1]
-        pr = max(2.0, math.sqrt((pmask & wmask).sum() / math.pi))
+        amax = max(a2 for a2, _ in comps)
+        pmask = np.zeros_like(wmask)
+        for a2, m in comps:
+            if a2 >= 0.2 * amax:
+                pmask |= m
+        pr = max(3.0, math.sqrt(amax / math.pi))
         pcol = tuple(np.median(win[pmask][:, :3], axis=0)
                      .astype(int).tolist()) + (255,)
         wcol = tuple(np.median(win[wmask][:, :3], axis=0)
                      .astype(int).tolist()) + (255,)
-        lift = ndi.binary_dilation(pmask, iterations=2) & wmask
+        # erase the pupil ITSELF plus a halo — intersecting with the
+        # white mask would spare the dark pixels (they are not white)
+        # and leave the drawn pupil sitting under the stamped one
+        lift = ndi.binary_dilation(pmask, iterations=3) \
+            & ndi.binary_fill_holes(
+                ndi.binary_dilation(wmask, iterations=2))
         win[lift] = wcol
         tx = max(0.0, (wxs.max() - wxs.min()) / 2 - pr - 1)
         ty = max(0.0, (wys.max() - wys.min()) / 2 - pr - 1)
