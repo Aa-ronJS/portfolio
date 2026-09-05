@@ -1,0 +1,29 @@
+# Console — the hub's control panel -> https://console.${BASE_DOMAIN}
+# Everything stackctl does, from a browser: start/stop apps, add people,
+# toggle SSO, run backups, edit SMTP + branding. Signs in with ADMIN_USER /
+# ADMIN_PASSWORD from .env.
+services:
+  app:
+    build: .
+    image: founder-stack/console:local
+    restart: unless-stopped
+    environment:
+      STACK_ROOT: ${STACK_ROOT}
+    volumes:
+      # the stack directory at the *same* path as on the host, so compose
+      # bind-mounts (./config, ./blueprints, ...) resolve for the host daemon
+      - ${STACK_ROOT}:${STACK_ROOT}
+      - /var/run/docker.sock:/var/run/docker.sock
+    networks:
+      - default
+      - proxy
+    labels:
+      traefik.enable: "true"
+      traefik.http.routers.console.rule: Host(`console.${BASE_DOMAIN}`)
+      traefik.http.routers.console.entrypoints: websecure
+      traefik.http.routers.console.tls.certresolver: le
+      traefik.http.services.console.loadbalancer.server.port: 8080
+
+networks:
+  proxy:
+    external: true

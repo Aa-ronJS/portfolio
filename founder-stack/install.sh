@@ -43,6 +43,8 @@ else
   [ -n "$DOMAIN" ] || fail "domain is required"
   read -rp "Email for Let's Encrypt + admin accounts: " EMAIL
   [ -n "$EMAIL" ] || fail "email is required"
+  read -rp "Business name (shown across every app) [Founder Stack]: " BRAND_IN
+  BRAND_IN="${BRAND_IN:-Founder Stack}"
 
   echo
   echo "Outbound email (invoices, invites, newsletters) needs an SMTP relay."
@@ -59,6 +61,8 @@ else
   while IFS= read -r line; do
     case "$line" in
       BASE_DOMAIN=*)   line="BASE_DOMAIN=$DOMAIN" ;;
+      STACK_ROOT=*)    line="STACK_ROOT=$ROOT" ;;
+      BRAND_NAME=*)    line="BRAND_NAME=$BRAND_IN" ;;
       ACME_EMAIL=*)    line="ACME_EMAIL=$EMAIL" ;;
       ADMIN_EMAIL=*)   line="ADMIN_EMAIL=$EMAIL" ;;
       SMTP_FROM=*)     line="SMTP_FROM=noreply@$DOMAIN" ;;
@@ -105,8 +109,14 @@ cat <<EOF
       *.$BASE_DOMAIN  A  <this server's IP>
 
   Next:
-      ./stackctl list          # see the catalog
-      ./stackctl up --all      # or pick apps: ./stackctl up calcom umami
-      ./stackctl status
+      ./stackctl up homepage console   # the hub + its control panel
+      ./stackctl up --all              # everything (or pick apps)
+
+  Then open https://console.$BASE_DOMAIN (login: admin / ADMIN_PASSWORD from .env)
+  and run the rest from the browser — or keep using ./stackctl.
 
 EOF
+if [ -t 0 ]; then
+  read -rp "Deploy everything now (all apps, first-run setup, SSO, brand)? [Y/n] " yn
+  case "${yn:-Y}" in [Yy]*) exec "$ROOT/stackctl" deploy ;; esac
+fi

@@ -85,6 +85,12 @@
         container: fs-nextcloud-app-1
 
 - Operations:
+    - Console:
+        href: https://console.{{HOMEPAGE_VAR_BASE_DOMAIN}}
+        description: Control panel — apps, people, sign-on, backups, settings
+        icon: mdi-tune
+        server: local
+        container: fs-console-app-1
     - Automations:
         href: https://automate.{{HOMEPAGE_VAR_BASE_DOMAIN}}
         description: Workflows & integrations (Activepieces)

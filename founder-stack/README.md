@@ -33,6 +33,15 @@ Plus two pieces that tie it together:
   every app as a tile, grouped by job (Customers / Money / Marketing /
   Team / Operations), with a live running-status dot per app and server
   CPU/RAM/disk at the top. Bookmark one URL, reach everything.
+- **The console** — `console.yourdomain.com`: the hub's control panel.
+  Start/stop/update apps, add or remove teammates everywhere, turn SSO on,
+  run and restore backups, set SMTP and branding — from a browser, with
+  live command output. Everything `stackctl` does, no shell needed.
+- **One brand** — set your business name, logo and accent colour once (in
+  the console or `.env`) and `stackctl brand apply` pushes it into the hub,
+  the console, and every app with a branding surface (Authentik, Nextcloud,
+  Mattermost, Rocket.Chat, Chatwoot, Listmonk, Ghost, Easy!Appointments),
+  so the stack reads as one product.
 - **One identity** — real single sign-on (Authentik at
   `auth.yourdomain.com`, auto-configured by blueprint, `./stackctl sso on`)
   for every app that supports OIDC, plus scripted provisioning for the
@@ -67,29 +76,33 @@ $8 × 50/month.
   `*.yourdomain.com  A  <your-server-ip>` (and optionally the apex).
 - Ports 80 and 443 open.
 
-## Quickstart
+## Quickstart — one command
 
 ```bash
 git clone https://github.com/Aa-ronJS/portfolio.git
 cd portfolio/founder-stack
-sudo ./install.sh          # installs Docker if needed, asks for your domain,
-                           # generates every secret, starts the HTTPS proxy
+sudo ./install.sh
+```
 
-./stackctl list            # see the catalog
-./stackctl up homepage     # the hub — bookmark https://home.yourdomain.com
-./stackctl up calcom listmonk umami    # start what you want...
-./stackctl up --all                    # ...or everything
-./stackctl sso on          # optional: one login for the stack (docs/SSO.md)
-./stackctl user add jane@yourco.com    # one command onboards a teammate everywhere
+`install.sh` asks four things (domain, email, business name, optional SMTP
+relay), generates every secret, starts the HTTPS proxy, then offers
+**Deploy everything** — which starts every app, waits for them to come up,
+runs each app's first-time setup from your answers, turns on single
+sign-on and applies your brand. When it finishes you get three links: the
+hub, the console, and sign-on. Add your team from the console's People tab.
+
+Prefer to drive it yourself? Everything is also a command:
+
+```bash
+./stackctl deploy                       # the same one-shot, re-runnable any time
+./stackctl up calcom listmonk umami     # or pick apps
+./stackctl user add jane@yourco.com     # one command onboards a teammate everywhere
 ./stackctl status
 ```
 
-That's it. Every app comes up on its own subdomain with a Let's Encrypt
-certificate. Admin credentials are pre-seeded from `.env` where the app
-supports it; the rest ask you to create the admin account on first visit
-(see [docs/APPS.md](docs/APPS.md) for the exact first-login step per app —
-until you've done it, that URL is an open admin-signup page, so do it
-right after `up`).
+Every app comes up on its own subdomain with a Let's Encrypt certificate,
+with its admin account pre-seeded or bootstrapped from `.env`
+([docs/APPS.md](docs/APPS.md) lists the per-app details).
 
 ## Day-2 operations
 
@@ -100,7 +113,10 @@ right after `up`).
 ./stackctl restore <dir>       # restore a backup
 ./stackctl update              # pull newest images and restart, app by app
 ./stackctl down calcom         # stop an app (data is kept)
+./stackctl brand apply         # push name/logo/colour into every app
 ```
+
+All of the above is also available in the console at `console.yourdomain.com`.
 
 Backups are plain tarballs + SQL dumps — copy `./backups` off-server with
 rclone/rsync/cron and you have disaster recovery.

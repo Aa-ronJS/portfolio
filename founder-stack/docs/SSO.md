@@ -125,6 +125,7 @@ CPU/RAM/disk at the top. It's the "start here" page for you and anyone on
 your team: `./stackctl up homepage`.
 
 The hub itself is unauthenticated (it exposes only app names, links, and
-up/down status — no data). If you want it private too, put Authentik's
-forward-auth proxy in front of it — a good "advanced chapter" for the
-product; happy path leaves it open.
+up/down status — no data). The **console** (`console.<BASE_DOMAIN>`) is the
+hub's control panel and is protected with `ADMIN_USER`/`ADMIN_PASSWORD`: it
+runs every `stackctl` operation from the browser — apps, people, SSO,
+backups, SMTP, branding — streaming the output live.

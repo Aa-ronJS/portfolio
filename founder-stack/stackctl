@@ -1,5 +1,6 @@
 #!/usr/bin/env bash
 # stackctl — manage the Founder Stack.
+#   stackctl deploy             (one shot: everything up, bootstrapped, SSO on, branded)
 #   stackctl list | status
 #   stackctl up <app...> | up --all
 #   stackctl down <app...> | down --all
@@ -10,6 +11,7 @@
 #   stackctl restore <backup-dir>
 #   stackctl sso on|off
 #   stackctl tunnel up|down     (Cloudflare Tunnel: no public IP needed)
+#   stackctl brand apply|show   (push name/logo/colour into every app)
 #   stackctl user add <email> [password] | passwd <email> [password] | rm <email>
 set -euo pipefail
 
@@ -27,6 +29,7 @@ fail() { printf '\033[1;31mERROR:\033[0m %s\n' "$*" >&2; exit 1; }
 subdomain() {
   case "$1" in
     homepage) echo home ;;      authentik) echo auth ;;
+    console) echo console ;;
     calcom) echo cal ;;         invoiceninja) echo invoices ;;
     twenty) echo crm ;;         activepieces) echo automate ;;
     listmonk) echo newsletter ;; formbricks) echo forms ;;
@@ -78,6 +81,8 @@ app_tag() { # annotation for list/status output
   fi
 }
 
+export STACK_ROOT="$ROOT"   # compose files (console) mount the stack at its host path
+
 compose() { # compose <app> <compose args...>
   local app="$1"; shift
   docker compose --env-file "$ENVFILE" -f "$APPS_DIR/$app/docker-compose.yml" -p "fs-$app" "$@"
@@ -98,6 +103,18 @@ running_count() { # number of running containers for an app; 0 on any error
   local n
   n="$(compose "$1" ps -q 2>/dev/null | wc -l)" || n=0
   echo "$n"
+}
+
+wait_ready() { # <app> [seconds] — poll the app's URL until it answers (< 500)
+  local a="$1" t="${2:-300}" url code k=()
+  url="https://$(subdomain "$a").$(base_domain)/"
+  [ "${STACK_INSECURE:-0}" = 1 ] && k=(-k --noproxy '*')
+  while [ "$t" -gt 0 ]; do
+    code="$(curl -s "${k[@]}" -o /dev/null -w '%{http_code}' --max-time 10 "$url" 2>/dev/null || echo 000)"
+    case "$code" in 2*|3*|401|403) return 0 ;; esac   # 404 = traefik has no healthy backend yet
+    sleep 5; t=$((t-5))
+  done
+  return 1
 }
 
 cmd="${1:-}"; shift || true
@@ -139,7 +156,8 @@ case "$cmd" in
 
   logs)
     [ $# -eq 1 ] || fail "usage: stackctl logs <app>"
-    compose "$1" logs -f --tail=200
+    if [ "${STACKCTL_NO_FOLLOW:-0}" = 1 ]; then compose "$1" logs --tail=200   # console: one shot
+    else compose "$1" logs -f --tail=200; fi
     ;;
 
   status)
@@ -271,8 +289,46 @@ case "$cmd" in
     esac
     ;;
 
+  brand)
+    . "$ROOT/scripts/provision.sh"   # http(), envval(), note_*(), listmonk_session()
+    . "$ROOT/scripts/brand.sh"
+    case "${1:-}" in
+      apply) log "Applying brand to the hub, console and every running app that supports it..."; brand_apply ;;
+      show)  echo "BRAND_NAME=$(brand_name)"; echo "BRAND_COLOR=$(brand_color)"; echo "BRAND_LOGO_URL=$(brand_logo)" ;;
+      *) fail "usage: stackctl brand apply|show   (edit BRAND_* in .env or use the console's Settings tab)" ;;
+    esac
+    ;;
+
+  deploy)
+    # The one-click path. Idempotent: safe to re-run any time.
+    log "1/5 Starting every app for this server..."
+    "$0" up --all
+    log "2/5 Waiting for apps to come up (first boot runs migrations; a few minutes)..."
+    for a in $(default_apps); do
+      [ "$(running_count "$a")" -gt 0 ] || continue
+      if wait_ready "$a" 420; then printf '  ready   %s\n' "$a"; else printf '  slow    %s (still starting; will settle on its own)\n' "$a"; fi
+    done
+    log "3/5 First-run setup (workspaces, owners, installs) from your .env..."
+    "$0" bootstrap
+    log "4/5 Turning on single sign-on..."
+    "$0" sso on
+    log "5/5 Applying your brand everywhere..."
+    "$0" brand apply
+    echo
+    log "Deployed."
+    echo "    Hub:      https://home.$(base_domain)"
+    echo "    Console:  https://console.$(base_domain)   (admin / ADMIN_PASSWORD from .env)"
+    echo "    Sign-on:  https://auth.$(base_domain)      (akadmin / ADMIN_PASSWORD)"
+    echo "    Add your team: stackctl user add jane@yourco.com  — or the console's People tab."
+    ;;
+
+  bootstrap)
+    . "$ROOT/scripts/provision.sh"
+    run_bootstrap
+    ;;
+
   ""|help|-h|--help)
-    sed -n '2,13p' "$0" | sed 's/^# \{0,1\}//'
+    sed -n '2,15p' "$0" | sed 's/^# \{0,1\}//'
     ;;
   *)
     fail "unknown command '$cmd' (try: stackctl help)"

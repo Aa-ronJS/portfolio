@@ -1,4 +1,4 @@
-title: Founder Stack
+title: Acme Studio
 description: Your whole business, one server.
 theme: dark
 color: slate
@@ -7,12 +7,17 @@ hideVersion: true
 statusStyle: dot
 layout:
   Customers:
+    style: row
     columns: 4
   Money:
+    style: row
     columns: 4
   Marketing:
+    style: row
     columns: 4
   Team:
+    style: row
     columns: 4
   Operations:
-    columns: 4
+    style: row
+    columns: 5

@@ -15,6 +15,10 @@
 #   - In-app invite: formbricks (no API for members on the free tier)
 #   - Single-admin by design: uptime-kuma
 
+# Best-effort by design: one app failing must never abort the run, so errexit
+# is off while provisioners/brand functions run (stackctl enables it globally).
+set +e
+
 PROVISION_OK=()
 PROVISION_FAILED=()
 PROVISION_MANUAL=()
@@ -158,6 +162,13 @@ puts 'PROVISION_OK'"
       ;;
     passwd) code="u = User.find_by!(email: '$email'); u.update!(password: '$pass', password_confirmation: '$pass'); puts 'PROVISION_OK'" ;;
     rm) code="u = User.find_by(email: '$email'); u&.destroy!; puts 'PROVISION_OK'" ;;
+    bootstrap)
+      # first run: account + owner from .env, nothing else
+      local ae ap; ae="$(envval ADMIN_EMAIL)"; ap="$(envval ADMIN_PASSWORD)"
+      code="a = Account.first || Account.create!(name: '$(envval BRAND_NAME)');
+u = User.find_by(email: '$ae') || User.new(name: 'admin', email: '$ae', password: '$ap', password_confirmation: '$ap');
+u.skip_confirmation!; u.save! if u.new_record?;
+AccountUser.find_or_create_by!(account: a, user: u) { |au| au.role = :administrator }; puts 'PROVISION_OK'" ;;
   esac
   out="$(docker exec fs-chatwoot-rails-1 bundle exec rails runner "$code" 2>/dev/null)"
   if printf '%s' "$out" | grep -q PROVISION_OK; then
@@ -248,6 +259,7 @@ provision_umami() {
     fi
   fi
   [ -n "$tok" ] || { note_fail umami "admin login failed (not ADMIN_PASSWORD, not the default)"; return; }
+  [ "$action" = bootstrap ] && { note_ok umami "umami — admin ready"; return; }
   case "$action" in
     add)
       http POST "$base/users" -H "Authorization: Bearer $tok" -H "Content-Type: application/json" \
@@ -295,7 +307,7 @@ provision_calcom() {
 provision_ghost() {
   local action="$1" email="$2"
   app_running ghost || { note_manual ghost "not running"; return; }
-  [ "$action" = add ] || { note_manual ghost "manage staff in Ghost admin"; return; }
+  [ "$action" = add ] || [ "$action" = bootstrap ] || { note_manual ghost "manage staff in Ghost admin"; return; }
   local base="https://blog.$(base_domain)/ghost/api/admin" jar
   jar="$(mktemp)"
   # zero-touch first run: if Ghost has no owner yet, create one from .env
@@ -303,7 +315,10 @@ provision_ghost() {
     http POST "$base/authentication/setup/" -H "Content-Type: application/json" \
       -d "{\"setup\":[{\"name\":\"$(json_escape "$(envval ADMIN_USER)")\",\"email\":\"$(json_escape "$(envval ADMIN_EMAIL)")\",\"password\":\"$(json_escape "$(envval ADMIN_PASSWORD)")\",\"blogTitle\":\"Blog\"}]}" >/dev/null \
       && note_ok ghost "ghost — bootstrapped owner account as ADMIN_EMAIL"
+  else
+    [ "$action" = bootstrap ] && note_ok ghost "ghost — owner ready"
   fi
+  [ "$action" = bootstrap ] && { rm -f "$jar"; return; }
   if [ -z "$(envval SMTP_HOST)" ]; then
     # without SMTP, Ghost 500s on admin login (it emails a sign-in notice)
     # and on staff invites — nothing more we can script
@@ -420,7 +435,10 @@ provision_easyappointments() {
       && note_ok easyappointments "easy!appointments — installed, admin = ADMIN_USER" \
       || { rm -f "$jar"; note_fail easyappointments "install failed (HTTP $HTTP_CODE)"; return; }
     rm -f "$jar"
+  else
+    [ "$action" = bootstrap ] && note_ok easyappointments "easy!appointments — already installed"
   fi
+  [ "$action" = bootstrap ] && return
   [ "$action" = add ] || { note_manual easyappointments "Users → Providers ($action not scripted)"; return; }
   # new users are "providers" (bookable staff) — created via the REST API as admin
   http POST "$base/index.php/api/v1/providers" -u "$(envval ADMIN_USER):$(envval ADMIN_PASSWORD)" -H "Content-Type: application/json" \
@@ -433,7 +451,7 @@ provision_easyappointments() {
 provision_docmost() {
   local action="$1" email="$2" pass="$3" user="${2%%@*}"
   app_running docmost || { note_manual docmost "not running"; return; }
-  [ "$action" = add ] || { note_manual docmost "Settings → Members ($action not scripted)"; return; }
+  [ "$action" = add ] || [ "$action" = bootstrap ] || { note_manual docmost "Settings → Members ($action not scripted)"; return; }
   local base="https://docs.$(base_domain)/api" jar
   jar="$(mktemp)"
   # zero-touch first run: create the workspace + owner from .env
@@ -445,7 +463,10 @@ provision_docmost() {
       || { rm -f "$jar"; note_fail docmost "setup/login failed (HTTP $HTTP_CODE)"; return; }
     http POST "$base/auth/login" -c "$jar" -H "Content-Type: application/json" \
       -d "{\"email\":\"$(json_escape "$(envval ADMIN_EMAIL)")\",\"password\":\"$(json_escape "$(envval ADMIN_PASSWORD)")\"}" >/dev/null
+  else
+    [ "$action" = bootstrap ] && note_ok docmost "docmost — workspace ready"
   fi
+  [ "$action" = bootstrap ] && { rm -f "$jar"; return; }
   if [ -z "$(envval SMTP_HOST)" ]; then
     rm -f "$jar"; note_manual docmost "no SMTP configured — invite '$email' from Settings → Members once SMTP is set"; return
   fi
@@ -487,7 +508,7 @@ twenty_access_token() { # <email> <password> -> workspace access token on stdout
 provision_twenty() {
   local action="$1" email="$2" pass="$3"
   app_running twenty || { note_manual twenty "not running"; return; }
-  [ "$action" = add ] || { note_manual twenty "Settings → Members ($action not scripted)"; return; }
+  [ "$action" = add ] || [ "$action" = bootstrap ] || { note_manual twenty "Settings → Members ($action not scripted)"; return; }
   local o="https://crm.$(base_domain)" aemail apass access agn lt hash body
   aemail="$(json_escape "$(envval ADMIN_EMAIL)")"; apass="$(json_escape "$(envval ADMIN_PASSWORD)")"
   access="$(twenty_access_token "$aemail" "$apass")"
@@ -499,12 +520,28 @@ provision_twenty() {
     [ -n "$access" ] || { note_fail twenty "workspace bootstrap failed (HTTP $HTTP_CODE)"; return; }
     twenty_gql '{"query":"mutation{activateWorkspace(data:{displayName:\"Founder Stack\"}){id}}"}' "$access" >/dev/null
     note_ok twenty "twenty — bootstrapped workspace + admin as ADMIN_EMAIL"
+  else
+    [ "$action" = bootstrap ] && note_ok twenty "twenty — workspace ready"
   fi
+  [ "$action" = bootstrap ] && return
   hash="$(twenty_gql '{"query":"{currentWorkspace{inviteHash}}"}' "$access" | sed -n 's/.*"inviteHash":"\([^"]*\)".*/\1/p' | head -1)"
   [ -n "$hash" ] || { note_fail twenty "could not read workspace invite hash"; return; }
   body="$(twenty_gql "{\"query\":\"mutation{signUpInWorkspace(email:\\\"$(json_escape "$email")\\\",password:\\\"$(json_escape "$pass")\\\",workspaceInviteHash:\\\"$hash\\\"){loginToken{token}}}\"}")"
   if printf '%s' "$body" | grep -q '"loginToken":{"token"'; then note_ok twenty "twenty — account created and joined workspace"
   else note_fail twenty "sign-up failed: $(printf '%s' "$body" | sed -n 's/.*"message":"\([^"]*\)".*/\1/p' | head -1)"; fi
+}
+
+# ---------- Bootstrap orchestrator: every zero-touch first-run setup, no teammate ----------
+run_bootstrap() {
+  PROVISION_OK=(); PROVISION_FAILED=(); PROVISION_MANUAL=()
+  provision_umami bootstrap "" ""
+  provision_chatwoot bootstrap "" ""
+  provision_ghost bootstrap "" ""
+  provision_docmost bootstrap "" ""
+  provision_twenty bootstrap "" ""
+  provision_easyappointments bootstrap "" ""
+  [ ${#PROVISION_MANUAL[@]} -gt 0 ] && { echo "Skipped:"; printf '  - %s\n' "${PROVISION_MANUAL[@]}"; }
+  return 0
 }
 
 # ---------- Orchestrator ----------

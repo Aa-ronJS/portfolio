@@ -7,6 +7,7 @@ services:
     environment:
       HOMEPAGE_ALLOWED_HOSTS: home.${BASE_DOMAIN},${BASE_DOMAIN}
       HOMEPAGE_VAR_BASE_DOMAIN: ${BASE_DOMAIN}
+      HOMEPAGE_VAR_BRAND_NAME: ${BRAND_NAME}
       TZ: ${TZ}
     volumes:
       - ./config:/app/config
