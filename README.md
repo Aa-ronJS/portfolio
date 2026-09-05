@@ -3,10 +3,13 @@
 Source of https://aaronsteele.vercel.app. One HTML file, five photographs, three
 self-hosted fonts, no build step and no dependencies.
 
-`/book` is a second page on the same design system: a direct-response funnel for
-a short book, using the classic skeleton (problem, story, proof, reveal,
-objections, disqualification, FAQ, author, guarantee) but with honest copy and
-only checkable numbers. The checkout URL, price, refund address and testimonial
+`/book` is a second page on the same design system: a direct-response funnel
+for *Unsellable*, a book aimed at the researched gap between exit advisers
+(who diagnose owner-dependence but don't fix it) and SOP-writing shops (who
+produce binders nobody opens). The page uses the classic funnel skeleton
+(problem, story, proof, reveal, objections, disqualification, FAQ, author,
+guarantee) with honest copy; the market statistics are from IBBA Market Pulse
+and BizBuySell data. The checkout URL, price, refund address and testimonial
 slot are all marked `EDIT:` in the file; testimonials stay commented out until
 real ones exist.
 
