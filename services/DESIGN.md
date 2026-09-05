@@ -1,94 +1,82 @@
-# The design, and where it came from
+# The design, and how it stopped looking AI-made
 
-The site's design language is "the warm gallery": the atmosphere and
-confidence of the crafted, award-winning end of web design, built from
-a strictly non-AI canon researched rather than absorbed. It replaced
-two earlier attempts in one session: the original dark-hero-and-stat-
-cards look (AI slop) and a newspaper-austere pass (correct principles,
-wrong temperature). What survived is the doctrine below.
+Fourth pass, and the one built on the right research question. The first
+three (dark-hero slop, a newspaper, a "warm gallery") changed the paint
+while keeping the same bones, and the bones were the tell. This pass
+started from the literature on what actually makes a site read as
+AI-generated, and designed against it.
 
-## The canon
+## The research
 
-- **Klim Type Foundry** (klim.co.nz): Webby and Red Dot winner, built
-  by Springload on Kris Sowersby's brief, explicitly rooted in Swiss
-  practice: Josef Muller-Brockmann, Wim Crouwel, Karl Gerstner, Romek
-  Marber. Minimal, bold, clear; the typography is the design and
-  everything else stays out of its way.
-- **iA / Information Architects** (ia.net): "web design is 95%
-  typography"; text is the interface; responsive typography as the
-  discipline, chrome as the enemy.
-- **GOV.UK and the GDS design principles**: content first, every word
-  earns its place, "making something simple to use is much harder
-  than making it look simple", accessibility as good design rather
-  than compliance. The web's best-tested plain style.
-- **Butterick's Practical Typography**: the numbers this stylesheet
-  obeys. Body 15 to 25px (a text serif wants the upper half), line
-  spacing 120 to 145%, line length 45 to 90 characters, professional
-  fonts, restraint about everything else.
-- **The editorial school** (Pangram Pangram's Editorial New, Awwwards
-  site of the year 2021; Locomotive's editorial work): serif display
-  at headline sizes, index and table layouts, hairline rules doing
-  the structure, numbered entries.
+The consistent finding across sources: AI design tells are **defaults**,
+the statistical middle of the training data, and the fix is loud,
+specific, brand-rooted decisions plus broken structure. The named tells
+that matter here, each of which an earlier pass of this site committed:
 
-Sources checked during the research pass:
-[Klim at the Webbys](https://www.webbyawards.com/crafted-with-code/klim-type-foundry-website/),
-[Springload's Klim case study](https://www.springload.co.nz/work/klim/),
-[iA on responsive typography](https://ia.net/topics/responsive-typography-the-basics),
-[GOV.UK design principles](https://www.gov.uk/guidance/government-design-principles),
-[GOV.UK design system](https://design-system.service.gov.uk/),
-[Practical Typography's key rules](https://practicaltypography.com/summary-of-key-rules.html),
-[Awwwards sites of the year](https://www.awwwards.com/websites/sites_of_the_year/).
+- Kicker/eyebrow labels above every heading (mono, uppercase,
+  letterspaced): committed in all three passes.
+- Italic serif display headlines as hero text: pass three's signature.
+- Cream/beige as the default "tasteful" surface: passes two and three.
+- Dark sections with glows, radial halos and grain: passes one and three.
+- "Big number, small label, three supporting stats": every pass.
+- Hairline borders paired with soft shadows; hover lifts on cards:
+  pass three.
+- Tiny numbered section labels (01, 02); mono-uppercase buttons;
+  aphoristic-cadence copy in the docs.
+- The unvarying hero, then features, then proof, then FAQ rhythm with
+  identical section anatomy: structural, and the deepest tell of all.
 
-## The rules extracted
+Sources: [Impeccable's slop tells list](https://impeccable.style/slop/),
+[How to fix the AI-generated look in your frontend](https://dev.to/alanwest/how-to-fix-the-ai-generated-look-in-your-frontend-1ahh),
+[925 Studios on AI slop design tells](https://www.925studios.co/blog/ai-slop-design-tells),
+[SmoothUI on AI design slop](https://smoothui.dev/blog/ai-design-slop),
+[why AI keeps building the same purple gradient site](https://prg.sh/ramblings/Why-Your-AI-Keeps-Building-the-Same-Purple-Gradient-Website).
 
-1. **Typography carries the beauty.** Newsreader (Production Type,
-   OFL, self-hosted variable roman and italic) at enormous sizes for
-   display, with the italic as the signature: every h1, the brand, the
-   cross-reference links and the evidence numerals are italic serif.
-   Satoshi carries text and UI so long passages never read as
-   newsprint; IBM Plex Mono does small labels, nav and captions.
-2. **Candlelight, not darkness.** The dark surfaces (header+hero, the
-   emphasis sections, the footer) are warm espresso with a soft
-   radial glow and a breath of SVG grain, so they read as atmosphere
-   rather than a slab. Content sections are warm cream. The two
-   temperatures alternate; neither is default-grey anything.
-3. **Gold means go.** One luminous gold accent on dark (deepened for
-   legibility on cream): primary buttons, the current nav item, tags,
-   figure numerals, link underlines. Never a second accent.
-4. **Generosity is the luxury.** Oversized section padding, wide
-   gutters, measures capped (Butterick's numbers still hold: body in
-   the 15 to 25px band, 1.6 leading, 45 to 90 character lines).
-5. **Motion is felt, not seen**: 180 to 220ms eased transitions,
-   1 to 2px hover lifts, soft long-throw shadows on cards and the
-   calculator. Nothing animates on its own; everything responds.
-6. **Links look like links** (underlines, gold), primary actions are
-   gold rectangles with mono uppercase labels, zero radius everywhere
-   (--r stays 0; sharp edges are part of the brand).
-7. **No decoration without information**: no icon sets, no stock
-   anything, no gradients-as-decoration (the glow is light, not a
-   gradient stripe), and the grain sits at 5% alpha where it belongs.
+## The decisions (v4: flat, chunky, honest)
+
+1. **Palette rooted in a place, not a template**: paper the colour of
+   actual paper, deep eucalypt green as the only block colour, greenish
+   near-black ink, one hot ochre. Flat everywhere. No gradients, no
+   glows, no grain, no soft shadows, no cream-by-default.
+2. **A display face with genuine character**: Bricolage Grotesque
+   (variable, condensed-capable, self-hosted), set heavy and tight.
+   Satoshi for everything you read. Mono appears only where data
+   genuinely is. No Inter, no fashionable serif, no italic-display.
+3. **Structure by thick rule and box**: 2px ink rules open sections and
+   the header; 2px ink boxes make cards and the calculator; 1px mixed
+   lines divide entries. Never hairline-plus-shadow.
+4. **The eyebrow is dead**: the `.tag` is now a bold, sentence-case,
+   ochre phrase with a 3px stub underline: reads like a person labelled
+   the section, not a design system.
+5. **Asymmetry on purpose**: the hero's lede and actions step 24% right
+   of the headline at desktop; the first service card spans two columns
+   and carries the tint; the evidence is a full-width ledger of rows
+   (number, then sentence) rather than a row of stat tiles.
+6. **Buttons are sentence-case text-face rectangles** with 2px ink
+   borders; the primary is flat ochre; the only shadow on the site is
+   the hard 4px offset a primary button earns on hover.
+7. **Butterick's numbers still hold underneath** (body in the 15 to
+   25px band, 1.6 leading, capped measures); readability research
+   survives every art direction.
 
 ## Mechanics
 
 Everything lives in `public/css/site.css`. The class names and token
-names (`--s*`, `--t-*`, `--fg*`, `--bone*`, `--amber*`, `.tag`,
-`.rows`, `.figures`, `.section--ink` and so on) are the site's stable
-API: 85 pages and the calculator's inline styles reference them, so
-restyles change values, never names. `--amber*` holds the gold family;
-`.section--ink` is the espresso emphasis section; the glow and grain
-live in `--glow` and `--grain` (a pure-CSS SVG noise data URI, no
-asset).
+names (`--s*`, `--t-*`, `--fg*`, `--bone*`, `--amber*`, `.tag`, `.rows`,
+`.figures`, `.section--ink` and so on) are the site's stable API: 85
+pages and the calculator's inline styles reference them, so restyles
+change values, never names. `--amber*` holds the ochre family;
+`--green` is the block colour; `.section--ink` is the flat green
+section.
 
-Fonts are self-hosted in `public/fonts/` (newsreader-var,
-newsreader-italic-var, satoshi-var, the two Plex Mono weights); every
-page preloads Satoshi and the Newsreader italic, the two
-above-the-fold faces, and the generators' head templates carry the
-same preloads. `theme-color` is the espresso value because the page
-opens dark. The favicon and OG cards' ink-and-amber mark sits
-naturally with this palette; regenerate the OG set with the italic
-serif when the images pass happens.
+Fonts are self-hosted in `public/fonts/` (bricolage-var, satoshi-var,
+the two Plex Mono weights); every page preloads Satoshi and Bricolage,
+and the generators' head templates carry the same preloads.
+`theme-color` is the paper value. The favicon and OG cards still carry
+the old ink-and-amber mark; regenerate the OG set in the flat
+paper/green/ochre language when the images pass happens.
 
-The one test that matters, non-negotiable: open the page and look at
-it. If a change makes it more ordinary, more grey, or more like
-software marketing, the change is wrong. It should be beautiful
-first; everything else is implementation.
+The standing test, from the research and non-negotiable: **every
+element must look chosen, not defaulted.** Before any future restyle,
+re-read the tells lists above; if a proposed element appears on them,
+it does not ship, however good it looks in the moment.

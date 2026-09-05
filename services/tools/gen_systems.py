@@ -101,10 +101,10 @@ def head(title, desc, path, jsonld):
 <meta property="og:image" content="https://REPLACE-DOMAIN/og/services.png">
 <meta name="twitter:card" content="summary_large_image">
 <meta name="twitter:image" content="https://REPLACE-DOMAIN/og/services.png">
-<meta name="theme-color" content="#211b13">
+<meta name="theme-color" content="#f2efe4">
 {FAVICON}
 <link rel="preload" as="font" type="font/woff2" href="/fonts/satoshi-var.woff2" crossorigin>
-<link rel="preload" as="font" type="font/woff2" href="/fonts/newsreader-italic-var.woff2" crossorigin>
+<link rel="preload" as="font" type="font/woff2" href="/fonts/bricolage-var.woff2" crossorigin>
 <link rel="stylesheet" href="/css/site.css">
 <script type="application/ld+json">
 {jsonld}
