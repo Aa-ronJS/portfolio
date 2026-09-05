@@ -12,6 +12,7 @@
 #   stackctl sso on|off
 #   stackctl tunnel up|down     (Cloudflare Tunnel: no public IP needed)
 #   stackctl brand apply|show   (push name/logo/colour into every app)
+#   stackctl dns ip|check|cloudflare|duckdns up|down   (domain records: show, verify, automate)
 #   stackctl user add <email> [password] | passwd <email> [password] | rm <email>
 set -euo pipefail
 
@@ -38,6 +39,7 @@ subdomain() {
     documenso) echo sign ;;     umami) echo analytics ;;
     nextcloud) echo files ;;    vaultwarden) echo vault ;;
     uptime-kuma) echo status ;; ghost) echo blog ;;
+    wordpress) echo site ;;     shlink) echo links-admin ;;
     # ARM alternatives share the subdomain of the app they replace
     espocrm) echo crm ;;        rocketchat) echo chat ;;
     easyappointments) echo cal ;;
@@ -72,7 +74,8 @@ app_label() {
     ghost) echo "Blog" ;;               umami) echo "Analytics" ;;
     mattermost|rocketchat) echo "Team chat" ;;
     vikunja) echo "Tasks" ;;            docmost) echo "Docs" ;;
-    nextcloud) echo "Files" ;;          *) echo "$1" ;;
+    nextcloud) echo "Files" ;;          wordpress) echo "Website" ;;
+    shlink) echo "Short links" ;;       *) echo "$1" ;;
   esac
 }
 # Friendly names accepted anywhere an app id is: stackctl up crm chat booking
@@ -87,10 +90,11 @@ app_alias() {
     booking|bookings|calendar|scheduling|booking-calendar) is_arm && echo easyappointments || echo calcom ;;
     forms|surveys) echo formbricks ;;          invoices|invoicing|billing) echo invoiceninja ;;
     signatures|esign|sign) echo documenso ;;   newsletter|email-marketing) echo listmonk ;;
-    blog|website) echo ghost ;;                analytics) echo umami ;;
+    blog) echo ghost ;;                        analytics) echo umami ;;
     chat|team-chat) is_arm && echo rocketchat || echo mattermost ;;
     tasks|projects) echo vikunja ;;            docs|wiki) echo docmost ;;
     files|storage|drive) echo nextcloud ;;
+    website|site|wordpress|cms|shop) echo wordpress ;;  links|short-links|shortlinks) echo shlink ;;
     *) echo "$1" ;;
   esac
 }
@@ -326,6 +330,55 @@ case "$cmd" in
     esac
     ;;
 
+  dns)
+    d="$(base_domain)"
+    envv() { grep "^$1=" "$ENVFILE" | head -1 | cut -d= -f2-; }
+    public_ip() { curl -s --max-time 8 https://api.ipify.org 2>/dev/null || curl -s --max-time 8 https://ifconfig.me 2>/dev/null || true; }
+    hosts_needed() { echo "$d"; for a in $(default_apps); do echo "$(subdomain "$a").$d"; done; echo "www.$d"; echo "links.$d"; }
+    case "${1:-}" in
+      ip) public_ip; echo ;;
+      check)
+        ip="$(public_ip)"; [ -n "$ip" ] && log "This server's public IP: $ip" || log "Could not look up this server's public IP (no outbound internet?) — use the IP your host shows you."
+        echo "Records your domain needs (both pointing at this server):"
+        printf '  %-6s %-28s -> %s\n' A "$d" "${ip:-<server IP>}"; printf '  %-6s %-28s -> %s\n' A "*.$d" "${ip:-<server IP>}"
+        echo; echo "Checking what the internet sees:"
+        ok=0; bad=0
+        for h in $(hosts_needed | sort -u); do
+          got="$(getent ahostsv4 "$h" 2>/dev/null | awk '{print $1}' | head -1)"
+          if [ -n "$got" ] && { [ "$got" = "$ip" ] || [ -z "$ip" ]; }; then printf '  \033[1;32m✔\033[0m %s -> %s\n' "$h" "$got"; ok=$((ok+1))
+          elif [ -n "$got" ]; then printf '  \033[1;31m✖\033[0m %s -> %s (expected %s)\n' "$h" "$got" "$ip"; bad=$((bad+1))
+          else printf '  \033[1;31m✖\033[0m %s -> no record\n' "$h"; bad=$((bad+1)); fi
+        done
+        echo; [ "$bad" -eq 0 ] && log "DNS is complete." || log "$bad of $((ok+bad)) names still need records — a wildcard (*) record fixes them all at once."
+        ;;
+      cloudflare)
+        tok="$(envv CF_API_TOKEN)"; [ -n "$tok" ] || fail "set CF_API_TOKEN in .env (Cloudflare → My Profile → API Tokens → Edit zone DNS)"
+        ip="$(public_ip)"; [ -n "$ip" ] || fail "could not determine this server's public IP"
+        api="https://api.cloudflare.com/client/v4"; H=(-H "Authorization: Bearer $tok" -H "Content-Type: application/json")
+        zone="$(curl -s "${H[@]}" "$api/zones?name=$d" | sed -n 's/.*"id":"\([a-f0-9]\{32\}\)".*/\1/p' | head -1)"
+        [ -n "$zone" ] || fail "no Cloudflare zone named $d for this token (add the domain to Cloudflare first)"
+        for name in "$d" "*.$d"; do
+          rid="$(curl -s "${H[@]}" "$api/zones/$zone/dns_records?type=A&name=$name" | sed -n 's/.*"id":"\([a-f0-9]\{32\}\)".*/\1/p' | head -1)"
+          body="{\"type\":\"A\",\"name\":\"$name\",\"content\":\"$ip\",\"ttl\":300,\"proxied\":false}"
+          if [ -n "$rid" ]; then curl -s -X PUT "${H[@]}" "$api/zones/$zone/dns_records/$rid" -d "$body" >/dev/null && log "updated  A $name -> $ip"
+          else curl -s -X POST "${H[@]}" "$api/zones/$zone/dns_records" -d "$body" >/dev/null && log "created  A $name -> $ip"; fi
+        done
+        log "Done. Certificates are issued automatically as each app comes up (allow a minute for DNS)."
+        ;;
+      duckdns)
+        case "${2:-}" in
+          up)
+            [ -n "$(envv DUCKDNS_TOKEN)" ] || fail "set DUCKDNS_TOKEN in .env (duckdns.org shows it at the top of your page)"
+            sub="$(envv DUCKDNS_SUBDOMAIN)"; [ -n "$sub" ] || { sub="${d%.duckdns.org}"; sed -i "s|^DUCKDNS_SUBDOMAIN=.*|DUCKDNS_SUBDOMAIN=$sub|" "$ENVFILE"; }
+            docker compose --env-file "$ENVFILE" -f "$ROOT/dyndns/docker-compose.yml" -p fs-dyndns up -d
+            log "DuckDNS updater running: $sub.duckdns.org follows this server's IP (checked every 5 minutes)." ;;
+          down) docker compose --env-file "$ENVFILE" -f "$ROOT/dyndns/docker-compose.yml" -p fs-dyndns down ;;
+          *) fail "usage: stackctl dns duckdns up|down" ;;
+        esac ;;
+      *) fail "usage: stackctl dns ip|check|cloudflare|duckdns up|down" ;;
+    esac
+    ;;
+
   brand)
     . "$ROOT/scripts/provision.sh"   # http(), envval(), note_*(), listmonk_session()
     . "$ROOT/scripts/brand.sh"
@@ -371,7 +424,7 @@ case "$cmd" in
     ;;
 
   ""|help|-h|--help)
-    sed -n '2,15p' "$0" | sed 's/^# \{0,1\}//'
+    sed -n '2,16p' "$0" | sed 's/^# \{0,1\}//'
     ;;
   *)
     fail "unknown command '$cmd' (try: stackctl help)"

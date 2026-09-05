@@ -447,6 +447,38 @@ provision_easyappointments() {
     || note_fail easyappointments "API create failed (HTTP $HTTP_CODE)"
 }
 
+# ---------- Website (WordPress via WP-CLI) ----------
+wp() { compose wordpress run --rm -T cli wp "$@" 2>/dev/null; }
+provision_wordpress() {
+  local action="$1" email="$2" pass="$3" user="${2%%@*}"
+  app_running wordpress || { note_manual wordpress "not running"; return; }
+  # zero-touch first run: install with the admin from .env; add the shop if asked
+  if ! wp core is-installed >/dev/null; then
+    local t; for t in 1 2 3 4 5 6; do wp core is-installed >/dev/null 2>&1 && break; wp db check >/dev/null 2>&1 && break; sleep 5; done
+    wp core install --url="https://$(base_domain)" --title="$(envval BRAND_NAME)" --admin_user="$(envval ADMIN_USER)" \
+      --admin_password="$(envval ADMIN_PASSWORD)" --admin_email="$(envval ADMIN_EMAIL)" --skip-email >/dev/null \
+      && note_ok wordpress "Website — installed, admin = ADMIN_USER" || { note_fail wordpress "install failed (database still starting? retry in a minute)"; return; }
+    wp option update blogdescription "" >/dev/null; wp rewrite structure '/%postname%/' >/dev/null
+  else
+    [ "$action" = bootstrap ] && note_ok wordpress "Website — ready"
+  fi
+  if [ "$(envval WORDPRESS_WOOCOMMERCE)" = true ] && ! wp plugin is-installed woocommerce >/dev/null; then
+    wp plugin install woocommerce --activate >/dev/null && note_ok wordpress "Website — online shop (WooCommerce) installed" || note_fail wordpress "shop plugin install failed (no internet from the server?)"
+  fi
+  [ "$action" = bootstrap ] && return
+  case "$action" in
+    add)
+      wp user create "$user" "$email" --role=editor --user_pass="$pass" >/dev/null \
+        && note_ok wordpress "Website — editor account created" || note_fail wordpress "user create failed (already exists?)" ;;
+    passwd)
+      wp user update "$email" --user_pass="$pass" >/dev/null \
+        && note_ok wordpress "Website — password rotated" || note_fail wordpress "user update failed" ;;
+    rm)
+      wp user delete "$email" --reassign=1 --yes >/dev/null \
+        && note_ok wordpress "Website — user removed" || note_fail wordpress "user delete failed" ;;
+  esac
+}
+
 # ---------- Docmost (REST API) ----------
 provision_docmost() {
   local action="$1" email="$2" pass="$3" user="${2%%@*}"
@@ -540,6 +572,7 @@ run_bootstrap() {
   provision_docmost bootstrap "" ""
   provision_twenty bootstrap "" ""
   provision_easyappointments bootstrap "" ""
+  provision_wordpress bootstrap "" ""
   [ ${#PROVISION_MANUAL[@]} -gt 0 ] && { echo "Skipped:"; printf '  - %s\n' "${PROVISION_MANUAL[@]}"; }
   return 0
 }
@@ -564,6 +597,7 @@ run_provisioners() { # <add|passwd|rm> <email> <password>
   provision_espocrm    "$action" "$email" "$pass"
   provision_easyappointments "$action" "$email" "$pass"
   provision_docmost    "$action" "$email" "$pass"
+  provision_wordpress  "$action" "$email" "$pass"
   provision_invoiceninja "$action" "$email" "$pass"
   provision_twenty     "$action" "$email" "$pass"
 

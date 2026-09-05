@@ -39,6 +39,18 @@
         container: fs-documenso-app-1
 
 - Marketing:
+    - Website:
+        href: https://{{HOMEPAGE_VAR_BASE_DOMAIN}}
+        description: Your public website & online shop
+        icon: mdi-web
+        server: local
+        container: fs-wordpress-app-1
+    - Short links:
+        href: https://links-admin.{{HOMEPAGE_VAR_BASE_DOMAIN}}
+        description: Branded short URLs with click stats
+        icon: mdi-link-variant
+        server: local
+        container: fs-shlink-app-1
     - Newsletter:
         href: https://newsletter.{{HOMEPAGE_VAR_BASE_DOMAIN}}
         description: Email campaigns & subscriber lists

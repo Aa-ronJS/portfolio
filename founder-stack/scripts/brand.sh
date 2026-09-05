@@ -152,14 +152,22 @@ LOGOEOF
   note_ok logo "Logo — monogram '$initial' in $(brand_color) (replace brand/logo.svg with your own any time)"
 }
 
+# ---------- Website: site title + tagline ----------
+brand_wordpress() {
+  app_running wordpress || return
+  compose wordpress run --rm -T cli wp core is-installed >/dev/null 2>&1 || return
+  compose wordpress run --rm -T cli wp option update blogname "$(brand_name)" >/dev/null 2>&1 \
+    && note_ok wordpress "Website — site title applied" || note_fail wordpress "could not set site title"
+}
+
 brand_apply() {
   PROVISION_OK=(); PROVISION_FAILED=(); PROVISION_MANUAL=()
   echo "Brand: $(brand_name)  colour: $(brand_color)  logo: $(brand_logo)"
   brand_default_logo
   brand_homepage; brand_authentik; brand_nextcloud; brand_mattermost; brand_rocketchat
-  brand_chatwoot; brand_listmonk; brand_easyappointments; brand_ghost
+  brand_chatwoot; brand_listmonk; brand_easyappointments; brand_ghost; brand_wordpress
   echo
-  echo "The console picks the brand up automatically. Tasks, Analytics, Status page, Signatures, Forms, Passwords"
+  echo "The console picks the brand up automatically. Tasks, Analytics, Status page, Signatures, Forms, Passwords, Short links"
   echo "and Automations have no branding surface and keep their own look; CRM, Docs and Invoices take a logo in"
   echo "their own settings."
   if [ ${#PROVISION_MANUAL[@]} -gt 0 ]; then echo "Manual:"; printf '  - %s\n' "${PROVISION_MANUAL[@]}"; fi

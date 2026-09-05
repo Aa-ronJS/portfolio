@@ -26,6 +26,8 @@ open the URL creates the admin account** — do it immediately after
 | nextcloud | `files.` | **Pre-seeded** (`ADMIN_USER`/`ADMIN_PASSWORD`) | ~500 MB |
 | vaultwarden | `vault.` | Sign up, then set `VAULTWARDEN_SIGNUPS_ALLOWED=false` and re-up | ~50 MB |
 | uptime-kuma | `status.` | First-visit setup | ~150 MB |
+| wordpress | apex, `www.`, `site.` | **Auto-bootstrapped** by `stackctl user add`/deploy (admin = ADMIN_USER); WooCommerce via the Website switch | ~300 MB |
+| shlink | `links.` + `links-admin.` | Admin UI behind the console login; API key pre-set | ~200 MB |
 | ghost | `blog.` | **Auto-bootstrapped** by `stackctl user add` (owner = ADMIN_EMAIL) | ~300 MB |
 | *ARM alternatives* (docs/ZERO-COST.md) | | | |
 | easyappointments | `cal.` | **Auto-bootstrapped** by `stackctl user add` (admin = ADMIN_USER/ADMIN_PASSWORD) | ~150 MB |

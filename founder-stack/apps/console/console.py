@@ -15,13 +15,13 @@ STACKCTL = os.path.join(ROOT, "stackctl")
 ENVFILE = os.path.join(ROOT, ".env")
 
 # verbs the UI may run, and how many args they accept (None = any number)
-ALLOWED = {"deploy": None, "bootstrap": 0, "list": 0, "status": 0, "up": None, "down": None,
+ALLOWED = {"deploy": None, "bootstrap": 0, "dns": None, "list": 0, "status": 0, "up": None, "down": None,
            "restart": None, "update": None, "backup": 0, "restore": 1, "sso": 1, "user": None,
            "tunnel": 1, "brand": 1, "logs": 1}
 NAME_RE = re.compile(r"^[a-z0-9][a-z0-9-]{0,40}$")
 EMAIL_RE = re.compile(r"^[^@\s]+@[^@\s]+\.[^@\s]+$")
 GLOBAL_EDITABLE = {"SMTP_HOST", "SMTP_PORT", "SMTP_USER", "SMTP_PASSWORD", "SMTP_FROM", "BRAND_NAME",
-                   "BRAND_COLOR", "BRAND_LOGO_URL", "CF_TUNNEL_TOKEN", "TZ"}
+                   "BRAND_COLOR", "BRAND_LOGO_URL", "CF_TUNNEL_TOKEN", "TZ", "CF_API_TOKEN", "DUCKDNS_TOKEN"}
 MAIL_APPS = ["invoiceninja", "listmonk", "chatwoot", "documenso", "ghost", "calcom", "formbricks",
              "docmost", "vaultwarden", "authentik", "rocketchat", "espocrm"]
 
@@ -45,6 +45,8 @@ APPS = {
     "listmonk":        ("Newsletter", "Marketing", "Email campaigns & subscriber lists", False),
     "ghost":           ("Blog", "Marketing", "Website, blog, paid newsletter", False),
     "umami":           ("Analytics", "Marketing", "Privacy-friendly website analytics", False),
+    "wordpress":       ("Website", "Marketing", "Your public website — pages, blog, and an online shop if you want one", False),
+    "shlink":          ("Short links", "Marketing", "Branded short URLs with click stats", False),
     "mattermost":      ("Team chat", "Team", "Channels, direct messages, calls", False),
     "rocketchat":      ("Team chat", "Team", "Channels, direct messages, calls", False),
     "vikunja":         ("Tasks", "Team", "Projects, boards & to-dos", False),
@@ -65,6 +67,7 @@ APP_SETTINGS = {
     "calcom":       [("CALCOM_DISABLE_SIGNUP", "Disable public sign-ups", B, "Keep off while adding people from People (it uses the signup API)")],
     "twenty":       [("TWENTY_DISABLE_SIGNUP", "Disable public sign-ups", B, "Keep off while adding people from People (invite-hash join)")],
     "rocketchat":   [("ROCKETCHAT_REGISTRATION", "Registration", "select:Public,Disabled,Secret URL", "Who can register directly")],
+    "wordpress":    [("WORDPRESS_WOOCOMMERCE", "Online shop (WooCommerce)", B, "Installs and activates the shop on your website")],
 }
 ENV_PREFIX = {a: [a.upper().replace("-", "_") + "_"] for a in APPS}
 ENV_PREFIX["uptime-kuma"] = ["UPTIME_KUMA_"]
@@ -175,6 +178,8 @@ def wizard_plan(a):
     if yes("forms", kind in ("consulting", "nonprofit", "saas")): want.add("formbricks")
     if yes("newsletter", kind in ("creator", "nonprofit", "shop")): want.update(["listmonk", "ghost"])
     if yes("analytics", True): want.add("umami")
+    if yes("website", True): want.add("wordpress")
+    if yes("links", kind in ("creator", "shop")): want.add("shlink")
     if not solo: want.update(["docmost", "mattermost"])
     # swap in ARM builds where needed
     apps = []
@@ -187,7 +192,8 @@ def wizard_plan(a):
            "VIKUNJA_REGISTRATION_OPEN": "false", "CHATWOOT_ACCOUNT_SIGNUP": "false", "MATTERMOST_OPEN_SERVER": "false",
            "DOCUMENSO_DISABLE_SIGNUP": "true", "ROCKETCHAT_REGISTRATION": "Disabled",
            "VAULTWARDEN_SIGNUPS_ALLOWED": "true", "ACTIVEPIECES_SIGNUP_OPEN": "true", "CALCOM_DISABLE_SIGNUP": "false",
-           "TWENTY_DISABLE_SIGNUP": "false"}
+           "TWENTY_DISABLE_SIGNUP": "false",
+           "WORDPRESS_WOOCOMMERCE": "true" if (kind == "shop" and "wordpress" in apps) else "false"}
     if a.get("smtp_host"):
         env.update({"SMTP_HOST": a["smtp_host"], "SMTP_PORT": a.get("smtp_port") or "587",
                     "SMTP_USER": a.get("smtp_user", ""), "SMTP_PASSWORD": a.get("smtp_password", "")})
@@ -271,6 +277,7 @@ class Handler(BaseHTTPRequestHandler):
                 if verb == "user": ok = (i == 0 and a in ("add", "passwd", "rm")) or (i == 1 and EMAIL_RE.match(a)) or (i == 2)
                 elif verb == "restore": ok = NAME_RE.match(a) is not None
                 elif verb in ("sso", "tunnel", "brand"): ok = a in ("on", "off", "up", "down", "apply", "show")
+                elif verb == "dns": ok = a in ("ip", "check", "cloudflare", "duckdns", "up", "down")
                 else: ok = a == "--all" or (NAME_RE.match(a) is not None and a in APPS)
                 if not ok: return self.send(400, "bad arguments", "text/plain")
             if verb == "restore": rest = [os.path.join(ROOT, "backups", rest[0])]
@@ -287,6 +294,8 @@ class Handler(BaseHTTPRequestHandler):
                     running = [a["name"] for a in state()["apps"] if a["state"] == "running" and a["name"] in MAIL_APPS]
                     if running: yield f"Re-applying mail settings to: {' '.join(running)}\n"; yield from run(["up"] + running)
                 elif apply == "brand": yield from run(["brand", "apply"])
+                elif apply == "cloudflare": yield from run(["dns", "cloudflare"])
+                elif apply == "duckdns": yield from run(["dns", "duckdns", "up"])
             return self.stream(lines())
 
         m = re.match(r"^/api/app/([a-z0-9-]+)$", path)
@@ -302,6 +311,14 @@ class Handler(BaseHTTPRequestHandler):
                     yield f"Re-applying {name}...\n"; yield from run(["up", name])
             return self.stream(lines())
 
+        if path == "/api/domain/check":
+            name = str(body.get("name", "")).strip().lower()
+            if not re.match(r"^[a-z0-9-]+(\.[a-z0-9-]+)+$", name): return self.send(400, "bad domain", "text/plain")
+            r = subprocess.run(["curl", "-s", "-o", "/dev/null", "-w", "%{http_code}", "--max-time", "10", f"https://rdap.org/domain/{name}"],
+                               capture_output=True, text=True)
+            code = r.stdout.strip()
+            status = "available" if code == "404" else "taken" if code == "200" else "unknown"
+            return self.send(200, json.dumps({"name": name, "status": status}), "application/json")
         if path == "/api/wizard/plan":
             return self.send(200, json.dumps(wizard_plan(body.get("answers", {}))), "application/json")
         if path == "/api/wizard/apply":
@@ -363,7 +380,7 @@ pre#out{background:#0b1220;color:#dbe4f0;border:1px solid var(--border);border-r
 .switch select{width:auto}.switch input[type=checkbox]{width:18px;height:18px;accent-color:var(--accent)}
 </style></head><body>
 <header><img src="/brand/logo.svg" alt=""><div><h1>__BRAND__ <span class="sub">console</span></h1><div class="sub" id="dom"></div></div><a class="hub" id="hublink" href="#">Open the hub →</a></header>
-<nav><button data-t="setup">Set up</button><button data-t="apps">Apps</button><button data-t="people">People</button><button data-t="signon">Sign-on</button><button data-t="backups">Backups</button><button data-t="settings">Settings</button></nav>
+<nav><button data-t="setup">Set up</button><button data-t="apps">Apps</button><button data-t="domain">Domain &amp; DNS</button><button data-t="people">People</button><button data-t="signon">Sign-on</button><button data-t="backups">Backups</button><button data-t="settings">Settings</button></nav>
 <main><div>
 
 <section id="setup"><div class="card hero"><h2 style="font-size:18px">Let's set up your stack</h2><p class="hint" style="margin:0 0 10px">Answer a few questions and I'll pick the right apps, lock down sign-ups, apply your brand and deploy — one click at the end. You can change anything later under Apps.</p>
@@ -375,6 +392,18 @@ pre#out{background:#0b1220;color:#dbe4f0;border:1px solid var(--border);border-r
 <div class="card"><div style="display:flex;justify-content:space-between;align-items:center"><h2 style="margin:0">Apps <span class="tag" id="arch"></span></h2><div><button class="b" onclick="run(['update'])">Update all</button> <button class="b" onclick="load()">Refresh</button></div></div>
 <div id="applist"></div></div>
 <div class="card drawer" id="cfg" hidden></div></section>
+
+<section id="domain">
+<div class="card"><h2>Your domain <span class="tag" id="dom2"></span></h2><p class="hint">Every app lives on a subdomain of it, and your website on the bare name. All of them need to point at this server — one wildcard record does it.</p>
+<div style="margin:8px 0"><button class="b p" onclick="run(['dns','check'])">Check my DNS</button> <span class="hint">shows the records needed and whether the internet sees them yet</span></div></div>
+<div class="card"><h2>Set the records for me</h2>
+<label>Domain on Cloudflare (free plan) — API token with Zone → DNS → Edit</label><input id="cf_api" type="password" placeholder="paste token, then click">
+<div style="margin:8px 0 14px"><button class="b p" onclick="v('cf_api')&&saveEnv({CF_API_TOKEN:v('cf_api')},'cloudflare')">Create records on Cloudflare</button></div>
+<label>Free DuckDNS name (yourbiz.duckdns.org) — token from duckdns.org</label><input id="dd_tok" type="password" placeholder="paste token, then click">
+<div style="margin:8px 0"><button class="b" onclick="v('dd_tok')&&saveEnv({DUCKDNS_TOKEN:v('dd_tok')},'duckdns')">Keep my IP updated (home servers)</button></div></div>
+<div class="card"><h2>Need a domain?</h2><p class="hint">Check a name, then register it where it's cheapest. Roughly $10/year for .com; a free <code>.duckdns.org</code> name works for everything but looks less polished.</p>
+<div class="choices" style="align-items:center"><input id="dom_q" placeholder="yourbusiness.com" style="max-width:320px" onkeydown="if(event.key==='Enter')domCheck()"><button class="b p" onclick="domCheck()">Check availability</button></div>
+<div id="dom_res" style="margin-top:10px"></div></div></section>
 
 <section id="people"><div class="card"><h2>Add a teammate</h2><p class="hint">Creates the same email + password account in every running app (real single sign-on where the app supports it) and shows the password once.</p>
 <label>Email</label><input id="u_email" type="email" placeholder="jane@yourco.com"><label>Password (blank = generate)</label><input id="u_pass" type="text">
@@ -405,7 +434,7 @@ const $=id=>document.getElementById(id),v=id=>$(id).value.trim();let S=null,SEL=
 function tab(t){document.querySelectorAll('nav button,section').forEach(e=>e.classList.remove('on'));document.querySelector(`nav button[data-t="${t}"]`).classList.add('on');$(t).classList.add('on');}
 document.querySelectorAll('nav button').forEach(b=>b.onclick=()=>tab(b.dataset.t));
 async function load(first){S=await (await fetch('/api/state')).json();if(first){SEL=new Set(S.apps.map(a=>a.name));tab(S.apps.some(a=>a.state==='running'&&!a.core)?'apps':'setup');}render();}
-function render(){$('dom').textContent=S.domain;$('arch').textContent='('+S.arch+')';$('hublink').href='https://home.'+S.domain;$('authlink').href='https://auth.'+S.domain;
+function render(){$('dom').textContent=S.domain;$('dom2').textContent=S.domain;$('arch').textContent='('+S.arch+')';$('hublink').href='https://home.'+S.domain;$('authlink').href='https://auth.'+S.domain;
 const groups={};S.apps.forEach(a=>(groups[a.group]??=[]).push(a));
 $('applist').innerHTML=Object.entries(groups).map(([g,list])=>`<div class="group"><h3>${g}</h3>${list.map(a=>`<div class="app"><input type="checkbox" ${SEL.has(a.name)?'checked':''} onchange="tog('${a.name}',this.checked)"><div><span class="dot ${a.state==='running'?'up':''}"></span><span class="n">${a.label}</span> <span class="tag">${a.url.replace('https://','')}</span><div class="d">${a.desc}</div></div><div style="white-space:nowrap">${a.state==='running'?`<a class="b" style="text-decoration:none;display:inline-block" href="${a.url}" target="_blank">Open</a>`:''}${a.configurable?`<button class="b" onclick="cfg('${a.name}')">Configure</button>`:''}${a.state==='running'?`<button class="b" onclick="run(['logs','${a.name}'])">Logs</button><button class="b" onclick="run(['restart','${a.name}'])">Restart</button><button class="b" onclick="run(['down','${a.name}'])">Stop</button>`:`<button class="b p" onclick="run(['deploy','${a.name}'])">Deploy</button>`}</div></div>`).join('')}</div>`).join('');
 selsum();$('ssopill').textContent=S.sso?'on':'off';$('ssopill').className='pill'+(S.sso?' on':'');$('tunpill').textContent=S.tunnel_configured?'token set':'no token';
@@ -422,6 +451,9 @@ function run(args){$('out').textContent='$ stackctl '+args.join(' ')+'\n';return
 function user(sub){const e=v('u_email');if(!e)return alert('email required');const a=['user',sub,e];if(sub!=='rm'&&v('u_pass'))a.push(v('u_pass'));run(a);}
 function saveEnv(set,apply){post('/api/env',{set,apply});}
 function saveSmtp(){const set={SMTP_HOST:v('s_host'),SMTP_PORT:v('s_port')||'587',SMTP_USER:v('s_user'),SMTP_FROM:v('s_from')};if(v('s_pass'))set.SMTP_PASSWORD=$('s_pass').value;saveEnv(set,'smtp');}
+async function domCheck(){const n=v('dom_q');if(!n)return;$('dom_res').innerHTML='<span class="hint">Checking…</span>';const r=await (await fetch('/api/domain/check',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({name:n})})).json();
+const buy=`<div class="choices" style="margin-top:8px"><a class="b" style="text-decoration:none" target="_blank" href="https://dash.cloudflare.com/?to=/:account/domains/register/${n}">Cloudflare (at cost)</a><a class="b" style="text-decoration:none" target="_blank" href="https://porkbun.com/checkout/search?q=${n}">Porkbun</a><a class="b" style="text-decoration:none" target="_blank" href="https://www.namecheap.com/domains/registration/results/?domain=${n}">Namecheap</a></div>`;
+$('dom_res').innerHTML=r.status==='available'?`<b style="color:var(--ok)">${n} looks available.</b> Register it, add it to Cloudflare (free), then paste a token above and the records are created for you.${buy}`:r.status==='taken'?`<b>${n} is taken.</b> Try another name.`:`Couldn't check right now. Try the registrars directly:${buy}`;}
 // ---- per-app configuration drawer ----
 async function cfg(name){const c=await (await fetch('/api/app/'+name)).json();const d=$('cfg');d.hidden=false;
 d.innerHTML=`<div style="display:flex;justify-content:space-between;align-items:center"><h2 style="margin:0">Configure ${c.label}</h2><button class="b" onclick="$('cfg').hidden=true">Close</button></div>
@@ -441,6 +473,8 @@ const Q=[
  {k:'forms',q:'Surveys or intake forms?',c:[['yes','Yes'],['no','No']]},
  {k:'newsletter',q:'A newsletter or blog?',c:[['yes','Yes'],['no','No']]},
  {k:'crm',q:'Track contacts and deals in a CRM?',c:[['yes','Yes'],['no','No']]},
+ {k:'website',q:'Do you want a public website (pages, blog — and a shop if you sell online)?',c:[['yes','Yes'],['no','No, I have one']]},
+ {k:'links',q:'Branded short links for marketing (yourdomain/offer)?',c:[['yes','Yes'],['no','No']]},
  {k:'color',q:'Pick an accent colour for everything.',type:'color'},
  {k:'smtp',q:'Email relay for invoices, invites and newsletters? (Resend and Brevo have free tiers.)',c:[['later','Set up later'],['now','I have SMTP details']]},
 ];let A={},qi=0;

@@ -24,6 +24,9 @@ with HTTPS everywhere, in one command.
 | Passwords | 1Password | `vault.yourdomain.com` | Vaultwarden |
 | Status page | Statuspage / Pingdom | `status.yourdomain.com` | Uptime Kuma |
 | Blog | Substack / Wix | `blog.yourdomain.com` | Ghost |
+| Website & shop | Squarespace / Wix / Shopify | `yourdomain.com` | WordPress (+ WooCommerce) |
+| Short links | Bitly | `links.yourdomain.com` | Shlink |
+| Domain & DNS | GoDaddy dashboard | console → Domain & DNS | Cloudflare / DuckDNS APIs |
 
 Everything is named by what it does — in the hub, the console, the CLI and
 every message. The open-source projects underneath are listed here for
@@ -46,6 +49,11 @@ Plus two pieces that tie it together:
   with a Configure panel per app (quick switches plus every setting it
   reads). People, Sign-on, Backups and Settings round it out. Everything
   streams its output live; everything `stackctl` does, no shell needed.
+- **Domain & DNS, handled** — the console's Domain & DNS tab checks a
+  name's availability, links you to at-cost registrars, shows the exact
+  records your server needs, verifies what the internet sees, and creates
+  the records for you on Cloudflare (paste a token) or keeps a free DuckDNS
+  name pointed at a home server. `stackctl dns check|cloudflare|duckdns`.
 - **One brand** — set your business name, logo and accent colour once (in
   the console or `.env`) and `stackctl brand apply` pushes it into the hub,
   the console, Sign-on, Files, Team chat, Support desk, Newsletter, Blog and

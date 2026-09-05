@@ -21,10 +21,10 @@ every included license. Turning it into a product needs a little care.
 
 | License | Apps here | Self-host | Sell setup/course | Host for clients |
 |---|---|---|---|---|
-| MIT / Apache | Activepieces (CE), Vikunja, Ghost (MIT), Uptime Kuma, Umami | ✅ | ✅ | ✅ |
+| MIT / Apache | Activepieces (CE), Vikunja, Ghost (MIT), Uptime Kuma, Umami, Shlink | ✅ | ✅ | ✅ |
 | AGPLv3 | Cal.com*, Twenty, Listmonk, Formbricks*, Docmost*, Documenso*, Nextcloud, Vaultwarden (GPL/AGPL), Invoice Ninja (Elastic**) | ✅ | ✅ | ✅ if you publish source of any modifications |
 | MIT + paid enterprise tiers | Mattermost (team edition), Chatwoot, Rocket.Chat (community) | ✅ | ✅ | ✅ (stay on the open edition) |
-| GPLv3 | EspoCRM (AGPLv3), Easy!Appointments (GPLv3) | ✅ | ✅ | ✅ if you publish source of any modifications |
+| GPL | EspoCRM (AGPLv3), Easy!Appointments (GPLv3), WordPress + WooCommerce (GPLv2) | ✅ | ✅ | ✅ if you publish source of any modifications |
 
 \* These use AGPL for the core with some enterprise-only directories — the
 stack uses only the open cores.

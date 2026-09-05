@@ -58,6 +58,11 @@ within a day.
    for DuckDNS names without any special handling.
 
 When you install, answer the domain prompt with `yourbiz.duckdns.org`.
+On a home server whose IP changes, `./stackctl dns duckdns up` (or the
+console's Domain & DNS tab) keeps the name updated automatically.
+
+Verify at any time with `./stackctl dns check`; on a Cloudflare-hosted
+domain, `./stackctl dns cloudflare` creates the records for you.
 
 Prefer a real domain later? Buy one (~$10/yr), point a wildcard `A` record at
 the same IP, change `BASE_DOMAIN` in `.env`, run `./stackctl up --all`

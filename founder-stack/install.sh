@@ -70,12 +70,16 @@ else
       SMTP_PORT=*)     line="SMTP_PORT=$SMTP_PORT_IN" ;;
       SMTP_USER=*)     line="SMTP_USER=$SMTP_USER_IN" ;;
       SMTP_PASSWORD=*) line="SMTP_PASSWORD=$SMTP_PASS_IN" ;;
+      DUCKDNS_SUBDOMAIN=*) case "$DOMAIN" in *.duckdns.org) line="DUCKDNS_SUBDOMAIN=${DOMAIN%.duckdns.org}" ;; esac ;;
       *=__GEN_*__)
         key="${line%%=*}"; placeholder="${line#*=}"
         line="$key=$(gen "$placeholder")" ;;
     esac
     printf '%s\n' "$line"
   done < .env.example > .env
+  # the short-links admin UI is protected with the same admin login (single-quoted: dotenv must not expand the $ signs)
+  AP="$(grep '^ADMIN_PASSWORD=' .env | cut -d= -f2-)"
+  sed -i "s|^SHLINK_UI_HTPASSWD=.*|SHLINK_UI_HTPASSWD='admin:$(openssl passwd -apr1 "$AP")'|" .env
   chmod 600 .env
   log "Wrote .env (mode 600). Your admin password is in it: grep ADMIN_PASSWORD .env"
 fi

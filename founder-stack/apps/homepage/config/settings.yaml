@@ -14,7 +14,7 @@ layout:
     columns: 4
   Marketing:
     style: row
-    columns: 4
+    columns: 5
   Team:
     style: row
     columns: 4
