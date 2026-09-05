@@ -3,15 +3,23 @@
 Source of https://aaronsteele.vercel.app. One HTML file, five photographs, three
 self-hosted fonts, no build step and no dependencies.
 
-`/book` is a second page on the same design system: a direct-response funnel
-for *Unsellable*, a book aimed at the researched gap between exit advisers
-(who diagnose owner-dependence but don't fix it) and SOP-writing shops (who
-produce binders nobody opens). The page uses the classic funnel skeleton
-(problem, story, proof, reveal, objections, disqualification, FAQ, author,
-guarantee) with honest copy; the market statistics are from IBBA Market Pulse
-and BizBuySell data. The checkout URL, price, refund address and testimonial
-slot are all marked `EDIT:` in the file; testimonials stay commented out until
-real ones exist.
+`/book` is a parked direct-response funnel for *Unsellable* (exit-readiness).
+Keyword research showed the niche has essentially no search demand, so it
+waits for a paid-social experiment rather than leading.
+
+`/ready` is the live play: **Privacy Ready** (working name), an Australian
+Privacy Act readiness funnel built against measured search demand (~20k
+AU searches/month across the compliance cluster, low competition) and the
+reform wave. It's a self-contained folder — own fonts, relative links — that
+lifts onto its own domain unchanged. Six pages: the funnel (free quiz → $99
+kit / $29 guide → $3.5k/$7.5k/$12.5k fixed-price sprint → $350/mo retainer),
+a 16-question scored readiness quiz (client-side only), and four SEO guides
+targeting the measured terms, each with FAQ JSON-LD and sources. Every dated
+legal claim was checked against primary sources (OAIC, legislation.gov.au) —
+notably: the small-business exemption does *not* end 10 Dec 2026 (that's the
+ADM disclosure date); the real capture was AML/CTF tranche 2 on 1 July 2026.
+Checkout/booking URLs, refund address and the email-capture form are marked
+`EDIT:`; re-verify the legal claims before launch.
 
 `PREFLIGHT.md` holds the design pre-flight it was built against, answered in
 writing before any markup, including the deviations from the house playbook and

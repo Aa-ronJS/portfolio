@@ -1,0 +1,807 @@
+<!doctype html>
+<html lang="en-AU">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Privacy Ready — Australian Privacy Act readiness for small business</title>
+<meta name="description" content="The Privacy Act now covers around 100,000 businesses that were exempt on 30 June 2026 — real estate, legal and accounting practices among them. Plain-English readiness: a free check, a $99 kit, and a fixed-price sprint. Not a law firm, and honest about what the law actually says.">
+<meta name="theme-color" content="#14171f">
+<link rel="preload" as="font" type="font/woff2" href="fonts/clash-display-var.woff2" crossorigin>
+<link rel="preload" as="font" type="font/woff2" href="fonts/satoshi-var.woff2" crossorigin>
+
+<!-- ===========================================================================
+   PRIVACY READY — the funnel. Working brand name until the domain is chosen.
+
+   Positioning: the site that gets the law right. Most content in this space
+   claims the small business exemption ends on 10 December 2026. It does not —
+   that date is the automated-decision-making disclosure obligation; the
+   exemption removal is agreed in principle with no bill and no date. What IS
+   true and urgent: AML/CTF tranche 2 pulled ~100k businesses (real estate,
+   legal, accounting) under the Act on 1 July 2026. Every regulatory claim on
+   this page is dated and carried with its source in the foot.
+
+   Ladder: free quiz -> $29 guide / $99 kit -> $3.5k/$7.5k/$12.5k sprint ->
+   $350/mo review retainer.
+
+   EDIT before shipping (search "EDIT:"):
+     1. CHECKOUT_KIT / CHECKOUT_BOOK / CALL_URL in the script at the bottom.
+     2. The refund email address.
+     3. Re-verify every dated legal claim against OAIC/AGD before launch —
+        the exposure-draft consultation closes 18 Sep 2026 and things move.
+     4. Brand name, if the domain ends up different.
+   =========================================================================== -->
+
+<style>
+@font-face{font-family:'Clash';src:url('fonts/clash-display-var.woff2') format('woff2-variations');font-weight:200 700;font-style:normal;font-display:swap}
+@font-face{font-family:'Satoshi';src:url('fonts/satoshi-var.woff2') format('woff2-variations');font-weight:300 900;font-style:normal;font-display:swap}
+@font-face{font-family:'Mono';src:url('fonts/ibm-plex-mono-400.woff2') format('woff2');font-weight:400;font-style:normal;font-display:swap}
+@font-face{font-family:'Mono';src:url('fonts/ibm-plex-mono-500.woff2') format('woff2');font-weight:500;font-style:normal;font-display:swap}
+@font-face{font-family:'Clash Fallback';src:local('Segoe UI Semibold'),local('Helvetica Neue'),local('Arial');size-adjust:94%;ascent-override:96%;descent-override:22%;line-gap-override:0%}
+@font-face{font-family:'Satoshi Fallback';src:local('Segoe UI'),local('Helvetica Neue'),local('Arial');size-adjust:99%;ascent-override:97%;descent-override:24%;line-gap-override:0%}
+
+:root{
+  --brand-h:236; --brand-c:0.115;
+
+  --ink:        oklch(0.165 0.016 250);
+  --ink-2:      oklch(0.210 0.018 250);
+  --ink-line:   oklch(0.330 0.018 250);
+  --bone:       oklch(0.960 0.006 250);
+  --bone-line:  oklch(0.860 0.010 250);
+
+  --acc:        oklch(0.740 var(--brand-c) var(--brand-h));
+  --acc-deep:   oklch(0.480 0.130 calc(var(--brand-h) + 4));
+  --acc-soft:   oklch(0.850 0.070 var(--brand-h));
+
+  --on-ink:      oklch(0.966 0.004 250);
+  --on-ink-dim:  oklch(0.800 0.008 250);
+  --on-ink-mute: oklch(0.640 0.012 250);
+  --on-bone:     oklch(0.205 0.016 250);
+  --on-bone-dim: oklch(0.420 0.014 250);
+  --on-bone-mute:oklch(0.545 0.012 250);
+
+  --fg:var(--on-ink); --fg-dim:var(--on-ink-dim); --fg-mute:var(--on-ink-mute);
+  --line:var(--ink-line); --accent:var(--acc);
+
+  --display:'Clash','Clash Fallback',sans-serif;
+  --body:'Satoshi','Satoshi Fallback',system-ui,sans-serif;
+  --mono:'Mono',ui-monospace,Consolas,monospace;
+
+  --t--1:clamp(0.80rem,0.78rem + 0.10vw,0.875rem);
+  --t-0: clamp(1.06rem,1.00rem + 0.30vw,1.25rem);
+  --t-1: clamp(1.22rem,1.10rem + 0.55vw,1.60rem);
+  --t-2: clamp(1.62rem,1.35rem + 1.30vw,2.75rem);
+  --t-3: clamp(2.00rem,1.50rem + 2.40vw,4.00rem);
+  --t-4: clamp(2.40rem,1.65rem + 4.00vw,5.60rem);
+  --t-5: clamp(2.40rem,1.50rem + 4.20vw,5.40rem);
+
+  --s2:8px; --s3:12px; --s4:16px; --s5:24px; --s6:32px;
+  --s7:48px; --s8:64px; --s9:96px; --s10:128px;
+  --act:clamp(88px,13vh,170px);
+  --gut:clamp(20px,5vw,80px);
+
+  --ease:cubic-bezier(0.22,1,0.36,1);
+  --ease-out:cubic-bezier(0.16,1,0.3,1);
+}
+
+*,*::before,*::after{box-sizing:border-box}
+html{-webkit-text-size-adjust:100%}
+html:focus-within{scroll-behavior:smooth}
+body{
+  margin:0; background:var(--ink); color:var(--fg);
+  font-family:var(--body); font-size:var(--t-0); line-height:1.55; font-weight:400;
+  -webkit-font-smoothing:antialiased; overflow-x:hidden; accent-color:var(--acc);
+}
+::selection{background:var(--acc); color:oklch(0.17 0.016 250)}
+img{max-width:100%; display:block}
+
+h1,h2,h3{
+  font-family:var(--display); font-weight:600; margin:0;
+  line-height:0.96; letter-spacing:-0.024em; text-wrap:balance;
+}
+h1{font-size:var(--t-5)}
+h2{font-size:var(--t-4)}
+h3{font-size:var(--t-2); line-height:1.0}
+p{margin:0 0 1em; text-wrap:pretty}
+p:last-child{margin-bottom:0}
+a{color:inherit}
+:focus-visible{outline:2px solid var(--acc); outline-offset:4px}
+
+.tag{
+  font-family:var(--mono); font-size:0.6875rem; font-weight:500;
+  letter-spacing:0.14em; text-transform:uppercase; color:var(--accent); margin:0;
+}
+.wrap{max-width:1400px; margin-inline:auto; padding-inline:var(--gut)}
+.measure{max-inline-size:21ch}
+.measure-wide{max-inline-size:52ch}
+
+.act{position:relative; padding-block:var(--act)}
+.act--bone{
+  background:var(--bone); color:var(--on-bone);
+  --fg:var(--on-bone); --fg-dim:var(--on-bone-dim); --fg-mute:var(--on-bone-mute);
+  --line:var(--bone-line); --accent:var(--acc-deep);
+}
+.act--deep{background:var(--ink); overflow:clip; isolation:isolate}
+.act--deep::before{
+  content:''; position:absolute; inset:0; z-index:-1; pointer-events:none;
+  background:radial-gradient(120% 85% at 78% 12%, oklch(0.60 0.12 var(--brand-h) / 0.13), transparent 60%);
+}
+
+/* ---------- Top bar ------------------------------------------------------- */
+.bar{
+  display:flex; align-items:center; justify-content:space-between; gap:var(--s5);
+  padding-block:var(--s5); border-bottom:1px solid oklch(1 0 0 / 0.10);
+}
+.bar__brand{
+  font-family:var(--display); font-weight:600; font-size:1.15rem; letter-spacing:-0.02em;
+  text-decoration:none; display:inline-flex; align-items:baseline; gap:0.45em;
+}
+.bar__brand b{color:var(--acc); font-weight:600}
+.bar__links{display:flex; flex-wrap:wrap; gap:var(--s2) var(--s6); font-family:var(--mono); font-size:var(--t--1)}
+.bar__links a{text-decoration:none; color:var(--fg-dim)}
+.bar__links a:hover{color:var(--acc)}
+@media (max-width:40rem){.bar__links a.optional{display:none}}
+
+/* ---------- Buttons & terms ----------------------------------------------- */
+.btn{
+  display:inline-flex; align-items:center; gap:0.6em; min-height:54px;
+  padding:0 var(--s6); text-decoration:none;
+  font-weight:700; font-size:var(--t--1); letter-spacing:0.06em; text-transform:uppercase;
+  background:var(--acc); color:oklch(0.17 0.016 250); border:1px solid var(--acc);
+  transition:background 200ms var(--ease), border-color 200ms var(--ease), transform 140ms var(--ease);
+}
+.btn:hover{background:var(--acc-soft); border-color:var(--acc-soft)}
+.btn:active{transform:scale(0.975)}
+.btn--ghost{background:transparent; color:var(--fg); border-color:oklch(1 0 0 / 0.32)}
+.act--bone .btn--ghost{border-color:oklch(0 0 0 / 0.28)}
+.btn--ghost:hover{background:oklch(1 0 0 / 0.09); border-color:currentColor; color:var(--fg)}
+.btn__arrow{transition:transform 220ms var(--ease)}
+.btn:hover .btn__arrow{transform:translateX(5px)}
+
+.terms{
+  margin-top:var(--s4); font-family:var(--mono); font-size:var(--t--1);
+  color:var(--fg-mute); display:flex; flex-wrap:wrap; gap:var(--s2) var(--s5);
+}
+.terms span{display:inline-flex; align-items:center; gap:var(--s3)}
+.terms span:not(:last-child)::after{content:''; width:4px; height:4px; background:var(--accent); opacity:0.7}
+
+/* ---------- Hero ---------------------------------------------------------- */
+.hero{display:grid; align-items:center; min-height:82svh; padding-block:var(--s8)}
+.hero h1{margin-block:var(--s4) var(--s6); max-inline-size:16ch}
+.hero h1 em{font-style:normal; color:var(--acc)}
+.hero__lede{font-size:var(--t-1); line-height:1.45; color:var(--fg-dim); max-inline-size:46ch}
+.hero__lede b{color:var(--fg); font-weight:600}
+.hero__foot{display:flex; flex-wrap:wrap; gap:var(--s4); align-items:center; margin-top:var(--s7)}
+
+/* ---------- Dated facts --------------------------------------------------- */
+.facts{margin-top:var(--s9); border-top:1px solid var(--line)}
+.fact{
+  display:grid; gap:var(--s3) var(--s8); padding-block:var(--s7);
+  border-bottom:1px solid var(--line); align-items:start;
+}
+@media (min-width:58rem){.fact{grid-template-columns:11rem minmax(0,1fr); gap:var(--s9)}}
+.fact > *{min-width:0}
+.fact__when{
+  font-family:var(--mono); font-size:var(--t--1); font-weight:500;
+  letter-spacing:0.08em; color:var(--accent); padding-top:0.4em; white-space:nowrap;
+}
+.fact h3{font-size:var(--t-1); line-height:1.15; letter-spacing:-0.02em; margin-bottom:var(--s3)}
+.fact__body{color:var(--fg-dim); line-height:1.62; max-inline-size:62ch}
+.fact__body b{color:var(--fg); font-weight:600}
+
+/* ---------- Dashed lists -------------------------------------------------- */
+.doable{display:grid; gap:var(--s5) var(--s8); margin:0; padding:0; list-style:none}
+@media (min-width:56rem){.doable{grid-template-columns:repeat(2,minmax(0,1fr))}}
+.doable > li{
+  min-width:0; padding-left:var(--s6); position:relative;
+  color:var(--fg-dim); line-height:1.6; max-inline-size:46ch;
+}
+.doable > li::before{
+  content:''; position:absolute; left:0; top:0.62em;
+  width:14px; height:1px; background:var(--accent);
+}
+.doable b{color:var(--fg); font-weight:600}
+
+/* ---------- Figures ------------------------------------------------------- */
+.figures{display:grid; gap:var(--s7) var(--s6); margin-top:var(--s9); grid-template-columns:repeat(auto-fit,minmax(170px,1fr))}
+.figures > *{min-width:0}
+.fig__n{
+  font-family:var(--display); font-weight:600; font-size:var(--t-2);
+  line-height:0.88; letter-spacing:-0.04em; font-variant-numeric:tabular-nums;
+  display:block; color:var(--accent);
+}
+.fig__k{display:block; margin-top:var(--s4); color:var(--fg-dim); font-size:var(--t--1); line-height:1.5; max-inline-size:26ch}
+
+/* ---------- Marquee ------------------------------------------------------- */
+.marq{overflow:hidden; border-block:1px solid var(--ink-line); padding-block:var(--s5); --gap:var(--s7)}
+.marq__row{display:flex; gap:var(--gap); width:max-content}
+@media (prefers-reduced-motion: no-preference){
+  .marq__row{animation:slide 52s linear infinite}
+  .marq:hover .marq__row{animation-play-state:paused}
+  @keyframes slide{to{transform:translateX(calc(-50% - (var(--gap) / 2)))}}
+}
+.marq__row span{font-family:var(--display); font-weight:400; font-size:var(--t-1); letter-spacing:-0.02em; color:var(--on-ink-mute); white-space:nowrap}
+.marq__row span::after{content:'/'; margin-left:var(--gap); color:var(--acc); opacity:0.6}
+
+/* ---------- Kit ------------------------------------------------------------ */
+.kit{display:grid; gap:var(--s8); margin-top:var(--s9); align-items:start}
+@media (min-width:62rem){.kit{grid-template-columns:minmax(0,1.1fr) minmax(0,0.9fr); gap:var(--s10)}}
+.kit__list{margin:0; padding:0; list-style:none; border-top:1px solid var(--line)}
+.kit__list li{
+  display:grid; grid-template-columns:2.4rem minmax(0,1fr); gap:var(--s4);
+  padding-block:var(--s5); border-bottom:1px solid var(--line); align-items:baseline;
+}
+.kit__list .n{font-family:var(--mono); font-size:var(--t--1); color:var(--accent)}
+.kit__list b{font-weight:600}
+.kit__list p{color:var(--fg-dim); font-size:var(--t--1); line-height:1.55; margin:var(--s2) 0 0}
+.pricecard{
+  background:var(--ink); color:var(--on-ink); padding:var(--s7);
+  --fg:var(--on-ink); --fg-dim:var(--on-ink-dim); --fg-mute:var(--on-ink-mute);
+  --line:var(--ink-line); --accent:var(--acc);
+  box-shadow:9px 18px 24px oklch(0.08 0.016 250 / 0.28), 30px 60px 78px oklch(0.08 0.016 250 / 0.22);
+}
+.pricecard .price{
+  font-family:var(--display); font-weight:600; font-size:var(--t-3);
+  letter-spacing:-0.04em; line-height:0.9; display:block; margin-block:var(--s4);
+}
+.pricecard .price small{font-size:0.4em; font-weight:500; letter-spacing:0; color:var(--fg-mute)}
+.pricecard .sub{color:var(--fg-dim); font-size:var(--t--1); line-height:1.6}
+
+/* ---------- Sprint tiers --------------------------------------------------- */
+.tiers{display:grid; gap:var(--s6); margin-top:var(--s9)}
+@media (min-width:60rem){.tiers{grid-template-columns:repeat(3,minmax(0,1fr))}}
+.tier{border:1px solid var(--line); padding:var(--s6); display:flex; flex-direction:column; gap:var(--s4); min-width:0}
+.tier--hot{border-color:var(--accent); box-shadow:inset 0 3px 0 0 var(--accent)}
+.tier h3{font-size:var(--t-1); line-height:1.1; letter-spacing:-0.02em}
+.tier .price{
+  font-family:var(--display); font-weight:600; font-size:var(--t-2);
+  letter-spacing:-0.04em; line-height:0.9;
+}
+.tier .price small{font-size:0.42em; font-weight:500; letter-spacing:0; color:var(--fg-mute)}
+.tier .who{font-family:var(--mono); font-size:var(--t--1); color:var(--accent); letter-spacing:0.06em}
+.tier p{color:var(--fg-dim); font-size:var(--t--1); line-height:1.6; margin:0}
+
+/* ---------- Objections / FAQ ----------------------------------------------- */
+.finds{display:grid; gap:var(--s6); margin-top:var(--s9); padding:0; list-style:none}
+@media (min-width:54rem){.finds{grid-template-columns:repeat(2,minmax(0,1fr)); gap:var(--s7) var(--s9)}}
+.finds li{border-top:1px solid var(--line); padding-top:var(--s5); min-width:0}
+.finds h4{font-family:var(--display); font-weight:500; font-size:var(--t-1); line-height:1.15; letter-spacing:-0.02em; margin:0 0 var(--s3)}
+.finds p{color:var(--fg-dim); font-size:var(--t--1); line-height:1.65; margin:0}
+
+.faq{margin-top:var(--s9); border-top:1px solid var(--line)}
+.faq details{border-bottom:1px solid var(--line)}
+.faq summary{
+  cursor:pointer; list-style:none; padding-block:var(--s5);
+  display:flex; justify-content:space-between; align-items:baseline; gap:var(--s6);
+  font-family:var(--display); font-weight:500; font-size:var(--t-1);
+  line-height:1.15; letter-spacing:-0.02em;
+}
+.faq summary::-webkit-details-marker{display:none}
+.faq summary::after{content:'+'; font-family:var(--mono); color:var(--accent); flex:none}
+.faq details[open] summary::after{content:'\2212'}
+.faq details > p{color:var(--fg-dim); line-height:1.62; max-inline-size:62ch; padding-bottom:var(--s6); margin:0}
+
+/* ---------- CTA band, links, foot ------------------------------------------ */
+.cta{text-align:center; display:grid; justify-items:center; gap:var(--s5)}
+.cta .terms{justify-content:center}
+.link{
+  display:inline-flex; align-items:center; gap:0.5em; min-height:32px;
+  font-family:var(--mono); font-size:var(--t--1); text-decoration:none; color:var(--fg);
+  box-shadow:inset 0 -1px 0 0 color-mix(in oklch, var(--accent) 55%, transparent);
+  transition:color 180ms var(--ease), box-shadow 180ms var(--ease);
+}
+.link:hover{color:var(--accent); box-shadow:inset 0 -1px 0 0 var(--accent)}
+.prose{color:var(--fg-dim); line-height:1.62; max-inline-size:56ch}
+.prose b{color:var(--fg); font-weight:600}
+.rule{height:1px; background:var(--accent); border:0; margin:0}
+
+.foot{padding-block:var(--s9) var(--s7)}
+.foot__grid{display:flex; flex-wrap:wrap; gap:var(--s6) var(--s9); justify-content:space-between; align-items:flex-end; margin-top:var(--s8); padding-top:var(--s6); border-top:1px solid var(--ink-line)}
+.foot__note{color:var(--on-ink-mute); font-size:var(--t--1); max-inline-size:52ch; line-height:1.6}
+
+/* ---------- Article (guides) ----------------------------------------------- */
+.article{max-width:820px; margin-inline:auto; padding-inline:var(--gut)}
+.article header{margin-bottom:var(--s8)}
+.article h1{font-size:var(--t-4); margin-block:var(--s4) var(--s5); max-inline-size:18ch}
+.article .dek{font-size:var(--t-1); line-height:1.45; color:var(--fg-dim); max-inline-size:44ch}
+.article h2{font-size:var(--t-2); margin:var(--s8) 0 var(--s5); letter-spacing:-0.024em}
+.article h3{font-size:var(--t-1); line-height:1.15; margin:var(--s7) 0 var(--s4)}
+.article p, .article li{color:var(--fg-dim); line-height:1.68}
+.article b{color:var(--fg); font-weight:600}
+.article ul, .article ol{padding-left:1.2em; margin:0 0 1.2em}
+.article li{margin-bottom:0.5em}
+.article li::marker{color:var(--accent)}
+.article .aside{
+  border-left:2px solid var(--accent); padding:var(--s4) var(--s5);
+  background:oklch(1 0 0 / 0.04); margin-block:var(--s6);
+  font-size:var(--t--1); line-height:1.6; color:var(--fg-dim);
+}
+.act--bone .article .aside{background:oklch(0 0 0 / 0.035)}
+.article .src{font-family:var(--mono); font-size:var(--t--1); color:var(--fg-mute); line-height:1.7}
+.ctaband{
+  border:1px solid var(--line); padding:var(--s6); margin-block:var(--s8);
+  display:flex; flex-wrap:wrap; gap:var(--s5); align-items:center; justify-content:space-between;
+}
+.ctaband p{margin:0; max-inline-size:38ch}
+
+/* ---------- Quiz ----------------------------------------------------------- */
+.quiz{max-width:820px; margin-inline:auto; padding-inline:var(--gut)}
+.q{border-top:1px solid var(--line); padding-block:var(--s6)}
+.q__head{display:grid; grid-template-columns:3rem minmax(0,1fr); gap:var(--s4); align-items:baseline}
+.q__n{font-family:var(--mono); font-size:var(--t--1); color:var(--accent); letter-spacing:0.08em}
+.q h3{font-size:var(--t-1); line-height:1.25; letter-spacing:-0.018em}
+.q__hint{grid-column:2; color:var(--fg-mute); font-size:var(--t--1); margin-top:var(--s2)}
+.q__opts{display:grid; gap:var(--s3); margin-top:var(--s5)}
+@media (min-width:44rem){.q__opts{grid-template-columns:repeat(3,minmax(0,1fr))}}
+.q__opts.q__opts--stack{grid-template-columns:1fr}
+.q__opts label{
+  display:flex; gap:var(--s3); align-items:flex-start; cursor:pointer;
+  border:1px solid var(--line); padding:var(--s4); font-size:var(--t--1); line-height:1.5;
+  transition:border-color 160ms var(--ease), background 160ms var(--ease);
+}
+.q__opts label:hover{border-color:var(--accent)}
+.q__opts label:has(input:checked){border-color:var(--accent); background:oklch(1 0 0 / 0.05)}
+.act--bone .q__opts label:has(input:checked){background:oklch(0 0 0 / 0.04)}
+.q__opts input{margin-top:0.2em; flex:none}
+
+.quizbar{
+  position:sticky; top:0; z-index:5; background:var(--ink);
+  border-bottom:1px solid var(--ink-line); padding-block:var(--s4);
+}
+.quizbar__in{max-width:820px; margin-inline:auto; padding-inline:var(--gut); display:flex; align-items:center; gap:var(--s5)}
+.quizbar__track{flex:1; height:2px; background:var(--ink-line); position:relative}
+.quizbar__fill{position:absolute; inset:0 auto 0 0; width:0%; background:var(--acc); transition:width 300ms var(--ease)}
+.quizbar__count{font-family:var(--mono); font-size:var(--t--1); color:var(--fg-mute); white-space:nowrap}
+
+.result{border:1px solid var(--accent); padding:var(--s7); margin-block:var(--s8)}
+.result[hidden]{display:none}
+.result__score{
+  font-family:var(--display); font-weight:600; font-size:var(--t-3);
+  letter-spacing:-0.04em; line-height:0.9; color:var(--accent);
+}
+.result__score small{font-size:0.38em; font-weight:500; letter-spacing:0; color:var(--fg-mute)}
+.result h3{margin-block:var(--s4)}
+.result__flags{margin:var(--s5) 0 0; padding:0; list-style:none}
+.result__flags li{
+  padding:var(--s3) 0 var(--s3) var(--s6); position:relative;
+  color:var(--fg-dim); font-size:var(--t--1); line-height:1.55;
+  border-bottom:1px solid var(--line);
+}
+.result__flags li::before{content:''; position:absolute; left:0; top:1.15em; width:14px; height:1px; background:var(--accent)}
+
+/* ---------- Reveal & motion ------------------------------------------------ */
+@media (prefers-reduced-motion: no-preference){
+  .rise{opacity:0; transform:translate3d(0,26px,0)}
+  .rise.in{opacity:1; transform:none; transition:opacity 620ms var(--ease-out) var(--d,0ms), transform 620ms var(--ease-out) var(--d,0ms)}
+  .wipe{transform:scaleX(0); transform-origin:left}
+  .wipe.in{transform:scaleX(1); transition:transform 900ms var(--ease-out) var(--d,0ms)}
+}
+@media (prefers-reduced-motion: reduce){
+  *,*::before,*::after{animation-duration:1ms !important; animation-iteration-count:1 !important; transition-duration:1ms !important}
+  html:focus-within{scroll-behavior:auto}
+}
+
+.q,.result{scroll-margin-top:76px}
+
+</style>
+</head>
+<body>
+
+<div class="wrap">
+  <nav class="bar" aria-label="Site">
+    <a class="bar__brand" href="./">Privacy<b>Ready</b></a>
+    <div class="bar__links">
+      <a href="quiz/">Readiness check</a>
+      <a href="#kit">The kit</a>
+      <a href="#sprint" class="optional">Fixed-price sprint</a>
+      <a href="guides/australian-privacy-principles/" class="optional">Guides</a>
+    </div>
+  </nav>
+</div>
+
+<!-- ============================ HERO ============================ -->
+<header class="act act--deep hero">
+  <div class="wrap">
+    <p class="tag rise">Australian Privacy Act · plain-English readiness</p>
+    <h1 class="rise" style="--d:80ms">The Privacy Act just started applying to businesses <em>like yours.</em></h1>
+    <p class="hero__lede rise" style="--d:170ms">
+      On 1 July 2026, around <b>100,000 small businesses lost their exemption</b> — real estate
+      agencies, law firms, accountants and others captured by the new AML/CTF rules. Most of them
+      don't know. For everyone else, removal of the $3M exemption is agreed in principle and
+      grinding toward law. Find out where you stand in three minutes, for free.
+    </p>
+    <div class="hero__foot rise" style="--d:260ms">
+      <a class="btn" href="quiz/">Take the readiness check <span class="btn__arrow" aria-hidden="true">&rarr;</span></a>
+      <a class="btn btn--ghost" href="#kit">Get the kit — $99</a>
+    </div>
+    <p class="terms rise" style="--d:320ms">
+      <span>Free, no email required</span><span>3 minutes, 16 questions</span><span>General information, not legal advice</span>
+    </p>
+  </div>
+</header>
+
+<!-- ============================ WHAT CHANGED ============================ -->
+<section class="act act--bone">
+  <div class="wrap">
+    <p class="tag rise">What actually changed</p>
+    <h2 class="rise measure" style="--d:80ms">Half the internet has the date wrong.</h2>
+    <p class="rise prose" style="--d:150ms; margin-top:var(--s6)">
+      You may have read that "the small business exemption ends on 10 December 2026". It doesn't —
+      that date belongs to a different obligation. Compliance advice that starts with a wrong fact
+      is not advice. Here is what has actually happened, dated, with sources at the bottom of this
+      page.
+    </p>
+
+    <div class="facts">
+      <div class="fact rise">
+        <span class="fact__when">Since Dec 2022</span>
+        <div>
+          <h3>The penalties stopped being trivial.</h3>
+          <p class="fact__body">For serious or repeated interference with privacy, the maximum
+             civil penalty is the greatest of <b>$50 million</b>, three times the benefit obtained,
+             or 30% of adjusted turnover. Small operators won't see numbers like that — but the
+             regulator's posture changed with them, and mid- and low-tier penalties now exist for
+             ordinary failures.</p>
+        </div>
+      </div>
+      <div class="fact rise" style="--d:70ms">
+        <span class="fact__when">Since Jun 2025</span>
+        <div>
+          <h3>Individuals can now sue.</h3>
+          <p class="fact__body">The new statutory tort for <b>serious invasions of privacy</b>
+             means a person no longer needs the regulator to act — they can bring a claim
+             themselves. A mishandled client file is no longer only a complaints-process problem.</p>
+        </div>
+      </div>
+      <div class="fact rise" style="--d:140ms">
+        <span class="fact__when">1 Jul 2026</span>
+        <div>
+          <h3>~100,000 businesses lost the exemption. Quietly.</h3>
+          <p class="fact__body">The AML/CTF tranche-2 reforms made real estate agents,
+             conveyancers, lawyers, accountants and dealers in precious metals <b>reporting
+             entities</b> — and reporting entities do not get the small business exemption. If
+             that's you, the 13 Australian Privacy Principles apply to you <b>today</b>, at any
+             turnover.</p>
+        </div>
+      </div>
+      <div class="fact rise" style="--d:210ms">
+        <span class="fact__when">10 Dec 2026</span>
+        <div>
+          <h3>Privacy policies must disclose automated decisions.</h3>
+          <p class="fact__body">From this date, covered entities using personal information in
+             <b>automated decision-making</b> that could significantly affect someone — credit
+             scoring, tenant screening tools, AI-assisted triage — must say so in their privacy
+             policy: what information, what decisions. If you've bolted AI tools onto your
+             workflow this year, this is yours.</p>
+        </div>
+      </div>
+      <div class="fact rise" style="--d:280ms">
+        <span class="fact__when">Not yet law</span>
+        <div>
+          <h3>Full removal of the $3M exemption: agreed, undated.</h3>
+          <p class="fact__body">Government agreed <b>in principle</b> in 2023 to remove the small
+             business exemption entirely — around 2.3&ndash;2.5 million businesses. The August
+             2026 exposure draft bill does <b>not</b> include it, and no commencement date exists.
+             The honest read: the direction is one-way, the deadline is unknown, and preparing
+             while it's cheap beats scrambling when a date lands.</p>
+        </div>
+      </div>
+    </div>
+
+    <div class="cta" style="margin-top:var(--s9)">
+      <a class="btn rise" href="quiz/">Where do I stand? — free check <span class="btn__arrow" aria-hidden="true">&rarr;</span></a>
+    </div>
+  </div>
+</section>
+
+<!-- ============================ COVERED ALREADY? ============================ -->
+<section class="act act--deep">
+  <div class="wrap">
+    <p class="tag rise">Covered already?</p>
+    <h2 class="rise measure" style="--d:80ms">The exemption has more holes than people think.</h2>
+    <p class="rise prose" style="--d:150ms; margin-top:var(--s6)">
+      "Under $3M turnover" was never the whole test. The Act already applies to you — at any size —
+      if any of these fit:
+    </p>
+
+    <ul class="doable" style="margin-top:var(--s8)">
+      <li class="rise"><b>You became an AML/CTF reporting entity on 1 July 2026</b> — real estate,
+          conveyancing, legal, accounting, trust and company services, precious metals dealing.</li>
+      <li class="rise" style="--d:70ms"><b>You provide a health service</b> and hold health
+          information — allied health, fitness and wellbeing included, not just clinics.</li>
+      <li class="rise" style="--d:140ms"><b>You trade in personal information</b> — buying or
+          selling lists, or disclosing customer data for a benefit.</li>
+      <li class="rise" style="--d:210ms"><b>You're a contractor to the Commonwealth</b> under a
+          contract that touches personal information.</li>
+      <li class="rise" style="--d:280ms"><b>Your turnover passed $3M</b> — including one good year;
+          coverage doesn't switch back off when revenue dips.</li>
+      <li class="rise" style="--d:350ms"><b>Your biggest clients require it anyway.</b> Corporate
+          and government supply chains increasingly demand Privacy Act-consistent handling from
+          vendors regardless of the law's floor — the contract makes it binding for you either way.</li>
+    </ul>
+
+    <div class="figures">
+      <div class="rise"><span class="fig__n">~100k</span><span class="fig__k">businesses newly covered on 1 July 2026 via AML/CTF tranche 2</span></div>
+      <div class="rise" style="--d:90ms"><span class="fig__n">13</span><span class="fig__k">Australian Privacy Principles that apply once you're in</span></div>
+      <div class="rise" style="--d:180ms"><span class="fig__n">$50M+</span><span class="fig__k">top of the civil penalty range for serious or repeated interference</span></div>
+      <div class="rise" style="--d:270ms"><span class="fig__n">2.5M</span><span class="fig__k">businesses in scope if the exemption removal proceeds as agreed</span></div>
+    </div>
+  </div>
+</section>
+
+<div class="marq" aria-hidden="true">
+  <div class="marq__row">
+    <span>Real estate</span><span>Conveyancing</span><span>Accounting</span><span>Bookkeeping</span><span>Legal practices</span><span>Mortgage broking</span><span>Allied health</span><span>Recruitment</span><span>Ecommerce</span><span>Trades &amp; services</span>
+    <span>Real estate</span><span>Conveyancing</span><span>Accounting</span><span>Bookkeeping</span><span>Legal practices</span><span>Mortgage broking</span><span>Allied health</span><span>Recruitment</span><span>Ecommerce</span><span>Trades &amp; services</span>
+  </div>
+</div>
+
+<!-- ============================ THE KIT ============================ -->
+<section class="act act--bone" id="kit">
+  <div class="wrap">
+    <p class="tag rise">The kit — do it yourself</p>
+    <h2 class="rise" style="--d:80ms">Ready in a weekend.<br>Signed off by your lawyer in an hour.</h2>
+    <p class="rise prose" style="--d:150ms; margin-top:var(--s6)">
+      Everything a 2&ndash;50 person business needs to stand up real privacy practice — written in
+      plain English, built to hand to a lawyer for review rather than built to replace one. Lawyers
+      bill a lot less for reviewing a solid draft than for starting from a blank page.
+    </p>
+
+    <div class="kit">
+      <ul class="kit__list rise" style="--d:120ms">
+        <li><span class="n">01</span><div><b>The guide.</b><p>The 13 APPs as operations, not legislation: what each one means a business your size actually does on a Tuesday. Includes the 1 July capture and the December ADM disclosure, explained straight.</p></div></li>
+        <li><span class="n">02</span><div><b>Privacy policy template</b><p>Structured for the current Act, with the automated-decision-making section December requires — and marked where your lawyer should look hardest.</p></div></li>
+        <li><span class="n">03</span><div><b>Data breach response plan</b><p>Who does what in the first 24 hours, the 30-day assessment clock, when the OAIC and affected people must be told. Fill in six names and it's yours.</p></div></li>
+        <li><span class="n">04</span><div><b>Personal information register</b><p>A spreadsheet that maps what you hold, where it lives, why you have it, and when it should be destroyed. The single artefact that makes every other obligation tractable.</p></div></li>
+        <li><span class="n">05</span><div><b>Staff briefing deck</b><p>A 20-minute session you can run yourself, so the practice survives contact with the people who actually answer the phone.</p></div></li>
+        <li><span class="n">06</span><div><b>PIA worksheet</b><p>A lightweight privacy impact assessment for when you next add a tool or change a process — the habit that keeps you ready instead of getting ready twice.</p></div></li>
+      </ul>
+
+      <div class="pricecard rise" style="--d:200ms">
+        <p class="tag">The Privacy Ready Kit</p>
+        <span class="price">$99 <small>AUD, once</small></span>
+        <p class="sub">Instant download. All six pieces, editable formats. Updated when the law
+           moves — updates included for 12 months.</p>
+        <div style="margin-top:var(--s6); display:grid; gap:var(--s3); justify-items:start">
+          <a class="btn js-kit" href="#kit">Get the kit — $99 <span class="btn__arrow" aria-hidden="true">&rarr;</span></a>
+          <a class="link js-book" href="#kit">Just the guide — $29 &rarr;</a>
+        </div>
+        <p class="terms"><span>Instant download</span><span>30-day refund, no questions</span></p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============================ QUIZ BAND ============================ -->
+<section class="act act--deep">
+  <div class="wrap">
+    <div class="cta">
+      <p class="tag rise">Not sure where to start?</p>
+      <h2 class="rise measure" style="--d:80ms">Find out where you stand first.</h2>
+      <p class="rise prose" style="--d:150ms; max-inline-size:44ch; text-align:center">
+        Sixteen plain-English questions, scored against the 13 privacy principles and the breach
+        rules. No email required to see your result.
+      </p>
+      <a class="btn rise" style="--d:220ms" href="quiz/">Start the readiness check <span class="btn__arrow" aria-hidden="true">&rarr;</span></a>
+    </div>
+  </div>
+</section>
+
+<!-- ============================ THE SPRINT ============================ -->
+<section class="act act--bone" id="sprint">
+  <div class="wrap">
+    <p class="tag rise">The sprint — done with you</p>
+    <h2 class="rise" style="--d:80ms">Fixed price. Two weeks. Ready.</h2>
+    <p class="rise prose" style="--d:150ms; margin-top:var(--s6)">
+      For businesses that want it handled: I run the process with you — map the data you actually
+      hold, build the register, tailor and test the breach plan, draft the policy pack for your
+      lawyer's sign-off, and brief your team. You end with the practice in place, not a binder on
+      a shelf. Priced on your exposure, not by the hour.
+    </p>
+
+    <div class="tiers">
+      <div class="tier rise">
+        <p class="who">2&ndash;10 people · everyday data</p>
+        <h3>Micro</h3>
+        <span class="price">$3,500 <small>AUD fixed</small></span>
+        <p>Trades, retail, services holding names, contacts and payment records. Data map, register,
+           breach plan, policy pack drafted for legal review, one staff briefing.</p>
+      </div>
+      <div class="tier tier--hot rise" style="--d:80ms">
+        <p class="who">10&ndash;50 people · most firms land here</p>
+        <h3>Standard</h3>
+        <span class="price">$7,500 <small>AUD fixed</small></span>
+        <p>Everything in Micro, across more systems and more hands: per-team data mapping,
+           access-control review, ADM disclosure drafting, two briefings, and a tested breach
+           walkthrough — a live fire drill, not a document.</p>
+      </div>
+      <div class="tier rise" style="--d:160ms">
+        <p class="who">Sensitive data · real estate, health, finance-adjacent</p>
+        <h3>Sensitive</h3>
+        <span class="price">$12,500 <small>AUD fixed</small></span>
+        <p>For AML-captured and health-service businesses holding identity documents or health
+           records. Everything in Standard, plus vendor and overseas-disclosure review, retention
+           and destruction schedule, and a PIA on your riskiest process. Over 50 people: by quote.</p>
+      </div>
+    </div>
+
+    <p class="rise prose" style="--d:220ms; margin-top:var(--s7)">
+      Afterwards, the <b>review retainer — $350/month</b> — keeps it true: an annual full review,
+      a check whenever you add a system or the law moves (December's ADM change being the next),
+      and first call when something goes wrong. Cancel anytime.
+    </p>
+
+    <div class="hero__foot rise" style="--d:280ms">
+      <a class="btn js-call" href="quiz/">Start with the free check <span class="btn__arrow" aria-hidden="true">&rarr;</span></a>
+      <p class="terms" style="margin:0"><span>Fixed price, scoped in writing</span><span>Drafted for your lawyer's sign-off — not instead of it</span></p>
+    </div>
+  </div>
+</section>
+
+<!-- ============================ OBJECTIONS ============================ -->
+<section class="act act--deep">
+  <div class="wrap">
+    <p class="tag rise">Fair questions</p>
+    <h2 class="rise measure" style="--d:80ms">Asked by every owner so far.</h2>
+
+    <ul class="finds">
+      <li class="rise">
+        <h4>"We're still exempt. Why spend anything?"</h4>
+        <p>Three reasons that aren't the deadline: your bigger clients' contracts increasingly
+           require it now; the new tort means an aggrieved person can sue now; and the exemption's
+           removal is agreed in principle — doing it calmly this year is cheaper than doing it in a
+           rush the year a date lands.</p>
+      </li>
+      <li class="rise" style="--d:90ms">
+        <h4>"Can't our IT provider handle it?"</h4>
+        <p>They handle part of it — APP 11 is security, and MFA and backups matter. But most of the
+           13 principles are about process and promises: what you collect, what you tell people,
+           how you use it, how someone gets their file. That's operations, not hardware, which is
+           why MSPs selling this as an IT project keep producing compliant servers inside
+           non-compliant businesses.</p>
+      </li>
+      <li class="rise" style="--d:180ms">
+        <h4>"Can't I get AI to write a privacy policy?"</h4>
+        <p>It will write a beautiful one — for a business that doesn't exist. A policy that
+           describes what you actually do requires knowing what you actually do, which is the data
+           map. And the policy is one artefact out of thirteen obligations. Use AI for the typing;
+           the kit gives it the questions.</p>
+      </li>
+      <li class="rise" style="--d:270ms">
+        <h4>"Why not just use a law firm?"</h4>
+        <p>Use one — at the end, where they're irreplaceable. A firm reviewing a finished data map
+           and drafted pack bills a fraction of a firm interviewing your staff from scratch at
+           partner rates. I do the operational build; your lawyer does the law. If you don't have
+           one, I'll point you at firms that do fixed-fee review.</p>
+      </li>
+    </ul>
+  </div>
+</section>
+
+<!-- ============================ FAQ ============================ -->
+<section class="act act--bone">
+  <div class="wrap">
+    <p class="tag rise">Questions</p>
+    <h2 class="rise measure" style="--d:80ms">Asked and answered.</h2>
+
+    <div class="faq rise" style="--d:160ms">
+      <details>
+        <summary>Does the Privacy Act actually apply to my business?</summary>
+        <p>If your turnover is under $3M and none of the capture categories fit — you're not an
+           AML/CTF reporting entity, don't provide health services, don't trade in personal
+           information, aren't a Commonwealth contractor — then mostly not yet. The free readiness
+           check walks the categories. If you're captured, all 13 APPs apply regardless of size.</p>
+      </details>
+      <details>
+        <summary>What's the 10 December 2026 obligation everyone talks about?</summary>
+        <p>From that date, covered entities whose privacy policies are silent on automated
+           decision-making must fix that: if personal information feeds automated decisions that
+           could significantly affect someone's rights or interests, the policy must say what
+           information and what kinds of decisions. It is not the end of the small business
+           exemption — that reform has no date yet.</p>
+      </details>
+      <details>
+        <summary>What happens if the exemption removal becomes law?</summary>
+        <p>Around 2.3&ndash;2.5 million businesses would need what the kit builds: a policy, a
+           register, a breach plan, and practices that match. There will likely be a transition
+           period — and a stampede. Kit buyers get updates for 12 months, so the version you buy
+           now becomes the version that matches the bill.</p>
+      </details>
+      <details>
+        <summary>We've already had a breach. Is it too late?</summary>
+        <p>No, but the order changes: containment and assessment come first, and the notifiable
+           data breaches scheme may put you on a 30-day clock. The breach plan in the kit covers
+           it, and if it's live right now, skip the kit and get proper advice today — the OAIC's
+           own guidance is genuinely good in an emergency.</p>
+      </details>
+      <details>
+        <summary>Is this legal advice?</summary>
+        <p>No. It's general information and operational tooling, built to be reviewed by a lawyer
+           where your situation needs one — the templates mark those spots. Nothing here creates a
+           lawyer-client relationship, and a firm's sign-off on your finished pack is money well
+           spent.</p>
+      </details>
+      <details>
+        <summary>What if the kit isn't right for me?</summary>
+        <!-- EDIT: refund address -->
+        <p>Email <a class="link" href="mailto:refunds@example.com">refunds@example.com</a> within
+           30 days for a full refund, no questions asked, whether or not you've used it.</p>
+      </details>
+    </div>
+  </div>
+</section>
+
+<!-- ============================ WHO'S BEHIND IT ============================ -->
+<section class="act act--deep">
+  <div class="wrap">
+    <p class="tag rise">Who's behind this</p>
+    <h2 class="rise" style="--d:80ms">Turning legislation into operations is the actual day job.</h2>
+    <div class="prose rise" style="--d:160ms; margin-top:var(--s6)">
+      <p>Privacy Ready is built by <b>Aaron Steele</b> — a business analyst of ten years across
+         federal government, policing and critical infrastructure, including designing how a
+         Commonwealth scheme turned its legislation into the operational decisions its systems
+         make. That's the same job this is: reading what the law requires and turning it into
+         registers, processes and habits a small team actually runs.</p>
+      <p>Not a lawyer, and doesn't pretend to be — see the disclaimer below. Track record, systems
+         and code at <a class="link" href="https://aaronsteele.vercel.app">aaronsteele.vercel.app</a>.</p>
+    </div>
+  </div>
+</section>
+
+<!-- ============================ FOOT ============================ -->
+<footer class="act act--deep foot" style="padding-top:0">
+  <div class="wrap">
+    <div class="cta" style="justify-items:start; text-align:left">
+      <h2 class="rise measure" style="--d:0ms">Three minutes tells you where you stand.</h2>
+      <a class="btn rise" style="--d:80ms" href="quiz/">Take the readiness check <span class="btn__arrow" aria-hidden="true">&rarr;</span></a>
+    </div>
+
+    <div class="foot__grid">
+      <p class="foot__note">
+        <b>General information only — not legal advice.</b> Nothing on this site takes your
+        circumstances into account. Sources for the dated claims above: the Privacy Act 1988 and
+        Privacy and Other Legislation Amendment Act 2024 at
+        <a class="link" href="https://www.legislation.gov.au">legislation.gov.au</a>, and OAIC
+        guidance at <a class="link" href="https://www.oaic.gov.au">oaic.gov.au</a>, including its
+        automated decision-making consultation. Last reviewed September 2026 — the reform program
+        moves; check the current state.
+      </p>
+      <p class="foot__note">&copy; Aaron Steele. No cookies, no tracking pixels. The readiness
+         check runs entirely in your browser.</p>
+    </div>
+  </div>
+</footer>
+
+<script>
+(function () {
+  /* EDIT: payment + booking links. Until set, kit/book buttons stay anchored
+     to the offer and the sprint button routes through the quiz. */
+  var CHECKOUT_KIT = '';
+  var CHECKOUT_BOOK = '';
+  var CALL_URL = '';
+
+  if (CHECKOUT_KIT) document.querySelectorAll('.js-kit').forEach(function (a) { a.href = CHECKOUT_KIT; });
+  if (CHECKOUT_BOOK) document.querySelectorAll('.js-book').forEach(function (a) { a.href = CHECKOUT_BOOK; });
+  if (CALL_URL) document.querySelectorAll('.js-call').forEach(function (a) {
+    a.href = CALL_URL;
+    a.innerHTML = 'Book a scoping call <span class="btn__arrow" aria-hidden="true">&rarr;</span>';
+  });
+
+  var reduced = matchMedia('(prefers-reduced-motion: reduce)').matches;
+  var els = document.querySelectorAll('.rise, .wipe');
+  if (reduced || !('IntersectionObserver' in window)) {
+    els.forEach(function (el) { el.classList.add('in'); });
+  } else {
+    var io = new IntersectionObserver(function (entries) {
+      entries.forEach(function (e) {
+        if (e.isIntersecting) { e.target.classList.add('in'); io.unobserve(e.target); }
+      });
+    }, { rootMargin: '0px 0px -6% 0px', threshold: 0.05 });
+    els.forEach(function (el) { io.observe(el); });
+    requestAnimationFrame(function () {
+      document.querySelectorAll('header .rise, .bar').forEach(function (el) { el.classList.add('in'); });
+    });
+  }
+})();
+</script>
+</body>
+</html>
