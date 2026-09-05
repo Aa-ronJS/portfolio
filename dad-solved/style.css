@@ -1,0 +1,52 @@
+/* Dad, Solved. Newspaper puzzle page, warmed up. Cream paper, ink grid, one red. */
+:root{
+  --paper:#f4eee2; --paper-2:#ebe3d3; --ink:#1c1f2b; --ink-2:#3a3f52; --mute:#7a7e8f; --rule:#c9c1ae;
+  --red:#c8452b; --red-2:#a8351f;
+  --display:'Fraunces',Georgia,'Times New Roman',serif; --body:system-ui,-apple-system,'Segoe UI',Roboto,Helvetica,Arial,sans-serif; --mono:ui-monospace,Menlo,Consolas,monospace;
+  --s1:4px; --s2:8px; --s3:12px; --s4:16px; --s5:24px; --s6:32px; --s7:48px; --s8:64px; --s9:96px;
+  --gut:clamp(18px,4vw,56px);
+}
+*,*::before,*::after{box-sizing:border-box}
+html{-webkit-text-size-adjust:100%}
+body{margin:0; background:var(--paper); color:var(--ink); font-family:var(--body); font-size:clamp(1rem,0.96rem + 0.25vw,1.125rem); line-height:1.55; -webkit-font-smoothing:antialiased; overflow-x:hidden}
+img{max-width:100%; display:block}
+h1,h2,h3{font-family:var(--display); font-weight:800; margin:0; line-height:0.98; letter-spacing:-0.02em; text-wrap:balance; font-variation-settings:'opsz' 144,'SOFT' 40}
+h1{font-size:clamp(2.6rem,1.6rem + 5vw,6rem)}
+h2{font-size:clamp(1.8rem,1.3rem + 2.2vw,3.2rem)}
+h3{font-size:clamp(1.2rem,1.05rem + 0.6vw,1.5rem); font-weight:700}
+p{margin:0 0 1em; text-wrap:pretty} p:last-child{margin-bottom:0}
+a{color:inherit}
+:focus-visible{outline:3px solid var(--red); outline-offset:3px}
+.wrap{max-width:1180px; margin-inline:auto; padding-inline:var(--gut)}
+.kicker{font-family:var(--mono); font-size:0.75rem; letter-spacing:0.12em; text-transform:uppercase; color:var(--red); margin:0 0 var(--s3)}
+.lede{font-size:clamp(1.1rem,1rem + 0.5vw,1.35rem); color:var(--ink-2); max-inline-size:40ch; line-height:1.45}
+.btn{display:inline-flex; align-items:center; justify-content:center; gap:0.6em; min-height:56px; padding:0 var(--s6); background:var(--red); color:#fff; border:2px solid var(--red); text-decoration:none; font:inherit; font-weight:700; font-size:1rem; cursor:pointer; border-radius:4px; transition:background 160ms, transform 120ms}
+.btn:hover{background:var(--red-2); border-color:var(--red-2)} .btn:active{transform:scale(0.98)}
+.btn--ghost{background:transparent; color:var(--ink); border-color:var(--ink)} .btn--ghost:hover{background:var(--ink); color:var(--paper)}
+.btn[aria-disabled="true"]{opacity:0.45; pointer-events:none}
+.rule{border:0; border-top:2px solid var(--ink); margin:0}
+
+/* Crossword grid */
+.xw{display:grid; grid-template-columns:repeat(var(--cols),1fr); gap:0; width:min(100%, calc(var(--cols) * 2.2rem)); border:2px solid var(--ink); background:var(--ink); aspect-ratio:var(--cols)/var(--rows)}
+.xw > i{background:transparent; display:block}
+.xw > b{background:#fff; position:relative; display:grid; place-items:center; font-family:var(--body); font-weight:600; font-size:clamp(0.7rem,1.6vw,1.05rem); outline:1px solid var(--ink); outline-offset:-0.5px}
+.xw > b small{position:absolute; top:1px; left:2px; font-size:0.5em; font-weight:600; line-height:1; color:var(--ink-2)}
+.xw > b span{padding-top:0.25em}
+.xw--blur > b small{filter:blur(3px)}
+
+/* Clues */
+.clues{margin:0; padding:0 0 0 2em; columns:1; font-size:0.95rem; line-height:1.4}
+.clues li{margin-bottom:var(--s2); break-inside:avoid; padding-left:0.3em}
+.clues li::marker{font-family:var(--mono); font-weight:700; color:var(--red)}
+.clues em{color:var(--mute); font-style:normal; font-size:0.85em}
+.clues--blur li:nth-child(n+4){filter:blur(4px); user-select:none}
+
+/* Word search */
+.ws{display:grid; grid-template-columns:repeat(var(--n),1fr); width:min(100%, calc(var(--n) * 2rem)); border:2px solid var(--ink); font-family:var(--mono); font-weight:600; aspect-ratio:1}
+.ws > b{display:grid; place-items:center; font-size:clamp(0.65rem,1.5vw,1rem); background:#fff}
+.ws > b.hit{background:#f6d3c9; color:var(--red-2)}
+.wordlist{display:flex; flex-wrap:wrap; gap:var(--s2) var(--s4); padding:0; margin:var(--s4) 0 0; list-style:none; font-family:var(--mono); font-size:0.85rem; letter-spacing:0.04em}
+
+.ribbon{display:none; position:fixed; inset:auto 0 0 0; z-index:50; background:var(--ink); color:var(--paper); font-family:var(--mono); font-size:0.78rem; padding:10px var(--gut); line-height:1.5}
+.ribbon.on{display:block}
+[hidden]{display:none !important}

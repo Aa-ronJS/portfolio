@@ -1,0 +1,254 @@
+<!doctype html>
+<html lang="en-AU">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Dad, Solved. A crossword about him, printable in two minutes</title>
+<meta name="description" content="Forgot Father's Day? Type ten things about your dad and get a personalised crossword and word search, with answers, ready to print in two minutes. $14 AUD.">
+<meta property="og:title" content="Dad, Solved. A crossword about him, printable in two minutes">
+<meta property="og:description" content="Ten clues about your dad become a crossword and a word search. Print at home or send the PDF. $14 AUD.">
+<meta property="og:type" content="website">
+<meta name="theme-color" content="#f4eee2">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght,SOFT@9..144,700..900,0..100&display=swap">
+<link rel="stylesheet" href="/style.css">
+<style>
+.hero{padding-block:var(--s7) var(--s6); border-bottom:2px solid var(--ink)}
+.hero__grid{display:grid; gap:var(--s6); align-items:end}
+@media (min-width:60rem){.hero__grid{grid-template-columns:1.1fr 0.9fr; gap:var(--s8)}}
+.hero h1 em{font-style:italic; color:var(--red); font-variation-settings:'opsz' 144,'SOFT' 100,'WONK' 1}
+.price{display:flex; align-items:baseline; gap:var(--s3); margin-top:var(--s5); font-family:var(--display); font-weight:800}
+.price b{font-size:clamp(2.4rem,2rem + 2vw,4rem); line-height:1}
+.price > span{font-family:var(--mono); font-size:0.8rem; color:var(--mute); letter-spacing:0.08em}
+.steps{display:grid; gap:var(--s3); margin:var(--s5) 0 0; padding:0; list-style:none; font-size:0.95rem; color:var(--ink-2)}
+.steps li{display:grid; grid-template-columns:1.6rem 1fr; gap:var(--s2)}
+.steps li b{font-family:var(--mono); color:var(--red)}
+.sample{background:#fff; border:2px solid var(--ink); padding:var(--s4); box-shadow:8px 8px 0 var(--ink); transform:rotate(-1.2deg)}
+.sample h3{font-size:1.1rem; margin-bottom:var(--s3)}
+
+.maker{padding-block:var(--s7); display:grid; gap:var(--s7)}
+@media (min-width:60rem){.maker{grid-template-columns:minmax(0,1fr) minmax(0,1fr); gap:var(--s8)}}
+.field{display:grid; gap:var(--s1); margin-bottom:var(--s4)}
+.field label,.rowhead{font-family:var(--mono); font-size:0.72rem; letter-spacing:0.1em; text-transform:uppercase; color:var(--mute)}
+input,textarea{font:inherit; color:var(--ink); background:#fff; border:2px solid var(--rule); border-radius:4px; padding:10px 12px; min-height:48px; width:100%}
+input:focus,textarea:focus{outline:none; border-color:var(--ink)}
+.rows{display:grid; gap:var(--s2)}
+.row{display:grid; grid-template-columns:1.6rem minmax(0,1.2fr) minmax(0,2fr); gap:var(--s2); align-items:start}
+.row span{font-family:var(--mono); color:var(--red); font-weight:700; padding-top:12px; font-size:0.85rem}
+.row input.bad{border-color:var(--red)}
+.tools{display:flex; flex-wrap:wrap; gap:var(--s3); margin-top:var(--s4)}
+.small{font-size:0.85rem; color:var(--mute)}
+.preview{position:sticky; top:var(--s4)}
+.pane{background:var(--paper-2); border:2px solid var(--ink); padding:var(--s4)}
+.pane header{display:flex; justify-content:space-between; align-items:baseline; gap:var(--s3); margin-bottom:var(--s3)}
+.pane h3{font-size:1.15rem}
+.pane .xw{margin-inline:auto}
+.pane .clues{margin-top:var(--s4); font-size:0.9rem}
+@media (min-width:36rem){.pane .clues{columns:2; column-gap:var(--s5)}}
+.notice{font-size:0.85rem; color:var(--ink-2); margin-top:var(--s3); padding:var(--s3); background:#fff; border-left:3px solid var(--red)}
+.buy{margin-top:var(--s5); display:grid; gap:var(--s3)}
+.buy .btn{width:100%}
+.code{font-family:var(--mono); font-size:0.7rem; word-break:break-all; color:var(--mute); background:#fff; padding:var(--s2); border:1px dashed var(--rule); max-height:4.5em; overflow:auto}
+.faq{padding-block:var(--s7) var(--s8); border-top:2px solid var(--ink)}
+.faq dl{display:grid; gap:var(--s5); margin:var(--s5) 0 0}
+@media (min-width:54rem){.faq dl{grid-template-columns:repeat(3,1fr); gap:var(--s6)}}
+.faq dt{font-family:var(--display); font-weight:800; font-size:1.2rem; margin-bottom:var(--s2)}
+.faq dd{margin:0; color:var(--ink-2); font-size:0.95rem}
+footer{padding:var(--s6) 0 var(--s8); font-size:0.85rem; color:var(--mute); border-top:1px solid var(--rule)}
+@media print{body > *{display:none} body::before{content:'This page is the puzzle maker. Print from the page you reach after paying.'; display:block; padding:2cm; font-family:system-ui}}
+</style>
+</head>
+<body>
+
+<header class="hero">
+  <div class="wrap hero__grid">
+    <div>
+      <p class="kicker">Father's Day is today. This takes two minutes.</p>
+      <h1>A crossword <em>about him.</em></h1>
+      <p class="lede" style="margin-top:var(--s4)">Type ten things only your family knows about Dad. Get back a crossword and a word search built from them, answers included, ready to print or send.</p>
+      <div class="price"><b>$<span data-price>14</span></b><span>AUD, ONE PUZZLE PACK, INSTANT</span></div>
+      <ol class="steps">
+        <li><b>1</b> Write the clues below. Funny beats accurate. The preview builds as you type.</li>
+        <li><b>2</b> Pay once. You land straight on the print-ready pack.</li>
+        <li><b>3</b> Print it, or Save as PDF and text it to him. Answers on the last page, for when he gives up.</li>
+      </ol>
+    </div>
+    <aside class="sample" aria-label="Example clues">
+      <h3>Clues that work</h3>
+      <ol class="clues" style="font-size:0.9rem">
+        <li value="1">Where he goes for one thing and comes back with nine <em>(8)</em></li>
+        <li value="4">Lost, found, sat on <em>(6)</em></li>
+        <li value="7">The one thing nobody but him may touch <em>(10)</em></li>
+        <li value="9">Sunday, seven sharp, the whole street knows <em>(5)</em></li>
+      </ol>
+      <p class="small" style="margin-top:var(--s3)">BUNNINGS, REMOTE, THERMOSTAT, MOWER. Yours will be better.</p>
+    </aside>
+  </div>
+</header>
+
+<main class="wrap maker">
+  <section aria-labelledby="make-h">
+    <h2 id="make-h">Ten things about Dad.</h2>
+    <p class="small" style="margin:var(--s3) 0 var(--s5)">One or two words per answer works best. Letters only in the grid; spaces and apostrophes are dropped automatically. Six is enough, ten is better, twelve is the limit.</p>
+
+    <div class="field">
+      <label for="title">Title on the puzzle</label>
+      <input id="title" value="Happy Father's Day, Dad" maxlength="60">
+    </div>
+    <div class="field">
+      <label for="from">From</label>
+      <input id="from" placeholder="Sam, Ellie and the dog" maxlength="60">
+    </div>
+
+    <div class="row" aria-hidden="true"><span></span><span class="rowhead" style="color:var(--mute)">Answer</span><span class="rowhead" style="color:var(--mute)">Clue</span></div>
+    <div class="rows" id="rows"></div>
+
+    <div class="tools">
+      <button class="btn btn--ghost" type="button" id="example">Fill with the example</button>
+      <button class="btn btn--ghost" type="button" id="clear">Clear</button>
+    </div>
+  </section>
+
+  <aside class="preview" aria-labelledby="prev-h">
+    <div class="pane">
+      <header>
+        <h3 id="prev-h">Preview</h3>
+        <span class="small" id="stat">Waiting for clues</span>
+      </header>
+      <div id="grid"></div>
+      <div id="clues"></div>
+      <p class="notice" id="notice" hidden></p>
+    </div>
+    <div class="buy">
+      <a class="btn" id="pay" href="#" aria-disabled="true"><span>Pay $<span data-price>14</span> and get the pack &rarr;</span></a>
+      <p class="small">Stripe handles the card. You come straight back here to the finished pack. Everything you typed stays in this browser and is never sent anywhere except onto your printout.</p>
+      <details>
+        <summary class="small">Paying on a different device? Take your puzzle code.</summary>
+        <p class="small" style="margin-top:var(--s2)">Paste this after the # in the pack's address on the other device.</p>
+        <p class="code" id="code"></p>
+      </details>
+    </div>
+  </aside>
+</main>
+
+<section class="faq">
+  <div class="wrap">
+    <h2>The questions.</h2>
+    <dl>
+      <div><dt>What do I actually get?</dt><dd>Three A4 pages: the crossword with clues, a word search of the same answers, and the answer key. On screen in your browser, so you print it or Save as PDF and send it.</dd></div>
+      <div><dt>What if a word will not fit?</dt><dd>The preview tells you which one before you pay. Shorten it or change it. Every word that shows in the preview is in the pack.</dd></div>
+      <div><dt>Not Father's Day?</dt><dd>Change the title. Birthdays, retirements, Mother's Day, the grandad who has everything. Same price, same two minutes.</dd></div>
+      <div><dt>Does it work on a phone?</dt><dd>Yes. Making it and paying are fine on a phone. Printing is easier from a laptop, so the pack has a code you can carry across.</dd></div>
+      <div><dt>Refunds?</dt><dd>If the pack does not render, or something in it is wrong and you tell me within a week, you get the money back. Reply to the Stripe receipt.</dd></div>
+      <div><dt>Who made this?</dt><dd>One person in South Australia who forgot Father's Day once too. ABN on the receipt.</dd></div>
+    </dl>
+  </div>
+</section>
+
+<footer><div class="wrap">Dad, Solved. Prices in Australian dollars, GST included. Your clues never leave your browser.</div></footer>
+<div class="ribbon" id="ribbon" role="status"></div>
+
+<script src="/puzzle.js"></script>
+<script>
+(function () {
+  /* ---- CONFIG: set before sending traffic. While a placeholder remains the
+     ribbon says so and the pay button stays disabled. ---- */
+  var CONFIG = {
+    price: 14,
+    stripeLink: 'https://buy.stripe.com/REPLACE_ME',  /* Payment Link; after payment redirect to https://<host>/done/?paid=1 */
+    metaPixel: ''                                      /* Meta Pixel id. Empty means no pixel. */
+  };
+  var EXAMPLE = [
+    ['Bunnings', 'Where he goes for one thing and comes back with nine'],
+    ['Snag', 'What a sausage becomes the moment it hits the barbie'],
+    ['Thermostat', 'The one thing nobody but him may touch'],
+    ['Remote', 'Lost, found, sat on'],
+    ['Dad joke', 'His signature dish, served with a straight face'],
+    ['Ute', 'Hers is a car. His is a lifestyle'],
+    ['Mower', 'Sunday, seven sharp, the whole street knows'],
+    ['Shed', 'Where he goes to think, apparently'],
+    ['Esky', 'The most important bag on any trip'],
+    ['Nap', 'What he is "not doing" in the recliner']
+  ];
+  var N = 12, rows = document.getElementById('rows'), inputs = [];
+  for (var i = 0; i < N; i++) {
+    var row = document.createElement('div'); row.className = 'row';
+    row.innerHTML = '<span>' + (i + 1) + '</span><input aria-label="Answer ' + (i + 1) + '" maxlength="16" autocapitalize="characters" placeholder="' + (i < 3 ? ['Answer', 'One word', 'Or two'][i] : '') + '"><input aria-label="Clue ' + (i + 1) + '" maxlength="90" placeholder="' + (i === 0 ? 'The clue' : '') + '">';
+    rows.appendChild(row);
+    inputs.push({ a: row.children[1], c: row.children[2] });
+  }
+  var title = document.getElementById('title'), from = document.getElementById('from');
+  var seed = (Date.now() ^ Math.floor(Math.random() * 1e9)) >>> 0;
+
+  function state() {
+    return { v: 1, title: title.value.trim(), from: from.value.trim(), seed: seed,
+             entries: inputs.map(function (r) { return { answer: r.a.value.trim(), clue: r.c.value.trim() }; }).filter(function (e) { return e.answer || e.clue; }) };
+  }
+  document.querySelectorAll('[data-price]').forEach(function (el) { el.textContent = CONFIG.price; });
+
+  var pay = document.getElementById('pay'), live = CONFIG.stripeLink.indexOf('REPLACE_ME') === -1;
+  if (!live) { document.getElementById('ribbon').textContent = 'Not live yet: the Stripe payment link is a placeholder. Set CONFIG in index.html before sending any traffic here.'; document.getElementById('ribbon').classList.add('on'); }
+
+  var timer;
+  function render() {
+    var s = state();
+    var complete = s.entries.filter(function (e) { return Puzzle.clean(e.answer).length >= 2 && e.clue; });
+    inputs.forEach(function (r) { r.a.classList.toggle('bad', r.a.value.trim() !== '' && Puzzle.clean(r.a.value).length < 2); });
+    var grid = document.getElementById('grid'), clues = document.getElementById('clues'), stat = document.getElementById('stat'), notice = document.getElementById('notice');
+    try { localStorage.setItem('dadsolved', JSON.stringify(s)); } catch (e) {}
+    document.getElementById('code').textContent = Puzzle.encode(s);
+    if (complete.length < 2) {
+      grid.innerHTML = ''; clues.innerHTML = ''; stat.textContent = complete.length ? 'One more and the grid appears' : 'Waiting for clues';
+      notice.hidden = true; pay.setAttribute('aria-disabled', 'true'); pay.href = '#'; return;
+    }
+    var xw = Puzzle.crossword(complete, s.seed);
+    grid.innerHTML = Puzzle.renderCrossword(xw, 'blank').replace('class="xw"', 'class="xw xw--blur"');
+    clues.innerHTML = '<p class="kicker" style="margin-top:var(--s4)">Across</p>' + Puzzle.renderClues(xw.across).replace('class="clues"', 'class="clues clues--blur"')
+                    + '<p class="kicker" style="margin-top:var(--s4)">Down</p>' + Puzzle.renderClues(xw.down).replace('class="clues"', 'class="clues clues--blur"');
+    stat.textContent = xw.placed.length + ' of ' + complete.length + ' in the grid, ' + xw.rows + ' by ' + xw.cols;
+    if (xw.unplaced.length) {
+      notice.hidden = false;
+      notice.textContent = 'Could not fit: ' + xw.unplaced.map(function (u) { return u.raw; }).join(', ') + '. It shares no letters with the others in a way that works. Change a letter or pick another word, and it will still be in the word search either way.';
+    } else { notice.hidden = true; }
+    var enough = complete.length >= 4 && xw.placed.length >= 4;
+    if (enough && live) {
+      var u = new URL(CONFIG.stripeLink);
+      var attrib = new URLSearchParams(location.search);
+      var ref = [attrib.get('utm_source') || 'direct', attrib.get('utm_campaign') || ''].filter(Boolean).join('_').replace(/[^A-Za-z0-9_-]/g, '-').slice(0, 180);
+      u.searchParams.set('client_reference_id', ref);
+      pay.href = u.toString(); pay.removeAttribute('aria-disabled');
+    } else {
+      pay.setAttribute('aria-disabled', 'true'); pay.href = '#';
+      if (!enough) stat.textContent += '. Four in the grid unlocks the pack';
+    }
+  }
+  function queue() { clearTimeout(timer); timer = setTimeout(render, 120); }
+  document.querySelectorAll('input').forEach(function (el) { el.addEventListener('input', queue); });
+  document.getElementById('example').addEventListener('click', function () {
+    EXAMPLE.forEach(function (e, i) { inputs[i].a.value = e[0]; inputs[i].c.value = e[1]; });
+    for (var i = EXAMPLE.length; i < N; i++) { inputs[i].a.value = ''; inputs[i].c.value = ''; }
+    render();
+  });
+  document.getElementById('clear').addEventListener('click', function () { inputs.forEach(function (r) { r.a.value = ''; r.c.value = ''; }); from.value = ''; render(); });
+
+  /* Restore an unfinished puzzle from this browser. */
+  try {
+    var saved = JSON.parse(localStorage.getItem('dadsolved') || 'null');
+    if (saved && saved.entries && saved.entries.length) {
+      title.value = saved.title || title.value; from.value = saved.from || ''; seed = saved.seed || seed;
+      saved.entries.forEach(function (e, i) { if (inputs[i]) { inputs[i].a.value = e.answer || ''; inputs[i].c.value = e.clue || ''; } });
+    }
+  } catch (e) {}
+  render();
+
+  if (CONFIG.metaPixel) {
+    !function(f,b,e,v,n,t,s){if(f.fbq)return;n=f.fbq=function(){n.callMethod?n.callMethod.apply(n,arguments):n.queue.push(arguments)};if(!f._fbq)f._fbq=n;n.push=n;n.loaded=!0;n.version='2.0';n.queue=[];t=b.createElement(e);t.async=!0;t.src=v;s=b.getElementsByTagName(e)[0];s.parentNode.insertBefore(t,s)}(window,document,'script','https://connect.facebook.net/en_US/fbevents.js');
+    fbq('init', CONFIG.metaPixel); fbq('track', 'PageView');
+    pay.addEventListener('click', function () { if (pay.getAttribute('aria-disabled') !== 'true') fbq('track', 'InitiateCheckout', { value: CONFIG.price, currency: 'AUD' }); });
+  }
+})();
+</script>
+<script defer src="/_vercel/insights/script.js"></script>
+</body>
+</html>
