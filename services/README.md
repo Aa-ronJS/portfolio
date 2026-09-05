@@ -33,6 +33,38 @@ problems below, and the positioning is what converts them once they land.
 | `/project-rescue/` | developer disappeared, take over unfinished website |
 | `/contact/` | (conversion, not ranking) |
 
+## The live demos (the proof)
+
+Every service page and every industry page carries a working, interactive
+build of the thing it sells, embedded in the page: a visitor uses it,
+with data shaped like their business, before reading a word of claims.
+Twenty-two of them, all vanilla JavaScript on the static site, no build
+step, no external calls:
+
+- `public/js/demo-core.js` is the tiny framework (element helper, chrome,
+  formatting, seeded random, mount-by-`data-demo`).
+- `public/js/demos-services.js` holds the ten build-type demos (WordPress
+  health check, payout reconciler, enquiry triage assistant, a working
+  field app in a phone, redirect map builder, the reference API with its
+  real status rules, dedupe lab and automation bench, spreadsheet to
+  dashboard plus mismatch finder, ownership audit, process map and spec
+  generator).
+- `public/js/demos-industries.js` holds the twelve sector demos (week vs
+  forecast, consignment board, pre-start gate, one-ledger stock, bookings
+  and covers, time to invoice, waitlist refill, funder acquittal, rent
+  roll, spray windows, application assessment, AVETMISS-clean enrolment).
+- `public/css/demos.css` is the shared chrome; it uses the site tokens so
+  it restyles with the site.
+
+Pages mount a demo with `<div class="demo" data-demo="name">` holding a
+static fallback; the industries generator carries its own `DEMOS` map.
+Every demo is pre-loaded so it works at rest, degrades to readable text
+without scripts, respects reduced motion, and is tested in a real browser
+at 1424px and 390px (`test_demos.mjs` in the session scratchpad exercises
+all 22 with clicks and checks for console errors and overflow). The
+numbers inside demos are illustrative fixtures, labelled as such in the
+chrome; they never claim to be client data.
+
 ## Industry pages
 
 `/industries/` plus twelve sector pages (trades, transport, mining, retail,

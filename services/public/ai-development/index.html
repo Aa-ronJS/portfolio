@@ -17,6 +17,7 @@
 <link rel="preload" as="font" type="font/woff2" href="/fonts/satoshi-var.woff2" crossorigin>
 <link rel="preload" as="font" type="font/woff2" href="/fonts/bricolage-var.woff2" crossorigin>
 <link rel="stylesheet" href="/css/site.css">
+<link rel="stylesheet" href="/css/demos.css">
 <script type="application/ld+json">
 {
   "@context": "https://schema.org",
@@ -99,10 +100,23 @@
       </p>
       <div class="cta-row">
         <a class="btn" href="/contact/">Describe the job</a>
+        <a class="btn btn--ghost" href="#demo">Use the live demo</a>
         <a class="btn btn--ghost" href="#live">See it live first</a>
       </div>
     </div>
   </div>
+
+  <section class="section demo-section" id="demo">
+    <div class="wrap">
+      <p class="tag">Live proof</p>
+      <h2 class="measure">Use it. Right here.</h2>
+      <p class="demo__intro">Paste any message a customer might send. The assistant works out what they want, pulls out the facts, drafts a reply and lists what a human has to decide. That last part is the whole point of AI done properly.</p>
+      <div class="demo" data-demo="ai-triage">
+        <div class="demo__frame"><div class="demo__bar"><span class="demo__live"><i></i>live demo</span><span class="demo__title">Enquiry triage assistant</span></div><div class="demo__body"><p class="dim" style="margin:0">This working build runs in your browser and needs scripts enabled. Everything on the page describes what it does; turn them on to use it.</p></div></div>
+      </div>
+      <p class="demo__foot"><b>What you just used</b> is the shape of every AI build I do: extract, never invent; draft, never send; escalate what matters. The production version swaps the rules for a language model and keeps the guardrails.</p>
+    </div>
+  </section>
 
   <section class="section">
     <div class="wrap">
@@ -241,5 +255,7 @@
   </div>
 </footer>
 
+<script src="/js/demo-core.js" defer></script>
+<script src="/js/demos-services.js" defer></script>
 </body>
 </html>

@@ -749,6 +749,62 @@ def industries_line(current_slug=None):
     return "<p>Industries: " + " &middot; ".join(parts) + "</p>"
 
 
+
+# Live demos: one working build per sector, mounted by data-demo (see
+# public/js/demos-industries.js). (demo id, title, intro, footnote)
+DEMOS = {
+    "trades": ("trades-schedule", "This week against the forecast",
+        "A week of jobs, some outdoor, and the forecast. Reshuffle around the rain and watch the SMS drafts appear for your approval.",
+        "<b>Rain Check, one of my live tools, already does the weather half.</b> Joined to simPRO, ServiceM8 or AroFlo, the reshuffle proposes itself before 6am."),
+    "transport": ("transport-board", "Operations board",
+        "The reference build's dashboard logic on fixtures: advance a day, watch statuses move and the on-time rate change, then run the overdue sweep.",
+        "<b>Derived from the event log, so it cannot drift.</b> The complete build behind this is public and compilable, fifty-two checks passing."),
+    "mining": ("mining-prestart", "Pre-start and permits, gated",
+        "Work through the pre-start checks and permits. The shift cannot start until the gate is satisfied, and every tap lands in the audit trail with a name and time.",
+        "<b>Built the way BHP-grade sites expect</b> and sized for a contractor: the gate is the feature, the audit trail is the insurance."),
+    "retail": ("retail-stock", "One shelf, two tills",
+        "Sell the same items in store and online from one stock ledger, then flip to how most shops run and watch the oversell arrive.",
+        "<b>Square in store, Shopify online, one truth about stock.</b> The connector is the easy part; the ledger decision is the job."),
+    "hospitality": ("hospo-bookings", "Saturday service",
+        "Take a booking and watch covers per slot, kitchen load and the roster that follows. Try a full slot and see what the customer is offered instead.",
+        "<b>The widget is the visible bit.</b> Underneath: capacity, load, and a roster that follows covers instead of guesswork."),
+    "professional-services": ("pro-timesheet", "Matter time to invoice",
+        "The same time entries priced hourly and fixed-fee, with the write-off exposed. Add a revision round and see where fixed fees quietly die.",
+        "<b>Time captured once, priced two ways,</b> invoiced with narrative lines a client will pay. The flag fires at 80% so the conversation happens before the write-off."),
+    "health": ("health-waitlist", "Cancellations that fill themselves",
+        "Cancel an appointment and watch the waitlist fill the slot by SMS. Then run the week's recalls: the patients who never rebooked.",
+        "<b>Built on Cliniko's or Halaxy's API,</b> under your keys, in your accounts. Consent-first, human-approved, measured against the no-show rate."),
+    "nonprofits": ("nfp-acquittal", "Funder report with provenance",
+        "Program data captured once becomes the acquittal, every figure traceable to its rows. Record a donation and watch the receipt issue itself.",
+        "<b>Acquittals stop being archaeology</b> when the data is captured at the program, not reconstructed for the funder. Receipting on rails frees a volunteer's Tuesday."),
+    "real-estate": ("re-portfolio", "The rent roll, one level up",
+        "Arrears by age, leases about to lapse, filtered by property manager. Draft an owner report that reads like advice instead of a ledger.",
+        "<b>PropertyMe holds the properties; this holds the judgement.</b> Data out on a schedule, in your branding, in your accounts."),
+    "agriculture": ("agri-spray", "Spray window finder",
+        "Pick a paddock and a product, see which days the forecast and the label allow, and log an application with the withholding date computed.",
+        "<b>The same shape works for harvest windows, irrigation and stock movements:</b> rules plus forecast plus your paddocks, with the compliance record written as you go."),
+    "government": ("gov-assessment", "Application assessment",
+        "Score three applications against gate and weighted criteria. The recommendation writes its own reasons and the audit trail records every decision.",
+        "<b>Defensible by design:</b> criteria you can point to, reasons in the applicant's letter word for word, and a trail that survives an FOI request."),
+    "education": ("edu-enrolment", "Enrolment that refuses bad data",
+        "Try to enrol a student with a dodgy USI and a two-digit postcode. The form refuses, in AVETMISS terms, before the record exists.",
+        "<b>Every error caught here never reaches the reporting week.</b> The weekly sweep panel is the other half of the same idea."),
+}
+
+DEMO_SECTION = """  <section class="section demo-section" id="demo">
+    <div class="wrap">
+      <p class="tag">Live proof</p>
+      <h2 class="measure">Use it. Right here.</h2>
+      <p class="demo__intro">{intro}</p>
+      <div class="demo" data-demo="{demo}">
+        <div class="demo__frame"><div class="demo__bar"><span class="demo__live"><i></i>live demo</span><span class="demo__title">{title}</span></div><div class="demo__body"><p class="dim" style="margin:0">This working build runs in your browser and needs scripts enabled. Everything on the page describes what it does; turn them on to use it.</p></div></div>
+      </div>
+      <p class="demo__foot">{foot}</p>
+    </div>
+  </section>
+
+"""
+
 def page_head(title, desc, path, jsonld):
     return f"""<!doctype html>
 <html lang="en-AU">
@@ -769,6 +825,7 @@ def page_head(title, desc, path, jsonld):
 <link rel="preload" as="font" type="font/woff2" href="/fonts/satoshi-var.woff2" crossorigin>
 <link rel="preload" as="font" type="font/woff2" href="/fonts/bricolage-var.woff2" crossorigin>
 <link rel="stylesheet" href="/css/site.css">
+<link rel="stylesheet" href="/css/demos.css">
 <script type="application/ld+json">
 {jsonld}
 </script>
@@ -828,6 +885,8 @@ def render_industry(ind):
           <div>{a}</div>
         </details>""" for q, a in ind["faqs"])
 
+    _d = DEMOS.get(ind["slug"])
+    demo_section = DEMO_SECTION.format(demo=_d[0], title=_d[1], intro=_d[2], foot=_d[3]) if _d else ""
     return page_head(ind["title"], ind["desc"], path, jsonld) + f"""
 {NAV.format(current="")}
 
@@ -841,12 +900,13 @@ def render_industry(ind):
       </p>
       <div class="cta-row">
         <a class="btn" href="/contact/">Make the case</a>
+        <a class="btn btn--ghost" href="#demo">Use the live demo</a>
         <a class="btn btn--ghost" href="/industries/">Other industries</a>
       </div>
     </div>
   </div>
 
-  <section class="section">
+{demo_section}  <section class="section">
     <div class="wrap">
       <p class="tag">The work</p>
       <h2 class="measure">Where the hours go, and come back.</h2>
@@ -882,6 +942,8 @@ def render_industry(ind):
 
 {FOOTER.format(services_line=SERVICES_LINE, industries_line=industries_line())}
 
+<script src="/js/demo-core.js" defer></script>
+<script src="/js/demos-industries.js" defer></script>
 </body>
 </html>
 """

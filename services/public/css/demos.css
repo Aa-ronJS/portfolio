@@ -1,0 +1,80 @@
+/* Live demo chrome. Uses the site's tokens so it restyles with the site. */
+.demo{margin-top:var(--s6); min-width:0}
+.demo__frame{border:2px solid var(--ink); background:var(--bone); position:relative}
+.demo__bar{display:flex; align-items:center; gap:var(--s3) var(--s4); flex-wrap:wrap; padding:10px var(--s4); border-bottom:2px solid var(--ink); background:var(--bone-2)}
+.demo__live{display:inline-flex; align-items:center; gap:8px; font-family:var(--mono); font-size:0.72rem; letter-spacing:0.08em; text-transform:uppercase; color:var(--fg)}
+.demo__live i{width:9px; height:9px; border-radius:50%; background:var(--amber); display:inline-block; box-shadow:0 0 0 3px color-mix(in oklch, var(--amber) 30%, transparent)}
+.demo__title{font-weight:700; margin-right:auto}
+.demo__status{font-family:var(--mono); font-size:0.75rem; color:var(--fg-mute)}
+.demo__status--ok{color:var(--green)} .demo__status--warn{color:var(--amber-deep)} .demo__status--bad{color:oklch(0.5 0.16 30)}
+.demo__body{padding:var(--s5) var(--s4); display:grid; gap:var(--s4)}
+@media (min-width:48rem){.demo__body{padding:var(--s6)}}
+.demo__note{margin:0; padding:var(--s3) var(--s4); border-top:1px solid var(--line); font-size:var(--t--1); color:var(--fg-mute); background:var(--bone-2)}
+.demo__row{display:flex; gap:var(--s3) var(--s4); flex-wrap:wrap; align-items:center}
+.demo__grid{display:grid; gap:var(--s4); grid-template-columns:repeat(auto-fit,minmax(220px,1fr))}
+.demo__panel{border:1px solid var(--line); padding:var(--s4); background:var(--bone); min-width:0}
+.demo__panel h4{margin:0 0 var(--s3); font-family:var(--display); font-size:1.05rem; font-weight:700}
+.demo__label{font-size:0.86rem; font-weight:700; color:var(--fg-dim); display:grid; gap:6px}
+.demo__select, .demo__input, .demo__textarea{font:inherit; font-size:0.95rem; padding:10px 12px; border:2px solid var(--ink); background:var(--bone); color:var(--fg); border-radius:0; min-height:44px; max-width:100%}
+.demo__textarea{min-height:120px; font-family:var(--mono); font-size:0.85rem; line-height:1.5; width:100%; resize:vertical}
+.demo__btn{font:700 0.95rem var(--body); cursor:pointer; border:2px solid var(--ink); background:var(--amber); color:var(--ink); padding:10px 18px; min-height:44px; transition:transform 120ms, box-shadow 120ms}
+.demo__btn:hover{transform:translate(-1px,-1px); box-shadow:3px 3px 0 0 var(--ink)}
+.demo__btn:active{transform:none; box-shadow:none}
+.demo__btn--ghost{background:var(--bone)}
+.demo__btn--small{font-size:0.82rem; padding:6px 12px; min-height:34px}
+.demo__btn[disabled]{opacity:0.45; cursor:not-allowed; transform:none; box-shadow:none}
+.demo__scroll{overflow-x:auto}
+.demo__table{width:100%; border-collapse:collapse; font-size:0.9rem}
+.demo__table th{text-align:left; font-size:0.78rem; letter-spacing:0.04em; text-transform:uppercase; color:var(--fg-mute); border-bottom:2px solid var(--ink); padding:8px 10px 8px 0; white-space:nowrap}
+.demo__table td{padding:9px 10px 9px 0; border-bottom:1px solid var(--line); vertical-align:top}
+.demo__table tr.is-bad td{background:color-mix(in oklch, oklch(0.6 0.16 30) 12%, transparent)}
+.demo__table tr.is-ok td{background:color-mix(in oklch, var(--green) 10%, transparent)}
+.demo__table tr.is-warn td{background:color-mix(in oklch, var(--amber) 16%, transparent)}
+.demo__table td.num{text-align:right; font-variant-numeric:tabular-nums; white-space:nowrap}
+.demo__meter{display:inline-block; width:100%; height:12px; background:var(--bone-2); border:1px solid var(--line); vertical-align:middle; overflow:hidden}
+.demo__meter i{display:block; height:100%; background:var(--green); transition:width 500ms cubic-bezier(.22,1,.36,1)}
+.demo__meter--amber i{background:var(--amber)} .demo__meter--bad i{background:oklch(0.55 0.16 30)}
+.demo__pill{display:inline-block; font-family:var(--mono); font-size:0.72rem; letter-spacing:0.04em; padding:3px 9px; border:1.5px solid var(--ink); background:var(--bone); white-space:nowrap}
+.demo__pill--ok{background:color-mix(in oklch, var(--green) 25%, var(--bone))} .demo__pill--warn{background:var(--amber-soft)} .demo__pill--bad{background:color-mix(in oklch, oklch(0.6 0.16 30) 25%, var(--bone))} .demo__pill--dim{color:var(--fg-mute); border-color:var(--line)}
+.demo__big{font-family:var(--display); font-weight:800; font-size:clamp(1.6rem,3vw,2.4rem); line-height:1; font-variant-numeric:tabular-nums}
+.demo__kv{display:grid; grid-template-columns:auto 1fr; gap:6px var(--s4); font-size:0.92rem}
+.demo__kv b{color:var(--fg)}
+.demo__log{font-family:var(--mono); font-size:0.8rem; line-height:1.6; background:var(--ink); color:var(--bone); padding:var(--s4); max-height:220px; overflow:auto; margin:0}
+.demo__log .ok{color:oklch(0.85 0.12 150)} .demo__log .warn{color:var(--amber)} .demo__log .bad{color:oklch(0.75 0.15 30)} .demo__log .dim{opacity:0.55}
+.demo__toast{position:absolute; left:50%; bottom:var(--s4); transform:translate(-50%, 10px); background:var(--ink); color:var(--bone); padding:10px 16px; font-weight:700; font-size:0.9rem; opacity:0; transition:opacity 200ms, transform 200ms; pointer-events:none; z-index:2; max-width:90%}
+.demo__toast.on{opacity:1; transform:translate(-50%, 0)}
+.demo__toast--ok{background:var(--green)} .demo__toast--bad{background:oklch(0.5 0.16 30)}
+.demo__chips{display:flex; gap:8px; flex-wrap:wrap}
+.demo__chip{font:600 0.86rem var(--body); cursor:pointer; border:2px solid var(--ink); background:var(--bone); padding:7px 14px; border-radius:999px; min-height:36px}
+.demo__chip[aria-pressed="true"]{background:var(--amber)}
+.demo__phone{width:min(300px,100%); margin:0 auto; border:3px solid var(--ink); border-radius:28px; padding:14px 10px; background:var(--ink)}
+.demo__screen{background:var(--bone); border-radius:18px; min-height:420px; overflow:hidden; display:flex; flex-direction:column}
+.demo__screen .top{padding:12px 14px; border-bottom:2px solid var(--ink); font-weight:800; font-family:var(--display); display:flex; justify-content:space-between; align-items:center}
+.demo__screen .list{flex:1; overflow:auto}
+.demo__screen .item{padding:12px 14px; border-bottom:1px solid var(--line); cursor:pointer; display:flex; justify-content:space-between; gap:10px}
+.demo__screen .item:hover{background:var(--bone-2)}
+.demo__screen .tabs{display:flex; border-top:2px solid var(--ink)}
+.demo__screen .tabs button{flex:1; font:700 0.78rem var(--body); padding:10px 4px; border:0; background:var(--bone); cursor:pointer}
+.demo__screen .tabs button[aria-pressed="true"]{background:var(--amber)}
+.demo__svg{width:100%; height:auto; display:block; border:1px solid var(--line); background:var(--bone)}
+.demo__cal{display:grid; grid-template-columns:repeat(7,1fr); gap:4px}
+.demo__cal button{font:600 0.82rem var(--body); border:1.5px solid var(--line); background:var(--bone); padding:8px 4px; cursor:pointer; min-height:40px}
+.demo__cal button.taken{background:var(--bone-2); color:var(--fg-mute); text-decoration:line-through; cursor:not-allowed}
+.demo__cal button.pick{background:var(--amber); border-color:var(--ink)}
+.demo__cal button.risk{border-color:oklch(0.6 0.16 30); border-style:dashed}
+.demo-section .demo__intro{max-inline-size:60ch; color:var(--fg-dim); margin-top:var(--s4)}
+.demo__foot{margin:var(--s4) 0 0; font-size:var(--t--1); color:var(--fg-mute); max-inline-size:66ch}
+.demo__foot b{color:var(--fg)}
+.section--ink .demo__frame, .section--ink .demo__panel, .section--ink .demo__select, .section--ink .demo__input, .section--ink .demo__textarea, .section--ink .demo__btn--ghost, .section--ink .demo__chip, .section--ink .demo__pill{color:var(--ink)}
+
+/* Containment: nothing inside a demo may widen the page. */
+.demo__frame, .demo__body, .demo__body > *, .demo__panel, .demo__grid > *, .demo__row > *, .demo__label{min-width:0}
+.demo__log{white-space:pre-wrap; overflow-wrap:anywhere}
+.demo__label > .demo__input, .demo__label > .demo__select, .demo__label > .demo__textarea{width:100%}
+.demo__body code{overflow-wrap:anywhere}
+@media (max-width:48rem){
+  .demo__grid{grid-template-columns:1fr !important}
+  .demo__cal{grid-template-columns:repeat(4,1fr)}
+  .demo__cal button{font-size:0.78rem}
+  .demo__phone{width:100%}
+}

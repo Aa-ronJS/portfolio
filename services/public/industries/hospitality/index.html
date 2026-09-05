@@ -17,6 +17,7 @@
 <link rel="preload" as="font" type="font/woff2" href="/fonts/satoshi-var.woff2" crossorigin>
 <link rel="preload" as="font" type="font/woff2" href="/fonts/bricolage-var.woff2" crossorigin>
 <link rel="stylesheet" href="/css/site.css">
+<link rel="stylesheet" href="/css/demos.css">
 <script type="application/ld+json">
 {
   "@context": "https://schema.org",
@@ -84,10 +85,23 @@
       </p>
       <div class="cta-row">
         <a class="btn" href="/contact/">Make the case</a>
+        <a class="btn btn--ghost" href="#demo">Use the live demo</a>
         <a class="btn btn--ghost" href="/industries/">Other industries</a>
       </div>
     </div>
   </div>
+
+  <section class="section demo-section" id="demo">
+    <div class="wrap">
+      <p class="tag">Live proof</p>
+      <h2 class="measure">Use it. Right here.</h2>
+      <p class="demo__intro">Take a booking and watch covers per slot, kitchen load and the roster that follows. Try a full slot and see what the customer is offered instead.</p>
+      <div class="demo" data-demo="hospo-bookings">
+        <div class="demo__frame"><div class="demo__bar"><span class="demo__live"><i></i>live demo</span><span class="demo__title">Saturday service</span></div><div class="demo__body"><p class="dim" style="margin:0">This working build runs in your browser and needs scripts enabled. Everything on the page describes what it does; turn them on to use it.</p></div></div>
+      </div>
+      <p class="demo__foot"><b>The widget is the visible bit.</b> Underneath: capacity, load, and a roster that follows covers instead of guesswork.</p>
+    </div>
+  </section>
 
   <section class="section">
     <div class="wrap">
@@ -190,5 +204,7 @@
   </div>
 </footer>
 
+<script src="/js/demo-core.js" defer></script>
+<script src="/js/demos-industries.js" defer></script>
 </body>
 </html>
