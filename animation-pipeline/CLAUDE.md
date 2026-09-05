@@ -676,6 +676,18 @@ dead flat mid-neck; captures now reach 26px into the inter-row gap.
 Add to the check habit: pull two CONSECUTIVE frames of each talker
 mid-line — a still can't show a strobe.
 
+POST-MORTEM on the first pupils attempt (keep this): it shipped with
+a logically IMPOSSIBLE detection test (dark pixels overlapping the
+white mask — disjoint by definition), so draw_pupils never stamped a
+single pixel anywhere; the canonical face anchors also sat on the
+CHEEK of every guide-less drawing. Both the check-sheet panels and
+the episode were "verified" by eye and passed — the reviewer saw the
+movement he expected. Three rules came out of it: A/B pixel-diff a
+new visual feature against a disabled render (0 changed px = it does
+not exist); the check sheet prints a MEASURED verdict, never a
+judgement call; and motion claims are proven with an eye-region
+FILMSTRIP of consecutive frames plus per-frame diff counts.
+
 Dynamic pupils (2026-09-05): rigged characters look around. Per
 frame, `draw_pupils` (rig.py) works at the face eye anchors on the
 POSED canvas: it finds the light eye-white blob at each anchor and
@@ -689,11 +701,19 @@ skips while blinking. Look targets (render.py, per actor): `eyes:
 otherwise the talker's face, else ahead while walking; `look: false`
 turns it off with the head gaze; fighters never auto-look. The
 offset is QUANTISED per axis to {-1, 0, 1} — looks snap comic-style
-rather than track — and a flipped sprite mirrors the x. The check
-sheet grew a pupils row (left/centre/right/down; identical panels =
-detection declined, correct for hoods). Committed demos from before
-this feature are NOT re-rendered (walkers would gain a look-ahead);
-the fellowship episode is the reference.
+rather than track — and a flipped sprite mirrors the x at stamp time.
+SACCADES make the eyes alive WITHIN a shot: a seeded per-actor
+schedule of darts (glance somewhere else for ~0.3s, snap back) runs
+on top of the base look, so even a fixed listener's eyes move on
+screen; eyes: front / look: false suppress darts too. Ingest DETECTS
+the drawn eyes on the assembled body (find_eyes in rig.py: neutral-
+bright whites — min channel > 215, low saturation, so pale tinted
+skin doesn't merge with them — containing a compact dark hole) and
+writes real anchors into rig.json; the canonical template anchors
+only fit faces drawn on the old ghost guides. The check sheet's
+pupils row prints a MEASURED verdict (left-vs-right diff px).
+Committed demos from before this feature are NOT re-rendered; the
+fellowship episode is the reference.
 
 Discussed but unbuilt: per-character close-up
 framing in `char.json` (the directed close-up currently assumes a

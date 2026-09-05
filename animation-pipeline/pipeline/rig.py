@@ -755,6 +755,73 @@ def draw_open_mouth(img, cx, cy, w, colours=None):
               width=max(2, int(w * 0.10)))
 
 
+def find_eyes(img, y_max_frac=0.5):
+    """Locate drawn eyes on an assembled body: light eye-white blobs
+    with a compact dark pupil touching them, in the top part of the
+    figure. Returns [{"at": [fx, fy], "r": r_frac}, ...] in image
+    fractions (up to two, left first), or [] when nothing qualifies.
+    Written by kit ingest into rig.json face.eyes — the canonical
+    template anchors only fit a face drawn on the old ghost guides,
+    and an anchor on the cheek makes every eye feature silently skip.
+    """
+    from scipy import ndimage as ndi
+    arr = np.asarray(img.convert("RGBA"))
+    H, W = arr.shape[:2]
+    top = arr[:int(H * y_max_frac)]
+    rgb = top[..., :3].astype(int)
+    lum = rgb.sum(axis=2)
+    op = top[..., 3] > 128
+    # an eye white is bright AND neutral; pale tinted skin is not
+    white = (rgb.min(axis=2) > 215) & \
+            (rgb.max(axis=2) - rgb.min(axis=2) < 30) & op
+    lab, n = ndi.label(white)
+    dark = (lum < 330) & op
+    cands = []
+    for i in range(1, n + 1):
+        m = lab == i
+        a = m.sum()
+        if not 40 <= a <= 0.01 * W * H:
+            continue
+        ys, xs = np.nonzero(m)
+        w, h = xs.max() - xs.min() + 1, ys.max() - ys.min() + 1
+        if w > 4 * h or h > 4 * w:
+            continue
+        # the pupil is the dark HOLE in the white: fill the white's
+        # holes and intersect with dark. (dark & white overlap is
+        # impossible by definition — the first version tested exactly
+        # that and never found a pupil anywhere.)
+        pup = dark & ndi.binary_fill_holes(m)
+        if not 12 <= pup.sum() <= 2.5 * a:
+            continue
+        cands.append((a, xs.mean(), ys.mean(),
+                      math.sqrt(a / math.pi)))
+    if not cands:
+        return []
+    best = None
+    for i in range(len(cands)):
+        for j in range(i + 1, len(cands)):
+            a1, x1, y1, r1 = cands[i]
+            a2, x2, y2, r2 = cands[j]
+            if abs(y1 - y2) > 0.35 * max(r1, r2) * 6:
+                continue
+            if max(a1, a2) > 4.0 * min(a1, a2):
+                continue
+            dx = abs(x1 - x2)
+            if not 1.5 * (r1 + r2) < dx < 0.6 * W:
+                continue
+            score = a1 + a2
+            if best is None or score > best[0]:
+                best = (score, i, j)
+    if best:
+        pair = sorted([cands[best[1]], cands[best[2]]],
+                      key=lambda c: c[1])
+        return [{"at": [round(c[1] / W, 4), round(c[2] / H, 4)],
+                 "r": round(c[3] / H, 4)} for c in pair]
+    a, x, y, r = max(cands)
+    return [{"at": [round(x / W, 4), round(y / H, 4)],
+             "r": round(r / H, 4)}]
+
+
 def draw_pupils(img, face, look, transform=None, feat_h=None):
     """Copy of img with each DRAWN pupil lifted and re-stamped offset
     toward `look` — a quantised (dx, dy) with each axis in {-1, 0, 1},
@@ -784,9 +851,12 @@ def draw_pupils(img, face, look, transform=None, feat_h=None):
         if x0 < 0 or y0 < 0 or x0 + 2 * R > W or y0 + 2 * R > H:
             continue
         win = arr[y0:y0 + 2 * R, x0:x0 + 2 * R]
-        lum = win[..., :3].astype(int).sum(axis=2)
+        rgb = win[..., :3].astype(int)
+        lum = rgb.sum(axis=2)
         op = win[..., 3] > 128
-        lab, n = ndi.label((lum > 560) & op)
+        lab, n = ndi.label((rgb.min(axis=2) > 215)
+                           & (rgb.max(axis=2) - rgb.min(axis=2) < 30)
+                           & op)
         if not n:
             continue
         lcx, lcy = int(cx) - x0, int(cy) - y0
@@ -800,16 +870,24 @@ def draw_pupils(img, face, look, transform=None, feat_h=None):
         wmask = lab == li
         wys, wxs = np.nonzero(wmask)
         wc = (wxs.mean(), wys.mean())
-        dl, dn = ndi.label((lum < 330) & op
-                           & ndi.binary_dilation(wmask, iterations=2))
+        # pupil candidates: dark blobs inside the FILLED white (the
+        # pupil is the hole in the white; dark can never overlap white
+        # itself). Filling the dilated white also catches a pupil that
+        # touches the eye outline; a thin outline sliver that sneaks
+        # in fails the bbox-fill test.
+        dl, dn = ndi.label(
+            (lum < 330) & op & ndi.binary_fill_holes(
+                ndi.binary_dilation(wmask, iterations=2)))
         best = None
         for i in range(1, dn + 1):
             m = dl == i
-            if not (m & wmask).any():
+            a2 = m.sum()
+            if a2 < 6 or a2 > 3.5 * math.pi * r * r:
                 continue
-            if m.sum() > 3.5 * math.pi * r * r:
-                continue          # that's the eye outline, not a pupil
             ys, xs = np.nonzero(m)
+            bw = (xs.max() - xs.min() + 1) * (ys.max() - ys.min() + 1)
+            if bw > 4 * a2:
+                continue          # ring-shaped: the eye outline
             d2 = (xs.mean() - wc[0]) ** 2 + (ys.mean() - wc[1]) ** 2
             if best is None or d2 < best[0]:
                 best = (d2, m)

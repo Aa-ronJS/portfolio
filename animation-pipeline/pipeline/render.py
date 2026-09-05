@@ -685,16 +685,34 @@ class EpisodeRenderer:
                              -1 if dxe < -0.02 else 0),
                             (1 if dye > 0.06 else
                              -1 if dye < -0.06 else 0))
-                if look:
-                    # the sprite is mirrored after posing, so a flipped
-                    # actor stamps toward the opposite local x
-                    look = ((-look[0] if do_flip else look[0]), look[1])
-                    if look == (0, 0):
-                        look = None
+                if look == (0, 0):
+                    look = None
+                # saccades: eyes that never move read as painted-on.
+                # A seeded schedule of darts — glance somewhere else
+                # for a beat, snap back — runs on top of the base look
+                # (or on drawn eyes when there is no base). Stored in
+                # SCREEN space; _rig_frame mirrors x for flipped
+                # sprites at stamp time.
+                darts = []
+                if not (a.get("eyes") == "front"
+                        or a.get("look") is False or fighting):
+                    rngd = random.Random(i * 7919 + j * 31 + 13)
+                    tcur = rngd.uniform(0.8, 2.0)
+                    while tcur < s["duration"]:
+                        span = rngd.uniform(0.25, 0.45)
+                        q = (0, 0)
+                        for _ in range(4):
+                            q = (rngd.choice((-1, 1)),
+                                 rngd.choice((-1, 0, 0, 0, 1)))
+                            if q != (look or (0, 0)):
+                                break
+                        darts.append((round(tcur, 2),
+                                      round(tcur + span, 2), q))
+                        tcur += span + rngd.uniform(1.0, 2.4)
                 s["sprites"].append({
                     "imgs": None, "rig": rig, "specs": specs, "char": c,
                     "props": props, "reach": reach, "gaze": gaze,
-                    "look": look, "fight": fight,
+                    "look": look, "darts": darts, "fight": fight,
                     "k": k, "flip": do_flip, "cache": {},
                     "base": a.get("pose") or "body", "face": face,
                     # anchor restated for the padded pose canvas
@@ -1123,6 +1141,16 @@ class EpisodeRenderer:
                       round(ay0 + 0.5 * g * tau * tau),
                       round(ang0 + d.get("spin", 260) * tau))
             prop_state.append((i, fi, dq))
+        # the effective look this frame: a dart overrides the base
+        look = sp.get("look")
+        for (td0, td1, q) in sp.get("darts") or ():
+            if td0 <= t <= td1:
+                look = q
+                break
+        if look == (0, 0):
+            look = None
+        if look and sp["flip"]:
+            look = (-look[0], look[1])
         key = (tuple(sorted(
                    (b, tuple(sorted(
                        (k2, v if isinstance(v, str) else round(v, 2))
@@ -1130,7 +1158,7 @@ class EpisodeRenderer:
                    for b, ch in pose.items())),
                tuple(sorted(variant_for.items())),
                bool(overlay_blink), bool(overlay_talk),
-               sp.get("look"), tuple(prop_state))
+               look, tuple(prop_state))
         img = sp["cache"].get(key)
         if img is None:
             canvas, _pad = rig.pose(pose, variant_for)
@@ -1142,10 +1170,10 @@ class EpisodeRenderer:
                     feat_h=rig.H)
             # dynamic pupils: lift the drawn pupil and re-stamp it
             # toward the look target (skipped while the eyes are shut)
-            if sp.get("look") and face and face.get("eyes") \
+            if look and face and face.get("eyes") \
                     and not blink_sheet and not overlay_blink:
                 canvas = draw_pupils(
-                    canvas, face, sp["look"],
+                    canvas, face, look,
                     transform=lambda at: rig.anchor_world(
                         at, head_bone, pose),
                     feat_h=rig.H)

@@ -527,6 +527,24 @@ def cmd_ingest(args):
     posed, pad = rig.pose({})
     body = posed.crop((pad, pad, pad + BODY_W, pad + BODY_H))
     body.save(os.path.join(args.character, "body.png"))
+    # find the DRAWN eyes and replace the canonical anchors: with no
+    # guide art the face is drawn wherever, and an anchor on the cheek
+    # makes blink overlays and dynamic pupils silently skip
+    from rig import find_eyes
+    found = find_eyes(body)
+    if found:
+        rp2 = os.path.join(args.character, "rig.json")
+        with open(rp2) as f:
+            rj = json.load(f)
+        rj["face"]["eyes"] = found
+        with open(rp2, "w") as f:
+            json.dump(rj, f, indent=2)
+        print(f"eyes found at {[e['at'] for e in found]}",
+              file=sys.stderr)
+    else:
+        print("no drawn eye-whites found — blink overlays and pupils "
+              "will use the canonical anchors (may not line up)",
+              file=sys.stderr)
     a = np.array(body.getchannel("A"))
     ys, xs = np.nonzero(a > 24)
     anchor_y = round(float(ys.max()) / BODY_H, 3) if len(ys) else 1.0
@@ -733,13 +751,23 @@ def cmd_check(args):
                int(max(exs) + 6 * rr), int(max(eys) + 6 * rr))
         prow = []
         hb = face.get("bone", "head")
+        variants = []
         for lab, lk in [("look left", (-1, 0)), ("look centre", (0, 0)),
                         ("look right", (1, 0)), ("look down", (0, 1))]:
             im2 = draw_pupils(rest, face, lk, feat_h=r.H,
                               transform=lambda at: r.anchor_world(
                                   at, hb, {}))
+            variants.append(im2.crop(box))
             prow.append(panel(im2.crop(box), lab, 300, 260))
         rows.append(prow)
+        # the verdict is MEASURED, not eyeballed: identical panels
+        # once shipped as "moving pupils"
+        moved = int((np.abs(
+            np.asarray(variants[0].convert("RGB"), dtype=int)
+            - np.asarray(variants[2].convert("RGB"), dtype=int))
+            .sum(axis=2) > 30).sum())
+        print(f"pupils: {'MOVING' if moved > 40 else 'STATIC'} "
+              f"({moved}px left-vs-right)", file=sys.stderr)
     W = max(sum(p.width for p in row) for row in rows)
     H = sum(max(p.height for p in row) for row in rows)
     sheet = Image.new("RGBA", (W, H), MAG)
