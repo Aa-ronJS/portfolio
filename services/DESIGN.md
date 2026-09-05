@@ -1,11 +1,11 @@
 # The design, and where it came from
 
-The site was restyled in one pass against a deliberately non-AI canon:
-design work that earned its reputation from human craft, mostly before
-generative tools existed, researched and distilled rather than
-absorbed from whatever the models default to. This file records the
-sources, the rules extracted from them, and the mechanics, so future
-edits extend the language instead of diluting it.
+The site's design language is "the warm gallery": the atmosphere and
+confidence of the crafted, award-winning end of web design, built from
+a strictly non-AI canon researched rather than absorbed. It replaced
+two earlier attempts in one session: the original dark-hero-and-stat-
+cards look (AI slop) and a newspaper-austere pass (correct principles,
+wrong temperature). What survived is the doctrine below.
 
 ## The canon
 
@@ -41,35 +41,32 @@ Sources checked during the research pass:
 
 ## The rules extracted
 
-1. **Typography is the design.** One serif (Newsreader, Production
-   Type, OFL, self-hosted variable roman and italic) for display and
-   text; IBM Plex Mono for labels, navigation, figures and captions.
-   Nothing else.
-2. **Paper, ink, one accent.** Warm near-white ground, near-black
-   type, a single rust accent that only ever means "interactive or
-   emphasised": link underlines, current page, button hover, list
-   stubs. No second accent, ever.
-3. **Rules, not backgrounds.** Structure is drawn with hairlines and
-   weights of rule: 1px grey between entries, 1px ink to open an
-   index, 2px ink to open an emphasised section or the colophon. The
-   old dark blocks are gone; if a section needs weight it earns it
-   with a heavier rule and a faint paper tint, never a fill.
-4. **Links look like links.** Underlined, offset, accent-coloured
-   underlines; the arrow-links are set in italic serif like a printed
-   cross-reference. Buttons are rectangles: solid ink for the one
-   primary action, drawn 1px ink for the rest, mono uppercase labels.
-5. **Butterick's numbers hold everywhere**: body ~17 to 20px, leading
-   1.55, measures capped (26ch display, 58ch text, 64ch answers), and
-   they do not change meaning at phone widths.
-6. **The masthead, not the app bar.** Header is the site's name in
-   italic serif over a mono nav line, on the same paper, ruled off
-   with 1px ink. The footer is a colophon: strong rule, the same
-   links, mono small print.
-7. **No decoration that carries no information.** No cards with
-   borders-for-borders' sake, no icon sets, no gradients, no shadows,
-   no rounded anything (--r stays 0). The figures strip is ruled
-   columns with ink numerals, which is what evidence looks like in
-   print.
+1. **Typography carries the beauty.** Newsreader (Production Type,
+   OFL, self-hosted variable roman and italic) at enormous sizes for
+   display, with the italic as the signature: every h1, the brand, the
+   cross-reference links and the evidence numerals are italic serif.
+   Satoshi carries text and UI so long passages never read as
+   newsprint; IBM Plex Mono does small labels, nav and captions.
+2. **Candlelight, not darkness.** The dark surfaces (header+hero, the
+   emphasis sections, the footer) are warm espresso with a soft
+   radial glow and a breath of SVG grain, so they read as atmosphere
+   rather than a slab. Content sections are warm cream. The two
+   temperatures alternate; neither is default-grey anything.
+3. **Gold means go.** One luminous gold accent on dark (deepened for
+   legibility on cream): primary buttons, the current nav item, tags,
+   figure numerals, link underlines. Never a second accent.
+4. **Generosity is the luxury.** Oversized section padding, wide
+   gutters, measures capped (Butterick's numbers still hold: body in
+   the 15 to 25px band, 1.6 leading, 45 to 90 character lines).
+5. **Motion is felt, not seen**: 180 to 220ms eased transitions,
+   1 to 2px hover lifts, soft long-throw shadows on cards and the
+   calculator. Nothing animates on its own; everything responds.
+6. **Links look like links** (underlines, gold), primary actions are
+   gold rectangles with mono uppercase labels, zero radius everywhere
+   (--r stays 0; sharp edges are part of the brand).
+7. **No decoration without information**: no icon sets, no stock
+   anything, no gradients-as-decoration (the glow is light, not a
+   gradient stripe), and the grain sits at 5% alpha where it belongs.
 
 ## Mechanics
 
@@ -77,20 +74,21 @@ Everything lives in `public/css/site.css`. The class names and token
 names (`--s*`, `--t-*`, `--fg*`, `--bone*`, `--amber*`, `.tag`,
 `.rows`, `.figures`, `.section--ink` and so on) are the site's stable
 API: 85 pages and the calculator's inline styles reference them, so
-restyles change values, never names. `--amber*` now holds the rust
-family; `.section--ink` is now the tinted, heavy-ruled emphasis
-section rather than a dark block; both keep their names for exactly
-this reason.
+restyles change values, never names. `--amber*` holds the gold family;
+`.section--ink` is the espresso emphasis section; the glow and grain
+live in `--glow` and `--grain` (a pure-CSS SVG noise data URI, no
+asset).
 
 Fonts are self-hosted in `public/fonts/` (newsreader-var,
-newsreader-italic-var, the two Plex Mono weights); every page
-preloads the two Newsreader files, and the generators' head templates
-carry the same preloads. `theme-color` is the paper value. The
-favicon and the OG cards keep the original ink-and-amber mark; a tiny
-mark and a share card tolerate the old palette, and regenerating the
-OG set to match the new language is listed in IMAGES.md territory
-when the images pass happens.
+newsreader-italic-var, satoshi-var, the two Plex Mono weights); every
+page preloads Satoshi and the Newsreader italic, the two
+above-the-fold faces, and the generators' head templates carry the
+same preloads. `theme-color` is the espresso value because the page
+opens dark. The favicon and OG cards' ink-and-amber mark sits
+naturally with this palette; regenerate the OG set with the italic
+serif when the images pass happens.
 
-The one test that matters, from the canon and non-negotiable: open
-the page and read it. If a change makes it look more like software
-marketing and less like a well-set publication, the change is wrong.
+The one test that matters, non-negotiable: open the page and look at
+it. If a change makes it more ordinary, more grey, or more like
+software marketing, the change is wrong. It should be beautiful
+first; everything else is implementation.
