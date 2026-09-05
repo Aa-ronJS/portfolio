@@ -86,14 +86,14 @@ cleanup gets no kit, and the mobile page's honest answer is usually
    mostly checklists, which makes it fast to write and honest to sell.
 4. **The Automation Kit** (CRM and automation). Your first five
    automations without hiring anyone: pick the tool (Make, Zapier or
-   native), wire the standard joins, know the traps (the systems pages
-   are the research base).
+   native), wire the standard joins, know the traps (the CRM answers and
+   the pipeline demo are the research base).
 5. **The AI Kit** (AI development). Set up AI properly in a small
    business: the tools worth paying for, the prompt patterns, the
    guardrails, what never to automate. The AI page's register, boxed.
 6. **The Store Kit** (e-commerce). Set up Shopify properly the first
    time, including the accounting join done right from day one, drawing
-   directly on the Shopify and WooCommerce systems guides.
+   directly on the store demo and the e-commerce answers.
 
 Each subsequent kit is one instruction from you ("write the Brief Kit")
 and lands the same way this one did: full source in `products/`, sales
@@ -156,7 +156,7 @@ platform below handles it. Either way, say which on the page footer.
   public proof as everything else.
 - The kits stay current or come down. A kit that recommends a dead tool
   is a refund machine and a reputation leak; each kit's README notes
-  what to re-verify and when (mirrors the systems pages' honesty note).
+  what to re-verify and when.
 - Support boundary printed in every kit: the price includes the
   documents, not consulting. Questions about the kit's own steps get
   answered (they are bug reports on the product); "can you just look at

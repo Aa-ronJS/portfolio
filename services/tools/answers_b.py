@@ -17,8 +17,8 @@ PART_B = [
             ("The honest field",
              """HubSpot's free tier is a legitimate start and scales expensively. Zoho is
              underrated value for small teams. Salesforce is superb and usually overkill under
-             twenty seats. Job-system CRMs (the one inside ServiceM8 or your industry tool)
-             are often enough. I run all of them in anger and none pays me commission."""),
+             twenty seats. Job-system CRMs (the one built into your industry tool)
+             are often enough. I have built inside HubSpot, Salesforce and Zoho, and none pays me commission."""),
             ("What matters more than the pick",
              """Adoption and plumbing: the CRM fed automatically from your website, inbox and
              billing so it stays true without discipline, per

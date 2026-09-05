@@ -9,7 +9,7 @@
   /* ---------------- TRADES: the week vs the weather ---------------- */
   D.register('trades-schedule', function () {
     var f = D.frame({ title: 'This week\'s jobs against the forecast', status: 'Sunday night view',
-      note: 'Rain Check, one of my live tools, already does the forecast half for Adelaide trades. Joined to your job system (simPRO, ServiceM8, AroFlo), the reshuffle proposes itself before 6am.' });
+      note: 'Rain Check, one of my live tools, already does the forecast half for Adelaide trades. Joined to your job system, the reshuffle proposes itself before 6am.' });
     var days = [['Mon', 2, 10], ['Tue', 14, 80], ['Wed', 22, 90], ['Thu', 1, 5], ['Fri', 0, 0]];
     var jobs = [
       { who: 'Hargreaves', what: 'Roof re-wire', out: true, day: 0 }, { who: 'Nguyen', what: 'Switchboard', out: false, day: 0 },
@@ -132,7 +132,7 @@
   /* ---------------- RETAIL: one stock truth ---------------- */
   D.register('retail-stock', function () {
     var f = D.frame({ title: 'One shelf, two tills', status: 'single ledger',
-      note: 'Square in store, Shopify online, one truth about stock. Flip the switch to see how most shops actually run: two ledgers each certain they are right, and the oversell lands on your busiest Saturday.' });
+      note: 'Your till in store, your shop online, one truth about stock. Flip the switch to see how most shops actually run: two ledgers each certain they are right, and the oversell lands on your busiest Saturday.' });
     var skus = [{ sku: 'TEE-BLK-M', name: 'Black tee, M', stock: 3, reorder: 4 }, { sku: 'CAP-OLV', name: 'Olive cap', stock: 7, reorder: 3 }, { sku: 'MUG-01', name: 'Enamel mug', stock: 1, reorder: 5 }];
     var split = false, shadow = {}, tbl = h('div'), log = h('pre', { class: 'demo__log' });
     skus.forEach(function (s) { shadow[s.sku] = { store: s.stock, online: s.stock }; });
@@ -228,7 +228,7 @@
   /* ---------------- HEALTH: cancellations, waitlist, recalls ---------------- */
   D.register('health-waitlist', function () {
     var f = D.frame({ title: 'Cancellations that fill themselves', status: 'Tuesday, two practitioners',
-      note: 'Built on Cliniko\'s API (or Halaxy\'s): a cancellation frees the slot, the first matching waitlisted patient gets an SMS, the slot fills. The recall list is the quiet revenue most practices never chase.' });
+      note: 'Built onto the practice software you already run: a cancellation frees the slot, the first matching waitlisted patient gets an SMS, the slot fills. The recall list is the quiet revenue most practices never chase.' });
     var appts = [['9:00', 'Dr Rao', 'M. Chen'], ['9:30', 'Dr Rao', 'P. Nair'], ['10:00', 'S. Wells (physio)', 'T. Okafor'], ['10:30', 'Dr Rao', 'J. Hargreaves'], ['11:00', 'S. Wells (physio)', 'L. Tran']];
     var wait = [['A. Whitfield', 'Dr Rao', 'any morning'], ['R. Singh', 'S. Wells (physio)', 'before 11'], ['D. Marsh', 'Dr Rao', 'any']];
     var recalls = [['K. Lowe', 'Dr Rao', 'review due 6 weeks ago'], ['B. Costa', 'S. Wells (physio)', 'plan said 4 weeks, 9 weeks ago']];
@@ -297,7 +297,7 @@
   /* ---------------- REAL ESTATE: the portfolio view and the owner report ---------------- */
   D.register('re-portfolio', function () {
     var f = D.frame({ title: 'The rent roll, one level up', status: 'Monday morning',
-      note: 'PropertyMe holds the properties; this layer holds the judgement: arrears by age, leases about to lapse, and an owner report that reads like advice. Data out on a schedule, in your branding, in your accounts.' });
+      note: 'Your property platform holds the properties; this layer holds the judgement: arrears by age, leases about to lapse, and an owner report that reads like advice. Data out on a schedule, in your branding, in your accounts.' });
     var props = [['12 Elm St, Prospect', 'Kate', 620, 0, 240], ['4/88 Bay Rd, Glenelg', 'Kate', 540, 16, 61], ['31 Orchard Ave, Unley', 'Dev', 890, 3, 402], ['7 Mill Ct, Norwood', 'Dev', 710, 29, 18], ['2/15 Park Tce, Marion', 'Kate', 480, 0, 88], ['66 Grange Rd, Findon', 'Dev', 595, 44, 130]];
     var mgr = '', tbl = h('div'), tiles = h('div', { class: 'demo__grid', style: 'grid-template-columns:repeat(auto-fit,minmax(140px,1fr))' }), rep = h('div');
     function draw() {
@@ -314,7 +314,7 @@
       rep.innerHTML = '';
       rep.appendChild(h('div', { class: 'demo__panel' }, h('h4', {}, 'Quarterly owner report: ' + p[0]),
         h('p', { style: 'margin:0 0 8px; font-size:0.9rem' }, 'Rent ' + money(p[2]) + '/week, ' + (p[3] ? 'currently ' + p[3] + ' days in arrears; our follow-up sequence started at day 14 and a payment plan is in place.' : 'paid to date with no arrears this quarter.') + ' Comparable listings in the suburb sit ' + (p[2] < 600 ? 'around $30 to $50 above' : 'in line with') + ' your rent; ' + (p[4] <= 90 ? 'with the lease ending in ' + p[4] + ' days, we recommend opening the renewal conversation now with a modest increase.' : 'no action needed before the next review.')),
-        h('p', { style: 'margin:0; font-size:0.85rem; color:var(--fg-mute)' }, 'Assembled from PropertyMe data automatically, edited by your property manager in two minutes, sent in your branding. Four times a year, forever, without the swivel-chair audit.')));
+        h('p', { style: 'margin:0; font-size:0.85rem; color:var(--fg-mute)' }, 'Assembled from your property platform\'s data automatically, edited by your property manager in two minutes, sent in your branding. Four times a year, forever, without the swivel-chair audit.')));
       f.status('owner report drafted', 'ok');
     }
     f.body.appendChild(h('div', { class: 'demo__row' }, ctl('Property manager', D.select([['', 'Everyone'], 'Kate', 'Dev'], mgr, function (v) { mgr = v; draw(); }))));
@@ -384,7 +384,7 @@
   /* ---------------- EDUCATION: enrolment that validates at the door ---------------- */
   D.register('edu-enrolment', function () {
     var f = D.frame({ title: 'Enrolment form that refuses bad AVETMISS data', status: 'try to enrol',
-      note: 'Every error caught here is one that does not appear in the reporting week. The same checks run weekly against the student system so the deadline finds a clean file. aXcelerate, VETtrak: the point of entry is the point.' });
+      note: 'Every error caught here is one that does not appear in the reporting week. The same checks run weekly against the student system so the deadline finds a clean file. Whatever student system you run, the point of entry is the point.' });
     var v = { name: 'Priya Nair', usi: 'AB12CD34E', pc: '50', fund: '', course: 'CPC30220 · Feb intake' };
     var errs = h('ul', { style: 'margin:0; padding-left:1.1em; font-size:0.88rem; display:grid; gap:4px' }), ok = h('div');
     function validate() {

@@ -60,12 +60,12 @@ AI cannot fake. Target: every finished job becomes one within a fortnight
 of invoice, no exceptions. These also feed the service and industry pages
 as named paragraphs.
 
-**B. System-pair pages. The rankable long tail.**
-"[System] to [System]" and "[System] automation" pages: ServiceM8 to Xero,
-Shopify to MYOB, Cliniko reminders, HubSpot to Xero, simPRO scheduling,
-PropertyMe owner reports, aXcelerate enrolment, Square to Shopify stock.
-Buyers type exactly these; almost nobody serious writes for them; each maps
-to work you can actually do. Same page shape as answers, plus a "how the
+**B. System-pair pages. The rankable long tail, earned not drafted.**
+"[System] to [System]" and "[System] automation" pages: Shopify to Xero,
+HubSpot to Xero, WooCommerce fees and refunds, Zapier versus Make for a
+small business. Buyers type exactly these; almost nobody serious writes for
+them. The rule: only pairs Aaron has actually wired. Twelve speculative
+ones were drafted and shelved (section 7) for breaking that rule. Same page shape as answers, plus a "how the
 join actually works" section naming the real fields and traps. These are
 the highest ranking-probability pages on the board.
 
@@ -165,30 +165,14 @@ sites earn the scaled-abuse label; do not.
 review asks sent, Request Indexing for the 12 most commercial pages
 (home, pricing, the 10 services).
 
-**The 90-day queue: already written.** The twelve system-pair pages this
-section used to promise are built and in the repo at `/systems/`, produced
-through `tools/gen_systems.py` with the content in `tools/systems_a.py`
-and `tools/systems_b.py`:
-
-1. ServiceM8 to Xero without double entry
-2. Shopify to MYOB, reconciled
-3. Cliniko reminders that actually cut no-shows
-4. simPRO scheduling and the weather problem
-5. HubSpot to Xero for services businesses
-6. PropertyMe owner reports, automated
-7. aXcelerate enrolment from your website
-8. Square and Shopify agreeing about stock
-9. AroFlo to Xero, the field-to-invoice chain
-10. WooCommerce to Xero fees and refunds done right
-11. VETtrak AVETMISS exports without the week of pain
-12. Halaxy versus Cliniko, honestly
-
-They ship with the launch set, not as a drip: pre-launch pages are one
-site launch, and Google treats them that way. The drip rules in section 4
-govern what gets **added after** launch. Your part shrinks to the one
-thing that cannot be delegated: the pre-launch claims audit (section 7a),
-because these pages describe named products' behaviour and my knowledge
-of those products has a date on it.
+**The 90-day queue: the system-pair pages are shelved.** Twelve
+"[System] to [System]" pages were drafted and then pulled to
+`unpublished/systems/` because they described the behaviour of named
+products Aaron has not worked inside. The long tail is still real; it gets
+written pair by pair as actual engagements produce actual knowledge, and
+never before. Until then the rankable depth is the 40 answers and the
+12 industry pages, each of which now carries a working build a buyer can
+use on the page.
 
 Post-launch additions remain: answers from the capture file as they
 accrue, and the first work note the moment the first engagement closes.
@@ -205,9 +189,8 @@ sentence from you, not a weekly meeting: the generators and content files
 are the machine, and any future session can extend them.
 
 **Cannot be delegated, and small:** the pre-launch claims audit (read the
-12 systems pages once against what you know of those products; they state
-how ServiceM8, Cliniko, VETtrak and friends behave, and product behaviour
-drifts); the GBP post (your Google account); GSC (your Google account,
+industry pages once and strike anything you would not say on the call);
+the GBP post (your Google account); GSC (your Google account,
 15 minutes weekly); work notes and captured questions (they are your
 calls and your jobs; I turn them into pages the day you forward them).
 

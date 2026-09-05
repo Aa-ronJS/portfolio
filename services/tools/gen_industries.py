@@ -32,7 +32,7 @@ NAV = """<header class="top">
   </div>
 </header>"""
 
-SERVICES_LINE = """<p><a href="/ai-development/" style="color:inherit">AI development</a> &middot; <a href="/wordpress/" style="color:inherit">WordPress</a> &middot; <a href="/ecommerce/" style="color:inherit">E-commerce</a> &middot; <a href="/mobile-apps/" style="color:inherit">Mobile apps</a> &middot; <a href="/website-rebuild/" style="color:inherit">Website rebuilds</a> &middot; <a href="/full-stack-developer/" style="color:inherit">Custom software</a> &middot; <a href="/crm-automation/" style="color:inherit">CRM &amp; automation</a> &middot; <a href="/data-and-reporting/" style="color:inherit">Data &amp; reporting</a> &middot; <a href="/project-rescue/" style="color:inherit">Project rescues</a> &middot; <a href="/business-analysis/" style="color:inherit">Business analysis</a> &middot; <a href="/systems/" style="color:inherit">System guides</a> &middot; <a href="/diy/" style="color:inherit">DIY kits</a></p>"""
+SERVICES_LINE = """<p><a href="/ai-development/" style="color:inherit">AI development</a> &middot; <a href="/wordpress/" style="color:inherit">WordPress</a> &middot; <a href="/ecommerce/" style="color:inherit">E-commerce</a> &middot; <a href="/mobile-apps/" style="color:inherit">Mobile apps</a> &middot; <a href="/website-rebuild/" style="color:inherit">Website rebuilds</a> &middot; <a href="/full-stack-developer/" style="color:inherit">Custom software</a> &middot; <a href="/crm-automation/" style="color:inherit">CRM &amp; automation</a> &middot; <a href="/data-and-reporting/" style="color:inherit">Data &amp; reporting</a> &middot; <a href="/project-rescue/" style="color:inherit">Project rescues</a> &middot; <a href="/business-analysis/" style="color:inherit">Business analysis</a> &middot; <a href="/diy/" style="color:inherit">DIY kits</a></p>"""
 
 FOOTER = """<footer class="foot">
   <div class="wrap">
@@ -67,7 +67,7 @@ INDUSTRIES = [
         short="Trades",
         name="Trades &amp; construction",
         title="Software &amp; Automation for Trades &amp; Construction | Australia",
-        desc="Job systems wired together for trades businesses: ServiceM8, simPRO, AroFlo and Tradify talking to Xero and the website, quotes that follow themselves up, and field data without paperwork. Built by someone who already ships tools for trades.",
+        desc="Job systems wired together for trades businesses: your job system talking to Xero and the website, quotes that follow themselves up, and field data without paperwork. Built by someone who already ships tools for trades.",
         audience="Trades and construction businesses",
         h1="Built for people who build.",
         lede="""Quoting from the ute, scheduling that a change of weather wrecks, invoices chased at
@@ -76,7 +76,7 @@ INDUSTRIES = [
         live public tools exists because a concreter's biggest enemy is Thursday's weather.""",
         rows=[
             ("Job systems that talk to each other",
-             """ServiceM8, simPRO, AroFlo or Tradify wired to Xero and your website, so an enquiry
+             """Whatever job system you already run, wired to Xero and your website, so an enquiry
              becomes a quote becomes a job becomes an invoice without anyone retyping it, and the
              office stops being a photocopier between systems. The plumbing lives at
              <a href="/crm-automation/">CRM &amp; automation</a>."""),
@@ -105,7 +105,7 @@ INDUSTRIES = [
              [("Rain Check, live", "https://rain-check-mu.vercel.app"),
               ("The rest of the evidence", "https://aaronsteele.vercel.app/fullstack/")]),
         faqs=[
-            ("We already run ServiceM8 / simPRO / AroFlo. Do we have to change?",
+            ("We already run a job system. Do we have to change?",
              """No, and you usually should not. The job system is rarely the problem; the gaps
              around it are. I extend what you run: the website feeding it, Xero reconciled with
              it, the follow-ups automated out of it. Changing systems is the last resort, not the
@@ -248,7 +248,7 @@ INDUSTRIES = [
         five channels each keeping their own score.""",
         rows=[
             ("POS and web, reconciled",
-             """Square, Lightspeed or your POS of record kept in agreement with Shopify or
+             """Your point-of-sale system kept in agreement with Shopify or
              WooCommerce: stock, prices and products flowing one way on purpose, not two ways by
              accident. The storefront work itself lives at
              <a href="/ecommerce/">e-commerce</a>."""),
@@ -419,7 +419,7 @@ INDUSTRIES = [
         rows=[
             ("Intake and reminders that behave",
              """Referrals and new-client forms flowing into the practice system you already run,
-             whether that is Cliniko, Halaxy, Nookal or Best Practice, with reminders that
+             whichever one it is, with reminders that
              actually cut no-shows and waitlists that fill cancellations instead of
              apologising for them."""),
             ("NDIS admin, assembled not authored",
@@ -450,7 +450,7 @@ INDUSTRIES = [
              least-required and logged, nothing is used to train anyone's models, and anything
              AI drafts is reviewed by a professional before it touches a client file. You get
              the design in writing before work starts."""),
-            ("We run Cliniko / Halaxy and it mostly works.",
+            ("We run practice software and it mostly works.",
              """Keep it. The wins are around it: intake feeding it, reminders and recalls tuned,
              reports assembled from its data, the claiming admin automated. Replacing a working
              practice system is rarely the best spend of a provider's money."""),
@@ -480,7 +480,7 @@ INDUSTRIES = [
              agree with the accountant, per <a href="/data-and-reporting/">data &amp;
              reporting</a>. Donor trust is the asset; the database is where it lives."""),
             ("Receipting and reconciliation on rails",
-             """Raisely, GiveNow, Stripe and the bank flowing into the CRM and the accounts
+             """Your donation platform, Stripe and the bank flowing into the CRM and the accounts
              correctly, receipts issued without a volunteer's Tuesday, EOFY statements a
              button rather than a fortnight. Set up per <a href="/crm-automation/">CRM &amp;
              automation</a>."""),
@@ -493,13 +493,14 @@ INDUSTRIES = [
              an NFP can afford: the intake automation, the volunteer roster, the small internal
              tool, at quotes a board can approve without a special meeting."""),
         ],
-        ink=("The evidence", "Vetted where it matters.",
-             """Eleven years inside organisations that check their people properly: BHP's
-             critical infrastructure, SA Police, Services Australia, City of Marion. TOGAF
-             certified, baseline cleared. And the workmanship is public: two live tools with
-             open source and a compilable platform build with 52 passing checks, so a board
-             can verify before it approves.""",
-             [("The record", "https://aaronsteele.vercel.app/fullstack/")]),
+        ink=("The evidence", "The acquittal, already working.",
+             """The funder report above is built from program rows, every figure traceable,
+             and the receipt issues itself when a donation lands. That is the finished shape of
+             the work, not a promise of it. Behind it: a decade of records work in government
+             and community-facing organisations, where a wrong number in a report has
+             consequences, and two live tools with public source a board can inspect before
+             it approves anything.""",
+             [("Use the working build", "#demo")]),
         faqs=[
             ("We cannot afford consultants.",
              """You cannot afford the big-firm shape of them. One senior person with AI leverage
@@ -521,7 +522,7 @@ INDUSTRIES = [
         short="Real estate",
         name="Real estate &amp; property",
         title="Software &amp; Automation for Real Estate &amp; Property | Australia",
-        desc="Portal enquiries answered in minutes and filed in the CRM, property management admin automated around PropertyMe and friends, listing copy drafted from facts, and rent-roll reporting principals actually read.",
+        desc="Portal enquiries answered in minutes and filed in the CRM, property management admin automated around the platform you already run, listing copy drafted from facts, and rent-roll reporting principals actually read.",
         audience="Real estate agencies and property managers",
         h1="The follow-up is the business.",
         lede="""Every agent knows the listing that sold because someone answered at 9:40pm.
@@ -535,7 +536,7 @@ INDUSTRIES = [
              flagged to a human immediately, per <a href="/crm-automation/">CRM &amp;
              automation</a>. Speed to lead is the whole game and it automates beautifully."""),
             ("Property management without the grind",
-             """The admin around PropertyMe or your PM platform automated: arrears follow-ups
+             """The admin around your property management platform automated: arrears follow-ups
              that escalate politely, inspection scheduling that fills itself, owner reports
              assembled from real data instead of a fortnight of copy-paste."""),
             ("Listing copy drafted from facts",
@@ -699,8 +700,7 @@ INDUSTRIES = [
         rows=[
             ("The student lifecycle, joined up",
              """Enquiry to enrolment to completion without retyping: the website feeding the
-             student management system, whether that is aXcelerate, VETtrak or something
-             larger, with the follow-ups automated per <a href="/crm-automation/">CRM &amp;
+             student management system you already run, with the follow-ups automated per <a href="/crm-automation/">CRM &amp;
              automation</a>. Unanswered enquiries are unenrolled students."""),
             ("Compliance reporting from real records",
              """AVETMISS and funding-body reporting assembled from the SMS data you already
@@ -725,7 +725,7 @@ INDUSTRIES = [
              familiar ground.""",
              [("Year by year", "https://aaronsteele.vercel.app/fullstack/")]),
         faqs=[
-            ("We run aXcelerate / VETtrak and it is fine, mostly.",
+            ("We run a student management system and it is fine, mostly.",
              """Keep it, and fix the "mostly": the website enquiry that dies in an inbox, the
              LMS that does not know about the enrolment, the AVETMISS export that takes a
              week. The SMS is rarely the problem; the gaps around it are."""),
@@ -755,16 +755,16 @@ def industries_line(current_slug=None):
 DEMOS = {
     "trades": ("trades-schedule", "This week against the forecast",
         "A week of jobs, some outdoor, and the forecast. Reshuffle around the rain and watch the SMS drafts appear for your approval.",
-        "<b>Rain Check, one of my live tools, already does the weather half.</b> Joined to simPRO, ServiceM8 or AroFlo, the reshuffle proposes itself before 6am."),
+        "<b>Rain Check, one of my live tools, already does the weather half.</b> Joined to your job system, the reshuffle proposes itself before 6am."),
     "transport": ("transport-board", "Operations board",
         "The reference build's dashboard logic on fixtures: advance a day, watch statuses move and the on-time rate change, then run the overdue sweep.",
         "<b>Derived from the event log, so it cannot drift.</b> The complete build behind this is public and compilable, fifty-two checks passing."),
     "mining": ("mining-prestart", "Pre-start and permits, gated",
         "Work through the pre-start checks and permits. The shift cannot start until the gate is satisfied, and every tap lands in the audit trail with a name and time.",
-        "<b>Built the way BHP-grade sites expect</b> and sized for a contractor: the gate is the feature, the audit trail is the insurance."),
+        "<b>Built the way the big sites expect</b> and sized for a contractor: the gate is the feature, the audit trail is the insurance."),
     "retail": ("retail-stock", "One shelf, two tills",
         "Sell the same items in store and online from one stock ledger, then flip to how most shops run and watch the oversell arrive.",
-        "<b>Square in store, Shopify online, one truth about stock.</b> The connector is the easy part; the ledger decision is the job."),
+        "<b>Your till in store, your shop online, one truth about stock.</b> The connector is the easy part; the ledger decision is the job."),
     "hospitality": ("hospo-bookings", "Saturday service",
         "Take a booking and watch covers per slot, kitchen load and the roster that follows. Try a full slot and see what the customer is offered instead.",
         "<b>The widget is the visible bit.</b> Underneath: capacity, load, and a roster that follows covers instead of guesswork."),
@@ -773,13 +773,13 @@ DEMOS = {
         "<b>Time captured once, priced two ways,</b> invoiced with narrative lines a client will pay. The flag fires at 80% so the conversation happens before the write-off."),
     "health": ("health-waitlist", "Cancellations that fill themselves",
         "Cancel an appointment and watch the waitlist fill the slot by SMS. Then run the week's recalls: the patients who never rebooked.",
-        "<b>Built on Cliniko's or Halaxy's API,</b> under your keys, in your accounts. Consent-first, human-approved, measured against the no-show rate."),
+        "<b>Built onto the practice software you already run,</b> under your keys, in your accounts. Consent-first, human-approved, measured against the no-show rate."),
     "nonprofits": ("nfp-acquittal", "Funder report with provenance",
         "Program data captured once becomes the acquittal, every figure traceable to its rows. Record a donation and watch the receipt issue itself.",
         "<b>Acquittals stop being archaeology</b> when the data is captured at the program, not reconstructed for the funder. Receipting on rails frees a volunteer's Tuesday."),
     "real-estate": ("re-portfolio", "The rent roll, one level up",
         "Arrears by age, leases about to lapse, filtered by property manager. Draft an owner report that reads like advice instead of a ledger.",
-        "<b>PropertyMe holds the properties; this holds the judgement.</b> Data out on a schedule, in your branding, in your accounts."),
+        "<b>Your property platform holds the properties; this holds the judgement.</b> Data out on a schedule, in your branding, in your accounts."),
     "agriculture": ("agri-spray", "Spray window finder",
         "Pick a paddock and a product, see which days the forecast and the label allow, and log an application with the withholding date computed.",
         "<b>The same shape works for harvest windows, irrigation and stock movements:</b> rules plus forecast plus your paddocks, with the compliance record written as you go."),
@@ -1016,9 +1016,9 @@ def render_index():
 
 
 CARDS = {
-    "trades": "ServiceM8 to Xero without retyping, quotes that chase themselves, and a live weather tool built for exactly your Thursday problem.",
+    "trades": "Your job system to Xero without retyping, quotes that chase themselves, and a live weather tool built for exactly your Thursday problem.",
     "transport": "A working freight platform sits in my public repository: rating, event-logged tracking, POD, lane reporting. Compile it first.",
-    "mining": "Day job: critical infrastructure at a major miner. For the contractors who service that world, both dialects spoken.",
+    "mining": "Pre-starts, permits and audit trails that survive an auditor, sized for the contractors who service the big sites.",
     "retail": "One truth about stock and money across POS, web and marketplaces, reconciled properly and kept that way.",
     "hospitality": "Direct bookings that beat commissions, one calendar across the OTAs, and guests answered at 10pm without inventing policy.",
     "professional-services": "Intake typed once, documents assembled from the file, AI drafting with a professional in the loop. Billable hours, rescued.",

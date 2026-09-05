@@ -1,211 +1,173 @@
-/* Live builds for the ten service pages. Each demo is a working slice of the
-   thing the page sells, running entirely in the visitor's browser. */
+/* Live builds for the ten service pages. Each one is the finished thing a
+   buyer would get, working in their browser: not a tool about their
+   problem, the end result. */
 (function (D) {
   var h = D.h, money = D.money, fmt = D.fmt;
+  function ctl(label, node) { return h('label', { class: 'demo__label' }, label, node); }
+  function logline(log, cls, text) { log.appendChild(h('div', { class: cls }, text)); log.scrollTop = log.scrollHeight; }
+
+  /* Shared: four example businesses, so demos can re-skin to the visitor. */
+  var BIZ = {
+    sparky: { name: 'Hargreaves Electrical', tag: 'Licensed electricians, Adelaide hills to the coast', accent: '#D9482B', ink: '#1F1D1A', paper: '#FBF7EF',
+      services: [['Switchboard upgrades', 'Old fuse boxes replaced with compliant, safe boards.'], ['Emergency call-outs', 'Same-day for power loss, burning smells, tripping switches.'], ['EV charger installs', 'Home and workplace chargers, wired and certified.']],
+      about: 'Two brothers, one van each, fifteen years on the tools. We turn up when we said, and we clean up.', suburbs: 'Stirling, Mount Barker, Norwood, Glenelg', phone: '0412 555 019' },
+    cafe: { name: 'Bella Vista Cafe', tag: 'Breakfast, lunch and very good coffee, Glenelg', accent: '#2F6B4F', ink: '#1E211F', paper: '#F7F4EC',
+      services: [['All-day breakfast', 'Until 2:30, every day, no exceptions.'], ['Catering', 'Boxes and platters for offices and events, ordered online.'], ['Functions', 'The back room seats 30 for evenings and Sundays.']],
+      about: 'Family-run since 2011. Beans from a local roaster, bread baked overnight, staff who remember your order.', suburbs: 'Glenelg, Brighton, Somerton Park', phone: '08 8295 0141' },
+    physio: { name: 'Nair Physiotherapy', tag: 'Movement, recovery and honest advice, Norwood', accent: '#2B5FA8', ink: '#1B1F26', paper: '#F5F7FA',
+      services: [['Sports injuries', 'Assessment, rehab plans and return-to-play timelines.'], ['Back and neck pain', 'Hands-on treatment plus the exercises that actually stick.'], ['Post-surgery rehab', 'Working with your surgeon\'s protocol, not against it.']],
+      about: 'Three physios, no upselling. If you need two sessions, you will be told two sessions.', suburbs: 'Norwood, Kent Town, Payneham', phone: '08 8362 7710' },
+    accountant: { name: 'Okafor & Co', tag: 'Accountants for trades and small business, Unley', accent: '#8A5A2B', ink: '#1E1B17', paper: '#FAF6EF',
+      services: [['Tax and BAS', 'Lodged on time, explained in plain words, no surprises.'], ['Bookkeeping', 'Xero kept clean monthly so year-end is a formality.'], ['Structure advice', 'Sole trader, company or trust: the right answer for you, not the fanciest.']],
+      about: 'Twelve years of keeping tradies and shop owners out of trouble with the ATO. We speak human.', suburbs: 'Unley, Parkside, Mitcham', phone: '08 8272 3390' }
+  };
+  var BIZ_OPTS = [['sparky', 'An electrician'], ['cafe', 'A cafe'], ['physio', 'A physio clinic'], ['accountant', 'An accountant']];
+
+  /* Render a finished small-business website into a frame. */
+  function miniSite(biz, opts) {
+    opts = opts || {};
+    var page = 'home', form = { sent: false };
+    var root = h('div', { class: 'ms', style: 'background:' + biz.paper + '; color:' + biz.ink + '; font-family:var(--body); border:2px solid var(--ink); overflow:hidden; min-height:520px; display:flex; flex-direction:column' });
+    function nav() {
+      return h('div', { style: 'display:flex; gap:6px 16px; align-items:center; justify-content:space-between; flex-wrap:wrap; padding:14px 18px; border-bottom:2px solid ' + biz.ink },
+        h('b', { style: 'font-family:var(--display); font-size:1.1rem' }, biz.name),
+        h('span', { style: 'display:flex; gap:12px; font-size:0.85rem; font-weight:600' }, ['home', 'services', 'about', 'contact'].map(function (p) {
+          return h('a', { href: '#', style: 'text-decoration:' + (page === p ? 'underline' : 'none') + '; color:inherit; text-underline-offset:4px; text-decoration-color:' + biz.accent, onclick: function (e) { e.preventDefault(); page = p; draw(); } }, p[0].toUpperCase() + p.slice(1));
+        })));
+    }
+    function btn(label, onclick) { return h('button', { type: 'button', style: 'font:700 0.9rem var(--body); background:' + biz.accent + '; color:#fff; border:0; padding:11px 18px; cursor:pointer', onclick: onclick }, label); }
+    function body() {
+      var wrap = h('div', { style: 'padding:22px 18px; flex:1' });
+      if (page === 'home') {
+        wrap.appendChild(h('div', { style: 'display:grid; gap:14px' },
+          h('h3', { style: 'font-family:var(--display); font-size:clamp(1.5rem,3vw,2.2rem); line-height:1.05; margin:0; max-width:18ch' }, biz.tag),
+          h('p', { style: 'margin:0; max-width:48ch; font-size:0.95rem' }, biz.about),
+          h('div', { style: 'display:flex; gap:10px; flex-wrap:wrap' }, btn('Call ' + biz.phone, function () { D.toast(opts.toastRoot || root, 'On a phone this dials. That is the whole point of the button.', 'ok'); }), h('button', { type: 'button', style: 'font:700 0.9rem var(--body); background:none; border:2px solid ' + biz.ink + '; padding:9px 16px; cursor:pointer; color:inherit', onclick: function () { page = 'contact'; draw(); } }, 'Get a quote')),
+          h('div', { style: 'display:grid; grid-template-columns:repeat(auto-fit,minmax(140px,1fr)); gap:10px; margin-top:6px' }, biz.services.map(function (s) { return h('div', { style: 'border-top:3px solid ' + biz.accent + '; padding-top:8px' }, h('b', { style: 'display:block; font-size:0.92rem' }, s[0]), h('span', { style: 'font-size:0.82rem; opacity:0.8' }, s[1])); })),
+          h('p', { style: 'margin:6px 0 0; font-size:0.8rem; opacity:0.7' }, 'Serving ' + biz.suburbs + '. Reviews: 4.9 from 112 Google reviews.')));
+      } else if (page === 'services') {
+        wrap.appendChild(h('h3', { style: 'font-family:var(--display); font-size:1.5rem; margin:0 0 12px' }, 'What we do'));
+        biz.services.forEach(function (s) { wrap.appendChild(h('div', { style: 'padding:12px 0; border-bottom:1px solid rgba(0,0,0,0.12)' }, h('b', {}, s[0]), h('p', { style: 'margin:4px 0 0; font-size:0.9rem' }, s[1] + ' Fixed price quoted before we start.'))); });
+      } else if (page === 'about') {
+        wrap.appendChild(h('h3', { style: 'font-family:var(--display); font-size:1.5rem; margin:0 0 12px' }, 'About us'));
+        wrap.appendChild(h('p', { style: 'margin:0 0 10px; font-size:0.95rem; max-width:52ch' }, biz.about));
+        wrap.appendChild(h('div', { style: 'display:flex; gap:10px; flex-wrap:wrap' }, ['Owner', 'Team', 'The van'].map(function (c, i) { return h('div', { style: 'width:120px; height:84px; background:' + biz.accent + (i ? '22' : '') + '; border:2px solid ' + biz.ink + '; display:grid; place-items:center; font-size:0.75rem; font-weight:700' }, c + ' photo'); })));
+      } else {
+        wrap.appendChild(h('h3', { style: 'font-family:var(--display); font-size:1.5rem; margin:0 0 12px' }, 'Get in touch'));
+        if (form.sent) wrap.appendChild(h('div', { style: 'border:2px solid ' + biz.accent + '; padding:14px' }, h('b', {}, 'Thanks, ' + (form.name || 'there') + '.'), h('p', { style: 'margin:6px 0 0; font-size:0.9rem' }, 'Your message landed in our inbox and our job system at the same time. Expect a call within the hour on a weekday.')));
+        else {
+          var name = h('input', { placeholder: 'Your name', style: 'font:inherit; padding:10px; border:2px solid ' + biz.ink + '; width:100%', oninput: function (e) { form.name = e.target.value; } });
+          wrap.appendChild(h('div', { style: 'display:grid; gap:10px; max-width:420px' }, name, h('input', { placeholder: 'Phone or email', style: 'font:inherit; padding:10px; border:2px solid ' + biz.ink + '; width:100%' }), h('textarea', { placeholder: 'What do you need?', rows: 3, style: 'font:inherit; padding:10px; border:2px solid ' + biz.ink + '; width:100%' }), btn('Send', function () { form.sent = true; draw(); })));
+        }
+      }
+      return wrap;
+    }
+    function draw() { root.innerHTML = ''; root.appendChild(nav()); root.appendChild(body()); root.appendChild(h('div', { style: 'padding:10px 18px; border-top:1px solid rgba(0,0,0,0.12); font-size:0.75rem; opacity:0.7; display:flex; justify-content:space-between; flex-wrap:wrap; gap:6px' }, h('span', {}, biz.name + ' · ABN 00 000 000 000'), h('span', {}, 'Built by Aaron Steele'))); }
+    draw();
+    return { root: root, go: function (p) { page = p; draw(); } };
+  }
 
   /* ------------------------------------------------------------------ */
-  /* WordPress: the site health audit                                    */
+  /* WordPress: the finished website, re-skinned to your business        */
   /* ------------------------------------------------------------------ */
-  D.register('wordpress-audit', function () {
-    var f = D.frame({ title: 'WordPress health check', status: 'set your site up',
-      note: 'The scoring model is the same one I run on a real audit, without the measurements: on a real job the numbers come from your live site, not from your description of it.' });
-    var s = { hosting: 'shared', theme: 'builder', plugins: 34, images: 'raw', cache: 'none' };
-    var out = h('div', { class: 'demo__grid' });
-
-    function calc(st) {
-      var weight = 1.2, load = 1.4, findings = [];
-      if (st.hosting === 'shared') { load += 1.6; findings.push(['Hosting chosen on price', 'Move to managed WordPress hosting', 'high', 1.6]); }
-      if (st.hosting === 'vps') { load += 0.4; findings.push(['Unmanaged server', 'Fine if patched; managed hosting removes the chore', 'low', 0.3]); }
-      if (st.theme === 'builder') { weight += 1.8; load += 1.1; findings.push(['Page builder loading everything everywhere', 'Rebuild on a lean block theme', 'high', 1.1]); }
-      if (st.theme === 'heavy') { weight += 1.1; load += 0.6; findings.push(['Heavy premium theme', 'Strip unused modules or replace', 'med', 0.6]); }
-      if (st.plugins > 25) { load += (st.plugins - 25) * 0.05; findings.push([st.plugins + ' plugins doing overlapping jobs', 'Consolidate to one per job (target under 10)', 'high', (st.plugins - 25) * 0.05]); }
-      else if (st.plugins > 12) { load += 0.3; findings.push([st.plugins + ' plugins', 'Audit and prune to under 10', 'med', 0.3]); }
-      if (st.images === 'raw') { weight += 4.5; load += 2.2; findings.push(['Images uploaded straight off a phone', 'Resize, compress, modern formats, lazy-load', 'high', 2.2]); }
-      if (st.cache === 'none') { load += 0.9; findings.push(['No caching', 'Host-level caching (a plugin is the fallback)', 'med', 0.9]); }
-      var score = Math.max(8, Math.round(100 - (load - 1.4) * 13 - (weight - 1.2) * 4));
-      return { weight: weight, load: load, score: score, findings: findings.sort(function (a, b) { return b[3] - a[3]; }) };
+  D.register('wordpress-site', function () {
+    var f = D.frame({ title: 'A finished small-business website', status: 'click around the site',
+      note: 'This is the deliverable: a fast five-page site that reads well on a phone, takes enquiries, and is owned by you. Pick a business type to see the same build re-skinned in one click.' });
+    var key = 'sparky', width = 'desktop', holder = h('div');
+    function draw() {
+      holder.innerHTML = '';
+      var site = miniSite(BIZ[key], { toastRoot: f.root });
+      holder.appendChild(h('div', { style: 'margin:0 auto; max-width:' + (width === 'phone' ? '390px' : '100%') + '; transition:max-width 300ms' }, site.root));
+      f.status(BIZ[key].name + ' · ' + width, 'ok');
     }
-
-    function render(fixed) {
-      var st = fixed ? { hosting: 'managed', theme: 'block', plugins: 8, images: 'opt', cache: 'host' } : s;
-      var r = calc(st);
-      out.innerHTML = '';
-      var kind = r.score > 80 ? 'ok' : r.score > 50 ? 'warn' : 'bad';
-      f.status(fixed ? 'after the fix plan' : 'your setup, as described', kind);
-      out.appendChild(h('div', { class: 'demo__panel' },
-        h('h4', {}, fixed ? 'After' : 'Now'),
-        h('div', { class: 'demo__big', text: r.score + '/100' }),
-        D.bar(r.score, 100, r.score > 80 ? '' : r.score > 50 ? 'demo__meter--amber' : 'demo__meter--bad'),
-        h('div', { class: 'demo__kv', style: 'margin-top:12px' },
-          h('span', {}, 'Load on a phone'), h('b', {}, r.load.toFixed(1) + ' s'),
-          h('span', {}, 'Page weight'), h('b', {}, r.weight.toFixed(1) + ' MB'),
-          h('span', {}, 'Google mood'), h('b', {}, r.load < 2.5 ? 'happy' : r.load < 4 ? 'tolerant' : 'punishing'))));
-      out.appendChild(h('div', { class: 'demo__panel' },
-        h('h4', {}, fixed ? 'What changed' : 'Findings, worst first'),
-        r.findings.length ? h('ol', { style: 'margin:0; padding-left:1.2em; font-size:0.92rem; display:grid; gap:8px' },
-          r.findings.map(function (x) { return h('li', {}, h('b', {}, x[0]), ' ', h('span', { class: 'demo__pill demo__pill--' + (x[2] === 'high' ? 'bad' : x[2] === 'med' ? 'warn' : 'dim') }, x[2]), h('br'), h('span', { class: 'dim' }, x[1])); }))
-          : h('p', { style: 'margin:0' }, 'Managed hosting, lean block theme, eight plugins, optimised images, host caching. This is what "fixed" looks like, and it costs less to run than the mess did.')));
-    }
-
-    function ctl(label, node) { return h('label', { class: 'demo__label' }, label, node); }
-    var plug = h('input', { class: 'demo__input', type: 'range', min: 0, max: 60, value: s.plugins, style: 'min-height:auto; padding:0; border:0',
-      oninput: function () { s.plugins = +plug.value; plugLbl.textContent = 'Plugins installed: ' + s.plugins; render(false); } });
-    var plugLbl = h('span', { text: 'Plugins installed: ' + s.plugins });
-
-    f.body.appendChild(h('div', { class: 'demo__row' },
-      ctl('Hosting', D.select([['shared', '$5/month shared'], ['vps', 'A VPS someone set up'], ['managed', 'Managed WordPress']], s.hosting, function (v) { s.hosting = v; render(false); })),
-      ctl('Theme', D.select([['builder', 'Page builder theme'], ['heavy', 'Premium theme, lots of modules'], ['block', 'Lean block theme']], s.theme, function (v) { s.theme = v; render(false); })),
-      ctl('Images', D.select([['raw', 'Straight off the phone'], ['opt', 'Resized and compressed']], s.images, function (v) { s.images = v; render(false); })),
-      ctl('Caching', D.select([['none', 'None'], ['plugin', 'A caching plugin'], ['host', 'Host level']], s.cache, function (v) { s.cache = v; render(false); })),
-      ctl(plugLbl, plug)));
-    f.body.appendChild(out);
-    f.body.appendChild(h('div', { class: 'demo__row' },
-      D.btn('Show me after the fix plan', function () { render(true); D.toast(f.root, 'Same content, same domain, no rebuild-from-scratch required.', 'ok'); }),
-      D.btn('Back to my setup', function () { render(false); }, 'demo__btn--ghost')));
-    render(false);
+    f.body.appendChild(h('div', { class: 'demo__row' }, ctl('Business type', D.select(BIZ_OPTS, key, function (v) { key = v; draw(); })), ctl('View', D.select([['desktop', 'Desktop'], ['phone', 'Phone']], width, function (v) { width = v; draw(); }))));
+    f.body.appendChild(holder);
+    draw();
     return f.root;
   });
 
   /* ------------------------------------------------------------------ */
-  /* E-commerce: the payout reconciler                                   */
+  /* Website rebuild: before and after, same business, same URLs         */
   /* ------------------------------------------------------------------ */
-  D.register('ecommerce-reconcile', function () {
-    var f = D.frame({ title: 'Payout reconciler', status: 'three days of orders loaded',
-      note: 'Real stores have thousands of these. The structure is identical: clearing accounts per gateway, fees from the gateway report, refunds against the original sale, tax carried verbatim.' });
-    var r = D.rng(7);
-    var gateways = { shopify: { name: 'Shopify Payments', fee: 0.0175, fixed: 0.30 }, paypal: { name: 'PayPal', fee: 0.026, fixed: 0.30 }, afterpay: { name: 'Afterpay', fee: 0.06, fixed: 0.30 } };
-    var orders = [];
-    for (var i = 0; i < 14; i++) {
-      var sub = Math.round((30 + r() * 260) * 100) / 100, gw = ['shopify', 'shopify', 'shopify', 'paypal', 'afterpay'][Math.floor(r() * 5)];
-      var refund = r() < 0.18 ? Math.round(sub * (r() < 0.5 ? 1 : 0.4) * 100) / 100 : 0;
-      orders.push({ id: 1041 + i, day: ['Fri', 'Sat', 'Sun'][Math.floor(i / 5)], gw: gw, gross: Math.round(sub * 1.1 * 100) / 100, gst: Math.round(sub * 0.1 * 100) / 100, refund: refund, gift: i === 6 });
-    }
-    var wrongWay = false;
-    var out = h('div');
-
-    function reconcile() {
-      out.innerHTML = '';
-      var byGw = {};
-      orders.forEach(function (o) {
-        var g = byGw[o.gw] = byGw[o.gw] || { gross: 0, fees: 0, refunds: 0, n: 0 };
-        g.n++; g.gross += o.gross; g.refunds += o.refund;
-        g.fees += Math.round((o.gross * gateways[o.gw].fee + gateways[o.gw].fixed) * 100) / 100;
-      });
-      var rows = [], totalGap = 0;
-      Object.keys(byGw).forEach(function (k) {
-        var g = byGw[k], payout = Math.round((g.gross - g.fees - g.refunds) * 100) / 100;
-        var booked = wrongWay ? g.gross : g.gross - g.fees - g.refunds;
-        var gap = Math.round((booked - payout) * 100) / 100; totalGap += gap;
-        rows.push(h('tr', { class: Math.abs(gap) < 0.005 ? 'is-ok' : 'is-bad' },
-          h('td', {}, gateways[k].name, h('br'), h('span', { class: 'demo__pill demo__pill--dim' }, g.n + ' orders')),
-          h('td', { class: 'num' }, money(g.gross, true)),
-          h('td', { class: 'num' }, '-' + money(g.fees, true)),
-          h('td', { class: 'num' }, g.refunds ? '-' + money(g.refunds, true) : '0.00'),
-          h('td', { class: 'num' }, h('b', {}, money(payout, true))),
-          h('td', { class: 'num' }, money(booked, true)),
-          h('td', { class: 'num' }, Math.abs(gap) < 0.005 ? h('span', { class: 'demo__pill demo__pill--ok' }, 'matches') : h('span', { class: 'demo__pill demo__pill--bad' }, (gap > 0 ? '+' : '') + money(gap, true)))));
-      });
-      out.appendChild(D.table(['Gateway', 'Gross sales', 'Fees', 'Refunds', 'Bank payout', 'Booked in accounts', 'Gap'], rows));
-      var gift = orders.filter(function (o) { return o.gift; })[0];
-      out.appendChild(h('p', { style: 'margin:12px 0 0; font-size:0.9rem' },
-        wrongWay
-          ? [h('b', {}, 'Books overstated by ' + money(totalGap, true) + ' in three days.'), ' Gross sales posted straight to the bank account: the fees and refunds never entered the books, so the bank feed can never match. Scale that to a year and your accountant is un-mashing it at BAS time.']
-          : [h('b', {}, 'Every payout matches to the cent.'), ' Sales post to a clearing account per gateway, the payout clears it, fees become an expense from the gateway report, refunds credit the original sale. Order #' + gift.id + ' was a gift card: booked as a liability, not revenue, so it is not counted twice when redeemed.']));
-      f.status(wrongWay ? 'the way most stores are set up' : 'reconciled', wrongWay ? 'bad' : 'ok');
-    }
-    f.body.appendChild(D.table(['Order', 'Day', 'Gateway', 'Total (inc GST)', 'GST', 'Refund'],
-      orders.slice(0, 6).map(function (o) { return h('tr', {}, h('td', {}, '#' + o.id + (o.gift ? ' (gift card)' : '')), h('td', {}, o.day), h('td', {}, gateways[o.gw].name), h('td', { class: 'num' }, money(o.gross, true)), h('td', { class: 'num' }, money(o.gst, true)), h('td', { class: 'num' }, o.refund ? money(o.refund, true) : '')); })
-        .concat([h('tr', {}, h('td', { colspan: 6, style: 'color:var(--fg-mute)' }, '... and ' + (orders.length - 6) + ' more across Friday to Sunday, paid out Monday'))])));
-    var tog = h('label', { class: 'demo__row', style: 'gap:8px; font-weight:700; cursor:pointer' },
-      h('input', { type: 'checkbox', onchange: function (e) { wrongWay = e.target.checked; reconcile(); } }), 'Show it done the usual wrong way (gross sales straight to the bank)');
-    f.body.appendChild(h('div', { class: 'demo__row' }, D.btn('Reconcile Monday\'s payouts', reconcile), tog));
-    f.body.appendChild(out);
-    reconcile();
+  D.register('rebuild-before-after', function () {
+    var f = D.frame({ title: 'The rebuild: drag to compare', status: 'drag the handle',
+      note: 'Same business, same domain, same page addresses redirected so the Google rankings the old site earned carry over. The after is a live site you can click; the before is the reason they rang.' });
+    var biz = BIZ.accountant;
+    var before = h('div', { style: 'position:absolute; inset:0; background:#fff; color:#333; font-family:Times New Roman, serif; overflow:hidden' },
+      h('div', { style: 'background:#003366; color:#fff; padding:10px 14px; font-size:20px; font-weight:bold' }, 'OKAFOR & CO ACCOUNTANTS PTY LTD'),
+      h('div', { style: 'display:flex; gap:10px; padding:6px 14px; background:#e6e6e6; font-size:13px' }, ['Home', 'About Us', 'Services', 'Links', 'Contact Us'].map(function (t) { return h('u', {}, t); })),
+      h('div', { style: 'padding:14px; font-size:14px; line-height:1.4' },
+        h('p', { style: 'margin:0 0 8px' }, h('b', {}, 'Welcome to our website!!')), h('p', { style: 'margin:0 0 8px' }, 'Okafor & Co has been providing quality accounting solutions since 2013. We are committed to excellence. Click ', h('u', {}, 'here'), ' to download our brochure (PDF, 8MB).'),
+        h('table', { border: '1', cellpadding: '6', style: 'font-size:13px; border-collapse:collapse; margin-top:8px' }, h('tr', {}, h('td', {}, 'Tax Returns'), h('td', {}, 'Call for pricing')), h('tr', {}, h('td', {}, 'BAS'), h('td', {}, 'Call for pricing'))),
+        h('p', { style: 'margin:10px 0 0; font-size:11px; color:#888' }, 'Last updated: March 2017. Best viewed in Internet Explorer.')));
+    var after = h('div', { style: 'position:absolute; inset:0; overflow:hidden' }, miniSite(biz, { toastRoot: f.root }).root);
+    var pos = 50;
+    var stage = h('div', { style: 'position:relative; height:520px; border:2px solid var(--ink); overflow:hidden; background:var(--bone)' });
+    var afterClip = h('div', { style: 'position:absolute; inset:0; clip-path:inset(0 0 0 ' + pos + '%)' }, after);
+    var handle = h('div', { style: 'position:absolute; top:0; bottom:0; left:' + pos + '%; width:4px; background:var(--amber-deep); pointer-events:none' }, h('span', { style: 'position:absolute; top:50%; left:50%; transform:translate(-50%,-50%); background:var(--amber); border:2px solid var(--ink); font:700 0.72rem var(--body); padding:4px 8px; white-space:nowrap' }, '◀ before · after ▶'));
+    var range = h('input', { type: 'range', min: 0, max: 100, value: pos, style: 'width:100%', 'aria-label': 'Reveal before and after', oninput: function (e) { pos = +e.target.value; afterClip.style.clipPath = 'inset(0 0 0 ' + pos + '%)'; handle.style.left = pos + '%'; f.status(pos < 30 ? 'mostly the old site' : pos > 70 ? 'mostly the rebuild' : 'half and half', pos > 70 ? 'ok' : pos < 30 ? 'warn' : ''); } });
+    stage.appendChild(before); stage.appendChild(afterClip); stage.appendChild(handle);
+    f.body.appendChild(stage); f.body.appendChild(range);
+    f.body.appendChild(h('div', { class: 'demo__grid' },
+      h('div', { class: 'demo__panel' }, h('h4', {}, 'What carried over'), h('div', { class: 'demo__kv' }, h('span', {}, 'Old addresses'), h('b', {}, '14 of 14 redirected'), h('span', {}, 'Google rankings'), h('b', {}, 'kept (the redirects do this)'), h('span', {}, 'Content'), h('b', {}, 'rewritten, nothing invented'), h('span', {}, 'Domain and email'), h('b', {}, 'untouched'))),
+      h('div', { class: 'demo__panel' }, h('h4', {}, 'What changed'), h('div', { class: 'demo__kv' }, h('span', {}, 'Load on a phone'), h('b', {}, '6.8 s → 1.2 s'), h('span', {}, 'Pricing'), h('b', {}, '"call for pricing" → fixed, published'), h('span', {}, 'Enquiries'), h('b', {}, 'a form that lands in the inbox and the CRM'), h('span', {}, 'Ownership'), h('b', {}, 'everything in the client\'s name')))));
     return f.root;
   });
 
   /* ------------------------------------------------------------------ */
-  /* AI development: the enquiry triage assistant                        */
+  /* E-commerce: a store that takes an order, end to end                 */
   /* ------------------------------------------------------------------ */
-  D.register('ai-triage', function () {
-    var f = D.frame({ title: 'Enquiry triage assistant', status: 'paste anything a customer might send',
-      note: 'This slice runs on rules in your browser so it works without a key. The production version uses a language model under the same guardrails: extract, never invent; draft, never send; flag what a human must decide.' });
-    var samples = [
-      'Hi, our website has been down since about 9 this morning and we have a big promo running. Can someone call me on 0412 555 019 asap? Jenny, Bloom Florist',
-      'Looking for a quote to build a booking system for our clinic, 3 practitioners, needs to send SMS reminders and take deposits. Budget around $8k. Timeline before Nov 14.',
-      'I paid you $450 two weeks ago for the fix and the contact form still doesn\'t work. Very disappointed. Invoice 2291.',
-      'Do you do WordPress? My developer has disappeared and I cannot log in to my own site anymore.'
-    ];
-    var ta = h('textarea', { class: 'demo__textarea', rows: 5 }, samples[0]);
-    var out = h('div', { class: 'demo__grid' });
-
-    function run() {
-      var t = ta.value, low = t.toLowerCase();
-      var intents = [
-        ['urgent support', /(down|broken|not working|doesn'?t work|asap|urgent|hacked|locked out|cannot log ?in)/],
-        ['quote request', /(quote|price|cost|budget|how much|looking for|build)/],
-        ['complaint', /(disappointed|refund|still|paid|unacceptable|frustrat)/],
-        ['booking', /(book|appointment|call me|meeting|chat)/]
-      ];
-      var scores = intents.map(function (x) { return [x[0], (low.match(new RegExp(x[1].source, 'g')) || []).length]; }).sort(function (a, b) { return b[1] - a[1]; });
-      var intent = scores[0][1] ? scores[0][0] : 'general enquiry';
-      var phone = (t.match(/0\d[\d ]{8,10}/) || [])[0];
-      var money_ = (t.match(/\$\s?[\d,]+(?:\.\d+)?k?/i) || [])[0];
-      var date = (t.match(/\b(?:before|by|on)\s+([A-Z][a-z]{2,8}\s?\d{1,2})/) || [])[1];
-      var inv = (t.match(/invoice\s*#?\s*(\d+)/i) || [])[1];
-      var urgency = /asap|urgent|down|promo|hacked|locked/.test(low) ? 'high' : /before|by |deadline/.test(low) ? 'medium' : 'normal';
-      var name = (t.match(/(?:^|\.\s|\n)\s*([A-Z][a-z]+),\s*[A-Z]/) || [])[1];
-      var reply = {
-        'urgent support': 'Thanks ' + (name || 'for the message') + '. I am looking at it now. Can you confirm the site address and whether anything was changed this morning? If it is hosting, I will have a status for you inside the hour.',
-        'quote request': 'Thanks for the detail, that is enough to scope from. Two questions before I put a number in writing: which practice management system do you use today, and do the deposits need to hit your accounting system automatically?' + (date ? ' Your ' + date + ' date is workable if we start within a fortnight.' : ''),
-        'complaint': 'You are right to be annoyed, and I want to fix this today rather than explain it. Can you send a screenshot of what the form does when you submit it? If it is not resolved by close of business I will refund' + (inv ? ' invoice ' + inv : ' the fix') + ' regardless.',
-        'booking': 'Happy to talk. My slot is Wednesdays 11:30 Adelaide time; the booking link is below, or reply with a time that suits and I will make it work.',
-        'general enquiry': 'Thanks for getting in touch. Yes to WordPress, and yes to getting you back into your own site: that is a rescue job I do often. First step is confirming who currently holds the domain and hosting logins; can you tell me who set the site up?'
-      }[intent];
-      var checks = [];
-      if (!phone) checks.push('No phone number found: do not invent one, reply by email.');
-      if (money_) checks.push('Budget mentioned (' + money_ + '): a human confirms scope before quoting.');
-      if (intent === 'complaint') checks.push('Complaint: human reads before any reply is sent. Refund wording needs your approval.');
-      if (urgency === 'high') checks.push('Urgency high: notify Aaron by SMS, not just the inbox.');
-      if (!checks.length) checks.push('Nothing to escalate; a human still approves the send.');
+  D.register('store-checkout', function () {
+    var f = D.frame({ title: 'A working online store', status: 'add something to the cart',
+      note: 'Products, cart, checkout, confirmation, and the part customers never see: stock adjusted, the sale posted to accounting, the fulfilment email queued. All in one motion, no retyping.' });
+    var products = [{ id: 1, name: 'Enamel camp mug', price: 24, stock: 6 }, { id: 2, name: 'Wool blend beanie', price: 39, stock: 3 }, { id: 3, name: 'Canvas tote', price: 32, stock: 11 }, { id: 4, name: 'Gift card $50', price: 50, stock: 99, gift: true }];
+    var cart = {}, step = 'shop', order = null, out = h('div');
+    function total() { return Object.keys(cart).reduce(function (a, id) { var p = products.filter(function (x) { return x.id === +id; })[0]; return a + p.price * cart[id]; }, 0); }
+    function count() { return Object.keys(cart).reduce(function (a, id) { return a + cart[id]; }, 0); }
+    function draw() {
       out.innerHTML = '';
-      out.appendChild(h('div', { class: 'demo__panel' }, h('h4', {}, 'What it understood'),
-        h('div', { class: 'demo__kv' },
-          h('span', {}, 'Intent'), h('b', {}, intent, ' ', h('span', { class: 'demo__pill demo__pill--' + (urgency === 'high' ? 'bad' : urgency === 'medium' ? 'warn' : 'dim') }, urgency + ' urgency')),
-          h('span', {}, 'Name'), h('b', {}, name || 'not stated'),
-          h('span', {}, 'Phone'), h('b', {}, phone || 'none given'),
-          h('span', {}, 'Money'), h('b', {}, money_ || 'none'),
-          h('span', {}, 'Date'), h('b', {}, date || 'none'),
-          h('span', {}, 'Invoice'), h('b', {}, inv || 'none'))));
-      out.appendChild(h('div', { class: 'demo__panel' }, h('h4', {}, 'Draft reply (not sent)'), h('p', { style: 'margin:0 0 12px; font-size:0.92rem' }, reply),
-        h('h4', {}, 'Human check'), h('ul', { style: 'margin:0; padding-left:1.1em; font-size:0.88rem; display:grid; gap:4px' }, checks.map(function (c) { return h('li', {}, c); }))));
-      f.status('triaged as ' + intent, urgency === 'high' ? 'warn' : 'ok');
+      var head = h('div', { class: 'demo__row', style: 'justify-content:space-between; padding-bottom:10px; border-bottom:2px solid var(--ink)' }, h('b', { style: 'font-family:var(--display); font-size:1.15rem' }, 'Gum Leaf Goods'), h('span', {}, h('span', { class: 'demo__pill' }, count() + ' in cart · ' + money(total())), ' ', count() && step === 'shop' ? D.btn('Checkout', function () { step = 'details'; draw(); }, 'demo__btn--small') : ''));
+      out.appendChild(head);
+      if (step === 'shop') {
+        out.appendChild(h('div', { class: 'demo__grid', style: 'margin-top:14px' }, products.map(function (p) {
+          return h('div', { class: 'demo__panel' }, h('div', { style: 'height:70px; background:var(--bone-2); border:1px solid var(--line); display:grid; place-items:center; font-size:0.75rem; color:var(--fg-mute); margin-bottom:10px' }, 'product photo'), h('b', {}, p.name), h('div', { class: 'demo__row', style: 'justify-content:space-between; margin-top:6px' }, h('span', {}, money(p.price)), p.stock - (cart[p.id] || 0) > 0 ? D.btn('Add', function () { cart[p.id] = (cart[p.id] || 0) + 1; draw(); D.toast(f.root, p.name + ' added.', ''); }, 'demo__btn--small') : h('span', { class: 'demo__pill demo__pill--bad' }, 'sold out')), h('div', { class: 'dim', style: 'font-size:0.78rem; margin-top:4px' }, p.gift ? 'never sells out' : (p.stock - (cart[p.id] || 0)) + ' left'));
+        })));
+      } else if (step === 'details') {
+        out.appendChild(h('div', { class: 'demo__grid', style: 'margin-top:14px' },
+          h('div', { style: 'display:grid; gap:10px' }, h('h4', { style: 'margin:0; font-family:var(--display)' }, 'Your details'), h('input', { class: 'demo__input', value: 'Jo Hargreaves' }), h('input', { class: 'demo__input', value: 'jo@hargreaves.co' }), h('input', { class: 'demo__input', value: '12 Elm St, Prospect SA 5082' }), h('h4', { style: 'margin:6px 0 0; font-family:var(--display)' }, 'Payment'), h('input', { class: 'demo__input', value: '4242 4242 4242 4242', 'aria-label': 'Card number (test)' }), h('div', { class: 'demo__row' }, D.btn('Pay ' + money(total() + 9.95, true), function () { pay(); }), D.btn('Back to shop', function () { step = 'shop'; draw(); }, 'demo__btn--ghost'))),
+          h('div', { class: 'demo__panel' }, h('h4', {}, 'Order summary'), Object.keys(cart).map(function (id) { var p = products.filter(function (x) { return x.id === +id; })[0]; return h('div', { class: 'demo__row', style: 'justify-content:space-between; font-size:0.9rem' }, h('span', {}, cart[id] + ' × ' + p.name), h('span', {}, money(p.price * cart[id]))); }), h('div', { class: 'demo__row', style: 'justify-content:space-between; font-size:0.9rem; margin-top:6px; border-top:1px solid var(--line); padding-top:6px' }, h('span', {}, 'Shipping'), h('span', {}, '$9.95')), h('div', { class: 'demo__row', style: 'justify-content:space-between; font-weight:700; margin-top:4px' }, h('span', {}, 'Total inc GST'), h('span', {}, money(total() + 9.95, true))))));
+      } else {
+        out.appendChild(h('div', { class: 'demo__grid', style: 'margin-top:14px' },
+          h('div', { class: 'demo__panel' }, h('h4', {}, 'Order ' + order.id + ' confirmed'), h('p', { style: 'margin:0 0 8px; font-size:0.92rem' }, 'Thanks Jo. ' + count() + ' item' + (count() === 1 ? '' : 's') + ', ' + money(order.total, true) + ' paid. Dispatching Tuesday; tracking by SMS.'), D.btn('Shop again', function () { cart = {}; step = 'shop'; draw(); }, 'demo__btn--small')),
+          h('div', { class: 'demo__panel' }, h('h4', {}, 'What just happened behind the scenes'), h('pre', { class: 'demo__log', style: 'max-height:none' }, order.log.map(function (l) { return h('div', { class: l[0] }, l[1]); })))));
+      }
     }
-    f.body.appendChild(h('div', { class: 'demo__chips' }, samples.map(function (s, i) {
-      return h('button', { class: 'demo__chip', type: 'button', onclick: function () { ta.value = s; run(); } }, ['Site down', 'Clinic quote', 'Angry customer', 'Locked out'][i]);
-    })));
-    f.body.appendChild(ta);
-    f.body.appendChild(h('div', { class: 'demo__row' }, D.btn('Run the assistant', run), h('span', { class: 'dim', style: 'font-size:0.88rem' }, 'or edit the message and run it again')));
-    f.body.appendChild(out);
-    run();
+    function pay() {
+      var id = 'GL-' + (2040 + Math.floor(Math.random() * 900)), log = [];
+      log.push(['ok', '[payment] ' + money(total() + 9.95, true) + ' captured (Stripe test mode)']);
+      Object.keys(cart).forEach(function (cid) { var p = products.filter(function (x) { return x.id === +cid; })[0]; if (!p.gift) { p.stock -= cart[cid]; log.push(['ok', '[stock] ' + p.name + ' ' + (p.stock + cart[cid]) + ' -> ' + p.stock + (p.stock <= 2 ? ' (reorder alert sent)' : '')]); } else log.push(['warn', '[ledger] gift card booked as a liability, not revenue, until redeemed']); });
+      log.push(['ok', '[accounting] invoice ' + id + ' posted: sales to the Stripe clearing account, GST as its own line, fee to be booked from the payout']);
+      log.push(['ok', '[email] confirmation sent to jo@hargreaves.co; fulfilment sheet updated for Tuesday']);
+      log.push(['dim', '[done] 0 things for a human to retype']);
+      order = { id: id, total: total() + 9.95, log: log }; step = 'done'; draw(); f.status('order ' + id + ' placed', 'ok');
+    }
+    f.body.appendChild(out); draw();
     return f.root;
   });
 
   /* ------------------------------------------------------------------ */
-  /* Mobile apps: a working app in a phone, plus the honest verdict      */
+  /* Mobile apps: the app itself, in a phone                             */
   /* ------------------------------------------------------------------ */
   D.register('mobile-app', function () {
-    var f = D.frame({ title: 'JobBook: a field app you can use right now', status: 'tap around',
-      note: 'One codebase, iOS and Android, your data. The phone on the left is a real interactive slice; the verdict on the right is the honest conversation before any app gets built.' });
+    var f = D.frame({ title: 'JobBook: the app, in a phone', status: 'tap around',
+      note: 'One codebase, iOS and Android, your accounts, backend included. The app is real; the profile tab says who owns it, because that is part of the deliverable too.' });
     var jobs = [
       { id: 1, who: 'Hargreaves', what: 'Switchboard upgrade', when: '8:00', where: 'Prospect', done: false, notes: [] },
       { id: 2, who: 'Nguyen', what: 'Safety switch tripping', when: '10:30', where: 'Norwood', done: false, notes: ['Tenant home after 10'] },
       { id: 3, who: 'Bella Vista Cafe', what: 'Extra circuits, kitchen', when: '13:00', where: 'Glenelg', done: false, notes: [] },
       { id: 4, who: 'Okafor', what: 'Downlights x 12', when: '15:30', where: 'Unley', done: true, notes: ['Paid on site'] }
     ];
-    var view = { tab: 'today', open: null };
-    var screen = h('div', { class: 'demo__screen' });
-
+    var view = { tab: 'today', open: null }, screen = h('div', { class: 'demo__screen' });
     function render() {
       screen.innerHTML = '';
       var pending = jobs.filter(function (j) { return !j.done; }).length;
@@ -213,368 +175,248 @@
       var list = h('div', { class: 'list' });
       if (view.open) {
         var j = jobs.filter(function (x) { return x.id === view.open; })[0];
-        list.appendChild(h('div', { style: 'padding:14px' },
-          h('div', { style: 'font-weight:800; font-size:1.1rem' }, j.who), h('div', {}, j.what), h('div', { class: 'dim', style: 'font-size:0.85rem' }, j.when + ' · ' + j.where),
-          h('div', { style: 'margin:12px 0 6px; font-weight:700; font-size:0.85rem' }, 'Notes'),
-          j.notes.length ? h('ul', { style: 'margin:0; padding-left:1.1em; font-size:0.88rem' }, j.notes.map(function (n) { return h('li', {}, n); })) : h('p', { class: 'dim', style: 'margin:0; font-size:0.88rem' }, 'none yet'),
-          h('div', { class: 'demo__row', style: 'margin-top:14px' },
-            D.btn(j.done ? 'Reopen' : 'Mark done', function () { j.done = !j.done; D.toast(f.root, j.done ? 'Done. Invoice draft created.' : 'Reopened.', j.done ? 'ok' : ''); view.open = null; render(); }, 'demo__btn--small'),
-            D.btn('Add note', function () { j.notes.push(['Parts on order', 'Customer wants a call first', 'Access via side gate'][j.notes.length % 3]); render(); }, 'demo__btn--small demo__btn--ghost'),
-            D.btn('Back', function () { view.open = null; render(); }, 'demo__btn--small demo__btn--ghost'))));
+        list.appendChild(h('div', { style: 'padding:14px' }, h('div', { style: 'font-weight:800; font-size:1.1rem' }, j.who), h('div', {}, j.what), h('div', { class: 'dim', style: 'font-size:0.85rem' }, j.when + ' · ' + j.where),
+          h('div', { style: 'margin:12px 0 6px; font-weight:700; font-size:0.85rem' }, 'Notes'), j.notes.length ? h('ul', { style: 'margin:0; padding-left:1.1em; font-size:0.88rem' }, j.notes.map(function (n) { return h('li', {}, n); })) : h('p', { class: 'dim', style: 'margin:0; font-size:0.88rem' }, 'none yet'),
+          h('div', { class: 'demo__row', style: 'margin-top:14px' }, D.btn(j.done ? 'Reopen' : 'Mark done', function () { j.done = !j.done; D.toast(f.root, j.done ? 'Done. Invoice drafted in accounting.' : 'Reopened.', j.done ? 'ok' : ''); view.open = null; render(); }, 'demo__btn--small'), D.btn('Add note', function () { j.notes.push(['Parts on order', 'Customer wants a call first', 'Access via side gate'][j.notes.length % 3]); render(); }, 'demo__btn--small demo__btn--ghost'), D.btn('Back', function () { view.open = null; render(); }, 'demo__btn--small demo__btn--ghost'))));
       } else if (view.tab === 'me') {
-        list.appendChild(h('div', { style: 'padding:14px; font-size:0.9rem' }, h('p', {}, h('b', {}, 'Sam Tran'), h('br'), 'Licensed electrician'), h('p', {}, 'Store accounts: ', h('b', {}, 'yours'), h('br'), 'Code: ', h('b', {}, 'yours'), h('br'), 'Backend: ', h('b', {}, 'included')), h('p', { class: 'dim' }, 'The profile screen nobody demos, included because you own it.')));
+        list.appendChild(h('div', { style: 'padding:14px; font-size:0.9rem' }, h('p', {}, h('b', {}, 'Sam Tran'), h('br'), 'Licensed electrician'), h('p', {}, 'App store accounts: ', h('b', {}, 'yours'), h('br'), 'Source code: ', h('b', {}, 'yours'), h('br'), 'Backend and data: ', h('b', {}, 'yours')), h('p', { class: 'dim' }, 'The screen nobody demos, included because you own it.')));
       } else {
-        jobs.filter(function (j) { return view.tab === 'done' ? j.done : !j.done; }).forEach(function (j) {
-          list.appendChild(h('div', { class: 'item', onclick: function () { view.open = j.id; render(); } },
-            h('span', {}, h('b', {}, j.who), h('br'), h('span', { style: 'font-size:0.85rem' }, j.what)),
-            h('span', { class: 'dim', style: 'font-size:0.85rem; text-align:right' }, j.when, h('br'), j.where)));
-        });
-        if (!list.children.length) list.appendChild(h('p', { class: 'dim', style: 'padding:14px' }, 'Nothing here. Good day or slow day; either way it is honest.'));
+        jobs.filter(function (j) { return view.tab === 'done' ? j.done : !j.done; }).forEach(function (j) { list.appendChild(h('div', { class: 'item', onclick: function () { view.open = j.id; render(); } }, h('span', {}, h('b', {}, j.who), h('br'), h('span', { style: 'font-size:0.85rem' }, j.what)), h('span', { class: 'dim', style: 'font-size:0.85rem; text-align:right' }, j.when, h('br'), j.where))); });
+        if (!list.children.length) list.appendChild(h('p', { class: 'dim', style: 'padding:14px' }, 'Nothing here yet.'));
       }
       screen.appendChild(list);
-      screen.appendChild(h('div', { class: 'tabs' }, ['today', 'done', 'me'].map(function (t) {
-        return h('button', { type: 'button', 'aria-pressed': view.tab === t && !view.open, onclick: function () { view.tab = t; view.open = null; render(); } }, t === 'today' ? 'Today' : t === 'done' ? 'Done' : 'Me');
-      })));
+      screen.appendChild(h('div', { class: 'tabs' }, ['today', 'done', 'me'].map(function (t) { return h('button', { type: 'button', 'aria-pressed': view.tab === t && !view.open, onclick: function () { view.tab = t; view.open = null; render(); } }, t === 'today' ? 'Today' : t === 'done' ? 'Done' : 'Me'); })));
     }
     render();
-
-    var q = { edit: 'weekly', offline: 'no', native: 'no' };
-    var verdict = h('div', { class: 'demo__panel' });
-    function judge() {
-      var v, why;
-      if (q.native === 'yes') { v = 'A real app'; why = 'You need the camera, GPS in the background or push notifications that actually arrive. That is app territory, built once for both stores.'; }
-      else if (q.offline === 'yes') { v = 'A real app, probably'; why = 'Working without signal is the honest reason to build one. A well-made web app can cache, but a field crew in a basement wants the real thing.'; }
-      else if (q.edit === 'daily') { v = 'A web app you can install'; why = 'Daily use from a phone, always online: a progressive web app gives you the home-screen icon without the app-store tax. Cheaper, faster to change.'; }
-      else { v = 'Probably not an app'; why = 'Occasional use, online, no phone hardware: a good mobile website does this. I would rather tell you that now than invoice you for an app nobody opens.'; }
-      verdict.innerHTML = '';
-      verdict.appendChild(h('h4', {}, 'Verdict: ' + v)); verdict.appendChild(h('p', { style: 'margin:0; font-size:0.92rem' }, why));
-    }
-    var right = h('div', { style: 'display:grid; gap:12px; align-content:start' },
-      h('h4', { style: 'margin:0; font-family:var(--display); font-size:1.05rem' }, 'Do you even need an app?'),
-      h('label', { class: 'demo__label' }, 'How often would staff or customers use it?', D.select([['rarely', 'Now and then'], ['weekly', 'Weekly'], ['daily', 'Every day, from a phone']], q.edit, function (v) { q.edit = v; judge(); })),
-      h('label', { class: 'demo__label' }, 'Must it work with no signal?', D.select([['no', 'No, always online'], ['yes', 'Yes, sheds and basements']], q.offline, function (v) { q.offline = v; judge(); })),
-      h('label', { class: 'demo__label' }, 'Camera, background GPS or push notifications?', D.select([['no', 'Not really'], ['yes', 'Yes, essential']], q.native, function (v) { q.native = v; judge(); })),
-      verdict);
-    judge();
-    f.body.appendChild(h('div', { class: 'demo__grid', style: 'grid-template-columns:minmax(260px,320px) 1fr; align-items:start' }, h('div', { class: 'demo__phone' }, screen), right));
+    f.body.appendChild(h('div', { class: 'demo__grid', style: 'grid-template-columns:minmax(260px,320px) 1fr; align-items:start' }, h('div', { class: 'demo__phone' }, screen),
+      h('div', { class: 'demo__panel' }, h('h4', {}, 'What you are looking at'), h('p', { style: 'margin:0 0 8px; font-size:0.92rem' }, 'A job list for a small crew: today\'s work, notes from the field, done with one tap, invoice drafted the moment a job closes. The same app ships to both stores from one codebase.'), h('p', { style: 'margin:0; font-size:0.92rem' }, 'Swap the jobs for bookings, deliveries, inspections or patients and it is the same build. And if a good mobile website would do the job instead, you will hear that first.'))));
     return f.root;
   });
 
   /* ------------------------------------------------------------------ */
-  /* Website rebuild: the redirect map that saves the rankings           */
+  /* Custom software: a working internal tool                            */
   /* ------------------------------------------------------------------ */
-  D.register('rebuild-redirects', function () {
-    var f = D.frame({ title: 'Redirect map builder', status: 'sample site loaded',
-      note: 'The real job adds the data: which old URLs actually earn traffic and links, so effort goes where the rankings are. This is the mechanism.' });
-    var oldTa = h('textarea', { class: 'demo__textarea' }, ['/services/emergency-electrician-adelaide.html', '/services/switchboard-upgrades.html', '/about-us.html', '/blog/2019/03/safety-switch-tripping', '/gallery.php?id=4', '/contact.html', '/services/solar-installation.html'].join('\n'));
-    var newTa = h('textarea', { class: 'demo__textarea' }, ['/emergency-electrician/', '/switchboards/', '/about/', '/guides/safety-switch-keeps-tripping/', '/contact/', '/ev-chargers/'].join('\n'));
-    var out = h('div');
-    function tokens(u) { return u.toLowerCase().replace(/\.(html|php|aspx)$/, '').replace(/\?.*$/, '').split(/[^a-z0-9]+/).filter(function (t) { return t && !/^(services|blog|20\d\d|\d+|id|us|the|and|a)$/.test(t); }); }
-    var syn = { switchboard: 'switchboards', upgrades: 'switchboards', installation: 'install', tripping: 'tripping', keeps: 'tripping' };
-    function build() {
-      var olds = oldTa.value.split('\n').map(function (s) { return s.trim(); }).filter(Boolean);
-      var news = newTa.value.split('\n').map(function (s) { return s.trim(); }).filter(Boolean);
-      var rows = [], rules = [], kept = 0;
-      olds.forEach(function (o) {
-        var ot = tokens(o).map(function (t) { return syn[t] || t; }), best = null, bs = 0;
-        news.forEach(function (n) {
-          var nt = tokens(n).map(function (t) { return syn[t] || t; }), hit = 0;
-          ot.forEach(function (t) { if (nt.indexOf(t) >= 0 || nt.some(function (x) { return x.indexOf(t) === 0 || t.indexOf(x) === 0; })) hit++; });
-          var sc = ot.length ? hit / Math.max(ot.length, nt.length) : 0;
-          if (sc > bs) { bs = sc; best = n; }
-        });
-        var conf = bs >= 0.6 ? 'high' : bs >= 0.3 ? 'check' : 'decide';
-        if (conf !== 'decide') { kept++; rules.push(o.replace(/\?.*$/, '') + '  ->  ' + best + '  (301)'); }
-        rows.push(h('tr', { class: conf === 'high' ? 'is-ok' : conf === 'check' ? 'is-warn' : 'is-bad' },
-          h('td', {}, h('code', {}, o)), h('td', {}, best && conf !== 'decide' ? h('code', {}, best) : h('i', { class: 'dim' }, 'no obvious home')),
-          h('td', {}, h('span', { class: 'demo__pill demo__pill--' + (conf === 'high' ? 'ok' : conf === 'check' ? 'warn' : 'bad') }, conf === 'high' ? 'match' : conf === 'check' ? 'check me' : 'needs a decision'))));
-      });
-      out.innerHTML = '';
-      out.appendChild(D.table(['Old URL', 'Redirects to', 'Confidence'], rows));
-      out.appendChild(h('p', { style: 'margin:12px 0 6px; font-size:0.92rem' }, h('b', {}, kept + ' of ' + olds.length + ' old pages keep their Google equity.'), ' The red rows are where rankings die on a careless rebuild: a real page with no new home. The fix is a decision (a new page, or a redirect to the closest parent), never a 404.'));
-      out.appendChild(h('pre', { class: 'demo__log' }, rules.map(function (r) { return h('div', {}, r); })));
-      f.status(kept === olds.length ? 'every page has a home' : (olds.length - kept) + ' decision' + (olds.length - kept === 1 ? '' : 's') + ' needed', kept === olds.length ? 'ok' : 'warn');
-    }
-    f.body.appendChild(h('div', { class: 'demo__grid' }, h('label', { class: 'demo__label' }, 'Old site URLs (one per line)', oldTa), h('label', { class: 'demo__label' }, 'New site URLs', newTa)));
-    f.body.appendChild(h('div', { class: 'demo__row' }, D.btn('Build the redirect map', build), h('span', { class: 'dim', style: 'font-size:0.88rem' }, 'edit either list and rebuild')));
-    f.body.appendChild(out);
-    build();
-    return f.root;
-  });
-
-  /* ------------------------------------------------------------------ */
-  /* Custom software: the API playground (the reference build's rules)   */
-  /* ------------------------------------------------------------------ */
-  D.register('api-playground', function () {
-    var f = D.frame({ title: 'Linehaul API, in your browser', status: 'GET a list to start',
-      note: 'These are the actual rules from the public reference build: statuses can only move forward along allowed paths, and an illegal move is refused with a reason instead of silently corrupting the record.' });
-    var flow = { Booked: ['PickedUp', 'Cancelled'], PickedUp: ['InTransit', 'Held'], InTransit: ['Delivered', 'Held'], Held: ['InTransit', 'Cancelled'], Delivered: [], Cancelled: [] };
-    var data = [
-      { id: 'LH-24011', lane: 'ADL-MEL', status: 'InTransit', kg: 412, due: '2026-09-06T14:00' },
-      { id: 'LH-24012', lane: 'ADL-PER', status: 'Booked', kg: 1180, due: '2026-09-08T09:00' },
-      { id: 'LH-24013', lane: 'MEL-ADL', status: 'Delivered', kg: 96, due: '2026-09-05T11:00' },
-      { id: 'LH-24014', lane: 'ADL-SYD', status: 'Held', kg: 640, due: '2026-09-06T17:00', note: 'consignee unreachable' },
-      { id: 'LH-24015', lane: 'ADL-MEL', status: 'PickedUp', kg: 55, due: '2026-09-06T14:00' }
+  D.register('internal-tool', function () {
+    var f = D.frame({ title: 'Quotes and jobs tracker', status: 'the tool your spreadsheet wants to be',
+      note: 'The internal tool most small businesses fake in a spreadsheet: quotes in, jobs through, invoices out, and the numbers on top derived from the rows so they cannot be wrong. Built to your process, owned by you.' });
+    var rows = [
+      { id: 'Q-118', client: 'Bella Vista Cafe', desc: 'Kitchen circuits', amt: 4800, stage: 'quoted' },
+      { id: 'Q-119', client: 'Hargreaves', desc: 'Switchboard upgrade', amt: 2650, stage: 'accepted' },
+      { id: 'Q-120', client: 'Marion Netball', desc: 'Court lighting', amt: 18400, stage: 'quoted' },
+      { id: 'Q-117', client: 'Okafor', desc: 'Downlights x 12', amt: 1180, stage: 'invoiced' },
+      { id: 'Q-116', client: 'Nguyen', desc: 'Safety switch', amt: 320, stage: 'paid' },
+      { id: 'Q-115', client: 'Council depot', desc: 'Bollards', amt: 7200, stage: 'lost' }
     ];
-    var st = { ep: 'list', filter: '', id: 'LH-24012', to: 'PickedUp' };
-    var req = h('pre', { class: 'demo__log' }), res = h('pre', { class: 'demo__log' }), tbl = h('div');
-    function table() {
+    var next = { quoted: 'accepted', accepted: 'in progress', 'in progress': 'invoiced', invoiced: 'paid' }, n = 121;
+    var tiles = h('div', { class: 'demo__grid', style: 'grid-template-columns:repeat(auto-fit,minmax(140px,1fr))' }), tbl = h('div');
+    var form = { client: '', desc: '', amt: '' };
+    function draw() {
+      var open = rows.filter(function (r) { return r.stage === 'quoted'; }), won = rows.filter(function (r) { return ['accepted', 'in progress', 'invoiced', 'paid'].indexOf(r.stage) >= 0; }), lost = rows.filter(function (r) { return r.stage === 'lost'; });
+      var owing = rows.filter(function (r) { return r.stage === 'invoiced'; }).reduce(function (a, r) { return a + r.amt; }, 0);
+      tiles.innerHTML = '';
+      [['Quotes out', money(open.reduce(function (a, r) { return a + r.amt; }, 0)), open.length + ' open'], ['Win rate', Math.round(won.length / Math.max(1, won.length + lost.length) * 100) + '%', won.length + ' won, ' + lost.length + ' lost'], ['Work booked', money(won.filter(function (r) { return r.stage !== 'paid'; }).reduce(function (a, r) { return a + r.amt; }, 0)), 'accepted to invoiced'], ['Owed to you', money(owing), owing ? 'chase on day 14' : 'nothing outstanding']].forEach(function (t) {
+        tiles.appendChild(h('div', { class: 'demo__panel' }, h('div', { class: 'demo__big' }, t[1]), h('div', { style: 'font-weight:700; font-size:0.9rem' }, t[0]), h('div', { class: 'dim', style: 'font-size:0.8rem' }, t[2])));
+      });
       tbl.innerHTML = '';
-      tbl.appendChild(D.table(['Consignment', 'Lane', 'Status', 'Weight', 'Due'], data.map(function (c) {
-        return h('tr', { class: c.status === 'Held' ? 'is-warn' : c.status === 'Delivered' ? 'is-ok' : '' }, h('td', {}, h('code', {}, c.id)), h('td', {}, c.lane), h('td', {}, h('span', { class: 'demo__pill' }, c.status)), h('td', { class: 'num' }, c.kg + ' kg'), h('td', {}, c.due.replace('T', ' ')));
+      tbl.appendChild(D.table(['Quote', 'Client', 'Work', 'Amount', 'Stage', ''], rows.map(function (r) {
+        return h('tr', { class: r.stage === 'lost' ? 'is-bad' : r.stage === 'paid' ? 'is-ok' : r.stage === 'invoiced' ? 'is-warn' : '' }, h('td', {}, h('code', {}, r.id)), h('td', {}, r.client), h('td', {}, r.desc), h('td', { class: 'num' }, money(r.amt)), h('td', {}, h('span', { class: 'demo__pill' }, r.stage)),
+          h('td', {}, h('span', { class: 'demo__row', style: 'gap:6px' }, next[r.stage] ? D.btn('→ ' + next[r.stage], function () { r.stage = next[r.stage]; if (r.stage === 'invoiced') D.toast(f.root, 'Invoice ' + r.id.replace('Q', 'INV') + ' created in accounting and emailed.', 'ok'); draw(); }, 'demo__btn--small') : '', r.stage === 'quoted' ? D.btn('lost', function () { r.stage = 'lost'; draw(); }, 'demo__btn--small demo__btn--ghost') : '')));
       })));
+      f.status(rows.length + ' quotes · ' + money(owing) + ' outstanding', owing ? 'warn' : 'ok');
     }
-    function send() {
-      var r, q;
-      if (st.ep === 'list') {
-        q = 'GET /api/consignments' + (st.filter ? '?status=' + st.filter : '');
-        var items = data.filter(function (c) { return !st.filter || c.status === st.filter; });
-        r = { code: '200 OK', body: { items: items.map(function (c) { return { id: c.id, lane: c.lane, status: c.status, weightKg: c.kg }; }), total: items.length } };
-      } else if (st.ep === 'get') {
-        q = 'GET /api/consignments/' + st.id;
-        var c = data.filter(function (x) { return x.id === st.id; })[0];
-        r = c ? { code: '200 OK', body: { id: c.id, lane: c.lane, status: c.status, weightKg: c.kg, dueAt: c.due, allowedTransitions: flow[c.status] } } : { code: '404 Not Found', body: { error: 'no consignment ' + st.id } };
+    f.body.appendChild(tiles);
+    f.body.appendChild(h('div', { class: 'demo__panel' }, h('h4', {}, 'New quote'), h('div', { class: 'demo__row' },
+      h('input', { class: 'demo__input', placeholder: 'Client', oninput: function (e) { form.client = e.target.value; } }), h('input', { class: 'demo__input', placeholder: 'What for', oninput: function (e) { form.desc = e.target.value; } }), h('input', { class: 'demo__input', placeholder: 'Amount', type: 'number', style: 'max-width:140px', oninput: function (e) { form.amt = e.target.value; } }),
+      D.btn('Add quote', function () { if (!form.client || !+form.amt) { D.toast(f.root, 'Client and amount, please. The tool refuses half a record.', 'bad'); return; } rows.unshift({ id: 'Q-' + (n++), client: form.client, desc: form.desc || 'TBC', amt: +form.amt, stage: 'quoted' }); draw(); D.toast(f.root, 'Quote added and PDF emailed to ' + form.client + '.', 'ok'); }))));
+    f.body.appendChild(tbl); draw();
+    return f.root;
+  });
+
+  /* ------------------------------------------------------------------ */
+  /* CRM & automation: a working pipeline with automations that fire     */
+  /* ------------------------------------------------------------------ */
+  D.register('crm-pipeline', function () {
+    var f = D.frame({ title: 'Your CRM, moving deals and doing the chores', status: 'move a deal, watch the automations',
+      note: 'A pipeline your team will actually use, because it does the work for them: every stage change fires the follow-ups, tasks and accounting entries that people used to retype. Set up in HubSpot, Zoho or a simpler tool, whichever fits.' });
+    var stages = ['New', 'Contacted', 'Quoted', 'Won'];
+    var deals = [{ co: 'Bella Vista Cafe', v: 4800, s: 0, who: 'Marco' }, { co: 'Marion Netball Club', v: 18400, s: 1, who: 'Dee' }, { co: 'Hargreaves Electrical', v: 2650, s: 2, who: 'Jo' }, { co: 'Okafor & Co', v: 6200, s: 2, who: 'Tom' }, { co: 'Nair Physio', v: 3100, s: 3, who: 'Priya' }];
+    var board = h('div', { class: 'demo__grid', style: 'grid-template-columns:repeat(4,minmax(150px,1fr)); gap:10px' }), log = h('pre', { class: 'demo__log' });
+    function fire(d, from, to) {
+      var lines = { 1: ['[email] intro drafted to ' + d.who + ' for approval', '[task] "call ' + d.who + '" due tomorrow 9am'], 2: ['[quote] PDF generated from the deal line items, awaiting your send', '[task] follow up in 3 business days if unopened'], 3: ['[accounting] invoice drafted for ' + money(d.v) + ' with GST, deposit terms applied', '[email] welcome + next steps sent to ' + d.who, '[calendar] kickoff proposed: Wednesday 11:30'] };
+      logline(log, 'dim', '[deal] ' + d.co + ': ' + stages[from] + ' -> ' + stages[to]);
+      (lines[to] || []).forEach(function (l, i) { setTimeout(function () { logline(log, 'ok', l); }, 180 * (i + 1)); });
+    }
+    function draw() {
+      board.innerHTML = '';
+      stages.forEach(function (s, i) {
+        var col = h('div', { class: 'demo__panel', style: 'padding:10px' }, h('div', { style: 'font-weight:800; display:flex; justify-content:space-between' }, h('span', {}, s), h('span', { class: 'demo__pill demo__pill--dim' }, money(deals.filter(function (d) { return d.s === i; }).reduce(function (a, d) { return a + d.v; }, 0)))));
+        deals.filter(function (d) { return d.s === i; }).forEach(function (d) {
+          col.appendChild(h('div', { style: 'border:1.5px solid var(--line); background:var(--bone); padding:8px; margin-top:8px; font-size:0.85rem' }, h('b', {}, d.co), h('br'), money(d.v) + ' · ' + d.who, h('div', { class: 'demo__row', style: 'gap:4px; margin-top:6px' }, i < 3 ? D.btn('→', function () { d.s++; fire(d, i, d.s); draw(); }, 'demo__btn--small') : h('span', { class: 'demo__pill demo__pill--ok' }, 'won'))));
+        });
+        board.appendChild(col);
+      });
+      f.status(deals.filter(function (d) { return d.s === 3; }).length + ' won · ' + money(deals.reduce(function (a, d) { return a + (d.s < 3 ? d.v : 0); }, 0)) + ' in pipeline', 'ok');
+    }
+    var lead = { co: '', who: '' };
+    f.body.appendChild(h('div', { class: 'demo__row' }, h('input', { class: 'demo__input', placeholder: 'Company', oninput: function (e) { lead.co = e.target.value; } }), h('input', { class: 'demo__input', placeholder: 'Contact', oninput: function (e) { lead.who = e.target.value; } }), D.btn('Add lead', function () { if (!lead.co) return; deals.push({ co: lead.co, v: 2500, s: 0, who: lead.who || 'them' }); logline(log, 'ok', '[crm] ' + lead.co + ' created from web form; deduped against existing contacts on ABN, none found'); draw(); }, 'demo__btn--small')));
+    f.body.appendChild(board); f.body.appendChild(log);
+    logline(log, 'dim', '[ready] move a deal with the arrow. Every stage change does its chores.');
+    draw();
+    return f.root;
+  });
+
+  /* ------------------------------------------------------------------ */
+  /* Data & reporting: the finished dashboard                            */
+  /* ------------------------------------------------------------------ */
+  D.register('dashboard', function () {
+    var f = D.frame({ title: 'The dashboard your Monday needs', status: 'filter it',
+      note: 'Pulled from where the numbers actually live, refreshed on a schedule, opened on a phone. Every figure is derived from the rows behind it, so it cannot quietly drift from the truth.' });
+    var r = D.rng(3), branches = ['North', 'South', 'Online'], months = ['Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep'], data = [];
+    branches.forEach(function (b, bi) { months.forEach(function (m, mi) { data.push({ b: b, m: m, rev: Math.round(28000 + bi * 6000 + mi * 1800 + r() * 9000), jobs: Math.round(40 + r() * 30), late: Math.round(r() * 6) }); }); });
+    var fb = '', fm = 'all', tiles = h('div', { class: 'demo__grid', style: 'grid-template-columns:repeat(auto-fit,minmax(140px,1fr))' }), chart = h('div'), tbl = h('div');
+    function draw() {
+      var rows = data.filter(function (d) { return (!fb || d.b === fb) && (fm === 'all' || months.indexOf(d.m) >= months.length - +fm); });
+      var rev = rows.reduce(function (a, d) { return a + d.rev; }, 0), jobs = rows.reduce(function (a, d) { return a + d.jobs; }, 0), late = rows.reduce(function (a, d) { return a + d.late; }, 0);
+      tiles.innerHTML = '';
+      [['Revenue', money(rev), ''], ['Jobs', fmt(jobs), ''], ['Avg ticket', money(rev / Math.max(1, jobs)), ''], ['Late jobs', fmt(late), late > jobs * 0.06 ? 'bad' : '']].forEach(function (t) { tiles.appendChild(h('div', { class: 'demo__panel' }, h('div', { class: 'demo__big', style: t[2] === 'bad' ? 'color:oklch(0.5 0.16 30)' : '' }, t[1]), h('div', { class: 'dim', style: 'font-size:0.85rem; font-weight:700' }, t[0]))); });
+      var byM = months.filter(function (m) { return fm === 'all' || months.indexOf(m) >= months.length - +fm; }).map(function (m) { return [m, rows.filter(function (d) { return d.m === m; }).reduce(function (a, d) { return a + d.rev; }, 0)]; });
+      var W = 640, H = 200, pad = 30, bw = (W - pad * 2) / byM.length, max = Math.max.apply(null, byM.map(function (x) { return x[1]; }));
+      var svg = '<svg class="demo__svg" viewBox="0 0 ' + W + ' ' + H + '" role="img" aria-label="Revenue by month">';
+      byM.forEach(function (x, i) { var bh = x[1] / max * (H - 60); svg += '<rect x="' + (pad + i * bw + 8) + '" y="' + (H - 30 - bh) + '" width="' + (bw - 16) + '" height="' + bh + '" fill="var(--green)"></rect><text x="' + (pad + i * bw + bw / 2) + '" y="' + (H - 12) + '" font-size="12" text-anchor="middle" fill="currentColor">' + x[0] + '</text><text x="' + (pad + i * bw + bw / 2) + '" y="' + (H - 36 - bh) + '" font-size="11" text-anchor="middle" fill="currentColor">' + Math.round(x[1] / 1000) + 'k</text>'; });
+      chart.innerHTML = svg + '</svg>';
+      tbl.innerHTML = '';
+      tbl.appendChild(D.table(['Branch', 'Revenue', 'Jobs', 'Late', 'Share'], branches.filter(function (b) { return !fb || b === fb; }).map(function (b) { var rr = rows.filter(function (d) { return d.b === b; }), rv = rr.reduce(function (a, d) { return a + d.rev; }, 0); return h('tr', {}, h('td', {}, b), h('td', { class: 'num' }, money(rv)), h('td', { class: 'num' }, fmt(rr.reduce(function (a, d) { return a + d.jobs; }, 0))), h('td', { class: 'num' }, fmt(rr.reduce(function (a, d) { return a + d.late; }, 0))), h('td', {}, D.bar(rv, rev))); })));
+      f.status((fb || 'all branches') + ' · ' + (fm === 'all' ? '6 months' : 'last ' + fm), 'ok');
+    }
+    f.body.appendChild(h('div', { class: 'demo__row' }, ctl('Branch', D.select([['', 'All branches']].concat(branches), fb, function (v) { fb = v; draw(); })), ctl('Period', D.select([['all', 'Last 6 months'], ['3', 'Last 3 months'], ['1', 'Last month']], fm, function (v) { fm = v; draw(); })), h('span', { class: 'dim', style: 'font-size:0.86rem' }, 'refreshed nightly from accounting and the job system')));
+    f.body.appendChild(tiles); f.body.appendChild(chart); f.body.appendChild(tbl); draw();
+    return f.root;
+  });
+
+  /* ------------------------------------------------------------------ */
+  /* AI development: the assistant your customers would talk to          */
+  /* ------------------------------------------------------------------ */
+  D.register('ai-assistant', function () {
+    var f = D.frame({ title: 'A customer assistant that knows your business', status: 'ask it something',
+      note: 'This slice runs on rules in your browser so it works without a key; the production version uses a language model with the same guardrails: answer from your facts, book from your calendar, escalate anything it is not sure of, never invent.' });
+    var key = 'physio', thread = h('div', { style: 'display:grid; gap:8px; max-height:300px; overflow:auto; padding:4px' }), input = h('input', { class: 'demo__input', placeholder: 'Type a question a customer would ask', style: 'flex:1' });
+    var kb = {
+      physio: { hours: 'Monday to Friday 7am to 7pm, Saturday 8am to 1pm.', price: 'Initial consult $120, follow-ups $95. Private health rebates on the spot.', book: 'Tuesday 10:30 with Priya or Wednesday 4:15 with Sam', park: 'Free parking behind the clinic, entry from George St.', who: 'Three physios: Priya (sports), Sam (backs and necks), Lee (post-surgery).' },
+      cafe: { hours: 'Every day 7am to 3pm, kitchen until 2:30.', price: 'Breakfast from $14, coffee $4.80, catering boxes from $12 a head.', book: 'a table for 4 at 9:30 Saturday, or the back room for your function', park: 'Two-hour street parking on Jetty Rd; the council carpark is behind us.', who: 'Family-run since 2011.' },
+      sparky: { hours: 'Weekdays 7am to 5pm; emergency call-outs 24/7.', price: 'Call-out $140 inc first half hour, then $95 per half hour. Quotes are free and fixed.', book: 'Thursday morning or next Monday afternoon', park: 'We come to you.', who: 'Two licensed electricians, fifteen years each.' }
+    };
+    function reply(t) {
+      var k = kb[key], low = t.toLowerCase();
+      if (/hour|open|close|when/.test(low)) return ['We are open ' + k.hours, 'answered from your hours'];
+      if (/price|cost|how much|\$|fee|charge/.test(low)) return [k.price + ' Want me to book you in?', 'answered from your price list'];
+      if (/book|appoint|table|slot|available|come out/.test(low)) return ['I can offer ' + k.book + '. Which suits? I will hold it for you.', 'offered real gaps from your calendar'];
+      if (/park/.test(low)) return [k.park, 'answered from your FAQ'];
+      if (/who|staff|team|physio|electric/.test(low)) return [k.who, 'answered from your team page'];
+      if (/refund|complain|angry|wrong|hurt|pain.*worse|emergency/.test(low)) return ['I am sorry to hear that. I have flagged this for ' + (key === 'physio' ? 'the practice manager' : 'the owner') + ' who will call you back today. Can I take the best number?', 'escalated to a human: not something an assistant should decide'];
+      return ['Good question, and not one I am sure about, so I will not guess. I have passed it to the team and you will get a straight answer within the hour. Anything else I can help with meanwhile?', 'unknown: escalated instead of inventing an answer'];
+    }
+    function bubble(text, who, note) {
+      thread.appendChild(h('div', { style: 'justify-self:' + (who === 'you' ? 'end' : 'start') + '; max-width:85%' }, h('div', { style: 'padding:10px 14px; font-size:0.92rem; border:2px solid var(--ink); background:' + (who === 'you' ? 'var(--amber-soft)' : 'var(--bone)') }, text), note ? h('div', { class: 'dim', style: 'font-size:0.72rem; margin-top:3px' }, note) : null));
+      thread.scrollTop = thread.scrollHeight;
+    }
+    function send(t) { t = (t || input.value).trim(); if (!t) return; input.value = ''; bubble(t, 'you'); var r = reply(t); setTimeout(function () { bubble(r[0], 'bot', r[1]); f.status(r[1], /escalat/.test(r[1]) ? 'warn' : 'ok'); }, 450); }
+    var starters = { physio: ['Do you open Saturdays?', 'How much is a first visit?', 'Can I book this week?', 'My knee got worse after the last session'], cafe: ['Are you open Sunday?', 'Table for four Saturday morning?', 'Do you do catering?', 'Where do I park?'], sparky: ['Do you do emergency call-outs?', 'What is the call-out fee?', 'Can someone come Thursday?', 'Who will turn up?'] };
+    function reset() { thread.innerHTML = ''; bubble('Hi, I am the ' + BIZ[key].name + ' assistant. Ask me about hours, prices, bookings or anything on the site.', 'bot'); }
+    var chips = h('div', { class: 'demo__chips' });
+    function drawChips() { chips.innerHTML = ''; starters[key].forEach(function (s) { chips.appendChild(h('button', { class: 'demo__chip', type: 'button', onclick: function () { send(s); } }, s)); }); }
+    f.body.appendChild(h('div', { class: 'demo__row' }, ctl('Business', D.select([['physio', 'A physio clinic'], ['cafe', 'A cafe'], ['sparky', 'An electrician']], key, function (v) { key = v; reset(); drawChips(); }))));
+    f.body.appendChild(chips);
+    f.body.appendChild(h('div', { class: 'demo__panel', style: 'padding:12px' }, thread, h('div', { class: 'demo__row', style: 'margin-top:10px' }, input, D.btn('Send', function () { send(); }, 'demo__btn--small'))));
+    input.addEventListener('keydown', function (e) { if (e.key === 'Enter') send(); });
+    reset(); drawChips();
+    return f.root;
+  });
+
+  /* ------------------------------------------------------------------ */
+  /* Project rescue: the site after the rescue, and who owns it now      */
+  /* ------------------------------------------------------------------ */
+  D.register('rescue-outcome', function () {
+    var f = D.frame({ title: 'A rescued project: what you end up with', status: 'toggle before and after',
+      note: 'The end result of a rescue is not a report. It is the finished site, live, and every account in your name with the passwords in your hands. Both are shown here; both are the deliverable.' });
+    var mode = 'before', stage = h('div', { style: 'border:2px solid var(--ink); min-height:420px; overflow:hidden' });
+    var biz = BIZ.cafe;
+    function draw() {
+      stage.innerHTML = '';
+      if (mode === 'before') {
+        stage.appendChild(h('div', { style: 'background:#fff; color:#444; font-family:Arial, sans-serif; min-height:420px' },
+          h('div', { style: 'background:#222; color:#fff; padding:12px 16px; display:flex; justify-content:space-between' }, h('b', {}, 'bellavista-new-site-v3'), h('span', { style: 'font-size:12px; opacity:0.7' }, 'Home · About · Menu · Blog · Shop · Contact')),
+          h('div', { style: 'padding:16px' },
+            h('div', { style: 'height:140px; background:repeating-linear-gradient(45deg,#eee,#eee 10px,#f7f7f7 10px,#f7f7f7 20px); display:grid; place-items:center; color:#999; font-size:13px' }, '[hero image placeholder 1920x600]'),
+            h('h2', { style: 'margin:14px 0 6px' }, 'Lorem ipsum dolor sit amet'),
+            h('p', { style: 'font-size:14px; line-height:1.5' }, 'Consectetur adipiscing elit, sed do eiusmod tempor. INSERT CAFE DESCRIPTION HERE. Contact us at ', h('u', {}, 'email@example.com'), ' or call 04XX XXX XXX.'),
+            h('div', { style: 'display:flex; gap:10px; margin-top:10px' }, h('span', { style: 'padding:8px 12px; background:#ddd; font-size:13px' }, 'Order online (coming soon)'), h('span', { style: 'padding:8px 12px; border:1px solid #ccc; font-size:13px; color:#c00' }, 'Menu (404)')),
+            h('p', { style: 'font-size:12px; color:#c00; margin-top:14px' }, 'Warning: 3 plugins need updates · SSL certificate expired · admin user: developer@agency (you are not an admin)'))));
       } else {
-        q = 'POST /api/consignments/' + st.id + '/status\n{ "to": "' + st.to + '" }';
-        var c2 = data.filter(function (x) { return x.id === st.id; })[0];
-        if (!c2) r = { code: '404 Not Found', body: { error: 'no consignment ' + st.id } };
-        else if (flow[c2.status].indexOf(st.to) < 0) r = { code: '409 Conflict', body: { error: 'illegal transition', from: c2.status, to: st.to, allowed: flow[c2.status], hint: 'The status flow is enforced in one place; nothing downstream has to re-check it.' } };
-        else { c2.status = st.to; r = { code: '200 OK', body: { id: c2.id, status: c2.status, changedAt: new Date().toISOString(), allowedNext: flow[c2.status] } }; table(); }
+        stage.appendChild(miniSite(biz, { toastRoot: f.root }).root);
       }
-      req.textContent = q;
-      res.innerHTML = '';
-      res.appendChild(h('div', { class: r.code[0] === '2' ? 'ok' : r.code[0] === '4' && r.code[1] === '0' && r.code[2] === '9' ? 'warn' : 'bad' }, 'HTTP ' + r.code));
-      res.appendChild(h('div', {}, JSON.stringify(r.body, null, 2)));
-      f.status(r.code, r.code[0] === '2' ? 'ok' : 'warn');
+      f.status(mode === 'before' ? 'as inherited: 60% built, developer gone' : 'after: live, finished, yours', mode === 'before' ? 'bad' : 'ok');
     }
-    var ctl = h('div', { class: 'demo__row' });
-    function controls() {
-      ctl.innerHTML = '';
-      ctl.appendChild(h('label', { class: 'demo__label' }, 'Endpoint', D.select([['list', 'GET /consignments'], ['get', 'GET /consignments/{id}'], ['post', 'POST /consignments/{id}/status']], st.ep, function (v) { st.ep = v; controls(); })));
-      if (st.ep === 'list') ctl.appendChild(h('label', { class: 'demo__label' }, 'Filter', D.select([['', 'all'], 'Booked', 'PickedUp', 'InTransit', 'Held', 'Delivered'], st.filter, function (v) { st.filter = v; })));
-      else ctl.appendChild(h('label', { class: 'demo__label' }, 'Consignment', D.select(data.map(function (c) { return c.id; }).concat(['LH-99999']), st.id, function (v) { st.id = v; })));
-      if (st.ep === 'post') ctl.appendChild(h('label', { class: 'demo__label' }, 'Move to', D.select(['PickedUp', 'InTransit', 'Held', 'Delivered', 'Cancelled', 'Booked'], st.to, function (v) { st.to = v; })));
-      ctl.appendChild(D.btn('Send', send));
-    }
-    controls(); table();
-    f.body.appendChild(ctl);
-    f.body.appendChild(h('div', { class: 'demo__grid' }, h('div', {}, h('div', { class: 'demo__label', style: 'margin-bottom:6px' }, 'Request'), req), h('div', {}, h('div', { class: 'demo__label', style: 'margin-bottom:6px' }, 'Response'), res)));
-    f.body.appendChild(tbl);
-    send();
+    var own = [['Domain', 'client\'s registrar account, auto-renew on'], ['Hosting', 'client\'s account, invoices to the client'], ['Site admin', 'client is the only administrator'], ['Code and theme', 'in the client\'s repository, backed up'], ['Email', 'untouched throughout'], ['Analytics and Search Console', 'owner: client; developer removed']];
+    f.body.appendChild(h('div', { class: 'demo__chips' }, [['before', 'Before: what they inherited'], ['after', 'After: what they got']].map(function (o) { return h('button', { class: 'demo__chip', type: 'button', 'aria-pressed': mode === o[0], onclick: function (e) { mode = o[0]; Array.prototype.forEach.call(e.target.parentNode.children, function (c) { c.setAttribute('aria-pressed', c === e.target); }); draw(); } }, o[1]); })));
+    f.body.appendChild(stage);
+    f.body.appendChild(h('div', { class: 'demo__panel' }, h('h4', {}, 'Who owns what, after'), h('div', { class: 'demo__kv' }, own.map(function (o) { return [h('span', {}, o[0]), h('b', {}, h('span', { class: 'demo__pill demo__pill--ok' }, 'you'), ' ' + o[1])]; }).reduce(function (a, b) { return a.concat(b); }, []))));
+    draw();
     return f.root;
   });
 
   /* ------------------------------------------------------------------ */
-  /* CRM & automation: the dedupe lab and a flow you can fire            */
+  /* Business analysis: the deliverables, finished and browsable         */
   /* ------------------------------------------------------------------ */
-  D.register('crm-dedupe', function () {
-    var f = D.frame({ title: 'Dedupe lab and automation bench', status: 'nine messy contacts loaded',
-      note: 'The merge-key choice is the single decision that decides whether a migration is a cleanup or a catastrophe. The automation bench shows the plumbing shape: trigger, steps, a log you can read.' });
-    var contacts = [
-      { acct: 'A-1001', name: 'Dana Whitfield', email: 'dana@whitfield.com.au', co: 'Whitfield Plumbing' },
-      { acct: 'A-1002', name: 'Marcus Whitfield', email: 'dana@whitfield.com.au', co: 'Whitfield Plumbing' },
-      { acct: 'A-1003', name: 'Priya Nair', email: 'priya.nair@gmail.com', co: 'Nair Physio' },
-      { acct: 'A-1003', name: 'Priya Nair', email: 'priya@nairphysio.com.au', co: 'Nair Physio' },
-      { acct: 'A-1004', name: 'Tom Okafor', email: 'admin@okaforgroup.com', co: 'Okafor Group' },
-      { acct: 'A-1005', name: 'Lena Okafor', email: 'admin@okaforgroup.com', co: 'Okafor Group' },
-      { acct: 'A-1006', name: 'Sam Tran', email: 'sam.tran@outlook.com', co: 'Tran Electrical' },
-      { acct: 'A-1006', name: 'Sam Tran', email: 'sam@tranelectrical.com.au', co: 'Tran Electrical' },
-      { acct: 'A-1007', name: 'Jo Hargreaves', email: 'jo@hargreaves.co', co: 'Hargreaves Cafe' }
-    ];
-    var key = 'email', out = h('div');
-    function run() {
-      var groups = {};
-      contacts.forEach(function (c) { var k = c[key === 'email' ? 'email' : 'acct']; (groups[k] = groups[k] || []).push(c); });
-      var rows = [], bad = 0, fixed = 0;
-      Object.keys(groups).forEach(function (k) {
-        var g = groups[k], names = {}; g.forEach(function (c) { names[c.name] = 1; });
-        var distinct = Object.keys(names).length, wrong = distinct > 1, split = false;
-        if (key === 'acct' && g.length > 1) fixed++;
-        if (wrong) bad++;
-        rows.push(h('tr', { class: wrong ? 'is-bad' : g.length > 1 ? 'is-ok' : '' },
-          h('td', {}, h('code', {}, k)), h('td', {}, g.map(function (c) { return c.name; }).join(' + ')), h('td', {}, g[0].co),
-          h('td', {}, wrong ? h('span', { class: 'demo__pill demo__pill--bad' }, 'strangers merged') : g.length > 1 ? h('span', { class: 'demo__pill demo__pill--ok' }, 'duplicate merged') : h('span', { class: 'demo__pill demo__pill--dim' }, 'single'))));
-      });
-      out.innerHTML = '';
-      out.appendChild(D.table(['Merge key', 'Records merged', 'Company', 'Result'], rows));
-      out.appendChild(h('p', { style: 'margin:12px 0 0; font-size:0.92rem' }, key === 'email'
-        ? [h('b', {}, bad + ' merges combined different people'), ' because they shared an email (a couple, a shared admin inbox), while the person who changed their email became two records. Every downstream report is now wrong, quietly, for years.']
-        : [h('b', {}, fixed + ' real duplicates merged, zero strangers.'), ' The account number is the stable identifier the old system already used. Same data, one decision, opposite outcome.']));
-      f.status(key === 'email' ? bad + ' wrong merges' : 'clean', key === 'email' ? 'bad' : 'ok');
-    }
-    f.body.appendChild(h('div', { class: 'demo__row' }, h('label', { class: 'demo__label' }, 'Merge duplicates on', D.select([['email', 'email address (the convenient one)'], ['acct', 'account number (the stable one)']], key, function (v) { key = v; run(); }))));
-    f.body.appendChild(out);
-
-    var steps = [], log = h('pre', { class: 'demo__log' }, h('div', { class: 'dim' }, 'bench idle. add steps, then fire a test event.'));
-    var chain = h('div', { class: 'demo__chips' });
-    var avail = [['contact', 'Create or update CRM contact'], ['owner', 'Assign an owner by postcode'], ['xero', 'Create Xero contact if new'], ['sms', 'SMS the owner'], ['task', 'Open a follow-up task (2 days)'], ['sheet', 'Append to the monthly report']];
-    function drawChain() {
-      chain.innerHTML = ''; chain.appendChild(h('span', { class: 'demo__pill demo__pill--warn' }, 'TRIGGER: website enquiry form'));
-      steps.forEach(function (s, i) { chain.appendChild(h('span', {}, '→')); chain.appendChild(h('button', { class: 'demo__chip', type: 'button', 'aria-pressed': 'true', title: 'remove', onclick: function () { steps.splice(i, 1); drawChain(); } }, avail.filter(function (a) { return a[0] === s; })[0][1], ' ×')); });
-    }
-    function fire() {
-      log.innerHTML = '';
-      var lines = [['dim', '[event] form submitted: "Jo Hargreaves", jo@hargreaves.co, postcode 5000, "coffee machine POS keeps double charging"']];
-      steps.forEach(function (s) {
-        lines.push(s === 'contact' ? ['ok', '[crm] matched existing contact A-1007 on email, updated (no duplicate created)']
-          : s === 'owner' ? ['ok', '[crm] postcode 5000 -> owner: Aaron'] : s === 'xero' ? ['ok', '[xero] contact exists (ABN match), skipped create']
-          : s === 'sms' ? ['ok', '[sms] sent to owner: "New enquiry: Hargreaves Cafe, POS double charging"'] : s === 'task' ? ['ok', '[crm] task "follow up Hargreaves" due in 2 days'] : ['ok', '[sheets] appended row 214 to Enquiries 2026-09']);
-      });
-      if (!steps.length) lines.push(['warn', '[bench] no steps: the event was received and nothing happened. That is the default state of most CRMs.']);
-      lines.push(['dim', '[done] ' + steps.length + ' step' + (steps.length === 1 ? '' : 's') + ', 0 retyping, fails loudly if any step errors.']);
-      lines.forEach(function (l, i) { setTimeout(function () { log.appendChild(h('div', { class: l[0] }, l[1])); log.scrollTop = log.scrollHeight; }, i * 220); });
-    }
-    drawChain();
-    f.body.appendChild(h('div', { class: 'demo__panel' }, h('h4', {}, 'Automation bench: build the chain, fire an event'), chain,
-      h('div', { class: 'demo__row', style: 'margin-top:10px' }, avail.map(function (a) { return h('button', { class: 'demo__chip', type: 'button', onclick: function () { if (steps.indexOf(a[0]) < 0) { steps.push(a[0]); drawChain(); } } }, '+ ' + a[1]); })),
-      h('div', { class: 'demo__row', style: 'margin-top:10px' }, D.btn('Fire a test enquiry', fire)), log));
-    run();
-    return f.root;
-  });
-
-  /* ------------------------------------------------------------------ */
-  /* Data & reporting: spreadsheet in, dashboard out, mismatch found     */
-  /* ------------------------------------------------------------------ */
-  D.register('data-dashboard', function () {
-    var f = D.frame({ title: 'Spreadsheet to dashboard, and the mismatch finder', status: 'edit the numbers, it re-renders',
-      note: 'The dashboard is derived from the rows, so it cannot drift from them. The mismatch finder does what a reconciliation actually does: names the mechanism instead of shrugging.' });
-    var ta = h('textarea', { class: 'demo__textarea', rows: 8 }, 'month,north,south,online\nApr,42100,38800,12400\nMay,44900,37200,14100\nJun,41300,39900,15800\nJul,45200,36400,17900\nAug,27600,38100,19300\nSep,46800,40200,21000');
-    var out = h('div');
-    function render() {
-      var lines = ta.value.trim().split('\n').map(function (l) { return l.split(',').map(function (c) { return c.trim(); }); });
-      var head = lines[0], rows = lines.slice(1).filter(function (r) { return r.length === head.length; });
-      var series = head.slice(1), totals = series.map(function () { return 0; }), max = 0, notes = [];
-      rows.forEach(function (r) { r.slice(1).forEach(function (v, i) { v = +v || 0; totals[i] += v; max = Math.max(max, v); }); });
-      series.forEach(function (s, i) {
-        var vals = rows.map(function (r) { return +r[i + 1] || 0; }), mean = vals.reduce(function (a, b) { return a + b; }, 0) / vals.length;
-        vals.forEach(function (v, j) { if (Math.abs(v - mean) / mean > 0.3) notes.push(head[0] === 'month' ? rows[j][0] + ' ' + s + ' is ' + Math.round((v - mean) / mean * 100) + '% off its average: worth a question, not a panic' : s + ' row ' + (j + 1) + ' is an outlier'); });
-      });
-      var W = 640, H = 220, pad = 36, bw = (W - pad * 2) / rows.length, cols = ['var(--green)', 'var(--amber)', 'var(--ink)'];
-      var svg = '<svg class="demo__svg" viewBox="0 0 ' + W + ' ' + H + '" role="img" aria-label="Bar chart of the pasted data">';
-      rows.forEach(function (r, j) {
-        r.slice(1).forEach(function (v, i) { v = +v || 0; var bh = (v / max) * (H - pad * 2), x = pad + j * bw + i * (bw / series.length) * 0.9 + 4; svg += '<rect x="' + x + '" y="' + (H - pad - bh) + '" width="' + ((bw / series.length) * 0.8) + '" height="' + bh + '" fill="' + cols[i % 3] + '"></rect>'; });
-        svg += '<text x="' + (pad + j * bw + bw / 2) + '" y="' + (H - 12) + '" font-size="12" text-anchor="middle" fill="currentColor">' + r[0] + '</text>';
-      });
-      svg += '</svg>';
-      out.innerHTML = '';
-      out.appendChild(h('div', { class: 'demo__grid', style: 'grid-template-columns:2fr 1fr' },
-        h('div', { html: svg }),
-        h('div', { class: 'demo__panel' }, h('h4', {}, 'Totals'), h('div', { class: 'demo__kv' }, series.map(function (s, i) { return [h('span', {}, s), h('b', {}, money(totals[i]))]; }).reduce(function (a, b) { return a.concat(b); }, [])),
-          h('h4', { style: 'margin-top:14px' }, 'Flags'), notes.length ? h('ul', { style: 'margin:0; padding-left:1.1em; font-size:0.86rem' }, notes.map(function (n) { return h('li', {}, n); })) : h('p', { class: 'dim', style: 'margin:0; font-size:0.86rem' }, 'nothing unusual'))));
-      f.status(rows.length + ' rows, ' + series.length + ' series', 'ok');
-    }
-    f.body.appendChild(h('div', { class: 'demo__grid', style: 'grid-template-columns:minmax(240px,1fr) 2fr' }, h('label', { class: 'demo__label' }, 'Your spreadsheet (CSV, edit it)', ta, D.btn('Re-render', render, 'demo__btn--small')), out));
-
-    var mm = h('div', { class: 'demo__panel' });
-    var A = [['INV-2201', '28 Aug', 1540], ['INV-2202', '30 Aug', 880], ['INV-2203', '31 Aug', 2310], ['INV-2204', '31 Aug', 660]];
-    var B = [['INV-2201', '28 Aug', 1540], ['INV-2202', '30 Aug', 968], ['INV-2203', '2 Sep', 2310], ['INV-2204', '31 Aug', 660]];
-    function mismatch() {
-      var found = [];
-      A.forEach(function (a, i) { var b = B[i]; if (a[2] !== b[2]) found.push(a[0] + ': ' + money(a[2]) + ' vs ' + money(b[2]) + '. Ratio 1.10: one system holds GST, the other does not.'); if (a[1] !== b[1]) found.push(a[0] + ': dated ' + a[1] + ' vs ' + b[1] + '. Date boundary: invoiced in August, paid in September, so the two month totals will never agree and both are right.'); });
-      mm.innerHTML = '';
-      mm.appendChild(h('h4', {}, 'Why the two systems disagree'));
-      mm.appendChild(h('ul', { style: 'margin:0; padding-left:1.1em; font-size:0.9rem; display:grid; gap:6px' }, found.map(function (x) { return h('li', {}, x); })));
-      mm.appendChild(h('p', { style: 'margin:10px 0 0; font-size:0.88rem' }, h('b', {}, 'Mechanisms named, nothing left as "the systems just differ".'), ' Fix: report on payment date in both, carry tax as its own column, and the August numbers agree forever.'));
-    }
-    var side = h('div', { class: 'demo__grid' },
-      h('div', {}, h('div', { class: 'demo__label', style: 'margin-bottom:6px' }, 'Accounting says'), D.table(['Invoice', 'Date', 'Amount'], A.map(function (r) { return h('tr', {}, h('td', {}, r[0]), h('td', {}, r[1]), h('td', { class: 'num' }, money(r[2]))); }))),
-      h('div', {}, h('div', { class: 'demo__label', style: 'margin-bottom:6px' }, 'The CRM says'), D.table(['Invoice', 'Date', 'Amount'], B.map(function (r, i) { return h('tr', { class: r[2] !== A[i][2] || r[1] !== A[i][1] ? 'is-warn' : '' }, h('td', {}, r[0]), h('td', {}, r[1]), h('td', { class: 'num' }, money(r[2]))); }))));
-    f.body.appendChild(h('div', { class: 'demo__panel' }, h('h4', {}, 'The numbers do not match'), side, h('div', { class: 'demo__row', style: 'margin-top:10px' }, D.btn('Find the mechanism', mismatch)), mm));
-    render();
-    return f.root;
-  });
-
-  /* ------------------------------------------------------------------ */
-  /* Project rescue: the ownership audit                                 */
-  /* ------------------------------------------------------------------ */
-  D.register('rescue-audit', function () {
-    var f = D.frame({ title: 'Who actually owns your website?', status: 'answer honestly, nobody is watching',
-      note: 'Half of every rescue is this list. On a real job I confirm each answer against the registrar, the host and the code, then execute the plan in this order.' });
-    var items = [
-      ['Domain name registration', 'If they hold this, they hold your business address. Recovery: registrar dispute or a transfer request, and it takes the longest.', 3],
-      ['DNS (where the domain points)', 'Usually lives with the registrar or host. Needed before anything can move.', 2],
-      ['Hosting account', 'The account paying for the server. Without it you cannot see backups or move files.', 2],
-      ['WordPress / site admin login', 'An admin user in your name. Often the quickest win: a host can reset it for the owner.', 2],
-      ['The code or theme files', 'Do you have a copy? A backup you have downloaded counts. Nothing else does.', 1],
-      ['Database backup', 'Content, orders, users. Also in the hosting account, if you have that.', 1],
-      ['Business email', 'If mail runs through the same developer, moving the site can break email. Plan it together.', 2],
-      ['Analytics and Search Console', 'Your traffic history and Google standing. Ownership transfer is a few clicks once you can log in.', 1]
-    ];
-    var ans = items.map(function () { return 'unknown'; });
-    var out = h('div', { class: 'demo__panel' });
-    function plan() {
-      var risk = 0, steps = [];
-      items.forEach(function (it, i) { if (ans[i] === 'them') { risk += it[2] * 2; steps.push([it[2], 'Recover: ' + it[0] + '. ' + it[1]]); } else if (ans[i] === 'unknown') { risk += it[2]; steps.push([it[2] - 0.5, 'Find out: ' + it[0] + '. Check the registrar lookup, your hosting invoices, your inbox for setup emails.']); } });
-      steps.sort(function (a, b) { return b[0] - a[0]; });
-      var pctRisk = Math.min(100, Math.round(risk / 28 * 100));
-      out.innerHTML = '';
-      out.appendChild(h('h4', {}, 'Exposure: ' + (pctRisk < 20 ? 'low' : pctRisk < 55 ? 'real' : 'serious')));
-      out.appendChild(D.bar(pctRisk, 100, pctRisk < 20 ? '' : pctRisk < 55 ? 'demo__meter--amber' : 'demo__meter--bad'));
-      out.appendChild(h('p', { style: 'margin:10px 0; font-size:0.92rem' }, pctRisk < 20 ? 'You own your own business online. Rare, and well done. The rescue is just a handover.' : 'The recovery plan, in the order that unblocks the most:'));
-      if (steps.length) out.appendChild(h('ol', { style: 'margin:0; padding-left:1.2em; font-size:0.9rem; display:grid; gap:6px' }, steps.map(function (s) { return h('li', {}, s[1]); })));
-      f.status('exposure ' + pctRisk + '%', pctRisk < 20 ? 'ok' : pctRisk < 55 ? 'warn' : 'bad');
-    }
-    f.body.appendChild(D.table(['Thing', 'Who holds it?'], items.map(function (it, i) {
-      return h('tr', {}, h('td', {}, h('b', {}, it[0]), h('br'), h('span', { class: 'dim', style: 'font-size:0.85rem' }, it[1])),
-        h('td', {}, h('div', { class: 'demo__chips' }, [['me', 'Me'], ['them', 'The developer'], ['unknown', 'No idea']].map(function (o) { return h('button', { class: 'demo__chip', type: 'button', 'aria-pressed': ans[i] === o[0], onclick: function (e) { ans[i] = o[0]; Array.prototype.forEach.call(e.target.parentNode.children, function (c) { c.setAttribute('aria-pressed', c === e.target); }); plan(); } }, o[1]); }))));
-    })));
-    f.body.appendChild(out);
-    plan();
-    return f.root;
-  });
-
-  /* ------------------------------------------------------------------ */
-  /* Business analysis: process map and spec generator                   */
-  /* ------------------------------------------------------------------ */
-  D.register('ba-process-map', function () {
-    var f = D.frame({ title: 'Describe the process, get the map and the spec', status: 'sample process loaded',
-      note: 'Eleven years of this in rooms full of people who disagreed. The map finds the handoffs and waits; the spec turns them into statements you can check, which is what a developer (or an AI) can actually build from.' });
-    var ta = h('textarea', { class: 'demo__textarea', rows: 8 }, ['Customer: submits enquiry on website', 'Admin: reads inbox, retypes into spreadsheet', 'Admin: waits for owner to price it', 'Owner: prices job from memory', 'Admin: emails quote as PDF', 'Customer: waits, often chases by phone', 'Customer: accepts by email', 'Admin: retypes job into scheduling app', 'Owner: does the job', 'Admin: retypes into Xero, sends invoice'].join('\n'));
-    var out = h('div');
-    function parse() { return ta.value.split('\n').map(function (l) { return l.trim(); }).filter(Boolean).map(function (l) { var p = l.split(':'); return { actor: p.length > 1 ? p[0].trim() : 'Someone', step: (p.length > 1 ? p.slice(1).join(':') : l).trim() }; }); }
-    function map() {
-      var steps = parse(), actors = []; steps.forEach(function (s) { if (actors.indexOf(s.actor) < 0) actors.push(s.actor); });
-      var W = 760, rowH = 70, colW = Math.max(90, (W - 130) / steps.length), H = actors.length * rowH + 20;
-      var svg = '<svg class="demo__svg" viewBox="0 0 ' + W + ' ' + H + '" role="img" aria-label="Swimlane process map">';
-      actors.forEach(function (a, i) { svg += '<rect x="0" y="' + (i * rowH + 10) + '" width="' + W + '" height="' + rowH + '" fill="' + (i % 2 ? 'transparent' : 'rgba(0,0,0,0.035)') + '"></rect><text x="8" y="' + (i * rowH + 44) + '" font-size="12" font-weight="700" fill="currentColor">' + a + '</text>'; });
-      var handoffs = 0, waits = 0, retypes = 0;
+  D.register('ba-deliverables', function () {
+    var f = D.frame({ title: 'The documents you actually receive', status: 'four tabs, all finished',
+      note: 'Not a workshop: the outputs. A current-and-future process map, prioritised requirements, an options paper with a recommendation, and a plan with dates. Written so your board, your staff and your developer all read the same thing.' });
+    var tab = 'map', out = h('div'), future = false;
+    function mapSvg(fut) {
+      var actors = ['Customer', 'Admin', 'Owner'], steps = fut
+        ? [['Customer', 'enquires on website'], ['Customer', 'gets instant quote range'], ['Admin', 'approves quote (1 click)'], ['Customer', 'accepts online'], ['Owner', 'does the job'], ['Admin', 'invoice auto-sent']]
+        : [['Customer', 'emails enquiry'], ['Admin', 'retypes to spreadsheet'], ['Admin', 'waits for owner'], ['Owner', 'prices from memory'], ['Admin', 'emails PDF quote'], ['Customer', 'chases by phone'], ['Customer', 'accepts by email'], ['Admin', 'retypes into scheduler'], ['Owner', 'does the job'], ['Admin', 'retypes into accounting']];
+      var colW = Math.max(72, (760 - 120) / steps.length), W = Math.max(760, 120 + colW * steps.length), rowH = 64, H = actors.length * rowH + 16, svg = '<svg class="demo__svg" viewBox="0 0 ' + W + ' ' + H + '" role="img" aria-label="Process map">';
+      actors.forEach(function (a, i) { svg += '<rect x="0" y="' + (i * rowH + 8) + '" width="' + W + '" height="' + rowH + '" fill="' + (i % 2 ? 'transparent' : 'rgba(0,0,0,0.035)') + '"></rect><text x="8" y="' + (i * rowH + 42) + '" font-size="12" font-weight="700" fill="currentColor">' + a + '</text>'; });
       steps.forEach(function (s, j) {
-        var row = actors.indexOf(s.actor), x = 120 + j * colW, y = row * rowH + 22, wait = /wait|chase/i.test(s.step), retype = /retype|re-?enter|copy/i.test(s.step);
-        if (wait) waits++; if (retype) retypes++;
-        if (j > 0 && steps[j - 1].actor !== s.actor) { handoffs++; var px = 120 + (j - 1) * colW + colW * 0.8 - 8, py = actors.indexOf(steps[j - 1].actor) * rowH + 45; svg += '<line x1="' + px + '" y1="' + py + '" x2="' + x + '" y2="' + (y + 23) + '" stroke="currentColor" stroke-width="1.5" stroke-dasharray="4 3"></line>'; }
-        svg += '<rect x="' + x + '" y="' + y + '" width="' + (colW * 0.8 - 8) + '" height="46" rx="0" fill="' + (wait ? 'var(--amber-soft)' : retype ? 'oklch(0.9 0.05 30)' : 'var(--bone)') + '" stroke="currentColor" stroke-width="1.5"></rect>';
-        var words = s.step.split(' '), l1 = words.slice(0, 3).join(' '), l2 = words.slice(3, 6).join(' ');
-        svg += '<text x="' + (x + 6) + '" y="' + (y + 19) + '" font-size="10" fill="currentColor">' + l1.slice(0, 18) + '</text><text x="' + (x + 6) + '" y="' + (y + 34) + '" font-size="10" fill="currentColor">' + l2.slice(0, 18) + '</text>';
+        var row = actors.indexOf(s[0]), x = 110 + j * colW, y = row * rowH + 20, bad = /retype|wait|chase|memory/.test(s[1]);
+        if (j > 0) { var px = 110 + (j - 1) * colW + colW * 0.8 - 6, py = actors.indexOf(steps[j - 1][0]) * rowH + 42; svg += '<line x1="' + px + '" y1="' + py + '" x2="' + x + '" y2="' + (y + 22) + '" stroke="currentColor" stroke-width="1.4" stroke-dasharray="4 3"></line>'; }
+        svg += '<rect x="' + x + '" y="' + y + '" width="' + (colW * 0.8 - 6) + '" height="44" fill="' + (bad ? 'oklch(0.9 0.05 30)' : fut ? 'color-mix(in oklch, var(--green) 25%, var(--bone))' : 'var(--bone)') + '" stroke="currentColor" stroke-width="1.4"></rect>';
+        var w = s[1].split(' '); svg += '<text x="' + (x + 5) + '" y="' + (y + 18) + '" font-size="9.5" fill="currentColor">' + w.slice(0, 2).join(' ') + '</text><text x="' + (x + 5) + '" y="' + (y + 32) + '" font-size="9.5" fill="currentColor">' + w.slice(2, 5).join(' ') + '</text>';
       });
-      svg += '</svg>';
-      out.innerHTML = '';
-      out.appendChild(h('div', { html: svg }));
-      out.appendChild(h('div', { class: 'demo__row', style: 'margin-top:10px' },
-        h('span', { class: 'demo__pill' }, steps.length + ' steps'), h('span', { class: 'demo__pill' }, actors.length + ' actors'),
-        h('span', { class: 'demo__pill ' + (handoffs > 4 ? 'demo__pill--warn' : '') }, handoffs + ' handoffs'),
-        h('span', { class: 'demo__pill ' + (waits ? 'demo__pill--warn' : '') }, waits + ' waits'),
-        h('span', { class: 'demo__pill ' + (retypes ? 'demo__pill--bad' : '') }, retypes + ' retyping steps')));
-      out.appendChild(h('p', { style: 'margin:10px 0 0; font-size:0.9rem' }, retypes ? [h('b', {}, 'The ' + retypes + ' red boxes are the automation.'), ' Every retype is a join between two systems that software should own. The amber waits are where customers leak.'] : 'Clean process. Rare. Now let us check the spec holds.'));
-      f.status(handoffs + ' handoffs, ' + retypes + ' retypes', retypes ? 'warn' : 'ok');
+      return svg + '</svg>';
     }
-    function spec() {
-      var steps = parse(), lines = ['# SPEC (generated from your process)', '', '## Done means'];
-      steps.forEach(function (s) {
-        if (/retype|re-?enter|copy/i.test(s.step)) lines.push('- ' + s.step.replace(/retypes?|re-?enters?|copies/i, 'flows automatically') + ' without anyone typing; a failed sync is visible within 5 minutes.');
-        else if (/wait|chase/i.test(s.step)) lines.push('- ' + s.actor + ' never has to chase: the status is visible to them and a reminder fires after 2 business days.');
-        else if (/memory|guess/i.test(s.step)) lines.push('- ' + s.step.replace(/from memory/i, 'from a rate card') + '; the price can be reproduced by someone else.');
-        else lines.push('- ' + s.actor + ' can ' + s.step.replace(/^(\w+)s\b/, '$1') + ' in under 2 minutes on a phone.');
-      });
-      lines.push('', '## Must never', '- Lose an enquiry between systems.', '- Require the same fact to be typed twice.');
+    function draw() {
       out.innerHTML = '';
-      out.appendChild(h('pre', { class: 'demo__log', style: 'max-height:none' }, lines.join('\n')));
-      out.appendChild(h('p', { style: 'margin:10px 0 0; font-size:0.9rem' }, h('b', {}, 'Checkable statements, not vibes.'), ' This is the document a build gets held to, and the reason AI-assisted delivery works when the spec exists and fails when it does not.'));
-      f.status('spec drafted', 'ok');
+      if (tab === 'map') {
+        out.appendChild(h('div', { class: 'demo__row', style: 'margin-bottom:10px' }, h('b', {}, future ? 'Future state: 6 steps, 0 retyping' : 'Current state: 10 steps, 3 retypes, 2 waits'), D.btn(future ? 'Show current state' : 'Show future state', function () { future = !future; draw(); }, 'demo__btn--small demo__btn--ghost')));
+        out.appendChild(h('div', { html: mapSvg(future) }));
+      } else if (tab === 'req') {
+        out.appendChild(D.table(['#', 'Requirement', 'Priority', 'Done means'], [
+          ['R1', 'Enquiries from the website create a quote record automatically', 'Must', 'no enquiry is ever typed twice'],
+          ['R2', 'Customers see an instant price range for standard jobs', 'Must', 'range shown in under 2 seconds; fixed quote follows'],
+          ['R3', 'Owner approves quotes from a phone in one tap', 'Must', 'approval takes under 30 seconds'],
+          ['R4', 'Accepted quotes become scheduled jobs without retyping', 'Should', 'job appears in the schedule the moment the customer accepts'],
+          ['R5', 'Completed jobs invoice themselves', 'Should', 'invoice sent within 5 minutes of "done"'],
+          ['R6', 'Weekly report of quotes out, won, lost', 'Could', 'emailed Monday 7am, numbers reconcile to accounting']
+        ].map(function (r) { return h('tr', { class: r[2] === 'Must' ? '' : r[2] === 'Should' ? 'is-warn' : '' }, h('td', {}, h('code', {}, r[0])), h('td', {}, r[1]), h('td', {}, h('span', { class: 'demo__pill' }, r[2])), h('td', { style: 'font-size:0.85rem; color:var(--fg-dim)' }, r[3])); })));
+      } else if (tab === 'options') {
+        out.appendChild(h('div', { class: 'demo__grid' }, [
+          ['A. Off-the-shelf job app', '$60 to $150 / month', 'Fast, proven, but your quoting process bends to fit it. Fine if you can live with that.', 'warn'],
+          ['B. Off-the-shelf plus a small custom layer (recommended)', '$4k to $7k once + subscription', 'The app runs jobs; a thin custom piece does your quoting and joins accounting. Best value for how you actually work.', 'ok'],
+          ['C. Fully custom system', '$18k to $30k', 'Exactly your process, nothing else. Only worth it if the process is your competitive edge, and it is not, yet.', 'bad']
+        ].map(function (o) { return h('div', { class: 'demo__panel' }, h('h4', {}, o[0]), h('span', { class: 'demo__pill demo__pill--' + o[3] }, o[1]), h('p', { style: 'margin:8px 0 0; font-size:0.9rem' }, o[2])); })));
+        out.appendChild(h('p', { style: 'margin:12px 0 0; font-size:0.9rem' }, h('b', {}, 'Recommendation: B.'), ' Reasons are written down, costs are ranges you can hold me to, and the risks of A and C are named, not hidden.'));
+      } else {
+        var weeks = 10, tasks = [['Discovery and process map', 1, 2], ['Choose and set up the job app', 2, 3], ['Build the quoting layer', 4, 6], ['Join accounting', 6, 7], ['Staff training and parallel run', 8, 9], ['Go live and hypercare', 10, 10]];
+        var W = 720, rowH = 30, H = tasks.length * rowH + 30, colW = (W - 220) / weeks, svg = '<svg class="demo__svg" viewBox="0 0 ' + W + ' ' + H + '" role="img" aria-label="Project plan">';
+        for (var w = 1; w <= weeks; w++) svg += '<text x="' + (220 + (w - 0.5) * colW) + '" y="14" font-size="10" text-anchor="middle" fill="currentColor">W' + w + '</text>';
+        tasks.forEach(function (t, i) { var y = 24 + i * rowH; svg += '<text x="4" y="' + (y + 14) + '" font-size="11" fill="currentColor">' + t[0] + '</text><rect x="' + (220 + (t[1] - 1) * colW) + '" y="' + y + '" width="' + ((t[2] - t[1] + 1) * colW - 4) + '" height="20" fill="' + (i === 5 ? 'var(--amber)' : 'var(--green)') + '"></rect>'; });
+        out.appendChild(h('div', { html: svg + '</svg>' }));
+        out.appendChild(h('p', { style: 'margin:10px 0 0; font-size:0.9rem' }, 'Ten weeks, fixed price, one accountable person. The parallel run in weeks 8 and 9 is where staff find what the plan missed, on purpose, before it matters.'));
+      }
     }
-    f.body.appendChild(h('label', { class: 'demo__label' }, 'Your process, one step per line as "Who: does what"', ta));
-    f.body.appendChild(h('div', { class: 'demo__row' }, D.btn('Map it', map), D.btn('Write the spec', spec, 'demo__btn--ghost')));
-    f.body.appendChild(out);
-    map();
+    f.body.appendChild(h('div', { class: 'demo__chips' }, [['map', 'Process map'], ['req', 'Requirements'], ['options', 'Options paper'], ['plan', 'Project plan']].map(function (o) { return h('button', { class: 'demo__chip', type: 'button', 'aria-pressed': tab === o[0], onclick: function (e) { tab = o[0]; Array.prototype.forEach.call(e.target.parentNode.children, function (c) { c.setAttribute('aria-pressed', c === e.target); }); draw(); } }, o[1]); })));
+    f.body.appendChild(out); draw();
     return f.root;
   });
 

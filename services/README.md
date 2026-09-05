@@ -74,8 +74,10 @@ page per industry rather than an industry-times-service matrix: hundreds of
 thin combination pages read as doorway spam to Google and to buyers, and
 twelve deep pages you can send with a proposal beat them.
 
-Each page names the sector's real systems (ServiceM8, Cliniko, PropertyMe,
-aXcelerate and so on) and calibrates honesty per sector: mining, government,
+Each page speaks of the sector's systems generically ("your job system",
+"your practice software") rather than naming products Aaron has not worked
+inside, carries a working build for the sector, and calibrates honesty per
+sector: mining, government,
 education, not-for-profits and transport lean on the actual track record;
 hospitality, real estate, health and agriculture say in plain words that the
 industry is new and the method is not. Keep that calibration when editing;
@@ -100,24 +102,16 @@ a new entry in the generator's content files, regenerated and added to the
 sitemap. Write the answer the way you would say it on the call; the format
 does the rest.
 
-## The system guides
+## The system guides (unpublished)
 
-`/systems/` is the rankable long tail from the SEO plan, already written:
-twelve "[System] to [System]" pages (ServiceM8/AroFlo to Xero, Shopify to
-MYOB, WooCommerce fees, Square and Shopify stock, Cliniko reminders,
-Halaxy versus Cliniko, HubSpot to Xero, PropertyMe reports, aXcelerate
-enrolment, VETtrak AVETMISS, simPRO and weather). Buyers type exactly
-these pairs; almost nobody serious writes for them. Same generator
-machinery as answers (`tools/gen_systems.py`, content in
-`tools/systems_a.py` and `tools/systems_b.py`); each page names how the
-join actually works, the traps, and when the native integration means
-they should not hire anyone.
-
-The register is deliberate: method and mechanics, never a claimed
-portfolio of that specific pair. Where a page states product behaviour
-(what ServiceM8's native sync carries, how Halaxy charges), read it once
-before launch against what you currently know; products drift, and these
-pages carry a knowledge date like any expert would.
+Twelve "[System] to [System]" pages were generated for the SEO long tail
+and then pulled before launch: they asserted the mechanics of named
+products (job systems, practice software, property platforms, student
+management systems) that Aaron has not actually worked inside. They sit
+in `unpublished/systems/` with their generator (`tools/gen_systems.py`,
+`tools/systems_a.py`, `tools/systems_b.py`) and are not linked, not in
+the sitemap and not deployed. Republish any one of them only after real
+hands-on time with both products in the pair, and rewrite it from that.
 
 ## The DIY kits
 

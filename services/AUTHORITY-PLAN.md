@@ -69,35 +69,36 @@ story, and (once it exists) domain everywhere:
 
 ## Tier 1: ecosystem directories you have a claim to (the sharpest hour)
 
-This is the tier most one-person shops never think of, and it converts the
-twelve `/systems/` pages from content into positioning. Every platform you
-wrote a guide about has some form of partner, consultant, advisor or
-expert listing, and those listings are exactly where a buyer who already
-owns that system goes looking for help. These links live on high-authority
+This is the tier most one-person shops never think of. Every platform you
+actually build inside (HubSpot, Salesforce, Zoho, Zapier, Make, n8n, Xero,
+Stripe, Shopify, WooCommerce, WordPress) has some form of partner,
+consultant, advisor or expert listing, and those listings are exactly
+where a buyer who already owns that system goes looking for help. Stick
+to platforms you have shipped on; a listing for a product you have not
+worked inside is a claim you cannot back on the call. These links live on high-authority
 domains, next to purchase intent, in tiny ponds:
 
 - **Xero's ecosystem.** The advisor directory proper requires
   certification (a course and an exam; decide if the badge is worth the
-  hours, it plausibly is given how many of the systems pages end in
-  Xero). Short of that, the Xero community and app ecosystem discussions
+  hours, it plausibly is given how much of the CRM and store work ends
+  in Xero). Short of that, the Xero community and app ecosystem discussions
   are places a person who demonstrably understands clearing accounts and
   payout reconciliation gets noticed by bookkeepers.
-- **Field service platforms.** ServiceM8 runs a partner program with a
-  public directory of consultants; simPRO and AroFlo have partner or
-  implementer arrangements. Apply to each where the entry bar is
-  reasonable; your systems page for that platform is the application's
-  proof.
+- **Automation platforms.** Zapier, Make and n8n each run expert or
+  partner directories with a low entry bar and buyers already in a
+  "who can wire this for me" frame. The live CRM pipeline demo is the
+  application's proof.
 - **HubSpot.** The solutions provider tier is a paid program; below it,
   the community forum rewards genuinely useful answers with profile
-  visibility. Answer the questions your HubSpot-to-Xero page already
-  answers.
-- **Practice management and RTO systems.** Cliniko, Halaxy, aXcelerate
-  and VETtrak each have some mix of community forum, partner listing or
-  recommended-consultant arrangement. Smaller ecosystems mean a helpful
-  regular gets known platform-wide in months.
+  visibility. Answer the questions your CRM answers already cover.
+- **Shopify and WooCommerce.** Shopify's partner program and the
+  WooCommerce community both surface people who can do the accounting
+  join properly; the working store demo is the proof. Field-service,
+  practice-management and student-system ecosystems are off the list
+  until there is real hands-on work in them to point at.
 - **The method for every forum in this tier:** answer real questions with
-  real answers, link your relevant guide only when it genuinely answers
-  the thread, and let the profile link carry the SEO. Forum signature
+  real answers, link your relevant answer or demo only when it genuinely
+  answers the thread, and let the profile link carry the SEO. Forum signature
   spam died in 2012; being the person whose answers get bookmarked did
   not.
 
@@ -108,14 +109,14 @@ Fifteen of these relationships outperform any quantity of directory
 listings, and they compound.
 
 - **Bookkeepers and accountants.** The single best referral source for
-  every money-adjacent systems page: they see the ServiceM8 double entry
+  every money-adjacent page: they see the job-system double entry
   and the unreconciled Shopify feeds first, they are trusted, and they do
   not want to fix it themselves. The move is small and personal: identify
   ten Adelaide bookkeeping practices (the Xero and MYOB communities are
   where they congregate), send the coffee email in the templates section,
-  and hand them the systems guides as tools that make them look good with
-  their own clients. A bookkeeper who links your WooCommerce-fees guide
-  from their resources page has given you a link, an endorsement and a
+  and hand them the answers and the working store demo as tools that make
+  them look good with their own clients. A bookkeeper who links your
+  store-to-accounting answer from their resources page has given you a link, an endorsement and a
   channel in one motion.
 - **Marketing agencies without dev capacity.** Agencies sell websites and
   subcontract the builds. White-label or named, this is steady work and
@@ -178,10 +179,10 @@ credential for proposals, and occasionally a client.
    person who understands the business can now deliver what used to need
    a team. Honest about what AI does and does not change. This fits
    business, freelancing and AI shows.
-2. **The vertical story.** "Why your [ServiceM8/Cliniko/Shopify] and your
-   accounting system disagree, and what it costs you." This fits trade,
-   practice-management and industry shows, and each pitch links the
-   matching systems guide as proof you can go deep for an hour.
+2. **The vertical story.** "Why your job system and your accounting
+   system disagree, and what it costs you." This fits trade, retail and
+   industry shows, and each pitch links the matching industry page, with
+   its working build, as proof you can go deep for an hour.
 
 **Target map, in pitch order** (verify each before pitching, per the note
 at the top):
@@ -325,7 +326,7 @@ operators quietly go grey:
 1. Weeks 1 to 2: Tier 0 complete (it is a checklist; finish it), the
    LinkedIn announcement post to the professional network.
 2. Weeks 3 to 6: Tier 1 applications submitted (platform partner
-   directories, with systems guides as proof); first five bookkeeper
+   directories, with the live demos as proof); first five bookkeeper
    emails; first testimonials offered to tools you rate.
 3. Weeks 7 to 10: first podcast pitch batch (five vertical shows, one
    story each); first tool launch (pick the one with the best story) on
@@ -367,15 +368,15 @@ the bracketed parts or send nothing.
 
 **The bookkeeper/accountant coffee email:**
 
-> Subject: The [ServiceM8/Shopify/etc] cleanups your clients bring you
+> Subject: The [Shopify/CRM/job-system] cleanups your clients bring you
 >
 > Hi [name],
 >
 > I'm a developer in Adelaide who fixes the messes that land on
-> bookkeepers' desks: ServiceM8 minting duplicate Xero contacts, Shopify
+> bookkeepers' desks: job systems minting duplicate Xero contacts, Shopify
 > payouts that never reconcile, the client who records payments in both
-> systems. I've written plain-words guides to the common ones:
-> [link to the most relevant systems guide].
+> systems. I've written plain-words answers to the common ones:
+> [link to the most relevant answer].
 >
 > I'm not after your work; I'm after the jobs you don't want, the ones
 > that are more software than bookkeeping. If a coffee (or fifteen
@@ -408,8 +409,8 @@ the bracketed parts or send nothing.
 >    can't do"]
 >
 > Proof I can talk and not just type: [strongest relevant link: the
-> matching systems guide, the career record, a previous episode once one
-> exists]. Decent mic, quiet room, your format.
+> matching industry page and its working build, a previous episode once
+> one exists]. Decent mic, quiet room, your format.
 >
 > If it's not a fit, no reply needed and thanks for the show.
 >
