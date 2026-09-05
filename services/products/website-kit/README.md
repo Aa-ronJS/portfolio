@@ -7,16 +7,18 @@ for Aaron, not buyers, and does not ship.
 ## Packaging
 
 One command turns the source into the deliverables (run from this
-directory; needs pandoc, or use the session's docx/pdf tooling):
+directory; needs python3 with the `markdown` package and a Chromium,
+`CHROMIUM=/path/to/chromium` if it is not at the default):
 
 ```bash
-for f in 0*.md; do pandoc "$f" -o "dist/${f%.md}.pdf"; done
-pandoc 0*.md -o dist/website-kit-complete.pdf
-zip -r dist/website-kit.zip dist/*.pdf 0*.md
+python3 build.py
 ```
 
-Ship the zip (markdown plus PDFs, so buyers get both) through the
-merchant-of-record platform's file delivery. Keep `dist/` out of git.
+That produces `dist/`: six per-document PDFs, the combined
+`website-kit-complete.pdf`, and `website-kit.zip` (PDFs plus the
+markdown, so buyers get both). Ship the zip through the
+merchant-of-record platform's file delivery. `dist/` stays out of git;
+rebuild it whenever the source changes.
 
 ## Before selling, every time the kit changes
 

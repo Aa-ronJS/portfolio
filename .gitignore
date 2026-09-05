@@ -7,3 +7,4 @@ obj/
 local.settings.json
 __pycache__/
 *.pyc
+services/products/*/dist/
