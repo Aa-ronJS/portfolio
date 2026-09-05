@@ -1,0 +1,73 @@
+<!doctype html>
+<html lang="en-AU">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Received</title>
+<meta name="robots" content="noindex">
+<meta name="theme-color" content="#12181f">
+<style>
+@font-face{font-family:'Clash';src:url('/fonts/clash-display-var.woff2') format('woff2-variations');font-weight:200 700;font-display:swap}
+@font-face{font-family:'Satoshi';src:url('/fonts/satoshi-var.woff2') format('woff2-variations');font-weight:300 900;font-display:swap}
+@font-face{font-family:'Mono';src:url('/fonts/ibm-plex-mono-500.woff2') format('woff2');font-weight:500;font-display:swap}
+:root{--ink:oklch(0.158 0.019 252); --amber:oklch(0.760 0.155 58); --amber-soft:oklch(0.860 0.090 58); --fg:oklch(0.968 0.006 84); --dim:oklch(0.800 0.012 84); --mute:oklch(0.645 0.014 252); --line:oklch(0.330 0.020 252)}
+*{box-sizing:border-box}
+body{margin:0; min-height:100svh; display:grid; place-items:center; background:var(--ink); color:var(--fg); font-family:'Satoshi',system-ui,sans-serif; font-size:clamp(1.06rem,1rem + 0.3vw,1.25rem); line-height:1.55; padding:clamp(20px,5vw,80px)}
+main{max-width:44rem}
+.tag{font-family:'Mono',ui-monospace,monospace; font-size:0.6875rem; letter-spacing:0.14em; text-transform:uppercase; color:var(--amber); margin:0 0 16px}
+h1{font-family:'Clash',sans-serif; font-weight:600; font-size:clamp(2.2rem,1.4rem + 3.6vw,4.6rem); line-height:0.96; letter-spacing:-0.026em; margin:0 0 32px; text-wrap:balance}
+h1 em{font-style:normal; color:var(--amber)}
+p{color:var(--dim); margin:0 0 1em; max-inline-size:46ch}
+ol{color:var(--dim); padding-left:1.2em; margin:0 0 32px}
+li{margin-bottom:8px}
+a{color:inherit}
+.btn{display:inline-flex; align-items:center; min-height:54px; padding:0 32px; text-decoration:none; font-weight:700; font-size:0.875rem; letter-spacing:0.06em; text-transform:uppercase; background:var(--amber); color:oklch(0.16 0.02 252); border:1px solid var(--amber)}
+.btn:hover{background:var(--amber-soft)}
+.mute{color:var(--mute); font-size:0.875rem; margin-top:48px; padding-top:24px; border-top:1px solid var(--line)}
+[hidden]{display:none !important}
+</style>
+</head>
+<body>
+<main>
+  <div id="paid" hidden>
+    <p class="tag">Payment received</p>
+    <h1>Booked. <em>Three business days starts when I have access.</em></h1>
+    <p>Stripe has emailed you a receipt. Within one business day you will hear from me directly with the two things I need:</p>
+    <ol>
+      <li>A read-only (View only) user on your HubSpot portal, or a full export if you would rather not add a user.</li>
+      <li>Whatever your totals are supposed to agree with: Xero, your payment platform, the old CRM export. A spreadsheet is fine.</li>
+    </ol>
+    <p>The report and the fix list arrive within three business days of that, and we book the thirty minutes to go through it.</p>
+  </div>
+  <div id="asked">
+    <p class="tag">Received</p>
+    <h1>Got it. <em>Same business day.</em></h1>
+    <p>You will hear back from me with a yes, a no, or a question. If it is a yes, the reply carries the payment link and the two things I need to start.</p>
+  </div>
+  <a class="btn" href="/">Back to the home page</a>
+  <p class="mute">Nothing else happens with your details. No list, no sequence.</p>
+</main>
+<script>
+(function () {
+  var paid = new URLSearchParams(location.search).get('paid') === '1';
+  document.getElementById('paid').hidden = !paid;
+  document.getElementById('asked').hidden = paid;
+
+  /* Google Ads conversions. Fill the two labels from Ads > Goals > Conversions
+     once created; the tag id must match CONFIG.gadsId in /audit/index.html.
+     Empty means nothing loads. */
+  var GADS = { id: '', purchaseLabel: '', leadLabel: '' };
+  if (!GADS.id) return;
+  var s = document.createElement('script');
+  s.async = true; s.src = 'https://www.googletagmanager.com/gtag/js?id=' + GADS.id;
+  document.head.appendChild(s);
+  window.dataLayer = window.dataLayer || [];
+  window.gtag = function () { dataLayer.push(arguments); };
+  gtag('js', new Date()); gtag('config', GADS.id);
+  var label = paid ? GADS.purchaseLabel : GADS.leadLabel;
+  if (label) gtag('event', 'conversion', { send_to: GADS.id + '/' + label, value: paid ? 490 : 0, currency: 'AUD' });
+})();
+</script>
+<script defer src="/_vercel/insights/script.js"></script>
+</body>
+</html>
