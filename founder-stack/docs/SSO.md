@@ -41,6 +41,8 @@ What `user add` does per app:
 | Cal.com | signup API |
 | Ghost | admin session API → emails a staff invite (needs SMTP) |
 | Vaultwarden | admin API → emails an invite (user picks their own master password — by design: it encrypts their vault) |
+| Rocket.Chat *(ARM alt)* | REST API as admin — create, rotate, remove |
+| EspoCRM *(ARM alt)* | REST API as admin |
 | Twenty, Docmost, Formbricks, Invoice Ninja | no scriptable path on the free tier — use the in-app invite button (the summary output reminds you) |
 | Uptime Kuma | single-admin by design; don't share it |
 

@@ -40,9 +40,28 @@ Plus two pieces that tie it together:
   email + password account in every running app in one shot, and
   `user rm` offboards them everywhere. See [docs/SSO.md](docs/SSO.md).
 
+## What it actually costs
+
+The software is open source — no license fees, ever. What you pay for is
+the machine it runs on and, optionally, email delivery:
+
+| | $0 path | Comfortable path |
+|---|---|---|
+| Server | Oracle Cloud Always Free ARM VM (4 cores / 24 GB, forever) | any $10–40/mo VPS |
+| Domain | free `yourbiz.duckdns.org` subdomain | a real domain, ~$10/yr |
+| Email relay | Resend / Brevo free tier (3,000/mo or 300/day) | same, or Amazon SES at $0.10/1,000 |
+| **Monthly total** | **$0** | **$10–40** |
+
+The $0 path is fully supported — `install.sh` detects the ARM server and
+`stackctl` swaps in ARM-capable equivalents for the three apps whose
+upstreams only ship amd64 images. Step-by-step: [docs/ZERO-COST.md](docs/ZERO-COST.md).
+
+Either way the cost is flat: adding your 50th teammate costs $0, not
+$8 × 50/month.
+
 ## Requirements
 
-- A Linux server (Ubuntu 22.04+/Debian 12+ recommended).
+- A Linux server (Ubuntu 22.04+/Debian 12+ recommended), amd64 or arm64.
   - 4 GB RAM comfortably runs 4–6 apps; 16 GB runs everything at once.
 - A domain you control, with a **wildcard DNS record**:
   `*.yourdomain.com  A  <your-server-ip>` (and optionally the apex).

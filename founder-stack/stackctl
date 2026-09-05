@@ -34,11 +34,48 @@ subdomain() {
     documenso) echo sign ;;     umami) echo analytics ;;
     nextcloud) echo files ;;    vaultwarden) echo vault ;;
     uptime-kuma) echo status ;; ghost) echo blog ;;
+    # ARM alternatives share the subdomain of the app they replace
+    espocrm) echo crm ;;        rocketchat) echo chat ;;
+    easyappointments) echo cal ;;
     *) echo "$1" ;;
   esac
 }
 
+# Three upstreams ship amd64-only images; on arm64 servers (e.g. Oracle's
+# Always Free tier) these ARM-capable alternatives take their place.
+alt_for() { # amd64-only app -> its ARM alternative
+  case "$1" in
+    twenty) echo espocrm ;; mattermost) echo rocketchat ;; calcom) echo easyappointments ;;
+  esac
+}
+replaces() { # ARM alternative -> the app it replaces
+  case "$1" in
+    espocrm) echo twenty ;; rocketchat) echo mattermost ;; easyappointments) echo calcom ;;
+  esac
+}
+is_arm() { case "$(uname -m)" in aarch64|arm64) return 0 ;; *) return 1 ;; esac; }
+
 all_apps() { ls -1 "$APPS_DIR"; }
+
+# The set `up --all` starts: everything, minus whichever side of each
+# amd64/ARM pair doesn't fit this server (they'd fight over one subdomain).
+default_apps() {
+  local a
+  for a in $(all_apps); do
+    if is_arm; then [ -n "$(alt_for "$a")" ] && continue
+    else [ -n "$(replaces "$a")" ] && continue; fi
+    echo "$a"
+  done
+}
+
+app_tag() { # annotation for list/status output
+  local a="$1"
+  if [ -n "$(alt_for "$a")" ]; then
+    is_arm && echo "(amd64-only: use $(alt_for "$a"))" || echo ""
+  elif [ -n "$(replaces "$a")" ]; then
+    is_arm && echo "(ARM alternative to $(replaces "$a"))" || echo "(alternative to $(replaces "$a"))"
+  fi
+}
 
 compose() { # compose <app> <compose args...>
   local app="$1"; shift
@@ -46,7 +83,7 @@ compose() { # compose <app> <compose args...>
 }
 
 resolve_apps() { # expands --all, validates names
-  if [ "${1:-}" = "--all" ]; then all_apps; return; fi
+  if [ "${1:-}" = "--all" ]; then default_apps; return; fi
   [ $# -gt 0 ] || fail "specify app names or --all (see: stackctl list)"
   local a; for a in "$@"; do
     [ -d "$APPS_DIR/$a" ] || fail "unknown app '$a' (see: stackctl list)"
@@ -65,14 +102,23 @@ running_count() { # number of running containers for an app; 0 on any error
 cmd="${1:-}"; shift || true
 case "$cmd" in
   list)
-    printf '%-14s %s\n' "APP" "URL"
+    printf '%-17s %-40s %s\n' "APP" "URL" ""
     for a in $(all_apps); do
-      printf '%-14s https://%s.%s\n' "$a" "$(subdomain "$a")" "$(base_domain)"
+      printf '%-17s %-40s %s\n' "$a" "https://$(subdomain "$a").$(base_domain)" "$(app_tag "$a")"
     done
+    is_arm && echo && echo "arm64 server detected: 'up --all' uses the ARM alternatives automatically."
     ;;
 
   up)
     for a in $(resolve_apps "$@"); do
+      if is_arm && [ -n "$(alt_for "$a")" ]; then
+        fail "$a ships an amd64-only image and won't run on this arm64 server — use: stackctl up $(alt_for "$a")"
+      fi
+      # the two sides of a pair share a subdomain; refuse to run both
+      other="$(alt_for "$a")$(replaces "$a")"   # at most one is non-empty
+      if [ -n "$other" ] && [ "$(running_count "$other")" -gt 0 ]; then
+        fail "$other is running on the same subdomain as $a — stop it first: stackctl down $other"
+      fi
       log "Starting $a -> https://$(subdomain "$a").$(base_domain)"
       compose "$a" up -d
     done
@@ -96,11 +142,11 @@ case "$cmd" in
     ;;
 
   status)
-    printf '%-14s %-10s %s\n' "APP" "STATE" "URL"
+    printf '%-17s %-10s %s\n' "APP" "STATE" "URL"
     for a in $(all_apps); do
       state="stopped"
       [ "$(running_count "$a")" -gt 0 ] && state="running"
-      printf '%-14s %-10s https://%s.%s\n' "$a" "$state" "$(subdomain "$a")" "$(base_domain)"
+      printf '%-17s %-10s https://%s.%s  %s\n' "$a" "$state" "$(subdomain "$a")" "$(base_domain)" "$(app_tag "$a")"
     done
     ;;
 

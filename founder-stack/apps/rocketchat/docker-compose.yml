@@ -1,0 +1,53 @@
+# Rocket.Chat — team chat, ARM-capable alternative to Mattermost -> https://chat.${BASE_DOMAIN}
+# Shares the `chat.` subdomain with mattermost: run one or the other, not both.
+services:
+  mongodb:
+    image: mongo:7
+    restart: unless-stopped
+    command: ["--replSet", "rs0", "--bind_ip_all"]
+    volumes:
+      - mongo:/data/db
+    # Rocket.Chat requires a replica set; initialise it once the daemon is up
+    healthcheck:
+      test: ["CMD-SHELL", "mongosh --quiet --eval \"try { rs.status().ok } catch (e) { rs.initiate({_id:'rs0',members:[{_id:0,host:'mongodb:27017'}]}).ok }\" | grep -q 1"]
+      interval: 10s
+      timeout: 10s
+      retries: 30
+      start_period: 20s
+
+  app:
+    image: rocketchat/rocket.chat:latest
+    restart: unless-stopped
+    depends_on:
+      mongodb:
+        condition: service_healthy
+    environment:
+      MONGO_URL: mongodb://mongodb:27017/rocketchat?replicaSet=rs0
+      MONGO_OPLOG_URL: mongodb://mongodb:27017/local?replicaSet=rs0
+      ROOT_URL: https://chat.${BASE_DOMAIN}
+      PORT: 3000
+      DEPLOY_METHOD: docker
+      # Pre-seeded admin from .env; skips the setup wizard
+      ADMIN_USERNAME: ${ADMIN_USER}
+      ADMIN_PASS: ${ADMIN_PASSWORD}
+      ADMIN_EMAIL: ${ADMIN_EMAIL}
+      OVERWRITE_SETTING_Show_Setup_Wizard: completed
+    volumes:
+      - uploads:/app/uploads
+    networks:
+      - default
+      - proxy
+    labels:
+      traefik.enable: "true"
+      traefik.http.routers.rocketchat.rule: Host(`chat.${BASE_DOMAIN}`)
+      traefik.http.routers.rocketchat.entrypoints: websecure
+      traefik.http.routers.rocketchat.tls.certresolver: le
+      traefik.http.services.rocketchat.loadbalancer.server.port: 3000
+
+volumes:
+  mongo:
+  uploads:
+
+networks:
+  proxy:
+    external: true

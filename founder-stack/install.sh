@@ -39,10 +39,21 @@ gen() {
 if [ -f .env ]; then
   log ".env already exists — keeping it (delete it to regenerate)."
 else
-  read -rp "Your apex domain (e.g. example.com): " DOMAIN
+  read -rp "Your domain (e.g. example.com, or a free one like yourbiz.duckdns.org): " DOMAIN
   [ -n "$DOMAIN" ] || fail "domain is required"
   read -rp "Email for Let's Encrypt + admin accounts: " EMAIL
   [ -n "$EMAIL" ] || fail "email is required"
+
+  echo
+  echo "Outbound email (invoices, invites, newsletters) needs an SMTP relay."
+  echo "Free tiers that work: Resend (3,000/mo), Brevo (300/day). Enter to skip for now."
+  read -rp "SMTP host [skip]: " SMTP_HOST_IN
+  SMTP_PORT_IN=587; SMTP_USER_IN=""; SMTP_PASS_IN=""
+  if [ -n "$SMTP_HOST_IN" ]; then
+    read -rp "SMTP port [587]: " p; SMTP_PORT_IN="${p:-587}"
+    read -rp "SMTP username: " SMTP_USER_IN
+    read -rsp "SMTP password/API key: " SMTP_PASS_IN; echo
+  fi
 
   log "Generating .env with fresh secrets..."
   while IFS= read -r line; do
@@ -51,6 +62,10 @@ else
       ACME_EMAIL=*)    line="ACME_EMAIL=$EMAIL" ;;
       ADMIN_EMAIL=*)   line="ADMIN_EMAIL=$EMAIL" ;;
       SMTP_FROM=*)     line="SMTP_FROM=noreply@$DOMAIN" ;;
+      SMTP_HOST=*)     line="SMTP_HOST=$SMTP_HOST_IN" ;;
+      SMTP_PORT=*)     line="SMTP_PORT=$SMTP_PORT_IN" ;;
+      SMTP_USER=*)     line="SMTP_USER=$SMTP_USER_IN" ;;
+      SMTP_PASSWORD=*) line="SMTP_PASSWORD=$SMTP_PASS_IN" ;;
       *=__GEN_*__)
         key="${line%%=*}"; placeholder="${line#*=}"
         line="$key=$(gen "$placeholder")" ;;
@@ -71,6 +86,17 @@ log "Starting Traefik (HTTPS reverse proxy)..."
 docker compose --env-file "$ROOT/.env" -f "$ROOT/traefik/docker-compose.yml" -p fs-traefik up -d
 
 BASE_DOMAIN="$(grep '^BASE_DOMAIN=' .env | cut -d= -f2-)"
+case "$(uname -m)" in
+  aarch64|arm64)
+    cat <<EOF
+
+  arm64 server detected (Oracle Always Free, Raspberry Pi, ...).
+  Three upstreams only publish amd64 images, so 'stackctl up --all' will use
+  their ARM-capable equivalents automatically:
+      calcom -> easyappointments     twenty -> espocrm     mattermost -> rocketchat
+EOF
+    ;;
+esac
 cat <<EOF
 
   Founder Stack is bootstrapped.

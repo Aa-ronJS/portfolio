@@ -346,6 +346,56 @@ provision_vaultwarden() {
   rm -f "$jar"
 }
 
+# ---------- Rocket.Chat (REST API as admin) — ARM alternative to Mattermost ----------
+provision_rocketchat() {
+  local action="$1" email="$2" pass="$3" user="${2%%@*}"
+  app_running rocketchat || return   # silent: it's an alternative, usually not running
+  local base="https://chat.$(base_domain)/api/v1" body tok uid
+  body="$(http POST "$base/login" -H "Content-Type: application/json" \
+    -d "{\"user\":\"$(json_escape "$(envval ADMIN_USER)")\",\"password\":\"$(json_escape "$(envval ADMIN_PASSWORD)")\"}")" \
+    || { note_fail rocketchat "admin login failed (HTTP $HTTP_CODE)"; return; }
+  tok="$(printf '%s' "$body" | sed -n 's/.*"authToken":"\([^"]*\)".*/\1/p')"
+  uid="$(printf '%s' "$body" | sed -n 's/.*"userId":"\([^"]*\)".*/\1/p')"
+  local auth=(-H "X-Auth-Token: $tok" -H "X-User-Id: $uid" -H "Content-Type: application/json")
+  case "$action" in
+    add)
+      http POST "$base/users.create" "${auth[@]}" \
+        -d "{\"email\":\"$(json_escape "$email")\",\"name\":\"$(json_escape "$user")\",\"username\":\"$(json_escape "$user")\",\"password\":\"$(json_escape "$pass")\",\"verified\":true}" >/dev/null \
+        && note_ok rocketchat "rocket.chat — account created" \
+        || note_fail rocketchat "users.create failed (HTTP $HTTP_CODE)"
+      ;;
+    passwd)
+      local id; id="$(http GET "$base/users.info?username=$user" "${auth[@]}" | sed -n 's/.*"_id":"\([^"]*\)".*/\1/p' | head -1)"
+      [ -n "$id" ] && http POST "$base/users.update" "${auth[@]}" \
+        -d "{\"userId\":\"$id\",\"data\":{\"password\":\"$(json_escape "$pass")\"}}" >/dev/null \
+        && note_ok rocketchat "rocket.chat — password rotated" \
+        || note_fail rocketchat "users.update failed (HTTP $HTTP_CODE)"
+      ;;
+    rm)
+      http POST "$base/users.delete" "${auth[@]}" -d "{\"username\":\"$(json_escape "$user")\"}" >/dev/null \
+        && note_ok rocketchat "rocket.chat — user removed" \
+        || note_fail rocketchat "users.delete failed (HTTP $HTTP_CODE)"
+      ;;
+  esac
+}
+
+# ---------- EspoCRM (REST API as admin) — ARM alternative to Twenty ----------
+provision_espocrm() {
+  local action="$1" email="$2" pass="$3" user="${2%%@*}"
+  app_running espocrm || return      # silent: it's an alternative, usually not running
+  local base="https://crm.$(base_domain)/api/v1"
+  local auth=(-u "$(envval ADMIN_USER):$(envval ADMIN_PASSWORD)" -H "Content-Type: application/json")
+  case "$action" in
+    add)
+      http POST "$base/User" "${auth[@]}" \
+        -d "{\"userName\":\"$(json_escape "$user")\",\"emailAddress\":\"$(json_escape "$email")\",\"firstName\":\"$(json_escape "$user")\",\"type\":\"regular\",\"isActive\":true,\"password\":\"$(json_escape "$pass")\",\"passwordConfirm\":\"$(json_escape "$pass")\"}" >/dev/null \
+        && note_ok espocrm "espocrm — account created" \
+        || note_fail espocrm "API create failed (HTTP $HTTP_CODE)"
+      ;;
+    passwd|rm) note_manual espocrm "Administration → Users ($action not scripted)" ;;
+  esac
+}
+
 # ---------- Orchestrator ----------
 run_provisioners() { # <add|passwd|rm> <email> <password>
   local action="$1" email="$2" pass="$3"
@@ -362,6 +412,8 @@ run_provisioners() { # <add|passwd|rm> <email> <password>
   provision_calcom     "$action" "$email" "$pass"
   provision_ghost      "$action" "$email" "$pass"
   provision_vaultwarden "$action" "$email" "$pass"
+  provision_rocketchat "$action" "$email" "$pass"
+  provision_espocrm    "$action" "$email" "$pass"
 
   echo
   if [ "$action" = add ]; then

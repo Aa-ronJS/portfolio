@@ -25,7 +25,11 @@ open the URL creates the admin account** — do it immediately after
 | nextcloud | `files.` | **Pre-seeded** (`ADMIN_USER`/`ADMIN_PASSWORD`) | ~500 MB |
 | vaultwarden | `vault.` | Sign up, then set `VAULTWARDEN_SIGNUPS_ALLOWED=false` and re-up | ~50 MB |
 | uptime-kuma | `status.` | First-visit setup | ~150 MB |
-| ghost | `blog.` | Visit `/ghost` to create the owner account | ~300 MB |
+| ghost | `blog.` | **Auto-bootstrapped** by `stackctl user add` (owner = ADMIN_EMAIL) | ~300 MB |
+| *ARM alternatives* (docs/ZERO-COST.md) | | | |
+| easyappointments | `cal.` | First-visit setup wizard | ~150 MB |
+| espocrm | `crm.` | **Pre-seeded** (`ADMIN_USER`/`ADMIN_PASSWORD`) | ~400 MB |
+| rocketchat | `chat.` | **Pre-seeded** (`ADMIN_USER`/`ADMIN_PASSWORD`); wizard skipped | ~1 GB (app+mongo) |
 
 A 4 GB VPS runs ~5 of these comfortably; 16 GB runs all of them.
 
