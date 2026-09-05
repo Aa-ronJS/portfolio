@@ -7,9 +7,16 @@ instead of a marketplace. Seven pages, no JavaScript, no build step; each
 page is written for one search intent and answers it properly rather than
 being a doorway page.
 
+The through-line on every page is the actual positioning: one person who
+understands the business and runs AI like a delivery team, so work that used
+to need several people gets specified, built and proven by one. The service
+pages exist because that is not what buyers type into Google; they type the
+problems below, and the positioning is what converts them once they land.
+
 | Page | The search it answers |
 |---|---|
 | `/` | freelance web developer adelaide, full stack developer australia |
+| `/ai-development/` | ai developer, ai automation consultant, build an app with ai, ai agents for business |
 | `/wordpress/` | wordpress developer, wordpress site slow / hacked / rebuild |
 | `/website-rebuild/` | website redesign without losing seo, rebuild old website |
 | `/full-stack-developer/` | freelance full stack developer, hire .net developer |
