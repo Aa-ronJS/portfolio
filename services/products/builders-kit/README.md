@@ -41,6 +41,20 @@ every file they downloaded; renewal buys the year's currency. Never
 add licence keys, phone-home checks or expiring links to the
 documents themselves.
 
+## The self-setup layer
+
+`setup/` ships in the zip (markdown only, no PDFs): a
+`START-HERE-CLAUDE.md` addressed to Claude Code itself, which runs the
+kit's onboarding as a guided flow (interview one question at a time,
+scaffolding files from templates, git, increment zero, then stop and
+teach the loop), plus `setup/templates/` holding the four scaffolding
+files as ready-to-copy documents. Two sync rules: the templates must
+stay identical to the code blocks in `03-scaffolding.md`, and the
+setup flow's phases must keep matching what documents 03 and 05
+teach; drift between the readable kit and the runnable kit is a
+product defect. Test it occasionally the obvious way: point a fresh
+Claude Code session at the zip's setup file and watch it run.
+
 ## Register
 
 Same voice as the site. The buyer is technical-curious, not

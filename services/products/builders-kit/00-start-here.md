@@ -19,6 +19,29 @@ going technical, or a developer wanting the AI-era working method.
 If "terminal" made you wince, buy the Website Kit instead; it will
 get your site built and this kit will still be here.
 
+**Two ways to use this kit, both first-class:**
+
+1. **Read it.** Nine documents, in order the first time, out of order
+   forever, like any serious reference.
+2. **Hand it to Claude Code.** The zip you downloaded contains a
+   `setup/` folder written for the AI, not for you. Once Claude Code
+   is installed (document 3 gets you there in an afternoon), unzip
+   the kit into your new project folder, run `claude`, and say:
+
+   > Read builders-kit/setup/START-HERE-CLAUDE.md and follow it.
+
+   It will then interview you one question at a time, write your
+   project's scaffolding files from its answers, set up git, build
+   the first increment with you watching, and then, deliberately,
+   stop and teach you the working loop instead of continuing without
+   you. The kit's promise is capability, not a done-for-you site,
+   and the setup script obeys that promise: it invents no facts,
+   asks before every phase, and hands you the controls at the end.
+
+Either way, read documents 1 and 2 with your own eyes at some point
+soon: the method is short, and it is the part that makes everything
+else work.
+
 **What you have, in reading order:**
 
 1. **Start here** (this one): the licence, the promises, the shape.

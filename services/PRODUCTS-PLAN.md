@@ -61,7 +61,10 @@ cleanup gets no kit, and the mobile page's honest answer is usually
    Claude Code and the terminal workbench, the .md scaffolding with
    full templates, the architecture ladder, component-by-component
    build, hosting/DNS/secrets, a realistic security model, ship-and-
-   keep. **The annual model, honestly:** the fee buys the current
+   keep. The zip is also executable: a `setup/` layer addressed to
+   Claude Code itself runs the onboarding (interview, scaffolding,
+   git, first increment, then hands over the controls), so the pitch
+   is "read it, or run it". **The annual model, honestly:** the fee buys the current
    edition plus the licence year's re-issues, because this tier's
    subject (tooling, hosting, security) genuinely drifts within a
    year and keeping it current is real recurring work; lapsed buyers

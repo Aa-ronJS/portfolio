@@ -10,7 +10,11 @@ they are code: they program the programmer.
 
 Copy the templates verbatim, then edit every bracketed line. An
 unedited template is worse than none; the AI can tell boilerplate
-from intent.
+from intent. The templates also ship as ready files in the zip's
+`setup/templates/` folder, and the guided setup (document 1's second
+way in) installs and fills them for you through an interview; this
+document is still worth reading either way, because maintaining these
+files is yours forever.
 
 ## 4.1 CLAUDE.md: the standing orders
 

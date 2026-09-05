@@ -114,11 +114,16 @@ def main() -> None:
     print(f"  {kit}-complete.pdf")
 
     zip_path = dist / f"{kit}.zip"
+    setup_dir = src_dir / "setup"
     with zipfile.ZipFile(zip_path, "w", zipfile.ZIP_DEFLATED) as z:
         for pdf in sorted(dist.glob("*.pdf")):
             z.write(pdf, f"{kit}/pdf/{pdf.name}")
         for src in sources:
             z.write(src, f"{kit}/markdown/{src.name}")
+        if setup_dir.is_dir():
+            for f in sorted(setup_dir.rglob("*.md")):
+                z.write(f, f"{kit}/setup/{f.relative_to(setup_dir)}")
+            print(f"  setup/ included ({sum(1 for _ in setup_dir.rglob('*.md'))} files)")
     print(f"  {kit}.zip ({zip_path.stat().st_size // 1024} KB)")
 
 
