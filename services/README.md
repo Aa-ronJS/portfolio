@@ -98,13 +98,23 @@ with its sales page at `/diy/website-kit/`. The standing promise printed
 everywhere: the kit price comes off the invoice if the buyer later hires
 you for the same job, and refunds are 30 days, no theatre.
 
-Launch steps for the kits, beyond the usual placeholders: create a
-merchant-of-record checkout (Lemon Squeezy or Paddle shaped), build and
-upload the kit files per `products/website-kit/README.md`, set the real
-price, then:
+There are two tiers: the one-off Website Kit ($79 placeholder) and the
+annual-licence Builder's Kit ($249/year placeholder,
+`products/builders-kit/`, sales page `/diy/builders-kit/`), which
+carries a real obligation: at least one re-issue per licence year, and
+lapsed buyers keep their files forever (both printed on the page and in
+the kit; keep them true).
+
+Launch steps for the kits, beyond the usual placeholders: create the
+merchant-of-record products (Lemon Squeezy or Paddle shaped; the
+Builder's Kit as an annual subscription), build the deliverables
+(`cd products && python3 build.py website-kit && python3 build.py
+builders-kit`), upload the zips, set the real prices, then replace each
+placeholder (note PRO is a distinct URL, so sed it first):
 
 ```bash
-grep -rl 'REPLACE-CHECKOUT-URL' public | xargs sed -i 's|REPLACE-CHECKOUT-URL|https://your.checkout/link|g'
+grep -rl 'REPLACE-CHECKOUT-URL-PRO' public | xargs sed -i 's|REPLACE-CHECKOUT-URL-PRO|https://your.checkout/builders-kit|g'
+grep -rl 'REPLACE-CHECKOUT-URL' public | xargs sed -i 's|REPLACE-CHECKOUT-URL|https://your.checkout/website-kit|g'
 ```
 
 Until that runs, the buy buttons on `/diy/website-kit/` point at a dead

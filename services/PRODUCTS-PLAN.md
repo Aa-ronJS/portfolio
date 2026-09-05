@@ -54,6 +54,23 @@ cleanup gets no kit, and the mobile page's honest answer is usually
    flagship, because "how much does a website cost" is the site's
    biggest traffic magnet and "build it yourself with AI in a weekend"
    is the honest answer for half the askers.
+
+1b. **The Builder's Kit** (the professional tier, annual licence).
+   WRITTEN: source in `products/builders-kit/`, sales page at
+   `/diy/builders-kit/`. Nine documents: the actual practice method,
+   Claude Code and the terminal workbench, the .md scaffolding with
+   full templates, the architecture ladder, component-by-component
+   build, hosting/DNS/secrets, a realistic security model, ship-and-
+   keep. **The annual model, honestly:** the fee buys the current
+   edition plus the licence year's re-issues, because this tier's
+   subject (tooling, hosting, security) genuinely drifts within a
+   year and keeping it current is real recurring work; lapsed buyers
+   keep every file forever, no keys, no expiring links, no phone-home,
+   ever. The obligation it creates: at least one re-issue per year
+   (the source README tracks where drift concentrates). Credit rule
+   scoped to the licence year. This kit is also the marketing: it is
+   the productised version of the AI development page's pitch, and
+   "you are reading its output" is the proof line.
 2. **The Brief Kit** (business analysis, custom software). How to write
    a specification an AI or any developer can actually build from:
    the eleven-years-a-BA method as a fill-in playbook. Uniquely yours,
@@ -81,8 +98,14 @@ page in `/diy/`, no weekly homework.
 
 ## 3. Pricing, in the open
 
-Kits are priced as serious documents, not gurus' courses: **$49 to $149
-AUD** depending on depth, flagship at **$79**. The number on each sales
+One-off kits are priced as serious documents, not gurus' courses: **$49
+to $149 AUD** depending on depth, flagship at **$79**. The Builder's Kit
+is the exception and the ceiling: **$249 AUD per year** (placeholder,
+same TUNE rule), annual because its content requires annual upkeep, and
+always with the keep-your-files rule stated on the page. No other kit
+goes annual unless its content genuinely drifts the same way; "annual"
+as a revenue trick without the upkeep obligation is exactly the kind of
+thing this site does not do. The number on each sales
 page is a TUNE BEFORE LAUNCH placeholder like the calculator's config:
 make it a number you would defend on a call. Principles: cheap enough
 that a sole trader buys it without a meeting, dear enough to be read

@@ -11,7 +11,7 @@ directory; needs python3 with the `markdown` package and a Chromium,
 `CHROMIUM=/path/to/chromium` if it is not at the default):
 
 ```bash
-python3 build.py
+cd .. && python3 build.py website-kit
 ```
 
 That produces `dist/`: six per-document PDFs, the combined
