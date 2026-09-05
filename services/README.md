@@ -53,6 +53,29 @@ Targets per page are the "[industry] + software/automation" and
 "[named system] + integration/automation" long-tails, which have buyers and
 few serious pages competing.
 
+## The answers layer
+
+`/answers/` is the inbound content engine, HubSpot topic-cluster style: 38
+question pages across eight clusters (websites, apps, AI, CRM, data,
+e-commerce, rescues, hiring), each opening with a direct snippet-ready
+answer, going deeper in three sections, and linking sideways to its cluster
+and up to its pillar service page. Cost questions use market-typical ranges
+framed as market observations; your own pricing stays "fixed quote in
+writing", so nothing on these pages commits you to a number.
+
+Growing it is the ongoing SEO work: every real question a lead asks becomes
+a new entry in the generator's content files, regenerated and added to the
+sitemap. Write the answer the way you would say it on the call; the format
+does the rest.
+
+## Images
+
+No image key exists in the build environment, so `IMAGES.md` holds the full
+prompt pack (one house grade, twelve subjects mapped to pages) and
+`tools/nano_banana.py` runs it against Gemini's image model with your
+`GEMINI_API_KEY` in one command. Look at every image before wiring it in;
+compress under ~200KB; alt text describes what is actually in frame.
+
 ## Before launch, in order
 
 1. **Buy a domain.** This entire strategy is dead on a `vercel.app`
