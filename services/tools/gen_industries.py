@@ -48,6 +48,7 @@ FOOTER = """<footer class="foot">
          building since 2016. TOGAF certified, baseline cleared.</p>
       {services_line}
       {industries_line}
+      <p><a href="/privacy/" style="color:inherit">Privacy</a></p>
     </div>
   </div>
 </footer>"""
@@ -759,6 +760,9 @@ def page_head(title, desc, path, jsonld):
 <meta property="og:title" content="{title}">
 <meta property="og:description" content="{desc}">
 <meta property="og:type" content="website">
+<meta property="og:image" content="https://REPLACE-DOMAIN/og/industries.png">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:image" content="https://REPLACE-DOMAIN/og/industries.png">
 <meta name="theme-color" content="#12181f">
 {FAVICON}
 <link rel="preload" as="font" type="font/woff2" href="/fonts/clash-display-var.woff2" crossorigin>

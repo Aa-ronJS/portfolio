@@ -73,6 +73,7 @@ FOOTER = f"""<footer class="foot">
          building since 2016. TOGAF certified, baseline cleared.</p>
       {SERVICES_LINE}
       {INDUSTRIES_LINE}
+      <p><a href="/privacy/" style="color:inherit">Privacy</a></p>
     </div>
   </div>
 </footer>"""
@@ -94,6 +95,9 @@ def head(title, desc, path, jsonld):
 <meta property="og:title" content="{title}">
 <meta property="og:description" content="{desc}">
 <meta property="og:type" content="article">
+<meta property="og:image" content="https://REPLACE-DOMAIN/og/answers.png">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:image" content="https://REPLACE-DOMAIN/og/answers.png">
 <meta name="theme-color" content="#12181f">
 {FAVICON}
 <link rel="preload" as="font" type="font/woff2" href="/fonts/clash-display-var.woff2" crossorigin>

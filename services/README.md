@@ -93,6 +93,38 @@ quotes; the gate copy promises at most one follow-up and no list, so keep
 that true; and several paths deliberately point at cheaper options. This is
 the one page on the site with JavaScript.
 
+## The booking system
+
+`/book/` is a native scheduler, no Calendly: one recurring slot, Wednesdays
+11:30am Adelaide time (handles ACST/ACDT correctly), 30 minutes, shown to
+visitors in their own local time, with an add-to-calendar file on
+confirmation. Bookings POST to `api/book.js`, which notifies
+steele.aaron@outlook.com (override with `BOOKING_NOTIFY_EMAIL`).
+
+Wiring, all optional, all best-effort so a booker is never blocked:
+- `RESEND_API_KEY`: sends the confirmation email. Sign up at resend.com
+  with the notify address; the free tier sends from onboarding@resend.dev
+  to your own address, which is exactly this self-notification. Two
+  minutes.
+- Vercel KV (`KV_REST_API_URL`/`KV_REST_API_TOKEN`, added automatically
+  when you attach a KV store to the project): records taken Wednesdays and
+  turns a race into a polite "someone beat you to it". Without it, all
+  upcoming Wednesdays show as available and you reconcile by email, which
+  is fine at one slot a week.
+- `LEAD_WEBHOOK_URL`: bookings forward there too, same as calculator leads.
+
+The calculator's book button and the contact page both point at `/book/`.
+
+## Privacy and share images
+
+`/privacy/` states the site's actual data practice in plain words (what the
+calculator and booking pages collect, the one-follow-up promise, deletion
+on request); it is linked from every footer and must be kept true. `og/`
+holds six generated share cards wired into every page's `og:image`, so
+links pasted into LinkedIn, Facebook or Slack render branded instead of
+bare. `OUTREACH.md` carries the marketplace bios, proposal templates, the
+one-follow-up email and the Google Business Profile draft.
+
 ## Images
 
 No image key exists in the build environment, so `IMAGES.md` holds the full
