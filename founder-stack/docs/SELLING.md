@@ -21,8 +21,9 @@ every included license. Turning it into a product needs a little care.
 
 | License | Apps here | Self-host | Sell setup/course | Host for clients |
 |---|---|---|---|---|
-| MIT / Apache | Activepieces (CE), Vikunja, Ghost (MIT), Uptime Kuma, Umami, Shlink | ✅ | ✅ | ✅ |
-| AGPLv3 | Cal.com*, Twenty, Listmonk, Formbricks*, Docmost*, Documenso*, Nextcloud, Vaultwarden (GPL/AGPL), Invoice Ninja (Elastic**) | ✅ | ✅ | ✅ if you publish source of any modifications |
+| MIT / Apache / BSD | Activepieces (CE), Vikunja, Ghost (MIT), Uptime Kuma, Umami, Shlink, Owncast, Excalidraw, Jitsi (Apache), Open WebUI, Ollama, Kokoro TTS | ✅ | ✅ | ✅ |
+| Sustainable Use License | **n8n** | ✅ | ✅ (teaching/setup) | ❌ not as a paid hosted service — offer Activepieces there instead |
+| AGPLv3 | Cal.com*, Twenty, Listmonk, Formbricks*, Docmost*, Documenso*, Nextcloud, Vaultwarden (GPL/AGPL), PeerTube, Postiz, Invoice Ninja (Elastic**) | ✅ | ✅ | ✅ if you publish source of any modifications |
 | MIT + paid enterprise tiers | Mattermost (team edition), Chatwoot, Rocket.Chat (community) | ✅ | ✅ | ✅ (stay on the open edition) |
 | GPL | EspoCRM (AGPLv3), Easy!Appointments (GPLv3), WordPress + WooCommerce (GPLv2) | ✅ | ✅ | ✅ if you publish source of any modifications |
 
@@ -33,11 +34,15 @@ for clients; you may **not** offer it as a managed/hosted service to third
 parties. If you go the managed-hosting route, swap it for Crater (MIT) or
 handle invoicing clients differently.
 
-## Deliberately excluded
+## n8n, specifically
 
-- **n8n** — its "Sustainable Use License" prohibits offering it as a paid
-  service and restricts commercial redistribution. Activepieces (MIT core)
-  covers the same Zapier-replacement job with no resale problem.
+n8n's Sustainable Use License allows free self-hosting for your own
+business and lets you teach, consult and set it up for clients. What it
+does **not** allow is running it as a paid hosted service for others or
+redistributing it commercially. So: it is the default Automations app for
+your own stack and for the course/setup product; if you ever sell managed
+hosting, switch those customers to Activepieces (MIT), which ships in the
+stack as the optional simpler builder.
 
 ## Trademark rules (the part people get sued over)
 

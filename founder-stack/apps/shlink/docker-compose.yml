@@ -53,7 +53,7 @@ services:
       traefik.http.services.shlinkui.loadbalancer.server.port: 8080
       # the admin UI holds the API key, so it sits behind the console's login
       traefik.http.routers.shlinkui.middlewares: shlinkui-auth
-      traefik.http.middlewares.shlinkui-auth.basicauth.users: ${SHLINK_UI_HTPASSWD}
+      traefik.http.middlewares.shlinkui-auth.basicauth.users: ${ADMIN_HTPASSWD}
 
 volumes:
   db:

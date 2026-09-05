@@ -1,0 +1,39 @@
+# Video maker — turn a script into a narrated, captioned, branded video -> https://studio.${BASE_DOMAIN}
+# Type (or paste) what you want to say, add images if you like, pick a voice: get an MP4 for
+# social, your website or Video hosting. Runs on CPU. Protected by the admin login.
+services:
+  tts:
+    image: ghcr.io/remsky/kokoro-fastapi-cpu:latest
+    restart: unless-stopped
+
+  app:
+    build: .
+    image: founder-stack/videomaker:local
+    restart: unless-stopped
+    depends_on:
+      - tts
+    environment:
+      TTS_URL: http://tts:8880
+      BRAND_NAME: ${BRAND_NAME}
+      BRAND_COLOR: ${BRAND_COLOR}
+      BASE_DOMAIN: ${BASE_DOMAIN}
+    volumes:
+      - videos:/data
+    networks:
+      - default
+      - proxy
+    labels:
+      traefik.enable: "true"
+      traefik.http.routers.videomaker.rule: Host(`studio.${BASE_DOMAIN}`)
+      traefik.http.routers.videomaker.entrypoints: websecure
+      traefik.http.routers.videomaker.tls.certresolver: le
+      traefik.http.services.videomaker.loadbalancer.server.port: 8080
+      traefik.http.routers.videomaker.middlewares: videomaker-auth
+      traefik.http.middlewares.videomaker-auth.basicauth.users: ${ADMIN_HTPASSWD}
+
+volumes:
+  videos:
+
+networks:
+  proxy:
+    external: true

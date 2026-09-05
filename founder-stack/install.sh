@@ -79,7 +79,7 @@ else
   done < .env.example > .env
   # the short-links admin UI is protected with the same admin login (single-quoted: dotenv must not expand the $ signs)
   AP="$(grep '^ADMIN_PASSWORD=' .env | cut -d= -f2-)"
-  sed -i "s|^SHLINK_UI_HTPASSWD=.*|SHLINK_UI_HTPASSWD='admin:$(openssl passwd -apr1 "$AP")'|" .env
+  sed -i "s|^ADMIN_HTPASSWD=.*|ADMIN_HTPASSWD='admin:$(openssl passwd -apr1 "$AP")'|" .env
   chmod 600 .env
   log "Wrote .env (mode 600). Your admin password is in it: grep ADMIN_PASSWORD .env"
 fi

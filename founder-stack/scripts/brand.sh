@@ -160,14 +160,24 @@ brand_wordpress() {
     && note_ok wordpress "Website — site title applied" || note_fail wordpress "could not set site title"
 }
 
+# ---------- Video hosting: instance name ----------
+brand_peertube() {
+  app_running peertube || return
+  local tok cfg; tok="$(peertube_token)"; [ -n "$tok" ] || { note_fail peertube "root login failed"; return; }
+  cfg="$(http GET "https://video.$(base_domain)/api/v1/config/custom" -H "Authorization: Bearer $tok")" || { note_fail peertube "could not read config"; return; }
+  cfg="$(printf '%s' "$cfg" | python3 -c "import json,sys; d=json.load(sys.stdin); d['instance']['name']='$(brand_name)'; d['instance']['shortDescription']='Videos from $(brand_name)'; print(json.dumps(d))")"
+  http PUT "https://video.$(base_domain)/api/v1/config/custom" -H "Authorization: Bearer $tok" -H "Content-Type: application/json" -d "$cfg" >/dev/null \
+    && note_ok peertube "Video hosting — instance name applied" || note_fail peertube "config update failed (HTTP $HTTP_CODE)"
+}
+
 brand_apply() {
   PROVISION_OK=(); PROVISION_FAILED=(); PROVISION_MANUAL=()
   echo "Brand: $(brand_name)  colour: $(brand_color)  logo: $(brand_logo)"
   brand_default_logo
   brand_homepage; brand_authentik; brand_nextcloud; brand_mattermost; brand_rocketchat
-  brand_chatwoot; brand_listmonk; brand_easyappointments; brand_ghost; brand_wordpress
+  brand_chatwoot; brand_listmonk; brand_easyappointments; brand_ghost; brand_wordpress; brand_peertube
   echo
-  echo "The console picks the brand up automatically. Tasks, Analytics, Status page, Signatures, Forms, Passwords, Short links"
+  echo "The console and Video maker pick the brand up automatically. Tasks, Analytics, Status page, Signatures, Forms, Passwords, Short links, Automations, Meetings, Whiteboard"
   echo "and Automations have no branding surface and keep their own look; CRM, Docs and Invoices take a logo in"
   echo "their own settings."
   if [ ${#PROVISION_MANUAL[@]} -gt 0 ]; then echo "Manual:"; printf '  - %s\n' "${PROVISION_MANUAL[@]}"; fi

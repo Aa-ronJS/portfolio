@@ -33,7 +33,9 @@ APPS = {
     "authentik":       ("Sign-on", "Operations", "One login for the whole team", True),
     "vaultwarden":     ("Passwords", "Operations", "Password manager for the team", False),
     "uptime-kuma":     ("Status page", "Operations", "Uptime monitoring & public status page", False),
-    "activepieces":    ("Automations", "Operations", "Connect apps and automate workflows", False),
+    "n8n":             ("Automations", "Operations", "Connect your apps and automate workflows (full builder)", False),
+    "activepieces":    ("Automations (simple)", "Operations", "A simpler drag-and-drop automation builder — optional", False),
+    "openwebui":       ("AI assistant", "Operations", "Private ChatGPT-style assistant on your server — optional, needs 8 GB+ RAM", False),
     "twenty":          ("CRM", "Customers", "Contacts, deals, pipeline", False),
     "espocrm":         ("CRM", "Customers", "Contacts, deals, pipeline", False),
     "chatwoot":        ("Support desk", "Customers", "Helpdesk inbox & website live chat", False),
@@ -47,6 +49,12 @@ APPS = {
     "umami":           ("Analytics", "Marketing", "Privacy-friendly website analytics", False),
     "wordpress":       ("Website", "Marketing", "Your public website — pages, blog, and an online shop if you want one", False),
     "shlink":          ("Short links", "Marketing", "Branded short URLs with click stats", False),
+    "postiz":          ("Social scheduler", "Marketing", "Plan and publish posts across your social accounts", False),
+    "videomaker":      ("Video maker", "Video", "Type a script, get a narrated, captioned, branded video", False),
+    "peertube":        ("Video hosting", "Video", "Your own video platform — embeds, playlists, stats", False),
+    "owncast":         ("Live streaming", "Video", "Your own live page with chat; stream from OBS", False),
+    "jitsi":           ("Meetings", "Team", "Video calls & screen sharing, no account needed", False),
+    "excalidraw":      ("Whiteboard", "Team", "Sketch, diagram and plan together", False),
     "mattermost":      ("Team chat", "Team", "Channels, direct messages, calls", False),
     "rocketchat":      ("Team chat", "Team", "Channels, direct messages, calls", False),
     "vikunja":         ("Tasks", "Team", "Projects, boards & to-dos", False),
@@ -54,6 +62,7 @@ APPS = {
     "nextcloud":       ("Files", "Team", "File storage, sharing & sync", False),
 }
 ARM_PAIRS = {"twenty": "espocrm", "mattermost": "rocketchat", "calcom": "easyappointments"}
+OPTIONAL = {"activepieces", "openwebui"}   # listed, but not ticked/deployed unless chosen
 
 # ---- per-app granular settings: .env keys the compose files read ----
 B = "bool"
@@ -68,6 +77,9 @@ APP_SETTINGS = {
     "twenty":       [("TWENTY_DISABLE_SIGNUP", "Disable public sign-ups", B, "Keep off while adding people from People (invite-hash join)")],
     "rocketchat":   [("ROCKETCHAT_REGISTRATION", "Registration", "select:Public,Disabled,Secret URL", "Who can register directly")],
     "wordpress":    [("WORDPRESS_WOOCOMMERCE", "Online shop (WooCommerce)", B, "Installs and activates the shop on your website")],
+    "postiz":       [("POSTIZ_DISABLE_REGISTRATION", "Disable self-registration", B, "On = only people you add")],
+    "openwebui":    [("OPENWEBUI_SIGNUP", "Allow sign-ups", B, "Off = admin adds people"), ("OPENWEBUI_MODEL", "Default model", "text", "e.g. llama3.2:3b (fast on CPU), llama3.1:8b (needs 16 GB RAM)")],
+    "owncast":      [("OWNCAST_STREAM_KEY", "Stream key (paste into OBS)", "text", "rtmp://live.<your domain>:1935/live")],
 }
 ENV_PREFIX = {a: [a.upper().replace("-", "_") + "_"] for a in APPS}
 ENV_PREFIX["uptime-kuma"] = ["UPTIME_KUMA_"]
@@ -115,12 +127,13 @@ def is_arm():
     return os.uname().machine in ("aarch64", "arm64")
 
 
-def default_apps():
+def default_apps(include_optional=True):
     """The apps that fit this server (one side of each amd64/ARM pair)."""
     out = []
     for a in APPS:
         if is_arm() and a in ARM_PAIRS: continue
         if not is_arm() and a in ARM_PAIRS.values(): continue
+        if not include_optional and a in OPTIONAL: continue
         out.append(a)
     return out
 
@@ -137,7 +150,7 @@ def state():
     for a in shown:
         st = running.get(a, ("stopped", f"https://{a}.{env.get('BASE_DOMAIN','')}", ""))
         label, group, desc, core = APPS[a]
-        apps.append({"name": a, "label": label, "group": group, "desc": desc, "core": core,
+        apps.append({"name": a, "label": label, "group": group, "desc": desc, "core": core, "optional": a in OPTIONAL,
                      "state": st[0], "url": st[1], "tag": st[2], "configurable": a in APP_SETTINGS})
     bdir = os.path.join(ROOT, "backups")
     backups = sorted(os.listdir(bdir), reverse=True)[:10] if os.path.isdir(bdir) else []
@@ -169,7 +182,7 @@ def wizard_plan(a):
     kind = a.get("kind", "other")
     solo = team == "solo"
     yes = lambda k, default: a.get(k, "yes" if default else "no") == "yes"
-    want = {"homepage", "console", "authentik", "vaultwarden", "uptime-kuma", "activepieces", "nextcloud", "vikunja"}
+    want = {"homepage", "console", "authentik", "vaultwarden", "uptime-kuma", "n8n", "nextcloud", "vikunja"}
     if yes("crm", kind in ("consulting", "saas", "shop", "other")): want.add("twenty")
     if yes("bookings", kind in ("consulting", "local")): want.add("calcom")
     if yes("invoices", kind in ("consulting", "local", "other")): want.add("invoiceninja")
@@ -180,6 +193,11 @@ def wizard_plan(a):
     if yes("analytics", True): want.add("umami")
     if yes("website", True): want.add("wordpress")
     if yes("links", kind in ("creator", "shop")): want.add("shlink")
+    if yes("video", kind in ("creator",)): want.update(["videomaker", "peertube", "owncast"])
+    if yes("social", kind in ("creator", "shop", "consulting")): want.add("postiz")
+    if yes("meetings", not solo): want.add("jitsi")
+    if yes("ai", False): want.add("openwebui")
+    if not solo: want.add("excalidraw")
     if not solo: want.update(["docmost", "mattermost"])
     # swap in ARM builds where needed
     apps = []
@@ -192,7 +210,7 @@ def wizard_plan(a):
            "VIKUNJA_REGISTRATION_OPEN": "false", "CHATWOOT_ACCOUNT_SIGNUP": "false", "MATTERMOST_OPEN_SERVER": "false",
            "DOCUMENSO_DISABLE_SIGNUP": "true", "ROCKETCHAT_REGISTRATION": "Disabled",
            "VAULTWARDEN_SIGNUPS_ALLOWED": "true", "ACTIVEPIECES_SIGNUP_OPEN": "true", "CALCOM_DISABLE_SIGNUP": "false",
-           "TWENTY_DISABLE_SIGNUP": "false",
+           "TWENTY_DISABLE_SIGNUP": "false", "POSTIZ_DISABLE_REGISTRATION": "true", "OPENWEBUI_SIGNUP": "false",
            "WORDPRESS_WOOCOMMERCE": "true" if (kind == "shop" and "wordpress" in apps) else "false"}
     if a.get("smtp_host"):
         env.update({"SMTP_HOST": a["smtp_host"], "SMTP_PORT": a.get("smtp_port") or "587",
@@ -417,7 +435,7 @@ pre#out{background:#0b1220;color:#dbe4f0;border:1px solid var(--border);border-r
 <button class="b p" onclick="run(['backup'])">Back up now</button><table style="margin-top:12px"><tbody id="bktbl"></tbody></table></div></section>
 
 <section id="settings">
-<div class="card"><h2>Branding</h2><p class="hint">Applied to the hub, this console, Sign-on, Files, Team chat, Support desk, Newsletter, Blog and Booking calendar.</p>
+<div class="card"><h2>Branding</h2><p class="hint">Applied to the hub, this console, the Video maker, Sign-on, Files, Team chat, Support desk, Newsletter, Blog, Booking calendar and Video hosting.</p>
 <div class="row"><div><label>Business name</label><input id="b_name"></div><div><label>Accent colour</label><input id="b_color" type="color"></div></div>
 <label>Logo URL (blank = the monogram in <code>brand/logo.svg</code>)</label><input id="b_logo" placeholder="https://…/logo.svg">
 <div style="margin-top:10px"><button class="b p" onclick="saveEnv({BRAND_NAME:v('b_name'),BRAND_COLOR:v('b_color'),BRAND_LOGO_URL:v('b_logo')},'brand')">Save &amp; apply everywhere</button></div></div>
@@ -433,17 +451,17 @@ pre#out{background:#0b1220;color:#dbe4f0;border:1px solid var(--border);border-r
 const $=id=>document.getElementById(id),v=id=>$(id).value.trim();let S=null,SEL=new Set();
 function tab(t){document.querySelectorAll('nav button,section').forEach(e=>e.classList.remove('on'));document.querySelector(`nav button[data-t="${t}"]`).classList.add('on');$(t).classList.add('on');}
 document.querySelectorAll('nav button').forEach(b=>b.onclick=()=>tab(b.dataset.t));
-async function load(first){S=await (await fetch('/api/state')).json();if(first){SEL=new Set(S.apps.map(a=>a.name));tab(S.apps.some(a=>a.state==='running'&&!a.core)?'apps':'setup');}render();}
+async function load(first){S=await (await fetch('/api/state')).json();if(first){SEL=new Set(S.apps.filter(a=>!a.optional).map(a=>a.name));tab(S.apps.some(a=>a.state==='running'&&!a.core)?'apps':'setup');}render();}
 function render(){$('dom').textContent=S.domain;$('dom2').textContent=S.domain;$('arch').textContent='('+S.arch+')';$('hublink').href='https://home.'+S.domain;$('authlink').href='https://auth.'+S.domain;
 const groups={};S.apps.forEach(a=>(groups[a.group]??=[]).push(a));
-$('applist').innerHTML=Object.entries(groups).map(([g,list])=>`<div class="group"><h3>${g}</h3>${list.map(a=>`<div class="app"><input type="checkbox" ${SEL.has(a.name)?'checked':''} onchange="tog('${a.name}',this.checked)"><div><span class="dot ${a.state==='running'?'up':''}"></span><span class="n">${a.label}</span> <span class="tag">${a.url.replace('https://','')}</span><div class="d">${a.desc}</div></div><div style="white-space:nowrap">${a.state==='running'?`<a class="b" style="text-decoration:none;display:inline-block" href="${a.url}" target="_blank">Open</a>`:''}${a.configurable?`<button class="b" onclick="cfg('${a.name}')">Configure</button>`:''}${a.state==='running'?`<button class="b" onclick="run(['logs','${a.name}'])">Logs</button><button class="b" onclick="run(['restart','${a.name}'])">Restart</button><button class="b" onclick="run(['down','${a.name}'])">Stop</button>`:`<button class="b p" onclick="run(['deploy','${a.name}'])">Deploy</button>`}</div></div>`).join('')}</div>`).join('');
+$('applist').innerHTML=Object.entries(groups).map(([g,list])=>`<div class="group"><h3>${g}</h3>${list.map(a=>`<div class="app"><input type="checkbox" ${SEL.has(a.name)?'checked':''} onchange="tog('${a.name}',this.checked)"><div><span class="dot ${a.state==='running'?'up':''}"></span><span class="n">${a.label}</span> <span class="tag">${a.url.replace('https://','')}${a.optional?' · optional':''}</span><div class="d">${a.desc}</div></div><div style="white-space:nowrap">${a.state==='running'?`<a class="b" style="text-decoration:none;display:inline-block" href="${a.url}" target="_blank">Open</a>`:''}${a.configurable?`<button class="b" onclick="cfg('${a.name}')">Configure</button>`:''}${a.state==='running'?`<button class="b" onclick="run(['logs','${a.name}'])">Logs</button><button class="b" onclick="run(['restart','${a.name}'])">Restart</button><button class="b" onclick="run(['down','${a.name}'])">Stop</button>`:`<button class="b p" onclick="run(['deploy','${a.name}'])">Deploy</button>`}</div></div>`).join('')}</div>`).join('');
 selsum();$('ssopill').textContent=S.sso?'on':'off';$('ssopill').className='pill'+(S.sso?' on':'');$('tunpill').textContent=S.tunnel_configured?'token set':'no token';
 $('bktbl').innerHTML=S.backups.map(b=>`<tr><td>${b}</td><td style="text-align:right"><button class="b" onclick="if(confirm('Restore volumes from ${b}? Stop the apps first.'))run(['restore','${b}'])">Restore</button></td></tr>`).join('')||'<tr><td class="hint">No backups yet.</td></tr>';
 $('b_name').value=S.brand.name;$('b_color').value=S.brand.color;$('b_logo').value=S.brand.logo_url;$('tz').value=S.tz;
 $('s_host').value=S.smtp.SMTP_HOST;$('s_port').value=S.smtp.SMTP_PORT;$('s_user').value=S.smtp.SMTP_USER;$('s_from').value=S.smtp.SMTP_FROM;$('s_pwset').textContent=S.smtp_password_set?'(set)':'(not set)';
 if(!$('chat').children.length)startWizard();}
 function tog(n,on){on?SEL.add(n):SEL.delete(n);selsum();}function selsum(){const up=S.apps.filter(a=>a.state==='running').length;$('selsum').textContent=`${SEL.size} selected · ${up} of ${S.apps.length} running · SSO ${S.sso?'on':'off'}`;}
-function selAll(on){SEL=new Set(on?S.apps.map(a=>a.name):S.apps.filter(a=>a.core).map(a=>a.name));render();}function selRunning(){SEL=new Set(S.apps.filter(a=>a.state==='running'||a.core).map(a=>a.name));render();}
+function selAll(on){SEL=new Set(on?S.apps.filter(a=>!a.optional).map(a=>a.name):S.apps.filter(a=>a.core).map(a=>a.name));render();}function selRunning(){SEL=new Set(S.apps.filter(a=>a.state==='running'||a.core).map(a=>a.name));render();}
 function deploySelected(){if(!SEL.size)return alert('Select at least one app');run(['deploy',...SEL]);}
 async function streamTo(res){const out=$('out');out.textContent='';const r=res.body.getReader(),d=new TextDecoder();for(;;){const {value,done}=await r.read();if(done)break;out.textContent+=d.decode(value);out.scrollTop=out.scrollHeight;}}
 async function post(url,body){document.body.classList.add('busy');try{const res=await fetch(url,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(body)});if(!res.ok){$('out').textContent='Error: '+await res.text();return;}await streamTo(res);}finally{document.body.classList.remove('busy');load();}}
@@ -475,6 +493,10 @@ const Q=[
  {k:'crm',q:'Track contacts and deals in a CRM?',c:[['yes','Yes'],['no','No']]},
  {k:'website',q:'Do you want a public website (pages, blog — and a shop if you sell online)?',c:[['yes','Yes'],['no','No, I have one']]},
  {k:'links',q:'Branded short links for marketing (yourdomain/offer)?',c:[['yes','Yes'],['no','No']]},
+ {k:'video',q:'Do you make videos for marketing? (You get a video maker, your own video hosting and a live-streaming page.)',c:[['yes','Yes'],['no','Not really']]},
+ {k:'social',q:'Schedule posts to social media from one place?',c:[['yes','Yes'],['no','No']]},
+ {k:'meetings',q:'Video calls with clients or the team (your own meeting rooms)?',c:[['yes','Yes'],['no','No']]},
+ {k:'ai',q:'A private AI assistant on your server? (Needs a bigger server: 8 GB+ RAM.)',c:[['no','Not now'],['yes','Yes']]},
  {k:'color',q:'Pick an accent colour for everything.',type:'color'},
  {k:'smtp',q:'Email relay for invoices, invites and newsletters? (Resend and Brevo have free tiers.)',c:[['later','Set up later'],['now','I have SMTP details']]},
 ];let A={},qi=0;

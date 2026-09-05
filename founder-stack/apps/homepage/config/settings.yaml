@@ -14,10 +14,13 @@ layout:
     columns: 4
   Marketing:
     style: row
-    columns: 5
+    columns: 6
+  Video:
+    style: row
+    columns: 3
   Team:
     style: row
-    columns: 4
+    columns: 6
   Operations:
     style: row
-    columns: 5
+    columns: 6

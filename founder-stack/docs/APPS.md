@@ -27,6 +27,15 @@ open the URL creates the admin account** — do it immediately after
 | vaultwarden | `vault.` | Sign up, then set `VAULTWARDEN_SIGNUPS_ALLOWED=false` and re-up | ~50 MB |
 | uptime-kuma | `status.` | First-visit setup | ~150 MB |
 | wordpress | apex, `www.`, `site.` | **Auto-bootstrapped** by `stackctl user add`/deploy (admin = ADMIN_USER); WooCommerce via the Website switch | ~300 MB |
+| n8n | `automate.` | **Auto-bootstrapped** (owner = ADMIN_EMAIL); teammates get an invite link | ~400 MB |
+| activepieces | `flows.` (optional) | First-visit setup | ~500 MB |
+| videomaker | `studio.` | Admin login (HTTP auth); no accounts | ~1 GB (TTS engine) |
+| peertube | `video.` | **Pre-seeded**: `root` / `ADMIN_PASSWORD` | ~1 GB |
+| owncast | `live.` | **Pre-seeded** admin password + OBS stream key from .env | ~150 MB |
+| jitsi | `meet.` | No accounts (anyone with a room link); open UDP 10000 | ~1.5 GB |
+| excalidraw | `whiteboard.` | No accounts | ~50 MB |
+| postiz | `social.` | First person to register is the owner; then lock registration | ~800 MB |
+| openwebui | `ai.` (optional) | **Auto-bootstrapped** admin; downloads the default model on first deploy | ~1 GB + model (2–5 GB) |
 | shlink | `links.` + `links-admin.` | Admin UI behind the console login; API key pre-set | ~200 MB |
 | ghost | `blog.` | **Auto-bootstrapped** by `stackctl user add` (owner = ADMIN_EMAIL) | ~300 MB |
 | *ARM alternatives* (docs/ZERO-COST.md) | | | |
@@ -34,7 +43,7 @@ open the URL creates the admin account** — do it immediately after
 | espocrm | `crm.` | **Pre-seeded** (`ADMIN_USER`/`ADMIN_PASSWORD`) | ~400 MB |
 | rocketchat | `chat.` | **Pre-seeded** (`ADMIN_USER`/`ADMIN_PASSWORD`); wizard skipped | ~1 GB (app+mongo) |
 
-A 4 GB VPS runs ~5 of these comfortably; 16 GB runs all of them.
+A 4 GB VPS runs ~5 of these comfortably; 16 GB runs the whole default set; the AI assistant wants 8 GB of its own.
 
 ## One-time steps
 

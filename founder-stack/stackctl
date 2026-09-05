@@ -32,7 +32,7 @@ subdomain() {
     homepage) echo home ;;      authentik) echo auth ;;
     console) echo console ;;
     calcom) echo cal ;;         invoiceninja) echo invoices ;;
-    twenty) echo crm ;;         activepieces) echo automate ;;
+    twenty) echo crm ;;
     listmonk) echo newsletter ;; formbricks) echo forms ;;
     vikunja) echo tasks ;;      docmost) echo docs ;;
     mattermost) echo chat ;;    chatwoot) echo support ;;
@@ -40,6 +40,11 @@ subdomain() {
     nextcloud) echo files ;;    vaultwarden) echo vault ;;
     uptime-kuma) echo status ;; ghost) echo blog ;;
     wordpress) echo site ;;     shlink) echo links-admin ;;
+    n8n) echo automate ;;       activepieces) echo flows ;;
+    peertube) echo video ;;     owncast) echo live ;;
+    videomaker) echo studio ;;  excalidraw) echo whiteboard ;;
+    jitsi) echo meet ;;         postiz) echo social ;;
+    openwebui) echo ai ;;
     # ARM alternatives share the subdomain of the app they replace
     espocrm) echo crm ;;        rocketchat) echo chat ;;
     easyappointments) echo cal ;;
@@ -66,7 +71,12 @@ app_label() {
   case "$1" in
     homepage) echo "Hub" ;;             console) echo "Console" ;;
     authentik) echo "Sign-on" ;;        vaultwarden) echo "Passwords" ;;
-    uptime-kuma) echo "Status page" ;;  activepieces) echo "Automations" ;;
+    uptime-kuma) echo "Status page" ;;  n8n) echo "Automations" ;;
+    activepieces) echo "Automations (simple)" ;;
+    peertube) echo "Video hosting" ;;   owncast) echo "Live streaming" ;;
+    videomaker) echo "Video maker" ;;   excalidraw) echo "Whiteboard" ;;
+    jitsi) echo "Meetings" ;;           postiz) echo "Social scheduler" ;;
+    openwebui) echo "AI assistant" ;;
     twenty|espocrm) echo "CRM" ;;       chatwoot) echo "Support desk" ;;
     calcom|easyappointments) echo "Booking calendar" ;;
     formbricks) echo "Forms" ;;         invoiceninja) echo "Invoices" ;;
@@ -84,7 +94,11 @@ app_alias() {
   case "$a" in
     hub|home) echo homepage ;;                 sso|sign-on|signon|login) echo authentik ;;
     passwords|vault) echo vaultwarden ;;       status|status-page|uptime) echo uptime-kuma ;;
-    automations|automation|automate) echo activepieces ;;
+    automations|automation|automate) echo n8n ;;   flows|simple-automations) echo activepieces ;;
+    video|video-hosting|videos) echo peertube ;;   live|streaming|live-streaming) echo owncast ;;
+    studio|video-maker|videomaker) echo videomaker ;;  whiteboard|board) echo excalidraw ;;
+    meetings|meet|calls) echo jitsi ;;             social|scheduler|social-scheduler) echo postiz ;;
+    ai|assistant|ai-assistant) echo openwebui ;;
     crm) is_arm && echo espocrm || echo twenty ;;
     support|helpdesk|support-desk) echo chatwoot ;;
     booking|bookings|calendar|scheduling|booking-calendar) is_arm && echo easyappointments || echo calcom ;;
@@ -103,9 +117,13 @@ all_apps() { ls -1 "$APPS_DIR"; }
 
 # The set `up --all` starts: everything, minus whichever side of each
 # amd64/ARM pair doesn't fit this server (they'd fight over one subdomain).
+# Not started by `deploy --all`/`up --all` unless asked for by name: the
+# simpler automation builder (n8n is the default) and the AI assistant (RAM-heavy).
+OPTIONAL_APPS="activepieces openwebui"
 default_apps() {
   local a
   for a in $(all_apps); do
+    case " $OPTIONAL_APPS " in *" $a "*) continue ;; esac
     if is_arm; then [ -n "$(alt_for "$a")" ] && continue
     else [ -n "$(replaces "$a")" ] && continue; fi
     echo "$a"
@@ -114,6 +132,7 @@ default_apps() {
 
 app_tag() { # annotation for list/status output
   local a="$1"
+  case " $OPTIONAL_APPS " in *" $a "*) echo "(optional — start by name)"; return ;; esac
   if [ -n "$(alt_for "$a")" ]; then
     is_arm && echo "(amd64-only: use $(alt_for "$a"))" || echo ""
   elif [ -n "$(replaces "$a")" ]; then
@@ -334,7 +353,7 @@ case "$cmd" in
     d="$(base_domain)"
     envv() { grep "^$1=" "$ENVFILE" | head -1 | cut -d= -f2-; }
     public_ip() { curl -s --max-time 8 https://api.ipify.org 2>/dev/null || curl -s --max-time 8 https://ifconfig.me 2>/dev/null || true; }
-    hosts_needed() { echo "$d"; for a in $(default_apps); do echo "$(subdomain "$a").$d"; done; echo "www.$d"; echo "links.$d"; }
+    hosts_needed() { echo "$d"; for a in $(all_apps); do echo "$(subdomain "$a").$d"; done; echo "www.$d"; echo "links.$d"; }
     case "${1:-}" in
       ip) public_ip; echo ;;
       check)

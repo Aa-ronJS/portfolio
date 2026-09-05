@@ -1,5 +1,5 @@
-# Activepieces — workflow automation (replaces Zapier) -> https://automate.${BASE_DOMAIN}
-# Chosen over n8n on purpose: MIT-licensed community edition, safe to resell/bundle.
+# Automations (simple builder) — Activepieces, MIT-licensed alternative to n8n -> https://flows.${BASE_DOMAIN}
+# Safe to bundle in a hosted service where n8n's licence is not.
 services:
   db:
     image: postgres:16-alpine
@@ -24,7 +24,7 @@ services:
       - db
       - redis
     environment:
-      AP_FRONTEND_URL: https://automate.${BASE_DOMAIN}
+      AP_FRONTEND_URL: https://flows.${BASE_DOMAIN}
       AP_API_KEY: ${ACTIVEPIECES_API_KEY}
       AP_ENCRYPTION_KEY: ${ACTIVEPIECES_ENCRYPTION_KEY}
       AP_JWT_SECRET: ${ACTIVEPIECES_JWT_SECRET}
@@ -48,7 +48,7 @@ services:
       - proxy
     labels:
       traefik.enable: "true"
-      traefik.http.routers.activepieces.rule: Host(`automate.${BASE_DOMAIN}`)
+      traefik.http.routers.activepieces.rule: Host(`flows.${BASE_DOMAIN}`)
       traefik.http.routers.activepieces.entrypoints: websecure
       traefik.http.routers.activepieces.tls.certresolver: le
       traefik.http.services.activepieces.loadbalancer.server.port: 80

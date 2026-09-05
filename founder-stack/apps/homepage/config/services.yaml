@@ -51,6 +51,12 @@
         icon: mdi-link-variant
         server: local
         container: fs-shlink-app-1
+    - Social scheduler:
+        href: https://social.{{HOMEPAGE_VAR_BASE_DOMAIN}}
+        description: Plan & publish social posts
+        icon: mdi-share-variant
+        server: local
+        container: fs-postiz-app-1
     - Newsletter:
         href: https://newsletter.{{HOMEPAGE_VAR_BASE_DOMAIN}}
         description: Email campaigns & subscriber lists
@@ -70,7 +76,39 @@
         server: local
         container: fs-umami-app-1
 
+- Video:
+    - Video maker:
+        href: https://studio.{{HOMEPAGE_VAR_BASE_DOMAIN}}
+        description: Script in, narrated branded video out
+        icon: mdi-movie-open-edit
+        server: local
+        container: fs-videomaker-app-1
+    - Video hosting:
+        href: https://video.{{HOMEPAGE_VAR_BASE_DOMAIN}}
+        description: Your own video platform & embeds
+        icon: mdi-video-box
+        server: local
+        container: fs-peertube-app-1
+    - Live streaming:
+        href: https://live.{{HOMEPAGE_VAR_BASE_DOMAIN}}
+        description: Live page with chat; stream from OBS
+        icon: mdi-broadcast
+        server: local
+        container: fs-owncast-app-1
+
 - Team:
+    - Meetings:
+        href: https://meet.{{HOMEPAGE_VAR_BASE_DOMAIN}}
+        description: Video calls & screen sharing
+        icon: mdi-video
+        server: local
+        container: fs-jitsi-web-1
+    - Whiteboard:
+        href: https://whiteboard.{{HOMEPAGE_VAR_BASE_DOMAIN}}
+        description: Sketch, diagram, plan together
+        icon: mdi-draw
+        server: local
+        container: fs-excalidraw-app-1
     - Team chat:
         href: https://chat.{{HOMEPAGE_VAR_BASE_DOMAIN}}
         description: Channels, direct messages, calls
@@ -105,10 +143,16 @@
         container: fs-console-app-1
     - Automations:
         href: https://automate.{{HOMEPAGE_VAR_BASE_DOMAIN}}
-        description: Connect apps and automate workflows
+        description: Connect your apps and automate workflows
         icon: mdi-robot
         server: local
-        container: fs-activepieces-app-1
+        container: fs-n8n-app-1
+    - AI assistant:
+        href: https://ai.{{HOMEPAGE_VAR_BASE_DOMAIN}}
+        description: Private AI chat on your server
+        icon: mdi-creation
+        server: local
+        container: fs-openwebui-app-1
     - Passwords:
         href: https://vault.{{HOMEPAGE_VAR_BASE_DOMAIN}}
         description: Password manager for the team

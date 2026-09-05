@@ -479,6 +479,92 @@ provision_wordpress() {
   esac
 }
 
+# ---------- Automations (n8n): owner setup + invitations via its internal REST API ----------
+provision_n8n() {
+  local action="$1" email="$2" pass="$3" user="${2%%@*}"
+  app_running n8n || { note_manual n8n "not running"; return; }
+  local base="https://automate.$(base_domain)/rest" jar settings; jar="$(mktemp)"
+  settings="$(http GET "$base/settings")" || { rm -f "$jar"; note_fail n8n "not answering yet (HTTP $HTTP_CODE) — retry in a minute"; return; }
+  # zero-touch first run: claim the owner account with the admin from .env
+  if printf '%s' "$settings" | grep -q '"showSetupOnFirstLoad":true'; then
+    http POST "$base/owner/setup" -c "$jar" -H "Content-Type: application/json" \
+      -d "{\"email\":\"$(json_escape "$(envval ADMIN_EMAIL)")\",\"firstName\":\"Admin\",\"lastName\":\"User\",\"password\":\"$(json_escape "$(envval ADMIN_PASSWORD)")\"}" >/dev/null \
+      && note_ok n8n "Automations — owner account set up as ADMIN_EMAIL" || { rm -f "$jar"; note_fail n8n "owner setup failed (HTTP $HTTP_CODE)"; return; }
+  else
+    [ "$action" = bootstrap ] && note_ok n8n "Automations — ready"
+    http POST "$base/login" -c "$jar" -H "Content-Type: application/json" \
+      -d "{\"emailOrLdapLoginId\":\"$(json_escape "$(envval ADMIN_EMAIL)")\",\"password\":\"$(json_escape "$(envval ADMIN_PASSWORD)")\"}" >/dev/null \
+      || { rm -f "$jar"; [ "$action" = bootstrap ] || note_fail n8n "owner login failed (HTTP $HTTP_CODE)"; return; }
+  fi
+  [ "$action" = bootstrap ] && { rm -f "$jar"; return; }
+  case "$action" in
+    add)
+      local body link
+      body="$(http POST "$base/invitations" -b "$jar" -H "Content-Type: application/json" -d "[{\"email\":\"$(json_escape "$email")\",\"role\":\"global:member\"}]")" \
+        || { rm -f "$jar"; note_fail n8n "invitation failed (HTTP $HTTP_CODE)"; return; }
+      link="$(printf '%s' "$body" | sed -n 's/.*"inviteAcceptUrl":"\([^"]*\)".*/\1/p' | head -1)"
+      if [ -n "$link" ]; then note_ok n8n "Automations — invited; they set their own password here: $link"
+      else note_ok n8n "Automations — invitation emailed"; fi ;;
+    passwd|rm) note_manual n8n "Settings → Users ($action not scripted)" ;;
+  esac
+  rm -f "$jar"
+}
+
+# ---------- Video hosting (PeerTube REST API as root) ----------
+peertube_token() { # -> access token
+  local base="https://video.$(base_domain)/api/v1" cl id sec
+  cl="$(http GET "$base/oauth-clients/local")" || return 1
+  id="$(printf '%s' "$cl" | sed -n 's/.*"client_id":"\([^"]*\)".*/\1/p')"; sec="$(printf '%s' "$cl" | sed -n 's/.*"client_secret":"\([^"]*\)".*/\1/p')"
+  http POST "$base/users/token" -d "client_id=$id" -d "client_secret=$sec" -d "grant_type=password" -d "username=root" \
+    --data-urlencode "password=$(envval ADMIN_PASSWORD)" | sed -n 's/.*"access_token":"\([^"]*\)".*/\1/p'
+}
+provision_peertube() {
+  local action="$1" email="$2" pass="$3" user="${2%%@*}"
+  app_running peertube || { note_manual peertube "not running"; return; }
+  [ "$action" = add ] || { note_manual peertube "Administration → Users ($action not scripted)"; return; }
+  local tok; tok="$(peertube_token)"; [ -n "$tok" ] || { note_fail peertube "root login failed (still starting?)"; return; }
+  http POST "https://video.$(base_domain)/api/v1/users" -H "Authorization: Bearer $tok" -H "Content-Type: application/json" \
+    -d "{\"username\":\"$(json_escape "$user")\",\"password\":\"$(json_escape "$pass")\",\"email\":\"$(json_escape "$email")\",\"role\":2,\"videoQuota\":-1,\"videoQuotaDaily\":-1}" >/dev/null \
+    && note_ok peertube "Video hosting — account created" || note_fail peertube "API create failed (HTTP $HTTP_CODE)"
+}
+
+# ---------- AI assistant (Open WebUI): first admin, then users via the admin API ----------
+provision_openwebui() {
+  local action="$1" email="$2" pass="$3" user="${2%%@*}"
+  app_running openwebui || return   # optional app: silent when not running
+  local base="https://ai.$(base_domain)/api/v1/auths" tok
+  tok="$(http POST "$base/signin" -H "Content-Type: application/json" \
+    -d "{\"email\":\"$(json_escape "$(envval ADMIN_EMAIL)")\",\"password\":\"$(json_escape "$(envval ADMIN_PASSWORD)")\"}" | sed -n 's/.*"token":"\([^"]*\)".*/\1/p')"
+  if [ -z "$tok" ]; then
+    # zero-touch first run: the first sign-up becomes the admin
+    tok="$(http POST "$base/signup" -H "Content-Type: application/json" \
+      -d "{\"name\":\"Admin\",\"email\":\"$(json_escape "$(envval ADMIN_EMAIL)")\",\"password\":\"$(json_escape "$(envval ADMIN_PASSWORD)")\"}" | sed -n 's/.*"token":"\([^"]*\)".*/\1/p')"
+    [ -n "$tok" ] && note_ok openwebui "AI assistant — admin account created as ADMIN_EMAIL"
+  else
+    [ "$action" = bootstrap ] && note_ok openwebui "AI assistant — ready"
+  fi
+  [ -n "$tok" ] || { note_fail openwebui "admin login/signup failed (HTTP $HTTP_CODE)"; return; }
+  if [ "$action" = bootstrap ]; then
+    # pull the default model in the background so the first chat isn't a wait
+    docker exec -d fs-openwebui-ollama-1 ollama pull "$(envval OPENWEBUI_MODEL)" >/dev/null 2>&1 && note_ok openwebui "AI assistant — downloading model $(envval OPENWEBUI_MODEL) in the background"
+    return
+  fi
+  [ "$action" = add ] || { note_manual openwebui "Admin → Users ($action not scripted)"; return; }
+  http POST "$base/add" -H "Authorization: Bearer $tok" -H "Content-Type: application/json" \
+    -d "{\"name\":\"$(json_escape "$user")\",\"email\":\"$(json_escape "$email")\",\"password\":\"$(json_escape "$pass")\",\"role\":\"user\"}" >/dev/null \
+    && note_ok openwebui "AI assistant — account created" || note_fail openwebui "add user failed (HTTP $HTTP_CODE)"
+}
+
+# ---------- Social scheduler (Postiz): self-registration endpoint ----------
+provision_postiz() {
+  local action="$1" email="$2" pass="$3" user="${2%%@*}"
+  app_running postiz || { note_manual postiz "not running"; return; }
+  [ "$action" = add ] || { note_manual postiz "Settings → Team ($action not scripted)"; return; }
+  http POST "https://social.$(base_domain)/api/auth/register" -H "Content-Type: application/json" \
+    -d "{\"email\":\"$(json_escape "$email")\",\"password\":\"$(json_escape "$pass")\",\"company\":\"$(json_escape "$(envval BRAND_NAME)")\",\"provider\":\"LOCAL\",\"providerToken\":\"\"}" >/dev/null \
+    && note_ok postiz "Social scheduler — account created" || { note_fail postiz "register failed (HTTP $HTTP_CODE)"; note_manual postiz "invite from Settings → Team"; }
+}
+
 # ---------- Docmost (REST API) ----------
 provision_docmost() {
   local action="$1" email="$2" pass="$3" user="${2%%@*}"
@@ -573,6 +659,8 @@ run_bootstrap() {
   provision_twenty bootstrap "" ""
   provision_easyappointments bootstrap "" ""
   provision_wordpress bootstrap "" ""
+  provision_n8n bootstrap "" ""
+  provision_openwebui bootstrap "" ""
   [ ${#PROVISION_MANUAL[@]} -gt 0 ] && { echo "Skipped:"; printf '  - %s\n' "${PROVISION_MANUAL[@]}"; }
   return 0
 }
@@ -598,6 +686,10 @@ run_provisioners() { # <add|passwd|rm> <email> <password>
   provision_easyappointments "$action" "$email" "$pass"
   provision_docmost    "$action" "$email" "$pass"
   provision_wordpress  "$action" "$email" "$pass"
+  provision_n8n        "$action" "$email" "$pass"
+  provision_peertube   "$action" "$email" "$pass"
+  provision_postiz     "$action" "$email" "$pass"
+  provision_openwebui  "$action" "$email" "$pass"
   provision_invoiceninja "$action" "$email" "$pass"
   provision_twenty     "$action" "$email" "$pass"
 

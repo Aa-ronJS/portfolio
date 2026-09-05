@@ -11,7 +11,6 @@ with HTTPS everywhere, in one command.
 | Booking calendar | Calendly | `cal.yourdomain.com` | Cal.com |
 | Invoices | FreshBooks / QuickBooks | `invoices.yourdomain.com` | Invoice Ninja |
 | CRM | HubSpot | `crm.yourdomain.com` | Twenty |
-| Automations | Zapier | `automate.yourdomain.com` | Activepieces |
 | Newsletter | Mailchimp | `newsletter.yourdomain.com` | Listmonk |
 | Forms | Typeform | `forms.yourdomain.com` | Formbricks |
 | Tasks | Asana / Trello | `tasks.yourdomain.com` | Vikunja |
@@ -27,6 +26,14 @@ with HTTPS everywhere, in one command.
 | Website & shop | Squarespace / Wix / Shopify | `yourdomain.com` | WordPress (+ WooCommerce) |
 | Short links | Bitly | `links.yourdomain.com` | Shlink |
 | Domain & DNS | GoDaddy dashboard | console → Domain & DNS | Cloudflare / DuckDNS APIs |
+| Automations | Zapier / Make | `automate.yourdomain.com` | n8n (full community edition); Activepieces as a simpler optional builder |
+| Video maker | HeyGen / Canva video / Descript | `studio.yourdomain.com` | built in: ffmpeg + Kokoro TTS — script → narrated, captioned, branded MP4 |
+| Video hosting | Wistia / Vimeo | `video.yourdomain.com` | PeerTube |
+| Live streaming | StreamYard / Restream | `live.yourdomain.com` | Owncast |
+| Meetings | Zoom / Google Meet | `meet.yourdomain.com` | Jitsi Meet |
+| Whiteboard | Miro | `whiteboard.yourdomain.com` | Excalidraw |
+| Social scheduler | Buffer / Hootsuite | `social.yourdomain.com` | Postiz |
+| AI assistant | ChatGPT Team | `ai.yourdomain.com` | Open WebUI + Ollama (optional; CPU models) |
 
 Everything is named by what it does — in the hub, the console, the CLI and
 every message. The open-source projects underneath are listed here for
@@ -34,7 +41,7 @@ attribution and licensing (see [docs/SELLING.md](docs/SELLING.md)); nothing a
 user sees mentions them. `stackctl` accepts the function names too:
 `./stackctl up crm chat booking`.
 
-Total replaced: **$700+/month**. Total cost: **one VPS (~$10–40/month)**.
+Total replaced: **$1,000+/month**. Total cost: **one VPS (~$10–40/month)**.
 
 Plus two pieces that tie it together:
 
@@ -49,6 +56,13 @@ Plus two pieces that tie it together:
   with a Configure panel per app (quick switches plus every setting it
   reads). People, Sign-on, Backups and Settings round it out. Everything
   streams its output live; everything `stackctl` does, no shell needed.
+- **Video, without a GPU** — the Video maker turns a script into a
+  finished marketing video on a plain CPU server: each sentence is narrated
+  by a local text-to-speech engine and becomes a scene (your images, or
+  brand-colour title cards), with captions, intro and outro, as an MP4 you
+  can post anywhere or host on your own Video hosting. Live streaming gives
+  you a live page with chat you stream to from OBS. AI-avatar video (the
+  HeyGen style) needs a GPU and is deliberately not faked here.
 - **Domain & DNS, handled** — the console's Domain & DNS tab checks a
   name's availability, links you to at-cost registrars, shows the exact
   records your server needs, verifies what the internet sees, and creates

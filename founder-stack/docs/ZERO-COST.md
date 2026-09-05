@@ -6,7 +6,7 @@ business. This is the exact recipe. Budget ~45 minutes.
 
 | Need | Free option | Limit | Good enough for |
 |---|---|---|---|
-| Server | **Oracle Cloud "Always Free"** ARM VM | 4 cores, 24 GB RAM, 200 GB disk, forever | the entire stack, all apps at once |
+| Server | **Oracle Cloud "Always Free"** ARM VM | 4 cores, 24 GB RAM, 200 GB disk, forever | the entire default stack at once (add the AI assistant too if you skip a few heavy apps) |
 | Domain | **DuckDNS** free subdomain (`yourbiz.duckdns.org`) | one name, wildcard subdomains work | everything; upgrade to a real domain (~$10/yr) when you want to look polished |
 | Email | **Resend** free tier (or Brevo) | 3,000 emails/month (Brevo: 300/day) | invoices, invites, a modest newsletter |
 

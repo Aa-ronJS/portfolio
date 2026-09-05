@@ -1,0 +1,39 @@
+# AI assistant — private ChatGPT-style chat running on your server -> https://ai.${BASE_DOMAIN}
+# CPU-only: a small model (OPENWEBUI_MODEL) answers in seconds on a 4-core box. Optional; heavy on RAM.
+services:
+  ollama:
+    image: ollama/ollama:latest
+    restart: unless-stopped
+    volumes:
+      - models:/root/.ollama
+
+  app:
+    image: ghcr.io/open-webui/open-webui:main
+    restart: unless-stopped
+    depends_on:
+      - ollama
+    environment:
+      OLLAMA_BASE_URL: http://ollama:11434
+      WEBUI_SECRET_KEY: ${OPENWEBUI_SECRET_KEY}
+      WEBUI_URL: https://ai.${BASE_DOMAIN}
+      ENABLE_SIGNUP: ${OPENWEBUI_SIGNUP:-true}
+      DEFAULT_MODELS: ${OPENWEBUI_MODEL:-llama3.2:3b}
+    volumes:
+      - data:/app/backend/data
+    networks:
+      - default
+      - proxy
+    labels:
+      traefik.enable: "true"
+      traefik.http.routers.openwebui.rule: Host(`ai.${BASE_DOMAIN}`)
+      traefik.http.routers.openwebui.entrypoints: websecure
+      traefik.http.routers.openwebui.tls.certresolver: le
+      traefik.http.services.openwebui.loadbalancer.server.port: 8080
+
+volumes:
+  models:
+  data:
+
+networks:
+  proxy:
+    external: true
