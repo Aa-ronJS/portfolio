@@ -9,6 +9,7 @@
 #   stackctl backup
 #   stackctl restore <backup-dir>
 #   stackctl sso on|off
+#   stackctl tunnel up|down     (Cloudflare Tunnel: no public IP needed)
 #   stackctl user add <email> [password] | passwd <email> [password] | rm <email>
 set -euo pipefail
 
@@ -260,8 +261,18 @@ case "$cmd" in
     esac
     ;;
 
+  tunnel)
+    [ -n "$(grep '^CF_TUNNEL_TOKEN=' "$ENVFILE" | cut -d= -f2-)" ] || fail "set CF_TUNNEL_TOKEN in .env first (docs/ZERO-COST.md → Own hardware)"
+    case "${1:-}" in
+      up)   docker compose --env-file "$ENVFILE" -f "$ROOT/tunnel/docker-compose.yml" -p fs-tunnel up -d
+            log "Tunnel up. In Cloudflare: public hostname *.$(base_domain) → https://traefik:443, 'No TLS Verify' on." ;;
+      down) docker compose --env-file "$ENVFILE" -f "$ROOT/tunnel/docker-compose.yml" -p fs-tunnel down ;;
+      *) fail "usage: stackctl tunnel up|down" ;;
+    esac
+    ;;
+
   ""|help|-h|--help)
-    sed -n '2,12p' "$0" | sed 's/^# \{0,1\}//'
+    sed -n '2,13p' "$0" | sed 's/^# \{0,1\}//'
     ;;
   *)
     fail "unknown command '$cmd' (try: stackctl help)"

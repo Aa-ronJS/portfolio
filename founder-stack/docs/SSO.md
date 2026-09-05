@@ -1,8 +1,11 @@
-<!-- Live-tested: the full stack was booted under a real Docker daemon, the
-Authentik blueprint auto-registered all 6 OIDC clients, `stackctl user add`
-provisioned one identity across 7 apps in a single command, and a real
-headless-browser run completed the Vikunja→Authentik→Vikunja OIDC login
-(the resulting account reports auth_provider=authentik). -->
+<!-- Live-tested under a real Docker daemon: the Authentik blueprint
+auto-registered all 6 OIDC clients; a headless browser completed the
+Vikunja→Authentik→Vikunja OIDC login (account reports auth_provider=authentik);
+and `stackctl user add` was exercised against live instances of Authentik,
+Nextcloud, Mattermost, Chatwoot, Vikunja, Listmonk, Umami, Invoice Ninja,
+Twenty (incl. zero-touch workspace bootstrap), Docmost (bootstrap), Ghost
+(bootstrap), Rocket.Chat (add/rotate/remove), EspoCRM and Easy!Appointments
+(incl. zero-touch install). -->
 
 # One identity across the stack
 
@@ -43,7 +46,11 @@ What `user add` does per app:
 | Vaultwarden | admin API → emails an invite (user picks their own master password — by design: it encrypts their vault) |
 | Rocket.Chat *(ARM alt)* | REST API as admin — create, rotate, remove |
 | EspoCRM *(ARM alt)* | REST API as admin |
-| Twenty, Docmost, Formbricks, Invoice Ninja | no scriptable path on the free tier — use the in-app invite button (the summary output reminds you) |
+| Easy!Appointments *(ARM alt)* | bootstraps the install with ADMIN credentials, then creates a provider account via its REST API |
+| Twenty | GraphQL — bootstraps the workspace on first run, then signs the user up via the workspace invite hash |
+| Invoice Ninja | REST API as the pre-seeded admin |
+| Docmost | REST API — bootstraps workspace + owner on first run, then emails an invite (needs SMTP) |
+| Formbricks | Organization → Members → Invite (no members API on the free tier) |
 | Uptime Kuma | single-admin by design; don't share it |
 
 Every provisioner is best-effort: a failure prints a ✖ with the manual

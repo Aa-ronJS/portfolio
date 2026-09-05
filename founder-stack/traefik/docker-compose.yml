@@ -22,7 +22,9 @@ services:
       - /var/run/docker.sock:/var/run/docker.sock:ro
       - letsencrypt:/letsencrypt
     networks:
-      - proxy
+      proxy:
+        aliases:
+          - traefik
 
 volumes:
   letsencrypt:

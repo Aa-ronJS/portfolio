@@ -12,37 +12,28 @@ open the URL creates the admin account** — do it immediately after
 | authentik | `auth.` | **Pre-seeded**: `akadmin` / `ADMIN_PASSWORD` | ~1 GB (server+worker) |
 | calcom | `cal.` | First-visit setup (first signup becomes owner) | ~700 MB |
 | invoiceninja | `invoices.` | **Pre-seeded** (`IN_USER_EMAIL`/`IN_PASSWORD` from .env) | ~500 MB |
-| twenty | `crm.` | First-visit setup | ~1 GB (server+worker) |
+| twenty | `crm.` | **Auto-bootstrapped** by `stackctl user add` (workspace + admin = ADMIN_EMAIL) | ~1 GB (server+worker) |
 | activepieces | `automate.` | First-visit setup | ~500 MB |
 | listmonk | `newsletter.` | **Pre-seeded** (`ADMIN_USER`/`ADMIN_PASSWORD`) | ~150 MB |
 | formbricks | `forms.` | First-visit setup | ~400 MB |
 | vikunja | `tasks.` | First-visit setup; then consider disabling registration | ~100 MB |
-| docmost | `docs.` | First-visit setup (creates workspace + owner) | ~400 MB |
+| docmost | `docs.` | **Auto-bootstrapped** by `stackctl user add` (workspace + owner = ADMIN_EMAIL) | ~400 MB |
 | mattermost | `chat.` | First-visit setup (first user is system admin) | ~500 MB |
-| chatwoot | `support.` | Run the one-liner below once | ~1 GB (rails+sidekiq) |
+| chatwoot | `support.` | **Auto-bootstrapped** by `stackctl user add` (account + first user) | ~1 GB (rails+sidekiq) |
 | documenso | `sign.` | First-visit setup; needs signing cert first (below) | ~500 MB |
-| umami | `analytics.` | **Default login `admin` / `umami`** — change it immediately | ~200 MB |
+| umami | `analytics.` | **Auto-rotated** by `stackctl user add` (default admin/umami → ADMIN_PASSWORD) | ~200 MB |
 | nextcloud | `files.` | **Pre-seeded** (`ADMIN_USER`/`ADMIN_PASSWORD`) | ~500 MB |
 | vaultwarden | `vault.` | Sign up, then set `VAULTWARDEN_SIGNUPS_ALLOWED=false` and re-up | ~50 MB |
 | uptime-kuma | `status.` | First-visit setup | ~150 MB |
 | ghost | `blog.` | **Auto-bootstrapped** by `stackctl user add` (owner = ADMIN_EMAIL) | ~300 MB |
 | *ARM alternatives* (docs/ZERO-COST.md) | | | |
-| easyappointments | `cal.` | First-visit setup wizard | ~150 MB |
+| easyappointments | `cal.` | **Auto-bootstrapped** by `stackctl user add` (admin = ADMIN_USER/ADMIN_PASSWORD) | ~150 MB |
 | espocrm | `crm.` | **Pre-seeded** (`ADMIN_USER`/`ADMIN_PASSWORD`) | ~400 MB |
 | rocketchat | `chat.` | **Pre-seeded** (`ADMIN_USER`/`ADMIN_PASSWORD`); wizard skipped | ~1 GB (app+mongo) |
 
 A 4 GB VPS runs ~5 of these comfortably; 16 GB runs all of them.
 
 ## One-time steps
-
-### Chatwoot — create the admin account
-After `stackctl up chatwoot`, the URL shows an onboarding screen; complete it
-in the browser, or create the account from the CLI:
-
-```bash
-docker exec -it fs-chatwoot-rails-1 bundle exec rails runner \
-  "AccountBuilder.new(account_name:'My Business', email:'you@example.com', user_password:'<password>', confirmed: true).perform"
-```
 
 ### Documenso — generate the signing certificate
 Documenso signs PDFs with a local certificate. Before first `up`:
@@ -56,9 +47,6 @@ openssl pkcs12 -export -out cert.p12 -inkey key.pem -in cert.pem -passout pass:
 
 This is a self-signed cert (fine for internal/most business use). For
 eIDAS/qualified signatures you'd buy a cert and drop it in the same place.
-
-### Umami — change the default login
-Umami ships with `admin` / `umami`. Log in and change it before anything else.
 
 ### Vikunja — lock down registration
 After your team has signed up, set `VIKUNJA_SERVICE_ENABLEREGISTRATION: "false"`

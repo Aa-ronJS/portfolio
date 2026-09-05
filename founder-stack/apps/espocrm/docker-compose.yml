@@ -26,8 +26,10 @@ services:
       ESPOCRM_ADMIN_USERNAME: ${ADMIN_USER}
       ESPOCRM_ADMIN_PASSWORD: ${ADMIN_PASSWORD}
       ESPOCRM_SITE_URL: https://crm.${BASE_DOMAIN}
-    volumes:
-      - data:/var/www/html
+    volumes: &espocrm-volumes   # EspoCRM 10 layout: targeted mounts, not /var/www/html
+      - data:/var/www/html/data
+      - custom:/var/www/html/custom
+      - custom-client:/var/www/html/client/custom
     networks:
       - default
       - proxy
@@ -45,12 +47,18 @@ services:
     depends_on:
       - app
     entrypoint: docker-daemon.sh
-    volumes:
-      - data:/var/www/html
+    environment:
+      ESPOCRM_DATABASE_HOST: db
+      ESPOCRM_DATABASE_NAME: espocrm
+      ESPOCRM_DATABASE_USER: espocrm
+      ESPOCRM_DATABASE_PASSWORD: ${ESPOCRM_DB_PASSWORD}
+    volumes: *espocrm-volumes
 
 volumes:
   db:
   data:
+  custom:
+  custom-client:
 
 networks:
   proxy:

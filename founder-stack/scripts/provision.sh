@@ -10,14 +10,15 @@
 #     listmonk*, nextcloud*                       (*after one-time setup)
 #   - Scripted same-credentials accounts (this file): authentik, nextcloud,
 #     mattermost, chatwoot, vikunja, listmonk, umami, activepieces, calcom,
-#     ghost, vaultwarden (email invite)
-#   - In-app invite (no usable API on the free tier): twenty, docmost,
-#     formbricks, invoiceninja
+#     twenty, invoiceninja, rocketchat, espocrm; email invites for ghost,
+#     vaultwarden, docmost (need SMTP)
+#   - In-app invite: formbricks (no API for members on the free tier)
 #   - Single-admin by design: uptime-kuma
 
 PROVISION_OK=()
 PROVISION_FAILED=()
 PROVISION_MANUAL=()
+HTTP_CODE=000   # set by http(); initialised so failed subshell calls never trip set -u
 
 envval() { grep "^$1=" "$ENVFILE" | head -1 | cut -d= -f2-; }
 
@@ -366,7 +367,9 @@ provision_rocketchat() {
       ;;
     passwd)
       local id; id="$(http GET "$base/users.info?username=$user" "${auth[@]}" | sed -n 's/.*"_id":"\([^"]*\)".*/\1/p' | head -1)"
-      [ -n "$id" ] && http POST "$base/users.update" "${auth[@]}" \
+      # password changes require the admin to re-prove identity (2FA-by-password headers)
+      local sha; sha="$(printf '%s' "$(envval ADMIN_PASSWORD)" | sha256sum | cut -d' ' -f1)"
+      [ -n "$id" ] && http POST "$base/users.update" "${auth[@]}" -H "x-2fa-method: password" -H "x-2fa-code: $sha" \
         -d "{\"userId\":\"$id\",\"data\":{\"password\":\"$(json_escape "$pass")\"}}" >/dev/null \
         && note_ok rocketchat "rocket.chat — password rotated" \
         || note_fail rocketchat "users.update failed (HTTP $HTTP_CODE)"
@@ -396,6 +399,114 @@ provision_espocrm() {
   esac
 }
 
+
+# ---------- Easy!Appointments (install endpoint + REST API) — ARM alternative to Cal.com ----------
+provision_easyappointments() {
+  local action="$1" email="$2" pass="$3" user="${2%%@*}"
+  app_running easyappointments || return   # silent: it's an alternative, usually not running
+  local base="https://cal.$(base_domain)" jar csrf
+  # zero-touch first run: an uninstalled instance redirects / to the install wizard
+  local k=(); [ "${STACK_INSECURE:-0}" = 1 ] && k=(-k --noproxy '*')
+  if curl -s "${k[@]}" -o /dev/null -w '%{redirect_url}' --max-time 20 "$base/" | grep -q 'installation'; then
+    jar="$(mktemp)"
+    csrf="$(http GET "$base/index.php/installation" -c "$jar" -b "$jar" | grep -oE "csrf_token[\"']?\s*[:=]\s*[\"'][^\"']+" | grep -oE "[^\"']+$" | head -1)"
+    http POST "$base/index.php/installation/perform" -b "$jar" -c "$jar" -H "X-Requested-With: XMLHttpRequest" \
+      --data-urlencode "csrf_token=$csrf" \
+      --data-urlencode "admin[first_name]=$(envval ADMIN_USER)" --data-urlencode "admin[last_name]=-" \
+      --data-urlencode "admin[email]=$(envval ADMIN_EMAIL)" --data-urlencode "admin[username]=$(envval ADMIN_USER)" \
+      --data-urlencode "admin[password]=$(envval ADMIN_PASSWORD)" \
+      --data-urlencode "company[company_name]=Founder Stack" --data-urlencode "company[company_email]=$(envval ADMIN_EMAIL)" \
+      --data-urlencode "company[company_link]=$base" | grep -q '"success":true' \
+      && note_ok easyappointments "easy!appointments — installed, admin = ADMIN_USER" \
+      || { rm -f "$jar"; note_fail easyappointments "install failed (HTTP $HTTP_CODE)"; return; }
+    rm -f "$jar"
+  fi
+  [ "$action" = add ] || { note_manual easyappointments "Users → Providers ($action not scripted)"; return; }
+  # new users are "providers" (bookable staff) — created via the REST API as admin
+  http POST "$base/index.php/api/v1/providers" -u "$(envval ADMIN_USER):$(envval ADMIN_PASSWORD)" -H "Content-Type: application/json" \
+    -d "{\"firstName\":\"$(json_escape "$user")\",\"lastName\":\"-\",\"email\":\"$(json_escape "$email")\",\"services\":[],\"settings\":{\"username\":\"$(json_escape "$user")\",\"password\":\"$(json_escape "$pass")\",\"notifications\":true,\"calendarView\":\"default\"}}" >/dev/null \
+    && note_ok easyappointments "easy!appointments — provider account created" \
+    || note_fail easyappointments "API create failed (HTTP $HTTP_CODE)"
+}
+
+# ---------- Docmost (REST API) ----------
+provision_docmost() {
+  local action="$1" email="$2" pass="$3" user="${2%%@*}"
+  app_running docmost || { note_manual docmost "not running"; return; }
+  [ "$action" = add ] || { note_manual docmost "Settings → Members ($action not scripted)"; return; }
+  local base="https://docs.$(base_domain)/api" jar
+  jar="$(mktemp)"
+  # zero-touch first run: create the workspace + owner from .env
+  if ! http POST "$base/auth/login" -c "$jar" -H "Content-Type: application/json" \
+      -d "{\"email\":\"$(json_escape "$(envval ADMIN_EMAIL)")\",\"password\":\"$(json_escape "$(envval ADMIN_PASSWORD)")\"}" >/dev/null; then
+    http POST "$base/auth/setup" -c "$jar" -H "Content-Type: application/json" \
+      -d "{\"workspaceName\":\"Founder Stack\",\"name\":\"$(json_escape "$(envval ADMIN_USER)")\",\"email\":\"$(json_escape "$(envval ADMIN_EMAIL)")\",\"password\":\"$(json_escape "$(envval ADMIN_PASSWORD)")\"}" >/dev/null \
+      && note_ok docmost "docmost — bootstrapped workspace + owner as ADMIN_EMAIL" \
+      || { rm -f "$jar"; note_fail docmost "setup/login failed (HTTP $HTTP_CODE)"; return; }
+    http POST "$base/auth/login" -c "$jar" -H "Content-Type: application/json" \
+      -d "{\"email\":\"$(json_escape "$(envval ADMIN_EMAIL)")\",\"password\":\"$(json_escape "$(envval ADMIN_PASSWORD)")\"}" >/dev/null
+  fi
+  if [ -z "$(envval SMTP_HOST)" ]; then
+    rm -f "$jar"; note_manual docmost "no SMTP configured — invite '$email' from Settings → Members once SMTP is set"; return
+  fi
+  http POST "$base/workspace/invites/create" -b "$jar" -H "Content-Type: application/json" \
+    -d "{\"emails\":[\"$(json_escape "$email")\"],\"role\":\"member\"}" >/dev/null \
+    && note_ok docmost "docmost — invite emailed" \
+    || note_fail docmost "invite failed (HTTP $HTTP_CODE)"
+  rm -f "$jar"
+}
+
+# ---------- Invoice Ninja (REST API as the pre-seeded admin) ----------
+provision_invoiceninja() {
+  local action="$1" email="$2" pass="$3" user="${2%%@*}"
+  app_running invoiceninja || { note_manual invoiceninja "not running"; return; }
+  [ "$action" = add ] || { note_manual invoiceninja "Settings → User Management ($action not scripted)"; return; }
+  local base="https://invoices.$(base_domain)/api/v1" tok
+  tok="$(http POST "$base/login" -H "Content-Type: application/json" -H "X-Requested-With: XMLHttpRequest" \
+    -d "{\"email\":\"$(json_escape "$(envval ADMIN_EMAIL)")\",\"password\":\"$(json_escape "$(envval ADMIN_PASSWORD)")\"}" \
+    | sed -n 's/.*"token": *"\([^"]*\)".*/\1/p' | head -1)"
+  [ -n "$tok" ] || { note_fail invoiceninja "admin login failed (HTTP $HTTP_CODE)"; return; }
+  http POST "$base/users?include=company_user" -H "Content-Type: application/json" -H "X-Api-Token: $tok" -H "X-Requested-With: XMLHttpRequest" \
+    -d "{\"first_name\":\"$(json_escape "$user")\",\"last_name\":\"-\",\"email\":\"$(json_escape "$email")\",\"password\":\"$(json_escape "$pass")\",\"company_user\":{\"is_admin\":false,\"permissions\":\"view_client,edit_client,create_client,view_invoice,edit_invoice,create_invoice\"}}" >/dev/null \
+    && note_ok invoiceninja "invoice ninja — account created" \
+    || note_fail invoiceninja "API create failed (HTTP $HTTP_CODE)"
+}
+
+# ---------- Twenty CRM (GraphQL on /metadata; verified against v2.38) ----------
+twenty_gql() { # <json body> [bearer token]
+  http POST "https://crm.$(base_domain)/metadata" -H "Content-Type: application/json" \
+    -H "Origin: https://crm.$(base_domain)" ${2:+-H "Authorization: Bearer $2"} -d "$1"
+}
+twenty_tok() { sed -n 's/.*"token":"\([^"]*\)".*/\1/p' | head -1; }
+twenty_access_token() { # <email> <password> -> workspace access token on stdout (empty on failure)
+  local o="https://crm.$(base_domain)" lt
+  lt="$(twenty_gql "{\"query\":\"mutation{getLoginTokenFromCredentials(email:\\\"$1\\\",password:\\\"$2\\\",origin:\\\"$o\\\"){loginToken{token}}}\"}" | twenty_tok)"
+  [ -n "$lt" ] || return 0
+  twenty_gql "{\"query\":\"mutation{getAuthTokensFromLoginToken(loginToken:\\\"$lt\\\",origin:\\\"$o\\\"){tokens{accessOrWorkspaceAgnosticToken{token}}}}\"}" | twenty_tok
+}
+provision_twenty() {
+  local action="$1" email="$2" pass="$3"
+  app_running twenty || { note_manual twenty "not running"; return; }
+  [ "$action" = add ] || { note_manual twenty "Settings → Members ($action not scripted)"; return; }
+  local o="https://crm.$(base_domain)" aemail apass access agn lt hash body
+  aemail="$(json_escape "$(envval ADMIN_EMAIL)")"; apass="$(json_escape "$(envval ADMIN_PASSWORD)")"
+  access="$(twenty_access_token "$aemail" "$apass")"
+  if [ -z "$access" ]; then
+    # zero-touch first run: sign up the admin, create + activate the workspace
+    agn="$(twenty_gql "{\"query\":\"mutation{signUp(email:\\\"$aemail\\\",password:\\\"$apass\\\"){tokens{accessOrWorkspaceAgnosticToken{token}}}}\"}" | twenty_tok)"
+    lt="$(twenty_gql '{"query":"mutation{signUpInNewWorkspace(input:{displayName:\"Founder Stack\"}){loginToken{token} workspace{id}}}"}' "$agn" | twenty_tok)"
+    access="$(twenty_gql "{\"query\":\"mutation{getAuthTokensFromLoginToken(loginToken:\\\"$lt\\\",origin:\\\"$o\\\"){tokens{accessOrWorkspaceAgnosticToken{token}}}}\"}" | twenty_tok)"
+    [ -n "$access" ] || { note_fail twenty "workspace bootstrap failed (HTTP $HTTP_CODE)"; return; }
+    twenty_gql '{"query":"mutation{activateWorkspace(data:{displayName:\"Founder Stack\"}){id}}"}' "$access" >/dev/null
+    note_ok twenty "twenty — bootstrapped workspace + admin as ADMIN_EMAIL"
+  fi
+  hash="$(twenty_gql '{"query":"{currentWorkspace{inviteHash}}"}' "$access" | sed -n 's/.*"inviteHash":"\([^"]*\)".*/\1/p' | head -1)"
+  [ -n "$hash" ] || { note_fail twenty "could not read workspace invite hash"; return; }
+  body="$(twenty_gql "{\"query\":\"mutation{signUpInWorkspace(email:\\\"$(json_escape "$email")\\\",password:\\\"$(json_escape "$pass")\\\",workspaceInviteHash:\\\"$hash\\\"){loginToken{token}}}\"}")"
+  if printf '%s' "$body" | grep -q '"loginToken":{"token"'; then note_ok twenty "twenty — account created and joined workspace"
+  else note_fail twenty "sign-up failed: $(printf '%s' "$body" | sed -n 's/.*"message":"\([^"]*\)".*/\1/p' | head -1)"; fi
+}
+
 # ---------- Orchestrator ----------
 run_provisioners() { # <add|passwd|rm> <email> <password>
   local action="$1" email="$2" pass="$3"
@@ -414,13 +525,17 @@ run_provisioners() { # <add|passwd|rm> <email> <password>
   provision_vaultwarden "$action" "$email" "$pass"
   provision_rocketchat "$action" "$email" "$pass"
   provision_espocrm    "$action" "$email" "$pass"
+  provision_easyappointments "$action" "$email" "$pass"
+  provision_docmost    "$action" "$email" "$pass"
+  provision_invoiceninja "$action" "$email" "$pass"
+  provision_twenty     "$action" "$email" "$pass"
 
   echo
   if [ "$action" = add ]; then
     printf '\033[1mReal SSO via Authentik\033[0m (this account, "authentik"/OIDC button): tasks, chat, sign, vault'
     [ "$(envval SSO_ENABLED)" = true ] || printf '  [run: stackctl sso on]'
     echo
-    echo "In-app invite needed (no scripting possible on free tier): twenty (crm), docmost (docs), formbricks (forms), invoiceninja (invoices)"
+    echo "In-app invite: formbricks (forms) — Organization → Members"
     echo "Single-admin by design: uptime-kuma (status)"
   fi
   if [ ${#PROVISION_MANUAL[@]} -gt 0 ]; then

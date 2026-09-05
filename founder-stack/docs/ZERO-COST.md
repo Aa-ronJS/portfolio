@@ -106,7 +106,7 @@ alternative on the same subdomain:
 
 | amd64-only | ARM alternative | Same job | Notes |
 |---|---|---|---|
-| Cal.com | **Easy!Appointments** | booking pages, calendar sync | lighter; no team round-robin |
+| Cal.com | **Easy!Appointments** | booking pages, calendar sync | lighter; no team round-robin; admin auto-bootstrapped |
 | Twenty CRM | **EspoCRM** | contacts, deals, pipeline, email | more mature; admin pre-seeded from `.env` |
 | Mattermost | **Rocket.Chat** | team chat, channels, DMs, apps | admin pre-seeded; `stackctl user add` supported |
 
@@ -127,10 +127,22 @@ Two obstacles, both solved for free:
 - **Dynamic IP with ports you *can* open:** DuckDNS again — run its
   update script from cron so the name follows your IP.
 
-Note `install.sh` currently assumes ports 80/443 reach Traefik directly;
-the Cloudflare Tunnel variant (tunnel → Traefik on port 80, TLS at
-Cloudflare) needs Traefik's HTTPS redirect disabled. That's a documented
-"advanced install" for the product; the Oracle route needs no changes.
+Cloudflare Tunnel setup (10 minutes):
+
+1. Add your domain to Cloudflare (free plan) and point its nameservers there.
+2. Cloudflare dashboard → Zero Trust → Networks → Tunnels → **Create a
+   tunnel** (Cloudflared) → copy the **token**.
+3. Public hostname: subdomain `*`, domain yours, service **HTTPS** →
+   `traefik:443`; under *Additional application settings → TLS* turn on
+   **No TLS Verify**. (Cloudflare serves real certificates at its edge;
+   inside your box Traefik uses its own.)
+4. On the server: put the token in `.env` as `CF_TUNNEL_TOKEN`, then
+   ```bash
+   sudo ./install.sh          # same as always; ports 80/443 need not be open
+   ./stackctl tunnel up
+   ./stackctl up --all
+   ```
+Everything else — hub, SSO, `user add`, backups — works unchanged.
 
 ## What's still not free, honestly
 
