@@ -1,0 +1,57 @@
+# Activepieces — workflow automation (replaces Zapier) -> https://automate.${BASE_DOMAIN}
+# Chosen over n8n on purpose: MIT-licensed community edition, safe to resell/bundle.
+services:
+  db:
+    image: postgres:16-alpine
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: activepieces
+      POSTGRES_PASSWORD: ${ACTIVEPIECES_DB_PASSWORD}
+      POSTGRES_DB: activepieces
+    volumes:
+      - db:/var/lib/postgresql/data
+
+  redis:
+    image: redis:7-alpine
+    restart: unless-stopped
+    volumes:
+      - redis:/data
+
+  app:
+    image: activepieces/activepieces:latest
+    restart: unless-stopped
+    depends_on:
+      - db
+      - redis
+    environment:
+      AP_FRONTEND_URL: https://automate.${BASE_DOMAIN}
+      AP_API_KEY: ${ACTIVEPIECES_API_KEY}
+      AP_ENCRYPTION_KEY: ${ACTIVEPIECES_ENCRYPTION_KEY}
+      AP_JWT_SECRET: ${ACTIVEPIECES_JWT_SECRET}
+      AP_ENVIRONMENT: prod
+      AP_EXECUTION_MODE: UNSANDBOXED
+      AP_POSTGRES_HOST: db
+      AP_POSTGRES_PORT: 5432
+      AP_POSTGRES_DATABASE: activepieces
+      AP_POSTGRES_USERNAME: activepieces
+      AP_POSTGRES_PASSWORD: ${ACTIVEPIECES_DB_PASSWORD}
+      AP_REDIS_HOST: redis
+      AP_REDIS_PORT: 6379
+      AP_TELEMETRY_ENABLED: "false"
+    networks:
+      - default
+      - proxy
+    labels:
+      traefik.enable: "true"
+      traefik.http.routers.activepieces.rule: Host(`automate.${BASE_DOMAIN}`)
+      traefik.http.routers.activepieces.entrypoints: websecure
+      traefik.http.routers.activepieces.tls.certresolver: le
+      traefik.http.services.activepieces.loadbalancer.server.port: 80
+
+volumes:
+  db:
+  redis:
+
+networks:
+  proxy:
+    external: true

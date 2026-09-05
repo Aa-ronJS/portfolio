@@ -1,0 +1,80 @@
+# Chatwoot — helpdesk & live chat (replaces Zendesk/Intercom) -> https://support.${BASE_DOMAIN}
+x-chatwoot-env: &chatwoot-env
+  RAILS_ENV: production
+  NODE_ENV: production
+  INSTALLATION_ENV: docker
+  SECRET_KEY_BASE: ${CHATWOOT_SECRET_KEY_BASE}
+  FRONTEND_URL: https://support.${BASE_DOMAIN}
+  FORCE_SSL: "true"
+  ENABLE_ACCOUNT_SIGNUP: "false"
+  POSTGRES_HOST: db
+  POSTGRES_USERNAME: chatwoot
+  POSTGRES_PASSWORD: ${CHATWOOT_DB_PASSWORD}
+  POSTGRES_DATABASE: chatwoot_production
+  REDIS_URL: redis://redis:6379
+  ACTIVE_STORAGE_SERVICE: local
+  SMTP_ADDRESS: ${SMTP_HOST}
+  SMTP_PORT: ${SMTP_PORT}
+  SMTP_USERNAME: ${SMTP_USER}
+  SMTP_PASSWORD: ${SMTP_PASSWORD}
+  SMTP_AUTHENTICATION: plain
+  SMTP_ENABLE_STARTTLS_AUTO: "true"
+  MAILER_SENDER_EMAIL: ${SMTP_FROM}
+
+services:
+  db:
+    image: postgres:16-alpine
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: chatwoot
+      POSTGRES_PASSWORD: ${CHATWOOT_DB_PASSWORD}
+      POSTGRES_DB: chatwoot_production
+    volumes:
+      - db:/var/lib/postgresql/data
+
+  redis:
+    image: redis:7-alpine
+    restart: unless-stopped
+    volumes:
+      - redis:/data
+
+  rails:
+    image: chatwoot/chatwoot:latest
+    restart: unless-stopped
+    depends_on:
+      - db
+      - redis
+    environment: *chatwoot-env
+    entrypoint: docker/entrypoints/rails.sh
+    command: ["sh", "-c", "bundle exec rails db:chatwoot_prepare && bundle exec rails s -p 3000 -b 0.0.0.0"]
+    volumes:
+      - storage:/app/storage
+    networks:
+      - default
+      - proxy
+    labels:
+      traefik.enable: "true"
+      traefik.http.routers.chatwoot.rule: Host(`support.${BASE_DOMAIN}`)
+      traefik.http.routers.chatwoot.entrypoints: websecure
+      traefik.http.routers.chatwoot.tls.certresolver: le
+      traefik.http.services.chatwoot.loadbalancer.server.port: 3000
+
+  sidekiq:
+    image: chatwoot/chatwoot:latest
+    restart: unless-stopped
+    depends_on:
+      - db
+      - redis
+    environment: *chatwoot-env
+    command: ["bundle", "exec", "sidekiq", "-C", "config/sidekiq.yml"]
+    volumes:
+      - storage:/app/storage
+
+volumes:
+  db:
+  redis:
+  storage:
+
+networks:
+  proxy:
+    external: true

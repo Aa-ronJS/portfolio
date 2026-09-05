@@ -1,0 +1,48 @@
+# Formbricks — forms & surveys (replaces Typeform) -> https://forms.${BASE_DOMAIN}
+services:
+  db:
+    image: postgres:16-alpine
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: formbricks
+      POSTGRES_PASSWORD: ${FORMBRICKS_DB_PASSWORD}
+      POSTGRES_DB: formbricks
+    volumes:
+      - db:/var/lib/postgresql/data
+
+  app:
+    image: ghcr.io/formbricks/formbricks:latest
+    restart: unless-stopped
+    depends_on:
+      - db
+    environment:
+      WEBAPP_URL: https://forms.${BASE_DOMAIN}
+      DATABASE_URL: postgresql://formbricks:${FORMBRICKS_DB_PASSWORD}@db:5432/formbricks
+      NEXTAUTH_URL: https://forms.${BASE_DOMAIN}
+      NEXTAUTH_SECRET: ${FORMBRICKS_NEXTAUTH_SECRET}
+      ENCRYPTION_KEY: ${FORMBRICKS_ENCRYPTION_KEY}
+      CRON_SECRET: ${FORMBRICKS_CRON_SECRET}
+      SMTP_HOST: ${SMTP_HOST}
+      SMTP_PORT: ${SMTP_PORT}
+      SMTP_USER: ${SMTP_USER}
+      SMTP_PASSWORD: ${SMTP_PASSWORD}
+      MAIL_FROM: ${SMTP_FROM}
+    volumes:
+      - uploads:/home/nextjs/apps/web/uploads
+    networks:
+      - default
+      - proxy
+    labels:
+      traefik.enable: "true"
+      traefik.http.routers.formbricks.rule: Host(`forms.${BASE_DOMAIN}`)
+      traefik.http.routers.formbricks.entrypoints: websecure
+      traefik.http.routers.formbricks.tls.certresolver: le
+      traefik.http.services.formbricks.loadbalancer.server.port: 3000
+
+volumes:
+  db:
+  uploads:
+
+networks:
+  proxy:
+    external: true

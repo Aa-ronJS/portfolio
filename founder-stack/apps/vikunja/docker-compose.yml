@@ -1,0 +1,33 @@
+# Vikunja — tasks & projects (replaces Trello/Asana) -> https://tasks.${BASE_DOMAIN}
+services:
+  app:
+    image: vikunja/vikunja:latest
+    restart: unless-stopped
+    environment:
+      VIKUNJA_SERVICE_PUBLICURL: https://tasks.${BASE_DOMAIN}
+      VIKUNJA_SERVICE_JWTSECRET: ${VIKUNJA_JWT_SECRET}
+      VIKUNJA_DATABASE_TYPE: sqlite
+      VIKUNJA_DATABASE_PATH: /db/vikunja.db
+      VIKUNJA_SERVICE_ENABLEREGISTRATION: "true"
+      VIKUNJA_MAILER_ENABLED: "false"
+      TZ: ${TZ}
+    volumes:
+      - files:/app/vikunja/files
+      - db:/db
+    networks:
+      - default
+      - proxy
+    labels:
+      traefik.enable: "true"
+      traefik.http.routers.vikunja.rule: Host(`tasks.${BASE_DOMAIN}`)
+      traefik.http.routers.vikunja.entrypoints: websecure
+      traefik.http.routers.vikunja.tls.certresolver: le
+      traefik.http.services.vikunja.loadbalancer.server.port: 3456
+
+volumes:
+  files:
+  db:
+
+networks:
+  proxy:
+    external: true

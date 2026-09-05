@@ -1,0 +1,166 @@
+#!/usr/bin/env bash
+# stackctl — manage the Founder Stack.
+#   stackctl list | status
+#   stackctl up <app...> | up --all
+#   stackctl down <app...> | down --all
+#   stackctl restart <app...>
+#   stackctl logs <app>
+#   stackctl update [app...]
+#   stackctl backup
+#   stackctl restore <backup-dir>
+set -euo pipefail
+
+ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+ENVFILE="$ROOT/.env"
+APPS_DIR="$ROOT/apps"
+BACKUP_DIR="$ROOT/backups"
+
+log()  { printf '\033[1;32m==>\033[0m %s\n' "$*"; }
+fail() { printf '\033[1;31mERROR:\033[0m %s\n' "$*" >&2; exit 1; }
+
+[ -f "$ENVFILE" ] || fail "no .env found — run sudo ./install.sh first"
+
+# app -> subdomain (also documented in README/docs)
+subdomain() {
+  case "$1" in
+    calcom) echo cal ;;         invoiceninja) echo invoices ;;
+    twenty) echo crm ;;         activepieces) echo automate ;;
+    listmonk) echo newsletter ;; formbricks) echo forms ;;
+    vikunja) echo tasks ;;      docmost) echo docs ;;
+    mattermost) echo chat ;;    chatwoot) echo support ;;
+    documenso) echo sign ;;     umami) echo analytics ;;
+    nextcloud) echo files ;;    vaultwarden) echo vault ;;
+    uptime-kuma) echo status ;; ghost) echo blog ;;
+    *) echo "$1" ;;
+  esac
+}
+
+all_apps() { ls -1 "$APPS_DIR"; }
+
+compose() { # compose <app> <compose args...>
+  local app="$1"; shift
+  docker compose --env-file "$ENVFILE" -f "$APPS_DIR/$app/docker-compose.yml" -p "fs-$app" "$@"
+}
+
+resolve_apps() { # expands --all, validates names
+  if [ "${1:-}" = "--all" ]; then all_apps; return; fi
+  [ $# -gt 0 ] || fail "specify app names or --all (see: stackctl list)"
+  local a; for a in "$@"; do
+    [ -d "$APPS_DIR/$a" ] || fail "unknown app '$a' (see: stackctl list)"
+    echo "$a"
+  done
+}
+
+base_domain() { grep '^BASE_DOMAIN=' "$ENVFILE" | cut -d= -f2-; }
+
+running_count() { # number of running containers for an app; 0 on any error
+  local n
+  n="$(compose "$1" ps -q 2>/dev/null | wc -l)" || n=0
+  echo "$n"
+}
+
+cmd="${1:-}"; shift || true
+case "$cmd" in
+  list)
+    printf '%-14s %s\n' "APP" "URL"
+    for a in $(all_apps); do
+      printf '%-14s https://%s.%s\n' "$a" "$(subdomain "$a")" "$(base_domain)"
+    done
+    ;;
+
+  up)
+    for a in $(resolve_apps "$@"); do
+      log "Starting $a -> https://$(subdomain "$a").$(base_domain)"
+      compose "$a" up -d
+    done
+    log "Done. First-login steps per app: docs/APPS.md"
+    ;;
+
+  down)
+    for a in $(resolve_apps "$@"); do
+      log "Stopping $a (data is kept)"
+      compose "$a" down
+    done
+    ;;
+
+  restart)
+    for a in $(resolve_apps "$@"); do compose "$a" restart; done
+    ;;
+
+  logs)
+    [ $# -eq 1 ] || fail "usage: stackctl logs <app>"
+    compose "$1" logs -f --tail=200
+    ;;
+
+  status)
+    printf '%-14s %-10s %s\n' "APP" "STATE" "URL"
+    for a in $(all_apps); do
+      state="stopped"
+      [ "$(running_count "$a")" -gt 0 ] && state="running"
+      printf '%-14s %-10s https://%s.%s\n' "$a" "$state" "$(subdomain "$a")" "$(base_domain)"
+    done
+    ;;
+
+  update)
+    apps="$( [ $# -gt 0 ] && resolve_apps "$@" || all_apps )"
+    for a in $apps; do
+      [ "$(running_count "$a")" -gt 0 ] || continue
+      log "Updating $a..."
+      compose "$a" pull
+      compose "$a" up -d
+    done
+    ;;
+
+  backup)
+    ts="$(date +%Y%m%d-%H%M%S)"
+    dest="$BACKUP_DIR/$ts"
+    mkdir -p "$dest"
+    log "Backing up to $dest"
+    for a in $(all_apps); do
+      [ "$(running_count "$a")" -gt 0 ] || continue
+      log "  $a: dumping databases..."
+      # Postgres containers in this app
+      for c in $(compose "$a" ps -q); do
+        img="$(docker inspect -f '{{.Config.Image}}' "$c")"
+        name="$(docker inspect -f '{{index .Config.Labels "com.docker.compose.service"}}' "$c")"
+        case "$img" in
+          postgres*|*"/postgres"*)
+            user="$(docker exec "$c" printenv POSTGRES_USER 2>/dev/null || echo postgres)"
+            docker exec "$c" pg_dumpall -U "$user" > "$dest/$a-$name.sql" ;;
+          mysql*|mariadb*)
+            pw="$(docker exec "$c" sh -c 'printenv MYSQL_ROOT_PASSWORD' 2>/dev/null || true)"
+            [ -n "$pw" ] && docker exec "$c" sh -c "exec mysqldump --all-databases -uroot -p\"\$MYSQL_ROOT_PASSWORD\"" > "$dest/$a-$name.sql" ;;
+        esac
+      done
+      log "  $a: archiving volumes..."
+      for v in $(docker volume ls -q --filter "label=com.docker.compose.project=fs-$a"); do
+        docker run --rm -v "$v":/data:ro -v "$dest":/backup busybox \
+          tar czf "/backup/$a-vol-$v.tar.gz" -C /data . >/dev/null
+      done
+    done
+    log "Backup complete: $dest — copy it off this server."
+    ;;
+
+  restore)
+    [ $# -eq 1 ] && [ -d "${1:-}" ] || fail "usage: stackctl restore <backup-dir>"
+    src="$(cd "$1" && pwd)"
+    log "Restoring volumes from $src (apps must be stopped: stackctl down --all)"
+    for f in "$src"/*-vol-*.tar.gz; do
+      [ -e "$f" ] || continue
+      v="$(basename "$f" .tar.gz)"; v="${v#*-vol-}"
+      docker volume create "$v" >/dev/null
+      docker run --rm -v "$v":/data -v "$src":/backup:ro busybox \
+        sh -c "cd /data && tar xzf /backup/$(basename "$f")"
+      log "  restored volume $v"
+    done
+    log "Volumes restored. Start apps (stackctl up ...). SQL dumps in $src are a"
+    log "second line of defense; volume restore alone brings databases back."
+    ;;
+
+  ""|help|-h|--help)
+    sed -n '2,10p' "$0" | sed 's/^# \{0,1\}//'
+    ;;
+  *)
+    fail "unknown command '$cmd' (try: stackctl help)"
+    ;;
+esac

@@ -1,0 +1,60 @@
+# Twenty — CRM (replaces HubSpot/Salesforce CRM) -> https://crm.${BASE_DOMAIN}
+services:
+  db:
+    image: postgres:16-alpine
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: twenty
+      POSTGRES_PASSWORD: ${TWENTY_DB_PASSWORD}
+      POSTGRES_DB: default
+    volumes:
+      - db:/var/lib/postgresql/data
+
+  redis:
+    image: redis:7-alpine
+    restart: unless-stopped
+
+  server:
+    image: twentycrm/twenty:latest
+    restart: unless-stopped
+    depends_on:
+      - db
+      - redis
+    environment: &twenty-env
+      SERVER_URL: https://crm.${BASE_DOMAIN}
+      APP_SECRET: ${TWENTY_APP_SECRET}
+      PG_DATABASE_URL: postgres://twenty:${TWENTY_DB_PASSWORD}@db:5432/default
+      REDIS_URL: redis://redis:6379
+      STORAGE_TYPE: local
+    volumes:
+      - server-data:/app/packages/twenty-server/.local-storage
+    networks:
+      - default
+      - proxy
+    labels:
+      traefik.enable: "true"
+      traefik.http.routers.twenty.rule: Host(`crm.${BASE_DOMAIN}`)
+      traefik.http.routers.twenty.entrypoints: websecure
+      traefik.http.routers.twenty.tls.certresolver: le
+      traefik.http.services.twenty.loadbalancer.server.port: 3000
+
+  worker:
+    image: twentycrm/twenty:latest
+    restart: unless-stopped
+    command: ["yarn", "worker:prod"]
+    depends_on:
+      - db
+      - redis
+    environment:
+      <<: *twenty-env
+      DISABLE_DB_MIGRATIONS: "true"
+    volumes:
+      - server-data:/app/packages/twenty-server/.local-storage
+
+volumes:
+  db:
+  server-data:
+
+networks:
+  proxy:
+    external: true
