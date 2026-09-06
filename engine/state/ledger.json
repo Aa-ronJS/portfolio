@@ -1,0 +1,29 @@
+[
+ {
+  "format": "myth_kill",
+  "hook": "Offline draft: myth_kill for money",
+  "market": "money",
+  "media_id": null,
+  "run_id": "20260830T0553",
+  "source": "offline",
+  "video": "/home/user/portfolio/engine/out/20260830T0553/money/reel-money-20260830T0553.mp4"
+ },
+ {
+  "format": "hidden_feature",
+  "hook": "Offline draft: hidden_feature for aitools",
+  "market": "aitools",
+  "media_id": null,
+  "run_id": "20260830T0553",
+  "source": "offline",
+  "video": "/home/user/portfolio/engine/out/20260830T0553/aitools/reel-aitools-20260830T0553.mp4"
+ },
+ {
+  "format": "tiny_protocol",
+  "hook": "Offline draft: tiny_protocol for health",
+  "market": "health",
+  "media_id": null,
+  "run_id": "20260830T0553",
+  "source": "offline",
+  "video": "/home/user/portfolio/engine/out/20260830T0553/health/reel-health-20260830T0553.mp4"
+ }
+]
