@@ -1,0 +1,179 @@
+<!doctype html>
+<html lang="en-AU">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Sources Close To. The tabloid about your friend</title>
+<meta name="description" content="A glossy tabloid newspaper about your friend, written from anonymous tips sent in by everyone who knows them. Front page scandal, exclusive interview, horoscope, classifieds. Print-ready in minutes. $29 AUD.">
+<meta property="og:title" content="Sources Close To. The tabloid about your friend">
+<meta property="og:description" content="Drop a link in the group chat. Everyone sends in dirt anonymously. A newspaper comes out. $29.">
+<meta property="og:type" content="website">
+<meta name="theme-color" content="#d3202a">
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Anton&family=Archivo+Narrow:ital,wght@0,400..700;1,400..700&family=Newsreader:ital,opsz,wght@0,6..72,400..700;1,6..72,400..700&display=swap">
+<link rel="stylesheet" href="/style.css">
+<style>
+.hero{padding-block:var(--s7) var(--s6); background:#fff; border-bottom:6px solid var(--ink)}
+.hero__grid{display:grid; gap:var(--s7); align-items:center}
+@media (min-width:60rem){.hero__grid{grid-template-columns:1fr 1fr; gap:var(--s8)}}
+.hero h1 em{font-style:normal; color:var(--red)}
+.demo{position:relative}
+.demo .mag{zoom:0.42; margin:0}
+@media (max-width:820px){.demo .mag{zoom:0.36}} @media (max-width:520px){.demo .mag{zoom:0.30}}
+.demo .pg{margin:0 auto; transform:rotate(-1.5deg)}
+.demo__hint{position:absolute; right:-6px; top:-10px; background:var(--yellow); font-family:var(--head); padding:6px 12px; transform:rotate(4deg); box-shadow:3px 3px 0 var(--ink); z-index:2}
+.how{padding-block:var(--s8)}
+.steps{display:grid; gap:var(--s5); margin-top:var(--s6)}
+@media (min-width:54rem){.steps{grid-template-columns:repeat(3,1fr); gap:var(--s6)}}
+.step{background:#fff; border:2px solid var(--ink); padding:var(--s5); position:relative}
+.step b{position:absolute; top:-18px; left:16px; background:var(--red); color:#fff; font-family:var(--head); font-size:1.4rem; padding:2px 12px}
+.step h3{margin:var(--s2) 0 var(--s3)}
+.make{padding-block:var(--s8); background:var(--paper-2); border-top:6px solid var(--ink)}
+.make__grid{display:grid; gap:var(--s7)}
+@media (min-width:60rem){.make__grid{grid-template-columns:1fr 1.1fr; gap:var(--s8)}}
+.row2{display:grid; grid-template-columns:1fr 1fr; gap:var(--s3)}
+.price{font-family:var(--head); font-size:clamp(2.6rem,2rem + 2vw,4rem); line-height:1}
+.price small{font-family:var(--body); font-size:0.9rem; color:var(--mute); text-transform:uppercase; letter-spacing:0.08em; display:block; margin-top:4px}
+.inside{padding-block:var(--s8)}
+.inside ul{columns:2; gap:var(--s6); margin:var(--s5) 0 0; padding:0; list-style:none}
+@media (min-width:54rem){.inside ul{columns:3}}
+.inside li{break-inside:avoid; padding:var(--s3) 0; border-top:2px solid var(--ink); font-family:var(--serif); font-size:1.05rem}
+.inside li b{display:block; font-family:var(--head); text-transform:uppercase; font-size:1rem; letter-spacing:0.04em; color:var(--red)}
+.faq{padding-block:var(--s8); border-top:6px solid var(--ink); background:#fff}
+.faq dl{display:grid; gap:var(--s5); margin:var(--s5) 0 0}
+@media (min-width:54rem){.faq dl{grid-template-columns:repeat(2,1fr); gap:var(--s6)}}
+.faq dt{font-family:var(--head); text-transform:uppercase; font-size:1.2rem; margin-bottom:var(--s2)}
+.faq dd{margin:0; color:var(--ink-2)}
+</style>
+</head>
+<body>
+
+<header class="hero">
+  <div class="wrap hero__grid">
+    <div>
+      <span class="kicker">The group-chat gift</span>
+      <h1>The tabloid <em>about your mate.</em></h1>
+      <p class="lede" style="margin-top:var(--s4)">Drop one link in the group chat. Everyone who knows them sends in dirt, anonymously. A six-page newspaper comes out: front-page scandal, an exclusive interview with "a source", their horoscope, the classifieds. They read it aloud at the party. Nobody forgets it.</p>
+      <div style="display:flex; flex-wrap:wrap; gap:var(--s3); margin-top:var(--s6); align-items:center">
+        <a class="btn btn--red" href="#make">Start an issue</a>
+        <a class="btn btn--ghost" href="#inside">What's inside</a>
+        <span class="price" style="margin-left:var(--s3)">$29<small>AUD, one issue, print-ready</small></span>
+      </div>
+    </div>
+    <div class="demo">
+      <span class="demo__hint">Sample issue, real layout</span>
+      <div id="demo"></div>
+    </div>
+  </div>
+</header>
+
+<section class="how">
+  <div class="wrap">
+    <h2>Three days, three steps.</h2>
+    <div class="steps">
+      <div class="step"><b>1</b><h3>Open the tip line</h3><p>Their name, the occasion, your name. Thirty seconds. You get a private link for the group chat and a private one for you.</p></div>
+      <div class="step"><b>2</b><h3>Let the sources talk</h3><p>Friends and family send in stories, habits, quotes and photos, anonymously if they like. You can see what has come in. Five tips is enough. Fifteen is a great issue.</p></div>
+      <div class="step"><b>3</b><h3>Send it to print</h3><p>Pay once. The newsroom writes the whole issue in about a minute. You get six A4 pages to print at home or at Officeworks, or Save as PDF and send. One rewrite included if you want a second edition.</p></div>
+    </div>
+  </div>
+</section>
+
+<section class="inside" id="inside">
+  <div class="wrap">
+    <span class="kicker">In every issue</span>
+    <h2>Six pages of unverified reporting.</h2>
+    <ul>
+      <li><b>Front page</b>The funniest tip, forty-point type, over their photo. "WORLD EXCLUSIVE."</li>
+      <li><b>The lead story</b>Quotes from "a source", "insiders" and "a close friend who asked not to be named".</li>
+      <li><b>The big interview</b>A sit-down with someone who has seen the remote.</li>
+      <li><b>Spotted</b>A gossip column of where they have been seen and what they were "not doing".</li>
+      <li><b>Ranked</b>The five greatest hits of a legendary career.</li>
+      <li><b>Dear Deirdre</b>They write to the agony aunt about their worst habit. The reply is unhelpful.</li>
+      <li><b>Horoscope</b>Their sign, or a new one. "Bunnings Rising."</li>
+      <li><b>Classifieds</b>FOR SALE, WANTED, LOST, PUBLIC NOTICE, MISSED CONNECTIONS.</li>
+      <li><b>Back-page ad</b>A product only they would need.</li>
+      <li><b>From the editor</b>The one sincere page. Why everyone who sent a tip loves them. This is the bit that gets them.</li>
+    </ul>
+  </div>
+</section>
+
+<section class="make" id="make">
+  <div class="wrap make__grid">
+    <div>
+      <span class="kicker">Start an issue</span>
+      <h2>Who is it about?</h2>
+      <p class="lede" style="margin-top:var(--s4)">Nothing is charged now. You pay when you send it to print, once there are enough tips. If the group chat lets you down, you owe nothing.</p>
+      <p class="small" style="margin-top:var(--s4)">Birthdays, 40ths, retirements, farewells, hens and bucks, the couple who just got engaged, the housemate who is moving out. Anyone with friends who talk.</p>
+    </div>
+    <form class="card" id="create">
+      <div class="row2">
+        <div class="field"><label for="name">Their first name</label><input id="name" name="name" required maxlength="40" placeholder="Sam"></div>
+        <div class="field"><label for="pronoun">They are</label><select id="pronoun" name="pronoun"><option value="they">they / them</option><option value="he">he / him</option><option value="she">she / her</option></select></div>
+      </div>
+      <div class="row2">
+        <div class="field"><label for="occasion">The occasion</label><input id="occasion" name="occasion" maxlength="60" placeholder="40th birthday"></div>
+        <div class="field"><label for="city">Their town (optional)</label><input id="city" name="city" maxlength="40" placeholder="Adelaide"></div>
+      </div>
+      <div class="row2">
+        <div class="field"><label for="buyer">Your name</label><input id="buyer" name="buyer" maxlength="40" placeholder="Ellie"></div>
+        <div class="field"><label for="relationship">You are their</label><input id="relationship" name="relationship" maxlength="60" placeholder="sister"></div>
+      </div>
+      <div class="field"><label for="tip1">Your first tip (optional, the sources will add more)</label><textarea id="tip1" name="tip1" maxlength="400" placeholder="Goes to Bunnings for one thing. Comes back with nine. Every single Saturday."></textarea></div>
+      <button class="btn btn--red" type="submit" style="width:100%">Open the tip line</button>
+      <p class="small" style="margin-top:var(--s3)">Free to start. The link is private to whoever you send it to. Tips are anonymous unless the sender signs them.</p>
+      <p class="err" id="err" hidden></p>
+    </form>
+  </div>
+</section>
+
+<section class="faq">
+  <div class="wrap">
+    <h2>Questions from the floor.</h2>
+    <dl>
+      <div><dt>Will it be mean?</dt><dd>No. The newsroom roasts habits, never the person. Nothing about weight, health, appearance, money or anything that reads as genuinely painful. Cruel tips get left out. The last page is sincere.</dd></div>
+      <div><dt>Who writes it?</dt><dd>An editor built on Claude, working from the tips only. It invents sources, correspondents and fake products. It does not invent facts about real people. You read it before anyone else does, and one rewrite is included.</dd></div>
+      <div><dt>What do I get?</dt><dd>Six A4 pages in your browser: print them at home, or Save as PDF and take it to Officeworks for a glossy version. Print as many as the party needs.</dd></div>
+      <div><dt>Can the birthday person see the tips?</dt><dd>Only if someone sends them the link. The tip line and the finished issue are on private links. Keep them in the chat they are not in.</dd></div>
+      <div><dt>How long does it take?</dt><dd>Opening the tip line: thirty seconds. Collecting: as long as you give it. Writing the issue: about a minute after you pay.</dd></div>
+      <div><dt>Refunds?</dt><dd>If the issue does not render or something in it is wrong and you tell me within a week, the money comes back. Reply to the receipt.</dd></div>
+    </dl>
+  </div>
+</section>
+
+<footer class="site"><div class="wrap">Sources Close To. Made in South Australia. Prices in Australian dollars, GST included. ABN on the receipt.</div></footer>
+
+<script src="/magazine.js"></script>
+<script>
+(function () {
+  /* Attribution kept for the checkout reference. */
+  try {
+    var p = new URLSearchParams(location.search);
+    if (p.get('utm_source')) sessionStorage.setItem('ref', [p.get('utm_source'), p.get('utm_campaign'), p.get('utm_content')].filter(Boolean).join('_'));
+  } catch (e) {}
+
+  fetch('/api/demo').then(function (r) { return r.json(); }).then(function (doc) {
+    var html = Magazine.render(doc);
+    var tmp = document.createElement('div'); tmp.innerHTML = html;
+    var mag = tmp.firstChild; Array.prototype.slice.call(mag.children, 1).forEach(function (pg) { pg.remove(); });
+    document.getElementById('demo').appendChild(mag);
+  }).catch(function () {});
+
+  var form = document.getElementById('create'), err = document.getElementById('err');
+  form.addEventListener('submit', function (ev) {
+    ev.preventDefault(); err.hidden = true;
+    var f = new FormData(form);
+    var body = { name: f.get('name'), pronoun: f.get('pronoun'), occasion: f.get('occasion'), city: f.get('city'), buyer: f.get('buyer'), relationship: f.get('relationship'), tips: [f.get('tip1')].filter(Boolean) };
+    form.querySelector('button').disabled = true;
+    fetch('/api/issue', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body) })
+      .then(function (r) { return r.json().then(function (j) { if (!r.ok) throw new Error(j.error || 'Something went wrong'); return j; }); })
+      .then(function (j) {
+        try { var mine = JSON.parse(localStorage.getItem('sct_issues') || '[]'); mine.push({ id: j.id, key: j.key, name: body.name }); localStorage.setItem('sct_issues', JSON.stringify(mine)); } catch (e) {}
+        location.href = '/edit?id=' + j.id + '&key=' + j.key;
+      })
+      .catch(function (e) { err.textContent = e.message; err.hidden = false; form.querySelector('button').disabled = false; });
+  });
+})();
+</script>
+<script defer src="/_vercel/insights/script.js"></script>
+</body>
+</html>

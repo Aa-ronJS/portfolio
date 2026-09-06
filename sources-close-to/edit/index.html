@@ -1,0 +1,147 @@
+<!doctype html>
+<html lang="en-AU">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Your issue</title>
+<meta name="robots" content="noindex">
+<meta name="theme-color" content="#d3202a">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Anton&family=Archivo+Narrow:ital,wght@0,400..700;1,400..700&family=Newsreader:ital,opsz,wght@0,6..72,400..700;1,6..72,400..700&display=swap">
+<link rel="stylesheet" href="/style.css">
+<style>
+.mast-sm{background:var(--ink); color:#fff; padding:var(--s5) var(--gut)}
+.mast-sm h1{font-size:clamp(2rem,1.4rem + 3.5vw,4rem); color:#fff}
+.mast-sm p{margin:var(--s2) 0 0; font-weight:700; letter-spacing:0.06em; text-transform:uppercase; font-size:0.85rem; color:var(--yellow)}
+main{padding-block:var(--s6) var(--s8)}
+.grid{display:grid; gap:var(--s6)}
+@media (min-width:60rem){.grid{grid-template-columns:1fr 1fr; gap:var(--s8)}}
+.share{display:flex; gap:var(--s2); flex-wrap:wrap; margin-top:var(--s3)}
+.share input{flex:1 1 220px; font-size:0.9rem}
+.meter{height:12px; background:#fff; border:2px solid var(--ink); margin-top:var(--s3)}
+.meter div{height:100%; background:var(--red); width:0; transition:width 400ms}
+.count{font-family:var(--head); font-size:3rem; line-height:1; color:var(--red)}
+.spin{display:inline-block; width:1em; height:1em; border:3px solid #fff; border-right-color:transparent; border-radius:50%; animation:spin 800ms linear infinite; vertical-align:-0.15em}
+@keyframes spin{to{transform:rotate(360deg)}}
+</style>
+</head>
+<body>
+<div class="mast-sm"><div class="wrap"><h1 id="mast">Sources Close To</h1><p id="sub">Editor's desk</p></div></div>
+<main class="wrap">
+  <p class="err" id="err" hidden></p>
+  <div class="grid" id="desk" hidden>
+    <section>
+      <div class="card">
+        <span class="label">Step 1. The tip line, for the group chat</span>
+        <p style="margin-top:var(--s2)">Send this to everyone who knows them. Not to them.</p>
+        <div class="share"><input id="tiplink" readonly><button class="btn" type="button" id="copy">Copy</button></div>
+        <div class="share" style="margin-top:var(--s2)"><a class="btn btn--ghost" id="wa" target="_blank" rel="noopener">WhatsApp</a><a class="btn btn--ghost" id="sms">Text</a><a class="btn btn--ghost" id="mail">Email</a></div>
+      </div>
+      <div class="card" style="margin-top:var(--s5)">
+        <span class="label">Step 2. What has come in</span>
+        <div class="count" id="count">0</div>
+        <div class="meter"><div id="meter"></div></div>
+        <p class="small" id="meter-note" style="margin-top:var(--s2)"></p>
+        <ul class="tips" id="tips"></ul>
+        <form id="addtip" style="margin-top:var(--s4)">
+          <div class="field"><label for="text">Add one of your own</label><textarea id="text" maxlength="400" placeholder="Their catchphrase, the barbecue story, the thing they always do."></textarea></div>
+          <button class="btn btn--ghost" type="submit">Add tip</button>
+        </form>
+      </div>
+    </section>
+    <aside>
+      <div class="card" id="printcard">
+        <span class="label">Step 3. Send it to print</span>
+        <p class="price" style="font-family:var(--head); font-size:3rem; line-height:1; margin:var(--s2) 0">$29</p>
+        <p>One payment. The newsroom writes the whole issue from the tips in about a minute. You read it first. One rewrite is included.</p>
+        <button class="btn btn--red" type="button" id="pay" style="width:100%; margin-top:var(--s3)">Pay and send to print</button>
+        <p class="small" id="paynote" style="margin-top:var(--s3)">Tips close when you pay. Make sure the chat has had its say.</p>
+      </div>
+      <div class="card" id="writing" hidden style="background:var(--ink); color:#fff">
+        <span class="label" style="color:var(--yellow)">The newsroom is writing</span>
+        <p style="margin-top:var(--s2)"><span class="spin"></span> Chasing sources, checking nothing, laying out six pages. About a minute.</p>
+      </div>
+      <div class="card" id="done" hidden style="background:var(--yellow)">
+        <span class="label">Hot off the press</span>
+        <h3 style="margin-top:var(--s2)">The issue is out.</h3>
+        <a class="btn btn--red" id="read" style="width:100%; margin-top:var(--s3)">Read it, print it</a>
+        <button class="btn btn--ghost" type="button" id="rewrite" style="width:100%; margin-top:var(--s2)">Rewrite once (new edition, same tips)</button>
+        <p class="small" id="rewrite-note" style="margin-top:var(--s2)"></p>
+      </div>
+      <div class="card" style="margin-top:var(--s5)">
+        <span class="label">Keep this page</span>
+        <p style="margin-top:var(--s2)" class="small">This address is your editor's key. Bookmark it. Anyone with it can read the finished issue, so do not put it in the group chat.</p>
+      </div>
+    </aside>
+  </div>
+</main>
+<footer class="site"><div class="wrap">Sources Close To. Payment by Stripe. Reply to the receipt and a human answers.</div></footer>
+<script>
+(function () {
+  var q = new URLSearchParams(location.search), id = q.get('id'), key = q.get('key'), sessionId = q.get('session_id');
+  var $ = function (s) { return document.getElementById(s); };
+  var doc = null;
+  function esc(s) { return String(s).replace(/[&<>"]/g, function (c) { return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]; }); }
+  function fail(m) { $('err').textContent = m; $('err').hidden = false; }
+  function api(path, body) {
+    return fetch(path, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body) })
+      .then(function (r) { return r.json().then(function (j) { if (!r.ok) throw new Error(j.error || 'Something went wrong'); return j; }); });
+  }
+  function load() {
+    return fetch('/api/issue?id=' + encodeURIComponent(id) + '&key=' + encodeURIComponent(key)).then(function (r) { return r.json(); }).then(function (d) {
+      if (d.error) throw new Error(d.error);
+      if (!('tips' in d)) throw new Error('That key does not open this issue.');
+      doc = d; show();
+    });
+  }
+  function show() {
+    $('desk').hidden = false;
+    var name = doc.subject.name, link = location.origin + '/tip?id=' + doc.id;
+    $('mast').textContent = 'Sources Close To ' + name;
+    $('sub').textContent = doc.status === 'collecting' ? 'Editor’s desk. Collecting tips' : 'Editor’s desk. Gone to print';
+    document.title = 'Sources Close To ' + name + ': editor’s desk';
+    $('tiplink').value = link;
+    var msg = 'We are making a tabloid newspaper about ' + name + ' for the ' + doc.occasion + '. Send in your dirt, anonymously if you like. Do not show ' + name + '. ' + link;
+    $('wa').href = 'https://wa.me/?text=' + encodeURIComponent(msg);
+    $('sms').href = 'sms:?&body=' + encodeURIComponent(msg);
+    $('mail').href = 'mailto:?subject=' + encodeURIComponent('Dirt on ' + name + ', please') + '&body=' + encodeURIComponent(msg);
+    $('count').textContent = doc.tips.length + (doc.photos.length ? ' + ' + doc.photos.length + ' photo' + (doc.photos.length > 1 ? 's' : '') : '');
+    var pct = Math.min(100, Math.round(doc.tips.length / 15 * 100));
+    $('meter').style.width = pct + '%';
+    $('meter-note').textContent = doc.tips.length < 5 ? (5 - doc.tips.length) + ' more to reach the minimum of five' : doc.tips.length < 12 ? 'Enough for an issue. More tips, better issue.' : 'A fat issue. The newsroom will be busy.';
+    $('tips').innerHTML = doc.tips.slice().reverse().map(function (t) { return '<li>' + esc(t.text) + '<small>' + esc(t.by) + '</small></li>'; }).join('');
+    $('pay').disabled = doc.tips.length < 5;
+    var printed = Boolean(doc.magazine);
+    $('printcard').hidden = printed || (doc.payment && doc.payment.paid);
+    $('done').hidden = !printed;
+    $('addtip').hidden = doc.status !== 'collecting';
+    if (printed) {
+      $('read').href = '/issue?id=' + doc.id + '&key=' + key;
+      var left = 2 - (doc.runs || 1);
+      $('rewrite').hidden = left <= 0; $('rewrite-note').textContent = left > 0 ? 'One rewrite left. It replaces this edition.' : 'This is the final edition.';
+    }
+  }
+  function generate(regen) {
+    $('writing').hidden = false; $('printcard').hidden = true; $('done').hidden = true;
+    return api('/api/generate', { id: id, key: key, session_id: sessionId, regenerate: Boolean(regen) })
+      .then(function () { history.replaceState(null, '', '/edit?id=' + id + '&key=' + key); return load(); })
+      .then(function () { $('writing').hidden = true; location.href = '/issue?id=' + id + '&key=' + key; })
+      .catch(function (e) { $('writing').hidden = true; fail(e.message); return load(); });
+  }
+  if (!id || !key) { fail('This link is missing its key. Open the address you were given when you started the issue.'); return; }
+  load().then(function () {
+    if (sessionId && !doc.magazine) generate(false);
+    else if (doc.payment && doc.payment.paid && !doc.magazine) generate(false);
+  }).catch(function (e) { fail(e.message); });
+
+  $('copy').addEventListener('click', function () { $('tiplink').select(); try { navigator.clipboard.writeText($('tiplink').value); } catch (e) { document.execCommand('copy'); } $('copy').textContent = 'Copied'; setTimeout(function () { $('copy').textContent = 'Copy'; }, 1500); });
+  $('addtip').addEventListener('submit', function (ev) { ev.preventDefault(); var t = $('text').value.trim(); if (!t) return; api('/api/tip', { id: id, text: t, by: (doc.buyer && doc.buyer.name) || 'the editor' }).then(function () { $('text').value = ''; return load(); }).catch(function (e) { fail(e.message); }); });
+  $('pay').addEventListener('click', function () {
+    $('pay').disabled = true; var ref = ''; try { ref = sessionStorage.getItem('ref') || ''; } catch (e) {}
+    api('/api/checkout', { id: id, key: key, ref: ref }).then(function (j) { if (j.paid) return generate(false); location.href = j.url; }).catch(function (e) { fail(e.message); $('pay').disabled = false; });
+  });
+  $('rewrite').addEventListener('click', function () { if (confirm('Rewrite the whole issue from the same tips? The current edition is replaced.')) generate(true); });
+})();
+</script>
+<script defer src="/_vercel/insights/script.js"></script>
+</body>
+</html>

@@ -26,6 +26,12 @@ Checkout/booking URLs, refund address and the email-capture form are marked
 writing before any markup, including the deviations from the house playbook and
 the three defects found by looking at the rendered page rather than the markup.
 
+`sources-close-to/` is a separate product that happens to live in this
+repository: a tabloid newspaper about one person, written by Claude from
+anonymous tips their friends send in through a shared link, sold at $29 as a
+print-ready issue. It has its own `package.json`, Vercel functions and
+`LAUNCH.md`. Deploy it as its own Vercel project from that folder.
+
 ## The moving parts
 
 | What | How | What happens without it |
