@@ -22,6 +22,22 @@ ADM disclosure date); the real capture was AML/CTF tranche 2 on 1 July 2026.
 Checkout/booking URLs, refund address and the email-capture form are marked
 `EDIT:`; re-verify the legal claims before launch.
 
+`services/` is a separate deployable: a static lead-capture site for
+inbound search (WordPress builds and rebuilds, custom software, CRM work,
+project rescues), meant for its own domain and Vercel project. Its README
+covers the launch checklist and the honest version of the SEO strategy.
+
+Two more pages ride along for contract applications:
+
+- https://aaronsteele.vercel.app/fullstack, the engagement report for
+  contract applications: track record, checkable evidence, and what solo
+  codebase ownership covers.
+- https://aaronsteele.vercel.app/linehaul, the technical deep dive into
+  **[Linehaul](linehaul/)**, a working platform reference build (.NET 9
+  minimal APIs with Dapper and raw T-SQL, Next.js/TypeScript, Azure as
+  Bicep). The main page's rules do not all apply in there; its own README
+  does.
+
 `PREFLIGHT.md` holds the design pre-flight it was built against, answered in
 writing before any markup, including the deviations from the house playbook and
 the three defects found by looking at the rendered page rather than the markup.

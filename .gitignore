@@ -1,3 +1,10 @@
 .vercel/
 *.log
 node_modules/
+bin/
+obj/
+.next/
+local.settings.json
+__pycache__/
+*.pyc
+services/products/*/dist/

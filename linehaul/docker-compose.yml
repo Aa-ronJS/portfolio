@@ -1,0 +1,45 @@
+# Local development database: real SQL Server 2022, the same engine dialect
+# as Azure SQL, with migrations and demo seed applied on start.
+#
+#   docker compose up -d
+#   # api:  ConnectionStrings__Linehaul="Server=localhost,14330;Database=linehaul;User Id=sa;Password=${SA_PASSWORD};TrustServerCertificate=True" dotnet run --project api/Linehaul.Api
+#   # web:  LINEHAUL_API_URL=http://localhost:5000 npm run dev --prefix web
+
+services:
+  sql:
+    image: mcr.microsoft.com/mssql/server:2022-latest
+    environment:
+      ACCEPT_EULA: "Y"
+      MSSQL_SA_PASSWORD: ${SA_PASSWORD:?set SA_PASSWORD in your environment}
+    ports:
+      - "14330:1433"
+    healthcheck:
+      test: ["CMD-SHELL", "/opt/mssql-tools18/bin/sqlcmd -C -S localhost -U sa -P \"$$MSSQL_SA_PASSWORD\" -Q 'SELECT 1' -b"]
+      interval: 5s
+      timeout: 5s
+      retries: 20
+
+  migrate:
+    image: mcr.microsoft.com/mssql/server:2022-latest
+    depends_on:
+      sql:
+        condition: service_healthy
+    volumes:
+      - ./db:/db:ro
+    environment:
+      MSSQL_SA_PASSWORD: ${SA_PASSWORD:?set SA_PASSWORD in your environment}
+    entrypoint: ["/bin/bash", "-c"]
+    command:
+      - |
+        set -euo pipefail
+        sqlcmd() { /opt/mssql-tools18/bin/sqlcmd -C -S sql -U sa -P "$$MSSQL_SA_PASSWORD" "$$@"; }
+        sqlcmd -Q "IF DB_ID('linehaul') IS NULL CREATE DATABASE linehaul;" -b
+        for f in /db/migrations/*.sql; do
+          echo "applying $$f"
+          sqlcmd -d linehaul -i "$$f" -b
+        done
+        for f in /db/seed/*.sql; do
+          echo "seeding $$f"
+          sqlcmd -d linehaul -i "$$f" -b
+        done
+        echo "database ready"
