@@ -150,17 +150,19 @@ Marketing consultant (only if comfortable)
 **Service area:** Adelaide SA + Australia-wide (service-area business, no
 public address)
 
-**Description (750 char limit):**
+**Description (682 characters, under the 750 limit; no URLs or phone
+numbers, which Google rejects in this field):**
 
-One developer who does the whole job: websites and WordPress, online
-stores, custom software, mobile apps, AI automation, CRM cleanups and
-rescues of stalled projects. Eleven years as a business analyst in mining,
-policing and federal government means the person who works out what you
-need is the person who builds it. Fixed quotes in writing before work
-starts, everything built in your name and your accounts, and honest advice
-including "don't spend it" when that's the truth. Two of my tools are live
-on the internet with public source code, so you can check the workmanship
-before you call. Adelaide based, working remotely Australia-wide.
+I am one developer who does the whole job: websites and WordPress, online
+stores, custom software, mobile apps, AI automation, CRM setup and
+migration, and taking over stalled projects. Eleven years as a business
+analyst in mining, policing and government means the person who works out
+what you need is the person who builds it. Everything is quoted in writing
+before work starts and built in your own name and your own accounts. You
+get a straight answer, including do not spend the money when that is the
+truth. Two of my tools run live on the internet with their source public,
+so you can check the workmanship before you ring. Adelaide based, working
+remotely across Australia.
 
 **Services list:** Website design, WordPress development, Website rebuild,
 E-commerce development, Custom software, Mobile app development, AI
