@@ -1,0 +1,35 @@
+<!doctype html>
+<html lang="en-AU">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>The issue</title>
+<meta name="robots" content="noindex">
+<meta name="theme-color" content="#d3202a">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Anton&family=Archivo+Narrow:ital,wght@0,400..700;1,400..700&family=Newsreader:ital,opsz,wght@0,6..72,400..700;1,6..72,400..700&display=swap">
+<link rel="stylesheet" href="/style.css">
+<style>body{background:#8a8580} .empty{max-width:40rem; margin:var(--s9) auto; padding:0 var(--gut); background:var(--paper)}</style>
+</head>
+<body>
+<div class="bar"><span id="title">Sources Close To</span><div style="display:flex; gap:var(--s2)"><a class="btn" id="back">Editor's desk</a><button class="btn" type="button" onclick="print()">Print / Save as PDF</button></div></div>
+<div id="out"></div>
+<div class="empty card" id="empty" hidden><h2>Nothing to read yet.</h2><p style="margin-top:var(--s3)" id="why"></p></div>
+<footer class="site noprint" style="background:var(--paper); margin-top:0; padding-inline:var(--gut)"><div class="wrap">In the print dialog choose A4, no margins, background graphics on. For a glossy copy, Save as PDF and take it to any print shop.</div></footer>
+<script src="/magazine.js"></script>
+<script>
+(function () {
+  var q = new URLSearchParams(location.search), id = q.get('id'), key = q.get('key');
+  var $ = function (s) { return document.getElementById(s); };
+  $('back').href = '/edit?id=' + id + '&key=' + key;
+  fetch('/api/issue?id=' + encodeURIComponent(id) + '&key=' + encodeURIComponent(key)).then(function (r) { return r.json(); }).then(function (doc) {
+    if (doc.error || !('tips' in doc)) throw new Error(doc.error || 'That key does not open this issue.');
+    if (!doc.magazine) throw new Error('This issue has not gone to print. Go back to the editor’s desk.');
+    document.title = 'Sources Close To ' + doc.subject.name;
+    $('title').textContent = 'Sources Close To ' + doc.subject.name;
+    $('out').innerHTML = Magazine.render(doc);
+  }).catch(function (e) { $('empty').hidden = false; $('why').textContent = e.message; });
+})();
+</script>
+<script defer src="/_vercel/insights/script.js"></script>
+</body>
+</html>

@@ -1,0 +1,110 @@
+<!doctype html>
+<html lang="en-AU">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>The tip line</title>
+<meta name="robots" content="noindex">
+<meta name="theme-color" content="#d3202a">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Anton&family=Archivo+Narrow:ital,wght@0,400..700;1,400..700&family=Newsreader:ital,opsz,wght@0,6..72,400..700;1,6..72,400..700&display=swap">
+<link rel="stylesheet" href="/style.css">
+<style>
+.mast-sm{background:var(--red); color:#fff; padding:var(--s5) var(--gut)}
+.mast-sm h1{font-size:clamp(2.2rem,1.4rem + 4vw,4.5rem); color:#fff}
+.mast-sm p{margin:var(--s2) 0 0; font-weight:700; letter-spacing:0.06em; text-transform:uppercase; font-size:0.85rem}
+main{padding-block:var(--s6) var(--s8)}
+.grid{display:grid; gap:var(--s6)}
+@media (min-width:60rem){.grid{grid-template-columns:1.1fr 0.9fr; gap:var(--s8)}}
+.prompts{margin:var(--s4) 0 0; padding:0; list-style:none; display:flex; flex-wrap:wrap; gap:var(--s2)}
+.prompts li{border:1px solid var(--ink); padding:4px 10px; font-size:0.85rem; cursor:pointer; background:#fff}
+.prompts li:hover{background:var(--yellow)}
+.photo-in{display:flex; gap:var(--s3); align-items:center}
+.photo-in img{width:64px; height:64px; object-fit:cover; border:2px solid var(--ink)}
+.count{font-family:var(--head); font-size:3rem; line-height:1; color:var(--red)}
+</style>
+</head>
+<body>
+<div class="mast-sm"><div class="wrap"><h1 id="mast">Sources Close To</h1><p id="sub">The tip line is open</p></div></div>
+<main class="wrap">
+  <div class="grid">
+    <section>
+      <h2 id="ask">What have you got on them?</h2>
+      <p class="lede" style="margin-top:var(--s3)">Habits, catchphrases, the story everyone tells, the thing they always do at a barbecue. One tip per send, as many sends as you like. Anonymous unless you sign it.</p>
+      <ul class="prompts" aria-label="Ideas">
+        <li>Their catchphrase</li><li>What they always order</li><li>The thing they cannot stop buying</li><li>A rule only they enforce</li><li>The story from that one night</li><li>What they are "not doing" when they are doing it</li><li>Their most repeated joke</li><li>Where they always are</li>
+      </ul>
+      <form class="card" id="tipform" style="margin-top:var(--s5)">
+        <div class="field"><label for="text">The tip</label><textarea id="text" maxlength="400" required placeholder="Has a lock on the thermostat. An actual lock. It is set to 19."></textarea></div>
+        <div class="field"><label for="by">Sign it (or leave it as "a source")</label><input id="by" maxlength="30" placeholder="a source"></div>
+        <div class="field"><label for="photo">Add a photo (optional, they will need one for the cover)</label>
+          <div class="photo-in"><input id="photo" type="file" accept="image/*" style="min-height:44px"><img id="prev" alt="" hidden></div>
+          <input id="caption" maxlength="120" placeholder="Caption, if you like" style="margin-top:var(--s2)">
+        </div>
+        <button class="btn btn--red" type="submit" style="width:100%">Send it to the newsroom</button>
+        <p class="notice" id="ok" hidden style="margin-top:var(--s3)"></p>
+        <p class="err" id="err" hidden style="margin-top:var(--s3)"></p>
+      </form>
+    </section>
+    <aside>
+      <div class="card">
+        <span class="label">Tips so far</span>
+        <div class="count" id="count">0</div>
+        <p class="small" id="photos"></p>
+        <ul class="tips" id="recent"></ul>
+      </div>
+      <div class="card" style="margin-top:var(--s5); background:var(--yellow)">
+        <h3>Know someone else who deserves a front page?</h3>
+        <p style="margin-top:var(--s2)">Anyone can start an issue about anyone. Free to start, $29 when it goes to print.</p>
+        <a class="btn" href="/?utm_source=tipline&utm_medium=referral" style="margin-top:var(--s3)">Start one about them</a>
+      </div>
+    </aside>
+  </div>
+</main>
+<footer class="site"><div class="wrap">Tips are stored until the issue goes to print. Nothing you send is shown to the subject unless someone sends them the link.</div></footer>
+<script>
+(function () {
+  var id = new URLSearchParams(location.search).get('id');
+  var $ = function (s) { return document.getElementById(s); };
+  var photoData = null;
+  function show(doc) {
+    $('mast').textContent = 'Sources Close To ' + doc.subject.name;
+    $('sub').textContent = doc.status === 'collecting' ? 'The tip line is open. ' + doc.occasion : 'This issue has gone to print';
+    $('ask').textContent = 'What have you got on ' + doc.subject.name + '?';
+    $('count').textContent = doc.tipCount;
+    $('photos').textContent = doc.photoCount ? doc.photoCount + ' photo' + (doc.photoCount > 1 ? 's' : '') + ' in the picture desk' : 'No photos yet. The cover needs one.';
+    $('recent').innerHTML = (doc.recent || []).slice().reverse().map(function (t) { return '<li>' + esc(t.text) + '<small>' + esc(t.by) + '</small></li>'; }).join('');
+    if (doc.status !== 'collecting') { $('tipform').hidden = true; }
+    document.title = 'Sources Close To ' + doc.subject.name + ': the tip line';
+  }
+  function esc(s) { return String(s).replace(/[&<>"]/g, function (c) { return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]; }); }
+  if (!id) { $('err').textContent = 'This link is missing its issue. Ask whoever sent it for the full link.'; $('err').hidden = false; return; }
+  fetch('/api/issue?id=' + encodeURIComponent(id)).then(function (r) { return r.json(); }).then(function (d) { if (d.error) throw new Error(d.error); show(d); }).catch(function (e) { $('err').textContent = e.message; $('err').hidden = false; });
+
+  document.querySelectorAll('.prompts li').forEach(function (li) { li.addEventListener('click', function () { $('text').value = li.textContent + ': '; $('text').focus(); }); });
+
+  $('photo').addEventListener('change', function () {
+    var f = this.files[0]; if (!f) { photoData = null; $('prev').hidden = true; return; }
+    var img = new Image(), url = URL.createObjectURL(f);
+    img.onload = function () {
+      var max = 1400, s = Math.min(1, max / Math.max(img.width, img.height));
+      var c = document.createElement('canvas'); c.width = Math.round(img.width * s); c.height = Math.round(img.height * s);
+      c.getContext('2d').drawImage(img, 0, 0, c.width, c.height);
+      photoData = c.toDataURL('image/jpeg', 0.82); $('prev').src = photoData; $('prev').hidden = false; URL.revokeObjectURL(url);
+    };
+    img.src = url;
+  });
+
+  $('tipform').addEventListener('submit', function (ev) {
+    ev.preventDefault(); $('ok').hidden = true; $('err').hidden = true;
+    var btn = $('tipform').querySelector('button'); btn.disabled = true;
+    fetch('/api/tip', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ id: id, text: $('text').value, by: $('by').value, photo: photoData, caption: $('caption').value }) })
+      .then(function (r) { return r.json().then(function (j) { if (!r.ok) throw new Error(j.error || 'That did not send'); return j; }); })
+      .then(function (d) { show(d); $('text').value = ''; $('photo').value = ''; $('caption').value = ''; photoData = null; $('prev').hidden = true; $('ok').textContent = 'Filed. The newsroom thanks you. Got another?'; $('ok').hidden = false; })
+      .catch(function (e) { $('err').textContent = e.message; $('err').hidden = false; })
+      .then(function () { btn.disabled = false; });
+  });
+})();
+</script>
+<script defer src="/_vercel/insights/script.js"></script>
+</body>
+</html>
