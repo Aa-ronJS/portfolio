@@ -1,0 +1,27 @@
+# Live streaming — your own live video page + chat (webinars, launches) -> https://live.${BASE_DOMAIN}
+# Stream to it from OBS: rtmp://live.${BASE_DOMAIN}:1935/live  (stream key = OWNCAST_STREAM_KEY)
+services:
+  app:
+    image: owncast/owncast:latest
+    restart: unless-stopped
+    command: ["-adminpassword", "${ADMIN_PASSWORD}", "-streamkey", "${OWNCAST_STREAM_KEY}"]
+    ports:
+      - "1935:1935"
+    volumes:
+      - data:/app/data
+    networks:
+      - default
+      - proxy
+    labels:
+      traefik.enable: "true"
+      traefik.http.routers.owncast.rule: Host(`live.${BASE_DOMAIN}`)
+      traefik.http.routers.owncast.entrypoints: websecure
+      traefik.http.routers.owncast.tls.certresolver: le
+      traefik.http.services.owncast.loadbalancer.server.port: 8080
+
+volumes:
+  data:
+
+networks:
+  proxy:
+    external: true

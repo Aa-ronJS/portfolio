@@ -1,0 +1,68 @@
+# Video hosting — your own video platform with embeds, playlists and stats -> https://video.${BASE_DOMAIN}
+services:
+  db:
+    image: postgres:16-alpine
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: peertube
+      POSTGRES_PASSWORD: ${PEERTUBE_DB_PASSWORD}
+      POSTGRES_DB: peertube
+    volumes:
+      - db:/var/lib/postgresql/data
+
+  redis:
+    image: redis:7-alpine
+    restart: unless-stopped
+    volumes:
+      - redis:/data
+
+  app:
+    image: chocobozzz/peertube:production-bookworm
+    restart: unless-stopped
+    depends_on:
+      - db
+      - redis
+    environment:
+      PEERTUBE_DB_USERNAME: peertube
+      PEERTUBE_DB_PASSWORD: ${PEERTUBE_DB_PASSWORD}
+      PEERTUBE_DB_SSL: "false"
+      PEERTUBE_DB_HOSTNAME: db
+      PEERTUBE_WEBSERVER_HOSTNAME: video.${BASE_DOMAIN}
+      PEERTUBE_WEBSERVER_PORT: 443
+      PEERTUBE_WEBSERVER_HTTPS: "true"
+      PEERTUBE_TRUST_PROXY: '["127.0.0.1","loopback","172.16.0.0/12"]'
+      PEERTUBE_SECRET: ${PEERTUBE_SECRET}
+      PEERTUBE_ADMIN_EMAIL: ${ADMIN_EMAIL}
+      # pre-seeded admin: user "root"
+      PT_INITIAL_ROOT_PASSWORD: ${ADMIN_PASSWORD}
+      PEERTUBE_SIGNUP_ENABLED: "false"
+      PEERTUBE_REDIS_HOSTNAME: redis
+      PEERTUBE_SMTP_HOSTNAME: ${SMTP_HOST}
+      PEERTUBE_SMTP_PORT: ${SMTP_PORT}
+      PEERTUBE_SMTP_USERNAME: ${SMTP_USER}
+      PEERTUBE_SMTP_PASSWORD: ${SMTP_PASSWORD}
+      PEERTUBE_SMTP_FROM: ${SMTP_FROM}
+      PEERTUBE_SMTP_TLS: "false"
+      PEERTUBE_SMTP_DISABLE_STARTTLS: "false"
+    volumes:
+      - data:/data
+      - config:/config
+    networks:
+      - default
+      - proxy
+    labels:
+      traefik.enable: "true"
+      traefik.http.routers.peertube.rule: Host(`video.${BASE_DOMAIN}`)
+      traefik.http.routers.peertube.entrypoints: websecure
+      traefik.http.routers.peertube.tls.certresolver: le
+      traefik.http.services.peertube.loadbalancer.server.port: 9000
+
+volumes:
+  db:
+  redis:
+  data:
+  config:
+
+networks:
+  proxy:
+    external: true

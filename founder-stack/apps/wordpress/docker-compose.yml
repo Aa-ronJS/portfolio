@@ -1,0 +1,65 @@
+# Website — WordPress, your public site (and online shop via WooCommerce)
+#   -> https://${BASE_DOMAIN}  (also www. and site.${BASE_DOMAIN})
+# Takes over the bare domain when running; the hub stays at home.${BASE_DOMAIN}.
+# Zero-touch: `stackctl bootstrap` installs it with the admin from .env.
+services:
+  db:
+    image: mariadb:10.11
+    restart: unless-stopped
+    environment:
+      MYSQL_ROOT_PASSWORD: ${WORDPRESS_DB_ROOT_PASSWORD}
+      MYSQL_DATABASE: wordpress
+      MYSQL_USER: wordpress
+      MYSQL_PASSWORD: ${WORDPRESS_DB_PASSWORD}
+    volumes:
+      - db:/var/lib/mysql
+
+  app:
+    image: wordpress:6-php8.3-apache
+    restart: unless-stopped
+    depends_on:
+      - db
+    environment:
+      WORDPRESS_DB_HOST: db
+      WORDPRESS_DB_NAME: wordpress
+      WORDPRESS_DB_USER: wordpress
+      WORDPRESS_DB_PASSWORD: ${WORDPRESS_DB_PASSWORD}
+      # behind Traefik: tell WordPress it is served over HTTPS
+      WORDPRESS_CONFIG_EXTRA: |
+        if (isset($$_SERVER['HTTP_X_FORWARDED_PROTO']) && $$_SERVER['HTTP_X_FORWARDED_PROTO'] === 'https') { $$_SERVER['HTTPS'] = 'on'; }
+        define('WP_HOME', 'https://${BASE_DOMAIN}');
+        define('WP_SITEURL', 'https://${BASE_DOMAIN}');
+    volumes:
+      - html:/var/www/html
+    networks:
+      - default
+      - proxy
+    labels:
+      traefik.enable: "true"
+      traefik.http.routers.wordpress.rule: Host(`${BASE_DOMAIN}`) || Host(`www.${BASE_DOMAIN}`) || Host(`site.${BASE_DOMAIN}`)
+      traefik.http.routers.wordpress.priority: 100
+      traefik.http.routers.wordpress.entrypoints: websecure
+      traefik.http.routers.wordpress.tls.certresolver: le
+      traefik.http.services.wordpress.loadbalancer.server.port: 80
+
+  # WP-CLI, used by stackctl for install/users/brand: `compose wordpress run --rm cli wp ...`
+  cli:
+    image: wordpress:cli-php8.3
+    profiles: ["tools"]
+    depends_on:
+      - db
+    environment:
+      WORDPRESS_DB_HOST: db
+      WORDPRESS_DB_NAME: wordpress
+      WORDPRESS_DB_USER: wordpress
+      WORDPRESS_DB_PASSWORD: ${WORDPRESS_DB_PASSWORD}
+    volumes:
+      - html:/var/www/html
+
+volumes:
+  db:
+  html:
+
+networks:
+  proxy:
+    external: true

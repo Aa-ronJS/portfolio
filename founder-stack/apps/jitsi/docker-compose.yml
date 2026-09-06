@@ -1,0 +1,82 @@
+# Meetings — video calls & screen sharing, no account needed -> https://meet.${BASE_DOMAIN}
+# Needs UDP port 10000 open on the server/firewall for call media.
+x-jitsi-env: &jitsi-env
+  XMPP_DOMAIN: meet.jitsi
+  XMPP_AUTH_DOMAIN: auth.meet.jitsi
+  XMPP_MUC_DOMAIN: muc.meet.jitsi
+  XMPP_INTERNAL_MUC_DOMAIN: internal-muc.meet.jitsi
+  XMPP_GUEST_DOMAIN: guest.meet.jitsi
+  XMPP_RECORDER_DOMAIN: recorder.meet.jitsi
+  XMPP_SERVER: xmpp.meet.jitsi
+  JICOFO_AUTH_PASSWORD: ${JITSI_JICOFO_PASSWORD}
+  JVB_AUTH_PASSWORD: ${JITSI_JVB_PASSWORD}
+  PUBLIC_URL: https://meet.${BASE_DOMAIN}
+  TZ: ${TZ}
+
+services:
+  web:
+    image: jitsi/web:stable
+    restart: unless-stopped
+    environment:
+      <<: *jitsi-env
+      DISABLE_HTTPS: 1
+      ENABLE_LETSENCRYPT: 0
+      ENABLE_HTTP_REDIRECT: 0
+      ENABLE_XMPP_WEBSOCKET: 1
+    volumes:
+      - web:/config
+    networks:
+      meet.jitsi:
+      proxy:
+    labels:
+      traefik.enable: "true"
+      traefik.http.routers.jitsi.rule: Host(`meet.${BASE_DOMAIN}`)
+      traefik.http.routers.jitsi.entrypoints: websecure
+      traefik.http.routers.jitsi.tls.certresolver: le
+      traefik.http.services.jitsi.loadbalancer.server.port: 80
+
+  prosody:
+    image: jitsi/prosody:stable
+    restart: unless-stopped
+    environment: *jitsi-env
+    volumes:
+      - prosody:/config
+    networks:
+      meet.jitsi:
+        aliases:
+          - xmpp.meet.jitsi
+
+  jicofo:
+    image: jitsi/jicofo:stable
+    restart: unless-stopped
+    depends_on: [prosody]
+    environment: *jitsi-env
+    volumes:
+      - jicofo:/config
+    networks:
+      meet.jitsi:
+
+  jvb:
+    image: jitsi/jvb:stable
+    restart: unless-stopped
+    depends_on: [prosody]
+    environment:
+      <<: *jitsi-env
+      JVB_PORT: 10000
+    ports:
+      - "10000:10000/udp"
+    volumes:
+      - jvb:/config
+    networks:
+      meet.jitsi:
+
+volumes:
+  web:
+  prosody:
+  jicofo:
+  jvb:
+
+networks:
+  meet.jitsi:
+  proxy:
+    external: true
