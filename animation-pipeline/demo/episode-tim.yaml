@@ -1,0 +1,89 @@
+# Tim's screen test. One voice line, cut on the word "angry" (word
+# timestamps from whisper) so the shaky punch-in lands exactly on it.
+# The audio is the espeak placeholder — re-record vo/tim*.wav with a
+# human voice and everything re-syncs automatically.
+#
+# Demonstrates poses: tim has body/talk (calm) and angry/angry_talk,
+# selected per shot with `pose: angry`.
+
+title: tim is getting angry
+size: [1080, 1920]
+fps: 12
+boil: 0.0015
+boil_every: 2
+
+defaults:
+  font: ../fonts/satoshi-var.ttf
+  caption_size: 0.042
+  caption_weight: 700
+  caption_color: [26, 26, 26]
+  caption_y: 0.84
+  audio_tail: 0.05      # tiny: the three cuts are one continuous sentence
+
+shots:
+  # Tim walks into shot.
+  - bg: backgrounds/chipshop.png
+    duration: 1.5
+    caption: tim would like a word
+    actors:
+      - char: tim
+        at: [0.40, 0.76]
+        scale: 0.50
+        moves:
+          - {type: slide, from: [-0.3, 0.76], to: [0.40, 0.76], t: [0, 1.2]}
+          - {type: waddle, amp: 2.5, period: 0.5}
+          - {type: bob, amp: 0.005, period: 0.5}
+
+  # "i'm getting" — calm. He does not stay calm.
+  - bg: backgrounds/chipshop.png
+    audio: vo/tim1.wav
+    caption: i'm getting
+    actors:
+      - char: tim
+        at: [0.40, 0.76]
+        scale: 0.50
+        talk: true
+        moves:
+          - {type: bob, amp: 0.003, period: 0.7}
+
+  # "ANGRY" — shaky-cam punch-in on the face, angry pose.
+  - bg: backgrounds/chipshop.png
+    audio: vo/tim2.wav
+    caption: angry
+    caption_y: 0.93
+    zoom: [1.18, 1.42]
+    actors:
+      - char: tim
+        pose: angry
+        at: [0.5, 1.9]
+        scale: 2.27
+        talk: true
+        talk_style: alternate
+        moves:
+          - {type: shake, amp: 0.006}
+
+  # "...about everything you've been saying to me carly" — still angry.
+  - bg: backgrounds/chipshop.png
+    audio: vo/tim3.wav
+    caption: about everything you've been saying to me carly
+    actors:
+      - char: tim
+        pose: angry
+        at: [0.40, 0.76]
+        scale: 0.50
+        talk: true
+        moves:
+          - {type: bob, amp: 0.004, period: 0.6}
+          - {type: shake, amp: 0.0015}
+
+  # Point made. Tim leaves.
+  - bg: backgrounds/chipshop.png
+    duration: 1.8
+    actors:
+      - char: tim
+        pose: angry
+        at: [-0.35, 0.76]
+        scale: 0.50
+        moves:
+          - {type: slide, from: [0.40, 0.76], to: [-0.35, 0.76], t: [0.3, 1.5]}
+          - {type: waddle, amp: 3, period: 0.45}

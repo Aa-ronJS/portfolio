@@ -1,0 +1,141 @@
+# Ballroom in the chip shop — sugar leads, doug follows.
+#
+# Choreography mapped from reference footage: "How to dance with a
+# partner - ballroom dance in 60 seconds" (youtube shorts/-lyRKPBVzDY),
+# read off its storyboard track (the media download was IP-blocked;
+# 45 storyboard frames at ~1.4s spacing were enough to key the beats):
+#   ~0-8s    instructor talks, walks over to his partner
+#   ~9-16s   the hold: one hand under the shoulder blade, one hand
+#            about eye level, joined out to the side
+#   ~17-33s  the box: forward-together-back, "this is your home base",
+#            counted slow-quick-quick (rumba count; same box is waltz)
+#   ~34-47s  the underarm turn: raise the joined hands ("turn your
+#            wristwatch over, look at your watch"), partner passes
+#            under and comes back to the hold
+#   ~48-60s  send-out and finish on the dance floor
+#
+# Staged here as: approach -> the hold -> the box x2 -> the underarm
+# pass (doug walks under the raised arms and back; the direction
+# reversal flips him — a 12fps twirl) -> both bow. The waltz_lead /
+# waltz_follow clips are authored so a flipped follow mirrors into the
+# same screen direction as the lead: the couple sways as one.
+#
+# Render:   python3 pipeline/render.py demo/episode-dance.yaml
+
+title: sugar and doug make up
+size: [1080, 1920]
+fps: 12
+boil: 0.0015
+boil_every: 2
+
+ambience: {file: sfx/waltz.wav, gain: 0.7}
+
+defaults:
+  font: ../fonts/satoshi-var.ttf
+  caption_size: 0.042
+  caption_weight: 700
+  caption_color: [26, 26, 26]
+  caption_y: 0.84
+
+shots:
+  # 1 — after the fights, a truce: they walk to each other.
+  - bg: backgrounds/chipshop.png
+    duration: 3.0
+    caption: they made up
+    actors:
+      - char: sugar
+        at: [0.40, 0.76]
+        scale: 0.46
+        moves:
+          - {type: slide, from: [0.16, 0.76], to: [0.40, 0.76], t: [0.3, 2.4]}
+      - char: doug
+        at: [0.62, 0.76]
+        scale: 0.46
+        moves:
+          - {type: slide, from: [0.86, 0.76], to: [0.62, 0.76], t: [0.3, 2.4]}
+
+  # 2 — the hold: one hand about eye level. BOTH lead hands are
+  # reach-solved onto the same canvas point, so the hold genuinely
+  # joins — sugar's noodle arm and doug's stub both land on it.
+  - bg: backgrounds/chipshop.png
+    duration: 3.0
+    caption: one hand about eye level
+    actors:
+      - char: sugar
+        at: [0.40, 0.76]
+        scale: 0.46
+        clip: {name: waltz_lead, t: [0.8, 3.0]}
+        reach:
+          - {bone: arm_r, to: [0.51, 0.50], shape: straight, t: [1.1, 3.0]}
+      - char: doug
+        at: [0.62, 0.76]
+        scale: 0.46
+        flip: true
+        clip: {name: waltz_follow, t: [0.8, 3.0]}
+        reach:
+          - {bone: arm_r, to: [0.51, 0.50], shape: straight, t: [1.1, 3.0]}
+
+  # 3 — the box, twice over: forward-together-back, home base. The
+  # joined hands stay pinned while both bodies sway around them —
+  # that is what a frame is.
+  - bg: backgrounds/chipshop.png
+    duration: 6.0
+    caption: forward, together, back. home base.
+    actors:
+      - char: sugar
+        at: [0.40, 0.76]
+        scale: 0.46
+        clip: waltz_lead
+        reach:
+          - {bone: arm_r, to: [0.51, 0.50], shape: straight}
+      - char: doug
+        at: [0.62, 0.76]
+        scale: 0.46
+        flip: true
+        clip: waltz_follow
+        reach:
+          - {bone: arm_r, to: [0.51, 0.50], shape: straight}
+
+  # 4 — the underarm turn: wristwatch over, doug passes under the
+  # raised hands and back; reversing direction flips him mid-pass.
+  - bg: backgrounds/chipshop.png
+    duration: 4.0
+    caption: turn your wristwatch over
+    actors:
+      - char: sugar
+        at: [0.40, 0.76]
+        scale: 0.46
+        clip: {name: turn_lead, t: [0.0, 4.0]}
+        reach:
+          - {bone: arm_r, to: [0.505, 0.38], shape: straight, t: [0.7, 3.2]}
+      - char: doug
+        at: [0.62, 0.76]
+        scale: 0.46
+        flip: true
+        clip: {name: turn_follow, t: [0.0, 4.0]}
+        reach:
+          - {bone: arm_r, to: [0.505, 0.38], shape: straight, t: [0.7, 3.2]}
+        moves:
+          - {type: slide, from: [0.62, 0.76], to: [0.53, 0.76], t: [0.9, 1.7]}
+          - {type: slide, from: [0.53, 0.76], to: [0.62, 0.76], t: [1.9, 2.7]}
+
+  # 5 — the finish: a step apart (bowing from the hold bonks heads —
+  # found frame-by-frame), then the bow.
+  - bg: backgrounds/chipshop.png
+    duration: 3.5
+    caption: the dance floor is yours
+    actors:
+      - char: sugar
+        at: [0.28, 0.76]
+        scale: 0.46
+        flip: false   # pin the facing: the backward step must not mirror him
+        clip: {name: bow, t: [1.2, 3.5]}
+        moves:
+          - {type: slide, from: [0.40, 0.76], to: [0.28, 0.76], t: [0.15, 0.85]}
+      - char: doug
+        at: [0.74, 0.76]
+        scale: 0.46
+        flip: true
+        clip: {name: bow, t: [1.2, 3.5]}
+        moves:
+          - {type: slide, from: [0.62, 0.76], to: [0.74, 0.76], t: [0.15, 0.85]}

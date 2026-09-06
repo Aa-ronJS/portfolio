@@ -1,0 +1,83 @@
+# Same demo, driven by ONE raw recording instead of per-shot files.
+#
+# `take:` points at the whole recording; each shot grabs its spoken line
+# by number (`line: 1` = first thing said). The renderer splits the take
+# on silence automatically and caches the cut next to it.
+#
+# Render:  python3 pipeline/render.py demo/episode-take.yaml
+
+title: the seagull wants a chip (single-take puppet)
+size: [1080, 1920]
+fps: 12
+boil: 0.0015
+boil_every: 2
+
+take: vo/take.wav
+# If the split misses or merges lines, tune it here:
+# split: {min_pause: 0.35, min_line: 0.25, pad: 0.12}
+
+defaults:
+  font: ../fonts/satoshi-var.ttf
+  caption_size: 0.042
+  caption_weight: 700
+  caption_color: [26, 26, 26]
+  caption_y: 0.84
+  audio_tail: 0.35
+  talk_style: syllable      # mouth pops per syllable; or envelope/alternate
+
+shots:
+  - bg: backgrounds/chipshop.png
+    line: 1
+    caption: stan pops in for his tea
+    actors:
+      - char: stan
+        at: [0.34, 0.74]
+        scale: 0.34
+        talk: true
+        moves:
+          - {type: slide, from: [-0.25, 0.74], to: [0.34, 0.74], t: [0, 1.4]}
+          - {type: waddle, amp: 3, period: 0.5}
+          - {type: bob, amp: 0.006, period: 0.5}
+
+  - bg: backgrounds/chipshop.png
+    line: 2
+    caption: large chips please my good man
+    zoom: [1.0, 1.06]
+    actors:
+      - char: stan
+        at: [0.5, 1.35]
+        scale: 1.5
+        talk: true
+        talk_style: alternate   # strict 0101 flap, per-actor override
+        moves:
+          - {type: bob, amp: 0.003, period: 0.9}
+
+  - bg: backgrounds/chipshop.png
+    line: 3
+    caption: an enormous seagull has entered the shop
+    actors:
+      - char: stan
+        at: [0.26, 0.74]
+        scale: 0.30
+        flip: true
+      - char: seagull
+        at: [0.72, 0.73]
+        scale: 0.22
+        talk: true
+        moves:
+          - {type: hop, amp: 0.015, period: 0.45}
+          - {type: slide, from: [1.2, 0.73], to: [0.72, 0.73], t: [0, 1.2]}
+
+  - bg: backgrounds/chipshop.png
+    duration: 2.0
+    caption: stan respects the hustle
+    actors:
+      - char: stan
+        at: [0.26, 0.74]
+        scale: 0.30
+        flip: true
+      - char: seagull
+        at: [0.60, 0.73]
+        scale: 0.26
+        moves:
+          - {type: shake, amp: 0.002}

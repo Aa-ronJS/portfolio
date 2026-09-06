@@ -1,0 +1,42 @@
+{
+  "period": 1.0,
+  "loop": true,
+  "interp": "step",
+  "name": "aim",
+  "channels": {
+    "arm_r_upper": {
+      "rot": [
+        [
+          0.0,
+          -88
+        ],
+        [
+          0.5,
+          -91
+        ]
+      ],
+      "shape": [
+        [
+          0.0,
+          "straight"
+        ]
+      ]
+    },
+    "torso": {
+      "rot": [
+        [
+          0.0,
+          4
+        ]
+      ]
+    },
+    "head": {
+      "rot": [
+        [
+          0.0,
+          3
+        ]
+      ]
+    }
+  }
+}
