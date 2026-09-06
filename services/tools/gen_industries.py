@@ -813,13 +813,13 @@ def page_head(title, desc, path, jsonld):
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>{title}</title>
 <meta name="description" content="{desc}">
-<link rel="canonical" href="https://REPLACE-DOMAIN{path}">
+<link rel="canonical" href="https://aaron8.com{path}">
 <meta property="og:title" content="{title}">
 <meta property="og:description" content="{desc}">
 <meta property="og:type" content="website">
-<meta property="og:image" content="https://REPLACE-DOMAIN/og/industries.png">
+<meta property="og:image" content="https://aaron8.com/og/industries.png">
 <meta name="twitter:card" content="summary_large_image">
-<meta name="twitter:image" content="https://REPLACE-DOMAIN/og/industries.png">
+<meta name="twitter:image" content="https://aaron8.com/og/industries.png">
 <meta name="theme-color" content="#f2efe4">
 {FAVICON}
 <link rel="preload" as="font" type="font/woff2" href="/fonts/satoshi-var.woff2" crossorigin>
@@ -849,14 +849,14 @@ def render_industry(ind):
       "provider": {{ "@type": "Person", "name": "Aaron Steele", "url": "https://aaronsteele.vercel.app" }},
       "areaServed": "Australia",
       "audience": {{ "@type": "Audience", "audienceType": {jstr(ind['audience'])} }},
-      "url": "https://REPLACE-DOMAIN{path}"
+      "url": "https://aaron8.com{path}"
     }},
     {{
       "@type": "BreadcrumbList",
       "itemListElement": [
-        {{ "@type": "ListItem", "position": 1, "name": "Home", "item": "https://REPLACE-DOMAIN/" }},
-        {{ "@type": "ListItem", "position": 2, "name": "Industries", "item": "https://REPLACE-DOMAIN/industries/" }},
-        {{ "@type": "ListItem", "position": 3, "name": {jstr(plain(ind['name']))}, "item": "https://REPLACE-DOMAIN{path}" }}
+        {{ "@type": "ListItem", "position": 1, "name": "Home", "item": "https://aaron8.com/" }},
+        {{ "@type": "ListItem", "position": 2, "name": "Industries", "item": "https://aaron8.com/industries/" }},
+        {{ "@type": "ListItem", "position": 3, "name": {jstr(plain(ind['name']))}, "item": "https://aaron8.com{path}" }}
       ]
     }},
     {{
@@ -966,8 +966,8 @@ def render_index():
   "@context": "https://schema.org",
   "@type": "BreadcrumbList",
   "itemListElement": [
-    {{ "@type": "ListItem", "position": 1, "name": "Home", "item": "https://REPLACE-DOMAIN/" }},
-    {{ "@type": "ListItem", "position": 2, "name": "Industries", "item": "https://REPLACE-DOMAIN/industries/" }}
+    {{ "@type": "ListItem", "position": 1, "name": "Home", "item": "https://aaron8.com/" }},
+    {{ "@type": "ListItem", "position": 2, "name": "Industries", "item": "https://aaron8.com/industries/" }}
   ]
 }}"""
     title = "Industries | Software, Automation &amp; AI by Sector | Aaron Steele"

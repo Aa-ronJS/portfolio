@@ -1,4 +1,4 @@
 User-agent: *
 Allow: /
 
-Sitemap: https://REPLACE-DOMAIN/sitemap.xml
+Sitemap: https://aaron8.com/sitemap.xml

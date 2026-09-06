@@ -238,8 +238,8 @@ compress under ~200KB; alt text describes what is actually in frame.
    having anyway. Then replace the placeholders:
 
    ```bash
-   grep -rl 'REPLACE-DOMAIN' public | xargs sed -i 's/REPLACE-DOMAIN/yourdomain.com.au/g'
-   grep -rl 'REPLACE-EMAIL' public | xargs sed -i 's/REPLACE-EMAIL/you@yourdomain.com.au/g'
+   grep -rl 'aaron8.com' public | xargs sed -i 's/aaron8.com/yourdomain.com.au/g'
+   grep -rl 'hello@aaron8.com' public | xargs sed -i 's/hello@aaron8.com/you@yourdomain.com.au/g'
    ```
 
    Use an address on the new domain, not a personal gmail: it reads better
