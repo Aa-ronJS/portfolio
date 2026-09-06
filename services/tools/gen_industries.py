@@ -11,11 +11,11 @@ from pathlib import Path
 
 OUT = Path(__file__).resolve().parent.parent / "public" / "industries"
 
-FAVICON = """<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Crect width='100' height='100' fill='%2312181f'/%3E%3Ctext x='50' y='74' font-size='68' font-family='Arial' font-weight='700' text-anchor='middle' fill='%23e0a232'%3EA%3C/text%3E%3C/svg%3E">"""
+FAVICON = """<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Crect width='100' height='100' fill='%23e7732b'/%3E%3Cpath fill='%23161e17' fill-rule='evenodd' d='M28 12H72V88H28ZM40 24H60V44H40ZM40 56H60V76H40Z'/%3E%3C/svg%3E">"""
 
 NAV = """<header class="top">
   <div class="wrap">
-    <a class="brand" href="/">Aaron Steele<span>.</span></a>
+    <a class="brand" href="/">aaron8<span>.</span></a>
     <nav class="nav" aria-label="Site">
       <a href="/">Home</a>
       <a href="/ai-development/">AI development</a>
@@ -44,7 +44,7 @@ FOOTER = """<footer class="foot">
       <a class="link" href="https://github.com/Aa-ronJS">GitHub <span aria-hidden="true">&rarr;</span></a>
     </div>
     <div class="foot__meta">
-      <p>Aaron Steele. Adelaide, South Australia. Remote Australia-wide. Analyst since 2015,
+      <p>aaron8 is Aaron Steele. Adelaide, South Australia. Remote Australia-wide. Analyst since 2015,
          building since 2016. TOGAF certified, baseline cleared.</p>
       {services_line}
       {industries_line}
@@ -970,7 +970,7 @@ def render_index():
     {{ "@type": "ListItem", "position": 2, "name": "Industries", "item": "https://aaron8.com/industries/" }}
   ]
 }}"""
-    title = "Industries | Software, Automation &amp; AI by Sector | Aaron Steele"
+    title = "Industries | Software, Automation &amp; AI by Sector | aaron8"
     desc = "How the same disciplines land in your industry: trades, transport, mining, retail, hospitality, professional services, health, not-for-profits, real estate, agriculture, government and education. Each page says honestly whether I have worked your sector or am transferring the method."
     return page_head(title, desc, path, jsonld) + f"""
 {NAV.format(current=' aria-current="page"')}

@@ -72,11 +72,35 @@ section.
 Fonts are self-hosted in `public/fonts/` (bricolage-var, satoshi-var,
 the two Plex Mono weights); every page preloads Satoshi and Bricolage,
 and the generators' head templates carry the same preloads.
-`theme-color` is the paper value. The favicon and OG cards still carry
-the old ink-and-amber mark; regenerate the OG set in the flat
-paper/green/ochre language when the images pass happens.
+`theme-color` is the paper value.
 
 The standing test, from the research and non-negotiable: **every
 element must look chosen, not defaulted.** Before any future restyle,
 re-read the tells lists above; if a proposed element appears on them,
 it does not ship, however good it looks in the moment.
+
+## The mark (added 6 September 2026, with the aaron8 rename)
+
+`brand/aaron8-mark.svg` is the brand mark and `brand/PREFLIGHT-mark.md` is
+its pre-flight. A figure eight of even weight, counters a true square, cut
+out of a flat ochre tile: the site's own box language rather than an eight
+borrowed from a typeface. One weight (12) for every stem, bar and the waist,
+counters 20 x 20, figure 44 x 76 on a 100 tile, every coordinate a multiple
+of 4, zero radius. Ink on ochre measures 5.59:1, which is the doctrine's own
+rule that dark goes on amber solids.
+
+The figure's furthest corner sits 43.9 from the tile centre against a 50
+radius. That clearance is not decoration: a larger drawing measured 49.4 and
+Google's circular avatar sliced flat across the top and bottom of the eight.
+Do not scale the figure up inside its tile.
+
+Shipped from it: the favicon on all 73 pages (which had been an Arial letter
+in the retired ink-and-amber palette), `public/brand/` for the site,
+`aaron8-mark-1200.png` for the Google Business Profile logo field and
+`aaron8-storefront-1440.png` for its storefront photo. Both rasters sit
+inside Google's 10KB to 5MB window, which a 1KB flat PNG does not.
+
+The OG set was regenerated at the same time in the flat paper language. The
+old six were dark, gradient-backed and led with a mono uppercase kicker, all
+three of which this file had already killed, and they still said the old
+name. The set went from 938KB to 248KB in the process.

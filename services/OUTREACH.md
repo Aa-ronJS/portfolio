@@ -143,7 +143,9 @@ once, personally, within a day or two, then stop unless they reply.
 
 ## Google Business Profile
 
-**Business name:** Aaron Steele, Developer
+**Business name:** aaron8
+(the trading name the site now carries; Aaron Steele is the person behind
+it and stays on the privacy page, the calendar invites and the schema)
 **Category (primary):** Website designer
 **Categories (additional):** Software company, Computer consultant,
 Marketing consultant (only if comfortable)

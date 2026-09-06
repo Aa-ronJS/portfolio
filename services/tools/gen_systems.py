@@ -32,11 +32,11 @@ DEFAULT_PROOF = """Anyone can claim integration experience; checking it is harde
         internet with public source, and a full platform build you can compile yourself,
         52 checks passing. The method on this page is that method."""
 
-FAVICON = """<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Crect width='100' height='100' fill='%2312181f'/%3E%3Ctext x='50' y='74' font-size='68' font-family='Arial' font-weight='700' text-anchor='middle' fill='%23e0a232'%3EA%3C/text%3E%3C/svg%3E">"""
+FAVICON = """<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Crect width='100' height='100' fill='%23e7732b'/%3E%3Cpath fill='%23161e17' fill-rule='evenodd' d='M28 12H72V88H28ZM40 24H60V44H40ZM40 56H60V76H40Z'/%3E%3C/svg%3E">"""
 
 NAV = """<header class="top">
   <div class="wrap">
-    <a class="brand" href="/">Aaron Steele<span>.</span></a>
+    <a class="brand" href="/">aaron8<span>.</span></a>
     <nav class="nav" aria-label="Site">
       <a href="/">Home</a>
       <a href="/ai-development/">AI development</a>
@@ -72,7 +72,7 @@ FOOTER = f"""<footer class="foot">
       <a class="link" href="https://github.com/Aa-ronJS">GitHub <span aria-hidden="true">&rarr;</span></a>
     </div>
     <div class="foot__meta">
-      <p>Aaron Steele. Adelaide, South Australia. Remote Australia-wide. Analyst since 2015,
+      <p>aaron8 is Aaron Steele. Adelaide, South Australia. Remote Australia-wide. Analyst since 2015,
          building since 2016. TOGAF certified, baseline cleared.</p>
       {SERVICES_LINE}
       {INDUSTRIES_LINE}
@@ -159,7 +159,7 @@ def render_page(entry):
         for label, href in entry["pillars"])
     proof = entry.get("proof", DEFAULT_PROOF)
 
-    return head(entry["seo"] + " | Aaron Steele", desc, path, jsonld) + f"""
+    return head(entry["seo"] + " | aaron8", desc, path, jsonld) + f"""
 {NAV}
 
 <main>

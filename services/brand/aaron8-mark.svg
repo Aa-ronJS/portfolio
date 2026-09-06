@@ -1,0 +1,25 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100" width="100" height="100" role="img" aria-labelledby="t d">
+  <title id="t">aaron8</title>
+  <desc id="d">A figure eight of even weight with two square counters, cut out of a flat ochre tile.</desc>
+  <!--
+    The aaron8 mark. Pre-flight in ./PREFLIGHT-mark.md, tokens in ../DESIGN.md.
+    Tile   #e7732b = site token --amber oklch(0.680 0.165 48)
+    Figure #161e17 = site token --ink   oklch(0.225 0.018 150)   measured 5.59:1
+
+    One weight, 12, for every stem, bar and the waist alike. Counters a true
+    20 x 20 square. That makes the figure 44 x 76 at x 28..72, y 12..88, with
+    counters at x 40..60, y 24..44 and y 56..76. Every coordinate is a
+    multiple of 4, on the site's spacing grid. Zero radius, matching --r:0px.
+
+    Safe area: the figure's furthest corner sits 43.9 from the tile centre
+    against a 50 radius, so a circular crop clears it by 6. An earlier, larger
+    drawing measured 49.4 and Google's avatar sliced flat across it.
+
+    No gradient, no filter, no font, no raster.
+  -->
+  <rect width="100" height="100" fill="#e7732b"/>
+  <path fill="#161e17" fill-rule="evenodd"
+        d="M28 12 H72 V88 H28 Z
+           M40 24 H60 V44 H40 Z
+           M40 56 H60 V76 H40 Z"/>
+</svg>
