@@ -33,6 +33,7 @@ Everything the machine needs to run. About an hour, most of it in Stripe.
 | `FROM_EMAIL` | `Aaron Steele <aaron@yourdomain>` |
 | `REPLY_TO` | the inbox you read |
 | `COURSE_SECRET` | 32 or more random characters: `openssl rand -base64 32` |
+| `META_PIXEL_ID` | the pixel id from Meta Events Manager; optional until the ad runs |
 
 Changing `COURSE_SECRET` after launch invalidates every link already sent.
 Set it once.
@@ -56,14 +57,18 @@ Then, with Stripe in test mode and the test-mode key set:
 
 Switch to live keys only after all five pass.
 
-## 5. Meta Pixel
+## 5. Check it from your phone
 
-Add the pixel base code to `public/course/index.html` and fire a `Purchase`
-event of value 35 AUD from the course page on the first visit after payment.
-The cleanest place is `api/watch.js`, in the `session_id` branch, by
-appending `&paid=1` to the redirect and having the rendered page fire the
-event when it sees it. Not done here because it needs your pixel id; it is
-a five-line change.
+Open `https://<site>/api/health`. The first line says ready or names what
+is missing. Values are never shown, only whether each setting is set.
+
+## 5a. The Meta Pixel
+
+Already wired. Set `META_PIXEL_ID` and redeploy: the sales page loads the
+pixel and fires PageView and InitiateCheckout, and the course page fires a
+Purchase of 35 AUD once, on the first visit straight after paying. A
+forwarded link never counts as a sale. Until the id is set the pixel
+script is empty and nothing loads from Meta.
 
 ## 6. Before the ad goes live
 

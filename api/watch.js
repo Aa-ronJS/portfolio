@@ -5,10 +5,11 @@
    The second form checks with Stripe that the session was paid, then sends the
    browser to the first form, so the address bar holds the link they can keep. */
 
-const { missing } = require('./_lib/config');
+const { cfg, missing } = require('./_lib/config');
 const { verify, sign } = require('./_lib/token');
 const { getSession } = require('./_lib/stripe');
 const { title, lessons, checklists, starter } = require('./_lib/course');
+const text = require('./_lib/lessons-text');
 const { page, esc } = require('./_lib/page');
 
 function html(res, status, body) {
@@ -17,7 +18,15 @@ function html(res, status, body) {
   res.end(body);
 }
 
-function renderCourse(email) {
+/* The Purchase event, fired once, on the first visit straight after paying,
+   only when a pixel id is configured. The permanent link never carries paid=1
+   so a forwarded link does not count as a sale. */
+function pixelPurchase(paid) {
+  if (!paid || !cfg.metaPixel || !/^\d{5,20}$/.test(cfg.metaPixel)) return '';
+  return `<script src="/api/pixel.js"></script><script>if(window.fbq){fbq('track','Purchase',{value:35,currency:'AUD'})}</script>`;
+}
+
+function renderCourse(email, paid) {
   const lessonHtml = lessons.map((l) => `
     <section class="lesson">
       <div class="n">${l.n}<small>${l.minutes} min</small></div>
@@ -25,9 +34,10 @@ function renderCourse(email) {
         <h2>${esc(l.title)}</h2>
         <div class="video">${l.embed
           ? `<iframe src="${esc(l.embed)}" title="${esc(l.title)}" allow="fullscreen; picture-in-picture" allowfullscreen loading="lazy"></iframe>`
-          : `<p class="mute">Not recorded yet. This is the beta: the video lands here within seven days of your purchase, and you will get one email when it does.</p>`}</div>
+          : `<p class="mute">Not recorded yet. This is the beta: the video lands here within seven days of your purchase, and you will get one email when it does. The whole lesson is written out below it in the meantime.</p>`}</div>
         <p class="dim">${esc(l.summary)}</p>
         <p class="donow"><b>Do this now.</b> ${esc(l.doNow)}</p>
+        ${text[l.n] ? `<details class="read"><summary>Read the lesson</summary>${text[l.n].split('\n\n').map((para) => `<p>${esc(para)}</p>`).join('')}</details>` : ''}
       </div>
     </section>`).join('');
 
@@ -62,7 +72,7 @@ function renderCourse(email) {
         ${starter.map((c) => `<h3>${esc(c.name)}</h3><pre>${esc(c.body)}</pre>`).join('')}
       </section>
       ${checkHtml}
-    </div></div>`, { raw: true });
+    </div></div>${pixelPurchase(paid)}`, { raw: true });
 }
 
 module.exports = async (req, res) => {
@@ -76,7 +86,7 @@ module.exports = async (req, res) => {
       const email = (s.customer_details && s.customer_details.email) || s.customer_email;
       if (s.payment_status !== 'paid' || !email) return html(res, 402, page('Not paid yet', '<p>Stripe has not confirmed this payment. If you were charged, the link is in your email within a minute or two.</p><p><a class="link" href="/course/">Back to the course page</a></p>'));
       res.setHeader('Cache-Control', 'no-store');
-      return res.redirect(302, `/api/watch?t=${sign(email)}`);
+      return res.redirect(302, `/api/watch?t=${sign(email)}&paid=1`);
     } catch (err) {
       console.error('watch session', err.message);
       return html(res, 502, page('Could not check the payment', '<p>Stripe did not answer. Your link is also in your email, so nothing is lost.</p>'));
@@ -85,5 +95,5 @@ module.exports = async (req, res) => {
 
   const email = verify(q.t ? String(q.t) : '');
   if (!email) return html(res, 403, page('That link is not right', '<p>The link is missing or has been changed. Open the one from the email, or reply to it and I will send another.</p><p><a class="link" href="/course/">The course page</a></p>'));
-  return html(res, 200, renderCourse(email));
+  return html(res, 200, renderCourse(email, q.paid === '1'));
 };

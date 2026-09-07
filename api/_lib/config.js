@@ -15,6 +15,7 @@ const cfg = {
   fromEmail:      env('FROM_EMAIL'),          // e.g. "Aaron Steele <aaron@yourdomain>"
   replyTo:        env('REPLY_TO', ''),        // where the "I finished it" replies land
   courseSecret:   env('COURSE_SECRET'),       // signs the access links; 32+ random chars
+  metaPixel:      env('META_PIXEL_ID'),       // optional; the ad needs it to optimise for purchases
 };
 
 function missing(keys) {
