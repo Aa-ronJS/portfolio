@@ -1,0 +1,72 @@
+# Directed from directed_take.m4a — the machine staged it, you own it. Edit everything.
+title: ep-directed
+size: [1080, 1920]
+fps: 12
+boil: 0.0015
+boil_every: 2
+take: vo/directed_take.m4a
+defaults:
+  font: ../fonts/satoshi-var.ttf
+  caption_size: 0.042
+  caption_weight: 700
+  caption_color: [26, 26, 26]
+  caption_y: 0.84
+  audio_tail: 0.35
+  talk_style: syllable
+shots:
+- bg: backgrounds/chipshop.png
+  duration: 1.6
+  actors:
+  - char: seagull
+    at: [0.5, 0.74]
+    scale: 0.34
+    moves:
+    - type: slide
+      from: [1.25, 0.74]
+      to: [0.5, 0.74]
+      t: [0, 1.2]
+    - {type: waddle, amp: 3, period: 0.5}
+    - {type: bob, amp: 0.005, period: 0.5}
+- bg: backgrounds/chipshop.png
+  line: 3
+  caption: give us a chip mate
+  actors:
+  - char: seagull
+    at: [0.5, 0.74]
+    scale: 0.34
+    talk: true
+    moves:
+    - {type: bob, amp: 0.004, period: 0.7}
+- bg: backgrounds/chipshop.png
+  line: 5
+  caption: just one tip
+  zoom: [1.0, 1.05]
+  actors:
+  - char: seagull
+    at: [0.5, 1.35]
+    scale: 1.5
+    talk: true
+    moves:
+    - {type: bob, amp: 0.003, period: 0.9}
+- bg: backgrounds/chipshop.png
+  line: 6
+  caption: i am not treated
+  actors:
+  - char: seagull
+    at: [0.5, 0.74]
+    scale: 0.34
+    talk: true
+    moves:
+    - {type: bob, amp: 0.004, period: 0.7}
+- bg: backgrounds/chipshop.png
+  duration: 1.8
+  actors:
+  - char: seagull
+    at: [-0.3, 0.74]
+    scale: 0.34
+    moves:
+    - type: slide
+      from: [0.5, 0.74]
+      to: [-0.3, 0.74]
+      t: [0, 1.2]
+    - {type: waddle, amp: 3, period: 0.5}
