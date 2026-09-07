@@ -4,7 +4,7 @@ Everything the machine needs to run. About an hour, most of it in Stripe.
 
 ## 1. Stripe
 
-1. Create a product, **Brief the Machine**, with one price: $35.00 AUD, one
+1. Create a product, **Make It Move**, with one price: $35.00 AUD, one
    time. Copy the price id (`price_...`).
 2. Turn on customer receipt emails: Settings, Emails, "Successful payments".
    Stripe sends the receipt; our webhook sends the access link.
@@ -70,7 +70,7 @@ a five-line change.
 - [ ] All five test-mode steps pass on live keys with a real $35 purchase to
       yourself, then refunded.
 - [ ] `REPLY_TO` inbox has a filter that stars anything with the subject
-      "Re: Brief the Machine: your link".
+      "Re: Make It Move: your link".
 - [ ] The three videos are scheduled: a date in your calendar within the
       seven days the page promises.
 - [ ] `course/OPERATIONS.md` read once.

@@ -12,7 +12,7 @@ transfers to another channel if that changes.
 | Conversion location | Website | |
 | Budget | $5 a day, daily budget, no end date set yet | The $5/7 rule: $35 over a week is the price of one course |
 | Location | Worldwide | The whole edge. USA-only inventory costs several times more per impression |
-| Age | 25 to 65 | Below 25 rarely runs a business or a team |
+| Age | 22 to 60 | The buyer builds websites, for themselves or for clients |
 | Detailed targeting | None. Advantage+ audience on | Let the algorithm find buyers; the one-line ad does the qualifying |
 | Placements | Advantage+ placements | |
 | Language | English | The course is in English; leave everything else open |
@@ -23,23 +23,29 @@ payment. See `SETUP.md`. Without it the ad optimises for the wrong thing.
 
 ## Creative
 
-One image: a screenshot of the terminal with a brief on the left and the
-agent's response on the right, taken from the actual course recording. No
-stock photo, no face, no text overlay. It should look like what the buyer
-will see when they open the course, because it is.
+One video, not an image: a nine-second screen recording of the sales page
+being scrolled on a phone, so the ad shows the plate drifting, a section
+arriving and the numbers counting up. No face, no voice, no text overlay,
+no music. It should look like what the buyer will see when they tap through,
+because it is. Export at 1080 by 1350 so it fills the feed.
+
+Second creative to test against it: the same recording of the portfolio at
+`/`, which has all five effects.
 
 ## Primary text, two variants to test against each other
 
 **A.**
-> Most people paste a prompt into an AI coding agent and hope. Here is the
-> 22-minute version of how I brief one so it builds the right thing. $35.
+> Every animation in this video is plain CSS and sixty lines of JavaScript.
+> No library. Here is the 22-minute version of how to put them on your own
+> site. $35.
 
 **B.**
-> An AI coding agent saying "done" is a claim, not a fact. 22 minutes on how
-> to brief one and how to check it. $35.
+> Parallax, scroll reveals, a count-up and a card that tilts, with no
+> framework and nothing broken for people who turn motion off. 22 minutes.
+> $35.
 
-Headline, both: **Brief the Machine**
-Description, both: Three videos, two checklists, nothing held back.
+Headline, both: **Make It Move**
+Description, both: Three videos, one starter file, two checklists.
 Button: Learn more. Link: the course page.
 
 Run both variants in one ad set for the first week. After seven days keep

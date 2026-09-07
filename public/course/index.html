@@ -3,8 +3,8 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Brief the Machine</title>
-<meta name="description" content="A 22-minute course on how to make an AI coding agent build the right thing: the one-page brief, the check that catches it overclaiming, and the run that tries to break it. $35, nothing held back.">
+<title>Make It Move</title>
+<meta name="description" content="A 22-minute course on the five animations that make a web page look expensive: parallax plates, scroll reveals, count-up numbers, a pointer tilt and a marquee. Plain CSS, sixty lines of JavaScript, no library, and every effect switches itself off politely. $35.">
 <meta name="theme-color" content="#12181f">
 <link rel="preload" as="font" type="font/woff2" href="/fonts/clash-display-var.woff2" crossorigin>
 <link rel="preload" as="font" type="font/woff2" href="/fonts/satoshi-var.woff2" crossorigin>
@@ -12,12 +12,11 @@
 
 <style>
 /* ===========================================================================
-   A tiny-course sales page, built to the same pre-flight as the portfolio.
-   Same fonts, palette, radius and motion rules, so it reads as the same person.
-   The structure is the sales letter's: a hook, what you get, why it is small,
-   who it is for, the price and the guarantee, the questions, and the button
-   after every argument. What it does not borrow: testimonials, student counts
-   or income figures. The proof is the proof the portfolio uses.
+   A tiny-course sales page for a course about the motion on this site, so the
+   page has to be its own demonstration: the plate behind the hero, the
+   sections arriving, the numbers counting up, the card that tilts. Same
+   pre-flight as the portfolio. What it does not borrow from the sales letter it
+   is modelled on: testimonials, student counts, income figures.
    =========================================================================== */
 
 @font-face{font-family:'Clash';src:url('/fonts/clash-display-var.woff2') format('woff2-variations');font-weight:200 700;font-style:normal;font-display:swap}
@@ -78,7 +77,7 @@ a{color:inherit}
 .act--deep{background:var(--ink); overflow:clip; isolation:isolate; padding-block:clamp(110px,16vh,220px)}
 .act--deep::before{content:''; position:absolute; inset:0; z-index:-1; pointer-events:none; background:radial-gradient(120% 85% at 78% 18%, oklch(0.76 0.155 58 / 0.10), transparent 62%)}
 
-/* Parallax plates, off the main thread, static where unsupported or unwanted. */
+/* 1. The plate. Off the main thread; a still photograph where unsupported. */
 .plate{overflow:clip; isolation:isolate}
 .plate__media{position:absolute; inset:-14% 0; z-index:-2}
 .plate__media img{width:100%; height:100%; object-fit:cover}
@@ -94,7 +93,7 @@ a{color:inherit}
 
 .hero{min-height:100svh; display:grid; align-items:center; padding-block:var(--s9) var(--s8)}
 .hero .wrap{width:100%}
-.hero h1{margin-block:var(--s4) var(--s6); max-inline-size:14ch}
+.hero h1{margin-block:var(--s4) var(--s6); max-inline-size:13ch}
 .hero h1 em{font-style:normal; color:var(--amber)}
 .creds{display:flex; flex-wrap:wrap; gap:var(--s3) var(--s5); margin-top:var(--s7); font-family:var(--mono); font-size:var(--t--1); color:var(--fg-mute)}
 .creds span{display:inline-flex; align-items:center; gap:var(--s3)}
@@ -109,7 +108,6 @@ a{color:inherit}
 .btn__arrow{transition:transform 220ms var(--ease)}
 .btn:hover .btn__arrow{transform:translateX(5px)}
 
-/* The numbered spine, as on the portfolio. */
 .caps{margin-top:var(--s10); border-top:1px solid var(--line)}
 .cap{display:grid; gap:var(--s4) var(--s8); padding-block:var(--s8); border-bottom:1px solid var(--line); align-items:start}
 @media (min-width:58rem){.cap{grid-template-columns:5rem minmax(0,1fr) minmax(0,1.15fr); gap:var(--s9)}}
@@ -131,6 +129,7 @@ a{color:inherit}
 .split > *{min-width:0}
 .split h3{margin-bottom:var(--s5)}
 
+/* 2. Arrival. */
 @media (prefers-reduced-motion: no-preference){
   .rise{opacity:0; transform:translate3d(0,28px,0)}
   .rise.in{opacity:1; transform:none; transition:opacity 640ms var(--ease-out) var(--d,0ms), transform 640ms var(--ease-out) var(--d,0ms)}
@@ -140,6 +139,35 @@ a{color:inherit}
 .rule{height:1px; background:var(--accent); border:0; margin:0}
 .eyebrow{display:flex; align-items:center; gap:var(--s4); margin-bottom:var(--s5)}
 .eyebrow .rule{flex:1; max-width:150px}
+
+/* 3. Count-up. Real numbers, held in the markup. */
+.figures{display:grid; gap:var(--s7) var(--s6); margin-top:var(--s10); grid-template-columns:repeat(auto-fit,minmax(170px,1fr))}
+.figures > *{min-width:0}
+.fig__n{font-family:var(--display); font-weight:600; font-size:var(--t-3); line-height:0.88; letter-spacing:-0.045em; font-variant-numeric:tabular-nums; display:block; color:var(--accent)}
+.fig__k{display:block; margin-top:var(--s4); color:var(--fg-dim); font-size:var(--t--1); line-height:1.5; max-inline-size:26ch}
+
+/* 4. Tilt. Six degrees at most; flat on touch and reduced motion. */
+.proj{display:grid; gap:var(--s8); align-items:center}
+@media (min-width:62rem){.proj{grid-template-columns:minmax(0,1.05fr) minmax(0,0.95fr); gap:var(--s10)}}
+.proj > *{min-width:0}
+.proj__figure{perspective:1100px; margin:0}
+.tilt{position:relative; overflow:hidden; transform:rotateX(var(--rx,0deg)) rotateY(var(--ry,0deg)); transition:transform 480ms var(--ease);
+  box-shadow:0.3px 0.6px 0.8px oklch(0.09 0.02 252 / 0.35), 2.1px 4.2px 5.3px oklch(0.09 0.02 252 / 0.35), 8px 16px 22px oklch(0.09 0.02 252 / 0.35), 24px 48px 64px oklch(0.09 0.02 252 / 0.35)}
+.tilt img{width:100%; height:auto; aspect-ratio:3/2; object-fit:cover; transform:scale(1.03)}
+.tilt::after{content:''; position:absolute; inset:0; pointer-events:none; background:linear-gradient(140deg, oklch(0.76 0.155 58 / 0.16), transparent 48%); mix-blend-mode:screen}
+@media (hover:hover) and (pointer:fine) and (prefers-reduced-motion: no-preference){.tilt{transition:transform 200ms var(--ease)}}
+@media (hover:none),(pointer:coarse),(prefers-reduced-motion: reduce){.tilt{transform:none !important}}
+
+/* 5. Marquee. Pauses on hover. */
+.marq{overflow:hidden; border-block:1px solid var(--ink-line); padding-block:var(--s5); --gap:var(--s7)}
+.marq__row{display:flex; gap:var(--gap); width:max-content}
+@media (prefers-reduced-motion: no-preference){
+  .marq__row{animation:slide 40s linear infinite}
+  .marq:hover .marq__row{animation-play-state:paused}
+  @keyframes slide{to{transform:translateX(calc(-50% - (var(--gap) / 2)))}}
+}
+.marq__row span{font-family:var(--display); font-weight:400; font-size:var(--t-1); letter-spacing:-0.02em; color:var(--on-ink-mute); white-space:nowrap}
+.marq__row span::after{content:'/'; margin-left:var(--gap); color:var(--amber); opacity:0.6}
 
 .link{display:inline-flex; align-items:center; gap:0.5em; min-height:32px; font-family:var(--mono); font-size:var(--t--1); text-decoration:none; color:var(--fg); box-shadow:inset 0 -1px 0 0 color-mix(in oklch, var(--accent) 55%, transparent); transition:color 180ms var(--ease), box-shadow 180ms var(--ease)}
 .link:hover{color:var(--accent); box-shadow:inset 0 -1px 0 0 var(--accent)}
@@ -151,17 +179,16 @@ a{color:inherit}
 .finds h4{font-family:var(--display); font-weight:500; font-size:var(--t-1); line-height:1.1; letter-spacing:-0.022em; margin:0 0 var(--s3)}
 .finds p{color:var(--fg-dim); font-size:var(--t--1); line-height:1.65; margin:0}
 
-/* The price. One number, big, and the terms beside it in plain words. */
 .price{display:grid; gap:var(--s7); align-items:start; margin-top:var(--s9); padding-top:var(--s7); border-top:1px solid var(--line)}
 @media (min-width:58rem){.price{grid-template-columns:minmax(0,0.8fr) minmax(0,1.2fr); gap:var(--s10)}}
 .price > *{min-width:0}
 .price__n{font-family:var(--display); font-weight:600; font-size:var(--t-4); line-height:0.88; letter-spacing:-0.045em; font-variant-numeric:tabular-nums; display:block; color:var(--accent)}
-.price__n small{font-size:0.28em; letter-spacing:0; font-weight:500; color:var(--fg-mute); margin-left:0.35em; vertical-align:baseline}
+.price__n small{font-size:0.28em; letter-spacing:0; font-weight:500; color:var(--fg-mute); margin-left:0.35em}
 .price__k{display:block; margin-top:var(--s4); color:var(--fg-dim); font-size:var(--t--1); line-height:1.5; max-inline-size:26ch}
 .terms{margin:0; padding:0; list-style:none; display:grid; gap:var(--s4)}
 .terms li{display:grid; grid-template-columns:8rem minmax(0,1fr); gap:var(--s4); padding-block:var(--s4); border-bottom:1px solid var(--line); align-items:baseline}
 .terms li > *{min-width:0}
-.terms dt,.terms .k{font-family:var(--mono); font-size:var(--t--1); color:var(--fg-mute); letter-spacing:0.04em}
+.terms .k{font-family:var(--mono); font-size:var(--t--1); color:var(--fg-mute); letter-spacing:0.04em}
 .terms .v{color:var(--fg-dim); line-height:1.55}
 .terms .v b{color:var(--fg); font-weight:600}
 @media (max-width:36rem){.terms li{grid-template-columns:1fr; gap:var(--s2)}}
@@ -178,23 +205,23 @@ a{color:inherit}
 </head>
 <body>
 
-<!-- ============================ HERO: THE HOOK ============================ -->
+<!-- ============================ HERO: THE HOOK, ON A PLATE ============================ -->
 <header class="act hero plate">
   <div class="plate__media"><img src="/img/hero.jpg" alt="" width="1800" height="771" fetchpriority="high"></div>
   <div class="plate__veil"></div>
 
   <div class="wrap">
     <p class="tag rise">A tiny course. 22 minutes. $35.</p>
-    <h1 class="rise" style="--d:80ms">Most people paste a prompt in and hope. <em>This is the other way.</em></h1>
+    <h1 class="rise" style="--d:80ms">Every animation on this page. <em>No library. One afternoon.</em></h1>
     <p class="lede rise" style="--d:170ms">
-      An AI coding agent is a delivery team: fast, tireless, literal, and perfectly willing to build
-      the wrong thing beautifully if nobody tells it what right looks like. <b>Brief the Machine</b>
-      is the 22-minute version of how I brief one, how I check it, and how I set it against itself.
-      Three screen recordings and two one-page checklists. Nothing held back for a course you have
-      to buy next.
+      The photograph drifting behind these words. The way each section below arrives as you reach
+      it. The numbers that count up, the card that leans toward your pointer, the line of type that
+      never stops. <b>Five effects, plain CSS and about sixty lines of JavaScript</b>, and every one of
+      them switches itself off politely for people who turn motion off. Make It Move is how I built
+      them, shown on a real page, so you can put them on yours today.
     </p>
     <p class="creds rise" style="--d:230ms">
-      <span>Three videos</span><span>Two checklists</span><span>One afternoon to apply</span><span>No upsell</span>
+      <span>Three videos</span><span>One starter file</span><span>Two checklists</span><span>No upsell</span>
     </p>
     <div class="cta rise" style="--d:290ms">
       <a class="btn" href="/api/checkout">Get the course, $35 <span class="btn__arrow" aria-hidden="true">&rarr;</span></a>
@@ -207,87 +234,104 @@ a{color:inherit}
 <section class="act act--bone act--air" id="inside">
   <div class="wrap">
     <p class="tag rise">What is in it</p>
-    <h2 class="rise measure" style="--d:80ms">Three videos. Two pages. Done.</h2>
+    <h2 class="rise measure" style="--d:80ms">Three videos. One file. Two pages.</h2>
     <p class="rise measure-wide dim" style="--d:150ms; margin-top:var(--s6)">
-      Everything below is something I actually do, on tools you can go and open. Each video ends
-      with you having done the thing on your own project, not having watched me talk about it.
+      Every effect is taught on the page you are reading and the one it links to, then you put it on
+      your own page before the next video starts. You are watching for 22 minutes and building for
+      the rest of the afternoon.
     </p>
 
     <div class="caps">
       <div class="cap rise">
         <div class="cap__n">01<small>8 min</small></div>
-        <h3>A specification, not a wish.</h3>
+        <h3>The plate.</h3>
         <div class="cap__body">
-          <p>Why "build me a dashboard" produces a beautiful wrong thing, and the one-page brief that
-             stops it: <b>what it must do, what it must never do, the edge cases, and what finished
-             looks like.</b> The same document I would hand a delivery team, because it is the same
-             problem.</p>
-          <p>Live on screen, I write the brief for a small real tool and run it. <b>Checklist one</b>
-             is that brief as a fill-in template.</p>
+          <p>A full-bleed photograph that scrolls at a different rate to the type sitting over it, so
+             the page has depth instead of being a stack of rectangles. It is a <b>scroll-driven CSS
+             animation that runs off the main thread</b>, so it cannot make the page stutter, and
+             where the browser cannot do it, or the reader has asked for less motion, it is a still
+             photograph, which is the composition anyway.</p>
+          <p>The veil gradients that let white type sit on it. Choosing a photograph that can carry
+             it. Why the hero is a plate and the project sections are not.</p>
         </div>
       </div>
 
       <div class="cap rise" style="--d:80ms">
         <div class="cap__n">02<small>8 min</small></div>
-        <h3>Done is a claim, not a fact.</h3>
+        <h3>Arrival.</h3>
         <div class="cap__body">
-          <p>Two things an agent told me were finished: documentation for a test pipeline that did
-             not exist, and a performance report that was structurally incapable of failing. Both
-             looked perfect. <b>Every build gets a check against something you do not control</b>,
-             and I show you how to add one in a few minutes.</p>
-          <p><b>Checklist two</b> is the verification list I run before I believe anything an agent
-             says.</p>
+          <p>Things that arrive rather than simply being there. Sections that rise into place,
+             staggered with a single custom property. <b>An amber hairline that draws itself across
+             the page.</b> A number that counts up to a real figure held in the markup, with an ease
+             that lands instead of stopping.</p>
+          <p>All of it from one IntersectionObserver and about twenty lines, and the one rule that
+             stops it going wrong: the hero animates on load, because it is already on screen.</p>
         </div>
       </div>
 
       <div class="cap rise" style="--d:160ms">
         <div class="cap__n">03<small>6 min</small></div>
-        <h3>Set it against itself.</h3>
+        <h3>Depth, and switching it off.</h3>
         <div class="cap__body">
-          <p>One run builds. A separate run, knowing nothing about the first, tries to break it.
-             How to prompt the second run, what to hand it, and how it found <b>three real defects
-             in my own tool within an hour of it going live</b>, including one where it happily
-             answered a question it should have refused.</p>
-          <p>The last minute is where to go next, in one sentence, and it is not a pitch.</p>
+          <p>The card that leans toward the pointer, <b>capped at six degrees</b> and flat on touch.
+             The marquee that pauses when you hover it. Then the part that makes all of it
+             acceptable: every moving thing has an honest branch for people who prefer reduced
+             motion, and it resolves to the finished state, not to nothing.</p>
+          <p>And three defects on my own page that I only found by looking at the render, not the
+             code. You get the checklist that would have caught them.</p>
         </div>
       </div>
     </div>
 
-    <div class="cta rise" style="--d:100ms; margin-top:var(--s8)">
+    <div class="figures">
+      <div class="rise"><span class="fig__n" data-count="5">0</span><span class="fig__k">effects, and every one is running on this page or the one it links to</span></div>
+      <div class="rise" style="--d:90ms"><span class="fig__n" data-count="0">0</span><span class="fig__k">libraries, frameworks or build steps</span></div>
+      <div class="rise" style="--d:180ms"><span class="fig__n" data-count="6">0</span><span class="fig__k">degrees, the most the card is allowed to tilt</span></div>
+      <div class="rise" style="--d:270ms"><span class="fig__n" data-count="640">0</span><span class="fig__k">milliseconds, the longest any element takes to arrive</span></div>
+    </div>
+
+    <div class="cta rise" style="--d:100ms; margin-top:var(--s9)">
       <a class="btn" href="/api/checkout">Get the course, $35 <span class="btn__arrow" aria-hidden="true">&rarr;</span></a>
     </div>
   </div>
 </section>
 
-<!-- ============================ WHY TINY ============================ -->
+<div class="marq" aria-hidden="true">
+  <div class="marq__row">
+    <span>Parallax plate</span><span>Scroll reveal</span><span>Drawn hairline</span><span>Count-up</span><span>Pointer tilt</span><span>Marquee</span><span>Reduced motion</span><span>No library</span>
+    <span>Parallax plate</span><span>Scroll reveal</span><span>Drawn hairline</span><span>Count-up</span><span>Pointer tilt</span><span>Marquee</span><span>Reduced motion</span><span>No library</span>
+  </div>
+</div>
+
+<!-- ============================ WHY TINY, AND WHY IT IS HONEST ============================ -->
 <section class="act act--deep">
   <div class="wrap">
     <p class="tag rise">Why 22 minutes</p>
     <h2 class="rise measure" style="--d:80ms">Because you will finish it.</h2>
     <div class="split" style="margin-top:var(--s8)">
       <div class="dim rise" style="--d:150ms">
-        <p>Most online courses are twelve modules long and get abandoned at module two. Not because
-           the buyer is lazy. Because the course is padded to justify the price, and the good part is
-           held back for the coaching offer at the end.</p>
-        <p>This one is priced so that it pays for itself. <b>I do not need you to buy anything
-           after it</b>, so there is no reason to hold anything back, and I have not. If you finish
-           it and want more, you know where I am. If you finish it and never think about me again,
-           that is a good outcome too.</p>
+        <p>Most courses on this are twelve modules long, built around a framework you have to adopt
+           first, and abandoned at module two. This one is five effects and the rule that ties them
+           together, and it is priced so that it pays for itself. <b>I do not need you to buy anything
+           after it</b>, so nothing is held back for a coaching offer at the end.</p>
+        <p>You should also know this before you pay: the page these effects were built on is public,
+           under a licence that lets you copy it. You could read the source and work it out. What you
+           are buying is <b>the 22 minutes that explains every line</b>, the starter file that has only
+           the moving parts in it, and the two checklists that keep the result from looking like every
+           other animated page.</p>
       </div>
       <div class="dim rise" style="--d:230ms">
-        <p>You will notice what is missing. No income screenshots. No count of how many people have
-           bought it. No wall of testimonials. Those are the tells of a page that needs you to stop
-           thinking, and I would rather you kept thinking.</p>
-        <p>What is here instead is <b>the same proof the rest of my site uses</b>: two working tools
-           whose code is public, and specific things that went wrong and how they were found. You
-           can check every one of them before you spend a cent.</p>
+        <p>You will notice what is missing here. No income screenshots. No count of how many people
+           have bought it. No wall of testimonials. Those are the tells of a page that needs you to
+           stop thinking, and I would rather you kept thinking.</p>
+        <p>The proof is the page. Scroll it. Turn on reduce motion in your operating system and
+           reload it. Open it on your phone. <b>If you want the site to move like this one does, the
+           course is how.</b> If you do not, keep the $35.</p>
       </div>
     </div>
     <div class="links rise" style="--d:300ms; margin-top:var(--s8)">
-      <a class="link" href="https://rain-check-mu.vercel.app">Rain Check, live <span aria-hidden="true">&rarr;</span></a>
-      <a class="link" href="https://doorknock-eight.vercel.app">Doorknock, live <span aria-hidden="true">&rarr;</span></a>
-      <a class="link" href="https://github.com/Aa-ronJS">The code <span aria-hidden="true">&rarr;</span></a>
-      <a class="link" href="/">The rest of the site</a>
+      <a class="link" href="/">The page it was built on <span aria-hidden="true">&rarr;</span></a>
+      <a class="link" href="https://github.com/Aa-ronJS/portfolio">Its source</a>
     </div>
   </div>
 </section>
@@ -296,73 +340,79 @@ a{color:inherit}
 <section class="act act--bone act--air">
   <div class="wrap">
     <p class="tag rise">Who it is for</p>
-    <h2 class="rise measure" style="--d:80ms">You already use one. It keeps getting it wrong.</h2>
+    <h2 class="rise measure" style="--d:80ms">You have a page. It sits there.</h2>
     <div class="split" style="margin-top:var(--s8)">
       <div class="rise" style="--d:150ms">
         <h3>This is for you if</h3>
         <ul class="doable" style="grid-template-columns:1fr">
-          <li><b>You run a business or a team</b> and have started using Claude Code, Cursor or Copilot to
-              build internal tools, and the output is confident, fast and not quite what you meant.</li>
-          <li><b>You are a consultant or analyst</b> who is expected to deliver working things now, not
-              documents about them, and you want a method rather than a vibe.</li>
-          <li><b>You have shipped something an agent built</b> and later found out it did not do what
-              its own notes said it did.</li>
+          <li><b>You build sites for clients</b>, on your own or in a small studio, and you want the
+              page to feel expensive without adding a framework you then have to maintain.</li>
+          <li><b>You built your own site</b> and can edit its HTML and CSS, and it works, and it is flat.</li>
+          <li><b>You already use an animation library</b> and you are tired of shipping 80 kilobytes of
+              it to fade in a heading.</li>
         </ul>
       </div>
       <div class="rise" style="--d:230ms">
         <h3>This is not for you if</h3>
         <ul class="doable" style="grid-template-columns:1fr">
-          <li><b>You have never opened a coding agent.</b> Start with the free tutorials the tools ship
-              with. Come back when it has annoyed you.</li>
-          <li><b>You want to learn to program.</b> This is about briefing and checking, not syntax. A
-              working programmer will get plenty from it, but that is not who it is written for.</li>
-          <li><b>You want a promise about money.</b> I can show you how I work. What you build with it
-              is yours.</li>
+          <li><b>You cannot edit the code of your site.</b> A hosted builder with no custom code access
+              will not take any of this. Check first.</li>
+          <li><b>You want a design course.</b> This is motion. It assumes the type, colour and layout are
+              already yours, and it will make a bad layout move badly.</li>
+          <li><b>You want a component library.</b> It is two files you paste in and understand, not a
+              package you import.</li>
         </ul>
       </div>
     </div>
   </div>
 </section>
 
-<!-- ============================ WHERE IT CAME FROM ============================ -->
+<!-- ============================ WHERE IT CAME FROM, WITH A TILT CARD ============================ -->
 <section class="act plate">
   <div class="plate__media"><img src="/img/seam.jpg" alt="" width="1400" height="933" loading="lazy"></div>
   <div class="plate__veil"></div>
 
   <div class="wrap">
-    <div class="eyebrow rise"><span class="tag">Where it came from</span><hr class="rule wipe" style="--d:120ms"></div>
-    <h2 class="rise measure" style="--d:80ms">Ten years of writing the brief.</h2>
-    <p class="lede rise" style="--d:160ms; margin-top:var(--s6)">
-      I have been a business analyst since 2015 and building the automation myself since 2016, in
-      mining, policing, federal service delivery and local government. The job was always the same:
-      work out what a room full of people actually need, write it so a delivery team cannot build the
-      wrong thing, and then check what came back. <b>An AI agent is that delivery team, and it turns
-      out to be the same skill.</b>
-    </p>
+    <div class="proj">
+      <div>
+        <div class="eyebrow rise"><span class="tag">Where it came from</span><hr class="rule wipe" style="--d:120ms"></div>
+        <h2 class="rise" style="--d:80ms">Built for one page. Checked on the screen.</h2>
+        <p class="lede rise" style="--d:160ms; margin-top:var(--s6)">
+          Every effect in the course was built for my own site, answered in writing against a design
+          pre-flight before any markup, and then checked in a browser at four widths. <b>The card on
+          the right is the tilt from video three. Move your pointer over it.</b> On a phone it is
+          flat, on purpose.
+        </p>
+      </div>
+      <figure class="proj__figure rise" style="--d:200ms">
+        <div class="tilt"><img src="/img/glass.jpg" alt="Layers of hand-cut amber and grey glass stacked on a dark workbench, raking light catching every edge." width="1400" height="933" loading="lazy"></div>
+      </figure>
+    </div>
 
     <ul class="finds">
       <li class="rise">
-        <h4>The check that caught the agent overclaiming</h4>
-        <p>Both of my public tools carry a script whose only job is to compare the result against
-           something I do not control. It has caught things my own tests never could, and it is
-           what video two teaches.</p>
+        <h4>The call to action that never appeared</h4>
+        <p>The hero button was scroll-revealed, and the observer's margin put it outside the trigger
+           zone, so the most important element on the page sat at opacity zero forever. The markup
+           was fine. Only the render showed it. The fix is a rule, and it is in video two.</p>
       </li>
       <li class="rise" style="--d:90ms">
-        <h4>The adversarial run that found the security holes</h4>
-        <p>Reviewing a live shopping platform written mostly by AI, a second run with no knowledge
-           of the first logged into somebody else's account and shut down their broadcast. Video
-           three is how to set that up on your own project.</p>
+        <h4>Every photo card rendered portrait</h4>
+        <p>A height attribute on the image plus an aspect ratio in the CSS, and the ratio silently
+           lost. Every card came out tall at 933 pixels. One declaration fixes it, and checklist two
+           makes you look.</p>
       </li>
       <li class="rise" style="--d:180ms">
-        <h4>The test that could only ever pass</h4>
-        <p>A performance page that always came back perfect, because it was scoring blanks out of
-           blanks. The project's own notes had it down as verified. This is what "done is a claim"
-           means in practice.</p>
+        <h4>The same photograph, twice on one screen</h4>
+        <p>Once as a plate, once in a tilted card, and it read as a mistake rather than a
+           composition. The plates now belong to the statement sections only. That is a design rule,
+           not a code one, and it is in checklist one.</p>
       </li>
       <li class="rise" style="--d:270ms">
-        <h4>The one reported problem that was not one</h4>
-        <p>An automated tool flagged a leaked key. I traced it and told them to ignore it. A good
-           check catches false alarms as well as real ones, or it costs you a week chasing ghosts.</p>
+        <h4>Letters colliding at hero size</h4>
+        <p>Display tracking that looked right at 24 pixels put letters into each other at 160. Caught
+           by looking, fixed by a single value. Motion draws the eye to type; the type has to survive
+           the attention.</p>
       </li>
     </ul>
   </div>
@@ -382,13 +432,13 @@ a{color:inherit}
     <div class="price">
       <div class="rise" style="--d:120ms">
         <span class="price__n">$35<small>AUD</small></span>
-        <span class="price__k">once, for the three videos and both checklists</span>
+        <span class="price__k">once, for the videos, the starter file and both checklists</span>
       </div>
       <ul class="terms rise" style="--d:200ms">
-        <li><span class="k">You get</span><span class="v">Three screen recordings, about 22 minutes in total, and two one-page checklists: <b>the brief template and the verification list.</b></span></li>
-        <li><span class="k">When</span><span class="v">This is the beta. <b>Recordings are delivered within seven days of purchase</b>, and you keep every later revision at no cost.</span></li>
-        <li><span class="k">Guarantee</span><span class="v">Watch all of it. If it did not change how you brief an agent, <b>ask and the money comes back.</b> No form, no reason required.</span></li>
-        <li><span class="k">After</span><span class="v">When you have run your first brief, reply to the receipt and tell me what it built. <b>I read every one.</b> That is the only follow-up there is.</span></li>
+        <li><span class="k">You get</span><span class="v">Three screen recordings, about 22 minutes in total, <b>the two-file starter with only the moving parts in it</b>, and two one-page checklists: before anything moves, and look at the render.</span></li>
+        <li><span class="k">When</span><span class="v">This is the beta. The starter file and checklists are there the moment you pay. <b>Recordings land within seven days of purchase</b>, and you keep every later revision at no cost.</span></li>
+        <li><span class="k">Guarantee</span><span class="v">Watch all of it. If your page does not move by the end of the afternoon, <b>ask and the money comes back.</b> No form, no reason required.</span></li>
+        <li><span class="k">After</span><span class="v">When your page moves, reply to the receipt with the link. <b>I look at every one</b> and answer with the one thing I would change. That is the only follow-up there is.</span></li>
       </ul>
     </div>
 
@@ -408,38 +458,41 @@ a{color:inherit}
 
     <ul class="finds">
       <li class="rise">
-        <h4>Do I need to buy anything else for this to work?</h4>
-        <p>No. It is a complete thing. There is no coaching offer behind it that the course is
-           secretly an advertisement for. If you later want something built properly, you can ask,
-           and the answer might be yes, but the course does not depend on it.</p>
+        <h4>How much code do I need to know?</h4>
+        <p>Enough to open your site's HTML and CSS and add a class to an element. The JavaScript is
+           sixty lines you paste in once and never edit. Every line of it is explained, but you do
+           not have to write any.</p>
       </li>
       <li class="rise" style="--d:90ms">
-        <h4>Which tool is it for?</h4>
-        <p>I record with Claude Code because that is what I use. The brief, the check and the
-           adversarial run work the same way in Cursor, Copilot or anything else that takes
-           instructions and writes code. Nothing in it is a product feature.</p>
+        <h4>Does it work in every browser?</h4>
+        <p>The reveals, count-up, tilt and marquee work everywhere. The parallax plate uses
+           scroll-driven animation, which most current browsers support; where one does not, the
+           plate is a still photograph and the page is otherwise identical. The course shows you how
+           to make that true of everything you add, not just this.</p>
       </li>
       <li class="rise" style="--d:180ms">
-        <h4>Why is it a beta?</h4>
-        <p>Because I would rather find out whether people want it before I spend a week polishing
-           it. You get the recordings within seven days, and every revision after that. The price
-           reflects that, and the guarantee covers it.</p>
+        <h4>Isn't the code already free?</h4>
+        <p>Yes. The page it was built on is public under the MIT licence, and I say so above rather
+           than hoping you do not notice. You are paying for the explanation, the file that is only
+           the moving parts, and the two checklists. If reading source is how you learn, go and read
+           it and keep the $35.</p>
       </li>
       <li class="rise" style="--d:270ms">
-        <h4>Is there a longer version?</h4>
-        <p>Not yet. If enough people finish this one and ask for the next step, which is giving the
-           agent real tools so it can read your CRM instead of guessing about it, I will record
-           that too. The last minute of video three says exactly that, once.</p>
+        <h4>Can I use it on client sites?</h4>
+        <p>Yes, as many as you like, with no attribution. The starter file is yours once you have
+           it. Charge your clients for the afternoon; that is rather the point.</p>
       </li>
       <li class="rise" style="--d:360ms">
-        <h4>Can I share it with my team?</h4>
-        <p>Yes. Buy it once and show it to whoever you work with. I am not going to chase a small
-           business over a 22-minute video.</p>
+        <h4>Does it work with React, Astro, WordPress, whatever I use?</h4>
+        <p>It is CSS classes and one script that runs on page load. If your tool produces HTML, it
+           works. The course is recorded on a plain HTML file so nothing about a framework gets in
+           the way of seeing what each line does.</p>
       </li>
       <li class="rise" style="--d:450ms">
-        <h4>What if I already do all of this?</h4>
-        <p>Then you do not need it, and I would rather you kept the $35. The page above is honest
-           about what is in it so you can make that call before buying, not after.</p>
+        <h4>Why is it a beta?</h4>
+        <p>Because I would rather find out whether people want it before I spend a week polishing
+           it. The starter file and checklists are complete now. The recordings arrive within seven
+           days, and every revision after that, and the guarantee covers all of it.</p>
       </li>
     </ul>
   </div>
@@ -448,8 +501,8 @@ a{color:inherit}
 <!-- ============================ FOOT ============================ -->
 <footer class="act foot">
   <div class="wrap">
-    <p class="tag rise">Brief the Machine</p>
-    <h2 class="rise measure" style="--d:80ms">Twenty-two minutes. Then build something.</h2>
+    <p class="tag rise">Make It Move</p>
+    <h2 class="rise measure" style="--d:80ms">Twenty-two minutes. Then make yours move.</h2>
     <div class="cta rise" style="--d:200ms">
       <a class="btn" href="/api/checkout">Get the course, $35 <span class="btn__arrow" aria-hidden="true">&rarr;</span></a>
       <a class="btn btn--ghost" href="/">Who is teaching it</a>
@@ -457,9 +510,10 @@ a{color:inherit}
 
     <div class="foot__grid">
       <p class="foot__note">
-        Everything on this page that can be checked, you can check: the tools are live, the code is
-        public, and the method is the one I use on them. The only thing you take on trust is whether
-        22 minutes of it is worth $35, and the guarantee exists so you do not have to.
+        Everything on this page that can be checked, you can check: the effects are running on it,
+        the source is public, and the defects described are the ones written up in the repository.
+        The only thing you take on trust is whether 22 minutes of explanation is worth $35, and the
+        guarantee exists so you do not have to.
       </p>
       <p class="foot__note">Aaron Steele, South Australia.</p>
     </div>
@@ -469,12 +523,11 @@ a{color:inherit}
 <script>
 (function () {
   var reduced = matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+  /* Arrival. The hero is already on screen, so it animates on load. */
   var hero = document.querySelectorAll('header .rise, header .wipe');
   var rest = document.querySelectorAll('section .rise, section .wipe, footer .rise, footer .wipe');
-
-  /* The hero is already on screen, so it animates on load. Only what is below waits for a scroll. */
   requestAnimationFrame(function () { hero.forEach(function (el) { el.classList.add('in'); }); });
-
   if (reduced || !('IntersectionObserver' in window)) {
     rest.forEach(function (el) { el.classList.add('in'); });
   } else {
@@ -484,6 +537,49 @@ a{color:inherit}
       });
     }, { rootMargin: '0px 0px -6% 0px', threshold: 0.05 });
     rest.forEach(function (el) { io.observe(el); });
+  }
+
+  /* Count-up. Real numbers only; the final value lives in the markup. */
+  var counters = document.querySelectorAll('[data-count]');
+  function land(el) { el.textContent = Number(el.dataset.count).toLocaleString('en-AU'); }
+  if (reduced || !('IntersectionObserver' in window)) {
+    counters.forEach(land);
+  } else {
+    var co = new IntersectionObserver(function (entries) {
+      entries.forEach(function (e) {
+        if (!e.isIntersecting) return;
+        co.unobserve(e.target);
+        var el = e.target, target = Number(el.dataset.count), t0 = performance.now();
+        (function step(now) {
+          var p = Math.min(1, (now - t0) / 1100);
+          el.textContent = Math.round(target * (1 - Math.pow(1 - p, 4))).toLocaleString('en-AU');
+          if (p < 1) requestAnimationFrame(step); else land(el);
+        })(t0);
+      });
+    }, { threshold: 0.5 });
+    counters.forEach(function (el) { co.observe(el); });
+  }
+
+  /* Tilt. Pointer only, one frame at a time, six degrees at most. */
+  if (matchMedia('(hover: hover) and (pointer: fine)').matches && !reduced) {
+    document.querySelectorAll('.tilt').forEach(function (card) {
+      var frame = null, max = 6;
+      card.addEventListener('pointermove', function (ev) {
+        if (frame) return;
+        frame = requestAnimationFrame(function () {
+          frame = null;
+          var r = card.getBoundingClientRect();
+          var x = (ev.clientX - r.left) / r.width - 0.5;
+          var y = (ev.clientY - r.top) / r.height - 0.5;
+          card.style.setProperty('--ry', (x * max).toFixed(2) + 'deg');
+          card.style.setProperty('--rx', (-y * max).toFixed(2) + 'deg');
+        });
+      });
+      card.addEventListener('pointerleave', function () {
+        card.style.setProperty('--ry', '0deg');
+        card.style.setProperty('--rx', '0deg');
+      });
+    });
   }
 })();
 </script>

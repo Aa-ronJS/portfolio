@@ -7,18 +7,18 @@ const { cfg } = require('./config');
 const { accessUrl } = require('./token');
 
 function deliveryText(email) {
-  return `Thanks for buying Brief the Machine.
+  return `Thanks for buying Make It Move.
 
 Your link, which works forever and is fine to forward to your team:
 
 ${accessUrl(email)}
 
-There are three videos and two one-page checklists. Start with video one and
-have a real project open beside it; each video ends with you doing the thing,
-not watching me do it.
+Three videos, one starter file, two one-page checklists. Start with video one
+and have your own page open beside it; each video ends with you putting the
+effect on your page, not watching it on mine.
 
-One ask. When you have run your first brief, reply to this email and tell me
-what it built. I read every one.
+One ask. When your page moves, reply to this email with the link. I look at
+every one and I answer with the one thing I would change.
 
 Aaron`;
 }
@@ -31,7 +31,7 @@ async function sendDelivery(email) {
       from: cfg.fromEmail,
       to: [email],
       reply_to: cfg.replyTo || undefined,
-      subject: 'Brief the Machine: your link',
+      subject: 'Make It Move: your link',
       text: deliveryText(email),
     }),
   });

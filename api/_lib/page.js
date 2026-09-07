@@ -3,6 +3,7 @@
    two failure pages. Same fonts, palette and radius as the rest of the site,
    inlined, because a function has no stylesheet to lean on. */
 
+const { title } = require('./course');
 const esc = (s) => String(s).replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
 
 const css = `
@@ -38,11 +39,14 @@ p{margin:0 0 1em;text-wrap:pretty}p:last-child{margin-bottom:0}
 .check ul{margin:0;padding:0;list-style:none;display:grid;gap:10px}
 .check li{position:relative;padding-left:32px;color:var(--on-bone-dim);line-height:1.55}
 .check li::before{content:'';position:absolute;left:0;top:.62em;width:14px;height:1px;background:var(--amber-deep)}
+pre{font-family:var(--mono);font-size:.8rem;line-height:1.5;background:oklch(0.205 0.021 252);color:var(--fg-dim);border:1px solid var(--ink-line);padding:20px 24px;overflow-x:auto;margin:16px 0 0;tab-size:2}
+.bone pre{background:#fff;color:var(--on-bone-dim);border-color:var(--bone-line)}
+.kit h3{margin:32px 0 0}
 @media print{.bone{background:#fff}.video,.nav{display:none}}
 `;
 
 function page(title, body, opts = {}) {
-  return `<!doctype html><html lang="en-AU"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><meta name="robots" content="noindex"><title>${esc(title)}</title><style>${css}</style></head><body>${opts.raw ? body : `<main class="wrap"><p class="tag">Brief the Machine</p><h1>${esc(title)}</h1><div class="dim" style="margin-top:32px;max-inline-size:50ch">${body}</div></main>`}</body></html>`;
+  return `<!doctype html><html lang="en-AU"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><meta name="robots" content="noindex"><title>${esc(title)}</title><style>${css}</style></head><body>${opts.raw ? body : `<main class="wrap"><p class="tag">${esc(title)}</p><h1>${esc(title)}</h1><div class="dim" style="margin-top:32px;max-inline-size:50ch">${body}</div></main>`}</body></html>`;
 }
 
 module.exports = { page, esc };

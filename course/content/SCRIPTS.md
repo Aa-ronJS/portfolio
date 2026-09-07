@@ -1,185 +1,225 @@
 # Recording scripts
 
-Three videos, one afternoon. Slides in the left half of the screen, a live
-terminal in the right. No webcam. Laptop microphone in a quiet room is fine;
-the buyer is paying for what you know, not the audio. Record each in one take
-and cut only the mistakes. Aim for the minutes shown; if you run long, cut
-explanation, never the live demonstration.
+Three videos, one afternoon. The browser on the left half of the screen, the
+editor on the right. No webcam. Laptop microphone in a quiet room is fine;
+the buyer is paying for what you know, not the audio. Record each in one
+take and cut only the mistakes. If you run long, cut explanation, never the
+part where you type.
 
-The demo project for all three videos is one small real tool: a script that
-reads a CSV of company domains and, for each, reports what email provider
-they use from their DNS records. It is small enough to build in a video and
-real enough to be wrong in interesting ways. Have the CSV ready with ten real
-domains, one of which has no MX record and one of which is a typo.
+Two tabs open throughout: the portfolio at `/`, which has all five effects,
+and the sales page at `/course`, which the buyer has just come from. Two
+files open: the portfolio's `index.html`, and a plain starter page for the
+demo. The demo page is a one-page site for an imaginary trades business with
+a hero, three sections and a footer, no motion, one dark photograph in the
+same grade as the others. Build it before you record; it is the "before".
 
 ---
 
-## Video 01. A specification, not a wish. (8 minutes)
+## Video 01. The plate. (8 minutes)
 
-**Cold open, slide: "build me a dashboard".** (0:00 to 0:45)
+**Cold open, the sales page, scrolling.** (0:00 to 0:50)
 
-> This is the most common prompt I see people give a coding agent. And the
-> agent will build it. It will be fast, it will look good, and it will be the
-> wrong dashboard, because nobody told it what the right one was. That is
-> not the agent's fault. If I handed that sentence to a contractor I would
-> get the same result and a bill.
+> You have just come from this page, so you have already seen everything I
+> am going to teach you. The photograph behind the heading was moving at a
+> different rate to the words. That is the whole trick, and it is the reason
+> the page feels like it has depth rather than being a stack of rectangles.
 >
-> I have been a business analyst since 2015. The job is to stand between
-> people who know what they need and people who build it, and write the
-> thing in the middle so the builders cannot build the wrong thing. An AI
-> agent is a delivery team. Fast, tireless, literal. It turns out to be the
-> same skill, and it fits on one page.
+> It is one CSS animation. No library, no scroll listener, no JavaScript at
+> all. And it runs off the main thread, which means it physically cannot
+> make the page stutter, which is more than most parallax libraries can say.
 
-**Slide: the four sections.** (0:45 to 2:00)
+**The markup.** (0:50 to 2:30)
 
-> Must do. Must never do. Edge cases. What finished looks like. That is the
-> whole template, and it is checklist one in your download. I will fill it in
-> live for a real tool, and then I will run it, and you will see how much
-> less it argues with you.
+Show the hero in the portfolio's source: the `plate` wrapper, the
+`plate__media` div with the image, the `plate__veil`. Three things, in that
+order. Points to make:
 
-Name the four, one sentence each on why it exists:
+- The media sits at `inset:-14% 0`, taller than the section on both ends,
+  because it is going to travel and must never show its edge.
+- `z-index:-2` for the image, `-1` for the veil, and `isolation:isolate` on
+  the wrapper so those negatives stay inside it.
+- The veil is two gradients: left-to-right so the type side is darkest, and
+  top-to-bottom so the section edges are darkest. White type sits on it at
+  every width because of the veil, not because of the photograph.
 
-- Must do: the thing a person could test without having built it.
-- Must never do: the guesses it is not allowed to make and the actions it
-  must ask before taking. This is the section everyone leaves out.
-- Edge cases: empty, duplicate, stale, hostile, and the one that went wrong
-  before.
-- Finished: the exact command that proves it, and an external check it cannot
-  fake.
+**The animation.** (2:30 to 4:30)
 
-**Live: write the brief.** (2:00 to 5:30)
+Show the `@supports (animation-timeline: view())` block.
 
-Open a blank markdown file beside the terminal. Type the brief for the DNS
-tool out loud. Keep it to about twenty lines. Points to make while typing:
+> `animation-timeline: view()` means: do not drive this animation by time,
+> drive it by how far this element has travelled through the viewport. Zero
+> percent as it enters at the bottom, one hundred as it leaves at the top.
+> The keyframes just move it from minus seven percent to plus seven, with a
+> touch of scale so the edges never appear. That is all.
+>
+> Now the two wrappers around it, which matter more than the effect. The
+> `@supports` means a browser that does not know this property ignores the
+> whole block and the image simply sits there, full-bleed, static. That is
+> not a fallback I had to design; it is the composition anyway. And inside
+> it, `prefers-reduced-motion: no-preference`, so a reader who has asked
+> their operating system for less motion also gets the still photograph.
+> Nothing else to write. The degraded tier is designed first and it is free.
 
-- Give it a real example row from the CSV. "Real example" is the highest
-  value word in the template.
-- In "must never do", write: if a domain has no MX record, say so, do not
-  guess. If a domain does not resolve, say so, do not skip it silently.
-- In "finished", write: running it on the ten-row CSV prints ten lines, and
-  the line for `[domain you know]` says Google, which I can check against
-  their public MX record myself.
+**Live: put a plate on the demo page.** (4:30 to 7:15)
 
-**Live: run it.** (5:30 to 7:15)
+Wrap the demo hero in `plate`, add the media and veil, paste the CSS from
+the starter file. Reload. Scroll. Then:
 
-Paste the brief into a fresh agent session with one line above it: "Build
-this. Ask me before adding any dependency." Let it run. Narrate what it
-does differently from a one-line prompt: it asks about the typo row, or it
-handles the no-MX case explicitly, because the brief named it. If it does
-something you did not ask for, point at the gap in your brief that let it,
-and fix the brief on screen, not the code.
+- Narrow the window to phone width and scroll again. Point out the veil is
+  doing the work of keeping the type readable.
+- Open the browser's rendering settings, emulate `prefers-reduced-motion:
+  reduce`, reload. The plate is still. Say: that is the test you run on
+  everything from here on.
 
 **Close.** (7:15 to 8:00)
 
-> Before video two, do this. Open a project you actually want built. Fill in
-> checklist one for it. Ten minutes, done badly, beats an hour of thinking
-> about it. You will find at least one section you cannot fill in, and that
-> section is where your agent has been inventing things.
+> Before video two: one plate on your own page. One. Not three. The
+> portfolio has two, on the two statement sections, and the project sections
+> deliberately do not, because the same photograph as a plate and as a card
+> on one screen read as a mistake. Pick your darkest photograph, add the
+> veil, scroll it at phone width and at full width. Then come back.
 
 ---
 
-## Video 02. Done is a claim, not a fact. (8 minutes)
+## Video 02. Arrival. (8 minutes)
 
-**Cold open, slide: two screenshots.** (0:00 to 1:30)
+**Cold open, the portfolio's capability list, scrolling slowly.** (0:00 to 0:45)
 
-Show two real artefacts from your own projects, redacted as needed:
+> Watch the headings. They are not there, and then they are, and they
+> arrive a beat apart. Watch the amber line draw itself across. Watch the
+> number: it does not appear, it lands. None of that is a library either. It
+> is one observer, about twenty lines of JavaScript, and three CSS classes.
 
-1. Documentation describing a test pipeline. Then the repository, with no
-   pipeline in it.
-2. The performance report page that always scored perfect, because it was
-   reading numbers the system never handed it.
+**The classes.** (0:45 to 2:15)
 
-> Both of these were reported to me as finished. Both looked finished. In
-> both cases the agent wrote the description of the thing and then, in the
-> most literal sense, moved on. Nobody lied. The agent is not capable of
-> lying. It is capable of describing a plan in the past tense.
+Show `.rise`, `.wipe`, `.wipe-y` in the CSS.
+
+- `.rise` starts at opacity zero and 28 pixels down. `.rise.in` is the
+  finished state, with a transition. The transition lives on the `in` state,
+  not the resting one, so removing the class would snap rather than animate.
+- `--d` is the stagger. Each element sets its own delay inline: 80
+  milliseconds, 160, 240. One custom property instead of a delay class per
+  element.
+- `.wipe` is `scaleX(0)` from the left, and `.wipe.in` is `scaleX(1)`. A one
+  pixel tall element with an accent background. That is the hairline that
+  draws itself.
+- All of it is inside `prefers-reduced-motion: no-preference`. Outside that
+  query the classes do nothing, so the elements are simply visible.
+
+**The observer.** (2:15 to 4:00)
+
+Show the script. Read it slowly.
+
+> Everything with the class is collected. One IntersectionObserver watches
+> them. When one crosses into view, it gets the `in` class and we stop
+> watching it. The root margin pulls the trigger line up six percent from
+> the bottom so things arrive when you can see them, not when a pixel of
+> them exists.
 >
-> So here is the rule I run every build under: an agent saying done is a
-> claim, not a fact. And a claim needs a check that the agent cannot pass by
-> being confident.
+> Now the rule, and this comes from a real defect. The hero's call to action
+> was scroll-revealed, and the observer's margin meant it never fired, so
+> the most important button on the page sat at opacity zero forever. The
+> markup was perfect. Only looking at the screen showed it. So: anything
+> already on screen at load, which is the hero, gets its class on the first
+> animation frame. Only what is below waits for a scroll. Two selectors,
+> `header` and everything else.
 
-**Slide: three kinds of proof, and which one counts.** (1:30 to 3:00)
+**The count-up.** (4:00 to 5:45)
 
-- Its own tests. Necessary, weakest. Ask of every test: could this fail?
-- Its own report. Ask of every number: where did this come from?
-- Something outside its control. The original spreadsheet. The live API. A
-  second provider. This is the one that counts, and it is what checklist two
-  is built around.
+Show `data-count` in the markup and the second observer.
 
-**Live: add the external check to the DNS tool.** (3:00 to 6:30)
+> The real number lives in the markup. Not in the script, in the markup, so
+> a search engine, a screen reader and a browser with JavaScript off all get
+> the true figure. The script only animates toward it. The ease is a
+> quartic: fast out, then slow, so the number lands rather than stops.
+> Tabular figures in the CSS so the width does not jitter as digits change.
+>
+> And one rule with no exceptions. Every number that counts up is a real
+> number. If you do not have one, do not fake one; use a different effect.
+> This page counts to 37,729 because that is how many donations were
+> re-matched. A page that counts to a round number nobody measured is
+> lying, and people can feel it.
 
-The tool from video one reports each domain's email provider by reading MX
-records through one resolver. Add a check that asks a different resolver
-(Cloudflare's if the first was Google's, or the other way round) and flags
-any domain where the two disagree. Brief the agent to add it, run it, and
-show the output on the ten-row CSV.
+**Live: on the demo page.** (5:45 to 7:20)
 
-Then break something on purpose: edit the CSV so a domain is misspelled in
-a way that still resolves to a parked page. Show that the tool now reports
-it, because the check is comparing against the world and not against itself.
-Say plainly: this is the same shape of check that sits in both my public
-tools, and it has caught things my own tests never could.
+Add `rise` to the three section headings with staggers, one `wipe` rule
+under the first, and one honest number in `data-count` (the year the
+business started is a fine one). Paste the script. Reload. Scroll. Emulate
+reduced motion, reload: everything visible, the number already at its final
+value.
 
-**Live: run checklist two on it.** (6:30 to 7:30)
+**Close.** (7:20 to 8:00)
 
-Go down the first three sections of checklist two on screen, fast. Open one
-of the agent's tests and ask "can this fail". Find the one number in its
-summary output and ask where it came from. Take twenty seconds per item.
-The point is that it is a habit, not a project.
-
-**Close.** (7:30 to 8:00)
-
-> Before video three: add one external check to your own tool. Something the
-> agent cannot fake. Run it. If it agrees with the world, good. If it does
-> not, you just saved yourself from finding out in front of a customer.
+> Before video three: the rise class on every heading on your page, one
+> hairline, one real number. Then press End on your keyboard to jump to the
+> bottom and scroll back up. Anything still invisible? That is the defect I
+> shipped, and now you have caught it before anyone else did.
 
 ---
 
-## Video 03. Set it against itself. (6 minutes)
+## Video 03. Depth, and switching it off. (6 minutes)
 
-**Cold open, slide: "three defects in an hour".** (0:00 to 1:15)
+**Cold open, the tilt card on the sales page, pointer moving.** (0:00 to 0:40)
 
-> When Rain Check went live, a tool of mine that tells a trades business
-> whether Thursday's concrete pour will survive the weather, I did not read
-> the code again. I opened a second agent session that knew nothing about
-> the first, gave it the tool and the brief, and told it to break it. Within
-> an hour it had found three real defects, including one where the tool
-> cheerfully answered a question it should have refused.
+> Last two effects, then the rule that makes all five acceptable. The card
+> leans toward your pointer. Six degrees, no more. Past six it stops being a
+> material and starts being a gimmick.
+
+**Tilt.** (0:40 to 2:20)
+
+Show `.tilt` and the pointer script.
+
+- `perspective` on the parent, `rotateX` and `rotateY` from two custom
+  properties on the card. The CSS never changes; the script only sets `--rx`
+  and `--ry`.
+- One `requestAnimationFrame` at a time. A `pointermove` fires far faster
+  than the screen refreshes, so we take one reading per frame and drop the
+  rest.
+- The media queries: hover and fine pointer only, no reduced motion. A phone
+  gets `transform:none !important` and the script never attaches. Say why:
+  on touch there is no pointer to lean toward, so a tilting card would just
+  be a card that jumps when tapped.
+
+**Marquee.** (2:20 to 3:30)
+
+Show `.marq`.
+
+> The row's contents appear twice in the markup, and the animation travels
+> exactly half the row's width, so the loop is seamless. It pauses on hover,
+> because a reader who stops to read it should be allowed to. It is the only
+> thing on the page that moves without being asked, and it is inside the
+> reduced-motion query, so for some readers it does not.
+
+**The rule.** (3:30 to 4:45)
+
+Show the global `prefers-reduced-motion: reduce` block at the end of the CSS.
+
+> This is the most important twelve lines in the course. For anyone who has
+> asked for less motion, every animation and every transition on the page
+> collapses to one millisecond. Not removed: collapsed. So every effect
+> resolves to its finished state instantly. The reveals resolve to visible.
+> The counters resolve to their numbers. The plate resolves to a photograph.
+> The tilt resolves to a flat card. Nothing is missing, nothing moves.
 >
-> The build run wants to be finished. The break run wants to be right. You
-> want both, and you cannot get both from one session, because it cannot
-> un-know what it just built.
+> That is what "an honest reduced-motion branch" means. It is not a checkbox.
+> It is the promise that the page with motion off is the same page.
 
-**Slide: the prompt.** (1:15 to 2:30)
+**The render.** (4:45 to 5:30)
 
-Show the second-run prompt from checklist two, section four, on screen.
-Read it out. Then the three things to hand it: the brief, the code, and
-nothing else. No summary of what you think works. Say why: the moment you
-tell it what works, it believes you.
+Pull up checklist two on screen. Name the three defects, fast: the button
+that never appeared, the photo cards that rendered portrait because a
+`height` attribute beat an `aspect-ratio`, the same photograph twice on one
+screen. Say: none of these were in the code review, all of them were on the
+screen, and the checklist exists so you look.
 
-**Live: run it against the DNS tool.** (2:30 to 5:00)
+**Close, and the ask.** (5:30 to 6:00)
 
-Fresh session. Paste the prompt, the brief, and the code. Let it go. Narrate
-what it tries: the empty CSV, a domain with unicode, a row with a trailing
-space, a thousand rows. Show at least one real finding and fix it on
-screen. Then say what to do with the list of findings: they are next
-month's edge cases, and they go straight into section three of the brief.
-
-**Where to next, one sentence.** (5:00 to 5:20)
-
-> The next thing after this is giving the agent real tools, so instead of
-> guessing about your CRM it reads your CRM. Both of my public tools do
-> that. If enough of you finish this and ask, I will record that one too.
-
-**Close, and the ask.** (5:20 to 6:00)
-
-> That is the course. A brief it cannot misread, a check it cannot fake, and
-> a second run that tries to break it. Ten years of writing briefs for
-> delivery teams, in twenty-two minutes.
+> That is the course. A plate, an arrival, a number, a tilt, a marquee, and
+> the rule that switches them off. Two files, and you understand every line.
 >
-> One thing. When you have run your first brief, reply to the email your
-> link came in and tell me what it built and what the second run found. I
-> read every one, and I answer. Go build something.
+> One thing. When your page moves, reply to the email your link came in with
+> the address. I look at every one, and I answer with the one thing I would
+> change. Go make it move.
 
 ---
 

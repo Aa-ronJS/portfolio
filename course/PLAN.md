@@ -6,67 +6,66 @@ invented for the sales page.
 
 ## 1. The idea
 
-**Pain point with money behind it.** Small business owners, consultants and
-ops people who have started using AI coding agents (Claude Code, Cursor,
-Copilot) and are getting confident, fast, wrong output. They are already
-paying for the tool and for their own wasted time.
+**Pain point with money behind it.** Freelance web designers, small studios
+and founders who build their own sites. Their pages work and look flat, the
+animation libraries they reach for weigh 80 kilobytes and still look like
+everyone else's, and they bill clients for the result.
 
-**Instant gratification.** After 22 minutes they have a one-page brief they
-can paste in front of their next agent run, and a checklist for catching the
-agent when it says "done" and is not.
+**Instant gratification.** After 22 minutes their own page has a parallax
+plate, sections that arrive, a real number that counts up, and a card that
+tilts, with two files pasted in. The starter file and both checklists are
+there the second they pay; the recordings follow.
 
-**The hook.** The portfolio's own line: most people paste a prompt in and
-hope. The course is the other way.
+**The hook.** Every animation on this page, no library, one afternoon. The
+sales page is the demonstration, because it runs all five effects.
 
-Alternatives considered and set aside for now, in the order they would come
-next:
+**Why this over the first idea.** The earlier plan was a course on briefing
+AI coding agents. Stronger claim, weaker impulse buy: the buyer has to
+believe a method before paying. Here the buyer scrolls the page and the
+proof is the page. Nothing to believe.
 
-- *Find the money your CRM migration lost.* The $3.8 million HubSpot story.
-  Strong hook, but the buyer is a charity finance lead, a slow and careful
-  audience, not an impulse one.
-- *Give your AI agent hands.* Building an MCP server so an agent can read a
-  CRM. Excellent second course for people who finish the first.
+Alternatives set aside, in the order they would come next:
+
+- *Brief the Machine.* The AI-agent briefing course. Kept as the second
+  product, for buyers of this one who ask what else there is.
+- *The pre-flight.* The eight questions answered in writing before any
+  markup, from `PREFLIGHT.md`. A design course, and the natural third.
 
 ## 2. Title, price, length
 
 | | |
 |---|---|
-| Title | **Brief the Machine** |
-| Subtitle | How to make an AI coding agent build the right thing, in 22 minutes |
+| Title | **Make It Move** |
+| Subtitle | Every animation on this page. No library. One afternoon |
 | Price | $35 AUD, one payment, no upsell |
-| Length | Three screen recordings totalling about 22 minutes, plus two one-page checklists |
-| Format | Slides and a live terminal, no webcam, laptop microphone |
-| Guarantee | Watch all of it; if it did not change how you brief an agent, ask for the money back |
+| Length | Three screen recordings totalling about 22 minutes, one two-file starter, two one-page checklists |
+| Format | Browser and editor side by side, no webcam, laptop microphone |
+| Guarantee | Watch all of it; if your page does not move by the end of the afternoon, ask for the money back |
 
 ## 3. Curriculum
 
 Recorded in one afternoon, in this order, each video one take with cuts only
-for mistakes.
+for mistakes. Full scripts with timings in `content/SCRIPTS.md`.
 
-**Video 1. A specification, not a wish (8 minutes)**
-- Why "build me a dashboard" produces a beautiful wrong thing.
-- The four sections of the one-page brief: what it must do, what it must
-  never do, the edge cases, and what finished looks like.
-- Live: write the brief for a small real tool on screen, then run it.
-- Checklist 1 is this brief as a fill-in template.
+**Video 1. The plate (8 minutes).** The full-bleed parallax photograph:
+`animation-timeline: view()`, the veil, the wrappers that make it a still
+photograph where unsupported or unwanted. Live on a demo page.
 
-**Video 2. Done is a claim, not a fact (8 minutes)**
-- The two overclaims from the portfolio: documentation for a test pipeline
-  that did not exist, and a performance report structurally incapable of
-  failing.
-- The rule: every build carries a check against something you do not
-  control. A different DNS provider, the original data, the company's own
-  website.
-- Live: add that check to the tool from video 1 and watch it catch something.
-- Checklist 2 is the verification checklist.
+**Video 2. Arrival (8 minutes).** Scroll reveals with a custom-property
+stagger, the drawn hairline, the count-up to a real number held in the
+markup, one IntersectionObserver. The defect that taught the hero-on-load
+rule.
 
-**Video 3. Set it against itself (6 minutes)**
-- One run builds, a separate run that knows nothing about the first tries to
-  break it. How to prompt the second run.
-- The three defects this found in Rain Check within an hour of going live.
-- Where to go next: giving the agent real tools. One sentence, no pitch.
-- Close: when you have run your first brief, reply to the receipt email and
-  tell me what it built. I read every one.
+**Video 3. Depth, and switching it off (6 minutes).** The six-degree tilt,
+the marquee, and the global reduced-motion rule that resolves every effect
+to its finished state. The three defects found on the render, and the ask.
+
+**Checklist 1, before anything moves.** The design rules: one move, one
+accent, one radius, 640 milliseconds, six degrees, real numbers, one grade
+of photography.
+
+**Checklist 2, look at the render.** Four widths, reduced motion on, touch,
+JavaScript off, the performance panel.
 
 ## 4. The ad
 
@@ -83,13 +82,14 @@ Second variant to test against it:
 ## 5. The sales page
 
 `public/course/index.html`, served at `/course`. Same fonts, palette and
-components as the portfolio so it reads as the same person. Follows the
-sales-letter structure: hook, what you get, why it is small, who it is for,
-the price and guarantee, the questions, and the button after every argument.
+components as the portfolio, and it runs all five effects, because a page
+selling motion has to move. Follows the sales-letter structure: hook, what
+you get, why it is small, who it is for, the price and guarantee, the
+questions, and the button after every argument.
 
-No testimonials, no student counts, no income figures. The proof on the page
-is the same proof the portfolio uses: two live tools whose code is public,
-and specific things that went wrong and were found.
+No testimonials, no student counts, no income figures. It says plainly that
+the source is public under MIT and what the $35 buys instead. The proof is
+the page itself and the four defects written up in `PREFLIGHT.md`.
 
 ## 6. The ascension
 
@@ -118,7 +118,8 @@ the lessons and both checklists. `SETUP.md` is the hour of configuration.
 Still Aaron's, because they are promises:
 
 1. Record the three videos within seven days of the first sale. The course
-   page tells buyers that, in those words.
+   page tells buyers that, in those words. The starter file and checklists
+   are delivered instantly, so a buyer has something on day one regardless.
 2. Honour the guarantee as written: watch all of it, ask, money back.
 3. Read and answer the replies. The system has exactly one manual step and
    it is the one that makes the money.

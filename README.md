@@ -4,8 +4,8 @@ Source of https://aaronsteele.vercel.app. Two HTML files, three serverless funct
 self-hosted fonts, no build step and no dependencies.
 
 `public/index.html` is the portfolio. Everything under `course/` and `api/` is
-a second, self-contained thing: a tiny course sold from `/course`, built on the
-model decoded in `course/METHOD.md`. `api/` holds the three serverless functions
+a second, self-contained thing: a tiny course on the motion system below, sold
+from `/course`, built on the model decoded in `course/METHOD.md`. `api/` holds the three serverless functions
 (checkout, webhook, watch) that take the money, send the link and serve the
 course, on plain `fetch` and `crypto` with no packages. `course/SETUP.md`,
 `course/content/SCRIPTS.md`, `course/ads/ADS.md` and `course/OPERATIONS.md` are,

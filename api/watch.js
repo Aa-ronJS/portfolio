@@ -8,7 +8,7 @@
 const { missing } = require('./_lib/config');
 const { verify, sign } = require('./_lib/token');
 const { getSession } = require('./_lib/stripe');
-const { lessons, checklists } = require('./_lib/course');
+const { title, lessons, checklists, starter } = require('./_lib/course');
 const { page, esc } = require('./_lib/page');
 
 function html(res, status, body) {
@@ -39,22 +39,33 @@ function renderCourse(email) {
       ${c.sections.map((s) => `<h3>${esc(s.h)}</h3><ul>${s.items.map((i) => `<li>${esc(i)}</li>`).join('')}</ul>`).join('')}
     </section>`).join('');
 
-  return page('Brief the Machine', `
+  return page(title, `
     <main class="wrap">
-      <p class="tag">Brief the Machine</p>
-      <h1>Twenty-two minutes. Then build something.</h1>
-      <p class="dim" style="margin-top:32px;max-inline-size:50ch">Three videos, two checklists, in order. Have a real project open. Each video ends with something for you to do before the next one, and the checklists below are what the videos fill in.</p>
+      <p class="tag">${esc(title)}</p>
+      <h1>Twenty-two minutes. Then make yours move.</h1>
+      <p class="dim" style="margin-top:32px;max-inline-size:50ch">Three videos, one starter file, two checklists, in order. Have your own page open in an editor. Each video ends with something to put on it before the next one, and the checklists below are what keeps the result from looking generated.</p>
       <p class="mute" style="margin-top:24px">This link is yours: ${esc(email)}. It works forever and it is fine to forward to your team. Print this page and the checklists come out clean.</p>
       ${lessonHtml}
       <section class="lesson">
         <div class="n">Then</div>
         <div>
-          <h2>Tell me what it built.</h2>
-          <p class="dim" style="margin-top:24px;max-inline-size:50ch">When you have run your first brief, reply to the email this link came in and tell me what the agent built and what the second run found. I read every one, and I answer. If you need something built properly, that reply is where to say so; there is no form and no call unless you want one.</p>
+          <h2>Send me the link.</h2>
+          <p class="dim" style="margin-top:24px;max-inline-size:50ch">When your page moves, reply to the email this link came in with the address. I look at every one, and I answer with the one thing I would change. If you want the whole page built to this standard rather than just the motion, that reply is where to say so; there is no form and no call unless you want one.</p>
         </div>
       </section>
     </main>
-    <div class="bone"><div class="wrap">${checkHtml}</div></div>`, { raw: true });
+    <div class="bone"><div class="wrap">
+      <section class="kit">
+        <p class="tag">The starter file</p>
+        <h2>Only the moving parts.</h2>
+        <p class="dim" style="margin-top:16px;max-inline-size:50ch">The five effects, lifted out of the page they were built on and generalised, so they drop into any site. Two files. Copy them as they are; video one explains every line.</p>
+        <h3>motion.css</h3>
+        <pre>${esc(starter.css)}</pre>
+        <h3>motion.js</h3>
+        <pre>${esc(starter.js)}</pre>
+      </section>
+      ${checkHtml}
+    </div></div>`, { raw: true });
 }
 
 module.exports = async (req, res) => {
