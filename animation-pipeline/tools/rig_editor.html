@@ -1,0 +1,309 @@
+<!doctype html>
+<!-- Rig editor: open this file in any browser (double-click works, no
+     server, no dependencies). Drop a character's body.png in, click
+     where the joints are, click the eyes and mouth, download rig.json
+     into the character's folder. Verify with:
+         python3 pipeline/rig.py sheet characters/<name> check.png
+         python3 pipeline/rig.py preview characters/<name> walk.gif -->
+<html>
+<head>
+<meta charset="utf-8">
+<title>rig editor</title>
+<style>
+  :root { color-scheme: light; }
+  body { margin: 0; font: 14px/1.45 system-ui, sans-serif;
+         background: #f4f2ec; color: #1a1a1a; display: flex;
+         min-height: 100vh; }
+  #side { width: 340px; padding: 18px; box-sizing: border-box;
+          border-right: 2px solid #1a1a1a; background: #fff; }
+  h1 { font-size: 17px; margin: 0 0 4px; }
+  .hint { color: #666; font-size: 12.5px; }
+  #prompt { font-size: 16px; font-weight: 700; margin: 14px 0 4px;
+            min-height: 40px; }
+  #prompt em { color: #b33; font-style: normal; }
+  button { font: inherit; padding: 5px 12px; margin: 3px 4px 3px 0;
+           border: 2px solid #1a1a1a; background: #fff; border-radius: 7px;
+           cursor: pointer; }
+  button:hover { background: #ffe9a8; }
+  button.primary { background: #1a1a1a; color: #fff; }
+  button.primary:hover { background: #444; }
+  label { display: block; margin: 3px 0; }
+  #stage { flex: 1; display: flex; align-items: center;
+           justify-content: center; padding: 12px; }
+  canvas { max-width: 100%; max-height: 96vh; cursor: crosshair;
+           background:
+             repeating-conic-gradient(#e8e5dd 0 25%, #f6f4ee 0 50%)
+             0 0 / 24px 24px; border: 2px solid #1a1a1a; }
+  #done { display: none; }
+  ul#list { padding-left: 18px; margin: 8px 0; font-size: 12.5px;
+            max-height: 30vh; overflow: auto; }
+  ul#list .miss { color: #999; }
+  code { background: #eee; padding: 0 4px; border-radius: 4px; }
+</style>
+</head>
+<body>
+<div id="side">
+  <h1>rig editor</h1>
+  <div class="hint">One drawing in, one <code>rig.json</code> out.
+    Drop the character's <code>body.png</code> anywhere, or</div>
+  <p><input type="file" id="file" accept="image/png,image/*"></p>
+  <div id="setup">
+    <label><input type="checkbox" id="twoArms"> two-piece arms
+      (elbows)</label>
+    <label><input type="checkbox" id="twoLegs"> two-piece legs
+      (knees)</label>
+    <div class="hint">One-piece limbs are right for most crude
+      drawings; the stock clips fit either.</div>
+  </div>
+  <div id="prompt">Load a drawing to start.</div>
+  <div>
+    <button id="skip">skip this bit</button>
+    <button id="undo">undo click</button>
+    <button id="restart">restart</button>
+  </div>
+  <ul id="list"></ul>
+  <div id="done">
+    <button class="primary" id="save">download rig.json</button>
+    <div class="hint" style="margin-top:8px">
+      Put it next to <code>body.png</code> in the character's folder,
+      then sanity-check the cut and the walk:<br>
+      <code>rig.py sheet …</code> and <code>rig.py preview …</code><br><br>
+      Joints off? Drag any dot to adjust — the download always reflects
+      what you see.
+    </div>
+  </div>
+</div>
+<div id="stage"><canvas id="cv" width="600" height="800"></canvas></div>
+
+<script>
+"use strict";
+// Every coordinate is stored normalised to the source image (0..1),
+// exactly what rig.json wants — the canvas scale is display-only.
+
+const BONES = (twoArms, twoLegs) => {
+  const steps = [
+    ["torso", "hips (where the legs meet)", "neck"],
+    ["head", "neck", "top of the head", "torso"],
+  ];
+  const limb = (side, two, arm) => {
+    const s = arm ? "arm" : "leg", parent = arm ? "torso" : null;
+    const a = side === "l" ? "LEFT" : "RIGHT";
+    const root = arm ? `${a} shoulder` : `${a} hip`;
+    const end = arm ? "hand" : "foot";
+    if (two) {
+      const mid = arm ? "elbow" : "knee";
+      steps.push([`${s}_${side}_upper`, root, mid, parent]);
+      steps.push([`${s}_${side}_lower`, mid + " (again)", end,
+                  `${s}_${side}_upper`]);
+    } else {
+      steps.push([`${s}_${side}`, root, end, parent]);
+    }
+  };
+  limb("l", twoArms, true); limb("r", twoArms, true);
+  limb("l", twoLegs, false); limb("r", twoLegs, false);
+  return steps;
+};
+const FACE = [
+  ["eye_l", "centre of the LEFT eye", "edge of that eye"],
+  ["eye_r", "centre of the RIGHT eye", "edge of that eye"],
+  ["mouth", "centre of the mouth", "corner of the mouth"],
+];
+// LEFT/RIGHT are as seen on screen; clips only need them consistent.
+
+let img = null, bones = [], face = [], queue = [], cur = null,
+    clicks = [], drag = null;
+const cv = document.getElementById("cv"), ctx = cv.getContext("2d");
+const $ = id => document.getElementById(id);
+
+function buildQueue() {
+  bones = []; face = []; clicks = []; drag = null;
+  queue = BONES($("twoArms").checked, $("twoLegs").checked)
+    .map(([name, a, b, parent]) => ({kind: "bone", name, a, b, parent}))
+    .concat(FACE.map(([name, a, b]) => ({kind: name.startsWith("eye")
+      ? "eye" : "mouth", name, a, b})));
+  next();
+}
+function next() {
+  cur = queue.shift() || null;
+  clicks = [];
+  if (!cur) {
+    $("prompt").textContent = "Done. Drag any dot to fine-tune.";
+    $("done").style.display = "block";
+  } else {
+    $("done").style.display = "none";
+    ask();
+  }
+  refreshList(); draw();
+}
+function ask() {
+  const at = clicks.length ? cur.b : cur.a;
+  $("prompt").innerHTML =
+    `Click the <em>${at}</em> <span class="hint">(${cur.name})</span>`;
+}
+function refreshList() {
+  const ul = $("list"); ul.innerHTML = "";
+  for (const b of bones) {
+    const li = document.createElement("li");
+    li.textContent = b.name; ul.appendChild(li);
+  }
+  for (const f of face) {
+    const li = document.createElement("li");
+    li.textContent = f.name; ul.appendChild(li);
+  }
+  for (const q of (cur ? [cur, ...queue] : queue)) {
+    const li = document.createElement("li");
+    li.textContent = q.name + " …"; li.className = "miss";
+    ul.appendChild(li);
+  }
+}
+
+function toNorm(ev) {
+  const r = cv.getBoundingClientRect();
+  return [(ev.clientX - r.left) / r.width,
+          (ev.clientY - r.top) / r.height];
+}
+function px([x, y]) { return [x * cv.width, y * cv.height]; }
+
+cv.addEventListener("pointerdown", ev => {
+  const p = toNorm(ev);
+  if (!img) return;
+  if (!cur) {                       // editing mode: grab nearest handle
+    let best = null, bd = 12 / cv.getBoundingClientRect().width;
+    const consider = (pt, set) => {
+      const d = Math.hypot(pt[0] - p[0],
+                           (pt[1] - p[1]) * cv.height / cv.width);
+      if (d < bd) { bd = d; best = set; }
+    };
+    for (const b of bones) {
+      consider(b.head, v => b.head = v);
+      consider(b.tail, v => b.tail = v);
+    }
+    for (const f of face) consider(f.at, v => f.at = v);
+    drag = best;
+    return;
+  }
+  clicks.push(p);
+  if (clicks.length === 2) {
+    const [a, b] = clicks;
+    if (cur.kind === "bone") {
+      bones.push({name: cur.name, head: a, tail: b, parent: cur.parent});
+    } else {
+      const r = Math.hypot((b[0] - a[0]) * (cv.width / cv.height),
+                           b[1] - a[1]);
+      face.push(cur.kind === "eye"
+        ? {kind: "eye", name: cur.name, at: a, r}
+        : {kind: "mouth", name: cur.name, at: a, w: r * 2});
+    }
+    next();
+  } else { ask(); draw(); }
+});
+cv.addEventListener("pointermove", ev => {
+  if (drag) { drag(toNorm(ev)); draw(); }
+});
+addEventListener("pointerup", () => drag = null);
+
+$("skip").onclick = () => { if (cur) next(); };
+$("undo").onclick = () => {
+  if (clicks.length) { clicks.pop(); ask(); }
+  else if (cur && (bones.length || face.length)) {
+    // reopen the previous step
+    queue.unshift(cur);
+    const last = face.length ? face.pop() : bones.pop();
+    const all = BONES($("twoArms").checked, $("twoLegs").checked)
+      .map(([name, a, b, parent]) => ({kind: "bone", name, a, b, parent}))
+      .concat(FACE.map(([name, a, b]) => ({kind: name.startsWith("eye")
+        ? "eye" : "mouth", name, a, b})));
+    cur = all.find(q => q.name === last.name);
+    clicks = [];
+    $("done").style.display = "none";
+    ask();
+  }
+  refreshList(); draw();
+};
+$("restart").onclick = buildQueue;
+$("twoArms").onchange = $("twoLegs").onchange = buildQueue;
+
+function loadFile(f) {
+  const url = URL.createObjectURL(f);
+  const im = new Image();
+  im.onload = () => {
+    img = im;
+    const maxH = Math.min(innerHeight * 0.94, 900);
+    const k = Math.min(maxH / im.height, 700 / im.width);
+    cv.width = Math.round(im.width * k);
+    cv.height = Math.round(im.height * k);
+    buildQueue();
+  };
+  im.src = url;
+}
+$("file").onchange = ev => ev.target.files[0] && loadFile(ev.target.files[0]);
+addEventListener("dragover", ev => ev.preventDefault());
+addEventListener("drop", ev => {
+  ev.preventDefault();
+  ev.dataTransfer.files[0] && loadFile(ev.dataTransfer.files[0]);
+});
+
+function draw() {
+  ctx.clearRect(0, 0, cv.width, cv.height);
+  if (img) ctx.drawImage(img, 0, 0, cv.width, cv.height);
+  ctx.lineWidth = 3;
+  const dot = (p, col) => {
+    ctx.fillStyle = col; ctx.beginPath();
+    ctx.arc(p[0], p[1], 5, 0, 7); ctx.fill();
+  };
+  const cols = ["#d33", "#27c", "#292", "#e80", "#93c", "#c39", "#1aa"];
+  bones.forEach((b, i) => {
+    const a = px(b.head), t = px(b.tail);
+    ctx.strokeStyle = cols[i % cols.length];
+    ctx.beginPath(); ctx.moveTo(a[0], a[1]); ctx.lineTo(t[0], t[1]);
+    ctx.stroke();
+    dot(a, cols[i % cols.length]); dot(t, cols[i % cols.length]);
+    ctx.fillStyle = cols[i % cols.length];
+    ctx.font = "12px system-ui";
+    ctx.fillText(b.name, a[0] + 8, a[1] - 6);
+  });
+  for (const f of face) {
+    const a = px(f.at);
+    ctx.strokeStyle = "#f0c";
+    if (f.kind === "eye") {
+      ctx.beginPath();
+      ctx.arc(a[0], a[1], f.r * cv.height, 0, 7); ctx.stroke();
+    } else {
+      const w = f.w * cv.height;
+      ctx.strokeRect(a[0] - w / 2, a[1] - w * 0.3, w, w * 0.6);
+    }
+    dot(a, "#f0c");
+  }
+  if (clicks.length) dot(px(clicks[0]), "#000");
+}
+
+$("save").onclick = () => {
+  const round = v => Math.round(v * 1000) / 1000;
+  const rig = {
+    joint_radius: 0.02,
+    bones: bones.map(b => {
+      const o = {name: b.name,
+                 head: b.head.map(round), tail: b.tail.map(round)};
+      if (b.parent) o.parent = b.parent;
+      return o;
+    }),
+  };
+  const eyes = face.filter(f => f.kind === "eye")
+    .map(f => ({at: f.at.map(round), r: round(f.r)}));
+  const mouth = face.find(f => f.kind === "mouth");
+  if (eyes.length || mouth) {
+    rig.face = {bone: "head"};
+    if (eyes.length) rig.face.eyes = eyes;
+    if (mouth) rig.face.mouth = {at: mouth.at.map(round),
+                                 w: round(mouth.w)};
+  }
+  const a = document.createElement("a");
+  a.href = URL.createObjectURL(new Blob(
+    [JSON.stringify(rig, null, 2) + "\n"],
+    {type: "application/json"}));
+  a.download = "rig.json";
+  a.click();
+};
+</script>
+</body>
+</html>
