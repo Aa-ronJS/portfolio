@@ -3,8 +3,8 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Make It Move</title>
-<meta name="description" content="A 22-minute course on the five animations that make a web page look expensive: parallax plates, scroll reveals, count-up numbers, a pointer tilt and a marquee. Plain CSS, sixty lines of JavaScript, no library, and every effect switches itself off politely. $35.">
+<title>Draw It Badly</title>
+<meta name="description" content="A 22-minute course on making animated shorts from your phone: draw one character badly on purpose, record one voice take, and Claude renders the episode. Your voice, your jokes, no terminal. $35.">
 <meta name="theme-color" content="#12181f">
 <link rel="preload" as="font" type="font/woff2" href="/fonts/clash-display-var.woff2" crossorigin>
 <link rel="preload" as="font" type="font/woff2" href="/fonts/satoshi-var.woff2" crossorigin>
@@ -12,11 +12,11 @@
 
 <style>
 /* ===========================================================================
-   A tiny-course sales page for a course about the motion on this site, so the
-   page has to be its own demonstration: the plate behind the hero, the
-   sections arriving, the numbers counting up, the card that tilts. Same
-   pre-flight as the portfolio. What it does not borrow from the sales letter it
-   is modelled on: testimonials, student counts, income figures.
+   A tiny-course sales page for the animation pipeline in this repository.
+   Same pre-flight as the portfolio. The proof is a real drawn sheet next to
+   the real render it produced, and the source, which is public. What it does
+   not borrow from the sales letter it is modelled on: testimonials, student
+   counts, income figures.
    =========================================================================== */
 
 @font-face{font-family:'Clash';src:url('/fonts/clash-display-var.woff2') format('woff2-variations');font-weight:200 700;font-style:normal;font-display:swap}
@@ -57,7 +57,7 @@ html{-webkit-text-size-adjust:100%}
 html:focus-within{scroll-behavior:smooth}
 body{margin:0; background:var(--ink); color:var(--fg); font-family:var(--body); font-size:var(--t-0); line-height:1.55; -webkit-font-smoothing:antialiased; overflow-x:hidden; accent-color:var(--amber)}
 ::selection{background:var(--amber); color:oklch(0.16 0.02 252)}
-img{max-width:100%; display:block}
+img,video{max-width:100%; display:block}
 h1,h2,h3{font-family:var(--display); font-weight:600; margin:0; line-height:0.94; letter-spacing:-0.026em; text-wrap:balance}
 h1{font-size:var(--t-5)} h2{font-size:var(--t-4)} h3{font-size:var(--t-2); line-height:0.98}
 p{margin:0 0 1em; text-wrap:pretty} p:last-child{margin-bottom:0}
@@ -77,7 +77,6 @@ a{color:inherit}
 .act--deep{background:var(--ink); overflow:clip; isolation:isolate; padding-block:clamp(110px,16vh,220px)}
 .act--deep::before{content:''; position:absolute; inset:0; z-index:-1; pointer-events:none; background:radial-gradient(120% 85% at 78% 18%, oklch(0.76 0.155 58 / 0.10), transparent 62%)}
 
-/* 1. The plate. Off the main thread; a still photograph where unsupported. */
 .plate{overflow:clip; isolation:isolate}
 .plate__media{position:absolute; inset:-14% 0; z-index:-2}
 .plate__media img{width:100%; height:100%; object-fit:cover}
@@ -129,7 +128,6 @@ a{color:inherit}
 .split > *{min-width:0}
 .split h3{margin-bottom:var(--s5)}
 
-/* 2. Arrival. */
 @media (prefers-reduced-motion: no-preference){
   .rise{opacity:0; transform:translate3d(0,28px,0)}
   .rise.in{opacity:1; transform:none; transition:opacity 640ms var(--ease-out) var(--d,0ms), transform 640ms var(--ease-out) var(--d,0ms)}
@@ -140,34 +138,24 @@ a{color:inherit}
 .eyebrow{display:flex; align-items:center; gap:var(--s4); margin-bottom:var(--s5)}
 .eyebrow .rule{flex:1; max-width:150px}
 
-/* 3. Count-up. Real numbers, held in the markup. */
 .figures{display:grid; gap:var(--s7) var(--s6); margin-top:var(--s10); grid-template-columns:repeat(auto-fit,minmax(170px,1fr))}
 .figures > *{min-width:0}
 .fig__n{font-family:var(--display); font-weight:600; font-size:var(--t-3); line-height:0.88; letter-spacing:-0.045em; font-variant-numeric:tabular-nums; display:block; color:var(--accent)}
 .fig__k{display:block; margin-top:var(--s4); color:var(--fg-dim); font-size:var(--t--1); line-height:1.5; max-inline-size:26ch}
 
-/* 4. Tilt. Six degrees at most; flat on touch and reduced motion. */
-.proj{display:grid; gap:var(--s8); align-items:center}
-@media (min-width:62rem){.proj{grid-template-columns:minmax(0,1.05fr) minmax(0,0.95fr); gap:var(--s10)}}
-.proj > *{min-width:0}
-.proj__figure{perspective:1100px; margin:0}
-.tilt{position:relative; overflow:hidden; transform:rotateX(var(--rx,0deg)) rotateY(var(--ry,0deg)); transition:transform 480ms var(--ease);
-  box-shadow:0.3px 0.6px 0.8px oklch(0.09 0.02 252 / 0.35), 2.1px 4.2px 5.3px oklch(0.09 0.02 252 / 0.35), 8px 16px 22px oklch(0.09 0.02 252 / 0.35), 24px 48px 64px oklch(0.09 0.02 252 / 0.35)}
-.tilt img{width:100%; height:auto; aspect-ratio:3/2; object-fit:cover; transform:scale(1.03)}
-.tilt::after{content:''; position:absolute; inset:0; pointer-events:none; background:linear-gradient(140deg, oklch(0.76 0.155 58 / 0.16), transparent 48%); mix-blend-mode:screen}
-@media (hover:hover) and (pointer:fine) and (prefers-reduced-motion: no-preference){.tilt{transition:transform 200ms var(--ease)}}
-@media (hover:none),(pointer:coarse),(prefers-reduced-motion: reduce){.tilt{transform:none !important}}
-
-/* 5. Marquee. Pauses on hover. */
-.marq{overflow:hidden; border-block:1px solid var(--ink-line); padding-block:var(--s5); --gap:var(--s7)}
-.marq__row{display:flex; gap:var(--gap); width:max-content}
-@media (prefers-reduced-motion: no-preference){
-  .marq__row{animation:slide 40s linear infinite}
-  .marq:hover .marq__row{animation-play-state:paused}
-  @keyframes slide{to{transform:translateX(calc(-50% - (var(--gap) / 2)))}}
-}
-.marq__row span{font-family:var(--display); font-weight:400; font-size:var(--t-1); letter-spacing:-0.02em; color:var(--on-ink-mute); white-space:nowrap}
-.marq__row span::after{content:'/'; margin-left:var(--gap); color:var(--amber); opacity:0.6}
+/* The proof: the drawn sheet beside the render it produced. */
+.proof{display:grid; gap:var(--s7); margin-top:var(--s9); align-items:start}
+@media (min-width:58rem){.proof{grid-template-columns:minmax(0,1.2fr) minmax(0,0.8fr); gap:var(--s9)}}
+.proof > *{min-width:0}
+.proof figure{margin:0}
+.proof figcaption{margin-top:var(--s4); font-family:var(--mono); font-size:var(--t--1); color:var(--fg-mute); line-height:1.6; max-inline-size:40ch}
+.sheet{background:#fff; padding:clamp(10px,1.4vw,20px); box-shadow:0.3px 0.6px 0.8px oklch(0.09 0.02 252 / 0.35), 2.1px 4.2px 5.3px oklch(0.09 0.02 252 / 0.35), 8px 16px 22px oklch(0.09 0.02 252 / 0.35)}
+.sheet img{width:100%; height:auto; aspect-ratio:990/1400}
+.reel{aspect-ratio:9/16; max-width:360px; background:var(--ink-2); border:1px solid var(--line); position:relative}
+.reel video{width:100%; height:100%; object-fit:cover; display:block}
+.reel__play{position:absolute; inset:0; display:grid; place-items:center; background:transparent; border:0; color:var(--on-ink); font-family:var(--mono); font-size:var(--t--1); letter-spacing:0.1em; text-transform:uppercase; cursor:pointer}
+.reel__play span{padding:12px 18px; border:1px solid oklch(1 0 0 / 0.5); background:oklch(0.16 0.02 252 / 0.6)}
+.reel__play[hidden]{display:none}
 
 .link{display:inline-flex; align-items:center; gap:0.5em; min-height:32px; font-family:var(--mono); font-size:var(--t--1); text-decoration:none; color:var(--fg); box-shadow:inset 0 -1px 0 0 color-mix(in oklch, var(--accent) 55%, transparent); transition:color 180ms var(--ease), box-shadow 180ms var(--ease)}
 .link:hover{color:var(--accent); box-shadow:inset 0 -1px 0 0 var(--accent)}
@@ -205,89 +193,62 @@ a{color:inherit}
 </head>
 <body>
 
-<!-- ============================ HERO: THE HOOK, ON A PLATE ============================ -->
+<!-- ============================ HERO: THE HOOK ============================ -->
 <header class="act hero plate">
   <div class="plate__media"><img src="/img/hero.jpg" alt="" width="1800" height="771" fetchpriority="high"></div>
   <div class="plate__veil"></div>
 
   <div class="wrap">
     <p class="tag rise">A tiny course. 22 minutes. $35.</p>
-    <h1 class="rise" style="--d:80ms">Every animation on this page. <em>No library. One afternoon.</em></h1>
+    <h1 class="rise" style="--d:80ms">Draw one character badly. <em>Say the episode out loud. Post it tonight.</em></h1>
     <p class="lede rise" style="--d:170ms">
-      The photograph drifting behind these words. The way each section below arrives as you reach
-      it. The numbers that count up, the card that leans toward your pointer, the line of type that
-      never stops. <b>Five effects, plain CSS and about sixty lines of JavaScript</b>, and every one of
-      them switches itself off politely for people who turn motion off. Make It Move is how I built
-      them, shown on a real page, so you can put them on yours today.
+      Animated shorts, made entirely from your phone. You draw a character into a template with your
+      finger, record the whole episode as one voice memo with the stage directions spoken into it,
+      and hand both to Claude. <b>It cleans the drawing, rigs it, splits your take, stages every shot,
+      syncs the mouth to your voice and renders the video.</b> You never open a terminal. Your voice
+      and your jokes are the only things in it that are not automated, because they are the only
+      things anyone is watching for.
     </p>
     <p class="creds rise" style="--d:230ms">
-      <span>Three videos</span><span>One starter file</span><span>Two checklists</span><span>No upsell</span>
+      <span>Three videos</span><span>The prompt cards</span><span>Two checklists</span><span>No upsell</span>
     </p>
     <div class="cta rise" style="--d:290ms">
       <a class="btn" href="/api/checkout">Get the course, $35 <span class="btn__arrow" aria-hidden="true">&rarr;</span></a>
-      <a class="btn btn--ghost" href="#inside">What is in it</a>
+      <a class="btn btn--ghost" href="#proof">See one</a>
     </div>
   </div>
 </header>
 
-<!-- ============================ WHAT YOU GET ============================ -->
-<section class="act act--bone act--air" id="inside">
+<!-- ============================ THE PROOF ============================ -->
+<section class="act act--bone act--air" id="proof">
   <div class="wrap">
-    <p class="tag rise">What is in it</p>
-    <h2 class="rise measure" style="--d:80ms">Three videos. One file. Two pages.</h2>
+    <p class="tag rise">See one</p>
+    <h2 class="rise measure" style="--d:80ms">This sheet became this.</h2>
     <p class="rise measure-wide dim" style="--d:150ms; margin-top:var(--s6)">
-      Every effect is taught on the page you are reading and the one it links to, then you put it on
-      your own page before the next video starts. You are watching for 22 minutes and building for
-      the rest of the afternoon.
+      On the left, a character called Sugar, drawn by me into the template on my phone in about
+      ten minutes, every box, with a finger. On the right, what came out of the pipeline: he walks
+      in on his own legs, talks, blinks, and points, and nobody drew a single frame of any of it.
     </p>
 
-    <div class="caps">
-      <div class="cap rise">
-        <div class="cap__n">01<small>8 min</small></div>
-        <h3>The plate.</h3>
-        <div class="cap__body">
-          <p>A full-bleed photograph that scrolls at a different rate to the type sitting over it, so
-             the page has depth instead of being a stack of rectangles. It is a <b>scroll-driven CSS
-             animation that runs off the main thread</b>, so it cannot make the page stutter, and
-             where the browser cannot do it, or the reader has asked for less motion, it is a still
-             photograph, which is the composition anyway.</p>
-          <p>The veil gradients that let white type sit on it. Choosing a photograph that can carry
-             it. Why the hero is a plate and the project sections are not.</p>
+    <div class="proof">
+      <figure class="rise" style="--d:120ms">
+        <div class="sheet"><img src="/course/proof/sugar-sheet.jpg" alt="A kit template sheet filled in with a crude marker-style drawing of a character in pieces: torso, head, arms and legs each in their own box, with red joint dots." width="990" height="1400" loading="lazy"></div>
+        <figcaption>The exported sheet, exactly as sent, on an earlier layout of the template; the current one adds right-side boxes so nothing is mirrored. The red dots are the joints; the corner squares are how it gets straightened.</figcaption>
+      </figure>
+      <figure class="rise" style="--d:200ms">
+        <div class="reel">
+          <video id="reel" src="/course/proof/sugar.mp4" muted loop playsinline preload="metadata" width="1080" height="1920"></video>
+          <button class="reel__play" id="reel-play" type="button" aria-label="Play the demo"><span>Play</span></button>
         </div>
-      </div>
-
-      <div class="cap rise" style="--d:80ms">
-        <div class="cap__n">02<small>8 min</small></div>
-        <h3>Arrival.</h3>
-        <div class="cap__body">
-          <p>Things that arrive rather than simply being there. Sections that rise into place,
-             staggered with a single custom property. <b>An amber hairline that draws itself across
-             the page.</b> A number that counts up to a real figure held in the markup, with an ease
-             that lands instead of stopping.</p>
-          <p>All of it from one IntersectionObserver and about twenty lines, and the one rule that
-             stops it going wrong: the hero animates on load, because it is already on screen.</p>
-        </div>
-      </div>
-
-      <div class="cap rise" style="--d:160ms">
-        <div class="cap__n">03<small>6 min</small></div>
-        <h3>Depth, and switching it off.</h3>
-        <div class="cap__body">
-          <p>The card that leans toward the pointer, <b>capped at six degrees</b> and flat on touch.
-             The marquee that pauses when you hover it. Then the part that makes all of it
-             acceptable: every moving thing has an honest branch for people who prefer reduced
-             motion, and it resolves to the finished state, not to nothing.</p>
-          <p>And three defects on my own page that I only found by looking at the render, not the
-             code. You get the checklist that would have caught them.</p>
-        </div>
-      </div>
+        <figcaption>The render, as committed to the repository. The voice on this particular demo is a placeholder mumble, because the demo ships without a human in it. Yours will have you in it.</figcaption>
+      </figure>
     </div>
 
     <div class="figures">
-      <div class="rise"><span class="fig__n" data-count="5">0</span><span class="fig__k">effects, and every one is running on this page or the one it links to</span></div>
-      <div class="rise" style="--d:90ms"><span class="fig__n" data-count="0">0</span><span class="fig__k">libraries, frameworks or build steps</span></div>
-      <div class="rise" style="--d:180ms"><span class="fig__n" data-count="6">0</span><span class="fig__k">degrees, the most the card is allowed to tilt</span></div>
-      <div class="rise" style="--d:270ms"><span class="fig__n" data-count="640">0</span><span class="fig__k">milliseconds, the longest any element takes to arrive</span></div>
+      <div class="rise"><span class="fig__n" data-count="5">0</span><span class="fig__k">drawings required for a character that walks, talks and blinks</span></div>
+      <div class="rise" style="--d:90ms"><span class="fig__n" data-count="1">0</span><span class="fig__k">voice memo per episode, directions included</span></div>
+      <div class="rise" style="--d:180ms"><span class="fig__n" data-count="23">0</span><span class="fig__k">stock moves any character can do the moment it is rigged</span></div>
+      <div class="rise" style="--d:270ms"><span class="fig__n" data-count="0">0</span><span class="fig__k">synthesised voices, generated jokes, or frames anyone drew</span></div>
     </div>
 
     <div class="cta rise" style="--d:100ms; margin-top:var(--s9)">
@@ -296,123 +257,159 @@ a{color:inherit}
   </div>
 </section>
 
-<div class="marq" aria-hidden="true">
-  <div class="marq__row">
-    <span>Parallax plate</span><span>Scroll reveal</span><span>Drawn hairline</span><span>Count-up</span><span>Pointer tilt</span><span>Marquee</span><span>Reduced motion</span><span>No library</span>
-    <span>Parallax plate</span><span>Scroll reveal</span><span>Drawn hairline</span><span>Count-up</span><span>Pointer tilt</span><span>Marquee</span><span>Reduced motion</span><span>No library</span>
-  </div>
-</div>
-
-<!-- ============================ WHY TINY, AND WHY IT IS HONEST ============================ -->
-<section class="act act--deep">
+<!-- ============================ WHAT YOU GET ============================ -->
+<section class="act act--deep" id="inside">
   <div class="wrap">
-    <p class="tag rise">Why 22 minutes</p>
-    <h2 class="rise measure" style="--d:80ms">Because you will finish it.</h2>
+    <p class="tag rise">What is in it</p>
+    <h2 class="rise measure" style="--d:80ms">Three videos. Five cards. Two pages.</h2>
+    <p class="rise measure-wide dim" style="--d:150ms; margin-top:var(--s6)">
+      Each video ends with you drawing, recording or sending something, and by the end of the third
+      you have posted an episode. The prompt cards are the exact sentences you send to Claude, in
+      order, with the file attached. The checklists are what to look at before you trust a
+      character and before you post.
+    </p>
+
+    <div class="caps">
+      <div class="cap rise">
+        <div class="cap__n">01<small>8 min</small></div>
+        <h3>The drawing.</h3>
+        <div class="cap__body">
+          <p>The template on your phone. <b>Put the two red dots down first, then draw the part around
+             them.</b> The five parts that are required, the ones that unlock behaviour for good, and
+             why nothing is ever mirrored. Export, send, and Claude ingests it, checks it, and turns
+             it to face the right way.</p>
+          <p>Then the check sheet: every part over magenta, three walk phases on a ground line. You
+             look at it before you use the character, every time, because "it probably ingested
+             fine" is usually wrong somewhere.</p>
+        </div>
+      </div>
+
+      <div class="cap rise" style="--d:80ms">
+        <div class="cap__n">02<small>7 min</small></div>
+        <h3>The voice.</h3>
+        <div class="cap__body">
+          <p>The whole episode as one voice memo. <b>"In the chip shop, Dave walks in from the left and
+             says." Half a second of silence. The line.</b> That is the entire grammar, and it is
+             seven verbs. Claude splits the take on the pauses, casts whoever you named, stages the
+             shots, sets the captions from your words, and draft-renders it.</p>
+          <p>Mouth flaps come from the loudness of your voice, never from a transcript, which is why
+             they land on the words. Deadpan, first take, is usually the right take.</p>
+        </div>
+      </div>
+
+      <div class="cap rise" style="--d:160ms">
+        <div class="cap__n">03<small>7 min</small></div>
+        <h3>The fixes, and the cadence.</h3>
+        <div class="cap__body">
+          <p>Every correction is a sentence. <b>Smaller. Higher. From the right. Close up on him.</b>
+             Three in one message, another draft, then the final render and the post. What the
+             episode file is, and why you never need to open it. Props, stock moves, and the one
+             rule about sound.</p>
+          <p>Then how this becomes an account and not a hobby: batch by activity, characters are
+             capital, and after three episodes a new one is a yaml file and a voice memo.</p>
+        </div>
+      </div>
+    </div>
+
+    <div class="cta rise" style="--d:100ms; margin-top:var(--s8)">
+      <a class="btn" href="/api/checkout">Get the course, $35 <span class="btn__arrow" aria-hidden="true">&rarr;</span></a>
+    </div>
+  </div>
+</section>
+
+<!-- ============================ WHAT YOU NEED, AND WHY IT IS HONEST ============================ -->
+<section class="act act--bone act--air">
+  <div class="wrap">
+    <p class="tag rise">What you need</p>
+    <h2 class="rise measure" style="--d:80ms">A phone, a finger, and Claude.</h2>
     <div class="split" style="margin-top:var(--s8)">
-      <div class="dim rise" style="--d:150ms">
-        <p>Most courses on this are twelve modules long, built around a framework you have to adopt
-           first, and abandoned at module two. This one is five effects and the rule that ties them
-           together, and it is priced so that it pays for itself. <b>I do not need you to buy anything
-           after it</b>, so nothing is held back for a coaching offer at the end.</p>
-        <p>You should also know this before you pay: the page these effects were built on is public,
-           under a licence that lets you copy it. You could read the source and work it out. What you
-           are buying is <b>the 22 minutes that explains every line</b>, the starter file that has only
-           the moving parts in it, and the two checklists that keep the result from looking like every
-           other animated page.</p>
+      <div class="rise" style="--d:150ms">
+        <h3>You will need</h3>
+        <ul class="doable" style="grid-template-columns:1fr">
+          <li><b>A phone or tablet with a drawing app</b> that can open a PDF and export an image. Any
+              of them. A finger works; a stylus is nicer.</li>
+          <li><b>A Claude subscription that includes Claude Code</b>, opened in the phone's browser.
+              This is the one real cost beyond the course, and it is not mine.</li>
+          <li><b>A GitHub account</b>, free, so Claude has somewhere to keep your show.</li>
+          <li><b>The voice memo app</b> that is already on your phone.</li>
+        </ul>
       </div>
       <div class="dim rise" style="--d:230ms">
-        <p>You will notice what is missing here. No income screenshots. No count of how many people
-           have bought it. No wall of testimonials. Those are the tells of a page that needs you to
-           stop thinking, and I would rather you kept thinking.</p>
-        <p>The proof is the page. Scroll it. Turn on reduce motion in your operating system and
-           reload it. Open it on your phone. <b>If you want the site to move like this one does, the
-           course is how.</b> If you do not, keep the $35.</p>
+        <h3>And you should know</h3>
+        <p>The pipeline itself is public, in the same repository as this page, under a licence that
+           lets you use it for anything. You could clone it and read the manual. What you are
+           buying is <b>the 22 minutes that shows the phone loop end to end</b>, the five prompt
+           cards that drive it without a terminal, and the two checklists that catch what a
+           thumbnail cannot.</p>
+        <p>You will also notice what is missing here. No income screenshots, no follower counts,
+           no wall of testimonials. Those are the tells of a page that needs you to stop thinking.
+           The proof is the sheet and the render above, and the source under both.</p>
       </div>
     </div>
     <div class="links rise" style="--d:300ms; margin-top:var(--s8)">
-      <a class="link" href="/">The page it was built on <span aria-hidden="true">&rarr;</span></a>
-      <a class="link" href="https://github.com/Aa-ronJS/portfolio">Its source</a>
+      <a class="link" href="https://github.com/Aa-ronJS/portfolio/tree/master/animation-pipeline">The pipeline, and its manual <span aria-hidden="true">&rarr;</span></a>
+      <a class="link" href="/">Who built it</a>
     </div>
   </div>
 </section>
 
 <!-- ============================ WHO IT IS FOR ============================ -->
-<section class="act act--bone act--air">
-  <div class="wrap">
-    <p class="tag rise">Who it is for</p>
-    <h2 class="rise measure" style="--d:80ms">You have a page. It sits there.</h2>
-    <div class="split" style="margin-top:var(--s8)">
-      <div class="rise" style="--d:150ms">
-        <h3>This is for you if</h3>
-        <ul class="doable" style="grid-template-columns:1fr">
-          <li><b>You build sites for clients</b>, on your own or in a small studio, and you want the
-              page to feel expensive without adding a framework you then have to maintain.</li>
-          <li><b>You built your own site</b> and can edit its HTML and CSS, and it works, and it is flat.</li>
-          <li><b>You already use an animation library</b> and you are tired of shipping 80 kilobytes of
-              it to fade in a heading.</li>
-        </ul>
-      </div>
-      <div class="rise" style="--d:230ms">
-        <h3>This is not for you if</h3>
-        <ul class="doable" style="grid-template-columns:1fr">
-          <li><b>You cannot edit the code of your site.</b> A hosted builder with no custom code access
-              will not take any of this. Check first.</li>
-          <li><b>You want a design course.</b> This is motion. It assumes the type, colour and layout are
-              already yours, and it will make a bad layout move badly.</li>
-          <li><b>You want a component library.</b> It is two files you paste in and understand, not a
-              package you import.</li>
-        </ul>
-      </div>
-    </div>
-  </div>
-</section>
-
-<!-- ============================ WHERE IT CAME FROM, WITH A TILT CARD ============================ -->
 <section class="act plate">
   <div class="plate__media"><img src="/img/seam.jpg" alt="" width="1400" height="933" loading="lazy"></div>
   <div class="plate__veil"></div>
 
   <div class="wrap">
-    <div class="proj">
-      <div>
-        <div class="eyebrow rise"><span class="tag">Where it came from</span><hr class="rule wipe" style="--d:120ms"></div>
-        <h2 class="rise" style="--d:80ms">Built for one page. Checked on the screen.</h2>
-        <p class="lede rise" style="--d:160ms; margin-top:var(--s6)">
-          Every effect in the course was built for my own site, answered in writing against a design
-          pre-flight before any markup, and then checked in a browser at four widths. <b>The card on
-          the right is the tilt from video three. Move your pointer over it.</b> On a phone it is
-          flat, on purpose.
-        </p>
+    <div class="eyebrow rise"><span class="tag">Who it is for</span><hr class="rule wipe" style="--d:120ms"></div>
+    <h2 class="rise measure" style="--d:80ms">You have the jokes. You do not have a week.</h2>
+    <div class="split" style="margin-top:var(--s8)">
+      <div class="rise" style="--d:150ms">
+        <h3>This is for you if</h3>
+        <ul class="doable" style="grid-template-columns:1fr">
+          <li><b>You write funny things</b> and have wanted an animated account without learning
+              animation, hiring an animator, or showing your face.</li>
+          <li><b>You have a voice</b> you are willing to record deadpan into a phone. That is the
+              whole performance.</li>
+          <li><b>You can draw badly.</b> The style is the strategy: visuals so crude that one drawing
+              per character is a finished asset, so all the time goes into the writing.</li>
+        </ul>
       </div>
-      <figure class="proj__figure rise" style="--d:200ms">
-        <div class="tilt"><img src="/img/glass.jpg" alt="Layers of hand-cut amber and grey glass stacked on a dark workbench, raking light catching every edge." width="1400" height="933" loading="lazy"></div>
-      </figure>
+      <div class="rise" style="--d:230ms">
+        <h3>This is not for you if</h3>
+        <ul class="doable" style="grid-template-columns:1fr">
+          <li><b>You want it to look smooth.</b> Twelve frames a second, a hand-held wobble and a
+              two-frame mouth are the look, on purpose, and the pipeline refuses to smooth them.</li>
+          <li><b>You want a synthetic voice or generated jokes.</b> The pipeline will never add either.
+              The human voice and the human writing are the entire point.</li>
+          <li><b>You want to learn Python.</b> You will not touch it. If you want to, the source is
+              public and the manual is long.</li>
+        </ul>
+      </div>
     </div>
 
     <ul class="finds">
       <li class="rise">
-        <h4>The call to action that never appeared</h4>
-        <p>The hero button was scroll-revealed, and the observer's margin put it outside the trigger
-           zone, so the most important element on the page sat at opacity zero forever. The markup
-           was fine. Only the render showed it. The fix is a rule, and it is in video two.</p>
+        <h4>Why the drawings have to be bad</h4>
+        <p>Because a good drawing sets an expectation the next one has to meet, and then you are an
+           animator. A crude drawing sets no expectation, so a character drawn once in ten minutes
+           can carry a hundred episodes, and the audience votes for the voice and the joke.</p>
       </li>
       <li class="rise" style="--d:90ms">
-        <h4>Every photo card rendered portrait</h4>
-        <p>A height attribute on the image plus an aspect ratio in the CSS, and the ratio silently
-           lost. Every card came out tall at 933 pixels. One declaration fixes it, and checklist two
-           makes you look.</p>
+        <h4>Why one voice memo</h4>
+        <p>The pause is the cut. Speak the direction, pause, speak the line, pause. The pipeline
+           splits the take on the silences and every line becomes a shot whose length is the length
+           of what you said. There is no timeline to edit because you already edited it by talking.</p>
       </li>
       <li class="rise" style="--d:180ms">
-        <h4>The same photograph, twice on one screen</h4>
-        <p>Once as a plate, once in a tilted card, and it read as a mistake rather than a
-           composition. The plates now belong to the statement sections only. That is a design rule,
-           not a code one, and it is in checklist one.</p>
+        <h4>What Claude actually does</h4>
+        <p>Runs the tools, reads the check sheet, tells you which optional boxes you left empty and
+           what each would unlock, stages the shots from your directions, and takes corrections in
+           plain sentences. It does not write a word of dialogue. The manual it works from forbids it.</p>
       </li>
       <li class="rise" style="--d:270ms">
-        <h4>Letters colliding at hero size</h4>
-        <p>Display tracking that looked right at 24 pixels put letters into each other at 160. Caught
-           by looking, fixed by a single value. Motion draws the eye to type; the type has to survive
-           the attention.</p>
+        <h4>What a mistake looks like</h4>
+        <p>The first committed demo was staged from a robot voice as a worst-case test, and the
+           captions came out chewed. It went up on Instagram as it was, and the chewed captions
+           landed as part of the joke. Post the first one before you fix it.</p>
       </li>
     </ul>
   </div>
@@ -432,13 +429,13 @@ a{color:inherit}
     <div class="price">
       <div class="rise" style="--d:120ms">
         <span class="price__n">$35<small>AUD</small></span>
-        <span class="price__k">once, for the videos, the starter file and both checklists</span>
+        <span class="price__k">once, for the videos, the prompt cards and both checklists</span>
       </div>
       <ul class="terms rise" style="--d:200ms">
-        <li><span class="k">You get</span><span class="v">Three screen recordings, about 22 minutes in total, <b>the two-file starter with only the moving parts in it</b>, and two one-page checklists: before anything moves, and look at the render.</span></li>
-        <li><span class="k">When</span><span class="v">This is the beta. The starter file and checklists are there the moment you pay. <b>Recordings land within seven days of purchase</b>, and you keep every later revision at no cost.</span></li>
-        <li><span class="k">Guarantee</span><span class="v">Watch all of it. If your page does not move by the end of the afternoon, <b>ask and the money comes back.</b> No form, no reason required.</span></li>
-        <li><span class="k">After</span><span class="v">When your page moves, reply to the receipt with the link. <b>I look at every one</b> and answer with the one thing I would change. That is the only follow-up there is.</span></li>
+        <li><span class="k">You get</span><span class="v">Three screen recordings, about 22 minutes in total, <b>the five prompt cards and the spoken direction grammar</b>, and two one-page checklists: the sheet, and before you post.</span></li>
+        <li><span class="k">When</span><span class="v">This is the beta. The cards and checklists are there the moment you pay. <b>Recordings land within seven days of purchase</b>, and you keep every later revision at no cost.</span></li>
+        <li><span class="k">Guarantee</span><span class="v">Watch all of it. If you have not posted an episode by the end of the weekend, <b>ask and the money comes back.</b> No form, no reason required.</span></li>
+        <li><span class="k">After</span><span class="v">When your first episode renders, reply to the receipt with the file or the link. <b>I watch every one</b> and answer with the one thing I would change. That is the only follow-up there is.</span></li>
       </ul>
     </div>
 
@@ -458,41 +455,39 @@ a{color:inherit}
 
     <ul class="finds">
       <li class="rise">
-        <h4>How much code do I need to know?</h4>
-        <p>Enough to open your site's HTML and CSS and add a class to an element. The JavaScript is
-           sixty lines you paste in once and never edit. Every line of it is explained, but you do
-           not have to write any.</p>
+        <h4>Do I really never touch a terminal?</h4>
+        <p>Never. Claude Code runs in the browser on your phone, in a copy of the repository. You
+           attach the sheet or the voice memo, paste the card, and it does the rest and sends the
+           file back. Every command it runs is in the public manual if you are curious.</p>
       </li>
       <li class="rise" style="--d:90ms">
-        <h4>Does it work in every browser?</h4>
-        <p>The reveals, count-up, tilt and marquee work everywhere. The parallax plate uses
-           scroll-driven animation, which most current browsers support; where one does not, the
-           plate is a still photograph and the page is otherwise identical. The course shows you how
-           to make that true of everything you add, not just this.</p>
+        <h4>Isn't the pipeline already free?</h4>
+        <p>Yes. It is in the same repository as this page, under the MIT licence, and I say so
+           above rather than hoping you do not notice. You are paying for the 22 minutes that shows
+           the loop, the cards, and the checklists. If reading manuals is how you learn, keep the $35.</p>
       </li>
       <li class="rise" style="--d:180ms">
-        <h4>Isn't the code already free?</h4>
-        <p>Yes. The page it was built on is public under the MIT licence, and I say so above rather
-           than hoping you do not notice. You are paying for the explanation, the file that is only
-           the moving parts, and the two checklists. If reading source is how you learn, go and read
-           it and keep the $35.</p>
+        <h4>How long is an episode, and how long does it take?</h4>
+        <p>Under thirty seconds of video, from under two minutes of talking. The first one takes an
+           afternoon because you are drawing a character. After three episodes you have a cast, and a
+           new one is a voice memo and a cup of tea while it renders.</p>
       </li>
       <li class="rise" style="--d:270ms">
-        <h4>Can I use it on client sites?</h4>
-        <p>Yes, as many as you like, with no attribution. The starter file is yours once you have
-           it. Charge your clients for the afternoon; that is rather the point.</p>
+        <h4>Can I use my own voice? Can I use someone else's?</h4>
+        <p>Your own, recorded, is the point. A friend's, recorded, is fine. A synthetic voice is not
+           possible with this pipeline and will not become possible; the manual forbids adding it.</p>
       </li>
       <li class="rise" style="--d:360ms">
-        <h4>Does it work with React, Astro, WordPress, whatever I use?</h4>
-        <p>It is CSS classes and one script that runs on page load. If your tool produces HTML, it
-           works. The course is recorded on a plain HTML file so nothing about a framework gets in
-           the way of seeing what each line does.</p>
+        <h4>What if my drawing does not ingest cleanly?</h4>
+        <p>Claude sends you the check sheet and says which part has the problem, and you redraw
+           that one box, not the character. Checklist one is the four rules that stop it happening:
+           dots first, draw past the joint, close every outline, never mirror.</p>
       </li>
       <li class="rise" style="--d:450ms">
         <h4>Why is it a beta?</h4>
         <p>Because I would rather find out whether people want it before I spend a week polishing
-           it. The starter file and checklists are complete now. The recordings arrive within seven
-           days, and every revision after that, and the guarantee covers all of it.</p>
+           it. The cards and checklists are complete now. The recordings arrive within seven days,
+           and every revision after that, and the guarantee covers all of it.</p>
       </li>
     </ul>
   </div>
@@ -501,8 +496,8 @@ a{color:inherit}
 <!-- ============================ FOOT ============================ -->
 <footer class="act foot">
   <div class="wrap">
-    <p class="tag rise">Make It Move</p>
-    <h2 class="rise measure" style="--d:80ms">Twenty-two minutes. Then make yours move.</h2>
+    <p class="tag rise">Draw It Badly</p>
+    <h2 class="rise measure" style="--d:80ms">Twenty-two minutes. Then draw something badly.</h2>
     <div class="cta rise" style="--d:200ms">
       <a class="btn" href="/api/checkout">Get the course, $35 <span class="btn__arrow" aria-hidden="true">&rarr;</span></a>
       <a class="btn btn--ghost" href="/">Who is teaching it</a>
@@ -510,10 +505,10 @@ a{color:inherit}
 
     <div class="foot__grid">
       <p class="foot__note">
-        Everything on this page that can be checked, you can check: the effects are running on it,
-        the source is public, and the defects described are the ones written up in the repository.
-        The only thing you take on trust is whether 22 minutes of explanation is worth $35, and the
-        guarantee exists so you do not have to.
+        Everything on this page that can be checked, you can check: the sheet and the render are
+        in the repository, the source is public, and the manual says what the pipeline will and
+        will not do. The only thing you take on trust is whether 22 minutes of it is worth $35, and
+        the guarantee exists so you do not have to.
       </p>
       <p class="foot__note">Aaron Steele, South Australia.</p>
     </div>
@@ -524,7 +519,6 @@ a{color:inherit}
 (function () {
   var reduced = matchMedia('(prefers-reduced-motion: reduce)').matches;
 
-  /* Arrival. The hero is already on screen, so it animates on load. */
   var hero = document.querySelectorAll('header .rise, header .wipe');
   var rest = document.querySelectorAll('section .rise, section .wipe, footer .rise, footer .wipe');
   requestAnimationFrame(function () { hero.forEach(function (el) { el.classList.add('in'); }); });
@@ -560,26 +554,22 @@ a{color:inherit}
     counters.forEach(function (el) { co.observe(el); });
   }
 
-  /* Tilt. Pointer only, one frame at a time, six degrees at most. */
-  if (matchMedia('(hover: hover) and (pointer: fine)').matches && !reduced) {
-    document.querySelectorAll('.tilt').forEach(function (card) {
-      var frame = null, max = 6;
-      card.addEventListener('pointermove', function (ev) {
-        if (frame) return;
-        frame = requestAnimationFrame(function () {
-          frame = null;
-          var r = card.getBoundingClientRect();
-          var x = (ev.clientX - r.left) / r.width - 0.5;
-          var y = (ev.clientY - r.top) / r.height - 0.5;
-          card.style.setProperty('--ry', (x * max).toFixed(2) + 'deg');
-          card.style.setProperty('--rx', (-y * max).toFixed(2) + 'deg');
-        });
-      });
-      card.addEventListener('pointerleave', function () {
-        card.style.setProperty('--ry', '0deg');
-        card.style.setProperty('--rx', '0deg');
-      });
+  /* The demo reel. Plays on its own only when it is on screen and the reader
+     has not asked for less motion; otherwise it waits for the button. */
+  var reel = document.getElementById('reel'), play = document.getElementById('reel-play');
+  if (reel && play) {
+    play.addEventListener('click', function () {
+      if (reel.paused) { reel.play(); play.hidden = true; } else { reel.pause(); play.hidden = false; }
     });
+    reel.addEventListener('click', function () { if (!reel.paused) { reel.pause(); play.hidden = false; } });
+    if (!reduced && 'IntersectionObserver' in window) {
+      new IntersectionObserver(function (entries) {
+        entries.forEach(function (e) {
+          if (e.isIntersecting) { reel.play().then(function () { play.hidden = true; }).catch(function () {}); }
+          else if (!reel.paused) { reel.pause(); play.hidden = false; }
+        });
+      }, { threshold: 0.4 }).observe(reel);
+    }
   }
 })();
 </script>

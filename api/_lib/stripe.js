@@ -32,7 +32,7 @@ function createCheckout() {
     cancel_url: `${cfg.siteUrl}/course/#price`,
     allow_promotion_codes: 'true',
     'invoice_creation[enabled]': 'true',
-    'metadata[product]': 'make-it-move',
+    'metadata[product]': 'draw-it-badly',
   });
 }
 

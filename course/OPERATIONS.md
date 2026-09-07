@@ -66,7 +66,7 @@ unasked, a discount, a deadline. The buyer came to you. Keep it that way.
 
 ## When the videos land
 
-Once, to every buyer so far: subject "Make It Move: the videos are up",
+Once, to every buyer so far: subject "Draw It Badly: the videos are up",
 one line, same link. Send it from the same address so their reply threads
 stay in one place. After that, the system sends nothing on its own except
 the delivery email.

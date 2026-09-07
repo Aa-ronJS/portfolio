@@ -42,27 +42,24 @@ function renderCourse(email) {
   return page(title, `
     <main class="wrap">
       <p class="tag">${esc(title)}</p>
-      <h1>Twenty-two minutes. Then make yours move.</h1>
-      <p class="dim" style="margin-top:32px;max-inline-size:50ch">Three videos, one starter file, two checklists, in order. Have your own page open in an editor. Each video ends with something to put on it before the next one, and the checklists below are what keeps the result from looking generated.</p>
+      <h1>Twenty-two minutes. Then draw something badly.</h1>
+      <p class="dim" style="margin-top:32px;max-inline-size:50ch">Three videos, the prompt cards, two checklists, in order. Have the template open in a drawing app on your phone and Claude Code open in the browser. Each video ends with something to draw, record or send before the next one.</p>
       <p class="mute" style="margin-top:24px">This link is yours: ${esc(email)}. It works forever and it is fine to forward to your team. Print this page and the checklists come out clean.</p>
       ${lessonHtml}
       <section class="lesson">
         <div class="n">Then</div>
         <div>
-          <h2>Send me the link.</h2>
-          <p class="dim" style="margin-top:24px;max-inline-size:50ch">When your page moves, reply to the email this link came in with the address. I look at every one, and I answer with the one thing I would change. If you want the whole page built to this standard rather than just the motion, that reply is where to say so; there is no form and no call unless you want one.</p>
+          <h2>Send me the episode.</h2>
+          <p class="dim" style="margin-top:24px;max-inline-size:50ch">When your first episode renders, reply to the email this link came in with the file or the link to where you posted it. I watch every one, and I answer with the one thing I would change. If you want the pipeline extended for your show, a character rigged that will not behave, or the whole account set up, that reply is where to say so; there is no form and no call unless you want one.</p>
         </div>
       </section>
     </main>
     <div class="bone"><div class="wrap">
       <section class="kit">
-        <p class="tag">The starter file</p>
-        <h2>Only the moving parts.</h2>
-        <p class="dim" style="margin-top:16px;max-inline-size:50ch">The five effects, lifted out of the page they were built on and generalised, so they drop into any site. Two files. Copy them as they are; video one explains every line.</p>
-        <h3>motion.css</h3>
-        <pre>${esc(starter.css)}</pre>
-        <h3>motion.js</h3>
-        <pre>${esc(starter.js)}</pre>
+        <p class="tag">The prompt cards</p>
+        <h2>What you say to Claude, in order.</h2>
+        <p class="dim" style="margin-top:16px;max-inline-size:50ch">Word for word. Copy each one into Claude Code on your phone with the file attached, and change the names. You never open a terminal; the pipeline is public in the same repository and Claude runs it for you.</p>
+        ${starter.map((c) => `<h3>${esc(c.name)}</h3><pre>${esc(c.body)}</pre>`).join('')}
       </section>
       ${checkHtml}
     </div></div>`, { raw: true });

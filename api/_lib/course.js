@@ -4,215 +4,154 @@
    nothing. Paste the unlisted YouTube or Loom embed URL into `embed` and
    redeploy; buyers' links do not change. */
 
-const title = 'Make It Move';
+const title = 'Draw It Badly';
 
 const lessons = [
   {
     n: '01', minutes: 8,
-    title: 'The plate.',
+    title: 'The drawing.',
     embed: '',
-    summary: 'A full-bleed photograph that scrolls at a different rate to the type over it, so the page has depth. Built with a scroll-driven CSS animation that runs off the main thread, so it cannot make the page stutter, and wrapped so that where the browser cannot do it, or the reader has turned motion off, it is a still photograph, which is the composition anyway.',
-    doNow: 'Put one plate on your own page. One. Pick a photograph that is dark enough to carry type, add the veil, and scroll it at 360 wide and 1400 wide before you do anything else.',
+    summary: 'One character, drawn badly on purpose, straight into the kit template on your phone. The two red dots rule, the five parts that are required and the ones that unlock behaviour for good, exporting the sheet, and handing it to Claude: ingest, check, turn. You look at the check sheet before you use the character, every time.',
+    doNow: 'Open the template on your phone and draw one character into the boxes. Send Claude the exported sheet with prompt card two. Look at check.png. If a part has a hole, redraw that part only.',
   },
   {
-    n: '02', minutes: 8,
-    title: 'Arrival.',
+    n: '02', minutes: 7,
+    title: 'The voice.',
     embed: '',
-    summary: 'Things that arrive rather than simply being there: sections that rise into place as you reach them, staggered by a custom property, an amber hairline that draws itself across the page, and a number that counts up to a real figure held in the markup. One IntersectionObserver, about twenty lines.',
-    doNow: 'Add the rise class to every section heading on your page and one hairline. Then put a real number in a data-count attribute. If you do not have a real number, do not fake one; use a different effect.',
+    summary: 'The whole episode as one voice memo: you say the stage directions out loud, then the line, with a beat of silence between. Claude splits the take, casts whoever you named, stages the shots, sets the captions from what you said, and draft-renders it while you make a cup of tea. Under thirty seconds of finished video from under two minutes of talking.',
+    doNow: 'Record a four-line episode with your new character and one background. Send it with prompt card three. Watch the draft with the sound on before you change anything.',
   },
   {
-    n: '03', minutes: 6,
-    title: 'Depth, and switching it off.',
+    n: '03', minutes: 7,
+    title: 'The fixes, and the cadence.',
     embed: '',
-    summary: 'The card that tilts toward the pointer, capped at six degrees and flat on touch. The marquee that pauses when you hover it. Then the rule that makes the whole thing acceptable: every moving part has a branch for people who prefer reduced motion, and three defects I only found by looking at the rendered page rather than the code.',
-    doNow: 'Turn on reduce motion in your operating system and load your page. Everything must still be visible and everything must still make sense. Then run checklist two, slowly, once.',
+    summary: 'Every correction is a sentence to Claude: smaller, higher, from the right, close up on him. What the episode file is and why you never need to open it. Stock clips, props and the one sound rule. Then the production cadence that turns this into an account rather than a hobby: batch by activity, characters are capital, keep a bank of premises.',
+    doNow: 'Give Claude three corrections in one message, get the final render, and post it. Then write five premises in your bank before you close the app.',
   },
 ];
 
 const checklists = [
   {
     n: 'Checklist 01',
-    title: 'Before anything moves',
-    intro: 'Answer these before you add a single animation. An effect added without them is decoration; an effect added with them is a design decision.',
+    title: 'The sheet',
+    intro: 'Read this once before you draw and once after. A kit that ingests clean walks, talks, blinks and points immediately. A kit that does not costs you a re-draw of one box, never the whole character.',
     sections: [
-      { h: 'What is the one move', items: [
-        'Name the one effect the page is about. Everything else supports it or is cut.',
-        'Name the reference: one real site, one move taken from it, not the whole site.',
-        'What is the degraded tier? Describe the page with every animation off. It must still be the same composition.',
+      { h: 'Before the first line', items: [
+        'Open the template at 100 percent on the phone or tablet. Do not resize or crop it; the four corner squares are how the sheet is straightened.',
+        'Decide the character faces RIGHT. If it ends up facing left, that is fine, tell Claude to run turn.',
+        'One pen, one set of colours, for every box. It has to read as one drawing once assembled.',
+        'Put the two red dots down first, then draw the part around them. Dot one is the joint. Dot two is where the straight limb ends.',
       ]},
-      { h: 'The rules that keep it from looking generated', items: [
-        'One accent hue, and it is the colour of every moving thing: hairlines, numbers, the button.',
-        'One radius value on the whole page.',
-        'No state change longer than 640 milliseconds. Reveals may take longer; hovers may not.',
-        'Tilt never more than 6 degrees. Past that it reads as a gimmick.',
-        'Nothing moves on its own except the marquee, and the marquee pauses on hover.',
+      { h: 'The five that are required', items: [
+        'Torso: neck to hips, no head, no arms, no legs.',
+        'Head: neutral face, mouth closed.',
+        'Straight arm, relaxed, open hand.',
+        'Straight leg, standing, shoe on, toes pointing the walk direction. Draw the knee at the third dot.',
+        'Bent leg, knee mid-step.',
       ]},
-      { h: 'The photography', items: [
-        'One colour grade across every image. A plate from a different grade looks like a stock photo, because it is.',
-        'Dark enough under the veil to carry white type at the smallest width.',
-        'No text in the image. The type is the type.',
-        'Never the same photograph twice on one screen. Once as a plate and once as a card reads as a mistake.',
+      { h: 'Worth the extra minute', items: [
+        'Head with mouth open. Your drawn mouth beats the stock flap.',
+        'Bent arm, elbow at ninety degrees. Holding, flexing, hands near the face.',
+        'Pointing arm. The stock point clip uses it.',
+        'A second head with an expression. A pose now costs a head, not a body.',
+        'Right-side arm and leg boxes only where the limb curves toward the body. Leave the rest empty and the left drawing stands in.',
       ]},
-      { h: 'What must stay true', items: [
-        'Every number that counts up is a real number, and the final value lives in the markup, not the script.',
-        'The hero animates on load, not on scroll, because it is already on screen.',
-        'Every effect has a reduced-motion branch that resolves to its final state, not to nothing.',
-        'The page works with JavaScript off: visible, readable, static.',
+      { h: 'Rules that stop tears and gaps', items: [
+        'Draw every part slightly past its joint so rotation never opens a gap.',
+        'Close every outline. A shirt whose outline does not meet comes out see-through.',
+        'Nothing is ever mirrored. A mirrored limb bends backwards.',
+        'Export the drawn sheet as an image, or photograph the printed one flat with all four corners in frame, in even light.',
       ]},
     ],
   },
   {
     n: 'Checklist 02',
-    title: 'Look at the render, not the code',
-    intro: 'Run this in a browser, at 360, 414, 834 and 1424 wide, before you call it finished. Every defect I have shipped was invisible in the markup and obvious on the screen.',
+    title: 'Before you post',
+    intro: 'Run this on every draft render, with the sound on, before you ask for the final. The pipeline will happily render something that is wrong; it exists to catch what a glance at a thumbnail cannot.',
     sections: [
-      { h: 'Does everything arrive', items: [
-        'Scroll the whole page slowly. Is anything still at opacity zero? A revealed element whose observer never fires is the most common defect there is.',
-        'Reload at the top. Does the hero call to action appear without scrolling?',
-        'Jump straight to the bottom with the End key. Did the middle sections reveal, or did you skip past their trigger?',
+      { h: 'The check sheet', items: [
+        'Every part over magenta: no holes, no see-through garments.',
+        'Three walk phases with the ground line: feet point the way the character walks, no backwards knee.',
+        'The pupils verdict says found. If not, the eyes are not declared; tell Claude.',
       ]},
-      { h: 'Does the page hold', items: [
-        'No horizontal scrollbar at any width. Check the marquee and the plates especially; both are wider than the viewport by design.',
-        'Every image the shape you meant. A height attribute plus an aspect ratio without height auto renders portrait.',
-        'No link or button under 24 pixels tall. Hairline links need padding.',
-        'The display face at hero size: do any letter pairs collide? Tracking that is right at 24 pixels is wrong at 160.',
+      { h: 'The draft, with sound', items: [
+        'Every line you spoke is on screen as a caption, verbatim. A merged or split line means the pause was too short; say so and Claude re-cuts it.',
+        'The mouth flaps on the words, not on the breaths. If it flaps on breaths, ask for the talk threshold to go up.',
+        'Whoever you named walked in from the side you said, and stayed until they left.',
+        'Nothing floats. Feet on the ground line, held objects touching the hand that holds them.',
       ]},
-      { h: 'Does it switch off', items: [
-        'Reduce motion on: everything visible, nothing moving except what the reader started, counters at their final numbers.',
-        'Touch device or emulation: the tilt card is flat and the hover states are not stuck on.',
-        'A browser without scroll-driven animation support: the plate is a still photograph and the page is otherwise identical.',
-        'JavaScript off: the page reads top to bottom with nothing missing.',
+      { h: 'The look', items: [
+        'Twelve frames a second, the boil jitter, the two-frame mouth. If it looks smooth, something was smoothed; ask for it back.',
+        'Captions one line, lowercase, in the bottom third, readable on a phone at arm\'s length.',
+        'Under thirty seconds. If it is not, cut a shot, not the pauses.',
       ]},
-      { h: 'Does it cost anything', items: [
-        'Open the performance panel and scroll. The plate animation should not appear on the main thread at all.',
-        'Fonts preloaded, metric-matched fallbacks set, so the swap moves nothing.',
-        'Images sized in the markup so nothing jumps when they load.',
-        'Total page under a few hundred kilobytes without the photographs. There is no library to blame.',
+      { h: 'What stays human', items: [
+        'Your voice, recorded. Never synthesised, never cleaned up into someone else.',
+        'Your joke. Claude staged it; Claude did not write it.',
+        'Post it as it is. The mistranscribed caption is part of the joke more often than you expect.',
       ]},
     ],
   },
 ];
 
-/* The starter file: only the motion, generalised, from the page the course is
-   taught on. Buyers paste this into any site. The full page it came from is
-   public under MIT; this is the part that is only the moving bits. */
-const starter = {
-  css: `/* motion.css: five effects, no library. Pair with motion.js. */
+/* The starter: the prompt cards. Word for word what you say to Claude Code on
+   your phone, in order. The pipeline itself is public in the same repository;
+   these are the sentences that drive it without ever opening a terminal. */
+const starter = [
+  {
+    name: 'Card 1. The first session, once',
+    body: `Clone https://github.com/Aa-ronJS/portfolio and work in animation-pipeline.
+Run ./setup.sh --whisper. Then render demo/episode.yaml as a draft and send
+me the mp4 so I can see that everything works. Read animation-pipeline/CLAUDE.md
+first and follow it.`,
+  },
+  {
+    name: 'Card 2. A new character, every time you draw one',
+    body: `Attached is a kit sheet I drew on my phone from tools/kit_template.pdf.
+Ingest it as myshow/characters/gary with --paper-cut 0.06 because it is
+screen-drawn. Run check and send me check.png. If he is facing left, run turn
+first. Tell me which optional boxes I left empty and what each one would unlock.`,
+  },
+  {
+    name: 'Card 3. An episode, from one voice memo',
+    body: `Attached is one voice take with the stage directions spoken in it.
+Run puppet direct on it into myshow/ep01.yaml. Use the pub background if I did
+not name one. Draft render it and send me the mp4 and the episode yaml. Do not
+change any of my words in the captions.`,
+  },
+  {
+    name: 'Card 4. Corrections, as many as you like in one message',
+    body: `Shot 2: make gary half the size and put the caption higher.
+Shot 3: the seagull should hop in from the right, not the left.
+Shot 4: close up on gary.
+The mouth is flapping on my breaths; raise the talk threshold a little.
+Draft render again and send it.`,
+  },
+  {
+    name: 'Card 5. The final',
+    body: `Final render at 1080 by 1920 and send me the file. Then commit
+myshow with everything except the mp4.`,
+  },
+  {
+    name: 'The direction grammar, spoken into the recording',
+    body: `"in the chip shop, dave walks in from the left and says"
+"large chips please my good man"
+"the seagull hops in from the right and says"
+"give me one chip"
+"close up on dave, he says"
+"absolutely not"
+"the seagull leaves"
 
-/* 1. Parallax plate. A full-bleed photograph behind a section, scrolling at a
-   different rate to the content. Off the main thread. Static where unsupported. */
-.plate{position:relative; overflow:clip; isolation:isolate}
-.plate__media{position:absolute; inset:-14% 0; z-index:-2}
-.plate__media img{width:100%; height:100%; object-fit:cover}
-.plate__veil{position:absolute; inset:0; z-index:-1;
-  background:linear-gradient(to right, rgb(18 24 31 / .96), rgb(18 24 31 / .55)),
-             linear-gradient(to bottom, rgb(18 24 31 / .9), transparent 26%, transparent 66%, rgb(18 24 31 / .94))}
-@supports (animation-timeline: view()){
-  @media (prefers-reduced-motion: no-preference){
-    .plate__media{animation:drift linear both; animation-timeline:view(); animation-range:cover 0% cover 100%}
-    @keyframes drift{from{transform:translate3d(0,-7%,0) scale(1.05)} to{transform:translate3d(0,7%,0) scale(1.05)}}
-  }
-}
+dave says / asks / shouts     the NEXT line is dave's
+dave walks in from the left   dave joins the stage and stays
+dave leaves                   a short shot of dave leaving
+in the pub                    background matched by name
+close up on dave              next dialogue shot is head and shoulders
+new scene / cut / meanwhile   clears the stage
+beat / pause                  a short silent shot
 
-/* 2. Arrival. Add .rise to anything that should arrive; --d staggers it.
-   .wipe is the hairline that draws itself; .wipe-y the vertical one. */
-@media (prefers-reduced-motion: no-preference){
-  .rise{opacity:0; transform:translate3d(0,28px,0)}
-  .rise.in{opacity:1; transform:none; transition:opacity 640ms cubic-bezier(.16,1,.3,1) var(--d,0ms), transform 640ms cubic-bezier(.16,1,.3,1) var(--d,0ms)}
-  .wipe{transform:scaleX(0); transform-origin:left}
-  .wipe.in{transform:scaleX(1); transition:transform 900ms cubic-bezier(.16,1,.3,1) var(--d,0ms)}
-  .wipe-y{transform:scaleY(0); transform-origin:top}
-  .wipe-y.in{transform:scaleY(1); transition:transform 1000ms cubic-bezier(.16,1,.3,1) var(--d,0ms)}
-}
-.rule{height:1px; background:var(--accent, currentColor); border:0; margin:0}
-
-/* 3. Count-up. The real number lives in data-count; the script only animates
-   toward it. Tabular figures so the width does not jitter. */
-[data-count]{font-variant-numeric:tabular-nums}
-
-/* 4. Tilt. Capped at 6 degrees by the script. Flat on touch and reduced motion. */
-.tilt{transform:rotateX(var(--rx,0deg)) rotateY(var(--ry,0deg)); transition:transform 480ms cubic-bezier(.22,1,.36,1)}
-@media (hover:hover) and (pointer:fine) and (prefers-reduced-motion: no-preference){.tilt{transition:transform 200ms cubic-bezier(.22,1,.36,1)}}
-@media (hover:none),(pointer:coarse),(prefers-reduced-motion: reduce){.tilt{transform:none !important}}
-
-/* 5. Marquee. Duplicate the row's contents once in the markup; the animation
-   travels exactly half. Pauses on hover. */
-.marq{overflow:hidden; --gap:48px}
-.marq__row{display:flex; gap:var(--gap); width:max-content}
-@media (prefers-reduced-motion: no-preference){
-  .marq__row{animation:slide 52s linear infinite}
-  .marq:hover .marq__row{animation-play-state:paused}
-  @keyframes slide{to{transform:translateX(calc(-50% - (var(--gap) / 2)))}}
-}
-
-/* The rule that makes all of it acceptable. */
-@media (prefers-reduced-motion: reduce){
-  *,*::before,*::after{animation-duration:1ms !important; animation-iteration-count:1 !important; transition-duration:1ms !important}
-}`,
-  js: `/* motion.js: reveal, count-up, tilt. No dependencies. */
-(function () {
-  var reduced = matchMedia('(prefers-reduced-motion: reduce)').matches;
-
-  /* Reveal. Anything already on screen (the hero) animates on load; the rest
-     waits for a scroll. Put the hero inside <header>. */
-  var hero = document.querySelectorAll('header .rise, header .wipe, header .wipe-y');
-  var rest = document.querySelectorAll('section .rise, section .wipe, section .wipe-y, footer .rise, footer .wipe');
-  requestAnimationFrame(function () { hero.forEach(function (el) { el.classList.add('in'); }); });
-  if (reduced || !('IntersectionObserver' in window)) {
-    rest.forEach(function (el) { el.classList.add('in'); });
-  } else {
-    var io = new IntersectionObserver(function (entries) {
-      entries.forEach(function (e) {
-        if (e.isIntersecting) { e.target.classList.add('in'); io.unobserve(e.target); }
-      });
-    }, { rootMargin: '0px 0px -6% 0px', threshold: 0.05 });
-    rest.forEach(function (el) { io.observe(el); });
-  }
-
-  /* Count-up. Real numbers only; the final value lives in the markup. */
-  var counters = document.querySelectorAll('[data-count]');
-  function land(el) { el.textContent = Number(el.dataset.count).toLocaleString(); }
-  if (reduced || !('IntersectionObserver' in window)) {
-    counters.forEach(land);
-  } else {
-    var co = new IntersectionObserver(function (entries) {
-      entries.forEach(function (e) {
-        if (!e.isIntersecting) return;
-        co.unobserve(e.target);
-        var el = e.target, target = Number(el.dataset.count), t0 = performance.now();
-        (function step(now) {
-          var p = Math.min(1, (now - t0) / 1100);
-          el.textContent = Math.round(target * (1 - Math.pow(1 - p, 4))).toLocaleString();
-          if (p < 1) requestAnimationFrame(step); else land(el);
-        })(t0);
-      });
-    }, { threshold: 0.5 });
-    counters.forEach(function (el) { co.observe(el); });
-  }
-
-  /* Tilt. Pointer only, one frame at a time, six degrees at most. */
-  if (matchMedia('(hover: hover) and (pointer: fine)').matches && !reduced) {
-    document.querySelectorAll('.tilt').forEach(function (card) {
-      var frame = null, max = Number(card.dataset.tilt || 6);
-      card.addEventListener('pointermove', function (ev) {
-        if (frame) return;
-        frame = requestAnimationFrame(function () {
-          frame = null;
-          var r = card.getBoundingClientRect();
-          var x = (ev.clientX - r.left) / r.width - 0.5;
-          var y = (ev.clientY - r.top) / r.height - 0.5;
-          card.style.setProperty('--ry', (x * max).toFixed(2) + 'deg');
-          card.style.setProperty('--rx', (-y * max).toFixed(2) + 'deg');
-        });
-      });
-      card.addEventListener('pointerleave', function () {
-        card.style.setProperty('--ry', '0deg');
-        card.style.setProperty('--rx', '0deg');
-      });
-    });
-  }
-})();`,
-};
+Half a second of silence between lines. End a direction with the speech verb.`,
+  },
+];
 
 module.exports = { title, lessons, checklists, starter };

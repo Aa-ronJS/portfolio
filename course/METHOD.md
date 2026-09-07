@@ -89,5 +89,5 @@ The stated criteria for a tiny course idea that sells:
 The structure, the price logic, the teach-everything stance, the finish-and-
 reply ascension, and the $35 ad test. Not the income claims, not the fake
 scarcity around the bonus, and not the testimonial screenshots. `PLAN.md`
-applies this to the motion system on Aaron's own site, `public/course/index.html`
+applies this to the animation pipeline in this repository, `public/course/index.html`
 is the sales page for it, and `api/` is the machine that sells and delivers it.

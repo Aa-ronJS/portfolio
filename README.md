@@ -4,13 +4,17 @@ Source of https://aaronsteele.vercel.app. Two HTML files, three serverless funct
 self-hosted fonts, no build step and no dependencies.
 
 `public/index.html` is the portfolio. Everything under `course/` and `api/` is
-a second, self-contained thing: a tiny course on the motion system below, sold
+a second, self-contained thing: a tiny course on the animation pipeline, sold
 from `/course`, built on the model decoded in `course/METHOD.md`. `api/` holds the three serverless functions
 (checkout, webhook, watch) that take the money, send the link and serve the
 course, on plain `fetch` and `crypto` with no packages. `course/SETUP.md`,
 `course/content/SCRIPTS.md`, `course/ads/ADS.md` and `course/OPERATIONS.md` are,
 in order, the hour of configuration, the afternoon of recording, the ad, and
 the five minutes a day that runs it.
+
+`animation-pipeline/` is the product the course teaches: the toolchain that
+turns a badly drawn character and one voice memo into a rendered 9:16 short.
+Start with `animation-pipeline/CLAUDE.md`, then its `README.md`.
 
 `PREFLIGHT.md` holds the design pre-flight it was built against, answered in
 writing before any markup, including the deviations from the house playbook and
