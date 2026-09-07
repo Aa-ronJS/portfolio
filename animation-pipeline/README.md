@@ -191,6 +191,13 @@ its eyes are declared, in any pose sheet, with nothing drawn. A talking
 character with no `talk.png` gets a stock open-mouth flap the same way.
 Drawn sheets always win when they exist.
 
+Declared eyes also come alive between blinks: the drawn pupil is
+lifted out of each eye white and re-stamped toward wherever the
+character is looking — at the current talker, ahead on a walk, or
+wherever `eyes:` points them (episode reference below) — with small
+seeded saccade darts so idle characters glance around on their own.
+No extra drawing, no declaration beyond the eyes themselves.
+
 ### The character kit: what to draw
 
 Cutting one drawing works, but the cut can only be as clean as the
@@ -201,24 +208,48 @@ deserves a **kit**: each part its own small drawing in a `parts/`
 folder. Nothing is cut, nothing tears, and an expression change only
 needs a new head, not a new body.
 
-**The fast path is the printed template.** Print
-`tools/kit_template.pdf` (A4, 100% scale — or regenerate it with
-`python3 pipeline/kit.py template sheet.pdf`), draw one character into
-the boxes with marker — the red joint dots and pale blue proportion
-ghosts are already placed, boxes marked optional may stay empty —
-photograph it flat with all four corner squares in frame, then:
+**The fast path is the template.** Open `tools/kit_template.pdf`
+(A4 — or regenerate it with `python3 pipeline/kit.py template
+sheet.pdf`) in a drawing app on a tablet or phone and draw one
+character straight into the boxes with a stylus, or print it at 100%
+scale and use a marker. The red joint dots are already placed; boxes
+marked optional may stay empty. Export the drawn sheet as an image
+(or photograph the printed one flat, all four corner squares in
+frame), then:
 
 ```bash
+# screen-drawn sheet — the low cut keeps pale digital colours:
+python3 pipeline/kit.py ingest sheet.jpg myshow/characters/gary --paper-cut 0.06
+# photographed print — default cut removes paper texture:
 python3 pipeline/kit.py ingest photo.jpg myshow/characters/gary
-python3 pipeline/rig.py preview myshow/characters/gary walk.gif
 ```
 
-The photo is straightened off the corner squares, cleaned, and split
+The sheet is straightened off the corner squares, every printed mark
+(borders, dots, labels, fiducials) is erased, and the drawing is split
 into a complete character folder: `parts/*.png`, `rig.json` (skeleton,
-pivots, face anchors), `char.json`, and an assembled `body.png`. The
-character walks, talks, blinks and points immediately. That is the
-whole workflow; everything below is what the template is doing for
-you, and how to build a kit freehand without it.
+pivots, face anchors — the eyes are auto-detected for blinks and
+dynamic pupils), `char.json`, and an assembled `body.png`. The
+character walks, talks, blinks and points immediately.
+
+Two commands are **part of every ingest**, not optional extras:
+
+```bash
+python3 pipeline/kit.py check myshow/characters/gary check.png
+python3 pipeline/kit.py turn  myshow/characters/gary   # only if drawn facing LEFT
+```
+
+`check` renders an acceptance sheet — every part over magenta (any
+hole or transparent garment shows instantly), the rest pose and three
+walk phases with a ground line and direction arrow (backwards feet
+show instantly), the arm shapes, and a measured pupils verdict. Look
+at it before using the character; it exists because "it probably
+ingested fine" is usually wrong somewhere. `turn` canonicalizes a
+character drawn facing left so the stock clips (which assume a
+right-facing front) don't walk it backwards — mirroring the art,
+swapping left/right part roles, and remapping pivots and face anchors
+in one shot. That is the whole workflow; everything below is what the
+template is doing for you, and how to build a kit freehand without
+it.
 
 **The one trick: put the two red dots down first, then draw the part
 around them.** Straight-leg boxes carry a THIRD dot — the knee anchor:
@@ -430,7 +461,14 @@ shots:
                                #   arm sways. stretch: false to cap at
                                #   arm's length.
         look: false            # opt out of auto-gaze: characters turn
-                               #   their heads toward whoever talks
+                               #   their heads toward whoever talks —
+                               #   and, when their eyes are declared,
+                               #   their PUPILS track the talker too,
+                               #   with idle saccade darts on top
+        eyes: front            # pin the gaze instead: 'front' stares
+                               #   at camera; eyes: [1, 0] looks right,
+                               #   [-1, -1] up-left (each axis -1/0/1);
+                               #   walkers look ahead automatically
         fight: {with: 1}       # brawl with actor 1 (who carries
                                #   fight: {with: 0}): a seeded
                                #   choreography trades jabs, crosses and
