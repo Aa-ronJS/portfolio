@@ -107,11 +107,18 @@ engagement starts. No call unless they ask for one.
 | 7 | Count sales. Three or more on $35 spend: the idea works, double the budget. Zero to one: the hook is wrong, rewrite the title and first screen, run another $35. |
 | 14 | If the second test also misses, the topic is wrong for cold traffic. Try *Give your AI agent hands* or park it. |
 
-## 8. Still to be decided by Aaron before the page goes live
+## 8. What exists, and what is still Aaron's
 
-1. The checkout link. The button points at a placeholder and says so in a
-   comment. A Stripe Payment Link or Gumroad product fills it.
-2. The delivery promise. The page sells the beta and says the recordings
-   arrive within seven days of purchase. That is a promise to keep.
-3. The guarantee wording above, which is written as the house would write
-   it and is Aaron's to accept or change.
+Built and tested locally (`api/`): Stripe Checkout, the webhook that sends
+the access link, the signed permanent link, and the course page that renders
+the lessons and both checklists. `SETUP.md` is the hour of configuration.
+`content/SCRIPTS.md` is the afternoon of recording. `ads/ADS.md` is the ad.
+`OPERATIONS.md` is the five minutes a day after that.
+
+Still Aaron's, because they are promises:
+
+1. Record the three videos within seven days of the first sale. The course
+   page tells buyers that, in those words.
+2. Honour the guarantee as written: watch all of it, ask, money back.
+3. Read and answer the replies. The system has exactly one manual step and
+   it is the one that makes the money.
