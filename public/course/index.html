@@ -1,0 +1,491 @@
+<!doctype html>
+<html lang="en-AU">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Brief the Machine</title>
+<meta name="description" content="A 22-minute course on how to make an AI coding agent build the right thing: the one-page brief, the check that catches it overclaiming, and the run that tries to break it. $35, nothing held back.">
+<meta name="theme-color" content="#12181f">
+<link rel="preload" as="font" type="font/woff2" href="/fonts/clash-display-var.woff2" crossorigin>
+<link rel="preload" as="font" type="font/woff2" href="/fonts/satoshi-var.woff2" crossorigin>
+<link rel="preload" as="image" href="/img/hero.jpg" fetchpriority="high">
+
+<style>
+/* ===========================================================================
+   A tiny-course sales page, built to the same pre-flight as the portfolio.
+   Same fonts, palette, radius and motion rules, so it reads as the same person.
+   The structure is the sales letter's: a hook, what you get, why it is small,
+   who it is for, the price and the guarantee, the questions, and the button
+   after every argument. What it does not borrow: testimonials, student counts
+   or income figures. The proof is the proof the portfolio uses.
+   =========================================================================== */
+
+@font-face{font-family:'Clash';src:url('/fonts/clash-display-var.woff2') format('woff2-variations');font-weight:200 700;font-style:normal;font-display:swap}
+@font-face{font-family:'Satoshi';src:url('/fonts/satoshi-var.woff2') format('woff2-variations');font-weight:300 900;font-style:normal;font-display:swap}
+@font-face{font-family:'Mono';src:url('/fonts/ibm-plex-mono-400.woff2') format('woff2');font-weight:400;font-style:normal;font-display:swap}
+@font-face{font-family:'Mono';src:url('/fonts/ibm-plex-mono-500.woff2') format('woff2');font-weight:500;font-style:normal;font-display:swap}
+@font-face{font-family:'Clash Fallback';src:local('Segoe UI Semibold'),local('Helvetica Neue'),local('Arial');size-adjust:94%;ascent-override:96%;descent-override:22%;line-gap-override:0%}
+@font-face{font-family:'Satoshi Fallback';src:local('Segoe UI'),local('Helvetica Neue'),local('Arial');size-adjust:99%;ascent-override:97%;descent-override:24%;line-gap-override:0%}
+
+:root{
+  --brand-h:58; --brand-c:0.155;
+  --ink:oklch(0.158 0.019 252); --ink-2:oklch(0.205 0.021 252); --ink-line:oklch(0.330 0.020 252);
+  --bone:oklch(0.958 0.008 84); --bone-line:oklch(0.855 0.014 84);
+  --amber:oklch(0.760 var(--brand-c) var(--brand-h));
+  --amber-deep:oklch(0.590 0.140 calc(var(--brand-h) - 12));
+  --amber-soft:oklch(0.860 0.090 var(--brand-h));
+  --on-ink:oklch(0.968 0.006 84); --on-ink-dim:oklch(0.800 0.012 84); --on-ink-mute:oklch(0.645 0.014 252);
+  --on-bone:oklch(0.205 0.018 252); --on-bone-dim:oklch(0.420 0.016 252); --on-bone-mute:oklch(0.545 0.014 252);
+  --fg:var(--on-ink); --fg-dim:var(--on-ink-dim); --fg-mute:var(--on-ink-mute);
+  --line:var(--ink-line); --accent:var(--amber);
+  --display:'Clash','Clash Fallback',sans-serif;
+  --body:'Satoshi','Satoshi Fallback',system-ui,sans-serif;
+  --mono:'Mono',ui-monospace,Consolas,monospace;
+  --t--1:clamp(0.80rem,0.78rem + 0.10vw,0.875rem);
+  --t-0:clamp(1.06rem,1.00rem + 0.30vw,1.25rem);
+  --t-1:clamp(1.22rem,1.10rem + 0.55vw,1.60rem);
+  --t-2:clamp(1.62rem,1.35rem + 1.30vw,2.75rem);
+  --t-3:clamp(2.00rem,1.50rem + 2.40vw,4.00rem);
+  --t-4:clamp(2.60rem,1.70rem + 4.40vw,6.40rem);
+  --t-5:clamp(2.60rem,1.55rem + 4.60vw,6.20rem);
+  --s2:8px; --s3:12px; --s4:16px; --s5:24px; --s6:32px; --s7:48px; --s8:64px; --s9:96px; --s10:128px;
+  --act:clamp(96px,15vh,190px); --gut:clamp(20px,5vw,80px); --r:0px;
+  --ease:cubic-bezier(0.22,1,0.36,1); --ease-out:cubic-bezier(0.16,1,0.3,1);
+}
+
+*,*::before,*::after{box-sizing:border-box}
+html{-webkit-text-size-adjust:100%}
+html:focus-within{scroll-behavior:smooth}
+body{margin:0; background:var(--ink); color:var(--fg); font-family:var(--body); font-size:var(--t-0); line-height:1.55; -webkit-font-smoothing:antialiased; overflow-x:hidden; accent-color:var(--amber)}
+::selection{background:var(--amber); color:oklch(0.16 0.02 252)}
+img{max-width:100%; display:block}
+h1,h2,h3{font-family:var(--display); font-weight:600; margin:0; line-height:0.94; letter-spacing:-0.026em; text-wrap:balance}
+h1{font-size:var(--t-5)} h2{font-size:var(--t-4)} h3{font-size:var(--t-2); line-height:0.98}
+p{margin:0 0 1em; text-wrap:pretty} p:last-child{margin-bottom:0}
+a{color:inherit}
+:focus-visible{outline:2px solid var(--amber); outline-offset:4px}
+
+.tag{font-family:var(--mono); font-size:0.6875rem; font-weight:500; letter-spacing:0.14em; text-transform:uppercase; color:var(--accent); margin:0}
+.wrap{max-width:1500px; margin-inline:auto; padding-inline:var(--gut)}
+.measure{max-inline-size:19ch} .measure-wide{max-inline-size:50ch}
+.dim{color:var(--fg-dim)} .dim b,.lede b{color:var(--fg); font-weight:600}
+.lede{font-size:var(--t-1); line-height:1.44; color:var(--fg-dim); max-inline-size:42ch}
+.note{font-family:var(--mono); font-size:var(--t--1); color:var(--fg-mute); line-height:1.6}
+
+.act{position:relative; padding-block:var(--act)}
+.act--bone{background:var(--bone); color:var(--on-bone); --fg:var(--on-bone); --fg-dim:var(--on-bone-dim); --fg-mute:var(--on-bone-mute); --line:var(--bone-line); --accent:var(--amber-deep)}
+.act--air{padding-block:clamp(120px,18vh,250px)}
+.act--deep{background:var(--ink); overflow:clip; isolation:isolate; padding-block:clamp(110px,16vh,220px)}
+.act--deep::before{content:''; position:absolute; inset:0; z-index:-1; pointer-events:none; background:radial-gradient(120% 85% at 78% 18%, oklch(0.76 0.155 58 / 0.10), transparent 62%)}
+
+/* Parallax plates, off the main thread, static where unsupported or unwanted. */
+.plate{overflow:clip; isolation:isolate}
+.plate__media{position:absolute; inset:-14% 0; z-index:-2}
+.plate__media img{width:100%; height:100%; object-fit:cover}
+.plate__veil{position:absolute; inset:0; z-index:-1; background:
+  linear-gradient(to right, oklch(0.125 0.02 252 / 0.96) 0%, oklch(0.125 0.02 252 / 0.86) 46%, oklch(0.125 0.02 252 / 0.55) 100%),
+  linear-gradient(to bottom, oklch(0.125 0.02 252 / 0.90) 0%, transparent 26%, transparent 66%, oklch(0.125 0.02 252 / 0.94) 100%)}
+@supports (animation-timeline: view()){
+  @media (prefers-reduced-motion: no-preference){
+    .plate__media{animation:drift linear both; animation-timeline:view(); animation-range:cover 0% cover 100%}
+    @keyframes drift{from{transform:translate3d(0,-7%,0) scale(1.05)} to{transform:translate3d(0,7%,0) scale(1.05)}}
+  }
+}
+
+.hero{min-height:100svh; display:grid; align-items:center; padding-block:var(--s9) var(--s8)}
+.hero .wrap{width:100%}
+.hero h1{margin-block:var(--s4) var(--s6); max-inline-size:14ch}
+.hero h1 em{font-style:normal; color:var(--amber)}
+.creds{display:flex; flex-wrap:wrap; gap:var(--s3) var(--s5); margin-top:var(--s7); font-family:var(--mono); font-size:var(--t--1); color:var(--fg-mute)}
+.creds span{display:inline-flex; align-items:center; gap:var(--s3)}
+.creds span:not(:last-child)::after{content:''; width:4px; height:4px; background:var(--amber); opacity:0.7}
+.cta{display:flex; flex-wrap:wrap; gap:var(--s4); align-items:center; margin-top:var(--s7)}
+
+.btn{display:inline-flex; align-items:center; gap:0.6em; min-height:54px; padding:0 var(--s6); border-radius:var(--r); text-decoration:none; font-weight:700; font-size:var(--t--1); letter-spacing:0.06em; text-transform:uppercase; background:var(--amber); color:oklch(0.16 0.02 252); border:1px solid var(--amber); transition:background 200ms var(--ease), border-color 200ms var(--ease), transform 140ms var(--ease)}
+.btn:hover{background:var(--amber-soft); border-color:var(--amber-soft)}
+.btn:active{transform:scale(0.975)}
+.btn--ghost{background:transparent; color:var(--fg); border-color:color-mix(in oklch, var(--fg) 32%, transparent)}
+.btn--ghost:hover{background:color-mix(in oklch, var(--fg) 9%, transparent); border-color:var(--fg)}
+.btn__arrow{transition:transform 220ms var(--ease)}
+.btn:hover .btn__arrow{transform:translateX(5px)}
+
+/* The numbered spine, as on the portfolio. */
+.caps{margin-top:var(--s10); border-top:1px solid var(--line)}
+.cap{display:grid; gap:var(--s4) var(--s8); padding-block:var(--s8); border-bottom:1px solid var(--line); align-items:start}
+@media (min-width:58rem){.cap{grid-template-columns:5rem minmax(0,1fr) minmax(0,1.15fr); gap:var(--s9)}}
+.cap > *{min-width:0}
+.cap__n{font-family:var(--mono); font-size:var(--t--1); font-weight:500; letter-spacing:0.1em; color:var(--accent); padding-top:0.5em}
+.cap__n small{display:block; margin-top:var(--s2); letter-spacing:0.06em; color:var(--fg-mute); font-weight:400}
+.cap h3{letter-spacing:-0.028em}
+.cap__body{color:var(--fg-dim); line-height:1.62}
+.cap__body b{color:var(--fg); font-weight:600}
+
+.doable{display:grid; gap:var(--s5) var(--s8); margin:0; padding:0; list-style:none}
+@media (min-width:56rem){.doable{grid-template-columns:repeat(2,minmax(0,1fr))}}
+.doable > li{min-width:0; padding-left:var(--s6); position:relative; color:var(--fg-dim); line-height:1.6; max-inline-size:44ch}
+.doable > li::before{content:''; position:absolute; left:0; top:0.62em; width:14px; height:1px; background:var(--accent)}
+.doable b{color:var(--fg); font-weight:600}
+
+.split{display:grid; gap:var(--s8)}
+@media (min-width:62rem){.split{grid-template-columns:repeat(2,minmax(0,1fr)); gap:var(--s10)}}
+.split > *{min-width:0}
+.split h3{margin-bottom:var(--s5)}
+
+@media (prefers-reduced-motion: no-preference){
+  .rise{opacity:0; transform:translate3d(0,28px,0)}
+  .rise.in{opacity:1; transform:none; transition:opacity 640ms var(--ease-out) var(--d,0ms), transform 640ms var(--ease-out) var(--d,0ms)}
+  .wipe{transform:scaleX(0); transform-origin:left}
+  .wipe.in{transform:scaleX(1); transition:transform 900ms var(--ease-out) var(--d,0ms)}
+}
+.rule{height:1px; background:var(--accent); border:0; margin:0}
+.eyebrow{display:flex; align-items:center; gap:var(--s4); margin-bottom:var(--s5)}
+.eyebrow .rule{flex:1; max-width:150px}
+
+.link{display:inline-flex; align-items:center; gap:0.5em; min-height:32px; font-family:var(--mono); font-size:var(--t--1); text-decoration:none; color:var(--fg); box-shadow:inset 0 -1px 0 0 color-mix(in oklch, var(--accent) 55%, transparent); transition:color 180ms var(--ease), box-shadow 180ms var(--ease)}
+.link:hover{color:var(--accent); box-shadow:inset 0 -1px 0 0 var(--accent)}
+.links{display:flex; flex-wrap:wrap; gap:var(--s3) var(--s6); align-items:center}
+
+.finds{display:grid; gap:var(--s6); margin-top:var(--s9); padding:0; list-style:none}
+@media (min-width:54rem){.finds{grid-template-columns:repeat(2,minmax(0,1fr)); gap:var(--s7) var(--s9)}}
+.finds li{border-top:1px solid var(--line); padding-top:var(--s5); min-width:0}
+.finds h4{font-family:var(--display); font-weight:500; font-size:var(--t-1); line-height:1.1; letter-spacing:-0.022em; margin:0 0 var(--s3)}
+.finds p{color:var(--fg-dim); font-size:var(--t--1); line-height:1.65; margin:0}
+
+/* The price. One number, big, and the terms beside it in plain words. */
+.price{display:grid; gap:var(--s7); align-items:start; margin-top:var(--s9); padding-top:var(--s7); border-top:1px solid var(--line)}
+@media (min-width:58rem){.price{grid-template-columns:minmax(0,0.8fr) minmax(0,1.2fr); gap:var(--s10)}}
+.price > *{min-width:0}
+.price__n{font-family:var(--display); font-weight:600; font-size:var(--t-4); line-height:0.88; letter-spacing:-0.045em; font-variant-numeric:tabular-nums; display:block; color:var(--accent)}
+.price__n small{font-size:0.28em; letter-spacing:0; font-weight:500; color:var(--fg-mute); margin-left:0.35em; vertical-align:baseline}
+.price__k{display:block; margin-top:var(--s4); color:var(--fg-dim); font-size:var(--t--1); line-height:1.5; max-inline-size:26ch}
+.terms{margin:0; padding:0; list-style:none; display:grid; gap:var(--s4)}
+.terms li{display:grid; grid-template-columns:8rem minmax(0,1fr); gap:var(--s4); padding-block:var(--s4); border-bottom:1px solid var(--line); align-items:baseline}
+.terms li > *{min-width:0}
+.terms dt,.terms .k{font-family:var(--mono); font-size:var(--t--1); color:var(--fg-mute); letter-spacing:0.04em}
+.terms .v{color:var(--fg-dim); line-height:1.55}
+.terms .v b{color:var(--fg); font-weight:600}
+@media (max-width:36rem){.terms li{grid-template-columns:1fr; gap:var(--s2)}}
+
+.foot{padding-block:var(--s10) var(--s8)}
+.foot__grid{display:flex; flex-wrap:wrap; gap:var(--s6) var(--s9); justify-content:space-between; align-items:flex-end; margin-top:var(--s10); padding-top:var(--s6); border-top:1px solid var(--ink-line)}
+.foot__note{color:var(--on-ink-mute); font-size:var(--t--1); max-inline-size:44ch; line-height:1.6}
+
+@media (prefers-reduced-motion: reduce){
+  *,*::before,*::after{animation-duration:1ms !important; animation-iteration-count:1 !important; transition-duration:1ms !important}
+  html:focus-within{scroll-behavior:auto}
+}
+</style>
+</head>
+<body>
+
+<!-- ============================ HERO: THE HOOK ============================ -->
+<header class="act hero plate">
+  <div class="plate__media"><img src="/img/hero.jpg" alt="" width="1800" height="771" fetchpriority="high"></div>
+  <div class="plate__veil"></div>
+
+  <div class="wrap">
+    <p class="tag rise">A tiny course. 22 minutes. $35.</p>
+    <h1 class="rise" style="--d:80ms">Most people paste a prompt in and hope. <em>This is the other way.</em></h1>
+    <p class="lede rise" style="--d:170ms">
+      An AI coding agent is a delivery team: fast, tireless, literal, and perfectly willing to build
+      the wrong thing beautifully if nobody tells it what right looks like. <b>Brief the Machine</b>
+      is the 22-minute version of how I brief one, how I check it, and how I set it against itself.
+      Three screen recordings and two one-page checklists. Nothing held back for a course you have
+      to buy next.
+    </p>
+    <p class="creds rise" style="--d:230ms">
+      <span>Three videos</span><span>Two checklists</span><span>One afternoon to apply</span><span>No upsell</span>
+    </p>
+    <div class="cta rise" style="--d:290ms">
+      <a class="btn" href="#price">Get the course, $35 <span class="btn__arrow" aria-hidden="true">&rarr;</span></a>
+      <a class="btn btn--ghost" href="#inside">What is in it</a>
+    </div>
+  </div>
+</header>
+
+<!-- ============================ WHAT YOU GET ============================ -->
+<section class="act act--bone act--air" id="inside">
+  <div class="wrap">
+    <p class="tag rise">What is in it</p>
+    <h2 class="rise measure" style="--d:80ms">Three videos. Two pages. Done.</h2>
+    <p class="rise measure-wide dim" style="--d:150ms; margin-top:var(--s6)">
+      Everything below is something I actually do, on tools you can go and open. Each video ends
+      with you having done the thing on your own project, not having watched me talk about it.
+    </p>
+
+    <div class="caps">
+      <div class="cap rise">
+        <div class="cap__n">01<small>8 min</small></div>
+        <h3>A specification, not a wish.</h3>
+        <div class="cap__body">
+          <p>Why "build me a dashboard" produces a beautiful wrong thing, and the one-page brief that
+             stops it: <b>what it must do, what it must never do, the edge cases, and what finished
+             looks like.</b> The same document I would hand a delivery team, because it is the same
+             problem.</p>
+          <p>Live on screen, I write the brief for a small real tool and run it. <b>Checklist one</b>
+             is that brief as a fill-in template.</p>
+        </div>
+      </div>
+
+      <div class="cap rise" style="--d:80ms">
+        <div class="cap__n">02<small>8 min</small></div>
+        <h3>Done is a claim, not a fact.</h3>
+        <div class="cap__body">
+          <p>Two things an agent told me were finished: documentation for a test pipeline that did
+             not exist, and a performance report that was structurally incapable of failing. Both
+             looked perfect. <b>Every build gets a check against something you do not control</b>,
+             and I show you how to add one in a few minutes.</p>
+          <p><b>Checklist two</b> is the verification list I run before I believe anything an agent
+             says.</p>
+        </div>
+      </div>
+
+      <div class="cap rise" style="--d:160ms">
+        <div class="cap__n">03<small>6 min</small></div>
+        <h3>Set it against itself.</h3>
+        <div class="cap__body">
+          <p>One run builds. A separate run, knowing nothing about the first, tries to break it.
+             How to prompt the second run, what to hand it, and how it found <b>three real defects
+             in my own tool within an hour of it going live</b>, including one where it happily
+             answered a question it should have refused.</p>
+          <p>The last minute is where to go next, in one sentence, and it is not a pitch.</p>
+        </div>
+      </div>
+    </div>
+
+    <div class="cta rise" style="--d:100ms; margin-top:var(--s8)">
+      <a class="btn" href="#price">Get the course, $35 <span class="btn__arrow" aria-hidden="true">&rarr;</span></a>
+    </div>
+  </div>
+</section>
+
+<!-- ============================ WHY TINY ============================ -->
+<section class="act act--deep">
+  <div class="wrap">
+    <p class="tag rise">Why 22 minutes</p>
+    <h2 class="rise measure" style="--d:80ms">Because you will finish it.</h2>
+    <div class="split" style="margin-top:var(--s8)">
+      <div class="dim rise" style="--d:150ms">
+        <p>Most online courses are twelve modules long and get abandoned at module two. Not because
+           the buyer is lazy. Because the course is padded to justify the price, and the good part is
+           held back for the coaching offer at the end.</p>
+        <p>This one is priced so that it pays for itself. <b>I do not need you to buy anything
+           after it</b>, so there is no reason to hold anything back, and I have not. If you finish
+           it and want more, you know where I am. If you finish it and never think about me again,
+           that is a good outcome too.</p>
+      </div>
+      <div class="dim rise" style="--d:230ms">
+        <p>You will notice what is missing. No income screenshots. No count of how many people have
+           bought it. No wall of testimonials. Those are the tells of a page that needs you to stop
+           thinking, and I would rather you kept thinking.</p>
+        <p>What is here instead is <b>the same proof the rest of my site uses</b>: two working tools
+           whose code is public, and specific things that went wrong and how they were found. You
+           can check every one of them before you spend a cent.</p>
+      </div>
+    </div>
+    <div class="links rise" style="--d:300ms; margin-top:var(--s8)">
+      <a class="link" href="https://rain-check-mu.vercel.app">Rain Check, live <span aria-hidden="true">&rarr;</span></a>
+      <a class="link" href="https://doorknock-eight.vercel.app">Doorknock, live <span aria-hidden="true">&rarr;</span></a>
+      <a class="link" href="https://github.com/Aa-ronJS">The code <span aria-hidden="true">&rarr;</span></a>
+      <a class="link" href="/">The rest of the site</a>
+    </div>
+  </div>
+</section>
+
+<!-- ============================ WHO IT IS FOR ============================ -->
+<section class="act act--bone act--air">
+  <div class="wrap">
+    <p class="tag rise">Who it is for</p>
+    <h2 class="rise measure" style="--d:80ms">You already use one. It keeps getting it wrong.</h2>
+    <div class="split" style="margin-top:var(--s8)">
+      <div class="rise" style="--d:150ms">
+        <h3>This is for you if</h3>
+        <ul class="doable" style="grid-template-columns:1fr">
+          <li><b>You run a business or a team</b> and have started using Claude Code, Cursor or Copilot to
+              build internal tools, and the output is confident, fast and not quite what you meant.</li>
+          <li><b>You are a consultant or analyst</b> who is expected to deliver working things now, not
+              documents about them, and you want a method rather than a vibe.</li>
+          <li><b>You have shipped something an agent built</b> and later found out it did not do what
+              its own notes said it did.</li>
+        </ul>
+      </div>
+      <div class="rise" style="--d:230ms">
+        <h3>This is not for you if</h3>
+        <ul class="doable" style="grid-template-columns:1fr">
+          <li><b>You have never opened a coding agent.</b> Start with the free tutorials the tools ship
+              with. Come back when it has annoyed you.</li>
+          <li><b>You want to learn to program.</b> This is about briefing and checking, not syntax. A
+              working programmer will get plenty from it, but that is not who it is written for.</li>
+          <li><b>You want a promise about money.</b> I can show you how I work. What you build with it
+              is yours.</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============================ WHERE IT CAME FROM ============================ -->
+<section class="act plate">
+  <div class="plate__media"><img src="/img/seam.jpg" alt="" width="1400" height="933" loading="lazy"></div>
+  <div class="plate__veil"></div>
+
+  <div class="wrap">
+    <div class="eyebrow rise"><span class="tag">Where it came from</span><hr class="rule wipe" style="--d:120ms"></div>
+    <h2 class="rise measure" style="--d:80ms">Ten years of writing the brief.</h2>
+    <p class="lede rise" style="--d:160ms; margin-top:var(--s6)">
+      I have been a business analyst since 2015 and building the automation myself since 2016, in
+      mining, policing, federal service delivery and local government. The job was always the same:
+      work out what a room full of people actually need, write it so a delivery team cannot build the
+      wrong thing, and then check what came back. <b>An AI agent is that delivery team, and it turns
+      out to be the same skill.</b>
+    </p>
+
+    <ul class="finds">
+      <li class="rise">
+        <h4>The check that caught the agent overclaiming</h4>
+        <p>Both of my public tools carry a script whose only job is to compare the result against
+           something I do not control. It has caught things my own tests never could, and it is
+           what video two teaches.</p>
+      </li>
+      <li class="rise" style="--d:90ms">
+        <h4>The adversarial run that found the security holes</h4>
+        <p>Reviewing a live shopping platform written mostly by AI, a second run with no knowledge
+           of the first logged into somebody else's account and shut down their broadcast. Video
+           three is how to set that up on your own project.</p>
+      </li>
+      <li class="rise" style="--d:180ms">
+        <h4>The test that could only ever pass</h4>
+        <p>A performance page that always came back perfect, because it was scoring blanks out of
+           blanks. The project's own notes had it down as verified. This is what "done is a claim"
+           means in practice.</p>
+      </li>
+      <li class="rise" style="--d:270ms">
+        <h4>The one reported problem that was not one</h4>
+        <p>An automated tool flagged a leaked key. I traced it and told them to ignore it. A good
+           check catches false alarms as well as real ones, or it costs you a week chasing ghosts.</p>
+      </li>
+    </ul>
+  </div>
+</section>
+
+<!-- ============================ PRICE ============================ -->
+<section class="act act--bone act--air" id="price">
+  <div class="wrap">
+    <p class="tag rise">The price</p>
+    <h2 class="rise measure" style="--d:80ms">Less than an hour of anyone's time.</h2>
+    <p class="rise measure-wide dim" style="--d:150ms; margin-top:var(--s6)">
+      One payment. No membership, no community to join, no second course you need before this one
+      makes sense. It is priced so that it is an easy yes, and so that I never have to be careful
+      about what I put in it.
+    </p>
+
+    <div class="price">
+      <div class="rise" style="--d:120ms">
+        <span class="price__n">$35<small>AUD</small></span>
+        <span class="price__k">once, for the three videos and both checklists</span>
+      </div>
+      <ul class="terms rise" style="--d:200ms">
+        <li><span class="k">You get</span><span class="v">Three screen recordings, about 22 minutes in total, and two one-page checklists: <b>the brief template and the verification list.</b></span></li>
+        <li><span class="k">When</span><span class="v">This is the beta. <b>Recordings are delivered within seven days of purchase</b>, and you keep every later revision at no cost.</span></li>
+        <li><span class="k">Guarantee</span><span class="v">Watch all of it. If it did not change how you brief an agent, <b>ask and the money comes back.</b> No form, no reason required.</span></li>
+        <li><span class="k">After</span><span class="v">When you have run your first brief, reply to the receipt and tell me what it built. <b>I read every one.</b> That is the only follow-up there is.</span></li>
+      </ul>
+    </div>
+
+    <div class="cta rise" style="--d:260ms; margin-top:var(--s8)">
+      <!-- Checkout: set this href to the payment link (Stripe Payment Link or Gumroad) before the ad goes live. -->
+      <a class="btn" id="checkout" href="#price">Get the course, $35 <span class="btn__arrow" aria-hidden="true">&rarr;</span></a>
+      <p class="note" style="margin:0">Receipt and access by email.</p>
+    </div>
+  </div>
+</section>
+
+<!-- ============================ QUESTIONS ============================ -->
+<section class="act act--deep">
+  <div class="wrap">
+    <p class="tag rise">Questions</p>
+    <h2 class="rise measure" style="--d:80ms">The ones people ask.</h2>
+
+    <ul class="finds">
+      <li class="rise">
+        <h4>Do I need to buy anything else for this to work?</h4>
+        <p>No. It is a complete thing. There is no coaching offer behind it that the course is
+           secretly an advertisement for. If you later want something built properly, you can ask,
+           and the answer might be yes, but the course does not depend on it.</p>
+      </li>
+      <li class="rise" style="--d:90ms">
+        <h4>Which tool is it for?</h4>
+        <p>I record with Claude Code because that is what I use. The brief, the check and the
+           adversarial run work the same way in Cursor, Copilot or anything else that takes
+           instructions and writes code. Nothing in it is a product feature.</p>
+      </li>
+      <li class="rise" style="--d:180ms">
+        <h4>Why is it a beta?</h4>
+        <p>Because I would rather find out whether people want it before I spend a week polishing
+           it. You get the recordings within seven days, and every revision after that. The price
+           reflects that, and the guarantee covers it.</p>
+      </li>
+      <li class="rise" style="--d:270ms">
+        <h4>Is there a longer version?</h4>
+        <p>Not yet. If enough people finish this one and ask for the next step, which is giving the
+           agent real tools so it can read your CRM instead of guessing about it, I will record
+           that too. The last minute of video three says exactly that, once.</p>
+      </li>
+      <li class="rise" style="--d:360ms">
+        <h4>Can I share it with my team?</h4>
+        <p>Yes. Buy it once and show it to whoever you work with. I am not going to chase a small
+           business over a 22-minute video.</p>
+      </li>
+      <li class="rise" style="--d:450ms">
+        <h4>What if I already do all of this?</h4>
+        <p>Then you do not need it, and I would rather you kept the $35. The page above is honest
+           about what is in it so you can make that call before buying, not after.</p>
+      </li>
+    </ul>
+  </div>
+</section>
+
+<!-- ============================ FOOT ============================ -->
+<footer class="act foot">
+  <div class="wrap">
+    <p class="tag rise">Brief the Machine</p>
+    <h2 class="rise measure" style="--d:80ms">Twenty-two minutes. Then build something.</h2>
+    <div class="cta rise" style="--d:200ms">
+      <a class="btn" href="#price">Get the course, $35 <span class="btn__arrow" aria-hidden="true">&rarr;</span></a>
+      <a class="btn btn--ghost" href="/">Who is teaching it</a>
+    </div>
+
+    <div class="foot__grid">
+      <p class="foot__note">
+        Everything on this page that can be checked, you can check: the tools are live, the code is
+        public, and the method is the one I use on them. The only thing you take on trust is whether
+        22 minutes of it is worth $35, and the guarantee exists so you do not have to.
+      </p>
+      <p class="foot__note">Aaron Steele, South Australia.</p>
+    </div>
+  </div>
+</footer>
+
+<script>
+(function () {
+  var reduced = matchMedia('(prefers-reduced-motion: reduce)').matches;
+  var hero = document.querySelectorAll('header .rise, header .wipe');
+  var rest = document.querySelectorAll('section .rise, section .wipe, footer .rise, footer .wipe');
+
+  /* The hero is already on screen, so it animates on load. Only what is below waits for a scroll. */
+  requestAnimationFrame(function () { hero.forEach(function (el) { el.classList.add('in'); }); });
+
+  if (reduced || !('IntersectionObserver' in window)) {
+    rest.forEach(function (el) { el.classList.add('in'); });
+  } else {
+    var io = new IntersectionObserver(function (entries) {
+      entries.forEach(function (e) {
+        if (e.isIntersecting) { e.target.classList.add('in'); io.unobserve(e.target); }
+      });
+    }, { rootMargin: '0px 0px -6% 0px', threshold: 0.05 });
+    rest.forEach(function (el) { io.observe(el); });
+  }
+})();
+</script>
+</body>
+</html>

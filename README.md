@@ -1,7 +1,13 @@
 # Portfolio
 
-Source of https://aaronsteele.vercel.app. One HTML file, five photographs, three
+Source of https://aaronsteele.vercel.app. Two HTML files, five photographs, three
 self-hosted fonts, no build step and no dependencies.
+
+`public/index.html` is the portfolio. `public/course/index.html`, served at
+`/course`, is the sales page for a 22-minute course built on the tiny-course
+model: `course/METHOD.md` is that model decoded from the sales letter it came
+from, and `course/PLAN.md` is the plan for Aaron's version, including what still
+has to be decided before the page goes live.
 
 `PREFLIGHT.md` holds the design pre-flight it was built against, answered in
 writing before any markup, including the deviations from the house playbook and
