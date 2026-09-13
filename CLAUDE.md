@@ -12,5 +12,9 @@ Two independent things live here:
   the shots). Start with `animation-pipeline/CLAUDE.md`, then its
   `README.md`. Environment setup: `animation-pipeline/setup.sh`.
 
-The two share nothing except `public/fonts/satoshi-var.woff2`, which the
+- **`ecommerce-plan/`** — researched business plan for a workplace-safety
+  consumables replenishment business (Sept 2026). Start with its
+  `README.md`; `model.py` is the financial model.
+
+The site and the pipeline share nothing except `public/fonts/satoshi-var.woff2`, which the
 pipeline ships converted to TTF for captions.
