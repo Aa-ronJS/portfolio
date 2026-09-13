@@ -1,0 +1,3 @@
+date,business,suburb,contact,phone,industry,kits_seen,utes,outcome,kits_sold,plan,annual_or_monthly,amount_ex_gst,reason_for_no,follow_up_date,referred_by,notes
+2026-09-14,Example Plumbing,Lonsdale,Sam,0400 111 222,Trades,2,3,paid,4,yes,annual,692,,,,"Demo row. Delete me."
+2026-09-14,Example Electrical,Lonsdale,Jo,0400 333 444,Trades,1,2,next week,0,,,,"wants to check with partner",2026-09-21,Example Plumbing,"Demo row. Delete me."

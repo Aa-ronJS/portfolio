@@ -1,0 +1,18 @@
+{
+  "name": "kit-register",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Kit register, QR after-use refills, expiry engine and compliance certificate for workplace first-aid kits on replenishment.",
+  "main": "server.js",
+  "engines": { "node": ">=22.13" },
+  "scripts": {
+    "start": "node --disable-warning=ExperimentalWarning server.js",
+    "dev": "node --disable-warning=ExperimentalWarning --watch server.js",
+    "seed": "node --disable-warning=ExperimentalWarning scripts/seed.js",
+    "due": "node --disable-warning=ExperimentalWarning scripts/due.js",
+    "test": "node --disable-warning=ExperimentalWarning test/smoke.js"
+  },
+  "dependencies": {
+    "qrcode": "1.5.4"
+  }
+}

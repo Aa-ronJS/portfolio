@@ -1,0 +1,67 @@
+<title>Kits Always Compliant</title>
+<style>
+:root{--ink:#1B221E;--ink-2:#47524B;--muted:#76817A;--line:#D9E0D8;--accent:#1E7A4A;--accent-soft:#DDEFE3;--amber:#A86A12;--bg:#F6F8F4;--surface:#fff}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--ink:#EAF0EA;--ink-2:#B6C0B8;--muted:#83908A;--line:#2B352F;--accent:#4DC385;--accent-soft:#1D3A2B;--amber:#E2A94A;--bg:#121815;--surface:#1A211D}}
+:root[data-theme="dark"]{--ink:#EAF0EA;--ink-2:#B6C0B8;--muted:#83908A;--line:#2B352F;--accent:#4DC385;--accent-soft:#1D3A2B;--amber:#E2A94A;--bg:#121815;--surface:#1A211D}
+body{margin:0;background:var(--bg);color:var(--ink);font-family:"Public Sans","Segoe UI",Roboto,Arial,sans-serif;font-size:15px;line-height:1.5;padding-inline:20px;padding-block:24px 48px}
+.sheet{max-width:820px;margin:0 auto;background:var(--surface);border:1px solid var(--line);padding:36px 40px}
+h1,h2,h3{font-family:"Archivo","Helvetica Neue",Arial,sans-serif;margin:0;line-height:1.1;letter-spacing:-.01em;text-wrap:balance}
+h1{font-size:36px;font-weight:800;max-width:18ch}
+h2{font-size:18px;font-weight:700;margin:26px 0 10px}
+p{margin:0 0 .8em;max-width:66ch}
+.eyebrow{font-family:"IBM Plex Mono",ui-monospace,Menlo,monospace;font-size:12px;letter-spacing:.14em;text-transform:uppercase;color:var(--accent);margin:0 0 10px}
+.lede{font-size:17px;color:var(--ink-2);margin-top:14px}
+.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:12px}
+.card{border:1px solid var(--line);padding:14px 16px}
+.card h3{font-size:15px;font-weight:700;margin:0 0 6px}
+.amount{font-family:"Archivo",Arial,sans-serif;font-size:28px;font-weight:800;letter-spacing:-.02em}
+.per{font-size:12.5px;color:var(--muted)}
+.card ul{margin:8px 0 0;padding-left:1.1em;font-size:13.5px}
+.card li{margin-bottom:3px}
+.steps{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:12px;counter-reset:s}
+.steps div{border-top:3px solid var(--accent);padding-top:10px;font-size:14px}
+.steps div b{display:block;font-family:"Archivo",Arial,sans-serif;font-size:15px;margin-bottom:4px}
+.compare{width:100%;border-collapse:collapse;font-size:13.5px;margin-top:6px}
+.compare th,.compare td{text-align:left;padding:7px 10px;border-bottom:1px solid var(--line);vertical-align:top}
+.compare th{font-family:"IBM Plex Mono",ui-monospace,monospace;font-size:11px;letter-spacing:.08em;text-transform:uppercase;color:var(--ink-2);font-weight:500}
+.compare td:first-child{font-weight:600}
+.foot{border-top:1px solid var(--line);margin-top:26px;padding-top:12px;font-size:12px;color:var(--muted)}
+.cta{display:flex;gap:14px;flex-wrap:wrap;align-items:center;margin-top:18px;padding:14px 16px;background:var(--accent-soft);border-left:4px solid var(--accent)}
+.cta b{font-family:"Archivo",Arial,sans-serif;font-size:17px}
+@media print{body{background:#fff;padding:0}.sheet{border:0;padding:0;max-width:none}}
+</style>
+<div class="sheet">
+  <p class="eyebrow">Workplace first-aid · Adelaide · site kits · vehicle kits · AED consumables</p>
+  <h1>Your first-aid kits, always compliant. Never another visit.</h1>
+  <p class="lede">Every workplace and every work vehicle has to have a stocked first-aid kit, and someone has to prove it when a head contractor, an inspector or your insurer asks. We keep the kits stocked automatically and give you the certificate.</p>
+
+  <h2>How it works</h2>
+  <div class="steps">
+    <div><b>Kits arrive labelled</b>Code of Practice compliant site and vehicle kits, each with a QR label and a full contents register.</div>
+    <div><b>Used something? Scan it</b>Twenty seconds on any phone: tap what was used. The refill ships the same business day.</div>
+    <div><b>Refills before expiry</b>Two scheduled refill packs a year, AED pads and batteries replaced before they expire.</div>
+    <div><b>Proof on demand</b>A live compliance record and an annual certificate you can forward to anyone who asks.</div>
+  </div>
+
+  <h2>Pricing (ex GST)</h2>
+  <div class="grid">
+    <div class="card"><h3>Site kit</h3><div class="amount">$119</div><div class="per">once</div><ul><li>Code of Practice contents, low-risk workplace</li><li>QR label, contents register</li><li>Burns, eye, remote, outdoor modules available</li></ul></div>
+    <div class="card"><h3>Vehicle kit</h3><div class="amount">$59</div><div class="per">once</div><ul><li>Fits a glovebox or console</li><li>QR label, contents register</li></ul></div>
+    <div class="card"><h3>Replenishment plan</h3><div class="amount">$144</div><div class="per">per site kit per year · $84 per vehicle kit per year · monthly available</div><ul><li>Two scheduled refill packs a year</li><li>After-use refills on a scan</li><li>Expiry tracking, audit log</li><li>Annual compliance certificate</li></ul></div>
+    <div class="card"><h3>AED consumables</h3><div class="amount">Never expired</div><div class="per">OEM pads and batteries, billed at shipment</div><ul><li>Replaced before expiry</li><li>Model and serial on your record</li></ul></div>
+  </div>
+
+  <h2>A plumber with a workshop and three utes</h2>
+  <table class="compare">
+    <tr><th>Item</th><th>Today</th><th>Year one</th><th>Every year after</th></tr>
+    <tr><td>1 site kit + 3 vehicle kits</td><td>$296</td><td></td><td></td></tr>
+    <tr><td>Plan: 1 site + 3 vehicle</td><td></td><td>$396</td><td>$396</td></tr>
+    <tr><td>Refills, scans, certificate, no visits</td><td colspan="3">included</td></tr>
+    <tr><td><b>Total</b></td><td><b>$296</b></td><td><b>$396</b></td><td><b>$396</b></td></tr>
+  </table>
+  <p style="font-size:13.5px;color:var(--ink-2);margin-top:8px">About $33 a month for four compliant kits and the paperwork. A quarterly visit service is priced per visit, per kit; a do-it-yourself audit is an afternoon a quarter and a trip to the shop.</p>
+
+  <div class="cta"><b>Get compliant this week.</b><span>Kits delivered and registered within two business days in Adelaide. Call or text <strong>[phone]</strong> · <strong>[email]</strong></span></div>
+
+  <p class="foot">Kits are supplied by a TGA-listed Australian manufacturer with contents aligned to the example list in the Safe Work Australia model Code of Practice: First aid in the workplace. Your risk assessment decides your final contents; the duty to provide trained first aiders and keep kits accessible stays with the business under the Work Health and Safety Act 2012 (SA). [Legal name] · ABN [number] · Adelaide, South Australia.</p>
+</div>
