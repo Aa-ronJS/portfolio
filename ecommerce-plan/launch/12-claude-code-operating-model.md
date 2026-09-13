@@ -126,7 +126,7 @@ script wrote without your edit; scrape where an API exists. Done when: ten
 draft pages exist in `content/` and a fifty-row prospect list with drafted
 first emails exists for one industrial estate.
 
-### 6. Renewal and dunning flows (next; needs Stripe and Klaviyo accounts)
+### 6. Renewal and dunning flows (built in `lib/autopilot.js`; see `16-autopilot.md`)
 
 Must: 30-day renewal email with the certificate attached and the year's
 shipments listed; 7-day call list for accounts over three kits or with no
@@ -135,7 +135,7 @@ cancellation survey with one required reason. Conversation: every
 retention lever in `11-churn-and-retention.md`. Done when: the first
 cohort's renewals run without you remembering anything.
 
-### 7. Ops assistant (next; needs the email account)
+### 7. Ops assistant (built as `lib/inbox.js` and the approval queue; see `16-autopilot.md`)
 
 Must: reads the shared inbox, classifies (refill, address change, cancel,
 question, partner enquiry), drafts a reply and the app action, queues both

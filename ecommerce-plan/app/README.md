@@ -17,8 +17,8 @@ ADMIN_PASSWORD=pick-something npm start
 Open http://localhost:3000/admin (user `admin`, the password you set). The
 seed prints the demo scan, record and certificate links.
 
-Run the tests any time: `npm test` (boots a throwaway database, walks the
-whole sales flow, 40-odd assertions).
+Run the tests any time: `npm test` (boots a throwaway database with a fake
+Stripe and a fake 3PL, walks the whole sales and autopilot flow, 139 checks).
 
 ## What it does
 
@@ -51,6 +51,28 @@ optional partner, an optional referring customer, and a billing `status`
 (active, past_due, cancelled with a reason). The compliance record shows
 "renewal payment pending" while dunning runs and "plan inactive" after a
 cancellation.
+
+## Autopilot
+
+`npm run autopilot` (cron, 7am Adelaide) runs every recurring job once,
+idempotently: shipments to the 3PL, purchase orders at reorder points,
+renewal notices, dunning and closure, activation nudges, the self-check
+lead sequence, exit surveys and win-backs, partner statements and payouts,
+and the Monday review that emails you the numbers, the stop-rule breaches
+and the list of taps waiting. Money out and anything irreversible wait in
+the queue on `/admin/autopilot` unless under a cap; approving executes.
+
+| Route | Who | What |
+|---|---|---|
+| `/admin/autopilot` | you | The queue (approve / reject), which connections are configured, shipments with a manual "Shipped", stock with reorder points, purchase orders with "Received", inbound email and its handling, sent and queued email, "Run now" |
+| `POST /webhooks/fulfilment?key=FULFIL_WEBHOOK_SECRET` | the 3PL | `{order_ref, tracking, carrier}` marks the shipment shipped, closes the request, updates the record and stock, and the customer is emailed on the next run |
+| `POST /webhooks/inbox?key=INBOUND_SECRET` | the email provider | Postmark, Resend or Mailgun inbound JSON; classified (Claude with a structured-output schema, keyword fallback), answered on the spot for the safe classes with the sender's own links, or queued with a drafted reply |
+| `/billing?c=TOKEN` | the customer | Stripe customer portal session (card, invoices, cancel); a plain page when Stripe is not configured |
+
+Configuration is in `.env.example` under "autopilot". With nothing
+configured the jobs still run: emails queue in the outbox, shipments wait on
+the admin page for you to pack, and purchase orders are drafted. The
+design and the policy table are in `../launch/16-autopilot.md`.
 
 ## Agent-assisted scripts
 

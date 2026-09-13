@@ -9,6 +9,13 @@ process.env.BRAND = 'TestBrand';
 process.env.CONTACT_PHONE = '0400 000 000';
 process.env.STRIPE_WEBHOOK_SECRET = 'whsec_test';
 process.env.STRIPE_SECRET_KEY = 'sk_test_fake';
+process.env.INBOX_CLASSIFIER = 'keywords';
+process.env.INBOUND_SECRET = 'inb_test';
+process.env.FULFIL_WEBHOOK_SECRET = 'ful_test';
+process.env.FOUNDER_EMAIL = 'founder@example.com';
+process.env.AUTOPILOT_FORCE_WEEKLY = '1';
+process.env.AUTOPILOT_FORCE_MONTHLY = '1';
+process.env.SUPPLIER_EMAIL = 'orders@supplier.example';
 
 const assert = require('assert');
 const fs = require('fs');
@@ -245,6 +252,88 @@ const fakeStripe = http.createServer((req, res) => {
   r = await post('/partners', { name: 'Self Serve Safety', type: 'trainer', email: 'p@example.com' }); assert(r.status === 200 && r.text.includes('/buy?ref=')); ok('partner self-signup creates links');
   assert.strictEqual(db.listPartners().length, 2);
   r = await get('/terms'); assert.strictEqual(r.status, 200); ok('terms page');
+
+  // ---- autopilot: jobs, queue, shipments, stock, purchase orders, inbound email, billing link
+  const ap = require('../lib/autopilot'); const fulfilLib = require('../lib/fulfil');
+  const outboxKinds = () => db.listOutbox(500).map((m) => m.kind);
+  // a 3PL that accepts orders and echoes an id
+  const threePL = []; const fake3pl = http.createServer((rq, rs) => { let bd = ''; rq.on('data', (x) => bd += x); rq.on('end', () => { threePL.push(JSON.parse(bd)); rs.setHeader('Content-Type', 'application/json'); rs.end(JSON.stringify({ id: 'WH-' + threePL.length })); }); });
+  await new Promise((r2) => fake3pl.listen(0, r2));
+  process.env.FULFIL_WEBHOOK = `http://127.0.0.1:${fake3pl.address().port}/orders`;
+  // make the first customer look 12 days old, with a renewal in 20 days and an open after-use request
+  db.db.prepare("UPDATE customers SET created_at = ?, plan_renewal = ?, email = 'jo@example.com' WHERE id = ?").run(db.addDays(db.today(), -12) + 'T00:00:00.000Z', db.addDays(db.today(), 20), cid);
+  fulfilLib.seedStock({ 'KIT-SITE': 10, 'KIT-VEH': 15, 'PACK-SITE': 20, 'PACK-VEH': 30, 'AED-PADS': 2, 'AED-BATT': 1 });
+  const ck = db.listKits(cid)[0];
+  db.recordUse(ck, [{ id: db.listItems(ck.id)[0].id, name: db.listItems(ck.id)[0].name, qty: 1 }], 'autopilot test', 'Jo');
+  let run = await ap.runAll();
+  assert(run.renewals.sent === 1 && outboxKinds().some((k) => k.startsWith('renewal_30:'))); ok('renewal notice 30 days out, once per cycle');
+  run = await ap.runAll(); assert.strictEqual(run.renewals.sent, 0); ok('renewal notice is not repeated');
+  assert(run.shipments.created === 0 && db.listShipments(null).some((x) => x.kind === 'after_use' && x.status === 'sent_to_3pl')); ok('after-use request became a shipment and went to the 3PL');
+  const sh = db.listShipments(null).find((x) => x.kind === 'after_use');
+  assert(threePL.length >= 1 && threePL.some((o) => o.order_ref === sh.id && o.lines[0].qty === 1)); ok('3PL received the order with the lines');
+  // kit orders from checkout ship once, and cover every kit
+  assert(db.listShipments(null).some((x) => x.kind === 'kits' && x.customer_id === oc.id && JSON.parse(x.lines).length === 3)); ok('checkout kits shipped as one order of three');
+  r = await get('/webhooks/fulfilment', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ order_ref: sh.id, tracking: 'AP123' }) }); assert.strictEqual(r.status, 401); ok('fulfilment callback needs the secret');
+  r = await get('/webhooks/fulfilment?key=ful_test', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ order_ref: sh.id, tracking: 'AP123', carrier: 'AusPost' }) }); assert.strictEqual(r.status, 200);
+  assert(db.getShipment(sh.id).status === 'shipped' && db.listRequestsForKit(ck.id).every((q) => q.status !== 'open')); ok('3PL callback marks shipped and closes the refill request');
+  const skuUsed = fulfilLib.itemSku(db.listItems(ck.id)[0].name); assert.strictEqual(db.getStock(skuUsed).on_hand, -1); ok('stock decremented per line');
+  run = await ap.runAll(); assert(outboxKinds().some((k) => k === 'shipped:' + sh.id)); ok('customer told the refill shipped');
+  // stock: reorder point -> purchase order; small one auto-sent, big one queued
+  db.upsertStock({ sku: 'KIT-VEH', name: 'Vehicle kit', on_hand: 2, reorder_point: 8, reorder_qty: 30, unit_cost: 32 });
+  run = await ap.runAll(); let pos = db.listPurchaseOrders(); assert(run.stock.raised === 1 && pos.some((po) => po.status === 'sent' && po.total === 30 * 32)); ok('purchase order under the cap sent to the supplier automatically');
+  assert(outboxKinds().some((k) => k.startsWith('po:'))); ok('supplier emailed the purchase order');
+  db.upsertStock({ sku: 'KIT-SITE', name: 'Site kit', on_hand: 0, reorder_point: 5, reorder_qty: 40, unit_cost: 58 });
+  run = await ap.runAll(); assert(run.stock.queued && db.listActions('pending').some((a) => a.type === 'purchase_order')); ok('purchase order over the cap waits in the queue');
+  const poAction = db.listActions('pending').find((a) => a.type === 'purchase_order');
+  r = await post(`/admin/actions/${poAction.id}/approve`, {}, true); assert.strictEqual(r.status, 303);
+  assert(db.getAction(poAction.id).status === 'done' && db.listPurchaseOrders().find((po) => po.action_id === poAction.id).status === 'sent'); ok('approving the queue item sends the purchase order');
+  const bigPo = db.listPurchaseOrders().find((po) => po.action_id === poAction.id);
+  r = await post(`/admin/purchase-orders/${bigPo.id}/received`, {}, true); assert.strictEqual(db.getStock('KIT-SITE').on_hand, 40); ok('receiving a purchase order tops up stock');
+  // dunning: past due -> emails -> cancel at day 21
+  const pdc = db.createCustomer({ name: 'Late Payer', email: 'late@example.com', plan_billing: 'monthly' });
+  db.setBillingStatus(pdc.id, 'past_due'); db.logEvent(pdc.id, null, 'payment_failed', { attempt: 1 });
+  db.db.prepare("UPDATE events SET created_at = ? WHERE customer_id = ? AND type = 'payment_failed'").run(db.addDays(db.today(), -8) + 'T00:00:00.000Z', pdc.id);
+  run = await ap.runAll(); assert(outboxKinds().filter((k) => k.startsWith('dunning_') && db.listOutbox(500).find((m) => m.kind === k).customer_id === pdc.id).length === 2); ok('dunning emails at day 1 and 7');
+  db.db.prepare("UPDATE events SET created_at = ? WHERE customer_id = ? AND type = 'payment_failed'").run(db.addDays(db.today(), -22) + 'T00:00:00.000Z', pdc.id);
+  run = await ap.runAll(); assert(run.dunning.cancelled === 1 && db.getCustomer(pdc.id).status === 'cancelled'); ok('cancelled after 21 days past due');
+  assert(outboxKinds().includes('exit_survey')); ok('exit survey sent on cancellation');
+  // activation: no scan in 10 days -> nudge; onboarding reminder for unnamed kits
+  assert(outboxKinds().includes('onboarding_reminder') || !db.listCustomersByStatus('active').some((x) => !x.onboarded_at && sched.daysBetween(x.created_at.slice(0, 10), db.today()) >= 2)); ok('onboarding reminder logic ran');
+  const quiet = db.createCustomer({ name: 'Quiet Co', email: 'quiet@example.com' }); db.createKit({ customer_id: quiet.id, type: 'site', location: 'Office' });
+  db.db.prepare('UPDATE customers SET created_at = ?, onboarded_at = ? WHERE id = ?').run(db.addDays(db.today(), -11) + 'T00:00:00.000Z', db.now(), quiet.id);
+  run = await ap.runAll(); assert(db.listOutbox(500).some((m) => m.kind === 'activation_10' && m.customer_id === quiet.id)); ok('activation nudge at day 10 for a kit never scanned');
+  // leads sequence
+  assert(db.listOutbox(500).some((m) => m.kind === 'lead_0' && m.lead_id)); ok('self-check result email sent to the lead');
+  assert(db.listLeads().every((l) => l.status !== 'new' || !l.email)); ok('lead moved to contacted');
+  // partners: statement and payout in the queue
+  assert(db.listOutbox(500).some((m) => m.kind.startsWith('statement:')) && db.listActions('pending').some((a) => a.type === 'partner_payout')); ok('partner statement sent, payout waits for a tap');
+  const payAction = db.listActions('pending').find((a) => a.type === 'partner_payout');
+  r = await post(`/admin/actions/${payAction.id}/approve`, {}, true); assert(db.listPartnerPayouts(pid).every((x) => x.status === 'paid')); ok('approving the payout marks it paid');
+  // weekly review: digest to the founder, ads rule in the queue
+  assert(db.listOutbox(500).some((m) => m.kind.startsWith('digest:') && m.to_email === 'founder@example.com' && m.text.includes('Waiting for your tap'))); ok('weekly digest emailed to the founder');
+  assert(db.lastJobRuns(100).some((j) => j.job === 'review')); ok('weekly review recorded once');
+  // inbound email: safe classes answered, the rest queued with a draft
+  const inb = (from, subject, body) => get('/webhooks/inbox?key=inb_test', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ FromFull: { Email: from }, Subject: subject, TextBody: body }) });
+  r = await get('/webhooks/inbox', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: '{}' }); assert.strictEqual(r.status, 401); ok('inbound webhook needs the secret');
+  r = await inb('jo@example.com', 'Certificate please', 'Can you send our compliance certificate for the insurer?'); let j = JSON.parse(r.text);
+  assert(j.classification === 'certificate_request' && j.status === 'auto_replied'); ok('certificate request answered automatically');
+  const lastMail = db.listOutbox(1)[0]; assert(lastMail.kind === 'inbox_reply' && lastMail.text.includes(`/c/${c.token}/certificate`)); ok('reply carries the customer\'s own certificate link');
+  r = await inb('jo@example.com', 'We moved', 'Hi, new address: 44 Harbour Rd, Port Adelaide SA 5015. Thanks'); j = JSON.parse(r.text);
+  assert(j.classification === 'address_change' && j.status === 'queued'); ok('address change below confidence threshold waits for a tap');
+  r = await inb('jo@example.com', 'Kit', 'The scissors arrived damaged and the box was wrong, this is unacceptable'); j = JSON.parse(r.text);
+  assert(j.classification === 'complaint' && j.status === 'queued' && db.listActions('pending').some((a) => a.type === 'send_email' && a.detail.includes('draft reply'))); ok('complaint queued with a drafted reply');
+  const emailAction = db.listActions('pending').find((a) => a.type === 'send_email' && a.title.includes('complaint'));
+  r = await post(`/admin/actions/${emailAction.id}/reject`, { why: 'call them instead' }, true); assert(db.getAction(emailAction.id).status === 'rejected'); ok('a queued reply can be rejected');
+  r = await inb('seo@spam.example', 'Guest post', 'We offer backlink packages'); j = JSON.parse(r.text); assert(j.status === 'ignored'); ok('spam ignored');
+  r = await inb('jo@example.com', 'Cancel', 'Please cancel our plan'); j = JSON.parse(r.text); assert(j.status === 'auto_replied' && db.listEvents(cid).some((e) => e.type === 'cancel_requested')); ok('cancel request answered with the self-service link and logged');
+  // billing self-service link falls back to a page when Stripe has no portal
+  r = await get(`/billing?c=${c.token}`); assert(r.status === 200 || r.status === 303); ok('billing link resolves');
+  // admin page and manual run
+  r = await admin('/admin/autopilot'); assert(r.status === 200 && r.text.includes('Waiting for your tap') && r.text.includes('KIT-SITE') && r.text.includes('certificate_request')); ok('autopilot admin page renders queue, stock, inbox');
+  r = await post('/admin/autopilot/run', {}, true); assert.strictEqual(r.status, 303); ok('run now from admin');
+  r = await post(`/admin/shipments/${db.listShipments('sent_to_3pl')[0].id}/shipped`, { tracking: 'HAND1' }, true); assert.strictEqual(r.status, 303); ok('manual shipped button');
+  const runs = db.lastJobRuns(5); assert(runs[0].job === 'all' && JSON.parse(runs[0].summary).mail); ok('job runs recorded');
+  fake3pl.close();
 
   console.log(`\n${n} checks passed`);
   fakeStripe.close();

@@ -110,6 +110,64 @@ CREATE TABLE IF NOT EXISTS leads (
   status TEXT DEFAULT 'new',     -- new | contacted | won | lost
   created_at TEXT NOT NULL
 );
+CREATE TABLE IF NOT EXISTS outbox (
+  id TEXT PRIMARY KEY,
+  to_email TEXT NOT NULL, subject TEXT NOT NULL, text TEXT, html TEXT,
+  kind TEXT NOT NULL,            -- renewal_30 | renewal_7 | dunning_1 | ... | inbox_reply | digest
+  customer_id TEXT, partner_id TEXT, lead_id TEXT,
+  status TEXT DEFAULT 'queued',  -- queued (no mail provider configured) | sent | failed
+  provider_id TEXT, error TEXT,
+  created_at TEXT NOT NULL, sent_at TEXT
+);
+CREATE INDEX IF NOT EXISTS ob_kind ON outbox(kind, customer_id, created_at);
+CREATE TABLE IF NOT EXISTS actions (
+  id TEXT PRIMARY KEY,
+  type TEXT NOT NULL,            -- send_email | purchase_order | partner_payout | ads_budget | cancel_customer | refund | review
+  title TEXT NOT NULL, detail TEXT,
+  payload TEXT,                  -- JSON the executor needs
+  status TEXT DEFAULT 'pending', -- pending | done | rejected | failed
+  created_at TEXT NOT NULL, decided_at TEXT, result TEXT
+);
+CREATE TABLE IF NOT EXISTS stock (
+  sku TEXT PRIMARY KEY,
+  name TEXT NOT NULL,
+  on_hand INTEGER NOT NULL DEFAULT 0,
+  reorder_point INTEGER NOT NULL DEFAULT 0,
+  reorder_qty INTEGER NOT NULL DEFAULT 0,
+  unit_cost REAL DEFAULT 0,
+  updated_at TEXT
+);
+CREATE TABLE IF NOT EXISTS purchase_orders (
+  id TEXT PRIMARY KEY,
+  supplier TEXT, lines TEXT NOT NULL,  -- JSON [{sku,name,qty,unit_cost}]
+  total REAL NOT NULL,
+  status TEXT DEFAULT 'draft',   -- draft (awaiting approval) | sent | received
+  action_id TEXT,
+  created_at TEXT NOT NULL, sent_at TEXT, received_at TEXT
+);
+CREATE TABLE IF NOT EXISTS shipments (
+  id TEXT PRIMARY KEY,
+  customer_id TEXT NOT NULL, kit_id TEXT, request_id TEXT, aed_id TEXT,
+  kind TEXT NOT NULL,            -- kits | after_use | scheduled | aed
+  lines TEXT NOT NULL,           -- JSON [{sku,name,qty}]
+  recipient TEXT, address TEXT,
+  status TEXT DEFAULT 'pending', -- pending (pack it yourself) | sent_to_3pl | shipped | failed
+  external_id TEXT, tracking TEXT, carrier TEXT, error TEXT,
+  created_at TEXT NOT NULL, dispatched_at TEXT, shipped_at TEXT
+);
+CREATE INDEX IF NOT EXISTS sh_status ON shipments(status, created_at);
+CREATE TABLE IF NOT EXISTS inbox (
+  id TEXT PRIMARY KEY,
+  from_email TEXT, subject TEXT, body TEXT,
+  customer_id TEXT, classification TEXT, confidence REAL, reply TEXT,
+  status TEXT DEFAULT 'received', -- received | auto_replied | queued | ignored
+  action_id TEXT,
+  created_at TEXT NOT NULL
+);
+CREATE TABLE IF NOT EXISTS job_runs (
+  id INTEGER PRIMARY KEY AUTOINCREMENT,
+  job TEXT NOT NULL, ran_on TEXT NOT NULL, summary TEXT, created_at TEXT NOT NULL
+);
 `);
 
 // ---------- migrations (additive columns; safe to rerun) ----------
@@ -395,6 +453,101 @@ function logEvent(customerId, kitId, type, payload) {
 const listEvents = (cid, limit = 200) => db.prepare('SELECT * FROM events WHERE customer_id = ? ORDER BY created_at DESC LIMIT ?').all(cid, limit);
 const listKitEvents = (kid) => db.prepare('SELECT * FROM events WHERE kit_id = ? ORDER BY created_at DESC LIMIT 100').all(kid);
 
+// ---------- autopilot: outbox, actions, stock, purchase orders, shipments, inbox, job runs ----------
+function queueMail(m) {
+  const rec = { id: id(), to_email: m.to, subject: m.subject, text: m.text || null, html: m.html || null, kind: m.kind || 'other',
+    customer_id: m.customer_id || null, partner_id: m.partner_id || null, lead_id: m.lead_id || null, status: 'queued', created_at: now() };
+  db.prepare('INSERT INTO outbox (id,to_email,subject,text,html,kind,customer_id,partner_id,lead_id,status,created_at) VALUES (@id,@to_email,@subject,@text,@html,@kind,@customer_id,@partner_id,@lead_id,@status,@created_at)').run(rec);
+  return rec;
+}
+function markMail(mid, status, extra = {}) {
+  db.prepare('UPDATE outbox SET status = ?, provider_id = ?, error = ?, sent_at = ? WHERE id = ?').run(status, extra.provider_id || null, extra.error || null, status === 'sent' ? now() : null, mid);
+}
+const listOutbox = (limit = 100) => db.prepare('SELECT * FROM outbox ORDER BY created_at DESC LIMIT ?').all(limit);
+const mailSentCount = (kind, cid, since) => db.prepare("SELECT COUNT(*) AS n FROM outbox WHERE kind = ? AND customer_id = ? AND created_at >= ?").get(kind, cid, since || '').n;
+const mailedKinds = (cid) => db.prepare('SELECT kind, created_at FROM outbox WHERE customer_id = ? ORDER BY created_at').all(cid);
+
+function createAction(a) {
+  const rec = { id: id(), type: a.type, title: a.title, detail: a.detail || null, payload: JSON.stringify(a.payload || {}), status: 'pending', created_at: now() };
+  db.prepare('INSERT INTO actions (id,type,title,detail,payload,status,created_at) VALUES (@id,@type,@title,@detail,@payload,@status,@created_at)').run(rec);
+  return rec;
+}
+const getAction = (aid) => db.prepare('SELECT * FROM actions WHERE id = ?').get(aid);
+const listActions = (status = 'pending') => db.prepare('SELECT * FROM actions WHERE status = ? ORDER BY created_at').all(status);
+function decideAction(aid, status, result) {
+  db.prepare('UPDATE actions SET status = ?, decided_at = ?, result = ? WHERE id = ?').run(status, now(), result || null, aid);
+}
+const pendingActionExists = (type, needle) => !!db.prepare("SELECT 1 FROM actions WHERE type = ? AND status = 'pending' AND payload LIKE ?").get(type, `%${needle}%`);
+
+function upsertStock(s) {
+  db.prepare(`INSERT INTO stock (sku,name,on_hand,reorder_point,reorder_qty,unit_cost,updated_at) VALUES (@sku,@name,@on_hand,@reorder_point,@reorder_qty,@unit_cost,@updated_at)
+    ON CONFLICT(sku) DO UPDATE SET name=excluded.name, on_hand=excluded.on_hand, reorder_point=excluded.reorder_point, reorder_qty=excluded.reorder_qty, unit_cost=excluded.unit_cost, updated_at=excluded.updated_at`)
+    .run({ sku: s.sku, name: s.name, on_hand: s.on_hand | 0, reorder_point: s.reorder_point | 0, reorder_qty: s.reorder_qty | 0, unit_cost: +s.unit_cost || 0, updated_at: now() });
+}
+const getStock = (sku) => db.prepare('SELECT * FROM stock WHERE sku = ?').get(sku);
+const listStock = () => db.prepare('SELECT * FROM stock ORDER BY sku').all();
+function adjustStock(sku, delta, defaults = {}) {
+  if (!getStock(sku)) upsertStock({ sku, name: defaults.name || sku, on_hand: 0, reorder_point: defaults.reorder_point || 0, reorder_qty: defaults.reorder_qty || 0, unit_cost: defaults.unit_cost || 0 });
+  db.prepare('UPDATE stock SET on_hand = on_hand + ?, updated_at = ? WHERE sku = ?').run(delta, now(), sku);
+  return getStock(sku);
+}
+const stockBelowReorder = () => db.prepare('SELECT * FROM stock WHERE reorder_qty > 0 AND on_hand <= reorder_point ORDER BY sku').all();
+function createPurchaseOrder(po) {
+  const rec = { id: id(), supplier: po.supplier || null, lines: JSON.stringify(po.lines), total: +po.total || 0, status: po.status || 'draft', action_id: po.action_id || null, created_at: now(), sent_at: po.status === 'sent' ? now() : null };
+  db.prepare('INSERT INTO purchase_orders (id,supplier,lines,total,status,action_id,created_at,sent_at) VALUES (@id,@supplier,@lines,@total,@status,@action_id,@created_at,@sent_at)').run(rec);
+  return rec;
+}
+const getPurchaseOrder = (pid) => db.prepare('SELECT * FROM purchase_orders WHERE id = ?').get(pid);
+const listPurchaseOrders = (limit = 50) => db.prepare('SELECT * FROM purchase_orders ORDER BY created_at DESC LIMIT ?').all(limit);
+const openPurchaseOrderFor = (sku) => db.prepare("SELECT * FROM purchase_orders WHERE status IN ('draft','sent') AND lines LIKE ? ORDER BY created_at DESC").get(`%"sku":"${sku}"%`);
+function setPurchaseOrderStatus(pid, status) {
+  db.prepare('UPDATE purchase_orders SET status = ?, sent_at = COALESCE(sent_at, ?), received_at = ? WHERE id = ?').run(status, status === 'sent' ? now() : null, status === 'received' ? now() : null, pid);
+  if (status === 'received') { const po = getPurchaseOrder(pid); for (const l of JSON.parse(po.lines)) adjustStock(l.sku, l.qty, { name: l.name }); }
+}
+
+function createShipment(s) {
+  const rec = { id: id(), customer_id: s.customer_id, kit_id: s.kit_id || null, request_id: s.request_id || null, aed_id: s.aed_id || null, kind: s.kind,
+    lines: JSON.stringify(s.lines), recipient: s.recipient || null, address: s.address || null, status: 'pending', created_at: now() };
+  db.prepare('INSERT INTO shipments (id,customer_id,kit_id,request_id,aed_id,kind,lines,recipient,address,status,created_at) VALUES (@id,@customer_id,@kit_id,@request_id,@aed_id,@kind,@lines,@recipient,@address,@status,@created_at)').run(rec);
+  logEvent(rec.customer_id, rec.kit_id, 'shipment_created', { kind: rec.kind, shipment_id: rec.id });
+  return rec;
+}
+const getShipment = (sid) => db.prepare('SELECT * FROM shipments WHERE id = ?').get(sid);
+const getShipmentByExternal = (ext) => db.prepare('SELECT * FROM shipments WHERE external_id = ?').get(ext);
+const listShipments = (status, limit = 200) => status
+  ? db.prepare('SELECT s.*, c.name AS customer_name FROM shipments s JOIN customers c ON c.id = s.customer_id WHERE s.status = ? ORDER BY s.created_at DESC LIMIT ?').all(status, limit)
+  : db.prepare('SELECT s.*, c.name AS customer_name FROM shipments s JOIN customers c ON c.id = s.customer_id ORDER BY s.created_at DESC LIMIT ?').all(limit);
+const shipmentExistsFor = (field, value) => !!db.prepare(`SELECT 1 FROM shipments WHERE ${field} = ? AND status != 'failed'`).get(value);
+const shipmentForKitSince = (kid, kind, since) => db.prepare("SELECT * FROM shipments WHERE kit_id = ? AND kind = ? AND status != 'failed' AND created_at >= ?").get(kid, kind, since);
+function setShipmentStatus(sid, status, extra = {}) {
+  db.prepare('UPDATE shipments SET status = ?, external_id = COALESCE(?, external_id), tracking = COALESCE(?, tracking), carrier = COALESCE(?, carrier), error = ?, dispatched_at = COALESCE(dispatched_at, ?), shipped_at = COALESCE(shipped_at, ?) WHERE id = ?')
+    .run(status, extra.external_id || null, extra.tracking || null, extra.carrier || null, extra.error || null, status === 'sent_to_3pl' ? now() : null, status === 'shipped' ? now() : null, sid);
+  return getShipment(sid);
+}
+
+function createInbound(m) {
+  const rec = { id: id(), from_email: m.from_email || null, subject: m.subject || null, body: m.body || null, customer_id: m.customer_id || null,
+    classification: m.classification || null, confidence: m.confidence ?? null, reply: m.reply || null, status: m.status || 'received', action_id: m.action_id || null, created_at: now() };
+  db.prepare('INSERT INTO inbox (id,from_email,subject,body,customer_id,classification,confidence,reply,status,action_id,created_at) VALUES (@id,@from_email,@subject,@body,@customer_id,@classification,@confidence,@reply,@status,@action_id,@created_at)').run(rec);
+  return rec;
+}
+function updateInbound(iid, fields) {
+  const allowed = ['customer_id', 'classification', 'confidence', 'reply', 'status', 'action_id'];
+  const sets = []; const params = { id: iid };
+  for (const k of allowed) if (k in fields) { sets.push(`${k} = @${k}`); params[k] = fields[k] ?? null; }
+  if (sets.length) db.prepare(`UPDATE inbox SET ${sets.join(', ')} WHERE id = @id`).run(params);
+}
+const listInbox = (limit = 100) => db.prepare('SELECT * FROM inbox ORDER BY created_at DESC LIMIT ?').all(limit);
+
+function recordJobRun(job, ranOn, summary) {
+  db.prepare('INSERT INTO job_runs (job, ran_on, summary, created_at) VALUES (?,?,?,?)').run(job, ranOn, JSON.stringify(summary || {}), now());
+}
+const jobRanOn = (job, ranOn) => !!db.prepare('SELECT 1 FROM job_runs WHERE job = ? AND ran_on = ?').get(job, ranOn);
+const lastJobRuns = (limit = 30) => db.prepare('SELECT * FROM job_runs ORDER BY id DESC LIMIT ?').all(limit);
+const eventsOfType = (cid, type) => db.prepare('SELECT * FROM events WHERE customer_id = ? AND type = ? ORDER BY created_at DESC').all(cid, type);
+const listCustomersByStatus = (status) => db.prepare('SELECT * FROM customers WHERE status = ? ORDER BY created_at').all(status);
+const listAllOpenPayouts = () => db.prepare("SELECT x.*, p.name AS partner_name, p.email AS partner_email FROM partner_payouts x JOIN partners p ON p.id = x.partner_id WHERE x.status = 'owed' ORDER BY p.name").all();
+
 module.exports = {
   db, today, now, addMonths, addDays, REFILL_MONTHS,
   createCustomer, getCustomer, getCustomerByToken, listCustomers, updateCustomer,
@@ -406,4 +559,9 @@ module.exports = {
   createPartner, getPartner, getPartnerByToken, listPartners, listPartnerCustomers, listPartnerPayouts, markPayoutPaid,
   createLead, listLeads, setLeadStatus, SITE_PLAN_PY, VEHICLE_PLAN_PY,
   OBLIGATION_CATEGORIES, createObligation, listObligations, listAllObligations, obligationDone, retireObligation,
+  queueMail, markMail, listOutbox, mailSentCount, mailedKinds,
+  createAction, getAction, listActions, decideAction, pendingActionExists,
+  upsertStock, getStock, listStock, adjustStock, stockBelowReorder, createPurchaseOrder, getPurchaseOrder, listPurchaseOrders, openPurchaseOrderFor, setPurchaseOrderStatus,
+  createShipment, getShipment, getShipmentByExternal, listShipments, shipmentExistsFor, shipmentForKitSince, setShipmentStatus,
+  createInbound, updateInbound, listInbox, recordJobRun, jobRanOn, lastJobRuns, eventsOfType, listCustomersByStatus, listAllOpenPayouts,
 };

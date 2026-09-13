@@ -12,6 +12,7 @@
     "dev": "node --disable-warning=ExperimentalWarning --watch server.js",
     "seed": "node --disable-warning=ExperimentalWarning scripts/seed.js",
     "due": "node --disable-warning=ExperimentalWarning scripts/due.js",
+    "autopilot": "node --disable-warning=ExperimentalWarning scripts/autopilot.js",
     "test": "node --disable-warning=ExperimentalWarning test/smoke.js"
   },
   "dependencies": {

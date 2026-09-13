@@ -79,6 +79,20 @@ CASES = {
                  referral_rate=0.025, seo=[0, 0, 1, 3, 5, 8, 12, 14, 15, 18, 20, 20] + [30] * 12 + [40] * 12,
                  churn=0.030, arpa_uplift=[0] * 6 + [2, 4, 6, 8, 9, 10] + [12] * 12 + [14] * 12,
                  cs_min=1.0, hours_sales=[0] * 36, hours_build=[10] * 3 + [5] * 33, hours_content=[3] * 36),
+    # 'autopilot': the site case run with nobody in the loop. A 3PL packs every
+    # parcel at a per-order fee instead of founder hours and casual labour;
+    # customer service is triaged and mostly answered by the inbox agent
+    # (0.3 min of founder time per account per month, the taps); the founder's
+    # hours are the Monday review, a few approvals and content checking.
+    # Same demand, CAC and churn as 'site'. Storage is at the 3PL (in its fee).
+    'autopilot': dict(direct=[0] * 36,
+                 paid_budget=[600, 900, 1200, 1500, 1800, 2200, 2600, 3000, 3400, 3800, 4200, 4600] + [5500] * 12 + [7000] * 12,
+                 paid_cac=110.0,
+                 partner_per=1.2, partners=[0, 0, 0, 1, 1, 2, 3, 4, 5, 6, 7, 8] + [14] * 12 + [22] * 12,
+                 referral_rate=0.018, seo=[0, 0, 1, 3, 5, 8, 12, 14, 15, 18, 20, 20] + [25] * 12 + [30] * 12,
+                 churn=0.040, arpa_uplift=[0] * 6 + [2, 4, 6, 8, 9, 10] + [12] * 12 + [14] * 12,
+                 cs_min=0.3, hours_sales=[0] * 36, hours_build=[12] * 3 + [2] * 33, hours_content=[1] * 36,
+                 ops_cap=[0] * 36, parcel_fee=6.50, storage_pm=lambda active: 0, extra_fixed=[120] * 36),
     'high': dict(direct=[6, 9, 12, 14, 15, 16, 16, 16, 16, 16, 16, 16] + [10] * 12 + [8] * 12,
                  paid=[0, 6, 9, 12, 14, 16, 16, 16, 16, 24, 28, 30] + [40] * 12 + [55] * 12,
                  partner_per=3.0, partners=[0, 0, 1, 2, 3, 5, 6, 8, 10, 12, 14, 15] + [25] * 12 + [40] * 12,
@@ -114,6 +128,10 @@ def run(case):
     h_content = c.get('hours_content', HOURS_CONTENT)
     h_sales = c.get('hours_sales', HOURS_SALES)
     paid_cac = c.get('paid_cac', CAC['paid'])
+    ops_cap = c.get('ops_cap', FOUNDER_OPS_CAP)
+    parcel_fee = c.get('parcel_fee', 0.0)          # A$ per parcel paid to a 3PL instead of packing hours
+    storage_fn = c.get('storage_pm', STORAGE_PM)
+    extra_fixed = c.get('extra_fixed', [0] * 36)   # email, classifier, 3PL account minimums
     active = 0.0
     rows = []
     cum = dict(kit_rev=0, rec_rev=0, kit_cogs=0, ongoing=0, cac=0, fixed=0, hours=0)
@@ -132,11 +150,12 @@ def run(case):
         ongoing = active * (ONGOING_PM + uplift[m] * 0.4)
         cac = sum(new[k] * (paid_cac if k == 'paid' else CAC[k]) for k in new)
         parcels_wk = active * model.A['parcels_per_account_py'] / 52 + n_new / 4.33
-        ops_needed = parcels_wk * PARCEL_MIN / 60 + active * cs_min / 60 / 4.33 + 1.0
-        founder_ops = min(ops_needed, FOUNDER_OPS_CAP[m])
+        pack_hours = 0.0 if parcel_fee else parcels_wk * PARCEL_MIN / 60
+        ops_needed = pack_hours + active * cs_min / 60 / 4.33 + (0.5 if parcel_fee else 1.0)
+        founder_ops = min(ops_needed, ops_cap[m])
         hired_hours_wk = ops_needed - founder_ops
-        labour = hired_hours_wk * LABOUR_RATE * 4.33
-        fixed = FIXED[m] + ONE_OFFS.get(m, 0) + labour + STORAGE_PM(active)
+        labour = hired_hours_wk * LABOUR_RATE * 4.33 + (parcels_wk * 4.33 * parcel_fee if parcel_fee else 0.0)
+        fixed = FIXED[m] + ONE_OFFS.get(m, 0) + labour + storage_fn(active) + extra_fixed[m]
         profit = kit_rev + rec_rev - kit_cogs - ongoing - cac - fixed
         hours_wk = h_sales[m] + h_content[m] + h_build[m] + founder_ops
         rows.append(dict(m=m, new=new, n_new=n_new, active=active, kit_rev=kit_rev, rec_rev=rec_rev, kit_cogs=kit_cogs,
@@ -182,7 +201,7 @@ def report(case):
     line('Goods and postage', lambda y: sum(r['kit_cogs'] + r['ongoing'] for r in y))
     line('Acquisition costs (fees, ads, rewards, samples)', lambda y: sum(r['cac'] for r in y))
     line('Fixed costs incl. hired packing/CS hours and storage', lambda y: sum(r['fixed'] for r in y))
-    line('  of which hired labour', lambda y: sum(r['labour'] for r in y))
+    line('  of which hired labour or 3PL fees', lambda y: sum(r['labour'] for r in y))
     line('  hired hours per week at year end', lambda y: y[-1]['hired_hours_wk'], '{:.0f}')
     line('Parcels per week at year end', lambda y: y[-1]['parcels_wk'], '{:.0f}')
     line('**Profit before paying yourself**', lambda y: sum(r['profit'] for r in y), '**{:,.0f}**')

@@ -19,6 +19,7 @@ const EVENT_LABELS = {
   payment_recovered: 'Payment received', stripe_event: 'Billing event',
   obligation_added: 'Compliance item added', obligation_done: 'Compliance item completed', obligation_retired: 'Compliance item removed',
   checkout_completed: 'Paid online', referral_reward_due: 'Referral reward earned', onboarded: 'Kit locations named',
+  shipment_created: 'Shipment created', kits_shipped: 'Kits shipped', email_answered: 'Email answered automatically', address_changed: 'Address changed', cancel_requested: 'Cancellation requested by email',
 };
 function obligationRows(list) {
   return list.map((o) => `<tr><td>${h(o.label)}${o.location ? '<br><span class="small muted">' + h(o.location) + '</span>' : ''}</td><td>${pill(o.state)}</td><td>${fmtDate(o.last_done)}</td><td>${fmtDate(o.next_due)}</td><td class="small">${h(o.provider || '')}</td></tr>`).join('');
@@ -27,7 +28,7 @@ const eventLabel = (t) => EVENT_LABELS[t] || t;
 
 function layout({ title, body, cfg, nav = 'public', extraHead = '' }) {
   const navHtml = nav === 'admin'
-    ? `<nav><a href="/admin">Due today</a><a href="/admin/customers">Customers</a><a href="/admin/customers/new">New account</a><a href="/admin/partners">Partners</a><a href="/admin/leads">Leads</a><a href="/admin/metrics">Metrics</a><a href="/admin/labels">Labels</a><a href="/admin/export.csv">Export</a></nav>`
+    ? `<nav><a href="/admin">Due today</a><a href="/admin/customers">Customers</a><a href="/admin/customers/new">New account</a><a href="/admin/partners">Partners</a><a href="/admin/leads">Leads</a><a href="/admin/metrics">Metrics</a><a href="/admin/autopilot">Autopilot</a><a href="/admin/labels">Labels</a><a href="/admin/export.csv">Export</a></nav>`
     : nav === 'none' ? '' : `<nav><a href="/#pricing">Pricing</a><a href="/#how">How it works</a><a href="tel:${h(cfg.phone)}">${h(cfg.phone)}</a></nav>`;
   return `<!doctype html>
 <html lang="en-AU">
@@ -538,5 +539,38 @@ function metrics(m, cfg) {
 <div class="tbl"><table><tr><th>Reason</th><th class="n">Count</th></tr>${Object.entries(m.reasons).sort((a, b) => b[1] - a[1]).map(([r, n]) => `<tr><td>${h(r)}</td><td class="n">${n}</td></tr>`).join('') || '<tr><td colspan="2" class="muted">No cancellations.</td></tr>'}</table></div>` });
 }
 
+// ---------------------------------------------------------------- autopilot
+function autopilotPage(d, cfg) {
+  const lines = (json) => { try { return JSON.parse(json || '[]').map((l) => `${l.qty} × ${h(l.name)}`).join('<br>'); } catch { return ''; } };
+  const queue = d.pending.map((a) => `<tr><td><b>${h(a.title)}</b><br><span class="small muted">${h(a.type.replace(/_/g, ' '))} · ${fmtDateTime(a.created_at)}</span>${a.detail ? `<details class="small" style="margin-top:6px"><summary>Detail</summary><pre style="white-space:pre-wrap;font-family:inherit">${h(a.detail)}</pre></details>` : ''}</td><td><div class="row"><form method="post" action="/admin/actions/${h(a.id)}/approve"><button class="btn secondary" type="submit">Approve</button></form><form method="post" action="/admin/actions/${h(a.id)}/reject"><button class="btn quiet" type="submit">Reject</button></form></div></td></tr>`).join('');
+  const ship = d.shipments.map((s) => `<tr><td><a href="/admin/customers/${h(s.customer_id)}">${h(s.customer_name)}</a><br><span class="small muted">${h(s.kind.replace('_', ' '))} · ${fmtDateTime(s.created_at)}</span></td><td class="small">${lines(s.lines)}</td><td>${pill(s.status === 'shipped' ? 'shipped' : s.status === 'failed' ? 'overdue' : 'open')}<br><span class="small muted">${h(s.status.replace(/_/g, ' '))}${s.tracking ? ' · ' + h(s.tracking) : ''}${s.error ? ' · ' + h(s.error) : ''}</span></td><td>${s.status !== 'shipped' ? `<form method="post" action="/admin/shipments/${h(s.id)}/shipped" class="row"><input name="tracking" placeholder="Tracking" style="min-width:120px"><button class="btn quiet" type="submit">Shipped</button></form>` : ''}</td></tr>`).join('');
+  const stock = d.stock.map((s) => `<tr><td class="mono">${h(s.sku)}</td><td>${h(s.name)}</td><td class="n">${s.on_hand}</td><td class="n">${s.reorder_point}</td><td class="n">${s.reorder_qty}</td><td>${s.reorder_qty > 0 && s.on_hand <= s.reorder_point ? pill('due') : ''}</td><td><form method="post" action="/admin/stock" class="row"><input type="hidden" name="sku" value="${h(s.sku)}"><input name="on_hand" value="${s.on_hand}" style="width:80px"><button class="btn quiet" type="submit">Set</button></form></td></tr>`).join('');
+  const pos = d.purchaseOrders.map((po) => `<tr><td class="mono">${h(po.id.slice(0, 8))}</td><td>${h(po.supplier || '')}</td><td class="small">${lines(po.lines)}</td><td class="n">${po.total.toFixed(2)}</td><td>${h(po.status)}</td><td>${po.status === 'sent' ? `<form method="post" action="/admin/purchase-orders/${h(po.id)}/received"><button class="btn quiet" type="submit">Received</button></form>` : ''}</td></tr>`).join('');
+  const inbox = d.inbox.map((m) => `<tr><td>${h(m.from_email || '')}<br><span class="small muted">${fmtDateTime(m.created_at)}</span></td><td>${h(m.subject || '')}<br><span class="small muted">${h(m.classification || '')}${m.confidence !== null && m.confidence !== undefined ? ' · ' + Math.round(m.confidence * 100) + '%' : ''}</span></td><td>${h(m.status.replace(/_/g, ' '))}</td></tr>`).join('');
+  const outbox = d.outbox.map((m) => `<tr><td>${h(m.to_email)}</td><td>${h(m.subject)}<br><span class="small muted">${h(m.kind)}</span></td><td>${h(m.status)}${m.error ? `<br><span class="small muted">${h(m.error)}</span>` : ''}</td><td class="small mono">${fmtDateTime(m.created_at)}</td></tr>`).join('');
+  const last = d.lastRun ? JSON.parse(d.lastRun.summary || '{}') : null;
+  const runLine = last ? Object.entries(last).filter(([k]) => k !== 'on').map(([k, v]) => `<span class="small"><b>${h(k)}</b> ${h(typeof v === 'object' ? Object.entries(v).filter(([a]) => a !== 'text').map(([a, b]) => `${a} ${typeof b === 'string' ? b : JSON.stringify(b)}`).join(', ') : v)}</span>`).join(' · ') : '<span class="muted">never</span>';
+  const empty = (cols, msg) => `<tr><td colspan="${cols}" class="muted">${msg}</td></tr>`;
+  const cfgRow = (label, on) => `<tr><td>${label}</td><td>${on ? pill('compliant') : pill('due')} <span class="small muted">${on ? 'configured' : 'not configured'}</span></td></tr>`;
+  return layout({ title: 'Autopilot', cfg, nav: 'admin', body: `
+<p class="eyebrow">${fmtDate(d.on)}</p>
+<div class="row" style="justify-content:space-between"><h1>Autopilot</h1><form method="post" action="/admin/autopilot/run"><button class="btn" type="submit">Run now</button></form></div>
+<p class="muted">Last run ${d.lastRun ? fmtDateTime(d.lastRun.created_at) : 'never'}: ${runLine}</p>
+<h2>Waiting for your tap (${d.pending.length})</h2>
+<div class="tbl"><table><tr><th>Action</th><th></th></tr>${queue || empty(2, 'Nothing needs a decision.')}</table></div>
+<h2>Connections</h2>
+<div class="tbl"><table>${cfgRow('Outbound email (MAIL_API_URL)', d.conf.mail)}${cfgRow('Inbound email webhook (INBOUND_SECRET)', d.conf.inbound)}${cfgRow('Fulfilment / 3PL (FULFIL_WEBHOOK)', d.conf.fulfil)}${cfgRow('Stripe (STRIPE_SECRET_KEY + STRIPE_WEBHOOK_SECRET)', d.conf.stripe)}${cfgRow('Classifier (ANTHROPIC_API_KEY)', d.conf.claude)}${cfgRow('Supplier email for purchase orders (SUPPLIER_EMAIL)', d.conf.supplier)}</table></div>
+<h2>Shipments (${d.shipments.length} recent)</h2>
+<div class="tbl"><table><tr><th>Customer</th><th>Lines</th><th>Status</th><th></th></tr>${ship || empty(4, 'No shipments yet.')}</table></div>
+<h2>Stock</h2>
+<div class="tbl"><table><tr><th>SKU</th><th>Item</th><th class="n">On hand</th><th class="n">Reorder at</th><th class="n">Reorder qty</th><th></th><th></th></tr>${stock || empty(7, 'Stock rows appear after the first run.')}</table></div>
+<h2>Purchase orders</h2>
+<div class="tbl"><table><tr><th>Ref</th><th>Supplier</th><th>Lines</th><th class="n">Total</th><th>Status</th><th></th></tr>${pos || empty(6, 'None raised.')}</table></div>
+<h2>Inbound email (${d.inbox.length} recent)</h2>
+<div class="tbl"><table><tr><th>From</th><th>Subject</th><th>Handled</th></tr>${inbox || empty(3, 'Nothing received. Point your inbound email webhook at /webhooks/inbox?key=INBOUND_SECRET.')}</table></div>
+<h2>Sent and queued email (${d.outbox.length} recent)</h2>
+<div class="tbl"><table><tr><th>To</th><th>Subject</th><th>Status</th><th>When</th></tr>${outbox || empty(4, 'Nothing sent yet.')}</table></div>` });
+}
+
 module.exports = { h, layout, landing, scanPage, scanDone, record, certificate, dashboard, customers, customerNew, customerDetail, kitDetail, labels,
-  partnersList, partnerDetail, partnerPortal, checkForm, checkResult, leadsList, metrics, buyPage, welcomePage, partnerSignup };
+  partnersList, partnerDetail, partnerPortal, checkForm, checkResult, leadsList, metrics, buyPage, welcomePage, partnerSignup, autopilotPage };

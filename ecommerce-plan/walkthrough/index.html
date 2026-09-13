@@ -116,7 +116,7 @@ footer{margin-top:64px;padding-top:20px;border-top:1px solid var(--line);font-si
   </div>
 </header>
 <nav class="toc" aria-label="Sections">
-  <a href="#buy">1 · The buyer's path</a><a href="#use">2 · The day something is used</a><a href="#calendar">3 · The compliance calendar</a><a href="#partners">4 · Partners and referrals</a><a href="#check">5 · The self-check</a><a href="#admin">6 · Your side of it</a><a href="#money">7 · The financials</a><a href="#live">8 · What stands between this and live</a>
+  <a href="#buy">1 · The buyer's path</a><a href="#use">2 · The day something is used</a><a href="#calendar">3 · The compliance calendar</a><a href="#partners">4 · Partners and referrals</a><a href="#check">5 · The self-check</a><a href="#admin">6 · Your side of it</a><a href="#money">7 · The financials</a><a href="#live">8 · What stands between this and live</a><a href="#autopilot">9 · On autopilot</a>
 </nav>
 
 <!-- 1 -->
@@ -361,7 +361,33 @@ footer{margin-top:64px;padding-top:20px;border-top:1px solid var(--line);font-si
   </ul>
 </section>
 
-<footer>Screens captured 13 September 2026 from the kit-register app on a seeded demo database with six accounts, one partner and two leads; all businesses shown are fictional. Figures from model.py, channels.py (cases site_low, site, site_high, base), retention.py and pricing.py in the ecommerce-plan folder of the repository. Before GST; no founder salary deducted unless stated.</footer>
+<!-- 9 -->
+<section id="autopilot">
+  <div class="prose">
+    <div class="eyebrow">9 · On autopilot</div>
+    <h2>One email a week and a handful of taps</h2>
+    <p style="margin-top:12px">Every recurring thing the business does is now a daily job: shipments pushed to a 3PL, purchase orders at reorder points, renewal notices, dunning and closure, activation nudges, the self-check lead sequence, exit surveys and win-backs, partner statements, and a Monday review that emails you the numbers. Inbound email is classified and answered with the sender's own links. Money out and anything irreversible wait in a queue; approving executes.</p>
+  </div>
+  <div class="screen">
+    <div class="frame"><div class="bar"><i></i><i></i><i></i><span><em>https://</em>yourdomain.com.au/admin/autopilot</span></div><img src="shots/autopilot.png" alt="Autopilot admin page: the last run summary, a queue of three items waiting for a tap (a reply to a complaint, a partner payout of A$90 and a Google Ads budget change), a connections table showing which providers are configured, and the start of the shipments list." width="1920" height="1500" loading="lazy"></div>
+    <p class="cap"><b>The queue after one run on the demo data.</b> A complaint with a drafted reply, a A$90 partner payout to mark paid after the transfer, and the ad-budget rule proposing a cut because the demo has one paid account against A$600 of spend. Everything else on the page happened on its own: four shipments created, a A$1,160 purchase order emailed to the supplier because it was under the cap, two lead emails, a partner statement, three customer emails answered.</p>
+  </div>
+  <div class="grid2">
+    <div class="callout"><b>What stays yours.</b> Director duties (an email "approved" to the BAS agent each quarter, the annual solvency resolution), money leaving the account above the caps, and complaints. Under ten taps a month at the volumes in the model.</div>
+    <div class="callout warn"><b>The physical layer is the hard part.</b> Aero Healthcare's reseller programme names drop-shipping, so kits may never touch a warehouse; refills go to a 3PL from about 200 accounts, before which packing is an hour a day. The model prices a 3PL at A$6.50 a parcel from day one as the worst case: year one profit drops to A$35k for seven hours a week back, and by year three the profit is the same on three hours a week.</div>
+  </div>
+  <div class="tscroll"><table>
+    <thead><tr><th></th><th class="n">Site-only base</th><th class="n">Autopilot</th></tr></thead>
+    <tbody>
+      <tr><td>Profit before paying yourself, year 1 / 2 / 3 (A$k)</td><td class="n">43 / 297 / 614</td><td class="n">35 / 293 / 619</td></tr>
+      <tr><td>Your hours a week, year 1 / 2 / 3</td><td class="n">13 / 13 / 12</td><td class="n">6 / 3 / 3</td></tr>
+      <tr><td>Profit per hour of your time, year 3</td><td class="n">A$983</td><td class="n">A$3,966</td></tr>
+    </tbody>
+  </table></div>
+  <p class="cap">The full design, the policy table and the research behind it (3PL rates, Stripe, Xero, what a director cannot delegate) is in the plan folder as note 16. Thirty-eight new automated checks cover every job, the 3PL round trip, the caps and the classifier.</p>
+</section>
+
+<footer>Screens captured 13 September 2026 from the kit-register app on a seeded demo database with six accounts, one partner and two leads, plus one autopilot run; all businesses shown are fictional. Figures from model.py, channels.py (cases site_low, site, site_high, base), retention.py and pricing.py in the ecommerce-plan folder of the repository. Before GST; no founder salary deducted unless stated.</footer>
 </div>
 
 <script src="data.js"></script>

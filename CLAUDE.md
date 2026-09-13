@@ -15,8 +15,9 @@ Two independent things live here:
 - **`ecommerce-plan/`** — researched business plan for a workplace-safety
   consumables replenishment business (Sept 2026). Start with its
   `README.md`; `model.py` is the financial model; `app/` is the working
-  kit-register software (Node 22, SQLite, `npm test`); `launch/` is the
-  day-one sales kit.
+  kit-register software (Node 22, SQLite, `npm test`), including the
+  autopilot (`lib/autopilot.js`, `launch/16-autopilot.md`); `launch/` is the
+  day-one sales kit and the numbered follow-up notes.
 
 The site and the pipeline share nothing except `public/fonts/satoshi-var.woff2`, which the
 pipeline ships converted to TTF for captions.

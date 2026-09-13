@@ -27,6 +27,9 @@ const V = require('./lib/views');
 const metrics = require('./lib/metrics');
 const check = require('./lib/check');
 const checkout = require('./lib/checkout');
+const autopilot = require('./lib/autopilot');
+const fulfil = require('./lib/fulfil');
+const inbox = require('./lib/inbox');
 
 const cfg = {
   brand: process.env.BRAND || 'Kit Register',
@@ -42,6 +45,8 @@ const cfg = {
   stripeWebhookSecret: process.env.STRIPE_WEBHOOK_SECRET || '',
   stripeSecretKey: process.env.STRIPE_SECRET_KEY || '',
   stripeApiBase: (process.env.STRIPE_API_BASE || 'https://api.stripe.com').replace(/\/$/, ''),
+  inboundSecret: process.env.INBOUND_SECRET || '',
+  billingPortalUrl: process.env.STRIPE_PORTAL_URL || '',
   refillWindow: sched.REFILL_WINDOW_DAYS,
   renewalWindow: sched.RENEWAL_WINDOW_DAYS,
   obligationWindow: sched.OBLIGATION_WINDOW_DAYS,
@@ -491,6 +496,59 @@ admin('GET', '/admin/export.csv', (req, res) => {
   }
   const csv = rows.map((r) => r.map((v) => `"${String(v ?? '').replace(/"/g, '""')}"`).join(',')).join('\n');
   send(res, 200, csv, 'text/csv; charset=utf-8', { 'Content-Disposition': `attachment; filename="kits-${db.today()}.csv"` });
+});
+
+// --- autopilot: the queue, shipments, stock, inbound mail
+admin('GET', '/admin/autopilot', (req, res) => {
+  fulfil.seedStock();
+  const d = { on: db.today(), pending: db.listActions('pending'), shipments: db.listShipments(null, 60), stock: db.listStock(), purchaseOrders: db.listPurchaseOrders(20),
+    inbox: db.listInbox(40), outbox: db.listOutbox(40), lastRun: db.lastJobRuns(50).find((j) => j.job === 'all') || null,
+    conf: { mail: !!process.env.MAIL_API_URL, inbound: !!cfg.inboundSecret, fulfil: !!process.env.FULFIL_WEBHOOK, stripe: !!(cfg.stripeSecretKey && cfg.stripeWebhookSecret), claude: !!(process.env.ANTHROPIC_API_KEY || process.env.ANTHROPIC_AUTH_TOKEN), supplier: !!process.env.SUPPLIER_EMAIL } };
+  send(res, 200, V.autopilotPage(d, cfg));
+});
+admin('POST', '/admin/autopilot/run', async (req, res) => { await readBody(req); await autopilot.runAll(); redirect(res, '/admin/autopilot'); });
+admin('POST', '/admin/actions/:id/approve', async (req, res, p) => { await readBody(req); if (await autopilot.approve(p.id) === null) return notFound(res); redirect(res, '/admin/autopilot'); });
+admin('POST', '/admin/actions/:id/reject', async (req, res, p) => { const b = await readBody(req); if (autopilot.reject(p.id, b.why) === null) return notFound(res); redirect(res, '/admin/autopilot'); });
+admin('POST', '/admin/shipments/:id/shipped', async (req, res, p) => { const b = await readBody(req); if (!fulfil.markShipped(p.id, { tracking: b.tracking })) return notFound(res); redirect(res, '/admin/autopilot'); });
+admin('POST', '/admin/stock', async (req, res) => { const b = await readBody(req); const s = db.getStock(b.sku); if (s) db.upsertStock({ ...s, on_hand: parseInt(b.on_hand || '0', 10) || 0 }); redirect(res, '/admin/autopilot'); });
+admin('POST', '/admin/purchase-orders/:id/received', async (req, res, p) => { await readBody(req); if (!db.getPurchaseOrder(p.id)) return notFound(res); db.setPurchaseOrderStatus(p.id, 'received'); redirect(res, '/admin/autopilot'); });
+
+// the 3PL calls back when it ships (or you POST it from a shipping label tool)
+route('POST', '/webhooks/fulfilment', async (req, res, p, url) => {
+  const secret = process.env.FULFIL_WEBHOOK_SECRET || '';
+  const given = req.headers['x-fulfil-secret'] || url.searchParams.get('key') || '';
+  if (!secret || given !== secret) return send(res, 401, 'bad secret', 'text/plain');
+  const b = await readBody(req);
+  const s = (b.order_ref && db.getShipment(b.order_ref)) || (b.external_id && db.getShipmentByExternal(b.external_id)) || (b.id && db.getShipmentByExternal(b.id));
+  if (!s) return send(res, 404, 'unknown shipment', 'text/plain');
+  if (b.status && b.status !== 'shipped') return send(res, 200, 'noted', 'text/plain');
+  fulfil.markShipped(s.id, { tracking: b.tracking || b.tracking_number || null, carrier: b.carrier || null });
+  send(res, 200, 'ok', 'text/plain');
+});
+// the email provider posts inbound mail here
+route('POST', '/webhooks/inbox', async (req, res, p, url) => {
+  const given = req.headers['x-inbound-secret'] || url.searchParams.get('key') || '';
+  if (!cfg.inboundSecret || given !== cfg.inboundSecret) return send(res, 401, 'bad secret', 'text/plain');
+  const b = await readBody(req);
+  const m = inbox.fromProvider(b);
+  if (!m.from_email) return send(res, 400, 'no sender', 'text/plain');
+  const row = await inbox.handle(m);
+  send(res, 200, JSON.stringify({ id: row.id, classification: row.classification, status: row.status }), 'application/json');
+});
+// billing self-service: Stripe's customer portal (update card, invoices, cancel) via a per-customer link
+route('GET', '/billing', async (req, res, p, url) => {
+  const c = db.getCustomerByToken(url.searchParams.get('c') || '');
+  if (!c) return notFound(res);
+  if (cfg.stripeSecretKey && c.stripe_customer_id) {
+    try {
+      const body = new URLSearchParams({ customer: c.stripe_customer_id, return_url: `${cfg.baseUrl}/c/${c.token}` });
+      const r = await fetch(`${cfg.stripeApiBase}/v1/billing_portal/sessions`, { method: 'POST', headers: { Authorization: `Bearer ${cfg.stripeSecretKey}`, 'Content-Type': 'application/x-www-form-urlencoded' }, body });
+      const j = await r.json();
+      if (r.ok && j.url) return redirect(res, j.url);
+    } catch (e) { console.error('billing portal', e.message); }
+  }
+  if (cfg.billingPortalUrl) return redirect(res, cfg.billingPortalUrl);
+  send(res, 200, V.layout({ title: 'Billing', cfg, nav: 'none', body: `<div class="narrow"><h1>Billing</h1><p>Update your card, download invoices or cancel by emailing <a href="mailto:${V.h(cfg.email)}">${V.h(cfg.email)}</a> from the address on the account. Changes are made the same business day.</p><p><a class="btn secondary" href="/c/${V.h(c.token)}">Back to your record</a></p></div>` }));
 });
 
 // ---------------------------------------------------------------- server
