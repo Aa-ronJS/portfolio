@@ -1,0 +1,463 @@
+<title>Kit Register Walkthrough</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:wdth,wght@90,500;90,700;100,400&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap">
+<style>
+:root{
+  --ground:#f4f6f1; --surface:#ffffff; --surface-2:#e9ede5; --ink:#17201a; --ink-2:#4b574f; --muted:#7a857e;
+  --line:#d5dbd2; --line-2:#b9c2b7; --accent:#1e7a4e; --accent-ink:#ffffff; --accent-soft:#dff0e6;
+  --amber:#a8690e; --amber-soft:#f7ebd6; --red:#b3261e; --red-soft:#f8e2df;
+  --c-low:#b98a3c; --c-base:#1e7a4e; --c-high:#2b5d8f; --c-founder:#8a8f8b;
+  --shadow:0 1px 2px rgba(23,32,26,.06),0 12px 32px -16px rgba(23,32,26,.25);
+}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){
+  --ground:#121714; --surface:#1a211c; --surface-2:#232c26; --ink:#e9efe9; --ink-2:#b6c1b9; --muted:#7f8b83;
+  --line:#2c3630; --line-2:#3c4841; --accent:#4fb57f; --accent-ink:#0f1712; --accent-soft:#1c3327;
+  --amber:#d9a04a; --amber-soft:#332a18; --red:#e0685e; --red-soft:#3a1f1c;
+  --c-low:#d3a65a; --c-base:#4fb57f; --c-high:#6ea6dc; --c-founder:#7b847e;
+  --shadow:0 1px 2px rgba(0,0,0,.4),0 12px 32px -16px rgba(0,0,0,.6);
+}}
+:root[data-theme="dark"]{
+  --ground:#121714; --surface:#1a211c; --surface-2:#232c26; --ink:#e9efe9; --ink-2:#b6c1b9; --muted:#7f8b83;
+  --line:#2c3630; --line-2:#3c4841; --accent:#4fb57f; --accent-ink:#0f1712; --accent-soft:#1c3327;
+  --amber:#d9a04a; --amber-soft:#332a18; --red:#e0685e; --red-soft:#3a1f1c;
+  --c-low:#d3a65a; --c-base:#4fb57f; --c-high:#6ea6dc; --c-founder:#7b847e;
+  --shadow:0 1px 2px rgba(0,0,0,.4),0 12px 32px -16px rgba(0,0,0,.6);
+}
+*{box-sizing:border-box}
+body{margin:0;background:var(--ground);color:var(--ink);font-family:"IBM Plex Sans",system-ui,-apple-system,"Segoe UI",sans-serif;font-size:16px;line-height:1.55;padding-inline:clamp(16px,4vw,48px);padding-block:0 96px}
+h1,h2,h3{font-family:"Archivo","Archivo Narrow","Helvetica Neue",Arial,sans-serif;font-stretch:90%;font-weight:700;line-height:1.08;letter-spacing:-.015em;text-wrap:balance;margin:0}
+h1{font-size:clamp(38px,6vw,64px)}
+h2{font-size:clamp(28px,3.6vw,40px);margin-top:12px}
+h3{font-size:clamp(20px,2.2vw,24px);font-weight:600;margin-top:8px}
+p{margin:0}
+a{color:var(--accent)}
+code,.mono{font-family:"IBM Plex Mono",ui-monospace,SFMono-Regular,Menlo,monospace;font-size:.92em}
+.wrap{max-width:1080px;margin:0 auto}
+.prose{max-width:68ch}
+.prose p+p{margin-top:14px}
+.eyebrow{font-family:"IBM Plex Mono",ui-monospace,monospace;font-size:12px;letter-spacing:.12em;text-transform:uppercase;color:var(--accent);font-weight:500}
+.muted{color:var(--ink-2)}
+.small{font-size:14px}
+header.top{padding-block:56px 40px;border-bottom:1px solid var(--line);display:grid;gap:18px}
+header .lede{font-size:clamp(17px,1.6vw,20px);color:var(--ink-2);max-width:62ch;margin-top:6px}
+nav.toc{display:flex;flex-wrap:wrap;gap:6px 18px;padding-block:18px;border-bottom:1px solid var(--line);font-size:14px}
+nav.toc a{color:var(--ink-2);text-decoration:none;border-bottom:1px solid transparent;padding-bottom:2px}
+nav.toc a:hover,nav.toc a:focus-visible{color:var(--accent);border-color:var(--accent);outline:none}
+section{padding-block:56px 8px;display:grid;gap:22px}
+section+section{border-top:1px solid var(--line);margin-top:40px}
+.legend{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:12px;margin-top:6px}
+.legend div{background:var(--surface);border:1px solid var(--line);padding:14px 16px;border-radius:4px}
+.legend b{display:block;font-family:"IBM Plex Mono",monospace;font-size:12px;letter-spacing:.08em;text-transform:uppercase;margin-bottom:6px}
+.legend .ok b{color:var(--accent)} .legend .todo b{color:var(--amber)}
+/* screens */
+.screen{display:grid;gap:12px}
+.frame{background:var(--surface);border:1px solid var(--line-2);border-radius:8px;overflow:hidden;box-shadow:var(--shadow)}
+.frame .bar{display:flex;align-items:center;gap:10px;padding:8px 12px;background:var(--surface-2);border-bottom:1px solid var(--line);font-family:"IBM Plex Mono",monospace;font-size:12px;color:var(--ink-2)}
+.frame .bar i{width:9px;height:9px;border-radius:50%;background:var(--line-2);display:inline-block}
+.frame .bar i:nth-child(2){margin-left:-6px} .frame .bar i:nth-child(3){margin-left:-6px}
+.frame .bar span{margin-left:8px;background:var(--surface);border:1px solid var(--line);border-radius:4px;padding:2px 10px;flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.frame .bar span em{font-style:normal;color:var(--muted)}
+.frame img{display:block;width:100%;height:auto;max-width:100%}
+.cap{font-size:14px;color:var(--ink-2);max-width:72ch}
+.cap b{color:var(--ink);font-weight:600}
+.step{display:grid;grid-template-columns:minmax(0,1fr);gap:16px}
+.step .n{font-family:"IBM Plex Mono",monospace;font-size:12px;letter-spacing:.1em;color:var(--accent);text-transform:uppercase}
+.step h3{margin-top:2px}
+.phones{display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:20px;align-items:start}
+.phone{display:grid;gap:10px}
+.phone .shell{background:var(--ink);border-radius:26px;padding:10px;box-shadow:var(--shadow);max-width:340px;width:100%}
+.phone .glass{border-radius:18px;overflow:auto;height:560px;background:#f4f6f1;scrollbar-width:thin}
+.phone .glass img{display:block;width:100%;height:auto;max-width:100%}
+.phone .hint{font-family:"IBM Plex Mono",monospace;font-size:11px;letter-spacing:.06em;color:var(--muted);text-transform:uppercase}
+.pair{display:grid;grid-template-columns:repeat(auto-fit,minmax(320px,1fr));gap:20px;align-items:start}
+/* numbers */
+.tiles{display:grid;grid-template-columns:repeat(auto-fit,minmax(170px,1fr));gap:1px;background:var(--line);border:1px solid var(--line);border-radius:4px;overflow:hidden}
+.tile{background:var(--surface);padding:16px 18px;display:grid;gap:4px;align-content:start}
+.tile .v{font-family:"Archivo",sans-serif;font-stretch:90%;font-weight:700;font-size:30px;letter-spacing:-.02em;font-variant-numeric:tabular-nums;line-height:1}
+.tile .v small{font-size:15px;font-weight:500;color:var(--ink-2);letter-spacing:0;margin-left:2px}
+.tile .l{font-size:13px;color:var(--ink-2);line-height:1.35}
+.tile.neg .v{color:var(--red)} .tile.pos .v{color:var(--accent)}
+table{border-collapse:collapse;width:100%;font-size:14.5px;background:var(--surface);border:1px solid var(--line)}
+th,td{padding:9px 12px;text-align:left;vertical-align:top;border-bottom:1px solid var(--line)}
+th{font-family:"IBM Plex Mono",monospace;font-size:11.5px;letter-spacing:.08em;text-transform:uppercase;font-weight:500;color:var(--ink-2);background:var(--surface-2)}
+td.n,th.n{text-align:right;font-variant-numeric:tabular-nums;font-family:"IBM Plex Mono",monospace;font-size:13.5px}
+tr.total td{font-weight:600;border-top:2px solid var(--line-2)}
+tr.sub td{color:var(--ink-2);padding-left:24px}
+.tscroll{overflow-x:auto;border-radius:4px}
+.chart{background:var(--surface);border:1px solid var(--line);border-radius:4px;padding:16px 16px 10px;display:grid;gap:8px}
+.chart h3{font-size:16px;font-weight:600;margin:0}
+.chart svg{width:100%;height:auto;display:block;max-width:100%}
+.chart .k{display:flex;flex-wrap:wrap;gap:6px 18px;font-size:13px;color:var(--ink-2)}
+.chart .k i{display:inline-block;width:18px;height:3px;vertical-align:middle;margin-right:7px;border-radius:2px}
+.ax{stroke:var(--line);stroke-width:1}
+.axl{fill:var(--muted);font-family:"IBM Plex Mono",monospace;font-size:11px}
+.grid2{display:grid;grid-template-columns:repeat(auto-fit,minmax(320px,1fr));gap:20px;align-items:start}
+.callout{border-left:3px solid var(--accent);background:var(--accent-soft);padding:14px 18px;border-radius:0 4px 4px 0;max-width:72ch}
+.callout.warn{border-color:var(--amber);background:var(--amber-soft)}
+ul.tight{margin:0;padding-left:20px;display:grid;gap:8px;max-width:72ch}
+ul.tight li{padding-left:2px}
+.pill{display:inline-block;font-family:"IBM Plex Mono",monospace;font-size:11px;letter-spacing:.08em;text-transform:uppercase;padding:2px 8px;border-radius:999px;border:1px solid}
+.pill.ok{color:var(--accent);border-color:var(--accent)} .pill.todo{color:var(--amber);border-color:var(--amber)}
+.gates{display:grid;grid-template-columns:repeat(auto-fit,minmax(230px,1fr));gap:12px}
+.gates div{background:var(--surface);border:1px solid var(--line);border-radius:4px;padding:14px 16px;display:grid;gap:6px}
+.gates b{font-family:"Archivo",sans-serif;font-stretch:90%;font-size:18px}
+footer{margin-top:64px;padding-top:20px;border-top:1px solid var(--line);font-size:13px;color:var(--muted);max-width:72ch}
+@media (max-width:640px){.phone .glass{height:480px}.tile .v{font-size:26px}}
+@media (prefers-reduced-motion:no-preference){a,nav.toc a{transition:color .15s,border-color .15s}}
+</style>
+
+<div class="wrap">
+<header class="top">
+  <div class="eyebrow">13 September 2026 · Adelaide · what is actually built</div>
+  <h1>Kit Register, as it stands today</h1>
+  <p class="lede">Every screen below is a real screenshot of the software running against a demo database, and every number is the output of the financial models in the repository. Nothing is a mock-up. The brand name is a placeholder until the trade mark search is done.</p>
+  <div class="legend">
+    <div class="ok"><b>Working now</b>Site, configurator, Stripe checkout handshake, self-onboarding, QR after-use refills, expiry engine, compliance record and certificate, compliance calendar, partner signup and portal, referral links, self-check, admin, metrics. 101 automated checks pass.</div>
+    <div class="todo"><b>Not yet real</b>The business name, the company, a Stripe account with live keys, a wholesale price from Aero Healthcare (Gate G1), insurance, a domain and a host. The financials assume all of these exist.</div>
+  </div>
+</header>
+<nav class="toc" aria-label="Sections">
+  <a href="#buy">1 · The buyer's path</a><a href="#use">2 · The day something is used</a><a href="#calendar">3 · The compliance calendar</a><a href="#partners">4 · Partners and referrals</a><a href="#check">5 · The self-check</a><a href="#admin">6 · Your side of it</a><a href="#money">7 · The financials</a><a href="#live">8 · What stands between this and live</a>
+</nav>
+
+<!-- 1 -->
+<section id="buy">
+  <div class="prose">
+    <div class="eyebrow">1 · The buyer's path</div>
+    <h2>From a Google ad to a certificate without talking to anyone</h2>
+    <p style="margin-top:12px">A tradie searches "vehicle first aid kit", clicks, lands on the page below, sizes the order, pays by card, names the kit locations, and holds a compliance certificate. Four screens, two minutes, no phone call. This is the whole sales motion now that you are not selling in person.</p>
+  </div>
+
+  <div class="step">
+    <div><div class="n">Screen 1 of 4 · public</div><h3>The landing page</h3></div>
+    <div class="frame"><div class="bar"><i></i><i></i><i></i><span><em>https://</em>yourdomain.com.au/</span></div><img src="shots/landing.png" alt="Landing page: headline 'Your first-aid kits, always compliant. Never another visit.' with two buttons, Build your kit plan and Free 90-second compliance check, then a three-step How it works row and the pricing section." width="1920" height="1200" loading="lazy"></div>
+    <p class="cap"><b>The certificate is the promise, not the bandages.</b> Two calls to action: buy now, or take the free check and get emailed. The page ships Australia-wide from day one because there is no reason to stay local when nobody visits.</p>
+  </div>
+
+  <div class="step">
+    <div><div class="n">Screen 2 of 4 · public</div><h3>Build your kit plan</h3></div>
+    <div class="frame"><div class="bar"><i></i><i></i><i></i><span><em>https://</em>yourdomain.com.au/buy</span></div><img src="shots/buy.png" alt="The configurator: workplaces needing a site kit (1), work vehicles needing a kit (2), billing annual paid upfront, a compliance calendar tick box at A$14 a month, and a live quote: kits A$237, plan per year A$312, today ex GST A$549." width="1920" height="1200" loading="lazy"></div>
+    <p class="cap"><b>The quote updates as they type.</b> One workshop and two utes is A$237 of kits they own outright plus A$312 a year of plan, A$549 today. The button posts to Stripe Checkout with the order and any partner or referral code in the metadata. Monthly billing is offered at 15 percent more; the annual default is what keeps churn at 4 percent rather than 6.</p>
+  </div>
+
+  <div class="pair">
+    <div class="phone">
+      <div class="n eyebrow">Screen 3 of 4 · after payment</div>
+      <div class="shell"><div class="glass"><img src="shots/welcome.png" alt="Welcome page on a phone: thanks for the order, a form asking the customer to name each kit's location or vehicle rego, then a button to see the certificate." width="632" height="1434" loading="lazy"></div></div>
+      <p class="cap"><b>Name your kits.</b> Stripe sends them back here. The account, kits, partner payout and referral reward already exist from the webhook. They type "Workshop" and two regos, and that is onboarding done.</p>
+      <p class="hint">Scroll inside the phone</p>
+    </div>
+    <div class="screen">
+      <div class="n eyebrow">Screen 4 of 4 · the product</div>
+      <div class="frame"><div class="bar"><i></i><i></i><i></i><span><em>https://</em>yourdomain.com.au/c/WUPNMUUR…/certificate</span></div><img src="shots/certificate.png" alt="Workplace first-aid compliance certificate for Demo Plumbing Pty Ltd, issued 13 Sept 2026, with a status stamp and a table of three kits with their status, last check and next refill." width="1920" height="1200" loading="lazy"></div>
+      <p class="cap"><b>The certificate.</b> A dated, referenced page they can print or send to a head contractor, insurer or inspector. It says what the kits are, what standard they follow, and when each was last checked. It never says "guarantees compliance" or "TGA approved".</p>
+    </div>
+  </div>
+</section>
+
+<!-- 2 -->
+<section id="use">
+  <div class="prose">
+    <div class="eyebrow">2 · The day something is used</div>
+    <h2>Someone cuts a hand, scans the lid, and the refill is in the post</h2>
+    <p style="margin-top:12px">This is the loop the incumbents cannot run. A visit-based service finds the gap next quarter; a distributor's kit log needs someone to remember. Here the person who used the gloves reports it in twenty seconds and the parcel goes out the same day.</p>
+  </div>
+  <div class="pair">
+    <div class="phone">
+      <div class="n eyebrow">On the label · any phone, no login</div>
+      <div class="shell"><div class="glass"><img src="shots/scan.png" alt="Scan page for Vehicle kit Ute S123 ABC: 'What did you use?' with each kit item listed with its current count (for example Nitrile gloves 2 of 3 in kit), a quantity selector and a tick box, then buttons Send refill, Nothing used kit checked and complete, and Kit is missing or damaged." width="600" height="3864" loading="lazy"></div></div>
+      <p class="cap"><b>Every item in the kit, with what is left.</b> Tick the gloves and the dressing strips, send. The same page doubles as the six-monthly check ("nothing used, checked and complete") and the loss report.</p>
+      <p class="hint">Scroll inside the phone</p>
+    </div>
+    <div class="screen">
+      <div class="n eyebrow">Your admin, the same minute</div>
+      <div class="frame"><div class="bar"><i></i><i></i><i></i><span><em>https://</em>yourdomain.com.au/admin</span></div><img src="shots/admin.png" alt="Admin 'What ships today': one refill request from Demo Plumbing (1 x nitrile gloves, 1 x adhesive dressing strips, 'Cut hand on a fitting', by Sam) with a tracking field and Shipped button; one scheduled refill pack overdue by 10 days; one kit needing attention." width="1920" height="1200" loading="lazy"></div>
+      <p class="cap"><b>What ships today.</b> The after-use request, the scheduled six-monthly packs that fell due, kits that need attention, AED pads and batteries inside 45 days of expiry, renewals, and calendar obligations. Type the tracking number, press Shipped, the kit is compliant again and the customer's record updates. A daily version of this list is also emailed or posted to a webhook.</p>
+    </div>
+  </div>
+  <div class="screen">
+    <div class="n eyebrow">The customer's live record, showing the same events</div>
+    <div class="frame"><div class="bar"><i></i><i></i><i></i><span><em>https://</em>yourdomain.com.au/c/WUPNMUURPBW2Y85G</span></div><img src="shots/record.png" alt="Compliance record for Demo Plumbing Pty Ltd: Attention required stamp; a kits table showing the site kit compliant, Ute S123 ABC attention (gloves 2 of 3, dressing strips 0 of 1, refill request open) and Ute S456 DEF overdue (scheduled refill overdue by 10 days); buttons Print certificate, Name my kits, Refer a business, JSON." width="1920" height="1200" loading="lazy"></div>
+    <p class="cap"><b>Four states, computed from the rows, never typed in.</b> Compliant, due (a scheduled refill inside 14 days or an item expiring inside 45), attention (something short or a request open), overdue. The stamp at the top is the worst state across all kits, so the record is honest even when that is inconvenient. The "Refer a business" button gives them their own link and a free refill pack when it converts.</p>
+  </div>
+</section>
+
+<!-- 3 -->
+<section id="calendar">
+  <div class="prose">
+    <div class="eyebrow">3 · The compliance calendar</div>
+    <h2>The A$14 tick box that is worth more than the kits</h2>
+    <p style="margin-top:12px">Fire equipment every six months, test and tag, AED service, the emergency plan review, inductions, chemicals, licences. Most small businesses track none of it. Attached to a kit order it is a tick box; on its own it is a hard sale. The pricing model puts the calendar and its siblings at A$14 to 22 of extra revenue per account per month at the base take-rates, which is the single largest profit lever in the plan.</p>
+  </div>
+  <div class="screen">
+    <div class="frame"><div class="bar"><i></i><i></i><i></i><span><em>https://</em>yourdomain.com.au/c/9Y429GUK7RAZPSBV</span></div><img src="shots/record-calendar.png" alt="Compliance record for Little Gums Early Learning, a childcare centre with two site kits and the compliance calendar, showing kit rows and a compliance calendar section with fire equipment service and test and tag obligations, their providers and next due dates." width="1920" height="1200" loading="lazy"></div>
+    <p class="cap"><b>A childcare centre with two kits and the calendar.</b> Fire extinguishers serviced five months ago by a named provider, test and tag due next month. Each obligation has a cycle, a state, a line on the certificate and a line on your due list. "Done" resets the cycle. Calendar Plus (A$29) adds the induction and SWMS register and chemical register; those are specified but not built.</p>
+  </div>
+</section>
+
+<!-- 4 -->
+<section id="partners">
+  <div class="prose">
+    <div class="eyebrow">4 · Partners and referrals</div>
+    <h2>WHS consultants and bookkeepers sign themselves up</h2>
+    <p style="margin-top:12px">Nobody recruits partners by phone in this plan. A consultant lands on the signup page, gets three links on the spot, and earns 15 percent of the first year's plan for every client who buys through them. By year three the model has partners and referrals winning 38 percent of new accounts, which is what pulls blended acquisition cost down from A$105 to A$62.</p>
+  </div>
+  <div class="pair">
+    <div class="screen">
+      <div class="n eyebrow">Public · self-signup</div>
+      <div class="frame"><div class="bar"><i></i><i></i><i></i><span><em>https://</em>yourdomain.com.au/partners</span></div><img src="shots/partners-signup.png" alt="Partner signup page: who it is for, what a partner earns, and a short form for name, type, contact and email." width="1920" height="1200" loading="lazy"></div>
+      <p class="cap"><b>Submit, and the partner exists.</b> They get a buy link, a self-check link and their portal address immediately. No approval queue.</p>
+    </div>
+    <div class="phone">
+      <div class="n eyebrow">The partner's portal · on their phone</div>
+      <div class="shell"><div class="glass"><img src="shots/partner.png" alt="Partner view for Northside WHS Consulting: 2 clients referred, 1 fully compliant today, A$90 owed, A$0 paid; a table of clients with kit counts and compliance states; their referral link and the 15 percent explanation." width="600" height="1376" loading="lazy"></div></div>
+      <p class="cap"><b>Two clients, A$90 owed.</b> The partner sees each client's compliance state and plan status, never their contact details, and can point a client at the self-check from here. Payouts are recorded automatically at signup and marked paid from your admin.</p>
+    </div>
+  </div>
+</section>
+
+<!-- 5 -->
+<section id="check">
+  <div class="prose">
+    <div class="eyebrow">5 · The self-check</div>
+    <h2>The 90-second check that turns a cold click into a lead</h2>
+    <p style="margin-top:12px">Only about 2 percent of ad clicks buy on the first visit. The check catches another 6 percent as leads with a phone number and a score, and an automated sequence converts about one in eight of those. That second path is a third of the accounts the paid channel wins in the model, so it matters as much as the buy page.</p>
+  </div>
+  <div class="pair">
+    <div class="phone">
+      <div class="shell"><div class="glass"><img src="shots/check.png" alt="The compliance self-check on a phone: eight yes/no questions about first-aid kits, vehicle kits, checks, records, first aiders, AED and signage, then fields for business name, contact, phone and email, and a Get my result button." width="600" height="3401" loading="lazy"></div></div>
+      <p class="cap"><b>Eight questions, then a "4 of 8" result</b> naming the gaps and what fixes each. A partner's link attributes the lead to them. The page never claims a passing score means compliance.</p>
+      <p class="hint">Scroll inside the phone</p>
+    </div>
+    <div class="screen">
+      <div class="n eyebrow">What you see</div>
+      <div class="frame"><div class="bar"><i></i><i></i><i></i><span><em>https://</em>yourdomain.com.au/admin/leads</span></div><img src="shots/leads.png" alt="Admin leads list: two self-check leads with business, contact, score out of 8, source or partner, and a status of new." width="1920" height="1200" loading="lazy"></div>
+      <p class="cap"><b>Leads with a score and a source.</b> A physio at 4 of 8, a roofer at 2 of 8 who came through the consultant's link. Each lead also fires a webhook so the follow-up sequence starts without you.</p>
+    </div>
+  </div>
+</section>
+
+<!-- 6 -->
+<section id="admin">
+  <div class="prose">
+    <div class="eyebrow">6 · Your side of it</div>
+    <h2>Thirteen hours a week, most of it packing</h2>
+    <p style="margin-top:12px">The admin is built around the one question that matters each morning, what ships today, and the two numbers that decide whether the business is working: 30-day activation and monthly churn. Both stop-rules from the retention plan sit on the metrics page with their targets next to them.</p>
+  </div>
+  <div class="screen">
+    <div class="frame"><div class="bar"><i></i><i></i><i></i><span><em>https://</em>yourdomain.com.au/admin/metrics</span></div><img src="shots/metrics.png" alt="Admin metrics page: tiles for active accounts (6), 30-day activation (target 70%), logo churn (stop rule 4%), renewal rate (target 85%), kits per account (2.8), annual billing share (83%, target 70%+), past due (0), open requests older than 2 business days (0), self-check leads (2), compliance calendar take-rate (17%, target 35%); then accounts by source and cohorts by signup month." width="1920" height="1200" loading="lazy"></div>
+    <p class="cap"><b>Six demo accounts, so the rates show dashes until there is history.</b> Every tile carries its target. Below it, accounts by source (direct, paid, partner, referral, SEO) and signup cohorts, which is how you will know at week ten whether Gate G2 has passed.</p>
+  </div>
+  <div class="pair">
+    <div class="screen">
+      <div class="frame"><div class="bar"><i></i><i></i><i></i><span><em>https://</em>yourdomain.com.au/admin/customers/150290e1…</span></div><img src="shots/customer.png" alt="Admin customer detail for Little Gums Early Learning: plan and billing status, kits with states, defibrillators, the compliance calendar obligations with done and retire actions, and links to the record, certificate and labels." width="1920" height="1200" loading="lazy"></div>
+      <p class="cap"><b>One account.</b> Plan, kits, AEDs, calendar obligations, renewals, cancellation with a required reason. The label sheet for their kits prints from here.</p>
+    </div>
+    <div class="screen">
+      <div class="frame"><div class="bar"><i></i><i></i><i></i><span><em>https://</em>yourdomain.com.au/admin/partners</span></div><img src="shots/partners-admin.png" alt="Admin partners list: Northside WHS Consulting, WHS consultant, 2 referred accounts, A$90 owed, A$0 paid, with a form to add a partner." width="1920" height="1200" loading="lazy"></div>
+      <p class="cap"><b>Partners and what they are owed.</b> Fifteen percent of first-year plan revenue is recorded the moment a referred account is created; you mark it paid when the transfer goes.</p>
+    </div>
+  </div>
+  <div class="prose">
+    <p class="small muted">Also built but not pictured: the QR label sheet, the CSV export for Xero, the JSON version of every record, the printable plan terms and privacy policy, the daily due report script, and three agent-assisted scripts that draft answer pages, personalised outreach emails and prospect lists for you to read and send.</p>
+  </div>
+</section>
+
+<!-- 7 -->
+<section id="money">
+  <div class="prose">
+    <div class="eyebrow">7 · The financials</div>
+    <h2>What one account earns, and what a thousand of them earn</h2>
+    <p style="margin-top:12px">Three models produce these numbers. The unit-economics model describes one account. The channel model runs 36 months of accounts won by paid search, partners, referrals and SEO, with packing hours priced once you exceed what you can do yourself. The retention model builds churn from its causes rather than assuming it. All three are in the repository and rerun in under a second.</p>
+  </div>
+
+  <h3>One account</h3>
+  <div class="tiles">
+    <div class="tile"><div class="v">A$237</div><div class="l">kits sold upfront per account (1.2 site, 1.6 vehicle on average)</div></div>
+    <div class="tile"><div class="v">A$101</div><div class="l">margin on those kits after goods, postage and card fees</div></div>
+    <div class="tile"><div class="v">A$110</div><div class="l">cost to win one account self-serve (site base case)</div></div>
+    <div class="tile neg"><div class="v">−A$9</div><div class="l">day-one position: kit margin minus acquisition cost</div></div>
+    <div class="tile"><div class="v">A$35<small>/mo</small></div><div class="l">recurring revenue per account: plan, AED consumables, add-ons</div></div>
+    <div class="tile pos"><div class="v">A$20<small>/mo</small></div><div class="l">recurring contribution after ongoing goods and fees (57%)</div></div>
+    <div class="tile"><div class="v">25<small>months</small></div><div class="l">expected life at 4% monthly churn (site base case)</div></div>
+    <div class="tile"><div class="v">5.5 : 1</div><div class="l">lifetime contribution to acquisition cost at that churn</div></div>
+  </div>
+  <p class="cap">The kit sale pays for almost all of the acquisition on day one, and the first month of plan contribution covers the rest. That is the structural reason this business does not need outside money: each new customer funds their own acquisition, and the plan revenue compounds on top.</p>
+
+  <h3>Three years, three cases</h3>
+  <div class="grid2">
+    <div class="chart" id="chart-active"></div>
+    <div class="chart" id="chart-cum"></div>
+  </div>
+  <p class="cap">The three site-only cases differ in what a click costs and how many visitors buy: low is A$185 per account with 6.5 percent monthly churn, base is A$110 and 4 percent, high is A$80 and 3 percent. The grey line is the earlier founder-led plan for comparison: it wins more accounts in year one because you are in the room, and fewer after, because a national ad budget scales and sixteen hours a week in Adelaide does not. Cumulative profit in the base case dips to about −A$4,800 in month three and is positive for good from month seven.</p>
+
+  <div class="tscroll"><table>
+    <thead><tr><th>Site-only case</th><th class="n">Low</th><th class="n">Base</th><th class="n">High</th><th class="n">Founder-led base</th></tr></thead>
+    <tbody>
+      <tr><td>Active accounts, end of year 1 / 2 / 3</td><td class="n">198 / 548 / 846</td><td class="n">401 / 1,285 / 2,262</td><td class="n">579 / 2,084 / 4,063</td><td class="n">335 / 1,075 / 1,997</td></tr>
+      <tr><td>Revenue, year 1 / 2 / 3 (A$k)</td><td class="n">92 / 354 / 567</td><td class="n">182 / 812 / 1,513</td><td class="n">258 / 1,258 / 2,591</td><td class="n">146 / 554 / 1,029</td></tr>
+      <tr><td>Profit before paying yourself, year 1 / 2 / 3 (A$k)</td><td class="n">2 / 86 / 162</td><td class="n">43 / 297 / 614</td><td class="n">75 / 492 / 1,118</td><td class="n">42 / 190 / 368</td></tr>
+      <tr><td>Your hours a week</td><td class="n">12</td><td class="n">13</td><td class="n">13</td><td class="n">28 → 18</td></tr>
+      <tr><td>Take-home a week if paid as salary, year 2</td><td class="n">A$1,306</td><td class="n">A$3,681</td><td class="n">A$5,667</td><td class="n">A$2,585</td></tr>
+      <tr><td>Share of new accounts from partners and referrals, year 3</td><td class="n">21%</td><td class="n">38%</td><td class="n">50%</td><td class="n">53%</td></tr>
+    </tbody>
+  </table></div>
+
+  <h3>The base case, year by year</h3>
+  <div class="tscroll"><table>
+    <thead><tr><th></th><th class="n">Year 1</th><th class="n">Year 2</th><th class="n">Year 3</th></tr></thead>
+    <tbody>
+      <tr><td>Accounts won</td><td class="n">456</td><td class="n">1,280</td><td class="n">1,819</td></tr>
+      <tr><td>Kit sales</td><td class="n">108,207</td><td class="n">303,590</td><td class="n">431,544</td></tr>
+      <tr><td>Recurring revenue, earned</td><td class="n">74,118</td><td class="n">508,152</td><td class="n">1,081,509</td></tr>
+      <tr class="total"><td>Total revenue</td><td class="n">182,325</td><td class="n">811,743</td><td class="n">1,513,053</td></tr>
+      <tr><td>Goods and postage</td><td class="n">93,845</td><td class="n">389,558</td><td class="n">704,568</td></tr>
+      <tr><td>Acquisition: ads, partner fees, referral rewards</td><td class="n">34,219</td><td class="n">85,236</td><td class="n">115,286</td></tr>
+      <tr><td>Fixed costs, hired packing hours, storage</td><td class="n">10,789</td><td class="n">39,675</td><td class="n">79,590</td></tr>
+      <tr class="sub"><td>of which hired labour</td><td class="n">91</td><td class="n">22,475</td><td class="n">52,390</td></tr>
+      <tr class="sub"><td>parcels a week at year end</td><td class="n">45</td><td class="n">113</td><td class="n">189</td></tr>
+      <tr class="total"><td>Profit before paying yourself</td><td class="n">43,472</td><td class="n">297,273</td><td class="n">613,610</td></tr>
+      <tr><td>Personal tax and Medicare if all paid as salary</td><td class="n">4,913</td><td class="n">105,857</td><td class="n">254,535</td></tr>
+      <tr class="total"><td>Take-home</td><td class="n">38,559</td><td class="n">191,417</td><td class="n">359,075</td></tr>
+      <tr><td>Annual recurring revenue at year end</td><td class="n">216,969</td><td class="n">726,051</td><td class="n">1,332,737</td></tr>
+    </tbody>
+  </table></div>
+  <p class="cap">Year three is a business with a casual packer thirty hours a week and a small storage unit, not a laptop in a spare room. Treat it as the slope, not a promise. Everything in the table is before GST and before any hosting or software cost above the A$520 a month of fixed costs assumed.</p>
+
+  <h3>Where the accounts come from</h3>
+  <div class="grid2">
+    <div class="chart" id="chart-src"></div>
+    <div class="chart" id="chart-surv"></div>
+  </div>
+  <p class="cap">Left: accounts won per month by channel in the base case. Paid search does almost all of the work in year one at A$600 rising to A$4,600 a month of ads; partners and referrals compound behind it and are the reason blended cost per account falls every quarter. Right: of 100 accounts signed in month one, how many are still paying. The plan's whole retention design (annual default, renewal notice with the certificate attached, dunning, first scan inside 30 days) is the difference between the low and base curves.</p>
+
+  <h3>What the numbers rest on</h3>
+  <div class="grid2">
+    <div class="callout warn"><b>The load-bearing assumption is the conversion rate of the buy page.</b> Base case: a A$3 click, 2 percent buy directly, 6 percent take the check and one in eight of those buy after the email sequence, so about 2.7 percent blended and A$110 per account. If it is 1.5 percent the low case is what you get: A$2,253 of profit in year one on twelve hours a week. That is the honest cost of removing the in-person close.</div>
+    <div class="callout"><b>The upside is not in the kits.</b> Lifting revenue per account by A$14 a month through the calendar and its siblings is worth about A$160,000 of year-three profit, more than every operating efficiency combined. It is also the one thing a visit-based restocker or a distributor's kit log cannot copy without engineers.</div>
+  </div>
+  <div class="gates">
+    <div><b>Gate G1 · week 2</b><span class="small">Trade pricing from Aero Healthcare gives 45 percent or better margin at A$119 and A$59. If not, reprice or stop.</span></div>
+    <div><b>Gate G2 · week 10</b><span class="small">Twenty paid accounts through the site at under A$150 each, at least five from search ads.</span></div>
+    <div><b>Gate G3 · month 6</b><span class="small">Monthly churn under 4 percent and 30-day activation over 70 percent, read off the metrics page.</span></div>
+    <div><b>Gate G4 · month 9</b><span class="small">Partner self-signup has produced five accounts without a conversation.</span></div>
+  </div>
+</section>
+
+<!-- 8 -->
+<section id="live">
+  <div class="prose">
+    <div class="eyebrow">8 · What stands between this and live</div>
+    <h2>About a week of paperwork, then the three-week test</h2>
+    <p style="margin-top:12px">The software is the part that is done. The list below is everything that is not, in the order it has to happen. None of it needs you to sell anything.</p>
+  </div>
+  <ul class="tight">
+    <li><span class="pill todo">Name</span> Run the IP Australia and ASIC searches on a shortlist, register the business name and the .com.au, file TM Headstart in classes 10 and 42. Every name tried so far collided, which is why the screens say "Kit Register".</li>
+    <li><span class="pill todo">Entity</span> Pty Ltd, ABN, GST registration, business bank account. One afternoon online.</li>
+    <li><span class="pill todo">Supply</span> Email Aero Healthcare and one alternative for reseller pricing on the site kit, vehicle kit, refill packs and AED consumables. This is Gate G1 and the only unknown that can change the prices on the buy page.</li>
+    <li><span class="pill todo">Stripe</span> Open the account, add the live keys and webhook secret to the environment, put the site on a domain. The handshake is already built and tested against a fake Stripe server.</li>
+    <li><span class="pill todo">Insurance</span> Public and products liability, two quotes.</li>
+    <li><span class="pill todo">Stock</span> Ten site kits, fifteen vehicle kits, refill packs, printed labels. Under A$2,000.</li>
+    <li><span class="pill ok">Then</span> The three-week, A$1,500 test from the last note: three landing pages, three ad groups, A$500 each, national. Cost per account chooses whether the shop leads with kit plans, managed AEDs or generated documents. Only then order more than the first box of stock.</li>
+  </ul>
+</section>
+
+<footer>Screens captured 13 September 2026 from the kit-register app on a seeded demo database with six accounts, one partner and two leads; all businesses shown are fictional. Figures from model.py, channels.py (cases site_low, site, site_high, base), retention.py and pricing.py in the ecommerce-plan folder of the repository. Before GST; no founder salary deducted unless stated.</footer>
+</div>
+
+<script src="data.js"></script>
+<script>
+(function(){
+  const css = (v) => getComputedStyle(document.documentElement).getPropertyValue(v).trim();
+  const fmtK = (v) => v >= 1000 || v <= -1000 ? (v/1000).toFixed(v % 1000 === 0 ? 0 : 1).replace(/\.0$/,'') + 'k' : String(Math.round(v));
+  function lineChart(el, title, series, opts) {
+    const W = 520, H = 300, L = 54, R = 14, T = 16, B = 34;
+    const n = series[0].data.length;
+    const all = series.flatMap(s => s.data);
+    const lo = Math.min(0, ...all), hi = Math.max(...all);
+    const raw = (hi - lo) / 5, p10 = Math.pow(10, Math.floor(Math.log10(raw)));
+    const step = [1, 2, 2.5, 5, 10].map(m => m * p10).find(v => v >= raw);
+    const ymin = Math.floor(lo / step) * step, ymax = Math.ceil(hi / step) * step;
+    const ticks = Math.round((ymax - ymin) / step);
+    const x = (i) => L + i * (W - L - R) / (n - 1);
+    const y = (v) => T + (ymax - v) * (H - T - B) / (ymax - ymin);
+    let svg = `<svg viewBox="0 0 ${W} ${H}" role="img" aria-label="${title}">`;
+    for (let t = 0; t <= ticks; t++) {
+      const v = ymin + step * t;
+      svg += `<line class="ax" x1="${L}" x2="${W - R}" y1="${y(v)}" y2="${y(v)}"/><text class="axl" x="${L - 8}" y="${y(v) + 4}" text-anchor="end">${opts.fmt(v)}</text>`;
+    }
+    [0, 12, 24, 35].forEach((m) => {
+      svg += `<line class="ax" x1="${x(m)}" x2="${x(m)}" y1="${T}" y2="${H - B}"/><text class="axl" x="${x(m)}" y="${H - B + 16}" text-anchor="${m === 35 ? 'end' : m === 0 ? 'start' : 'middle'}">${m === 0 ? 'Month 1' : m === 35 ? 'Month 36' : 'Month ' + (m + 1)}</text>`;
+    });
+    if (ymin < 0) svg += `<line x1="${L}" x2="${W - R}" y1="${y(0)}" y2="${y(0)}" stroke="${css('--line-2')}" stroke-width="1.2"/>`;
+    for (const s of series) {
+      const d = s.data.map((v, i) => `${i ? 'L' : 'M'}${x(i).toFixed(1)},${y(v).toFixed(1)}`).join('');
+      svg += `<path d="${d}" fill="none" stroke="${s.color}" stroke-width="${s.w || 2.2}" stroke-linejoin="round" ${s.dash ? 'stroke-dasharray="5 4"' : ''}/>`;
+      const last = s.data[n - 1];
+      svg += `<circle cx="${x(n - 1)}" cy="${y(last)}" r="3.2" fill="${s.color}"/>`;
+    }
+    svg += '</svg>';
+    el.innerHTML = `<h3>${title}</h3>${svg}<div class="k">${series.map(s => `<span><i style="background:${s.color}"></i>${s.label}</span>`).join('')}</div>`;
+  }
+  function stackedArea(el, title, layers) {
+    const W = 520, H = 300, L = 44, R = 14, T = 16, B = 34, n = layers[0].data.length;
+    const tot = layers[0].data.map((_, i) => layers.reduce((a, l) => a + l.data[i], 0));
+    const ymax = Math.ceil(Math.max(...tot) / 20) * 20;
+    const x = (i) => L + i * (W - L - R) / (n - 1), y = (v) => T + (ymax - v) * (H - T - B) / ymax;
+    let svg = `<svg viewBox="0 0 ${W} ${H}" role="img" aria-label="${title}">`;
+    for (let t = 0; t <= 4; t++) { const v = ymax * t / 4; svg += `<line class="ax" x1="${L}" x2="${W - R}" y1="${y(v)}" y2="${y(v)}"/><text class="axl" x="${L - 8}" y="${y(v) + 4}" text-anchor="end">${v}</text>`; }
+    [0, 12, 24, 35].forEach((m) => { svg += `<text class="axl" x="${x(m)}" y="${H - B + 16}" text-anchor="${m === 35 ? 'end' : m === 0 ? 'start' : 'middle'}">${m === 0 ? 'Month 1' : m === 35 ? 'Month 36' : 'Month ' + (m + 1)}</text>`; });
+    let base = new Array(n).fill(0);
+    for (const l of layers) {
+      const top = base.map((b, i) => b + l.data[i]);
+      const up = top.map((v, i) => `${i ? 'L' : 'M'}${x(i).toFixed(1)},${y(v).toFixed(1)}`).join('');
+      const down = base.map((v, i) => `L${x(i).toFixed(1)},${y(v).toFixed(1)}`).reverse().join('');
+      svg += `<path d="${up}${down}Z" fill="${l.color}" fill-opacity="${l.op || .85}" stroke="none"/>`;
+      base = top;
+    }
+    svg += '</svg>';
+    el.innerHTML = `<h3>${title}</h3>${svg}<div class="k">${layers.map(l => `<span><i style="background:${l.color}"></i>${l.label}</span>`).join('')}</div>`;
+  }
+  function survival(el, title) {
+    const months = [0, 1, 3, 6, 9, 12, 13, 18, 24, 25, 30, 36];
+    const S = { low: [100, 94, 85, 75, 67, 45, 43, 37, 22, 22, 19, 11], base: [100, 98, 93, 89, 84, 66, 65, 60, 45, 44, 41, 31], high: [100, 99, 96, 93, 91, 78, 77, 74, 62, 61, 58, 49] };
+    const W = 520, H = 300, L = 44, R = 14, T = 16, B = 34;
+    const x = (m) => L + m * (W - L - R) / 36, y = (v) => T + (100 - v) * (H - T - B) / 100;
+    let svg = `<svg viewBox="0 0 ${W} ${H}" role="img" aria-label="${title}">`;
+    for (let t = 0; t <= 4; t++) { const v = t * 25; svg += `<line class="ax" x1="${L}" x2="${W - R}" y1="${y(v)}" y2="${y(v)}"/><text class="axl" x="${L - 8}" y="${y(v) + 4}" text-anchor="end">${v}</text>`; }
+    [0, 12, 24, 36].forEach((m) => { svg += `<line class="ax" x1="${x(m)}" x2="${x(m)}" y1="${T}" y2="${H - B}"/><text class="axl" x="${x(m)}" y="${H - B + 16}" text-anchor="${m === 36 ? 'end' : m === 0 ? 'start' : 'middle'}">${m === 0 ? 'Signup' : 'Month ' + m}</text>`; });
+    const cols = { low: css('--c-low'), base: css('--c-base'), high: css('--c-high') };
+    for (const k of ['low', 'base', 'high']) {
+      const d = months.map((m, i) => `${i ? 'L' : 'M'}${x(m).toFixed(1)},${y(S[k][i]).toFixed(1)}`).join('');
+      svg += `<path d="${d}" fill="none" stroke="${cols[k]}" stroke-width="2.2" stroke-linejoin="round"/><circle cx="${x(36)}" cy="${y(S[k][11])}" r="3.2" fill="${cols[k]}"/><text class="axl" x="${x(36) - 6}" y="${y(S[k][11]) - 7}" text-anchor="end" fill="${cols[k]}">${S[k][11]} left</text>`;
+    }
+    svg += '</svg>';
+    el.innerHTML = `<h3>${title}</h3>${svg}<div class="k"><span><i style="background:${cols.low}"></i>Low retention</span><span><i style="background:${cols.base}"></i>Base</span><span><i style="background:${cols.high}"></i>High</span></div>`;
+  }
+  function draw() {
+    const cl = css('--c-low'), cb = css('--c-base'), ch = css('--c-high'), cf = css('--c-founder');
+    lineChart(document.getElementById('chart-active'), 'Active accounts over 36 months', [
+      { label: 'Site-only, low', data: DATA.site_low.active, color: cl },
+      { label: 'Site-only, base', data: DATA.site.active, color: cb, w: 2.8 },
+      { label: 'Site-only, high', data: DATA.site_high.active, color: ch },
+      { label: 'Founder-led base (for comparison)', data: DATA.base.active, color: cf, dash: true, w: 1.8 },
+    ], { fmt: (v) => fmtK(v) });
+    const cum = (a) => { let s = 0; return a.map(v => s += v); };
+    lineChart(document.getElementById('chart-cum'), 'Cumulative profit before paying yourself, A$', [
+      { label: 'Site-only, low', data: cum(DATA.site_low.profit), color: cl },
+      { label: 'Site-only, base', data: cum(DATA.site.profit), color: cb, w: 2.8 },
+      { label: 'Site-only, high', data: cum(DATA.site_high.profit), color: ch },
+      { label: 'Founder-led base', data: cum(DATA.base.profit), color: cf, dash: true, w: 1.8 },
+    ], { fmt: (v) => fmtK(v) });
+    stackedArea(document.getElementById('chart-src'), 'Accounts won per month by channel, base case', [
+      { label: 'Paid search', data: DATA.site_src.paid, color: cb, op: .9 },
+      { label: 'Partners', data: DATA.site_src.partner, color: ch, op: .8 },
+      { label: 'Referrals', data: DATA.site_src.referral, color: cl, op: .8 },
+      { label: 'Search (SEO)', data: DATA.site_src.seo, color: cf, op: .6 },
+    ]);
+    survival(document.getElementById('chart-surv'), 'Of 100 accounts signed in month one, how many are still paying');
+  }
+  draw();
+  if (window.matchMedia) window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', draw);
+  new MutationObserver(draw).observe(document.documentElement, { attributes: true, attributeFilter: ['data-theme'] });
+})();
+</script>

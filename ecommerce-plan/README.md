@@ -43,6 +43,7 @@ documented in case the validation gate fails.
 | `pricing.py` | Pricing structures by account shape, elasticity cases, annual vs monthly, renewal increases, and the compliance-module table with take-rates and build days |
 | `retention.py` | Churn built up from its causes (annual renewal, monthly cliff, card failures and dunning, business closures): survival curves, flat-equivalent churn, what each retention lever is worth |
 | `report.html` | The same plan as a single shareable page (body-only HTML, published as an artifact) |
+| `walkthrough/` | **What it looks like.** Screenshots of every screen of the site and admin against a demo database, with the three-year financials charted from the models. Body-only HTML published as an artifact; open `index.html` locally |
 | `app/` | **The software.** Kit register, QR after-use refills, expiry engine, compliance record and certificate, labels, daily due report. `npm install && npm start`. See `app/README.md` |
 | `launch/` | **Selling tomorrow.** Day-one checklist, printable offer sheet, sales script, email templates, checkout setup (Stripe links today, Shopify CSV this week), tracking sheet, Google Ads spec, plan terms, privacy policy; then the numbers: `09` paid and SEO, `10` partners, referrals and earnings, `11` churn and retention, `12` the operating model with a coding agent on tap, `13` pricing and the compliance modules, `14` selling only through the site (the operative plan: no founder-led selling), `15` whether this is the best idea, with a re-score and a three-week test to decide |
 
