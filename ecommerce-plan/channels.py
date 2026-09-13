@@ -39,6 +39,19 @@ CASES = {
                  partner_per=1.5, partners=[0, 0, 0, 1, 2, 3, 4, 5, 6, 7, 8, 8] + [15] * 12 + [25] * 12,
                  referral_rate=0.020, seo=[0, 0, 0, 1, 2, 3, 5, 7, 8, 12, 14, 15] + [20] * 12 + [25] * 12,
                  churn=0.033),   # flat-equivalent of retention.py base case
+    # 'claude': base-case demand, run with a coding agent doing the build, content,
+    # prospecting lists, outreach drafts, ops automation and retention flows.
+    # Direct +25% (more conversations per selling hour from prepared lists and
+    # drafted follow-ups), partner recruitment +50% (sequenced outreach),
+    # SEO ramp pulled forward two quarters (pages exist from week 2, Google
+    # still takes its time), referral +0.5pt (automated ask + reward), churn at
+    # the "everything in your control done well" level from retention.py.
+    'claude': dict(direct=[6, 9, 11, 13, 14, 15, 15, 15, 15, 15, 15, 15] + [10] * 12 + [8] * 12,
+                   paid=[0, 4, 6, 7, 7, 7, 7, 7, 7, 12, 14, 15] + [20] * 12 + [28] * 12,
+                   partner_per=1.5, partners=[0, 0, 1, 2, 3, 5, 6, 8, 9, 10, 12, 12] + [22] * 12 + [35] * 12,
+                   referral_rate=0.025, seo=[0, 0, 1, 3, 5, 8, 12, 14, 15, 18, 20, 20] + [25] * 12 + [30] * 12,
+                   churn=0.025, arpa_uplift=[0] * 6 + [2, 4, 6, 8, 9, 10] + [12] * 12 + [14] * 12,
+                   cs_min=1.0, hours_build=[8] * 2 + [3] * 34, hours_content=[1] * 36),
     'high': dict(direct=[6, 9, 12, 14, 15, 16, 16, 16, 16, 16, 16, 16] + [10] * 12 + [8] * 12,
                  paid=[0, 6, 9, 12, 14, 16, 16, 16, 16, 24, 28, 30] + [40] * 12 + [55] * 12,
                  partner_per=3.0, partners=[0, 0, 1, 2, 3, 5, 6, 8, 10, 12, 14, 15] + [25] * 12 + [40] * 12,
@@ -68,6 +81,10 @@ PARCEL_MIN = 8          # minutes to pack and label one parcel
 
 def run(case):
     c = CASES[case]
+    uplift = c.get('arpa_uplift', [0] * 36)          # A$/account/month from compliance modules (60% margin)
+    cs_min = c.get('cs_min', CS_MIN_PER_ACCOUNT)
+    h_build = c.get('hours_build', HOURS_BUILD)
+    h_content = c.get('hours_content', HOURS_CONTENT)
     active = 0.0
     rows = []
     cum = dict(kit_rev=0, rec_rev=0, kit_cogs=0, ongoing=0, cac=0, fixed=0, hours=0)
@@ -80,18 +97,18 @@ def run(case):
         churned = active * c['churn']
         active = active - churned + n_new
         kit_rev = n_new * KIT_REV
-        rec_rev = active * ARPA
+        rec_rev = active * (ARPA + uplift[m])
         kit_cogs = n_new * KIT_COGS
-        ongoing = active * ONGOING_PM
+        ongoing = active * (ONGOING_PM + uplift[m] * 0.4)
         cac = sum(new[k] * CAC[k] for k in new)
         parcels_wk = active * model.A['parcels_per_account_py'] / 52 + n_new / 4.33
-        ops_needed = parcels_wk * PARCEL_MIN / 60 + active * CS_MIN_PER_ACCOUNT / 60 / 4.33 + 1.0
+        ops_needed = parcels_wk * PARCEL_MIN / 60 + active * cs_min / 60 / 4.33 + 1.0
         founder_ops = min(ops_needed, FOUNDER_OPS_CAP[m])
         hired_hours_wk = ops_needed - founder_ops
         labour = hired_hours_wk * LABOUR_RATE * 4.33
         fixed = FIXED[m] + ONE_OFFS.get(m, 0) + labour + STORAGE_PM(active)
         profit = kit_rev + rec_rev - kit_cogs - ongoing - cac - fixed
-        hours_wk = HOURS_SALES[m] + HOURS_CONTENT[m] + HOURS_BUILD[m] + founder_ops
+        hours_wk = HOURS_SALES[m] + h_content[m] + h_build[m] + founder_ops
         rows.append(dict(m=m, new=new, n_new=n_new, active=active, kit_rev=kit_rev, rec_rev=rec_rev, kit_cogs=kit_cogs,
                          ongoing=ongoing, cac=cac, fixed=fixed, labour=labour, hired_hours_wk=hired_hours_wk,
                          profit=profit, hours_wk=hours_wk, parcels_wk=parcels_wk))
@@ -142,7 +159,7 @@ def report(case):
     line('Your hours per week (average)', lambda y: sum(r['hours_wk'] for r in y) / len(y), '{:.0f}')
     line('Your hours in the year', lambda y: sum(r['hours_wk'] for r in y) * 52 / 12)
     line('Profit per hour of your time', lambda y: sum(r['profit'] for r in y) / (sum(r['hours_wk'] for r in y) * 52 / 12))
-    line('ARR at year end', lambda y: y[-1]['active'] * ARPA * 12)
+    line('ARR at year end', lambda y: y[-1]['active'] * (ARPA + (CASES[case].get('arpa_uplift', [0]*36))[y[-1]['m']]) * 12)
     print()
     print("### Take-home if you pay yourself the whole profit as salary\n")
     print("| | Year 1 | Year 2 | Year 3 |\n|---|---|---|---|")

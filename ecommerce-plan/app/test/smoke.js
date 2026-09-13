@@ -7,9 +7,11 @@ process.env.DB_PATH = require('path').join(require('os').tmpdir(), `kits-test-${
 process.env.ADMIN_PASSWORD = 'test-pass';
 process.env.BRAND = 'TestBrand';
 process.env.CONTACT_PHONE = '0400 000 000';
+process.env.STRIPE_WEBHOOK_SECRET = 'whsec_test';
 
 const assert = require('assert');
 const fs = require('fs');
+const crypto = require('crypto');
 const { server, cfg } = require('../server');
 const db = require('../lib/db');
 const sched = require('../lib/schedule');
@@ -117,6 +119,56 @@ const post = (p, body, auth) => get(p, { method: 'POST', headers: { 'Content-Typ
   // escaping
   await post('/admin/customers/new', { name: '<script>alert(1)</script> Co', site_kits: '0', vehicle_kits: '0' }, true);
   r = await admin('/admin/customers'); assert(!r.text.includes('<script>alert(1)') && r.text.includes('&lt;script&gt;')); ok('html escaped');
+
+  // ---- partners, referrals, payouts
+  r = await post('/admin/partners', { name: 'Safe Hands WHS', type: 'whs_consultant', contact_name: 'Pat', fee_share: '0.15' }, true);
+  assert.strictEqual(r.status, 303); ok('partner created');
+  const pid = r.location.split('/').pop(); const partner = db.getPartner(pid);
+  assert(partner && partner.token.length === 12);
+  r = await post('/admin/customers/new', { name: 'Referred Plumbing', partner_id: pid, site_kits: '1', vehicle_kits: '3' }, true);
+  const rid = r.location.split('/').pop(); const rc = db.getCustomer(rid);
+  assert.strictEqual(rc.source, 'partner'); ok('partner-referred account tagged');
+  const payouts = db.listPartnerPayouts(pid);
+  assert.strictEqual(payouts.length, 1); assert.strictEqual(payouts[0].amount, Math.round((144 + 3 * 84) * 0.15 * 100) / 100); ok('payout recorded: A$' + payouts[0].amount);
+  r = await get(`/p/${partner.token}`); assert(r.status === 200 && r.text.includes('Referred Plumbing') && r.text.includes('owed to you')); ok('partner portal renders');
+  assert(!r.text.includes('0400 123 456')); ok('portal hides client contact details');
+  r = await admin(`/admin/partners/${pid}`); assert(r.text.includes('/check?ref=' + partner.token)); ok('partner detail with referral link');
+  r = await post(`/admin/payouts/${payouts[0].id}/paid`, {}, true); assert.strictEqual(db.listPartnerPayouts(pid)[0].status, 'paid'); ok('payout marked paid');
+  r = await post('/admin/customers/new', { name: 'Word Of Mouth Electrical', referred_by: cid, site_kits: '1', vehicle_kits: '0' }, true);
+  const wid = r.location.split('/').pop(); assert.strictEqual(db.getCustomer(wid).source, 'referral');
+  assert(db.listEvents(cid).some((e) => e.type === 'referral_made')); ok('customer referral attributed to referrer');
+
+  // ---- self-check lead magnet
+  r = await get('/check?ref=' + partner.token); assert(r.status === 200 && r.text.includes('Is your first-aid setup compliant') && r.text.includes(partner.token)); ok('self-check form with partner ref');
+  r = await post('/check', { ref: partner.token, kits: 'yes', checked: 'no', dates: 'unsure', owner: 'yes', firstaider: 'yes', process: 'no', evidence: 'no', aed: 'yes', business: 'Lead Landscaping', phone: '0400 999 888', email: 'lead@example.com', industry: 'Landscaping / outdoor' });
+  assert(r.status === 200 && r.text.includes('4 of 8')); ok('self-check scored 4 of 8');
+  const leads = db.listLeads(); assert(leads.length === 1 && leads[0].partner_id === pid && leads[0].score === 4); ok('lead stored with partner attribution');
+  r = await admin('/admin/leads'); assert(r.text.includes('Lead Landscaping')); ok('leads page');
+  r = await post(`/admin/leads/${leads[0].id}`, { status: 'contacted' }, true); assert.strictEqual(db.listLeads()[0].status, 'contacted'); ok('lead status update');
+
+  // ---- cancellation and metrics
+  r = await post(`/admin/customers/${wid}/cancel`, { reason: 'closed the business' }, true); assert.strictEqual(db.getCustomer(wid).status, 'cancelled'); ok('plan cancelled with reason');
+  r = await get(`/c/${db.getCustomer(wid).token}`); assert(r.text.includes('Plan inactive')); ok('record shows inactive plan');
+  r = await admin('/admin/metrics'); assert(r.status === 200 && r.text.includes('Retention and acquisition') && r.text.includes('closed the business')); ok('metrics page with cancellation reason');
+  const M = require('../lib/metrics').compute();
+  assert(M.bySource.partner === 1 && M.bySource.referral === 1 && M.cancelled === 1 && M.leads === 1); ok('metrics counts by source');
+
+  // ---- Stripe webhook
+  db.updateCustomer(cid, { email: 'jo@example.com' });
+  const signed = (payload) => { const t = Math.floor(Date.now() / 1000); const raw = JSON.stringify(payload); const v1 = crypto.createHmac('sha256', 'whsec_test').update(`${t}.${raw}`).digest('hex'); return { raw, sig: `t=${t},v1=${v1}` }; };
+  const stripePost = (payload, sig) => get('/webhooks/stripe', { method: 'POST', headers: { 'Content-Type': 'application/json', 'Stripe-Signature': sig }, body: payload });
+  let sp = signed({ type: 'invoice.payment_failed', data: { object: { customer: 'cus_123', customer_email: 'jo@example.com', attempt_count: 1 } } });
+  r = await stripePost(sp.raw, 't=1,v1=bad'); assert.strictEqual(r.status, 400); ok('unsigned stripe event rejected');
+  r = await stripePost(sp.raw, sp.sig); assert.strictEqual(r.status, 200); assert.strictEqual(db.getCustomer(cid).status, 'past_due'); ok('payment failed -> past due (matched by email)');
+  assert.strictEqual(db.getCustomer(cid).stripe_customer_id, 'cus_123'); ok('stripe customer id attached');
+  r = await get(`/c/${c.token}`); assert(r.text.includes('Renewal payment pending')); ok('record shows dunning state');
+  const end = Math.floor(Date.now() / 1000) + 365 * 86400;
+  sp = signed({ type: 'invoice.paid', data: { object: { customer: 'cus_123', subscription: 'sub_1', amount_paid: 30700, lines: { data: [{ period: { end } }] } } } });
+  r = await stripePost(sp.raw, sp.sig); assert.strictEqual(r.status, 200);
+  const after = db.getCustomer(cid); assert(after.status === 'active' && after.plan_renewal === new Date(end * 1000).toISOString().slice(0, 10)); ok('invoice paid -> active, renewal moved (matched by stripe id)');
+  assert(db.listEvents(cid).some((e) => e.type === 'payment_recovered')); ok('recovery event logged');
+  sp = signed({ type: 'invoice.paid', data: { object: { customer: 'cus_unknown', customer_email: 'nobody@example.com' } } });
+  r = await stripePost(sp.raw, sp.sig); assert(r.text.includes('unmatched')); ok('unknown customer logged, not applied');
 
   console.log(`\n${n} checks passed`);
   server.close();

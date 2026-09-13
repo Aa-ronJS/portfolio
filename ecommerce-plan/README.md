@@ -43,7 +43,7 @@ documented in case the validation gate fails.
 | `retention.py` | Churn built up from its causes (annual renewal, monthly cliff, card failures and dunning, business closures): survival curves, flat-equivalent churn, what each retention lever is worth |
 | `report.html` | The same plan as a single shareable page (body-only HTML, published as an artifact) |
 | `app/` | **The software.** Kit register, QR after-use refills, expiry engine, compliance record and certificate, labels, daily due report. `npm install && npm start`. See `app/README.md` |
-| `launch/` | **Selling tomorrow.** Day-one checklist, printable offer sheet, sales script, email templates, checkout setup (Stripe links today, Shopify CSV this week), tracking sheet, Google Ads spec, plan terms, privacy policy |
+| `launch/` | **Selling tomorrow.** Day-one checklist, printable offer sheet, sales script, email templates, checkout setup (Stripe links today, Shopify CSV this week), tracking sheet, Google Ads spec, plan terms, privacy policy; then the numbers: `09` paid and SEO, `10` partners, referrals and earnings, `11` churn and retention, `12` the operating model with a coding agent on tap |
 
 ```
 python3 ecommerce-plan/model.py          # markdown tables

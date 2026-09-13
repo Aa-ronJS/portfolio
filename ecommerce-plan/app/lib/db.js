@@ -71,7 +71,48 @@ CREATE TABLE IF NOT EXISTS events (
 );
 CREATE INDEX IF NOT EXISTS ev_customer ON events(customer_id, created_at);
 CREATE INDEX IF NOT EXISTS ki_kit ON kit_items(kit_id);
+CREATE TABLE IF NOT EXISTS partners (
+  id TEXT PRIMARY KEY,
+  token TEXT UNIQUE NOT NULL,
+  name TEXT NOT NULL,
+  type TEXT,                     -- whs_consultant | bookkeeper | association | trainer | broker | other
+  contact_name TEXT, email TEXT, phone TEXT,
+  fee_share REAL DEFAULT 0.15,   -- share of first-year plan revenue per referred account
+  status TEXT DEFAULT 'active',
+  notes TEXT,
+  created_at TEXT NOT NULL
+);
+CREATE TABLE IF NOT EXISTS partner_payouts (
+  id TEXT PRIMARY KEY,
+  partner_id TEXT NOT NULL REFERENCES partners(id) ON DELETE CASCADE,
+  customer_id TEXT NOT NULL REFERENCES customers(id) ON DELETE CASCADE,
+  amount REAL NOT NULL,
+  status TEXT DEFAULT 'owed',    -- owed | paid
+  created_at TEXT NOT NULL, paid_at TEXT
+);
+CREATE TABLE IF NOT EXISTS leads (
+  id TEXT PRIMARY KEY,
+  business TEXT, contact_name TEXT, email TEXT, phone TEXT, industry TEXT,
+  score INTEGER, answers TEXT,   -- JSON of the self-check answers
+  partner_id TEXT, source TEXT DEFAULT 'check',
+  status TEXT DEFAULT 'new',     -- new | contacted | won | lost
+  created_at TEXT NOT NULL
+);
 `);
+
+// ---------- migrations (additive columns; safe to rerun) ----------
+function addColumn(table, col, decl) {
+  const cols = db.prepare(`PRAGMA table_info(${table})`).all().map((c) => c.name);
+  if (!cols.includes(col)) db.exec(`ALTER TABLE ${table} ADD COLUMN ${col} ${decl}`);
+}
+addColumn('customers', 'source', "TEXT DEFAULT 'direct'");      // direct | paid | partner | referral | seo | check | other
+addColumn('customers', 'partner_id', 'TEXT');
+addColumn('customers', 'referred_by', 'TEXT');                   // customer id
+addColumn('customers', 'status', "TEXT DEFAULT 'active'");       // active | past_due | cancelled
+addColumn('customers', 'cancelled_at', 'TEXT');
+addColumn('customers', 'cancel_reason', 'TEXT');
+addColumn('customers', 'stripe_customer_id', 'TEXT');
+addColumn('customers', 'stripe_subscription_id', 'TEXT');
 
 // ---------- helpers ----------
 const ALPHABET = '23456789ABCDEFGHJKLMNPQRSTUVWXYZ'; // no 0/O/1/I
@@ -106,17 +147,69 @@ function createCustomer(c) {
     plan_start: c.plan_start || today(),
     plan_renewal: c.plan_renewal || addMonths(c.plan_start || today(), c.plan_billing === 'monthly' ? 1 : 12),
     notes: c.notes || null, created_at: now(),
+    source: c.source || 'direct', partner_id: c.partner_id || null, referred_by: c.referred_by || null,
   };
-  db.prepare(`INSERT INTO customers (id,token,name,abn,contact_name,email,phone,address,industry,plan_billing,plan_start,plan_renewal,notes,created_at)
-    VALUES (@id,@token,@name,@abn,@contact_name,@email,@phone,@address,@industry,@plan_billing,@plan_start,@plan_renewal,@notes,@created_at)`).run(rec);
-  logEvent(rec.id, null, 'customer_created', { name: rec.name });
+  db.prepare(`INSERT INTO customers (id,token,name,abn,contact_name,email,phone,address,industry,plan_billing,plan_start,plan_renewal,notes,created_at,source,partner_id,referred_by)
+    VALUES (@id,@token,@name,@abn,@contact_name,@email,@phone,@address,@industry,@plan_billing,@plan_start,@plan_renewal,@notes,@created_at,@source,@partner_id,@referred_by)`).run(rec);
+  logEvent(rec.id, null, 'customer_created', { name: rec.name, source: rec.source });
+  if (rec.referred_by) logEvent(rec.referred_by, null, 'referral_made', { referred: rec.name, referred_id: rec.id });
   return rec;
 }
+const SITE_PLAN_PY = 144, VEHICLE_PLAN_PY = 84;
+function recordPartnerPayout(customer, siteKits, vehicleKits) {
+  if (!customer.partner_id) return null;
+  const p = getPartner(customer.partner_id);
+  if (!p) return null;
+  const amount = Math.round((siteKits * SITE_PLAN_PY + vehicleKits * VEHICLE_PLAN_PY) * p.fee_share * 100) / 100;
+  if (amount <= 0) return null;
+  const rec = { id: id(), partner_id: p.id, customer_id: customer.id, amount, status: 'owed', created_at: now() };
+  db.prepare('INSERT INTO partner_payouts (id,partner_id,customer_id,amount,status,created_at) VALUES (@id,@partner_id,@customer_id,@amount,@status,@created_at)').run(rec);
+  logEvent(customer.id, null, 'partner_payout_recorded', { partner: p.name, amount });
+  return rec;
+}
+function cancelCustomer(cid, reason) {
+  db.prepare("UPDATE customers SET status='cancelled', cancelled_at=?, cancel_reason=? WHERE id=?").run(now(), reason || null, cid);
+  logEvent(cid, null, 'plan_cancelled', { reason });
+}
+function setBillingStatus(cid, status, extra = {}) {
+  const sets = ['status = @status']; const params = { id: cid, status };
+  for (const k of ['plan_renewal', 'stripe_customer_id', 'stripe_subscription_id']) if (extra[k]) { sets.push(`${k} = @${k}`); params[k] = extra[k]; }
+  db.prepare(`UPDATE customers SET ${sets.join(', ')} WHERE id = @id`).run(params);
+}
+const getCustomerByStripe = (sid) => db.prepare('SELECT * FROM customers WHERE stripe_customer_id = ?').get(sid);
+const getCustomerByEmail = (e) => e ? db.prepare('SELECT * FROM customers WHERE lower(email) = lower(?) ORDER BY created_at DESC').get(e) : null;
+
+// ---------- partners ----------
+function createPartner(p) {
+  const rec = { id: id(), token: code(12), name: p.name.trim(), type: p.type || 'other', contact_name: p.contact_name || null,
+    email: p.email || null, phone: p.phone || null, fee_share: parseFloat(p.fee_share || '0.15') || 0.15, status: 'active', notes: p.notes || null, created_at: now() };
+  db.prepare('INSERT INTO partners (id,token,name,type,contact_name,email,phone,fee_share,status,notes,created_at) VALUES (@id,@token,@name,@type,@contact_name,@email,@phone,@fee_share,@status,@notes,@created_at)').run(rec);
+  return rec;
+}
+const getPartner = (pid) => db.prepare('SELECT * FROM partners WHERE id = ?').get(pid);
+const getPartnerByToken = (t) => db.prepare('SELECT * FROM partners WHERE token = ?').get(t);
+const listPartners = () => db.prepare(`SELECT p.*, (SELECT COUNT(*) FROM customers c WHERE c.partner_id = p.id) AS referred,
+  (SELECT COALESCE(SUM(amount),0) FROM partner_payouts x WHERE x.partner_id = p.id AND x.status='owed') AS owed,
+  (SELECT COALESCE(SUM(amount),0) FROM partner_payouts x WHERE x.partner_id = p.id AND x.status='paid') AS paid FROM partners p ORDER BY p.name`).all();
+const listPartnerCustomers = (pid) => db.prepare('SELECT * FROM customers WHERE partner_id = ? ORDER BY created_at DESC').all(pid);
+const listPartnerPayouts = (pid) => db.prepare('SELECT x.*, c.name AS customer_name FROM partner_payouts x JOIN customers c ON c.id = x.customer_id WHERE x.partner_id = ? ORDER BY x.created_at DESC').all(pid);
+function markPayoutPaid(pid) { db.prepare("UPDATE partner_payouts SET status='paid', paid_at=? WHERE id=?").run(now(), pid); }
+
+// ---------- leads ----------
+function createLead(l) {
+  const rec = { id: id(), business: l.business || null, contact_name: l.contact_name || null, email: l.email || null, phone: l.phone || null,
+    industry: l.industry || null, score: l.score ?? null, answers: JSON.stringify(l.answers || {}), partner_id: l.partner_id || null,
+    source: l.source || 'check', status: 'new', created_at: now() };
+  db.prepare('INSERT INTO leads (id,business,contact_name,email,phone,industry,score,answers,partner_id,source,status,created_at) VALUES (@id,@business,@contact_name,@email,@phone,@industry,@score,@answers,@partner_id,@source,@status,@created_at)').run(rec);
+  return rec;
+}
+const listLeads = () => db.prepare('SELECT l.*, p.name AS partner_name FROM leads l LEFT JOIN partners p ON p.id = l.partner_id ORDER BY l.created_at DESC LIMIT 500').all();
+function setLeadStatus(lid, status) { db.prepare('UPDATE leads SET status=? WHERE id=?').run(status, lid); }
 const getCustomer = (cid) => db.prepare('SELECT * FROM customers WHERE id = ?').get(cid);
 const getCustomerByToken = (t) => db.prepare('SELECT * FROM customers WHERE token = ?').get(t);
 const listCustomers = () => db.prepare('SELECT * FROM customers ORDER BY name').all();
 function updateCustomer(cid, fields) {
-  const allowed = ['name', 'abn', 'contact_name', 'email', 'phone', 'address', 'industry', 'plan_billing', 'plan_start', 'plan_renewal', 'notes'];
+  const allowed = ['name', 'abn', 'contact_name', 'email', 'phone', 'address', 'industry', 'plan_billing', 'plan_start', 'plan_renewal', 'notes', 'source', 'partner_id', 'referred_by', 'stripe_customer_id'];
   const sets = [];
   const params = { id: cid };
   for (const k of allowed) if (k in fields) { sets.push(`${k} = @${k}`); params[k] = fields[k] || null; }
@@ -253,4 +346,7 @@ module.exports = {
   recordUse, recordCheckOk, recordProblem, shipRequest, scheduledRefillShipped, listOpenRequests, listRequestsForKit,
   createAed, listAeds, listAllAeds, updateAed,
   logEvent, listEvents, listKitEvents,
+  recordPartnerPayout, cancelCustomer, setBillingStatus, getCustomerByStripe, getCustomerByEmail,
+  createPartner, getPartner, getPartnerByToken, listPartners, listPartnerCustomers, listPartnerPayouts, markPayoutPaid,
+  createLead, listLeads, setLeadStatus, SITE_PLAN_PY, VEHICLE_PLAN_PY,
 };

@@ -34,6 +34,30 @@ whole sales flow, 40-odd assertions).
 | `/admin/kits/ID` | you | Contents with quantities and expiry dates, requests, history, label, "scheduled refill pack shipped" |
 | `/admin/labels` | you | QR label sheet for every active kit (or `?customer=ID`) |
 | `/admin/export.csv` | you | Every kit with its state, for Xero or a spreadsheet |
+| `/check` | public | The 90-second compliance self-check: eight questions, a scored result with the gaps, a lead captured. `?ref=TOKEN` attributes it to a partner |
+| `/p/TOKEN` | a partner | Partner view: every referred client's compliance state and plan status, what they have earned, their referral link. No client contact details |
+| `/admin/partners`, `/admin/partners/ID` | you | Add partners, see referred accounts and payouts (15% of first-year plan revenue, recorded automatically), mark paid |
+| `/admin/leads` | you | Self-check leads with score and source; status new/contacted/won/lost |
+| `/admin/metrics` | you | Accounts by source, 30-day activation, monthly logo churn, renewal rate, kits per account, annual share, past-due, stale requests, signup cohorts, cancellation reasons |
+| `/webhooks/stripe` | Stripe | Signed events: `invoice.paid` (active, renewal date moved), `invoice.payment_failed` (past due, notify), `customer.subscription.deleted` (cancelled), `checkout.session.completed` (notify). Unknown customers are logged, never applied |
+
+Accounts carry a `source` (direct, paid, partner, referral, seo, check), an
+optional partner, an optional referring customer, and a billing `status`
+(active, past_due, cancelled with a reason). The compliance record shows
+"renewal payment pending" while dunning runs and "plan inactive" after a
+cancellation.
+
+## Agent-assisted scripts
+
+These call the Claude API (`@anthropic-ai/sdk`, Claude Opus 5, adaptive
+thinking, streaming where output is long). Credentials: `ANTHROPIC_API_KEY`
+or `ant auth login`. They draft; you read, edit, send, publish.
+
+| Script | What it does |
+|---|---|
+| `node scripts/content.js topics.txt` | One answer page draft per topic into `content/`, with the compliance constraints in the system prompt and a verify-before-publishing checklist at the top of every file |
+| `node scripts/outreach.js prospects.csv prospect` | One personalised first email per CSV row (subject and body columns added). `partner` mode writes the partner proposal instead |
+| `GOOGLE_MAPS_API_KEY=... node scripts/prospects.js "plumber" "Lonsdale SA" "Wingfield SA"` | Builds the prospect CSV from the Google Places API (official API, not scraping); phone and website filled where Google has them |
 
 The engine (`lib/schedule.js`) computes each kit's state from its rows:
 **compliant**, **due** (a scheduled refill inside 14 days or an item expiring
@@ -52,7 +76,10 @@ Windows are environment variables.
 | `CONTACT_PHONE`, `CONTACT_EMAIL` | | On every page and label |
 | `BASE_URL` | `http://localhost:3000` | Must be the public URL before you print labels: the QR encodes it |
 | `CHECKOUT_URL` | | Landing page button target (Shopify product or Stripe payment link) |
-| `NOTIFY_WEBHOOK` | | POSTs JSON on every scan, problem, new account, and the daily due report. Point it at n8n, Zapier, Make or a Slack webhook to get emails or messages |
+| `NOTIFY_WEBHOOK` | | POSTs JSON on every scan, problem, new account, lead, failed payment, cancellation, and the daily due report. Point it at n8n, Zapier, Make or a Slack webhook to get emails or messages |
+| `STRIPE_WEBHOOK_SECRET` | | From the Stripe dashboard when you add `BASE_URL/webhooks/stripe` as an endpoint. Without it every event is rejected |
+| `ANTHROPIC_API_KEY` | | For the scripts only; or use `ant auth login` |
+| `GOOGLE_MAPS_API_KEY` | | For `scripts/prospects.js` only |
 | `DB_PATH` | `./data/kits.db` | Back this file up. It is the business |
 | `REFILL_MONTHS` | `6` | Scheduled refill cycle |
 | `EXPIRY_WINDOW_DAYS`, `REFILL_WINDOW_DAYS`, `RENEWAL_WINDOW_DAYS` | `45`, `14`, `30` | Engine windows |

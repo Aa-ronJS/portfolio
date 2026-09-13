@@ -14,13 +14,15 @@ const EVENT_LABELS = {
   customer_created: 'Account opened', kit_registered: 'Kit registered', after_use_reported: 'Items used, refill requested',
   check_ok: 'Kit checked, all present', problem_reported: 'Problem reported', refill_shipped: 'Refill shipped',
   scheduled_refill_shipped: 'Scheduled refill pack shipped', aed_registered: 'AED registered', aed_updated: 'AED updated',
-  plan_renewed: 'Plan renewed', item_adjusted: 'Contents adjusted',
+  plan_renewed: 'Plan renewed', item_adjusted: 'Contents adjusted', referral_made: 'Referred a business',
+  partner_payout_recorded: 'Partner referral fee recorded', plan_cancelled: 'Plan cancelled', payment_failed: 'Renewal payment failed',
+  payment_recovered: 'Payment received', stripe_event: 'Billing event',
 };
 const eventLabel = (t) => EVENT_LABELS[t] || t;
 
 function layout({ title, body, cfg, nav = 'public', extraHead = '' }) {
   const navHtml = nav === 'admin'
-    ? `<nav><a href="/admin">Due today</a><a href="/admin/customers">Customers</a><a href="/admin/customers/new">New account</a><a href="/admin/labels">Labels</a><a href="/admin/export.csv">Export</a></nav>`
+    ? `<nav><a href="/admin">Due today</a><a href="/admin/customers">Customers</a><a href="/admin/customers/new">New account</a><a href="/admin/partners">Partners</a><a href="/admin/leads">Leads</a><a href="/admin/metrics">Metrics</a><a href="/admin/labels">Labels</a><a href="/admin/export.csv">Export</a></nav>`
     : nav === 'none' ? '' : `<nav><a href="/#pricing">Pricing</a><a href="/#how">How it works</a><a href="tel:${h(cfg.phone)}">${h(cfg.phone)}</a></nav>`;
   return `<!doctype html>
 <html lang="en-AU">
@@ -50,7 +52,7 @@ function landing(cfg) {
   <p class="eyebrow">Adelaide · Site kits · Vehicle kits · AED consumables</p>
   <h1>Your first-aid kits, always compliant. Never another visit.</h1>
   <p class="lede">Every workplace and every work vehicle must have a stocked first-aid kit, and someone has to prove it. ${h(cfg.brand)} keeps your kits stocked automatically and gives you a compliance certificate you can hand to an inspector, a head contractor or your insurer.</p>
-  <div class="row">${cta}<a class="btn secondary" href="mailto:${h(cfg.email)}">Email ${h(cfg.email)}</a></div>
+  <div class="row">${cta}<a class="btn secondary" href="/check">Free 90-second compliance check</a></div>
 </section>
 <section id="how">
   <h2>How it works</h2>
@@ -137,6 +139,8 @@ function record(customer, s, events, cfg) {
   <div class="head"><div><div class="brand">${h(cfg.brand)}</div><div class="small muted">First-aid compliance record</div></div><div class="stamp">Generated ${fmtDateTime(new Date().toISOString())}<br>Plan ${h(customer.plan_billing)} · renews ${fmtDate(customer.plan_renewal)}</div></div>
   <h1>${h(customer.name)}</h1>
   <p class="small muted">${h(customer.address || '')}${customer.abn ? ' · ABN ' + h(customer.abn) : ''}</p>
+  ${customer.status === 'past_due' ? '<div class="banner warn"><p>Renewal payment pending. The plan continues while the payment is retried; update the card or call us to keep the record current.</p></div>' : ''}
+  ${customer.status === 'cancelled' ? '<div class="banner bad"><p>Plan inactive since ' + fmtDate(customer.cancelled_at) + '. Kits remain registered; refills and the certificate resume when the plan does.</p></div>' : ''}
   <div class="status ${h(s.overall)}">${s.overall === 'compliant' ? 'All kits compliant' : 'Attention required'}</div>
   <h2>Kits</h2>
   <div class="tbl"><table><tr><th>Kit</th><th>Status</th><th>Last check</th><th>Next refill</th><th>Notes</th></tr>${kitRows(s.kits) || '<tr><td colspan="5">No kits registered yet.</td></tr>'}</table></div>
@@ -196,7 +200,8 @@ ${list.map((c) => `<tr><td><a href="/admin/customers/${h(c.id)}">${h(c.name)}</a
 }
 
 const INDUSTRIES = ['Trades (plumbing, electrical, building)', 'Landscaping / outdoor', 'Allied health / dental', 'Childcare / education', 'Hospitality', 'Manufacturing / workshop', 'Office / retail', 'Other'];
-function customerNew(cfg, err = '') {
+const SOURCES = ['direct', 'paid', 'partner', 'referral', 'seo', 'check', 'other'];
+function customerNew(cfg, err = '', partners = [], customers = []) {
   return layout({ title: 'New account', cfg, nav: 'admin', body: `
 <h1>New account</h1>
 <p class="small muted">Do this with the customer in front of you. Kits get registered on the next screen; the certificate exists the moment they are.</p>
@@ -210,6 +215,11 @@ ${err ? `<div class="banner bad"><p>${h(err)}</p></div>` : ''}
   <label class="field"><span>Delivery address</span><input name="address"></label>
   <label class="field"><span>Industry</span><select name="industry">${INDUSTRIES.map((i) => `<option>${h(i)}</option>`).join('')}</select></label>
   <label class="field"><span>Plan billing</span><select name="plan_billing"><option value="annual">Annual (default)</option><option value="monthly">Monthly (+15%)</option></select></label>
+  <div class="grid2">
+    <label class="field"><span>How did they come to us?</span><select name="source">${SOURCES.map((x) => `<option value="${x}">${x}</option>`).join('')}</select></label>
+    <label class="field"><span>Partner (if referred by one)</span><select name="partner_id"><option value="">None</option>${partners.map((p) => `<option value="${h(p.id)}">${h(p.name)}</option>`).join('')}</select></label>
+    <label class="field"><span>Referred by a customer</span><select name="referred_by"><option value="">None</option>${customers.map((c) => `<option value="${h(c.id)}">${h(c.name)}</option>`).join('')}</select></label>
+  </div>
   <label class="field"><span>Kits to register now</span><span class="row"><label class="row small">Site <input name="site_kits" type="number" min="0" max="50" value="1" style="width:80px"></label><label class="row small">Vehicle <input name="vehicle_kits" type="number" min="0" max="50" value="1" style="width:80px"></label></span></label>
   <label class="field"><span>Notes</span><textarea name="notes"></textarea></label>
   <button class="btn" type="submit">Create account and register kits</button>
@@ -224,7 +234,7 @@ function customerDetail(c, s, events, cfg) {
 <p class="eyebrow">${h(c.industry || 'Customer')}</p>
 <div class="row" style="justify-content:space-between;align-items:flex-start"><div><h1>${h(c.name)}</h1><p class="small muted">${h(c.contact_name || '')} · ${h(c.phone || '')} · ${h(c.email || '')}<br>${h(c.address || '')}${c.abn ? ' · ABN ' + h(c.abn) : ''}</p></div>
 <div class="row"><a class="btn secondary" href="/c/${h(c.token)}" target="_blank">Compliance record</a><a class="btn secondary" href="/c/${h(c.token)}/certificate" target="_blank">Certificate</a><a class="btn quiet" href="/admin/labels?customer=${h(c.id)}">Labels</a></div></div>
-<div class="banner ${s.overall === 'compliant' ? '' : 'warn'}"><p>Overall: <strong>${h(s.overall)}</strong> · Plan ${h(c.plan_billing)}, started ${fmtDate(c.plan_start)}, renews ${fmtDate(c.plan_renewal)}</p></div>
+<div class="banner ${s.overall === 'compliant' && c.status === 'active' ? '' : (c.status === 'cancelled' ? 'bad' : 'warn')}"><p>Overall: <strong>${h(s.overall)}</strong> · Billing: <strong>${h(c.status || 'active')}</strong> · Plan ${h(c.plan_billing)}, started ${fmtDate(c.plan_start)}, renews ${fmtDate(c.plan_renewal)} · Source: ${h(c.source || 'direct')}${c.partner_id ? ' via partner' : ''}${c.referred_by ? ' (customer referral)' : ''}</p></div>
 <h2>Kits (${s.kits.length})</h2>
 <div class="tbl"><table><tr><th>Kit</th><th>State</th><th>Last check</th><th>Next refill</th><th>Why</th></tr>${kits || '<tr><td colspan="5" class="muted">No kits yet.</td></tr>'}</table></div>
 <form method="post" action="/admin/customers/${h(c.id)}/kits" class="card" style="max-width:640px">
@@ -264,6 +274,7 @@ function customerDetail(c, s, events, cfg) {
   <label class="field"><span>Notes</span><textarea name="notes">${h(c.notes || '')}</textarea></label>
   <div class="row"><button class="btn secondary" type="submit">Save</button><button class="btn quiet" type="submit" formaction="/admin/customers/${h(c.id)}/renew">Mark plan renewed (+12 months)</button></div>
 </form>
+${c.status !== 'cancelled' ? `<form method="post" action="/admin/customers/${h(c.id)}/cancel" class="row" style="margin-top:12px"><label class="field" style="flex:1;min-width:220px"><span>Cancel plan: reason (required, one line)</span><input name="reason" required placeholder="e.g. closed the business / went with a visit service / cost"></label><button class="btn danger" type="submit" style="align-self:end">Cancel plan</button></form>` : `<p class="small muted">Cancelled ${fmtDate(c.cancelled_at)}: ${h(c.cancel_reason || 'no reason recorded')}</p>`}
 <h2>History</h2>
 <div class="tbl"><table><tr><th>When</th><th>Event</th><th>Detail</th></tr>${events.map((e) => { const p = JSON.parse(e.payload || '{}'); const det = p.items ? p.items.map((i) => `${i.qty} × ${i.name}`).join(', ') : (p.location || p.note || p.tracking || p.code || ''); return `<tr><td class="small mono">${fmtDateTime(e.created_at)}</td><td>${h(eventLabel(e.type))}</td><td class="small">${h(det)}</td></tr>`; }).join('')}</table></div>` });
 }
@@ -299,4 +310,122 @@ function labels(kits, cfg) {
 <div class="labels">${kits.map((k) => `<div class="label">${k.svg}<div><div class="t">${h(cfg.brand)}</div><div class="s"><strong>Used something? Scan me.</strong><br>${k.type === 'vehicle' ? 'Vehicle kit' : 'Site kit'}${k.location ? ' · ' + h(k.location) : ''}<br>${h(k.customer_name)}</div><div class="c">${h(k.code)} · ${h(cfg.phone)}</div></div></div>`).join('') || '<p class="muted">No kits to print.</p>'}</div>` });
 }
 
-module.exports = { h, layout, landing, scanPage, scanDone, record, certificate, dashboard, customers, customerNew, customerDetail, kitDetail, labels };
+// ---------------------------------------------------------------- partners
+const PARTNER_TYPES = ['whs_consultant', 'trainer', 'bookkeeper', 'accountant', 'association', 'broker', 'other'];
+function partnersList(list, cfg) {
+  return layout({ title: 'Partners', cfg, nav: 'admin', body: `
+<div class="row" style="justify-content:space-between"><h1>Partners (${list.length})</h1></div>
+<div class="tbl"><table><tr><th>Partner</th><th>Type</th><th class="n">Referred</th><th class="n">Owed</th><th class="n">Paid</th><th>Portal</th></tr>
+${list.map((p) => `<tr><td><a href="/admin/partners/${h(p.id)}">${h(p.name)}</a><br><span class="small muted">${h(p.contact_name || '')} ${h(p.phone || '')}</span></td><td>${h(p.type)}</td><td class="n">${p.referred}</td><td class="n">${p.owed.toFixed(2)}</td><td class="n">${p.paid.toFixed(2)}</td><td><a class="small" href="/p/${h(p.token)}" target="_blank">open</a></td></tr>`).join('') || '<tr><td colspan="6" class="muted">No partners yet.</td></tr>'}
+</table></div>
+<form method="post" action="/admin/partners" class="card" style="max-width:640px">
+  <h3>Add a partner</h3>
+  <div class="grid2">
+    <label class="field"><span class="req">Name (business or person)</span><input name="name" required></label>
+    <label class="field"><span>Type</span><select name="type">${PARTNER_TYPES.map((t) => `<option>${t}</option>`).join('')}</select></label>
+    <label class="field"><span>Contact</span><input name="contact_name"></label>
+    <label class="field"><span>Email</span><input name="email" type="email"></label>
+    <label class="field"><span>Phone</span><input name="phone" type="tel"></label>
+    <label class="field"><span>Fee share of first-year plan revenue</span><input name="fee_share" value="0.15"></label>
+  </div>
+  <button class="btn secondary" type="submit" style="margin-top:10px">Add partner</button>
+</form>` });
+}
+function partnerDetail(p, customers, payouts, cfg) {
+  return layout({ title: p.name, cfg, nav: 'admin', body: `
+<p class="eyebrow">${h(p.type)}</p>
+<div class="row" style="justify-content:space-between"><h1>${h(p.name)}</h1><a class="btn secondary" href="/p/${h(p.token)}" target="_blank">Partner portal</a></div>
+<p class="small muted">${h(p.contact_name || '')} · ${h(p.email || '')} · ${h(p.phone || '')} · fee share ${(p.fee_share * 100).toFixed(0)}%</p>
+<div class="banner"><p>Referral link for this partner: <span class="mono">${h(cfg.baseUrl)}/check?ref=${h(p.token)}</span><br>Portal: <span class="mono">${h(cfg.baseUrl)}/p/${h(p.token)}</span></p></div>
+<h2>Referred accounts (${customers.length})</h2>
+<div class="tbl"><table><tr><th>Business</th><th>Opened</th><th>Billing</th><th>Renews</th></tr>${customers.map((c) => `<tr><td><a href="/admin/customers/${h(c.id)}">${h(c.name)}</a></td><td>${fmtDate(c.created_at)}</td><td>${h(c.status || 'active')}</td><td>${fmtDate(c.plan_renewal)}</td></tr>`).join('') || '<tr><td colspan="4" class="muted">None yet.</td></tr>'}</table></div>
+<h2>Payouts</h2>
+<div class="tbl"><table><tr><th>Account</th><th class="n">Amount</th><th>Status</th><th>When</th><th></th></tr>${payouts.map((x) => `<tr><td>${h(x.customer_name)}</td><td class="n">${x.amount.toFixed(2)}</td><td>${pill(x.status === 'paid' ? 'compliant' : 'due')} ${h(x.status)}</td><td class="small mono">${fmtDate(x.paid_at || x.created_at)}</td><td>${x.status === 'owed' ? `<form method="post" action="/admin/payouts/${h(x.id)}/paid"><button class="btn quiet" type="submit">Mark paid</button></form>` : ''}</td></tr>`).join('') || '<tr><td colspan="5" class="muted">Nothing owed.</td></tr>'}</table></div>` });
+}
+function partnerPortal(p, rows, payouts, cfg) {
+  const owed = payouts.filter((x) => x.status === 'owed').reduce((a, x) => a + x.amount, 0);
+  const paid = payouts.filter((x) => x.status === 'paid').reduce((a, x) => a + x.amount, 0);
+  return layout({ title: 'Partner view', cfg, nav: 'none', body: `
+<p class="eyebrow">Partner view · ${h(p.name)}</p>
+<h1>Your referred clients</h1>
+<div class="tiles" style="display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:1px;background:var(--line);border:1px solid var(--line);margin:14px 0 22px">
+  <div class="tile" style="background:var(--surface);padding:14px 16px"><div class="mono" style="font-size:26px;font-weight:700">${rows.length}</div><div class="small muted">clients referred</div></div>
+  <div class="tile" style="background:var(--surface);padding:14px 16px"><div class="mono" style="font-size:26px;font-weight:700">${rows.filter((r) => r.overall === 'compliant').length}</div><div class="small muted">fully compliant today</div></div>
+  <div class="tile" style="background:var(--surface);padding:14px 16px"><div class="mono" style="font-size:26px;font-weight:700">A$${owed.toFixed(0)}</div><div class="small muted">owed to you</div></div>
+  <div class="tile" style="background:var(--surface);padding:14px 16px"><div class="mono" style="font-size:26px;font-weight:700">A$${paid.toFixed(0)}</div><div class="small muted">paid to date</div></div>
+</div>
+<div class="tbl"><table><tr><th>Client</th><th>Kits</th><th>Compliance</th><th>Plan</th><th>Renews</th></tr>${rows.map((r) => `<tr><td>${h(r.name)}</td><td class="n">${r.kits}</td><td>${pill(r.overall)}</td><td>${h(r.status || 'active')}</td><td>${fmtDate(r.plan_renewal)}</td></tr>`).join('') || '<tr><td colspan="5" class="muted">No referred clients yet. Send the link below.</td></tr>'}</table></div>
+<div class="banner"><p>Your referral link: <span class="mono">${h(cfg.baseUrl)}/check?ref=${h(p.token)}</span><br>Anyone who completes the 90-second check from this link is attributed to you. You earn ${(p.fee_share * 100).toFixed(0)}% of their first year's plan when they sign up.</p></div>
+<p class="small muted">Business names and compliance states only; client contact details are not shown here. Questions: ${h(cfg.phone)}.</p>` });
+}
+
+// ---------------------------------------------------------------- self-check
+function checkForm(questions, cfg, ref = '') {
+  return layout({ title: 'Compliance check', cfg, body: `
+<div class="narrow">
+  <p class="eyebrow">Free · 90 seconds · no obligation</p>
+  <h1>Is your first-aid setup compliant?</h1>
+  <p class="muted">Eight questions a WHS inspector or a head contractor would ask. Answer honestly; the result shows the gaps and what fixes each.</p>
+  <form method="post" action="/check" class="stack">
+    <input type="hidden" name="ref" value="${h(ref)}">
+    ${questions.map((q, i) => `<fieldset class="card" style="border:1px solid var(--line);margin:0"><legend class="small muted">${i + 1} of ${questions.length}</legend><p style="font-weight:600;margin:0 0 8px">${h(q.q)}</p><div class="row"><label class="row"><input type="radio" name="${q.id}" value="yes" required style="width:20px;min-height:0"> Yes</label><label class="row"><input type="radio" name="${q.id}" value="no" style="width:20px;min-height:0"> No</label><label class="row"><input type="radio" name="${q.id}" value="unsure" style="width:20px;min-height:0"> Not sure</label></div></fieldset>`).join('')}
+    <h3>Where should we send the result?</h3>
+    <label class="field"><span class="req">Business name</span><input name="business" required></label>
+    <label class="field"><span>Your name</span><input name="contact_name"></label>
+    <label class="field"><span class="req">Mobile</span><input name="phone" type="tel" required></label>
+    <label class="field"><span>Email</span><input name="email" type="email"></label>
+    <label class="field"><span>Industry</span><select name="industry">${INDUSTRIES.map((i) => `<option>${h(i)}</option>`).join('')}</select></label>
+    <button class="btn block" type="submit">Show my result</button>
+    <p class="small muted">This is a general self-check based on the Safe Work Australia model Code of Practice, not legal advice. A passing score does not certify compliance; your risk assessment and first-aider training remain your responsibility.</p>
+  </form>
+</div>` });
+}
+function checkResult(result, lead, cfg) {
+  const cta = cfg.checkoutUrl ? `<a class="btn" href="${h(cfg.checkoutUrl)}">Get compliant this week</a>` : `<a class="btn" href="tel:${h(cfg.phone)}">Call ${h(cfg.phone)}</a>`;
+  return layout({ title: 'Your result', cfg, body: `
+<div class="narrow">
+  <p class="eyebrow">${h(lead.business || 'Your business')}</p>
+  <h1>${result.passed} of ${result.total}</h1>
+  <p class="muted">${result.passed === result.total ? 'Everything an inspector would ask about is in place. Keep it that way: the hard part is staying there.' : `${result.gaps.length} gap${result.gaps.length === 1 ? '' : 's'} an inspector, a head contractor or your insurer would find. Each one has a fix.`}</p>
+  ${result.gaps.map((g) => `<div class="card" style="margin-bottom:10px"><h3 style="margin:0 0 6px;font-size:15px">${h(g.q)}</h3><p class="small" style="margin:0 0 6px">${h(g.gap)}</p><p class="small" style="margin:0"><strong>Fix:</strong> ${h(g.fix)}</p></div>`).join('')}
+  <div class="banner" style="margin-top:18px"><p><strong>We keep kits compliant automatically</strong>: site and vehicle kits with QR labels, refills the same day something is used, scheduled packs before expiry, and a certificate you can forward. Site kit A$119, vehicle kit A$59, plan from A$84 a year per kit.</p></div>
+  <div class="row">${cta}<a class="btn secondary" href="/#pricing">See pricing</a></div>
+  <p class="small muted" style="margin-top:16px">We'll text this result to ${h(lead.phone || 'you')}. No spam, and every message has an unsubscribe. General information only, not legal advice.</p>
+</div>` });
+}
+function leadsList(leads, cfg) {
+  return layout({ title: 'Leads', cfg, nav: 'admin', body: `
+<h1>Leads (${leads.length})</h1>
+<div class="tbl"><table><tr><th>When</th><th>Business</th><th>Contact</th><th class="n">Score</th><th>Source</th><th>Status</th></tr>
+${leads.map((l) => `<tr><td class="small mono">${fmtDateTime(l.created_at)}</td><td>${h(l.business || '')}<br><span class="small muted">${h(l.industry || '')}</span></td><td class="small">${h(l.contact_name || '')}<br>${h(l.phone || '')} ${h(l.email || '')}</td><td class="n">${l.score ?? ''}/8</td><td>${h(l.source)}${l.partner_name ? ' · ' + h(l.partner_name) : ''}</td><td><form method="post" action="/admin/leads/${h(l.id)}" class="row"><select name="status" style="min-height:36px;padding:4px 8px;width:auto">${['new', 'contacted', 'won', 'lost'].map((x) => `<option ${l.status === x ? 'selected' : ''}>${x}</option>`).join('')}</select><button class="btn quiet" type="submit">Save</button></form></td></tr>`).join('') || '<tr><td colspan="6" class="muted">No leads yet. Put /check on the landing page and in the ads.</td></tr>'}
+</table></div>` });
+}
+
+// ---------------------------------------------------------------- metrics
+function metrics(m, cfg) {
+  const pct = (v) => v === null || v === undefined ? '—' : (v * 100).toFixed(0) + '%';
+  const tile = (v, l) => `<div class="tile" style="background:var(--surface);padding:14px 16px"><div class="mono" style="font-size:26px;font-weight:700">${v}</div><div class="small muted">${l}</div></div>`;
+  return layout({ title: 'Metrics', cfg, nav: 'admin', body: `
+<p class="eyebrow">${fmtDate(m.on)}</p>
+<h1>Retention and acquisition</h1>
+<div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:1px;background:var(--line);border:1px solid var(--line);margin:14px 0 22px">
+  ${tile(m.active, 'active accounts')}
+  ${tile(pct(m.activation), `30-day activation (${m.activated} of ${m.eligible} eligible) · target 70%`)}
+  ${tile(pct(m.churn30), `logo churn, last 30 days (${m.cancelled30} of ${m.activeAtStart}) · stop rule 4%`)}
+  ${tile(pct(m.renewal), `renewal rate, due in last 90 days (${m.renewed} of ${m.dueRecently}) · target 85%`)}
+  ${tile(m.kitsPerAccount.toFixed(1), `kits per account (${m.vehiclePerAccount.toFixed(1)} vehicle)`)}
+  ${tile(pct(m.annualShare), 'annual billing share · target 70%+')}
+  ${tile(m.pastDue, 'past due (dunning running)')}
+  ${tile(m.stale, 'open requests older than 2 business days · target 0')}
+  ${tile(m.leads, 'self-check leads')}
+</div>
+<h2>Accounts by source</h2>
+<div class="tbl"><table><tr><th>Source</th><th class="n">All time</th><th class="n">Last 30 days</th></tr>${Object.keys(m.bySource).sort().map((k) => `<tr><td>${h(k)}</td><td class="n">${m.bySource[k]}</td><td class="n">${m.bySource30[k] || 0}</td></tr>`).join('') || '<tr><td colspan="3" class="muted">No accounts yet.</td></tr>'}</table></div>
+<h2>Cohorts by signup month</h2>
+<div class="tbl"><table><tr><th>Month</th><th class="n">Signed</th><th class="n">Still active</th><th class="n">Retention</th><th class="n">Activated in 30 days</th><th class="n">Kits per account</th></tr>${m.cohorts.map((c) => `<tr><td class="mono">${h(c.month)}</td><td class="n">${c.signed}</td><td class="n">${c.active}</td><td class="n">${(c.active / c.signed * 100).toFixed(0)}%</td><td class="n">${c.eligible ? (c.activated / c.eligible * 100).toFixed(0) + '%' : '—'}</td><td class="n">${(c.kits / c.signed).toFixed(1)}</td></tr>`).join('')}</table></div>
+<h2>Cancellation reasons</h2>
+<div class="tbl"><table><tr><th>Reason</th><th class="n">Count</th></tr>${Object.entries(m.reasons).sort((a, b) => b[1] - a[1]).map(([r, n]) => `<tr><td>${h(r)}</td><td class="n">${n}</td></tr>`).join('') || '<tr><td colspan="2" class="muted">No cancellations.</td></tr>'}</table></div>` });
+}
+
+module.exports = { h, layout, landing, scanPage, scanDone, record, certificate, dashboard, customers, customerNew, customerDetail, kitDetail, labels,
+  partnersList, partnerDetail, partnerPortal, checkForm, checkResult, leadsList, metrics };
