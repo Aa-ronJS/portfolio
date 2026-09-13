@@ -1,5 +1,10 @@
 # 06 — The first 90 days
 
+> **Superseded in part, 13 Sep 2026.** The founder has ruled out founder-led
+> selling. Walk-ins, phone calls and in-person registration below no longer
+> apply; see `14-site-only-selling.md` for the plan that replaces them. The
+> setup items (name, entity, Stripe, insurance, wholesale, labels) stand.
+
 Assumes a decision in the week of 15 September 2026 and roughly 20 to 25
 hours a week. Each week has a deliverable you can show someone. Gates from
 `01-recommendation.md` are marked.

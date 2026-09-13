@@ -8,6 +8,7 @@ process.env.ADMIN_PASSWORD = 'test-pass';
 process.env.BRAND = 'TestBrand';
 process.env.CONTACT_PHONE = '0400 000 000';
 process.env.STRIPE_WEBHOOK_SECRET = 'whsec_test';
+process.env.STRIPE_SECRET_KEY = 'sk_test_fake';
 
 const assert = require('assert');
 const fs = require('fs');
@@ -26,7 +27,28 @@ const admin = (p, opts = {}) => get(p, { ...opts, headers: { Authorization: AUTH
 const form = (o) => new URLSearchParams(o).toString();
 const post = (p, body, auth) => get(p, { method: 'POST', headers: { 'Content-Type': 'application/x-www-form-urlencoded', ...(auth ? { Authorization: AUTH } : {}) }, body: form(body) });
 
+// A fake Stripe: records the session it was asked to create, serves it back as paid.
+const http = require('http');
+const fakeSessions = {};
+const fakeStripe = http.createServer((req, res) => {
+  let body = ''; req.on('data', (c) => body += c); req.on('end', () => {
+    if (req.method === 'POST' && req.url === '/v1/checkout/sessions') {
+      const p = new URLSearchParams(body); const id = 'cs_test_' + Object.keys(fakeSessions).length;
+      const meta = {}; for (const [k, v] of p) { const m = k.match(/^metadata\[(.+)\]$/); if (m) meta[m[1]] = v; }
+      fakeSessions[id] = { id, url: `http://stripe.test/pay/${id}`, mode: p.get('mode'), payment_status: 'paid', status: 'complete', customer: 'cus_' + id, subscription: 'sub_' + id,
+        amount_total: 12345, metadata: meta, customer_details: { email: 'buyer@example.com', phone: '0400 555 666', name: meta.contact_name || 'Buyer', address: { line1: '9 Site St', city: 'Adelaide', state: 'SA', postal_code: '5000' } },
+        line_items_raw: body };
+      res.setHeader('Content-Type', 'application/json'); res.end(JSON.stringify(fakeSessions[id])); return;
+    }
+    const m = req.url.match(/^\/v1\/checkout\/sessions\/(.+)$/);
+    if (req.method === 'GET' && m && fakeSessions[m[1]]) { res.setHeader('Content-Type', 'application/json'); res.end(JSON.stringify(fakeSessions[m[1]])); return; }
+    res.statusCode = 404; res.end(JSON.stringify({ error: { message: 'no such session' } }));
+  });
+});
+
 (async () => {
+  await new Promise((r) => fakeStripe.listen(0, r));
+  cfg.stripeApiBase = `http://127.0.0.1:${fakeStripe.address().port}`;
   await new Promise((r) => server.listen(0, r));
   base = `http://127.0.0.1:${server.address().port}`;
   cfg.baseUrl = base;
@@ -188,7 +210,44 @@ const post = (p, body, auth) => get(p, { method: 'POST', headers: { 'Content-Typ
   r = await post(`/admin/obligations/${tt.id}/retire`, {}, true); assert.strictEqual(db.listObligations(cid).length, 1); ok('obligation retired');
   const M2 = require('../lib/metrics').compute(); assert(M2.withCalendar === 1 && M2.calendarTake > 0); ok('metrics: calendar take-rate');
 
+  // ---- self-serve: quote, checkout, fulfil via webhook, welcome/onboarding, referral, partner signup
+  const checkoutLib = require('../lib/checkout');
+  let qq = checkoutLib.quote({ sites: '1', vehicles: '3', billing: 'annual', calendar: 'yes' });
+  assert(qq.kits === 296 && qq.plan_pm === 33 + 14 && qq.plan_period === 47 * 12 && qq.today === 296 + 564); ok('quote: 1 site + 3 utes + calendar, annual');
+  qq = checkoutLib.quote({ sites: '0', vehicles: '1', billing: 'monthly' });
+  assert(qq.plan_pm === Math.round(15 * 1.15 * 100) / 100); ok('quote: minimum plan and monthly premium');
+  r = await get('/buy?ref=' + partner.token); assert(r.status === 200 && r.text.includes('Build your kit plan') && r.text.includes(partner.token)); ok('buy page with partner ref');
+  r = await post('/buy', { sites: '0', vehicles: '0', business: 'X' }); assert.strictEqual(r.status, 400); ok('buy rejects zero kits');
+  r = await post('/buy', { sites: '1', vehicles: '2', billing: 'annual', calendar: 'yes', business: 'Online Sparky', contact_name: 'Sam', industry: 'Trades', ref: partner.token });
+  assert(r.status === 303 && /stripe\.test\/pay\/cs_test_/.test(r.location)); ok('checkout session created and redirected');
+  const sid = r.location.split('/').pop(); const sess = fakeSessions[sid];
+  assert(sess.mode === 'subscription' && sess.metadata.business === 'Online Sparky' && sess.metadata.sites === '1' && sess.metadata.vehicles === '2' && sess.metadata.calendar === 'yes' && sess.metadata.ref === partner.token); ok('session carries the order as metadata');
+  assert(/line_items%5B0%5D%5Bprice_data%5D%5Bunit_amount%5D=11900/.test(sess.line_items_raw) && /recurring%5D%5Binterval%5D=year/.test(sess.line_items_raw)); ok('line items: kit at A$119 one-off, plan recurring yearly');
+  // webhook arrives
+  sp = signed({ type: 'checkout.session.completed', data: { object: sess } });
+  r = await stripePost(sp.raw, sp.sig); assert(r.status === 200 && r.text.includes('fulfilled')); ok('webhook fulfils the session');
+  const oc = db.getCustomerBySession(sid); assert(oc && oc.source === 'partner' && oc.partner_id === pid && oc.calendar === 1 && oc.stripe_customer_id === 'cus_' + sid); ok('account created from session: partner-attributed, calendar on');
+  assert.strictEqual(db.listKits(oc.id).length, 3); ok('kits created from metadata');
+  assert(db.listPartnerPayouts(pid).some((x) => x.customer_id === oc.id && x.amount === Math.round((144 + 2 * 84) * 0.15 * 100) / 100)); ok('partner payout recorded for online sale');
+  r = await stripePost(sp.raw, sp.sig); assert(r.text.includes('already')); ok('webhook is idempotent');
+  r = await get('/welcome?session_id=' + sid); assert(r.status === 200 && r.text.includes('Name your kits') && r.text.includes(oc.token)); ok('welcome page for a fulfilled session');
+  // success page before the webhook: a second purchase, welcome first
+  r = await post('/buy', { sites: '2', vehicles: '0', billing: 'monthly', business: 'Clinic Online', cref: c.token });
+  const sid2 = r.location.split('/').pop();
+  r = await get('/welcome?session_id=' + sid2); assert(r.status === 200); const oc2 = db.getCustomerBySession(sid2);
+  assert(oc2 && oc2.source === 'referral' && oc2.referred_by === cid && oc2.plan_billing === 'monthly' && db.listKits(oc2.id).length === 2); ok('welcome page fulfils when the webhook is late; customer referral attributed');
+  assert(db.listEvents(cid).some((e) => e.type === 'referral_reward_due')); ok('referrer reward logged');
+  const k2 = db.listKits(oc2.id);
+  r = await post(`/c/${oc2.token}/setup`, { ['loc_' + k2[0].id]: 'Reception', ['loc_' + k2[1].id]: 'Treatment room 2', contact_name: 'Dr Lee' });
+  assert(r.status === 303 && r.location.endsWith('/certificate')); assert.strictEqual(db.getKit(k2[0].id).location, 'Reception'); assert(db.getCustomer(oc2.id).onboarded_at); ok('self-serve onboarding names kits and lands on the certificate');
+  r = await get(`/c/${oc2.token}`); assert(r.text.includes('/buy?cref=' + oc2.token)); ok('record carries the customer referral link');
+  r = await get('/partners'); assert(r.status === 200 && r.text.includes('Get paid to fix them')); ok('partner signup page');
+  r = await post('/partners', { name: 'Self Serve Safety', type: 'trainer', email: 'p@example.com' }); assert(r.status === 200 && r.text.includes('/buy?ref=')); ok('partner self-signup creates links');
+  assert.strictEqual(db.listPartners().length, 2);
+  r = await get('/terms'); assert.strictEqual(r.status, 200); ok('terms page');
+
   console.log(`\n${n} checks passed`);
+  fakeStripe.close();
   server.close();
   db.db.close();
   for (const f of [process.env.DB_PATH, process.env.DB_PATH + '-wal', process.env.DB_PATH + '-shm']) { try { fs.unlinkSync(f); } catch {} }

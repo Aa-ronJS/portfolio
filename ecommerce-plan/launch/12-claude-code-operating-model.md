@@ -40,6 +40,11 @@ base case; `channels.py --case claude`):
 Treat year three as a business with a manager and a warehouse in it, as
 before. The point is the slope, not the endpoint.
 
+> **Revised later the same day.** Founder-led selling is out (see
+> `14-site-only-selling.md`). The "sixteen selling hours" rule below becomes
+> sixteen hours of conversion work, ads, content review and partner
+> outreach by drafted email; the trap is the same.
+
 ## The trap, named
 
 Your own portfolio page says it: an agent will build the wrong thing

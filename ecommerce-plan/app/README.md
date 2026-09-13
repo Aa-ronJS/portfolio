@@ -34,13 +34,17 @@ whole sales flow, 40-odd assertions).
 | `/admin/kits/ID` | you | Contents with quantities and expiry dates, requests, history, label, "scheduled refill pack shipped" |
 | `/admin/labels` | you | QR label sheet for every active kit (or `?customer=ID`) |
 | `/admin/export.csv` | you | Every kit with its state, for Xero or a spreadsheet |
+| `/buy` | public | The configurator: sites, vehicles, annual or monthly, compliance calendar tick box, live price (A$15 minimum plan, +15% monthly). Posts to Stripe Checkout with the order and any partner (`?ref=`) or customer (`?cref=`) referral as metadata |
+| `/welcome?session_id=` | the buyer | Success page: fulfils the paid session if the webhook has not yet, then asks the customer to name each kit location or rego and lands them on their certificate. `/c/TOKEN/welcome` reopens it |
+| `/partners` | public | Partner self-signup: creates the partner and shows their buy link, self-check link and portal on the spot |
+| `/terms` | public | Plan terms summary, linked from checkout |
 | `/check` | public | The 90-second compliance self-check: eight questions, a scored result with the gaps, a lead captured. `?ref=TOKEN` attributes it to a partner |
 | `/p/TOKEN` | a partner | Partner view: every referred client's compliance state and plan status, what they have earned, their referral link. No client contact details |
 | `/admin/partners`, `/admin/partners/ID` | you | Add partners, see referred accounts and payouts (15% of first-year plan revenue, recorded automatically), mark paid |
 | `/admin/leads` | you | Self-check leads with score and source; status new/contacted/won/lost |
 | `/admin/metrics` | you | Accounts by source, 30-day activation, monthly logo churn, renewal rate, kits per account, annual share, past-due, stale requests, signup cohorts, cancellation reasons |
 | `/admin/customers/ID/obligations`, `/admin/obligations/ID/done`, `/admin/obligations/ID/retire` | you | The compliance calendar add-on: dated obligations per customer (fire equipment six-monthly, test and tag, AED service, emergency plan review, inductions, chemicals, licences) with a provider, a "done" that resets the cycle, states on the record and certificate, a line in the due report, and a take-rate tile on metrics |
-| `/webhooks/stripe` | Stripe | Signed events: `invoice.paid` (active, renewal date moved), `invoice.payment_failed` (past due, notify), `customer.subscription.deleted` (cancelled), `checkout.session.completed` (notify). Unknown customers are logged, never applied |
+| `/webhooks/stripe` | Stripe | Signed events: `checkout.session.completed` (creates the account, kits, calendar flag, partner payout and referral reward from the session metadata; idempotent), `invoice.paid` (active, renewal date moved), `invoice.payment_failed` (past due, notify), `customer.subscription.deleted` (cancelled). Unknown customers on other events are logged, never applied |
 
 Accounts carry a `source` (direct, paid, partner, referral, seo, check), an
 optional partner, an optional referring customer, and a billing `status`
@@ -78,7 +82,9 @@ Windows are environment variables.
 | `BASE_URL` | `http://localhost:3000` | Must be the public URL before you print labels: the QR encodes it |
 | `CHECKOUT_URL` | | Landing page button target (Shopify product or Stripe payment link) |
 | `NOTIFY_WEBHOOK` | | POSTs JSON on every scan, problem, new account, lead, failed payment, cancellation, and the daily due report. Point it at n8n, Zapier, Make or a Slack webhook to get emails or messages |
-| `STRIPE_WEBHOOK_SECRET` | | From the Stripe dashboard when you add `BASE_URL/webhooks/stripe` as an endpoint. Without it every event is rejected |
+| `STRIPE_SECRET_KEY` | | Secret key for creating Checkout Sessions server-side. Without it `/buy` shows an "email us" message instead of a payment button |
+| `STRIPE_API_BASE` | `https://api.stripe.com` | Override for tests only |
+| `STRIPE_WEBHOOK_SECRET` | | From the Stripe dashboard when you add `BASE_URL/webhooks/stripe` as an endpoint. Subscribe it to `checkout.session.completed`, `invoice.paid`, `invoice.payment_failed`, `customer.subscription.deleted`. Without it every event is rejected |
 | `ANTHROPIC_API_KEY` | | For the scripts only; or use `ant auth login` |
 | `GOOGLE_MAPS_API_KEY` | | For `scripts/prospects.js` only |
 | `DB_PATH` | `./data/kits.db` | Back this file up. It is the business |
@@ -118,9 +124,8 @@ Back up `/data/kits.db` daily (a cron `fly ssh sftp get` or `litestream`).
 
 ## What is deliberately not here
 
-- No checkout. Shopify or a Stripe payment link handles money; you record
-  the plan in the customer's account. Build billing integration after 50
-  accounts.
+- No cart. One configurator, one Stripe Checkout session, done. Turn on
+  Stripe Tax in the dashboard so GST is added at checkout.
 - No customer login. The record URL carries an unguessable 16-character
   token, which is the same trust model as a shared Google Doc link, and it
   is what customers forward to inspectors.

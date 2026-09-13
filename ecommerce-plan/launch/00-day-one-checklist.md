@@ -1,5 +1,10 @@
 # Day one: selling tomorrow
 
+> **Superseded in part, 13 Sep 2026.** The founder has ruled out founder-led
+> selling. Walk-ins, phone calls and in-person registration below no longer
+> apply; see `14-site-only-selling.md` for the plan that replaces them. The
+> setup items (name, entity, Stripe, insurance, wholesale, labels) stand.
+
 You can take a first order tomorrow as a sole trader with retail-bought demo
 kits and the register running on your laptop. The Pty Ltd, the wholesale
 account and the domain catch up during the week. Nothing below waits on

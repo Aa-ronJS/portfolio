@@ -18,6 +18,7 @@ const EVENT_LABELS = {
   partner_payout_recorded: 'Partner referral fee recorded', plan_cancelled: 'Plan cancelled', payment_failed: 'Renewal payment failed',
   payment_recovered: 'Payment received', stripe_event: 'Billing event',
   obligation_added: 'Compliance item added', obligation_done: 'Compliance item completed', obligation_retired: 'Compliance item removed',
+  checkout_completed: 'Paid online', referral_reward_due: 'Referral reward earned', onboarded: 'Kit locations named',
 };
 function obligationRows(list) {
   return list.map((o) => `<tr><td>${h(o.label)}${o.location ? '<br><span class="small muted">' + h(o.location) + '</span>' : ''}</td><td>${pill(o.state)}</td><td>${fmtDate(o.last_done)}</td><td>${fmtDate(o.next_due)}</td><td class="small">${h(o.provider || '')}</td></tr>`).join('');
@@ -50,12 +51,12 @@ ${body}
 
 // ---------------------------------------------------------------- landing
 function landing(cfg) {
-  const cta = cfg.checkoutUrl ? `<a class="btn" href="${h(cfg.checkoutUrl)}">Get compliant this week</a>` : `<a class="btn" href="tel:${h(cfg.phone)}">Call ${h(cfg.phone)}</a>`;
+  const cta = `<a class="btn" href="/buy">Build your kit plan</a>`;
   return layout({ title: 'Workplace first-aid kits, always compliant', cfg, body: `
 <section class="hero">
   <p class="eyebrow">Adelaide · Site kits · Vehicle kits · AED consumables</p>
   <h1>Your first-aid kits, always compliant. Never another visit.</h1>
-  <p class="lede">Every workplace and every work vehicle must have a stocked first-aid kit, and someone has to prove it. ${h(cfg.brand)} keeps your kits stocked automatically and gives you a compliance certificate you can hand to an inspector, a head contractor or your insurer.</p>
+  <p class="lede">Every workplace and every work vehicle must have a stocked first-aid kit, and someone has to prove it. ${h(cfg.brand)} keeps your kits stocked automatically and gives you a compliance certificate you can hand to an inspector, a head contractor or your insurer. Order online in two minutes; kits ship Australia-wide; your certificate exists the moment you name your kit locations.</p>
   <div class="row">${cta}<a class="btn secondary" href="/check">Free 90-second compliance check</a></div>
 </section>
 <section id="how">
@@ -81,8 +82,93 @@ function landing(cfg) {
 <section>
   <h2>Who it is for</h2>
   <p>Trades with utes, allied-health and dental practices, childcare centres, cafes and small manufacturers. If you have between one and thirty kits and would rather not think about them, this is for you. If you need a technician on site every quarter, we are not the right fit.</p>
-  <p class="small muted">${h(cfg.legalName)} · ABN ${h(cfg.abn)} · ${h(cfg.email)} · ${h(cfg.phone)}</p>
+  <p class="small muted">${h(cfg.legalName)} · ABN ${h(cfg.abn)} · ${h(cfg.email)} · <a href="/partners">Refer clients and earn</a></p>
 </section>` });
+}
+
+// ---------------------------------------------------------------- self-serve checkout
+function buyPage(cfg, q, params = {}, err = '') {
+  const money = (n) => 'A$' + n.toFixed(n % 1 ? 2 : 0);
+  return layout({ title: 'Build your kit plan', cfg, body: `
+<div class="narrow">
+  <p class="eyebrow">Two minutes · pay online · ships Australia-wide</p>
+  <h1>Build your kit plan</h1>
+  <p class="muted">Tell us how many places and vehicles need a kit. Kits are yours outright; the plan keeps them stocked and gives you the certificate.</p>
+  ${params.cancelled ? '<div class="banner warn"><p>Checkout was cancelled. Nothing was charged. Adjust and try again, or email ' + h(cfg.email) + '.</p></div>' : ''}
+  ${err ? `<div class="banner bad"><p>${h(err)}</p></div>` : ''}
+  <form method="post" action="/buy" class="stack" id="buy">
+    <input type="hidden" name="ref" value="${h(params.ref || '')}"><input type="hidden" name="cref" value="${h(params.cref || '')}">
+    <div class="grid2">
+      <label class="field"><span>Workplaces needing a site kit</span><input type="number" name="sites" min="0" max="50" value="${q.sites}" id="sites"></label>
+      <label class="field"><span>Work vehicles needing a kit</span><input type="number" name="vehicles" min="0" max="50" value="${q.vehicles}" id="vehicles"></label>
+    </div>
+    <label class="field"><span>Billing</span><select name="billing" id="billing"><option value="annual" ${q.billing === 'annual' ? 'selected' : ''}>Annual, paid upfront (recommended)</option><option value="monthly" ${q.billing === 'monthly' ? 'selected' : ''}>Monthly (+15%)</option></select></label>
+    <label class="choice"><span><span class="name">Add the compliance calendar</span><br><span class="have">A$14 a month per business: fire equipment, test and tag, AED service and emergency plan dates tracked, reminded, on your certificate</span></span><input type="checkbox" name="calendar" value="yes" id="calendar" ${q.calendar ? 'checked' : ''}></label>
+    <div class="card" id="quote">
+      <div class="row" style="justify-content:space-between"><span>Kits (yours to keep)</span><strong class="mono" id="q-kits">${money(q.kits)}</strong></div>
+      <div class="row" style="justify-content:space-between"><span>Plan, ${q.billing === 'monthly' ? 'per month' : 'per year'}</span><strong class="mono" id="q-plan">${money(q.plan_period)}</strong></div>
+      <div class="row" style="justify-content:space-between;border-top:1px solid var(--line);padding-top:8px;margin-top:8px"><span>Today, ex GST</span><strong class="mono" id="q-today">${money(q.today)}</strong></div>
+      <p class="small muted" style="margin:6px 0 0">GST added at checkout. Minimum plan A$15 a month. Cancel any time; kits stay yours.</p>
+    </div>
+    <h3>Your business</h3>
+    <label class="field"><span class="req">Business name</span><input name="business" required value="${h(params.business || '')}"></label>
+    <div class="grid2">
+      <label class="field"><span>Your name</span><input name="contact_name"></label>
+      <label class="field"><span>Industry</span><select name="industry">${INDUSTRIES.map((i) => `<option>${h(i)}</option>`).join('')}</select></label>
+    </div>
+    <button class="btn block" type="submit">Continue to secure payment</button>
+    <p class="small muted">Payment by card through Stripe. Kits are supplied by a TGA-listed Australian manufacturer with contents aligned to the Safe Work Australia model Code of Practice. Your risk assessment decides your final contents. <a href="/terms">Plan terms</a>.</p>
+  </form>
+</div>
+<script>
+(function(){var P=${JSON.stringify(require('./checkout').PRICES)};
+function calc(){var s=+document.getElementById('sites').value||0,v=+document.getElementById('vehicles').value||0,b=document.getElementById('billing').value,c=document.getElementById('calendar').checked;
+var kits=s*P.site_kit+v*P.vehicle_kit;var plan=Math.max(s*P.site_plan_pm+v*P.vehicle_plan_pm,(s+v)>0?P.min_plan_pm:0);if(c)plan+=P.calendar_pm;if(b==='monthly')plan=Math.round(plan*P.monthly_premium*100)/100;var per=b==='monthly'?plan:plan*12;
+var m=function(n){return 'A$'+(n%1?n.toFixed(2):n.toFixed(0))};document.getElementById('q-kits').textContent=m(kits);document.getElementById('q-plan').textContent=m(per);document.getElementById('q-today').textContent=m(kits+per);document.querySelector('#quote .row:nth-child(2) span').textContent='Plan, '+(b==='monthly'?'per month':'per year');}
+['sites','vehicles','billing','calendar'].forEach(function(id){document.getElementById(id).addEventListener('input',calc);document.getElementById(id).addEventListener('change',calc);});})();
+</script>` });
+}
+
+function welcomePage(c, kits, cfg, justCreated) {
+  return layout({ title: 'Welcome', cfg, nav: 'none', body: `
+<div class="narrow">
+  <p class="eyebrow">Paid · account created</p>
+  <h1>Thanks, ${h(c.name)}. Name your kits.</h1>
+  <p class="muted">Your kits ship within two business days with QR labels. Tell us where each one will live so the labels, the record and the certificate say the right thing. Thirty seconds.</p>
+  <div class="banner"><p>Your compliance record (keep this link): <span class="mono">${h(cfg.baseUrl)}/c/${h(c.token)}</span></p></div>
+  <form method="post" action="/c/${h(c.token)}/setup" class="stack">
+    ${kits.map((k) => `<label class="field"><span>${k.type === 'vehicle' ? 'Vehicle' : 'Site'} kit ${k.type === 'vehicle' ? '(rego or vehicle name)' : '(where it hangs)'}</span><input name="loc_${h(k.id)}" placeholder="${k.type === 'vehicle' ? 'S123 ABC, white HiLux' : 'Workshop, near roller door'}" value="${/name me|add rego/.test(k.location || '') ? '' : h(k.location || '')}"></label>`).join('')}
+    <label class="field"><span>Who looks after the kits? (name)</span><input name="contact_name" value="${h(c.contact_name || '')}"></label>
+    <label class="field"><span>Delivery address (if different from billing)</span><input name="address" value="${h(c.address || '')}"></label>
+    <button class="btn block" type="submit">Save and see my certificate</button>
+  </form>
+  <p class="small muted" style="margin-top:14px">Questions: ${h(cfg.email)}.</p>
+</div>` });
+}
+
+function partnerSignup(cfg, err = '', done = null) {
+  if (done) return layout({ title: 'Partner account', cfg, body: `
+<div class="narrow"><p class="eyebrow">Partner account created</p><h1>You're set up, ${h(done.name)}.</h1>
+<p>You earn ${(done.fee_share * 100).toFixed(0)} percent of the first year's plan on every business that signs up through your links, paid once, plus a live view of their compliance state.</p>
+<div class="banner"><p>Your referral link (send this): <span class="mono">${h(cfg.baseUrl)}/buy?ref=${h(done.token)}</span><br>The free compliance check with your attribution: <span class="mono">${h(cfg.baseUrl)}/check?ref=${h(done.token)}</span><br>Your partner view (bookmark it): <span class="mono">${h(cfg.baseUrl)}/p/${h(done.token)}</span></p></div>
+<p class="small muted">Payouts are made monthly by bank transfer for the previous month's sign-ups. Keep these links private; anyone with the partner view link can see your referred clients' business names and compliance states.</p></div>` });
+  return layout({ title: 'Refer clients and earn', cfg, body: `
+<div class="narrow">
+  <p class="eyebrow">WHS consultants · trainers · bookkeepers · associations</p>
+  <h1>You see the out-of-date kits every week. Get paid to fix them.</h1>
+  <p class="muted">Send your clients a link. When they sign up, you earn 15 percent of their first year's plan, and you can see every referred client's compliance state before your next visit. No selling, no stock, no invoices.</p>
+  ${err ? `<div class="banner bad"><p>${h(err)}</p></div>` : ''}
+  <form method="post" action="/partners" class="stack">
+    <label class="field"><span class="req">Business or your name</span><input name="name" required></label>
+    <label class="field"><span>What you do</span><select name="type">${['whs_consultant', 'trainer', 'bookkeeper', 'accountant', 'association', 'broker', 'other'].map((t) => `<option>${t}</option>`).join('')}</select></label>
+    <label class="field"><span>Contact name</span><input name="contact_name"></label>
+    <label class="field"><span class="req">Email</span><input name="email" type="email" required></label>
+    <label class="field"><span>Mobile</span><input name="phone" type="tel"></label>
+    <label class="field"><span>ABN (for payouts)</span><input name="notes" placeholder="ABN"></label>
+    <button class="btn block" type="submit">Create my partner links</button>
+    <p class="small muted">By creating an account you agree to refer only businesses you have a relationship with and not to run paid ads on our brand name.</p>
+  </form>
+</div>` });
 }
 
 // ---------------------------------------------------------------- scan page
@@ -139,7 +225,7 @@ function aedRows(aeds) {
 
 function record(customer, s, events, cfg) {
   return layout({ title: customer.name + ' compliance record', cfg, nav: 'none', body: `
-<div class="printbar noprint"><a class="btn secondary" href="/c/${h(customer.token)}/certificate">Print certificate</a><a class="btn quiet" href="/c/${h(customer.token)}.json">JSON</a></div>
+<div class="printbar noprint"><a class="btn secondary" href="/c/${h(customer.token)}/certificate">Print certificate</a><a class="btn quiet" href="/c/${h(customer.token)}/welcome">Name my kits</a><a class="btn quiet" href="/buy?cref=${h(customer.token)}" title="Refer a business: they get set up, you get a free refill pack">Refer a business</a><a class="btn quiet" href="/c/${h(customer.token)}.json">JSON</a></div>
 <div class="cert">
   <div class="head"><div><div class="brand">${h(cfg.brand)}</div><div class="small muted">First-aid compliance record</div></div><div class="stamp">Generated ${fmtDateTime(new Date().toISOString())}<br>Plan ${h(customer.plan_billing)} · renews ${fmtDate(customer.plan_renewal)}</div></div>
   <h1>${h(customer.name)}</h1>
@@ -453,4 +539,4 @@ function metrics(m, cfg) {
 }
 
 module.exports = { h, layout, landing, scanPage, scanDone, record, certificate, dashboard, customers, customerNew, customerDetail, kitDetail, labels,
-  partnersList, partnerDetail, partnerPortal, checkForm, checkResult, leadsList, metrics };
+  partnersList, partnerDetail, partnerPortal, checkForm, checkResult, leadsList, metrics, buyPage, welcomePage, partnerSignup };

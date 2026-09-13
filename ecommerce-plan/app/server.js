@@ -26,6 +26,7 @@ const sched = require('./lib/schedule');
 const V = require('./lib/views');
 const metrics = require('./lib/metrics');
 const check = require('./lib/check');
+const checkout = require('./lib/checkout');
 
 const cfg = {
   brand: process.env.BRAND || 'Kit Register',
@@ -39,6 +40,8 @@ const cfg = {
   adminUser: process.env.ADMIN_USER || 'admin',
   adminPassword: process.env.ADMIN_PASSWORD || '',
   stripeWebhookSecret: process.env.STRIPE_WEBHOOK_SECRET || '',
+  stripeSecretKey: process.env.STRIPE_SECRET_KEY || '',
+  stripeApiBase: (process.env.STRIPE_API_BASE || 'https://api.stripe.com').replace(/\/$/, ''),
   refillWindow: sched.REFILL_WINDOW_DAYS,
   renewalWindow: sched.RENEWAL_WINDOW_DAYS,
   obligationWindow: sched.OBLIGATION_WINDOW_DAYS,
@@ -212,6 +215,71 @@ admin('POST', '/admin/customers/:id/cancel', async (req, res, p) => {
   redirect(res, `/admin/customers/${c.id}`);
 });
 
+// --- self-serve checkout
+route('GET', '/buy', (req, res, p, url) => {
+  const params = Object.fromEntries(url.searchParams);
+  const q = checkout.quote({ sites: params.sites || '1', vehicles: params.vehicles || '2', billing: params.billing, calendar: params.calendar });
+  send(res, 200, V.buyPage(cfg, q, params));
+});
+route('POST', '/buy', async (req, res) => {
+  const b = await readBody(req);
+  const q = checkout.quote(b);
+  const params = { ref: b.ref, cref: b.cref, business: b.business };
+  if (q.sites + q.vehicles === 0) return send(res, 400, V.buyPage(cfg, q, params, 'Add at least one site or vehicle kit.'));
+  if (!b.business || !b.business.trim()) return send(res, 400, V.buyPage(cfg, q, params, 'Business name is required.'));
+  if (!cfg.stripeSecretKey) return send(res, 503, V.buyPage(cfg, q, params, 'Online payment is not switched on yet. Email ' + cfg.email + ' and we will set you up today.'));
+  try {
+    const session = await checkout.createSession(q, { sites: q.sites, vehicles: q.vehicles, billing: q.billing, calendar: q.calendar ? 'yes' : 'no',
+      business: b.business.trim().slice(0, 120), contact_name: (b.contact_name || '').slice(0, 80), industry: (b.industry || '').slice(0, 80),
+      ref: (b.ref || '').slice(0, 24), cref: (b.cref || '').slice(0, 24), source: 'site' }, cfg);
+    redirect(res, session.url);
+  } catch (e) {
+    console.error('checkout', e.message);
+    send(res, 502, V.buyPage(cfg, q, params, 'Payment could not be started. Try again in a minute or email ' + cfg.email + '.'));
+  }
+});
+route('GET', '/welcome', async (req, res, p, url) => {
+  const sid = url.searchParams.get('session_id');
+  if (!sid) return notFound(res);
+  let c = db.getCustomerBySession(sid);
+  if (!c) {
+    // the webhook may not have arrived yet: fetch the session and fulfil it here (idempotent)
+    try {
+      const session = await checkout.retrieveSession(sid, cfg);
+      if (session.payment_status !== 'paid' && session.status !== 'complete') return send(res, 202, V.layout({ title: 'One moment', cfg, nav: 'none', extraHead: '<meta http-equiv="refresh" content="3">', body: '<div class="narrow"><h1>Confirming your payment</h1><p>This page refreshes itself. If it is still here after a minute, email ' + V.h(cfg.email) + ' with your receipt.</p></div>' }));
+      const r = checkout.fulfil(session);
+      c = r.customer;
+      if (r.created) notify('customer_created', { customer: c.name, source: c.source, kits: db.listKits(c.id).length, record_url: `${cfg.baseUrl}/c/${c.token}`, email: c.email, phone: c.phone });
+    } catch (e) { console.error('welcome', e.message); return notFound(res); }
+  }
+  send(res, 200, V.welcomePage(c, db.listKits(c.id), cfg, true));
+});
+route('GET', '/c/:token/welcome', (req, res, p) => {
+  const c = db.getCustomerByToken(p.token);
+  if (!c) return notFound(res);
+  send(res, 200, V.welcomePage(c, db.listKits(c.id), cfg, false));
+});
+route('POST', '/c/:token/setup', async (req, res, p) => {
+  const c = db.getCustomerByToken(p.token);
+  if (!c) return notFound(res);
+  const b = await readBody(req);
+  for (const k of db.listKits(c.id)) if (('loc_' + k.id) in b && b['loc_' + k.id].trim()) db.updateKit(k.id, { location: b['loc_' + k.id].trim().slice(0, 80) });
+  db.updateCustomer(c.id, { contact_name: b.contact_name || c.contact_name, address: b.address || c.address, onboarded_at: db.now() });
+  db.logEvent(c.id, null, 'onboarded', {});
+  redirect(res, `/c/${c.token}/certificate`);
+});
+route('GET', '/terms', (req, res) => send(res, 200, V.layout({ title: 'Plan terms', cfg, body: '<div class="narrow"><h1>Replenishment plan terms</h1><p>Kits are sold outright. The plan is a service per registered kit: scheduled refill packs twice a year, after-use refills reported through the kit\'s QR page (fair use four a year per kit), expiry tracking, a compliance record and an annual certificate. Annual plans are billed in advance and renew automatically with at least 30 days\' notice by email; monthly plans bill in advance each month. Cancel any time by email; annual plans refunded in full within 14 days of first purchase. The plan does not assess your first-aid needs or provide training; those duties remain with the person conducting the business or undertaking under the Work Health and Safety Act 2012 (SA) and Regulations. Nothing here excludes the Australian Consumer Law guarantees. Full terms: <a href="mailto:' + V.h(cfg.email) + '">' + V.h(cfg.email) + '</a>.</p></div>' })));
+
+// --- self-serve partner signup
+route('GET', '/partners', (req, res) => send(res, 200, V.partnerSignup(cfg)));
+route('POST', '/partners', async (req, res) => {
+  const b = await readBody(req);
+  if (!b.name || !b.name.trim() || !b.email) return send(res, 400, V.partnerSignup(cfg, 'Name and email are required.'));
+  const p = db.createPartner({ name: b.name, type: b.type, contact_name: b.contact_name, email: b.email, phone: b.phone, notes: b.notes, fee_share: '0.15' });
+  notify('partner_signed_up', { partner: p.name, type: p.type, email: p.email, portal: `${cfg.baseUrl}/p/${p.token}` });
+  send(res, 200, V.partnerSignup(cfg, '', p));
+});
+
 // --- compliance calendar
 admin('POST', '/admin/customers/:id/obligations', async (req, res, p) => {
   const c = db.getCustomer(p.id);
@@ -292,6 +360,11 @@ route('POST', '/webhooks/stripe', async (req, res) => {
   const obj = (ev.data && ev.data.object) || {};
   const stripeCustomer = obj.customer || null;
   const email = obj.customer_email || (obj.customer_details && obj.customer_details.email) || null;
+  if (ev.type === 'checkout.session.completed' && obj.id && (obj.payment_status === 'paid' || obj.status === 'complete')) {
+    const r = checkout.fulfil(obj);
+    if (r.created) notify('customer_created', { customer: r.customer.name, source: r.customer.source, kits: db.listKits(r.customer.id).length, record_url: `${cfg.baseUrl}/c/${r.customer.token}`, email: r.customer.email, phone: r.customer.phone });
+    return send(res, 200, r.created ? 'ok (fulfilled)' : 'ok (already fulfilled)', 'text/plain');
+  }
   const c = (stripeCustomer && db.getCustomerByStripe(stripeCustomer)) || db.getCustomerByEmail(email);
   if (!c) { db.logEvent('unmatched', null, 'stripe_event', { type: ev.type, stripe_customer: stripeCustomer, email }); return send(res, 200, 'ok (unmatched)', 'text/plain'); }
   if (stripeCustomer && !c.stripe_customer_id) db.updateCustomer(c.id, { stripe_customer_id: stripeCustomer });
@@ -311,10 +384,6 @@ route('POST', '/webhooks/stripe', async (req, res) => {
     case 'customer.subscription.deleted':
       db.cancelCustomer(c.id, 'subscription ended in Stripe');
       notify('plan_cancelled', { customer: c.name, reason: 'stripe subscription deleted' });
-      break;
-    case 'checkout.session.completed':
-      db.logEvent(c.id, null, 'stripe_event', { type: ev.type, amount: obj.amount_total });
-      notify('checkout_completed', { customer: c.name, amount: obj.amount_total, admin_url: `${cfg.baseUrl}/admin/customers/${c.id}` });
       break;
     default:
       db.logEvent(c.id, null, 'stripe_event', { type: ev.type });

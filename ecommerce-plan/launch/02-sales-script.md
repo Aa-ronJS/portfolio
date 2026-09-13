@@ -1,5 +1,10 @@
 # Sales script: the first 200 accounts
 
+> **Superseded in part, 13 Sep 2026.** The founder has ruled out founder-led
+> selling. Walk-ins, phone calls and in-person registration below no longer
+> apply; see `14-site-only-selling.md` for the plan that replaces them. The
+> setup items (name, entity, Stripe, insurance, wholesale, labels) stand.
+
 You are not selling bandages. You are selling the absence of a job and a
 piece of paper that ends an awkward conversation. Keep every sentence about
 that.

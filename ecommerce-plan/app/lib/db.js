@@ -125,6 +125,9 @@ addColumn('customers', 'cancelled_at', 'TEXT');
 addColumn('customers', 'cancel_reason', 'TEXT');
 addColumn('customers', 'stripe_customer_id', 'TEXT');
 addColumn('customers', 'stripe_subscription_id', 'TEXT');
+addColumn('customers', 'stripe_session_id', 'TEXT');
+addColumn('customers', 'calendar', 'INTEGER DEFAULT 0');       // compliance calendar add-on taken
+addColumn('customers', 'onboarded_at', 'TEXT');                // customer named their kit locations
 
 // ---------- helpers ----------
 const ALPHABET = '23456789ABCDEFGHJKLMNPQRSTUVWXYZ'; // no 0/O/1/I
@@ -189,6 +192,7 @@ function setBillingStatus(cid, status, extra = {}) {
   db.prepare(`UPDATE customers SET ${sets.join(', ')} WHERE id = @id`).run(params);
 }
 const getCustomerByStripe = (sid) => db.prepare('SELECT * FROM customers WHERE stripe_customer_id = ?').get(sid);
+const getCustomerBySession = (sid) => sid ? db.prepare('SELECT * FROM customers WHERE stripe_session_id = ?').get(sid) : null;
 const getCustomerByEmail = (e) => e ? db.prepare('SELECT * FROM customers WHERE lower(email) = lower(?) ORDER BY created_at DESC').get(e) : null;
 
 // ---------- partners ----------
@@ -261,7 +265,7 @@ const getCustomer = (cid) => db.prepare('SELECT * FROM customers WHERE id = ?').
 const getCustomerByToken = (t) => db.prepare('SELECT * FROM customers WHERE token = ?').get(t);
 const listCustomers = () => db.prepare('SELECT * FROM customers ORDER BY name').all();
 function updateCustomer(cid, fields) {
-  const allowed = ['name', 'abn', 'contact_name', 'email', 'phone', 'address', 'industry', 'plan_billing', 'plan_start', 'plan_renewal', 'notes', 'source', 'partner_id', 'referred_by', 'stripe_customer_id'];
+  const allowed = ['name', 'abn', 'contact_name', 'email', 'phone', 'address', 'industry', 'plan_billing', 'plan_start', 'plan_renewal', 'notes', 'source', 'partner_id', 'referred_by', 'stripe_customer_id', 'stripe_session_id', 'stripe_subscription_id', 'calendar', 'onboarded_at'];
   const sets = [];
   const params = { id: cid };
   for (const k of allowed) if (k in fields) { sets.push(`${k} = @${k}`); params[k] = fields[k] || null; }
@@ -398,7 +402,7 @@ module.exports = {
   recordUse, recordCheckOk, recordProblem, shipRequest, scheduledRefillShipped, listOpenRequests, listRequestsForKit,
   createAed, listAeds, listAllAeds, updateAed,
   logEvent, listEvents, listKitEvents,
-  recordPartnerPayout, cancelCustomer, setBillingStatus, getCustomerByStripe, getCustomerByEmail,
+  recordPartnerPayout, cancelCustomer, setBillingStatus, getCustomerByStripe, getCustomerByEmail, getCustomerBySession,
   createPartner, getPartner, getPartnerByToken, listPartners, listPartnerCustomers, listPartnerPayouts, markPayoutPaid,
   createLead, listLeads, setLeadStatus, SITE_PLAN_PY, VEHICLE_PLAN_PY,
   OBLIGATION_CATEGORIES, createObligation, listObligations, listAllObligations, obligationDone, retireObligation,

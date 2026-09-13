@@ -52,6 +52,33 @@ CASES = {
                    referral_rate=0.025, seo=[0, 0, 1, 3, 5, 8, 12, 14, 15, 18, 20, 20] + [25] * 12 + [30] * 12,
                    churn=0.025, arpa_uplift=[0] * 6 + [2, 4, 6, 8, 9, 10] + [12] * 12 + [14] * 12,
                    cs_min=1.0, hours_build=[8] * 2 + [3] * 34, hours_content=[1] * 36),
+    # 'site': NO founder selling. Everything through the site, national from
+    # day one. Paid search is budget-driven (spend / self-serve CAC), partners
+    # sign themselves up, SEO is the agent-assisted ramp, referrals come from
+    # the record page. Self-serve accounts churn more (more monthly plans, no
+    # relationship): flat-equivalent 4.0% base. Founder hours are ads, content
+    # review, CRO and ops only.
+    'site': dict(direct=[0] * 36,
+                 paid_budget=[600, 900, 1200, 1500, 1800, 2200, 2600, 3000, 3400, 3800, 4200, 4600] + [5500] * 12 + [7000] * 12,
+                 paid_cac=110.0,
+                 partner_per=1.2, partners=[0, 0, 0, 1, 1, 2, 3, 4, 5, 6, 7, 8] + [14] * 12 + [22] * 12,
+                 referral_rate=0.018, seo=[0, 0, 1, 3, 5, 8, 12, 14, 15, 18, 20, 20] + [25] * 12 + [30] * 12,
+                 churn=0.040, arpa_uplift=[0] * 6 + [2, 4, 6, 8, 9, 10] + [12] * 12 + [14] * 12,
+                 cs_min=1.0, hours_sales=[0] * 36, hours_build=[10] * 3 + [5] * 33, hours_content=[3] * 36),
+    'site_low': dict(direct=[0] * 36,
+                 paid_budget=[600, 900, 1200, 1500, 1800, 2200, 2600, 3000, 3400, 3800, 4200, 4600] + [5500] * 12 + [7000] * 12,
+                 paid_cac=185.0,
+                 partner_per=0.75, partners=[0, 0, 0, 0, 1, 1, 2, 2, 3, 3, 4, 4] + [7] * 12 + [10] * 12,
+                 referral_rate=0.010, seo=[0, 0, 0, 1, 2, 3, 5, 7, 8, 10, 12, 12] + [15] * 12 + [18] * 12,
+                 churn=0.065, arpa_uplift=[0] * 6 + [1, 2, 3, 4, 4, 5] + [6] * 12 + [7] * 12,
+                 cs_min=1.5, hours_sales=[0] * 36, hours_build=[10] * 3 + [5] * 33, hours_content=[3] * 36),
+    'site_high': dict(direct=[0] * 36,
+                 paid_budget=[600, 900, 1200, 1500, 1800, 2200, 2600, 3000, 3400, 3800, 4200, 4600] + [5500] * 12 + [7000] * 12,
+                 paid_cac=80.0,
+                 partner_per=1.5, partners=[0, 0, 1, 2, 3, 4, 6, 8, 9, 10, 12, 12] + [22] * 12 + [35] * 12,
+                 referral_rate=0.025, seo=[0, 0, 1, 3, 5, 8, 12, 14, 15, 18, 20, 20] + [30] * 12 + [40] * 12,
+                 churn=0.030, arpa_uplift=[0] * 6 + [2, 4, 6, 8, 9, 10] + [12] * 12 + [14] * 12,
+                 cs_min=1.0, hours_sales=[0] * 36, hours_build=[10] * 3 + [5] * 33, hours_content=[3] * 36),
     'high': dict(direct=[6, 9, 12, 14, 15, 16, 16, 16, 16, 16, 16, 16] + [10] * 12 + [8] * 12,
                  paid=[0, 6, 9, 12, 14, 16, 16, 16, 16, 24, 28, 30] + [40] * 12 + [55] * 12,
                  partner_per=3.0, partners=[0, 0, 1, 2, 3, 5, 6, 8, 10, 12, 14, 15] + [25] * 12 + [40] * 12,
@@ -85,6 +112,8 @@ def run(case):
     cs_min = c.get('cs_min', CS_MIN_PER_ACCOUNT)
     h_build = c.get('hours_build', HOURS_BUILD)
     h_content = c.get('hours_content', HOURS_CONTENT)
+    h_sales = c.get('hours_sales', HOURS_SALES)
+    paid_cac = c.get('paid_cac', CAC['paid'])
     active = 0.0
     rows = []
     cum = dict(kit_rev=0, rec_rev=0, kit_cogs=0, ongoing=0, cac=0, fixed=0, hours=0)
@@ -92,7 +121,8 @@ def run(case):
     for m in range(36):
         partners_new = c['partners'][m] * c['partner_per']
         referrals_new = active * c['referral_rate']
-        new = dict(direct=c['direct'][m], paid=c['paid'][m], partner=partners_new, referral=referrals_new, seo=c['seo'][m])
+        paid_new = (c['paid_budget'][m] / paid_cac) if 'paid_budget' in c else c['paid'][m]
+        new = dict(direct=c['direct'][m], paid=paid_new, partner=partners_new, referral=referrals_new, seo=c['seo'][m])
         n_new = sum(new.values())
         churned = active * c['churn']
         active = active - churned + n_new
@@ -100,7 +130,7 @@ def run(case):
         rec_rev = active * (ARPA + uplift[m])
         kit_cogs = n_new * KIT_COGS
         ongoing = active * (ONGOING_PM + uplift[m] * 0.4)
-        cac = sum(new[k] * CAC[k] for k in new)
+        cac = sum(new[k] * (paid_cac if k == 'paid' else CAC[k]) for k in new)
         parcels_wk = active * model.A['parcels_per_account_py'] / 52 + n_new / 4.33
         ops_needed = parcels_wk * PARCEL_MIN / 60 + active * cs_min / 60 / 4.33 + 1.0
         founder_ops = min(ops_needed, FOUNDER_OPS_CAP[m])
@@ -108,7 +138,7 @@ def run(case):
         labour = hired_hours_wk * LABOUR_RATE * 4.33
         fixed = FIXED[m] + ONE_OFFS.get(m, 0) + labour + STORAGE_PM(active)
         profit = kit_rev + rec_rev - kit_cogs - ongoing - cac - fixed
-        hours_wk = HOURS_SALES[m] + h_content[m] + h_build[m] + founder_ops
+        hours_wk = h_sales[m] + h_content[m] + h_build[m] + founder_ops
         rows.append(dict(m=m, new=new, n_new=n_new, active=active, kit_rev=kit_rev, rec_rev=rec_rev, kit_cogs=kit_cogs,
                          ongoing=ongoing, cac=cac, fixed=fixed, labour=labour, hired_hours_wk=hired_hours_wk,
                          profit=profit, hours_wk=hours_wk, parcels_wk=parcels_wk))
