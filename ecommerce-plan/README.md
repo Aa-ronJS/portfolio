@@ -39,6 +39,7 @@ documented in case the validation gate fails.
 | `06-90-day-plan.md` | Week-by-week execution from decision to 20 paying accounts |
 | `07-sources.md` | Every source used, grouped by topic, with unverified items listed |
 | `model.py` | The financial model. Change an assumption at the top, rerun, paste the tables |
+| `report.html` | The same plan as a single shareable page (body-only HTML, published as an artifact) |
 
 ```
 python3 ecommerce-plan/model.py          # markdown tables

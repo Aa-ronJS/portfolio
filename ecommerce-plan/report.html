@@ -1,0 +1,491 @@
+<title>Kits, Compliance, Replenishment</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:wght@500;700;800&family=Public+Sans:ital,wght@0,400;0,600;1,400&family=IBM+Plex+Mono:wght@400;500&display=swap">
+<style>
+:root{
+  --bg:#F6F8F4; --surface:#FFFFFF; --surface-2:#EEF2EB;
+  --ink:#1B221E; --ink-2:#47524B; --muted:#76817A; --line:#D9E0D8; --line-2:#C5CEC5;
+  --accent:#1E7A4A; --accent-soft:#DDEFE3; --on-accent:#FFFFFF;
+  --amber:#A86A12; --amber-soft:#F7EBD3;
+  --chart-fill:#1E7A4A; --chart-area:rgba(30,122,74,.16); --grid:#E3E9E1;
+  --display:"Archivo","Helvetica Neue",Arial,sans-serif;
+  --body:"Public Sans","Segoe UI",Roboto,Arial,sans-serif;
+  --mono:"IBM Plex Mono",ui-monospace,SFMono-Regular,Menlo,monospace;
+  --measure:66ch;
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    --bg:#121815; --surface:#1A211D; --surface-2:#212A25;
+    --ink:#EAF0EA; --ink-2:#B6C0B8; --muted:#83908A; --line:#2B352F; --line-2:#3A463E;
+    --accent:#4DC385; --accent-soft:#1D3A2B; --on-accent:#0E1A13;
+    --amber:#E2A94A; --amber-soft:#3A2D14;
+    --chart-fill:#4DC385; --chart-area:rgba(77,195,133,.18); --grid:#28322C;
+  }
+}
+:root[data-theme="dark"]{
+  --bg:#121815; --surface:#1A211D; --surface-2:#212A25;
+  --ink:#EAF0EA; --ink-2:#B6C0B8; --muted:#83908A; --line:#2B352F; --line-2:#3A463E;
+  --accent:#4DC385; --accent-soft:#1D3A2B; --on-accent:#0E1A13;
+  --amber:#E2A94A; --amber-soft:#3A2D14;
+  --chart-fill:#4DC385; --chart-area:rgba(77,195,133,.18); --grid:#28322C;
+}
+*,*::before,*::after{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);font-family:var(--body);font-size:16px;line-height:1.6;padding-inline:20px;padding-block:0 96px}
+a{color:var(--accent)}
+h1,h2,h3{font-family:var(--display);margin:0;line-height:1.1;text-wrap:balance;letter-spacing:-.01em}
+h1{font-size:clamp(34px,5vw,54px);font-weight:800;max-width:18ch}
+h2{font-size:clamp(24px,3vw,32px);font-weight:700;margin-block:0 18px}
+h3{font-size:19px;font-weight:700;margin-block:26px 10px}
+p{margin:0 0 1em;max-width:var(--measure);text-wrap:pretty}
+ul,ol{max-width:var(--measure);padding-left:1.2em;margin:0 0 1em}
+li{margin-bottom:.45em}
+strong{font-weight:600}
+.eyebrow{font-family:var(--mono);font-size:12px;letter-spacing:.14em;text-transform:uppercase;color:var(--accent);margin:0 0 10px}
+.num{font-family:var(--mono);font-variant-numeric:tabular-nums}
+.wrap{max-width:1180px;margin:0 auto}
+/* masthead */
+.mast{padding-block:44px 30px;border-bottom:2px solid var(--ink);display:flex;flex-wrap:wrap;gap:12px 40px;align-items:flex-end;justify-content:space-between}
+.mast .meta{font-family:var(--mono);font-size:12.5px;color:var(--ink-2);line-height:1.8}
+.lede{font-size:19px;color:var(--ink-2);max-width:62ch;margin-block:20px 0}
+/* grid */
+.layout{display:grid;grid-template-columns:220px minmax(0,1fr);gap:56px;padding-top:36px}
+nav.toc{position:sticky;top:20px;align-self:start;font-size:13.5px}
+nav.toc ol{list-style:none;padding:0;margin:0;border-left:1px solid var(--line-2)}
+nav.toc li{margin:0}
+nav.toc a{display:block;padding:6px 14px;color:var(--ink-2);text-decoration:none;border-left:2px solid transparent;margin-left:-1px}
+nav.toc a:hover,nav.toc a:focus-visible{color:var(--ink);border-left-color:var(--accent);outline:none}
+main{min-width:0}
+section{padding-block:8px 40px;border-bottom:1px solid var(--line)}
+section:last-of-type{border-bottom:0}
+/* decision block */
+.decision{background:var(--surface);border:1px solid var(--line);border-top:4px solid var(--accent);padding:26px 28px;margin-block:6px 30px}
+.decision p{max-width:70ch}
+.tiles{display:grid;grid-template-columns:repeat(auto-fit,minmax(170px,1fr));gap:1px;background:var(--line);border:1px solid var(--line);margin-top:22px}
+.tile{background:var(--surface);padding:16px 18px}
+.tile .v{font-family:var(--display);font-size:30px;font-weight:700;letter-spacing:-.02em;line-height:1;font-variant-numeric:tabular-nums}
+.tile .l{font-size:12.5px;color:var(--muted);margin-top:8px;line-height:1.4}
+/* tables */
+.tbl{overflow-x:auto;margin:14px 0 22px;border:1px solid var(--line);background:var(--surface)}
+table{border-collapse:collapse;width:100%;font-size:14px}
+th,td{padding:9px 12px;text-align:left;vertical-align:top;border-bottom:1px solid var(--line)}
+th{font-family:var(--mono);font-size:11.5px;letter-spacing:.08em;text-transform:uppercase;color:var(--ink-2);font-weight:500;background:var(--surface-2);white-space:nowrap}
+tr:last-child td{border-bottom:0}
+td.n,th.n{text-align:right;font-variant-numeric:tabular-nums;font-family:var(--mono);font-size:13.5px;white-space:nowrap}
+td.k{font-weight:600}
+.model td:first-child{white-space:nowrap}
+.gate td:first-child{font-family:var(--mono);font-weight:500;color:var(--amber);white-space:nowrap}
+/* callouts */
+.note{border-left:3px solid var(--amber);background:var(--amber-soft);padding:12px 16px;margin:16px 0 22px;max-width:70ch}
+.note p{margin:0}
+.verdict{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:14px;margin:18px 0 6px}
+.verdict div{background:var(--surface);border:1px solid var(--line);padding:16px 18px}
+.verdict h4{margin:0 0 6px;font-family:var(--display);font-size:16px;font-weight:700}
+.verdict p{font-size:14.5px;margin:0;color:var(--ink-2)}
+.tag{display:inline-block;font-family:var(--mono);font-size:11px;letter-spacing:.08em;text-transform:uppercase;padding:2px 8px;border:1px solid var(--line-2);color:var(--ink-2);margin-bottom:8px}
+.tag.no{color:var(--amber);border-color:var(--amber)}
+.tag.yes{color:var(--accent);border-color:var(--accent)}
+/* charts */
+.charts{display:grid;grid-template-columns:repeat(auto-fit,minmax(300px,1fr));gap:18px;margin:18px 0 10px}
+figure{margin:0;background:var(--surface);border:1px solid var(--line);padding:16px 16px 10px}
+figcaption{font-family:var(--display);font-weight:700;font-size:15px;margin-bottom:2px}
+figure .sub{font-size:12.5px;color:var(--muted);margin:0 0 10px}
+figure svg{width:100%;height:auto;display:block;overflow:visible}
+.tip{position:fixed;pointer-events:none;background:var(--ink);color:var(--bg);font-family:var(--mono);font-size:12px;padding:6px 9px;border-radius:3px;transform:translate(-50%,calc(-100% - 10px));white-space:nowrap;opacity:0;transition:opacity .12s;z-index:5}
+.tip.on{opacity:1}
+/* steps */
+.steps{list-style:none;padding:0;margin:0;max-width:74ch}
+.steps li{display:grid;grid-template-columns:110px 1fr;gap:14px;padding:12px 0;border-top:1px solid var(--line);margin:0}
+.steps li:last-child{border-bottom:1px solid var(--line)}
+.steps .w{font-family:var(--mono);font-size:12.5px;color:var(--accent);padding-top:3px}
+.steps p{margin:0;font-size:15px}
+.foot{font-size:13px;color:var(--muted);padding-top:28px;max-width:74ch}
+@media (max-width:980px){.layout{grid-template-columns:1fr;gap:20px}nav.toc{position:static;border-bottom:1px solid var(--line);padding-bottom:14px}nav.toc ol{border-left:0;display:flex;flex-wrap:wrap;gap:2px 10px}nav.toc a{padding:4px 0;border-left:0;margin:0}}
+@media (max-width:520px){.steps li{grid-template-columns:1fr;gap:4px}}
+@media (prefers-reduced-motion:reduce){.tip{transition:none}}
+</style>
+
+<div class="wrap">
+<header class="mast">
+  <div>
+    <p class="eyebrow">E-commerce business plan · Aaron Steele · South Australia</p>
+    <h1>Kits, Compliance, Replenishment</h1>
+    <p class="lede">Workplace safety consumables on automatic replenishment for small businesses, with the compliance record as the product. Researched 13 September 2026 across five independent streams; every figure sourced, every unverified item flagged.</p>
+  </div>
+  <div class="meta">Version 1 · 13 Sep 2026<br>Full plan, model and sources in the repo:<br><span class="num">ecommerce-plan/</span></div>
+</header>
+
+<div class="layout">
+<nav class="toc" aria-label="Contents">
+  <ol>
+    <li><a href="#answer">The answer</a></li>
+    <li><a href="#why">Why not a consumer brand</a></li>
+    <li><a href="#offer">The offer</a></li>
+    <li><a href="#moat">The software moat</a></li>
+    <li><a href="#competition">Competition, honestly</a></li>
+    <li><a href="#gates">Validation gates</a></li>
+    <li><a href="#economics">Unit economics</a></li>
+    <li><a href="#model">Twelve-month model</a></li>
+    <li><a href="#sens">Sensitivities</a></li>
+    <li><a href="#gtm">Go to market</a></li>
+    <li><a href="#ops">Operations and law</a></li>
+    <li><a href="#ninety">First 90 days</a></li>
+    <li><a href="#risks">Risks and fallback</a></li>
+    <li><a href="#sources">Sources</a></li>
+  </ol>
+</nav>
+
+<main>
+<section id="answer">
+  <div class="decision">
+    <p class="eyebrow">Recommendation</p>
+    <p><strong>Sell first-aid kits for sites and work vehicles, AED pads and batteries replaced before they expire, and PPE consumables, to small businesses in Adelaide first, wrapped in a replenishment plan that produces a compliance certificate.</strong> Goods come from an Australian ARTG-listed wholesaler, so there is no import, no minimum order and no tariff exposure. Kits are sold upfront so each new customer funds their own acquisition. The plan revenue recurs. The moat is the software you build: a QR kit register, an after-use refill loop, an expiry engine and the certificate.</p>
+    <div class="tiles">
+      <div class="tile"><div class="v num">+A$6</div><div class="l">Day-one position per new account: kit margin minus acquisition cost</div></div>
+      <div class="tile"><div class="v num">57%</div><div class="l">Recurring contribution margin per account per month</div></div>
+      <div class="tile"><div class="v num">A$13.0k</div><div class="l">Lowest cash balance in year one, from A$15k opening</div></div>
+      <div class="tile"><div class="v num">376</div><div class="l">Accounts needed to pay yourself A$7k a month</div></div>
+      <div class="tile"><div class="v num">Week 5</div><div class="l">Earliest first sale. No factory, no freight, no Chinese New Year</div></div>
+    </div>
+  </div>
+  <p>Demand is legally mandated. Every one of Australia's 996,000 employing businesses must provide first aid and keep the kit stocked; tradies must keep one in each work vehicle; the model Code of Practice expects an audit at least every twelve months, six for low-risk sites. South Australia has roughly 160,000 small businesses. Incumbents either send a technician in a van on a fixed annual fee or hand the customer a web form to log their own checks. Nobody sells the compliance outcome with the goods shipping automatically and no visit.</p>
+  <p>This is a business you sell, at least for the first two hundred accounts. That is the honest trade: a founder-led grind in industrial estates in exchange for a cash profile no consumer brand can match, a customer base that renews because the law requires it, and an exit multiple (4 to 7x EBITDA for low-churn subscription) that consumer e-commerce (1.4x profit on Flippa in 2025) will never see.</p>
+</section>
+
+<section id="why">
+  <p class="eyebrow">Evidence</p>
+  <h2>Why not a consumer brand on paid social</h2>
+  <p>Five research streams, run independently, converged on the same structural facts about 2026:</p>
+  <div class="tbl"><table>
+    <tr><th>Fact</th><th>Figure</th><th>Source</th></tr>
+    <tr><td>Median Meta ROAS across ~35,000 brands, 2025</td><td class="n">1.93x</td><td>Triple Whale via Eightx</td></tr>
+    <tr><td>Break-even ROAS at a 30% contribution margin</td><td class="n">3.33x</td><td>Eightx, May 2026</td></tr>
+    <tr><td>Blended CAC change since 2023</td><td class="n">+40 to 60%</td><td>K-38 Consulting, Sep 2026</td></tr>
+    <tr><td>Average result on a first order / a repeat order</td><td class="n">−US$29 / +US$39</td><td>SimplicityDX</td></tr>
+    <tr><td>Smallest Meta test that produces signal</td><td class="n">A$60 to 100 a day, 4 to 6 weeks</td><td>Meta learning-phase maths; AU agency data</td></tr>
+    <tr><td>Median operating margin, public DTC, FY2025</td><td class="n">−2.4%</td><td>Eightx</td></tr>
+    <tr><td>A$30k private-label launch: cash committed before first sale / lowest cash</td><td class="n">A$24k / −A$17k</td><td>Consumer comparison model in the repo</td></tr>
+    <tr><td>Orders a month to cover a A$4k founder draw at A$79 retail</td><td class="n">620</td><td>Same model</td></tr>
+    <tr><td>E-commerce exit multiple, Flippa 2025 average / top quartile</td><td class="n">1.4x / 2.7x profit</td><td>Flippa, Dec 2025</td></tr>
+  </table></div>
+  <p>Every small founder who made it in the last four years did it with near-zero acquisition cost for one to two years: Bro Glo on organic TikTok from US$974, Bare Performance Nutrition after five years of YouTube, Bluebird Provisions on SEO and email, Bell &amp; Bone in Australia on in-store sampling, email and wholesale. The ones who died (Stax, Tuchuzy, Mosaic, Kodgem, Oz Goods Depot) locked cash in inventory and fixed costs ahead of demand, or used customer money and tax money as working capital.</p>
+  <p>Your unfair advantage is not product design. It is CRM, automation, data, a decade of WHS-adjacent work in mining, policing and government, and the ability to build the tool yourself. Two of the five streams independently rated "niche B2B consumables" and "first-aid kits with automated restock" as the best skill fit of every option examined.</p>
+  <h3>The shortlist that lost</h3>
+  <div class="verdict">
+    <div><span class="tag no">Downgraded on check</span><h4>Custom-fit ute windscreen sunshade</h4><p>A$12 to 15 landed against A$69 to 99 retail, but Snap Shades, Sharkskin, Yowie Drive, Dingo Trails, WeatherTech and Amazon sellers all now cover it. One-off purchase.</p></div>
+    <div><span class="tag">Fallback</span><h4>Dog health consumables on subscription</h4><p>Best consumer option. Loses on capital (local maker MOQs), 18-plus week runway, claims near the TGA line and Petbarn pressure. Documented below.</p></div>
+    <div><span class="tag">Second business</span><h4>3D-printing consumables for Australia</h4><p>Real demand and a freight moat on 1 kg spools, but Bambu sells direct and inventory across dozens of colours is the cash trap the evidence warns about.</p></div>
+    <div><span class="tag">Second business</span><h4>Aging-in-place products</h4><p>Fastest-growing online cohorts (Builders +16.9%, Boomers +14.8%) and underserved, but a curation business until you private-label, and some items are TGA devices.</p></div>
+    <div><span class="tag no">Avoid</span><h4>Supplements, sunscreen, skincare</h4><p>Highest margins, highest regulatory and ad friction, dearest CPCs. TGA is tightening sunscreen after 16 of 20 failed SPF claims.</p></div>
+    <div><span class="tag no">Avoid</span><h4>Dropshipping, print-on-demand, Faire retail, subscription boxes</h4><p>US de minimis is gone; curated retail nets 2 to 5%; 60 to 70% of box subscribers are gone by order three.</p></div>
+  </div>
+</section>
+
+<section id="offer">
+  <p class="eyebrow">Product</p>
+  <h2>The offer</h2>
+  <div class="tbl"><table>
+    <tr><th>Component</th><th class="n">Price ex GST</th><th>What it includes</th></tr>
+    <tr><td class="k">Site kit, Code of Practice compliant, QR-labelled</td><td class="n">A$119 upfront</td><td>Wholesale assumed A$58 (quote needed). Comparable retail A$90 to 150</td></tr>
+    <tr><td class="k">Vehicle kit, QR-labelled</td><td class="n">A$59 upfront</td><td>Wholesale assumed A$32</td></tr>
+    <tr><td class="k">Plan per site kit</td><td class="n">A$12 / month, billed annually (A$144)</td><td>Two scheduled refill packs a year, after-use refills on a QR scan, expiry tracking, audit log, annual compliance certificate</td></tr>
+    <tr><td class="k">Plan per vehicle kit</td><td class="n">A$7 / month, billed annually (A$84)</td><td>Same</td></tr>
+    <tr><td class="k">AED consumables</td><td class="n">Cost + 40% at shipment</td><td>OEM pads (A$50 to 120) and batteries (A$150 to 300) shipped before expiry, every 2 to 5 years</td></tr>
+    <tr><td class="k">PPE and sun pack</td><td class="n">From A$22 / month</td><td>Gloves, TGA-listed SPF 50+ sunscreen, earplugs, eyewash. Outdoor trades</td></tr>
+    <tr><td class="k">Monthly billing</td><td class="n">+15%</td><td>Offered, never promoted. Annual cash upfront is what makes the model work</td></tr>
+  </table></div>
+  <p>Positioning line to test: <em>your first-aid kits, always compliant, never another visit.</em> What is being sold is the certificate and the absence of a job, not the bandages. Price sits between The First Aid Store's A$49 per six-month kit exchange and a visit service's undisclosed annual fee.</p>
+  <p>Ideal first customers, in order: trades with utes (plumbing, electrical, building, landscaping, HVAC) in Lonsdale, Wingfield, Edinburgh and Pooraka; allied-health and dental practices; childcare centres, especially multi-centre groups; cafes and small manufacturers. Avoid mining and large construction tenders, anyone who wants a visit, and single-kit home offices.</p>
+</section>
+
+<section id="moat">
+  <p class="eyebrow">Defensibility</p>
+  <h2>The software moat</h2>
+  <p>Build in this order, and ship the smallest version that produces a certificate before the first sale:</p>
+  <ol>
+    <li><strong>Kit register.</strong> Every kit has a QR code, a location, a contents profile (low-risk office, trade vehicle, remote, burns, eyewash) and per-line expiry dates seeded from the wholesaler's pack list.</li>
+    <li><strong>After-use loop.</strong> Scan, tap what was used (pictures, not text), a refill ships the same day. Nobody else has this, and it generates usage data nobody else has.</li>
+    <li><strong>Expiry engine.</strong> Nightly job schedules the two refill packs a year and AED pads or batteries due within 45 days, creates the order, tells the customer what is shipping and why.</li>
+    <li><strong>Compliance record and certificate.</strong> One page per customer: every kit, last check, next check, items replaced, plus a PDF referencing the model Code of Practice and the SA WHS Regulations 2012. This is what gets forwarded to an inspector, a head contractor or an insurer.</li>
+    <li><strong>Partner portal (month 4).</strong> A WHS consultant or bookkeeper sees all their clients' compliance states and earns a referral fee.</li>
+  </ol>
+  <p>Stack: Shopify Basic for checkout, subscriptions and invoices; a small service of your own (Postgres, an API, a QR landing page, a PDF generator) for everything Shopify does not have; Klaviyo flows; Xero; MyPost Business labels. No custom checkout, no mobile app, no integrations before fifty accounts.</p>
+</section>
+
+<section id="competition">
+  <p class="eyebrow">Honest picture</p>
+  <h2>Competition, checked directly</h2>
+  <p>The first research pass understated this market's incumbents. On verification:</p>
+  <div class="tbl"><table>
+    <tr><th>Who</th><th>What they do</th><th>What they do not do</th></tr>
+    <tr><td class="k">Alsco First Aid</td><td>Rents kits, quarterly technician visits, fixed annual fee (unpublished)</td><td>Priced for larger sites; people in vans</td></tr>
+    <tr><td class="k">The First Aid Store</td><td>A$49 comprehensive kit subscription, six-monthly exchange, no lock-in</td><td>No register, no after-use trigger, no certificate</td></tr>
+    <tr><td class="k">First Aid Distributions (Bendigo)</td><td>Bundles "KitCheck", a web log of kits, checks and expiry dates</td><td>Customer types their own checks; no auto-ship; no QR</td></tr>
+    <tr><td class="k">A1, National First Aid, Cleanpro, St John</td><td>Visit-based or order-it-yourself restocking</td><td>No live compliance record</td></tr>
+    <tr><td class="k">First Aid Kits Australia</td><td>Web store with a "restock in a few clicks" feature</td><td>Customer initiates everything</td></tr>
+  </table></div>
+  <p>The gap is a software problem: the compliance outcome, the after-use trigger, an expiry engine across kits and AEDs, and the certificate, with the goods shipping automatically and no visit. It is also why the plan is gated on real customers. Demand for kits is proven; demand for this way of buying them is a hypothesis until twenty businesses pay for it.</p>
+</section>
+
+<section id="gates">
+  <p class="eyebrow">Stop rules</p>
+  <h2>Validation gates</h2>
+  <div class="tbl"><table class="gate">
+    <tr><th>Gate</th><th>By when</th><th>Pass condition</th><th>If it fails</th></tr>
+    <tr><td>G1 Supply</td><td>Week 2</td><td>Written trade pricing from two ARTG-listed wholesalers giving 45% or better gross margin on kits at A$119 / A$59, refill packs at or under A$12</td><td>Reprice, or go to the fallback</td></tr>
+    <tr><td>G2 Demand</td><td>Week 8</td><td>20 paying Adelaide accounts (kits bought plus plan started), at least 10 on annual billing</td><td>Interview every no, change one thing, extend to week 12. Two failures: fallback</td></tr>
+    <tr><td>G3 Retention</td><td>Month 6</td><td>Logo churn under 4% a month; at least 60% of accounts have scanned a QR or received an after-use refill</td><td>The software is not valued: sell kits and refills without the plan, or fallback</td></tr>
+    <tr><td>G4 Scale channel</td><td>Month 9</td><td>One partner channel producing 10 or more accounts a month without you present</td><td>Stay founder-led and cap ambition at a good solo income</td></tr>
+  </table></div>
+  <div class="note"><p>Stop-loss: if acquisition cost exceeds A$150 for two consecutive months, or logo churn exceeds 4% a month at month six, stop adding accounts and fix the cause before spending another dollar.</p></div>
+</section>
+
+<section id="economics">
+  <p class="eyebrow">Per account</p>
+  <h2>Unit economics</h2>
+  <div class="tbl"><table>
+    <tr><th>Item</th><th class="n">AUD</th></tr>
+    <tr><td>Kits sold upfront: revenue / margin after goods, postage and fees</td><td class="n">237 / 101</td></tr>
+    <tr><td>Acquisition cost per account (ads on intent terms, partner fees, samples, travel; founder time not costed)</td><td class="n">95</td></tr>
+    <tr><td class="k">Day-one position per new account</td><td class="n">+6</td></tr>
+    <tr><td>Recurring revenue per account per month (1.2 site kits, 1.6 vehicle kits, AED and PPE shares)</td><td class="n">35.10</td></tr>
+    <tr><td>Ongoing goods, postage (one parcel per account), add-on and AED COGS, payment fees</td><td class="n">15.11</td></tr>
+    <tr><td class="k">Recurring contribution per account per month</td><td class="n">19.99 (57%)</td></tr>
+    <tr><td>Expected lifetime at 2.5% monthly churn</td><td class="n">40 months</td></tr>
+    <tr><td>Lifetime contribution including kit margin</td><td class="n">~900</td></tr>
+    <tr><td class="k">LTV to CAC</td><td class="n">9.5 : 1</td></tr>
+  </table></div>
+  <p>Every new account pays for its own acquisition on the day it signs. That single property is why the plan survives on A$15k where a consumer brand needs about A$47k of peak funding, and it is a design choice: the first version of the model bundled the kit into a A$19 a month plan and produced a 17-month payback and a A$50k cash hole. Selling the kit upfront and billing the plan annually fixed it.</p>
+</section>
+
+<section id="model">
+  <p class="eyebrow">Arithmetic on stated assumptions, not a forecast</p>
+  <h2>Twelve-month model</h2>
+  <p>Founder-led sales two days a week, 6 new accounts in month one rising to 46 in month twelve, 2.5% monthly churn, 70% of plans billed annually, no founder salary, A$15,000 opening cash. Reproduce or change any of it with <span class="num">model.py</span> in the repo.</p>
+  <div class="charts">
+    <figure>
+      <figcaption>Active accounts</figcaption>
+      <p class="sub">End of month, after churn. Oct 2026 to Sep 2027.</p>
+      <svg id="c1" viewBox="0 0 520 240" role="img" aria-label="Active accounts by month, rising from 6 to 272"></svg>
+    </figure>
+    <figure>
+      <figcaption>Closing cash balance, A$ thousand</figcaption>
+      <p class="sub">Includes annual plans billed upfront; about A$45k of the September figure is deferred service.</p>
+      <svg id="c2" viewBox="0 0 520 240" role="img" aria-label="Closing cash by month, from 13.0 thousand to 73.2 thousand"></svg>
+    </figure>
+  </div>
+  <div class="tbl"><table class="model">
+    <tr><th>Month</th><th class="n">New</th><th class="n">Active</th><th class="n">Kit sales</th><th class="n">Recurring earned</th><th class="n">Kit COGS</th><th class="n">Ongoing COGS</th><th class="n">CAC</th><th class="n">Fixed</th><th class="n">Accrual P&amp;L</th><th class="n">Closing cash</th></tr>
+    <tr><td>Oct-26</td><td class="n">6</td><td class="n">6</td><td class="n">1,423</td><td class="n">211</td><td class="n">819</td><td class="n">91</td><td class="n">570</td><td class="n">3,328</td><td class="n">−3,174</td><td class="n">13,009</td></tr>
+    <tr><td>Nov-26</td><td class="n">9</td><td class="n">15</td><td class="n">2,135</td><td class="n">521</td><td class="n">1,229</td><td class="n">224</td><td class="n">855</td><td class="n">1,720</td><td class="n">−1,372</td><td class="n">13,306</td></tr>
+    <tr><td>Dec-26</td><td class="n">12</td><td class="n">26</td><td class="n">2,846</td><td class="n">929</td><td class="n">1,639</td><td class="n">400</td><td class="n">1,140</td><td class="n">520</td><td class="n">77</td><td class="n">15,489</td></tr>
+    <tr><td>Jan-27</td><td class="n">15</td><td class="n">41</td><td class="n">3,558</td><td class="n">1,433</td><td class="n">2,048</td><td class="n">617</td><td class="n">1,425</td><td class="n">520</td><td class="n">381</td><td class="n">18,364</td></tr>
+    <tr><td>Feb-27</td><td class="n">18</td><td class="n">58</td><td class="n">4,270</td><td class="n">2,029</td><td class="n">2,458</td><td class="n">873</td><td class="n">1,710</td><td class="n">520</td><td class="n">737</td><td class="n">21,936</td></tr>
+    <tr><td>Mar-27</td><td class="n">22</td><td class="n">78</td><td class="n">5,218</td><td class="n">2,750</td><td class="n">3,004</td><td class="n">1,184</td><td class="n">2,090</td><td class="n">520</td><td class="n">1,171</td><td class="n">26,433</td></tr>
+    <tr><td>Apr-27</td><td class="n">26</td><td class="n">102</td><td class="n">6,167</td><td class="n">3,594</td><td class="n">3,550</td><td class="n">1,547</td><td class="n">2,470</td><td class="n">520</td><td class="n">1,674</td><td class="n">31,863</td></tr>
+    <tr><td>May-27</td><td class="n">30</td><td class="n">130</td><td class="n">7,116</td><td class="n">4,557</td><td class="n">4,097</td><td class="n">1,962</td><td class="n">2,850</td><td class="n">520</td><td class="n">2,245</td><td class="n">38,233</td></tr>
+    <tr><td>Jun-27</td><td class="n">34</td><td class="n">161</td><td class="n">8,065</td><td class="n">5,637</td><td class="n">4,643</td><td class="n">2,426</td><td class="n">3,230</td><td class="n">520</td><td class="n">2,882</td><td class="n">45,549</td></tr>
+    <tr><td>Jul-27</td><td class="n">38</td><td class="n">195</td><td class="n">9,014</td><td class="n">6,829</td><td class="n">5,189</td><td class="n">2,940</td><td class="n">3,610</td><td class="n">520</td><td class="n">3,584</td><td class="n">53,818</td></tr>
+    <tr><td>Aug-27</td><td class="n">42</td><td class="n">232</td><td class="n">9,962</td><td class="n">8,133</td><td class="n">5,735</td><td class="n">3,501</td><td class="n">3,990</td><td class="n">520</td><td class="n">4,349</td><td class="n">63,047</td></tr>
+    <tr><td>Sep-27</td><td class="n">46</td><td class="n">272</td><td class="n">10,911</td><td class="n">9,544</td><td class="n">6,281</td><td class="n">4,108</td><td class="n">4,370</td><td class="n">520</td><td class="n">5,176</td><td class="n">73,242</td></tr>
+  </table></div>
+  <div class="tbl"><table>
+    <tr><th>Year one</th><th class="n">AUD</th></tr>
+    <tr><td>Revenue (kits plus earned recurring)</td><td class="n">116,853</td></tr>
+    <tr><td>Contribution after CAC</td><td class="n">27,978</td></tr>
+    <tr><td class="k">Accrual result before founder pay</td><td class="n">17,730</td></tr>
+    <tr><td>Net cash movement</td><td class="n">+58,242</td></tr>
+    <tr><td>Active accounts / MRR / ARR at month twelve</td><td class="n">272 / 9,544 / 114,531</td></tr>
+  </table></div>
+  <p>Read the cash line carefully: about A$45k of the closing balance is annual plan revenue not yet earned. It is real cash and it funds growth, but it is owed as service. The accrual line is the honest year-one profit before paying yourself. Year one is a validation year with a small profit, not a salary. Covering a A$5k monthly draw needs about 276 accounts (month 12 on the base ramp); A$7k needs 376 (about month 15). A partner channel that doubles the ramp brings 476 forward to month 11 and puts year-one ARR at A$229k, which is the case for the partner portal in month four.</p>
+</section>
+
+<section id="sens">
+  <p class="eyebrow">What moves the answer</p>
+  <h2>Sensitivities</h2>
+  <div class="tbl"><table>
+    <tr><th>Variable</th><th>Values → year-one accrual result / month-12 ARR</th><th>Reading</th></tr>
+    <tr><td class="k">Acquisition cost</td><td class="n">60: +28.2k · 95: +17.7k · 140: +4.3k · 200: −13.6k</td><td>Above ~A$150 the day-one self-funding property breaks. Watch it weekly</td></tr>
+    <tr><td class="k">Vehicle kits per account</td><td class="n">0.8: +6.0k / 96k · 1.6: +17.7k / 115k · 2.5: +31.0k / 135k · 4.0: +53.0k / 169k</td><td>Fleets are the lever. A ten-ute plumber is worth five clinics</td></tr>
+    <tr><td class="k">Account ramp</td><td class="n">×0.5: +3.7k / 57k · ×1: +17.7k / 115k · ×1.5: +31.7k / 172k · ×2: +45.7k / 229k</td><td>The partner channel is what changes the scale of the business</td></tr>
+    <tr><td class="k">Site plan price</td><td class="n">A$9: +13.1k / 103k · 12: +17.7k / 115k · 15: +22.4k / 126k · 19: +28.6k / 142k</td><td>Test A$15 with clinics and childcare, where the certificate is worth more</td></tr>
+    <tr><td class="k">Site kit wholesale cost</td><td class="n">45: +22.4k · 58: +17.7k · 75: +11.7k · 90: +6.3k</td><td>Gate G1 exists because of this line</td></tr>
+    <tr><td class="k">Monthly churn</td><td class="n">1.5%: +18.5k / 119k · 2.5%: +17.7k / 115k · 4%: +16.7k / 109k · 6%: +15.4k / 101k</td><td>Barely moves year one because the base is young. Dominates year three</td></tr>
+    <tr><td class="k">Annual billing share</td><td class="n">30%: cash never dips below A$11k</td><td>Robust to customers preferring monthly; growth funding shrinks</td></tr>
+  </table></div>
+</section>
+
+<section id="gtm">
+  <p class="eyebrow">Channels</p>
+  <h2>Go to market</h2>
+  <h3>Phase 1, weeks 5 to 12: twenty accounts, in person</h3>
+  <ul>
+    <li><strong>Founder-led direct sales</strong> in industrial estates, ten visits a day, two days a week, sample kit and the certificate on a tablet. Open with the evidence question: when a head contractor or your insurer asks for proof your kits are compliant, what do you send them?</li>
+    <li><strong>Warm referrals.</strong> Every buyer is asked for two names on the day; the referrer gets a free refill pack.</li>
+    <li><strong>Google Ads on intent terms</strong>, A$15 to 25 a day, South Australia only: first aid kit restock, workplace first aid kit compliant, vehicle first aid kit, AED pads replacement. The landing page shows the certificate, not the kit.</li>
+    <li><strong>Amazon AU and eBay AU listings</strong> for the kits with a QR insert that activates a 30-day plan trial. eBay AU charges no transaction fees under A$25k a year from May 2026.</li>
+  </ul>
+  <h3>Phase 2, months 4 to 6: repeatability</h3>
+  <ul>
+    <li><strong>Partner channel</strong>: WHS consultants and safety trainers (portal plus 15% of first-year plan revenue), bookkeepers and small-business accountants (referral fee), and associations (Master Builders SA, HIA SA, MTA SA, NECA SA, ADA SA branch) with a member offer.</li>
+    <li><strong>Content that gets cited</strong>: one authoritative page per question a buyer types into Google or ChatGPT, with structured data and the short answer first. AI Overviews cut organic clicks 38% on the queries they appear on, and brands cited inside them gain 35% CTR. Informational blog SEO is dead; being the cited answer is not.</li>
+    <li><strong>Email and SMS flows only</strong>: onboarding, after-use confirmation, refill shipped, certificate renewed, renewal 30 days out, dunning with smart retries. Flows produce ~41% of email revenue from 5.3% of sends.</li>
+    <li><strong>Founder-led LinkedIn</strong>, twice a week, with real anonymised findings from the register.</li>
+  </ul>
+  <h3>Phase 3, months 7 to 12: beyond Adelaide</h3>
+  <ul>
+    <li>Self-serve onboarding good enough that a referral in Perth or Toowoomba buys without a call. State-specific landing pages for VIC, QLD and WA.</li>
+    <li>Regional Australia deliberately: regional buyers are the most Australian-owned motivated, outer-regional online spend grows faster than metro, and Adelaide dispatch beats east-coast retailers to WA, NT and regional SA.</li>
+  </ul>
+  <h3>What not to do</h3>
+  <ul>
+    <li>No Meta ads. The buyer is at work, searching, or being referred.</li>
+    <li>No on-site visits, even once. It makes you Alsco with a worse van.</li>
+    <li>No 200-kit mining tender in year one; no account over 10% of revenue.</li>
+    <li>No "TGA approved". Say "supplied by a TGA-listed Australian manufacturer" and "compliant with the Safe Work Australia model Code of Practice".</li>
+    <li>No national push before Adelaide retention (G3) is proven.</li>
+  </ul>
+</section>
+
+<section id="ops">
+  <p class="eyebrow">South Australia, 2026</p>
+  <h2>Operations and law</h2>
+  <div class="tbl"><table>
+    <tr><th>Decision</th><th>Recommendation</th><th class="n">Cost</th></tr>
+    <tr><td class="k">Entity</td><td>Pty Ltd from day one; you are supplying goods used in emergencies. Base rate entity tax 25%</td><td class="n">A$636 + A$342 / yr</td></tr>
+    <tr><td class="k">GST</td><td>Register immediately for input credits and B2B tax invoices; Deferred GST scheme if you ever import</td><td class="n">Free</td></tr>
+    <tr><td class="k">Trade mark</td><td>TM Headstart, classes 10 and 42, before printing anything; at least seven months to registration</td><td class="n">A$330 / class</td></tr>
+    <tr><td class="k">Insurance</td><td>Public and products liability, A$10M; tell the insurer the goods are ARTG-listed from an Australian sponsor</td><td class="n">A$600 to 1,320 / yr</td></tr>
+    <tr><td class="k">Supply</td><td>Aero Healthcare (Australian owned, daily national dispatch, reseller programme, custom-branded kits); quote Brenniston, FastAid or Trafalgar as the alternative. Stay a reseller: never sponsor, import or repackage sterile goods</td><td class="n">Quote (G1)</td></tr>
+    <tr><td class="k">Fulfilment</td><td>MyPost Business, one parcel per account. Parcel Post 500 g A$11.70 retail, A$7.02 at Band 5 same-city (1 Jul 2026). Self-fulfil until 150 to 300 orders a month; Australian 3PLs carry A$300 to 500 monthly minimums</td><td class="n">~A$9.40 / parcel</td></tr>
+    <tr><td class="k">Stack</td><td>Shopify Basic annual (A$42 / mo, 1.75% + 30c), native subscriptions, your own register service on Vercel or Fly, Klaviyo, Judge.me, Xero Grow</td><td class="n">~A$520 / mo all-in</td></tr>
+    <tr><td class="k">Consumer law</td><td>Consumer guarantees apply to business buyers under A$100k; plain, cancellable subscription terms (ACCC 2026/27 priority); renewal notice 30 days out; ACCC mandatory injury reporting within two days</td><td class="n">Process</td></tr>
+    <tr><td class="k">Privacy</td><td>Small-business exemption still in force at 8 Sep 2026; Spam Act applies regardless; opt-in only, minimal data</td><td class="n">Policy</td></tr>
+  </table></div>
+  <p>Startup cost for this plan is about A$13,900, of which A$3,300 is opening stock that replenishes from sales. The rest of a A$15 to 40k budget stays in the bank as runway. There is no manufacturing lead time, no freight, no customs broker and no Chinese New Year in this plan.</p>
+</section>
+
+<section id="ninety">
+  <p class="eyebrow">Execution</p>
+  <h2>First 90 days</h2>
+  <ul class="steps">
+    <li><span class="w">Week 1</span><p>Pty Ltd, ABN, GST, bank, business name, domain. TM Headstart filed. Two insurance quotes. Trade pricing requested from two wholesalers for site kits, vehicle kits, six-monthly refill packs, after-use modules and OEM AED consumables.</p></li>
+    <li><span class="w">Week 2</span><p>Ten discovery conversations (three trades you know, two practice managers, two childcare directors, three cold). Offer written on one page. <strong>Gate G1</strong> on the quotes.</p></li>
+    <li><span class="w">Weeks 3–4</span><p>Kit register, QR after-use page, expiry engine, certificate PDF, Shopify store with two kits and two plans. Order 10 site and 15 vehicle kits and label them. Landing page live. Google Ads at A$20 a day, SA only. Klaviyo flows.</p></li>
+    <li><span class="w">Weeks 5–8</span><p>Two sales days a week in industrial estates; one day on clinics and childcare. Register kits and generate the certificate on the spot. Amazon AU and eBay AU listings live. Weekly CAC, kits per account, annual share. <strong>Gate G2</strong> at week 8: twenty paying accounts, ten annual.</p></li>
+    <li><span class="w">Weeks 9–13</span><p>Fix the three most common complaints. Five cited-answer content pages with structured data. Merchant Center feed and ChatGPT discovery settings. Three WHS consultants, three bookkeepers, one association approached with the partner offer. Renewal and dunning flows. Month-3 review.</p></li>
+    <li><span class="w">Day 90</span><p>35 to 50 paying accounts, most in Adelaide, half on annual. A working register, after-use loop, expiry engine and certificate. CAC under A$120 including travel. One partner sending referrals. Cash at or above where you started.</p></li>
+  </ul>
+</section>
+
+<section id="risks">
+  <p class="eyebrow">What could go wrong</p>
+  <h2>Risks and the fallback</h2>
+  <ul>
+    <li><strong>Sales-limited growth.</strong> The first two hundred accounts are sold by you. The plan budgets your time honestly (no salary in year one), designs the partner channel from month four, and builds self-serve from day one so referrals convert without you.</li>
+    <li><strong>Low revenue per account.</strong> About A$35 a month recurring plus A$237 of kits. The levers are fleets, multi-site clinics and childcare groups, the PPE add-on and AED consumables. Track kits per account, not just accounts.</li>
+    <li><strong>Incumbent response.</strong> First Aid Distributions could add auto-ship to KitCheck. Your defence is speed, the after-use loop and its usage data, and owning one state's customers before going national.</li>
+    <li><strong>Regulatory.</strong> Kits and bandages are ARTG-listed by the sponsor; you resell. Do not sponsor, import, repackage or assemble. Keep every claim to the Code of Practice.</li>
+    <li><strong>Customer concentration.</strong> No account over 10% of revenue; it is a valuation discount and a churn risk.</li>
+  </ul>
+  <h3>Fallback if G2 fails twice</h3>
+  <p>A premium Australian-made dog dental or gut-health chew sold on subscription with email as the profit engine, on the Bell &amp; Bone template (solo founder, A$180k a month by 2022 on sampling, email and wholesale). Australian online pet is growing 15 to 20% a year, consumables repeat every four to eight weeks, gross margins run 50 to 65%, and the Australian ingredient story supports the roughly 10% premium Australian-made commands. It needs A$15 to 25k of inventory from a local contract manufacturer, an 18 to 24 week runway, founder-led short-form video at four to six posts a week for eight weeks before launch, in-store sampling with independent pet retailers, and no paid social until twenty reviews and a working email flow exist. A real business, and a harder one.</p>
+</section>
+
+<section id="sources">
+  <p class="eyebrow">Evidence base</p>
+  <h2>Sources</h2>
+  <p>About 180 searches and 400 page reads across five streams. The full list, grouped by topic, is in <span class="num">ecommerce-plan/07-sources.md</span>. The primary sources the recommendation rests on:</p>
+  <ul>
+    <li>Safe Work Australia, <a href="https://www.safeworkaustralia.gov.au/doc/model-code-practice-first-aid-workplace">Model Code of Practice: First aid in the workplace</a>; <a href="https://www.safework.sa.gov.au/workers/workplace-health-and-safety/first-aid">SafeWork SA, First aid</a></li>
+    <li>ABS, <a href="https://www.abs.gov.au/statistics/economy/business-indicators/counts-australian-businesses-including-entries-and-exits/latest-release">Counts of Australian Businesses</a> (30 June 2026); Business SA on South Australian small business counts</li>
+    <li>Aero Healthcare, <a href="https://aerohealthcare.com/customers/reseller/">reseller programme</a>; The First Aid Store, <a href="https://thefirstaidstore.com.au/products/comprehensive-first-aid-kit-subscription">kit subscription</a>; First Aid Distributions, <a href="https://www.firstaiddistributions.com.au/blogs/news/inside-kitcheck-first-aid-compliance">Inside KitCheck</a>; <a href="https://alscofirstaid.com.au/">Alsco First Aid</a></li>
+    <li>Australia Post, <a href="https://auspost.com.au/content/dam/auspost_corp/media/documents/mypost-business-postage-rates-guide.pdf">MyPost Business rates guide, July 2026</a>; <a href="https://www.shopify.com/au/pricing">Shopify AU pricing</a>; <a href="https://www.ipaustralia.gov.au/trade-marks/timeframes-and-fees">IP Australia fees</a></li>
+    <li>Australia Post eCommerce Report 2026 (via Inside Retail); Roy Morgan, <a href="https://www.roymorgan.com/findings/10158-amazon-temu-and-shein-growth-story-continues-march-2026">Amazon, Temu and Shein</a> (Mar 2026); <a href="https://www.census.gov/retail/mrts/www/data/pdf/ec_current.pdf">US Census quarterly e-commerce</a></li>
+    <li>Eightx <a href="https://eightx.co/blog/ecommerce-kpi-benchmark-report-2026">KPI benchmark report</a> (May 2026) and ROAS by vertical; <a href="https://levelcfo.com/benchmarks/ecommerce/">Level CFO benchmarks</a>; <a href="https://www.a2xaccounting.com/ecommerce-accounting-hub/2026-ecom-pl-benchmark-report">A2X 2026 P&amp;L benchmarks</a>; <a href="https://www.klaviyo.com/products/email-marketing/benchmarks">Klaviyo 2026 benchmarks</a></li>
+    <li><a href="https://confect.io/tactics/meta-andromeda-2026">Confect, Meta Andromeda study</a> (3,014 advertisers); <a href="https://lebesgue.io/facebook-ads/facebook-cpm-by-country">Lebesgue CPM by country</a>; <a href="https://www.searchenginejournal.com/ai-overviews-cut-organic-clicks-38-field-study-finds/573145/">AI Overviews field experiment</a>; <a href="https://aisearch.similarweb.com/blog/ai-referral-traffic-by-industry/">Similarweb AI referrals</a></li>
+    <li><a href="https://www.cbp.gov/sites/default/files/2025-08/factsheet_suspension_of_duty-free_de_minimis_treatment.pdf">CBP de minimis suspension</a>; <a href="https://taxfoundation.org/research/all/federal/trump-tariffs-trade-war/">Tax Foundation tariff tracker</a>; <a href="https://www.ecommercecircle.com.au/shopify-tiktok-shop-australia-playbook/">TikTok Shop Australia status</a> (Aug 2026)</li>
+    <li>Case studies: Inside Retail (Paire, Wrinkles Schminkles, Kings of Neon, Stax, Tuchuzy), SmartCompany (Geedup), Starter Story (Bro Glo, Worm Bucket, Bluebird, Bare Performance Nutrition), Indie Hackers (Kodgem); <a href="https://flippa.com/blog/2025-online-business-ma-insights-from-flippa/">Flippa 2025 M&amp;A insights</a></li>
+  </ul>
+  <h3>Unverified or assumed</h3>
+  <p>Wholesale kit and refill pricing (A$58, A$32, A$11, A$7) until quoted; Alsco's annual fee; Australian Google Ads CPCs on first-aid terms; ASIC 2026/27 fees (mirror sites); Sendle's status after January 2026; Klaviyo paid tiers; any 3PL's rate card; the combined US duty on China- and Australian-origin goods after 24 July 2026. Nothing in the recommendation depends on any of these except the wholesale price, which is Gate G1.</p>
+  <p class="foot">Prepared as a working document for Aaron Steele. Every number is either sourced in the repo or labelled an assumption in the model. The model is arithmetic on stated assumptions and is not a forecast.</p>
+</section>
+</main>
+</div>
+</div>
+<div class="tip" id="tip" aria-hidden="true"></div>
+
+<script>
+(function(){
+  var months=["Oct","Nov","Dec","Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep"];
+  var accounts=[6,15,26,41,58,78,102,130,161,195,232,272];
+  var cash=[13.0,13.3,15.5,18.4,21.9,26.4,31.9,38.2,45.5,53.8,63.0,73.2];
+  var tip=document.getElementById('tip');
+  var css=getComputedStyle(document.documentElement);
+  function tok(n){return css.getPropertyValue(n).trim();}
+  var NS='http://www.w3.org/2000/svg';
+  function el(n,a){var e=document.createElementNS(NS,n);for(var k in a)e.setAttribute(k,a[k]);return e;}
+  function frame(svg,max,step,fmt){
+    var W=520,H=240,L=44,R=12,T=14,B=34;
+    var pw=W-L-R,ph=H-T-B;
+    for(var v=0;v<=max;v+=step){
+      var y=T+ph-(v/max)*ph;
+      svg.appendChild(el('line',{x1:L,x2:W-R,y1:y,y2:y,stroke:tok('--grid'),'stroke-width':1}));
+      var t=el('text',{x:L-8,y:y+4,'text-anchor':'end','font-size':11,'font-family':tok('--mono'),fill:tok('--muted')});
+      t.textContent=fmt(v);svg.appendChild(t);
+    }
+    svg.appendChild(el('line',{x1:L,x2:W-R,y1:T+ph,y2:T+ph,stroke:tok('--line-2'),'stroke-width':1}));
+    months.forEach(function(m,i){
+      var x=L+pw*(i+0.5)/12;
+      var t=el('text',{x:x,y:H-12,'text-anchor':'middle','font-size':11,'font-family':tok('--mono'),fill:tok('--muted')});
+      t.textContent=m;svg.appendChild(t);
+    });
+    return {L:L,R:R,T:T,B:B,pw:pw,ph:ph,W:W,H:H};
+  }
+  function show(e,txt){tip.textContent=txt;tip.style.left=e.clientX+'px';tip.style.top=e.clientY+'px';tip.classList.add('on');}
+  function hide(){tip.classList.remove('on');}
+
+  // Chart 1: bars
+  var s1=document.getElementById('c1');
+  var f=frame(s1,300,100,function(v){return v;});
+  var bw=f.pw/12*0.62;
+  accounts.forEach(function(v,i){
+    var x=f.L+f.pw*(i+0.5)/12-bw/2;
+    var h=(v/300)*f.ph, y=f.T+f.ph-h;
+    var g=el('g',{});
+    g.appendChild(el('rect',{x:x,y:y,width:bw,height:h,fill:tok('--chart-fill'),rx:0}));
+    var hit=el('rect',{x:f.L+f.pw*i/12,y:f.T,width:f.pw/12,height:f.ph,fill:'transparent'});
+    hit.addEventListener('mousemove',function(e){show(e,months[i]+': '+v+' accounts');});
+    hit.addEventListener('mouseleave',hide);
+    g.appendChild(hit);s1.appendChild(g);
+  });
+  var lab=el('text',{x:f.L+f.pw*11.5/12,y:f.T+f.ph-(272/300)*f.ph-6,'text-anchor':'middle','font-size':11.5,'font-family':tok('--mono'),fill:tok('--ink-2')});
+  lab.textContent='272';s1.appendChild(lab);
+
+  // Chart 2: line + area
+  var s2=document.getElementById('c2');
+  var f2=frame(s2,80,20,function(v){return v;});
+  var pts=cash.map(function(v,i){return [f2.L+f2.pw*(i+0.5)/12, f2.T+f2.ph-(v/80)*f2.ph];});
+  var d='M'+pts.map(function(p){return p[0].toFixed(1)+' '+p[1].toFixed(1);}).join(' L');
+  var area=d+' L'+pts[pts.length-1][0].toFixed(1)+' '+(f2.T+f2.ph)+' L'+pts[0][0].toFixed(1)+' '+(f2.T+f2.ph)+' Z';
+  s2.appendChild(el('path',{d:area,fill:tok('--chart-area')}));
+  s2.appendChild(el('path',{d:d,fill:'none',stroke:tok('--chart-fill'),'stroke-width':2,'stroke-linejoin':'round'}));
+  // opening cash reference
+  var y15=f2.T+f2.ph-(15/80)*f2.ph;
+  s2.appendChild(el('line',{x1:f2.L,x2:f2.W-f2.R,y1:y15,y2:y15,stroke:tok('--amber'),'stroke-width':1,'stroke-dasharray':'3 4'}));
+  var l15=el('text',{x:f2.W-f2.R,y:y15-5,'text-anchor':'end','font-size':11,'font-family':tok('--mono'),fill:tok('--amber')});
+  l15.textContent='opening cash 15';s2.appendChild(l15);
+  var end=pts[pts.length-1];
+  s2.appendChild(el('circle',{cx:end[0],cy:end[1],r:4,fill:tok('--chart-fill'),stroke:tok('--surface'),'stroke-width':2}));
+  var le=el('text',{x:end[0]-8,y:end[1]-10,'text-anchor':'end','font-size':11.5,'font-family':tok('--mono'),fill:tok('--ink-2')});
+  le.textContent='73.2';s2.appendChild(le);
+  var dot=el('circle',{r:4,fill:tok('--chart-fill'),stroke:tok('--surface'),'stroke-width':2,opacity:0});
+  s2.appendChild(dot);
+  cash.forEach(function(v,i){
+    var hit=el('rect',{x:f2.L+f2.pw*i/12,y:f2.T,width:f2.pw/12,height:f2.ph,fill:'transparent'});
+    hit.addEventListener('mousemove',function(e){dot.setAttribute('cx',pts[i][0]);dot.setAttribute('cy',pts[i][1]);dot.setAttribute('opacity',1);show(e,months[i]+': A$'+v.toFixed(1)+'k');});
+    hit.addEventListener('mouseleave',function(){dot.setAttribute('opacity',0);hide();});
+    s2.appendChild(hit);
+  });
+})();
+</script>
