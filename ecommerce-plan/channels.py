@@ -33,17 +33,17 @@ CASES = {
                 paid=[0, 2, 3, 3, 3, 3, 3, 3, 3, 6, 6, 6] + [8] * 12 + [10] * 12,
                 partner_per=0.75, partners=[0, 0, 0, 1, 1, 2, 2, 3, 4, 4, 5, 5] + [7] * 12 + [10] * 12,
                 referral_rate=0.010, seo=[0, 0, 0, 1, 1, 1, 2, 2, 3, 4, 4, 5] + [8] * 12 + [10] * 12,
-                churn=0.035),
+                churn=0.061),   # flat-equivalent of retention.py low case
     'base': dict(direct=[5, 7, 9, 10, 11, 12, 12, 12, 12, 12, 12, 12] + [8] * 12 + [6] * 12,
                  paid=[0, 4, 6, 7, 7, 7, 7, 7, 7, 12, 14, 15] + [20] * 12 + [28] * 12,
                  partner_per=1.5, partners=[0, 0, 0, 1, 2, 3, 4, 5, 6, 7, 8, 8] + [15] * 12 + [25] * 12,
                  referral_rate=0.020, seo=[0, 0, 0, 1, 2, 3, 5, 7, 8, 12, 14, 15] + [20] * 12 + [25] * 12,
-                 churn=0.025),
+                 churn=0.033),   # flat-equivalent of retention.py base case
     'high': dict(direct=[6, 9, 12, 14, 15, 16, 16, 16, 16, 16, 16, 16] + [10] * 12 + [8] * 12,
                  paid=[0, 6, 9, 12, 14, 16, 16, 16, 16, 24, 28, 30] + [40] * 12 + [55] * 12,
                  partner_per=3.0, partners=[0, 0, 1, 2, 3, 5, 6, 8, 10, 12, 14, 15] + [25] * 12 + [40] * 12,
                  referral_rate=0.035, seo=[0, 0, 0, 2, 3, 5, 8, 10, 12, 16, 18, 20] + [30] * 12 + [40] * 12,
-                 churn=0.018),
+                 churn=0.020),   # flat-equivalent of retention.py high case
 }
 
 # acquisition cost per account by source (goods, fees, travel; founder time is NOT costed here)
