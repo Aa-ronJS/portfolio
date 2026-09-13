@@ -39,6 +39,7 @@ whole sales flow, 40-odd assertions).
 | `/admin/partners`, `/admin/partners/ID` | you | Add partners, see referred accounts and payouts (15% of first-year plan revenue, recorded automatically), mark paid |
 | `/admin/leads` | you | Self-check leads with score and source; status new/contacted/won/lost |
 | `/admin/metrics` | you | Accounts by source, 30-day activation, monthly logo churn, renewal rate, kits per account, annual share, past-due, stale requests, signup cohorts, cancellation reasons |
+| `/admin/customers/ID/obligations`, `/admin/obligations/ID/done`, `/admin/obligations/ID/retire` | you | The compliance calendar add-on: dated obligations per customer (fire equipment six-monthly, test and tag, AED service, emergency plan review, inductions, chemicals, licences) with a provider, a "done" that resets the cycle, states on the record and certificate, a line in the due report, and a take-rate tile on metrics |
 | `/webhooks/stripe` | Stripe | Signed events: `invoice.paid` (active, renewal date moved), `invoice.payment_failed` (past due, notify), `customer.subscription.deleted` (cancelled), `checkout.session.completed` (notify). Unknown customers are logged, never applied |
 
 Accounts carry a `source` (direct, paid, partner, referral, seo, check), an

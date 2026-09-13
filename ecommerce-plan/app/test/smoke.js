@@ -170,6 +170,24 @@ const post = (p, body, auth) => get(p, { method: 'POST', headers: { 'Content-Typ
   sp = signed({ type: 'invoice.paid', data: { object: { customer: 'cus_unknown', customer_email: 'nobody@example.com' } } });
   r = await stripePost(sp.raw, sp.sig); assert(r.text.includes('unmatched')); ok('unknown customer logged, not applied');
 
+  // ---- compliance calendar
+  r = await post(`/admin/customers/${cid}/obligations`, { category: 'fire', label: 'Fire extinguishers x4', location: 'Workshop', last_done: db.addMonths(db.today(), -6), provider: 'ABC Fire' }, true);
+  assert.strictEqual(r.status, 303); ok('obligation added');
+  let obs = db.listObligations(cid); assert(obs.length === 1 && obs[0].interval_months === 6 && obs[0].next_due === db.today()); ok('fire item defaults to 6 months, due today');
+  st = sched.obligationState(obs[0]); assert.strictEqual(st.state, 'due'); ok('obligation due state');
+  r = await get(`/c/${c.token}`); assert(r.text.includes('Compliance calendar') && r.text.includes('Fire extinguishers x4')); ok('record shows calendar');
+  r = await get(`/c/${c.token}/certificate`); assert(r.text.includes('1 scheduled item')); ok('certificate counts calendar items');
+  rep = sched.dueReport(); assert(rep.obligations.some((o) => o.id === obs[0].id)); ok('due report lists obligation');
+  r = await admin('/admin'); assert(r.text.includes('Compliance calendar items due (1)')); ok('dashboard shows obligation');
+  r = await post(`/admin/obligations/${obs[0].id}/done`, { date: db.today() }, true); assert.strictEqual(r.status, 303);
+  obs = db.listObligations(cid); assert.strictEqual(obs[0].next_due, db.addMonths(db.today(), 6)); ok('done resets the cycle');
+  assert.strictEqual(sched.obligationState(obs[0]).state, 'compliant');
+  r = await post(`/admin/customers/${cid}/obligations`, { category: 'test_tag', label: 'Test and tag, workshop', last_done: db.addMonths(db.today(), -14) }, true);
+  obs = db.listObligations(cid); const tt = obs.find((o) => o.category === 'test_tag'); assert.strictEqual(sched.obligationState(tt).state, 'overdue'); ok('overdue test-and-tag flagged');
+  assert.strictEqual(sched.customerSummary(db.getCustomer(cid)).overall, 'overdue'); ok('overall state includes calendar');
+  r = await post(`/admin/obligations/${tt.id}/retire`, {}, true); assert.strictEqual(db.listObligations(cid).length, 1); ok('obligation retired');
+  const M2 = require('../lib/metrics').compute(); assert(M2.withCalendar === 1 && M2.calendarTake > 0); ok('metrics: calendar take-rate');
+
   console.log(`\n${n} checks passed`);
   server.close();
   db.db.close();

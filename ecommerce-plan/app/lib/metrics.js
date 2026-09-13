@@ -68,7 +68,9 @@ function compute(on = db.today()) {
   const reasons = {};
   for (const c of cancelled) { const r = (c.cancel_reason || 'not recorded').trim().toLowerCase(); reasons[r] = (reasons[r] || 0) + 1; }
 
-  return { on, total: customers.length, active: active.length, cancelled: cancelled.length, pastDue: pastDue.length,
+  const withCalendar = new Set(db.listAllObligations().map((o) => o.customer_id)).size;
+  const calendarTake = active.length ? withCalendar / active.length : null;
+  return { on, withCalendar, calendarTake, total: customers.length, active: active.length, cancelled: cancelled.length, pastDue: pastDue.length,
     bySource, bySource30, activation, activated: activated.length, eligible: eligible.length, churn30, cancelled30, activeAtStart,
     renewal, renewed: renewed.length, dueRecently: dueRecently.length, kitsPerAccount, vehiclePerAccount, annualShare, stale,
     cohorts: Object.values(cohorts).sort((a, b) => b.month.localeCompare(a.month)), reasons, leads: db.listLeads().length };

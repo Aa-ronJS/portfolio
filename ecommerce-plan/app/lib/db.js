@@ -90,6 +90,18 @@ CREATE TABLE IF NOT EXISTS partner_payouts (
   status TEXT DEFAULT 'owed',    -- owed | paid
   created_at TEXT NOT NULL, paid_at TEXT
 );
+CREATE TABLE IF NOT EXISTS obligations (
+  id TEXT PRIMARY KEY,
+  customer_id TEXT NOT NULL REFERENCES customers(id) ON DELETE CASCADE,
+  category TEXT NOT NULL,        -- test_tag | fire | first_aid_check | aed | emergency_plan | induction | chemical | licence | other
+  label TEXT NOT NULL,           -- "Test and tag, workshop tools" / "Fire extinguishers x4"
+  location TEXT,
+  interval_months INTEGER NOT NULL,
+  last_done TEXT, next_due TEXT,
+  provider TEXT, notes TEXT,
+  status TEXT DEFAULT 'active',
+  created_at TEXT NOT NULL
+);
 CREATE TABLE IF NOT EXISTS leads (
   id TEXT PRIMARY KEY,
   business TEXT, contact_name TEXT, email TEXT, phone TEXT, industry TEXT,
@@ -194,6 +206,46 @@ const listPartners = () => db.prepare(`SELECT p.*, (SELECT COUNT(*) FROM custome
 const listPartnerCustomers = (pid) => db.prepare('SELECT * FROM customers WHERE partner_id = ? ORDER BY created_at DESC').all(pid);
 const listPartnerPayouts = (pid) => db.prepare('SELECT x.*, c.name AS customer_name FROM partner_payouts x JOIN customers c ON c.id = x.customer_id WHERE x.partner_id = ? ORDER BY x.created_at DESC').all(pid);
 function markPayoutPaid(pid) { db.prepare("UPDATE partner_payouts SET status='paid', paid_at=? WHERE id=?").run(now(), pid); }
+
+// ---------- obligations: the compliance calendar ----------
+const OBLIGATION_CATEGORIES = {
+  test_tag: { label: 'Test and tag (AS/NZS 3760)', default_months: 12 },
+  fire: { label: 'Fire equipment service (AS 1851)', default_months: 6 },
+  first_aid_check: { label: 'First-aid kit audit', default_months: 6 },
+  aed: { label: 'AED service', default_months: 6 },
+  emergency_plan: { label: 'Emergency plan review', default_months: 12 },
+  induction: { label: 'Induction and SWMS review', default_months: 12 },
+  chemical: { label: 'Chemical register and SDS review', default_months: 12 },
+  licence: { label: 'Licence or certificate expiry', default_months: 36 },
+  other: { label: 'Other', default_months: 12 },
+};
+function createObligation(o) {
+  const cat = OBLIGATION_CATEGORIES[o.category] ? o.category : 'other';
+  const months = Math.max(1, parseInt(o.interval_months || OBLIGATION_CATEGORIES[cat].default_months, 10) || 12);
+  const last = o.last_done || null;
+  const next = o.next_due || (last ? addMonths(last, months) : addMonths(today(), months));
+  const rec = { id: id(), customer_id: o.customer_id, category: cat, label: (o.label || OBLIGATION_CATEGORIES[cat].label).trim(), location: o.location || null,
+    interval_months: months, last_done: last, next_due: next, provider: o.provider || null, notes: o.notes || null, status: 'active', created_at: now() };
+  db.prepare('INSERT INTO obligations (id,customer_id,category,label,location,interval_months,last_done,next_due,provider,notes,status,created_at) VALUES (@id,@customer_id,@category,@label,@location,@interval_months,@last_done,@next_due,@provider,@notes,@status,@created_at)').run(rec);
+  logEvent(rec.customer_id, null, 'obligation_added', { label: rec.label, next_due: rec.next_due });
+  return rec;
+}
+const listObligations = (cid) => db.prepare("SELECT * FROM obligations WHERE customer_id = ? AND status = 'active' ORDER BY next_due").all(cid);
+const listAllObligations = () => db.prepare("SELECT o.*, c.name AS customer_name FROM obligations o JOIN customers c ON c.id = o.customer_id WHERE o.status = 'active' AND c.status != 'cancelled' ORDER BY o.next_due").all();
+function obligationDone(oid, date) {
+  const o = db.prepare('SELECT * FROM obligations WHERE id = ?').get(oid);
+  if (!o) return null;
+  const d = date || today();
+  db.prepare('UPDATE obligations SET last_done = ?, next_due = ? WHERE id = ?').run(d, addMonths(d, o.interval_months), oid);
+  logEvent(o.customer_id, null, 'obligation_done', { label: o.label, done: d, next_due: addMonths(d, o.interval_months) });
+  return db.prepare('SELECT * FROM obligations WHERE id = ?').get(oid);
+}
+function retireObligation(oid) {
+  const o = db.prepare('SELECT * FROM obligations WHERE id = ?').get(oid);
+  if (!o) return;
+  db.prepare("UPDATE obligations SET status = 'retired' WHERE id = ?").run(oid);
+  logEvent(o.customer_id, null, 'obligation_retired', { label: o.label });
+}
 
 // ---------- leads ----------
 function createLead(l) {
@@ -349,4 +401,5 @@ module.exports = {
   recordPartnerPayout, cancelCustomer, setBillingStatus, getCustomerByStripe, getCustomerByEmail,
   createPartner, getPartner, getPartnerByToken, listPartners, listPartnerCustomers, listPartnerPayouts, markPayoutPaid,
   createLead, listLeads, setLeadStatus, SITE_PLAN_PY, VEHICLE_PLAN_PY,
+  OBLIGATION_CATEGORIES, createObligation, listObligations, listAllObligations, obligationDone, retireObligation,
 };

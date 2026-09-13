@@ -51,6 +51,14 @@ function aedState(aed, on = db.today()) {
   return { state: ['compliant', 'due', 'attention', 'overdue'][rank], rank, reasons };
 }
 
+const OBLIGATION_WINDOW_DAYS = parseInt(process.env.OBLIGATION_WINDOW_DAYS || '30', 10);
+function obligationState(o, on = db.today()) {
+  const d = daysBetween(on, o.next_due);
+  if (d < 0) return { state: 'overdue', rank: 3, reasons: [`${o.label} overdue by ${-d} days`], days: d };
+  if (d <= OBLIGATION_WINDOW_DAYS) return { state: 'due', rank: 1, reasons: [`${o.label} due in ${d} days`], days: d };
+  return { state: 'compliant', rank: 0, reasons: [], days: d };
+}
+
 // Everything that needs shipping or attention, across all customers.
 function dueReport(on = db.today()) {
   const open = db.listOpenRequests();
@@ -68,7 +76,8 @@ function dueReport(on = db.today()) {
   const aeds = db.listAllAeds().map((a) => ({ ...a, ...aedState(a, on) })).filter((a) => a.rank > 0);
   const renewals = db.listCustomers().filter((c) => c.plan_renewal && daysBetween(on, c.plan_renewal) <= RENEWAL_WINDOW_DAYS)
     .map((c) => ({ ...c, days: daysBetween(on, c.plan_renewal) }));
-  return { on, open, scheduled, attention, aeds, renewals };
+  const obligations = db.listAllObligations().map((o) => ({ ...o, ...obligationState(o, on) })).filter((o) => o.rank > 0);
+  return { on, open, scheduled, attention, aeds, renewals, obligations };
 }
 
 // Customer-level summary for the compliance record.
@@ -79,8 +88,9 @@ function customerSummary(customer, on = db.today()) {
     return { ...k, items, ...kitState(k, items, open, on) };
   });
   const aeds = db.listAeds(customer.id).map((a) => ({ ...a, ...aedState(a, on) }));
-  const worst = Math.max(0, ...kits.map((k) => k.rank), ...aeds.map((a) => a.rank));
-  return { kits, aeds, open, overall: ['compliant', 'due', 'attention', 'overdue'][worst], rank: worst };
+  const obligations = db.listObligations(customer.id).map((o) => ({ ...o, ...obligationState(o, on) }));
+  const worst = Math.max(0, ...kits.map((k) => k.rank), ...aeds.map((a) => a.rank), ...obligations.map((o) => o.rank));
+  return { kits, aeds, obligations, open, overall: ['compliant', 'due', 'attention', 'overdue'][worst], rank: worst };
 }
 
-module.exports = { kitState, aedState, dueReport, customerSummary, daysBetween, EXPIRY_WINDOW_DAYS, REFILL_WINDOW_DAYS, RENEWAL_WINDOW_DAYS };
+module.exports = { kitState, aedState, obligationState, dueReport, customerSummary, daysBetween, EXPIRY_WINDOW_DAYS, REFILL_WINDOW_DAYS, RENEWAL_WINDOW_DAYS, OBLIGATION_WINDOW_DAYS };

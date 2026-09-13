@@ -17,7 +17,11 @@ const EVENT_LABELS = {
   plan_renewed: 'Plan renewed', item_adjusted: 'Contents adjusted', referral_made: 'Referred a business',
   partner_payout_recorded: 'Partner referral fee recorded', plan_cancelled: 'Plan cancelled', payment_failed: 'Renewal payment failed',
   payment_recovered: 'Payment received', stripe_event: 'Billing event',
+  obligation_added: 'Compliance item added', obligation_done: 'Compliance item completed', obligation_retired: 'Compliance item removed',
 };
+function obligationRows(list) {
+  return list.map((o) => `<tr><td>${h(o.label)}${o.location ? '<br><span class="small muted">' + h(o.location) + '</span>' : ''}</td><td>${pill(o.state)}</td><td>${fmtDate(o.last_done)}</td><td>${fmtDate(o.next_due)}</td><td class="small">${h(o.provider || '')}</td></tr>`).join('');
+}
 const eventLabel = (t) => EVENT_LABELS[t] || t;
 
 function layout({ title, body, cfg, nav = 'public', extraHead = '' }) {
@@ -69,6 +73,7 @@ function landing(cfg) {
     <div class="card"><h3>Vehicle kit</h3><div class="amount">$59</div><div class="per">once, ex GST</div><ul><li>Compact, fits a glovebox or console</li><li>QR label and contents register</li></ul></div>
     <div class="card"><h3>Replenishment plan</h3><div class="amount">$144 <span class="per">/ site kit / year</span></div><div class="per">$84 per vehicle kit per year. Monthly available.</div><ul><li>Two scheduled refill packs a year</li><li>After-use refills on a QR scan</li><li>Expiry tracking and audit log</li><li>Annual compliance certificate</li></ul></div>
     <div class="card"><h3>AED consumables</h3><div class="amount">Never expired</div><div class="per">OEM pads and batteries, billed at shipment</div><ul><li>Pads and battery replaced before expiry</li><li>Serial and model on your record</li></ul></div>
+    <div class="card"><h3>Compliance calendar</h3><div class="amount">$14 <span class="per">/ month</span></div><div class="per">add-on per business</div><ul><li>Test-and-tag, fire equipment, AED service, emergency plan review: every dated obligation in one place</li><li>Reminders before each is due; the record and certificate show them</li><li>Plus: inductions, SWMS and chemical register at $29</li></ul></div>
   </div>
   <p class="small muted">Kits are supplied by a TGA-listed Australian manufacturer and match the example contents in the Safe Work Australia model Code of Practice: First aid in the workplace. Your risk assessment decides your final contents; burns, eye, remote and outdoor modules are available.</p>
   <div class="row">${cta}</div>
@@ -145,6 +150,7 @@ function record(customer, s, events, cfg) {
   <h2>Kits</h2>
   <div class="tbl"><table><tr><th>Kit</th><th>Status</th><th>Last check</th><th>Next refill</th><th>Notes</th></tr>${kitRows(s.kits) || '<tr><td colspan="5">No kits registered yet.</td></tr>'}</table></div>
   ${s.aeds.length ? `<h2>Defibrillators</h2><div class="tbl"><table><tr><th>AED</th><th>Status</th><th>Pads expire</th><th>Battery expires</th><th>Notes</th></tr>${aedRows(s.aeds)}</table></div>` : ''}
+  ${s.obligations && s.obligations.length ? `<h2>Compliance calendar</h2><div class="tbl"><table><tr><th>Item</th><th>Status</th><th>Last done</th><th>Next due</th><th>Provider</th></tr>${obligationRows(s.obligations)}</table></div>` : ''}
   <h2>History</h2>
   <div class="tbl"><table><tr><th>When</th><th>Event</th><th>Detail</th></tr>${events.map((e) => { const p = JSON.parse(e.payload || '{}'); const det = p.items ? p.items.map((i) => `${i.qty} × ${i.name}`).join(', ') : (p.location || p.note || p.reporter || p.tracking || ''); return `<tr><td class="small mono">${fmtDateTime(e.created_at)}</td><td>${h(eventLabel(e.type))}${e.kit_id ? '' : ''}</td><td class="small">${h(det)}</td></tr>`; }).join('') || '<tr><td colspan="3">No events yet.</td></tr>'}</table></div>
   <p class="fine">Kits are supplied by a TGA-listed Australian manufacturer with contents aligned to the example in the Safe Work Australia model Code of Practice: First aid in the workplace, and maintained under the ${h(cfg.brand)} replenishment plan. The duty to assess first-aid needs, provide trained first aiders and keep kits accessible remains with the person conducting the business or undertaking under the Work Health and Safety Act 2012 (SA) and Regulations. This record reflects information reported to ${h(cfg.brand)} as at the time generated.</p>
@@ -163,6 +169,7 @@ function certificate(customer, s, cfg) {
   <p>This certifies that <strong>${h(customer.name)}</strong> maintains <strong>${kitsCount} first-aid kit${kitsCount === 1 ? '' : 's'}</strong> (${kitsCount - vehicles} site, ${vehicles} vehicle)${s.aeds.length ? ` and ${s.aeds.length} defibrillator${s.aeds.length === 1 ? '' : 's'}` : ''} under a ${h(cfg.brand)} replenishment plan. Kit contents are aligned to the example list in the Safe Work Australia model Code of Practice: First aid in the workplace; sterile and dated items are replaced on a scheduled cycle and after reported use; every check, use and refill is logged on the customer's compliance record.</p>
   <div class="tbl"><table><tr><th>Kit</th><th>Status</th><th>Last check</th><th>Next refill</th></tr>${s.kits.map((k) => `<tr><td>${kitLabel(k)}<br><span class="mono small muted">${h(k.code)}</span></td><td>${pill(k.state)}</td><td>${fmtDate(k.last_check_at)}</td><td>${fmtDate(k.next_refill_at)}</td></tr>`).join('')}</table></div>
   ${s.aeds.length ? `<div class="tbl"><table><tr><th>AED</th><th>Status</th><th>Pads expire</th><th>Battery expires</th></tr>${s.aeds.map((a) => `<tr><td>${h(a.location || 'AED')} <span class="small muted">${h(a.make_model || '')}</span></td><td>${pill(a.state)}</td><td>${fmtDate(a.pads_expiry)}</td><td>${fmtDate(a.battery_expiry)}</td></tr>`).join('')}</table></div>` : ''}
+  ${s.obligations && s.obligations.length ? `<p class="small" style="margin-top:14px"><strong>Compliance calendar</strong>: ${s.obligations.length} scheduled item${s.obligations.length === 1 ? '' : 's'} tracked (${s.obligations.filter((o) => o.state === 'compliant').length} current).</p><div class="tbl"><table><tr><th>Item</th><th>Status</th><th>Last done</th><th>Next due</th></tr>${s.obligations.map((o) => `<tr><td>${h(o.label)}</td><td>${pill(o.state)}</td><td>${fmtDate(o.last_done)}</td><td>${fmtDate(o.next_due)}</td></tr>`).join('')}</table></div>` : ''}
   <p class="small">Live record: <span class="mono">${h(cfg.baseUrl)}/c/${h(customer.token)}</span></p>
   <p class="fine">Issued by ${h(cfg.legalName)} (ABN ${h(cfg.abn)}). Kits are supplied by a TGA-listed Australian manufacturer. This certificate records the replenishment and check history reported to ${h(cfg.brand)}; the duty to assess first-aid needs, provide trained first aiders and keep kits accessible remains with the person conducting the business or undertaking under the Work Health and Safety Act 2012 (SA) and Regulations. Valid while the plan is current (renews ${fmtDate(customer.plan_renewal)}).</p>
 </div>` });
@@ -187,6 +194,8 @@ function dashboard(r, cfg) {
 <div class="tbl"><table><tr><th>Customer / kit</th><th>State</th><th>Why</th></tr>${att || empty(3, 'All kits compliant.')}</table></div>
 <h2>AED consumables (${r.aeds.length})</h2>
 <div class="tbl"><table><tr><th>Customer / AED</th><th>State</th><th>Why</th></tr>${aeds || empty(3, 'Nothing expiring.')}</table></div>
+<h2>Compliance calendar items due (${(r.obligations || []).length})</h2>
+<div class="tbl"><table><tr><th>Customer / item</th><th>State</th><th>Due</th><th>Provider</th><th></th></tr>${(r.obligations || []).map((o) => `<tr><td><a href="/admin/customers/${h(o.customer_id)}">${h(o.customer_name)}</a><br><span class="small muted">${h(o.label)}${o.location ? ' · ' + h(o.location) : ''}</span></td><td>${pill(o.state)}</td><td>${fmtDate(o.next_due)}</td><td class="small">${h(o.provider || '')}</td><td><form method="post" action="/admin/obligations/${h(o.id)}/done" class="row"><input type="date" name="date" value="${h(r.on)}" style="min-height:36px;padding:4px 8px"><button class="btn quiet" type="submit">Done</button></form></td></tr>`).join('') || empty(5, 'Nothing due in the next ' + (cfg.obligationWindow || 30) + ' days.')}</table></div>
 <h2>Plan renewals in ${cfg.renewalWindow} days (${r.renewals.length})</h2>
 <div class="tbl"><table><tr><th>Customer</th><th>Renews</th><th class="n">Days</th><th>Billing</th></tr>${ren || empty(4, 'None.')}</table></div>` });
 }
@@ -258,6 +267,21 @@ function customerDetail(c, s, events, cfg) {
     <label class="field"><span>Battery expires</span><input type="date" name="battery_expiry"></label>
   </div>
   <button class="btn secondary" type="submit" style="margin-top:10px">Register AED</button>
+</form>
+<h2>Compliance calendar (${(s.obligations || []).length})</h2>
+<p class="small muted">The add-on: every dated obligation this business has, with the reminder and the record. Test-and-tag, fire equipment, AED service, emergency plan review, inductions, chemical register, licences.</p>
+<div class="tbl"><table><tr><th>Item</th><th>State</th><th>Last done</th><th>Next due</th><th>Provider</th><th></th></tr>${(s.obligations || []).map((o) => `<tr><td>${h(o.label)}${o.location ? '<br><span class="small muted">' + h(o.location) + '</span>' : ''}<br><span class="small muted">every ${o.interval_months} months</span></td><td>${pill(o.state)}</td><td>${fmtDate(o.last_done)}</td><td>${fmtDate(o.next_due)}</td><td class="small">${h(o.provider || '')}</td><td><form method="post" action="/admin/obligations/${h(o.id)}/done" class="row"><input type="date" name="date" style="min-height:36px;padding:4px 8px"><button class="btn quiet" type="submit">Done</button><button class="btn quiet" type="submit" formaction="/admin/obligations/${h(o.id)}/retire">Remove</button></form></td></tr>`).join('') || '<tr><td colspan="6" class="muted">None tracked. Add the items below; they appear on the record and the certificate.</td></tr>'}</table></div>
+<form method="post" action="/admin/customers/${h(c.id)}/obligations" class="card" style="max-width:680px">
+  <h3>Add a compliance item</h3>
+  <div class="grid2">
+    <label class="field"><span>Category</span><select name="category">${Object.entries(cfg.obligationCategories || {}).map(([k, v]) => `<option value="${h(k)}">${h(v.label)}</option>`).join('')}</select></label>
+    <label class="field"><span>Label</span><input name="label" placeholder="Fire extinguishers x4, workshop"></label>
+    <label class="field"><span>Location</span><input name="location"></label>
+    <label class="field"><span>Every (months)</span><input name="interval_months" type="number" min="1" max="120" placeholder="default for category"></label>
+    <label class="field"><span>Last done</span><input type="date" name="last_done"></label>
+    <label class="field"><span>Provider (who does it)</span><input name="provider" placeholder="ABC Test & Tag"></label>
+  </div>
+  <button class="btn secondary" type="submit" style="margin-top:10px">Add item</button>
 </form>
 <h2>Account</h2>
 <form method="post" action="/admin/customers/${h(c.id)}" class="stack">
@@ -418,6 +442,7 @@ function metrics(m, cfg) {
   ${tile(m.pastDue, 'past due (dunning running)')}
   ${tile(m.stale, 'open requests older than 2 business days · target 0')}
   ${tile(m.leads, 'self-check leads')}
+  ${tile(pct(m.calendarTake), `compliance calendar take-rate (${m.withCalendar} accounts) · target 35%`)}
 </div>
 <h2>Accounts by source</h2>
 <div class="tbl"><table><tr><th>Source</th><th class="n">All time</th><th class="n">Last 30 days</th></tr>${Object.keys(m.bySource).sort().map((k) => `<tr><td>${h(k)}</td><td class="n">${m.bySource[k]}</td><td class="n">${m.bySource30[k] || 0}</td></tr>`).join('') || '<tr><td colspan="3" class="muted">No accounts yet.</td></tr>'}</table></div>

@@ -17,6 +17,8 @@ lines.push(`Kits needing attention: ${r.attention.length}`);
 for (const k of r.attention) lines.push(`  - ${k.customer_name} · ${k.type} ${k.location || ''} (${k.code}) · ${k.state}: ${k.reasons.join('; ')}`);
 lines.push(`AED consumables: ${r.aeds.length}`);
 for (const a of r.aeds) lines.push(`  - ${a.customer_name} · ${a.location || 'AED'} ${a.make_model || ''} · ${a.reasons.join('; ')}`);
+lines.push(`Compliance calendar items due: ${(r.obligations || []).length}`);
+for (const o of r.obligations || []) lines.push(`  - ${o.customer_name} · ${o.label} · ${o.state} · due ${o.next_due}${o.provider ? ' · ' + o.provider : ''}`);
 lines.push(`Plan renewals within ${sched.RENEWAL_WINDOW_DAYS} days: ${r.renewals.length}`);
 for (const c of r.renewals) lines.push(`  - ${c.name} · renews ${c.plan_renewal} (${c.days} days) · ${c.plan_billing}`);
 const text = lines.join('\n');

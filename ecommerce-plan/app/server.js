@@ -41,6 +41,8 @@ const cfg = {
   stripeWebhookSecret: process.env.STRIPE_WEBHOOK_SECRET || '',
   refillWindow: sched.REFILL_WINDOW_DAYS,
   renewalWindow: sched.RENEWAL_WINDOW_DAYS,
+  obligationWindow: sched.OBLIGATION_WINDOW_DAYS,
+  obligationCategories: db.OBLIGATION_CATEGORIES,
 };
 if (!cfg.adminPassword) console.warn('WARNING: ADMIN_PASSWORD is not set. /admin is disabled until it is.');
 
@@ -208,6 +210,28 @@ admin('POST', '/admin/customers/:id/cancel', async (req, res, p) => {
   db.cancelCustomer(c.id, b.reason);
   notify('plan_cancelled', { customer: c.name, reason: b.reason });
   redirect(res, `/admin/customers/${c.id}`);
+});
+
+// --- compliance calendar
+admin('POST', '/admin/customers/:id/obligations', async (req, res, p) => {
+  const c = db.getCustomer(p.id);
+  if (!c) return notFound(res);
+  const b = await readBody(req);
+  db.createObligation({ customer_id: c.id, ...b });
+  redirect(res, `/admin/customers/${c.id}`);
+});
+admin('POST', '/admin/obligations/:id/done', async (req, res, p) => {
+  const b = await readBody(req);
+  const o = db.obligationDone(p.id, b.date || null);
+  if (!o) return notFound(res);
+  redirect(res, req.headers.referer && req.headers.referer.includes('/admin/customers/') ? `/admin/customers/${o.customer_id}` : '/admin');
+});
+admin('POST', '/admin/obligations/:id/retire', async (req, res, p) => {
+  await readBody(req);
+  const o = db.db.prepare('SELECT customer_id FROM obligations WHERE id = ?').get(p.id);
+  if (!o) return notFound(res);
+  db.retireObligation(p.id);
+  redirect(res, `/admin/customers/${o.customer_id}`);
 });
 
 // --- partners
