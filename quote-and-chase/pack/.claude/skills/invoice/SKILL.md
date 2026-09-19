@@ -29,7 +29,8 @@ Steps:
    `business/details.md`.
 
 5. Write `invoices/INV-<number> - <client surname>/invoice.html` from
-   `templates/invoice.html`, replacing every `{{placeholder}}`, with
+   `templates/invoice.html`, replacing every `{{placeholder}}` (logo line: keep only if
+   `business/logo.png` or `.jpg` exists), with
    the payment details from `business/details.md` on it.
 
 6. Make the PDF with `tools/make-pdf.ps1` (Windows) or

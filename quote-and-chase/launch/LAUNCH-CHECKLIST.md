@@ -22,6 +22,16 @@ only you can do. Order matters; the first block is the go/no-go.
       not "Example result").
 - [ ] **Fill in config.js.** BUSINESS_NAME, ABN, SUPPORT_EMAIL, and a
       real LESSONS_DATE (a calendar date, not "within 14 days"). Redeploy.
+- [ ] **Two products at checkout.** "Course" at AUD 249 and "Already
+      built" at AUD 449. Both deliver the same zips; the second one's
+      confirmation must tell the buyer to fill in the build form at
+      `https://your-domain/build-form` (the thank-you page links it too).
+      Paste both product URLs into CHECKOUT_URL and CHECKOUT_URL_PREBUILT.
+- [ ] **Build form endpoint.** A Formspree or Tally form that accepts
+      the 50 fields and a file upload, into BUILD_FORM_ACTION. Test it
+      once end to end, then run `python3 quote-and-chase/prebuild/build.py`
+      on your own submission and open the zip. Fulfilment is one command
+      per order; see `quote-and-chase/prebuild/README.md`.
 - [ ] **Checkout.** Recommended: Gumroad or Lemon Squeezy. Both act as
       merchant of record, handle GST, deliver files and send receipts,
       so you need no Stripe account, no invoice logic and no download
@@ -29,7 +39,7 @@ only you can do. Order matters; the first block is the go/no-go.
       from `quote-and-chase-landing/public/downloads/`, or set the
       post-purchase redirect to `https://your-domain/thanks`. Paste the
       product URL into CHECKOUT_URL. Redeploy.
-- [ ] **Buy it yourself** with a real card. Confirm the files arrive and
+- [ ] **Buy both yourself** with a real card. Confirm the files arrive and
       the thank-you page loads. Refund yourself. That tests the refund
       path too.
 - [ ] **Email form.** Formspree, Tally or Kit endpoint into FORM_ACTION.
@@ -68,6 +78,14 @@ The page now says "founding price, pack today, videos by DATE". Hold that
 date. The written lessons ship inside the zip today; the videos are the
 promise. If you would rather not owe videos on a deadline, remove the
 lessons line from the price box and the FAQ and sell the pack alone.
+
+## Already-built orders
+
+Promise on the page: pack by email within two business days. Each one
+is `build.py intake.json --logo logo.png`, a read-through of the three
+business files, and an email. Delete the intake and logo afterwards;
+the privacy page says so. If orders outrun two days, change the
+promise on the page before you miss one.
 
 ## Block 5: first 72 hours
 

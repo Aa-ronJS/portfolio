@@ -184,6 +184,20 @@ textarea{width:100%;font:1rem var(--body);padding:.8em .9em;border:1.5px solid v
 .buy input[type=email]{font:1rem var(--body);padding:.8em .9em;border:1.5px solid var(--doc-line);border-radius:6px;background:#fff;color:var(--doc-ink)}
 .buy small{color:var(--doc-muted);font-size:.85rem}
 
+/* tiers */
+.tiers{display:grid;gap:20px}
+@media (min-width:860px){.tiers{grid-template-columns:1fr 1.15fr;align-items:stretch}}
+.tier{background:var(--paper);color:var(--doc-ink);border-radius:10px;padding:clamp(22px,3.5vw,34px);box-shadow:var(--shadow);display:grid;gap:16px;align-content:start}
+.tier.featured{outline:2px solid var(--tape);outline-offset:-2px}
+.tier .eyebrow{color:var(--tape-deep)}
+.tier ul{margin:0;padding-left:18px;color:var(--doc-muted);display:grid;gap:6px}
+.tierlede{color:var(--doc-muted)}
+.tier .price{font-size:clamp(2.6rem,6vw,3.8rem)}
+.tier .buy .btn{justify-content:center}
+.waitform{display:grid;gap:8px;max-width:720px;margin-top:8px}
+.waitform .row{display:flex;flex-wrap:wrap;gap:8px}
+.waitform input[type=email]{flex:1 1 240px;font:1rem var(--body);padding:.8em .9em;border:1.5px solid var(--line);border-radius:6px;background:var(--paper);color:var(--doc-ink)}
+.waitform small{color:var(--muted);font-size:.85rem}
 /* faq */
 details{border-top:1px solid var(--line);padding:16px 0}
 details:last-of-type{border-bottom:1px solid var(--line)}
@@ -216,7 +230,7 @@ footer .wrap{display:grid;gap:8px}
         <a class="btn tape" href="#try">See what you will build</a>
         <a class="btn ghost" href="#inside">See what is inside</a>
       </div>
-      <p class="fine">Windows or Mac. Set-up is a double-click. Under an hour of lessons. <a href="sample-quote.pdf" target="_blank" rel="noopener">See a quote built with the templates (PDF)</a>.</p>
+      <p class="fine">Windows or Mac. Set-up is a double-click. Under an hour of lessons. Prefer it already filled in? <a href="#price">There is an option for that</a>. <a href="sample-quote.pdf" target="_blank" rel="noopener">See a quote built with the templates (PDF)</a>.</p>
     </div>
 
     <div class="paper" aria-label="Example quote">
@@ -378,8 +392,9 @@ footer .wrap{display:grid;gap:8px}
       <h2>Less than one lost quote.</h2>
       <p class="lede">Founding price. The templates, installers and written lessons arrive today; the seven video lessons are delivered <span data-lessons-date>within 14 days of purchase</span>, and founding students keep every later update.</p>
     </div>
-    <div class="pricebox">
-      <div class="grid" style="gap:18px">
+    <div class="tiers">
+      <div class="tier">
+        <p class="eyebrow">Build it yourself</p>
         <div class="price">$249<small>AUD, once</small></div>
         <ul>
           <li>The Claude Code set-up course and installers, Windows and Mac</li>
@@ -387,19 +402,36 @@ footer .wrap{display:grid;gap:8px}
           <li>Template updates for twelve months</li>
           <li>Email support for the install</li>
         </ul>
-        <div class="guarantee"><b>Build one working quote in 14 days, or your money back.</b>If you have not produced a PDF quote from your own photos within two weeks of starting, email us and we refund you. No forms.</div>
+        <div class="buy">
+          <a class="btn tape" href="#" data-checkout>Get the course</a>
+          <small>Secure checkout, GST included. Download link straight away.</small>
+        </div>
       </div>
-      <div class="buy">
-        <a class="btn tape" href="#" data-checkout>Get the course</a>
-        <small>Secure checkout, GST included. You get the download link straight away.</small>
-        <form id="waitlist" action="#" method="post" data-form>
-          <label for="email" style="font-weight:600;font-size:.95rem">Not ready? Get the sample quote and the price list by email</label>
-          <input type="email" id="email" name="email" placeholder="you@yourpainting.com.au" required autocomplete="email">
-          <button class="btn ghost" type="submit" style="border-color:var(--doc-ink);color:var(--doc-ink)">Send them to me</button>
-          <small>One email. No newsletter unless you ask.</small>
-        </form>
+      <div class="tier featured">
+        <p class="eyebrow">Already built, still yours</p>
+        <div class="price">$449<small>AUD, once</small></div>
+        <p class="tierlede">Everything in the course, plus we fill in your templates for you. You answer a form with your business details, your rates, your bank details, your wording and your logo. You get back your pack with all of it in place, ready to quote. You can still change anything, because you have the course.</p>
+        <ul>
+          <li>Everything in the course</li>
+          <li>Your price list, wording, details and logo filled in by us</li>
+          <li>Delivered by email within two business days of your form</li>
+          <li>Same 14-day guarantee</li>
+        </ul>
+        <div class="buy">
+          <a class="btn tape" href="#" data-checkout-prebuilt>Get it already built</a>
+          <small>After checkout you fill in the build form. No call, no meeting.</small>
+        </div>
       </div>
     </div>
+    <div class="guarantee" style="max-width:720px"><b>Build one working quote in 14 days, or your money back.</b>If you have not produced a PDF quote from your own photos within two weeks of starting, email us and we refund you. No forms.</div>
+    <form id="waitlist" action="#" method="post" data-form class="waitform">
+      <label for="email" style="font-weight:600;font-size:.95rem">Not ready? Get the sample quote and the price list by email</label>
+      <div class="row">
+        <input type="email" id="email" name="email" placeholder="you@yourpainting.com.au" required autocomplete="email">
+        <button class="btn ghost" type="submit">Send them to me</button>
+      </div>
+      <small>One email. No newsletter unless you ask.</small>
+    </form>
   </div>
 </section>
 
@@ -411,6 +443,7 @@ footer .wrap{display:grid;gap:8px}
     </div>
     <div>
       <details><summary>Why teach me to build it instead of just selling me the tool?</summary><p>Because a tool you built, you can change. Next month you will want a before-and-after gallery page, or your week's jobs in driving order, or your quotes in Xero. If you built the first tool, you know how to ask for the second. That is worth more than any one feature, and it is the reason this is a course.</p></details>
+      <details><summary>What is the "already built" option?</summary><p>You still get the whole course. The difference is that we fill in the templates for you. After checkout you answer a form: business details, bank details, your rates for each line, your wording, your logo. Within two business days you get your pack back with all of it in place, so your first real quote is the first thing you do. There is no call and no meeting. Because you have the course, you can change anything later yourself.</p></details>
       <details><summary>Do I need to know anything about computers?</summary><p>If you can make a folder, drop photos into it and type a sentence, you are qualified. No coding. The installer does the technical part, the templates do the heavy lifting, and Claude explains what it is doing in plain English and asks before it runs anything.</p></details>
       <details><summary>Is it safe? What can it touch?</summary><p>Your tool works inside one folder in your Documents. The templates include a safety file that blocks deleting things, running installers and reading password files, and Claude asks before any command. It never sends a quote, invoice or message; you do. Your bank details appear on your invoices, the same as they do today.</p></details>
       <details><summary>What does Claude cost, and who do I pay?</summary><p>You need a Claude Pro subscription from Anthropic. You pay them directly, and you can cancel it any time. We do not see it and do not take a cut. The course is a one-time payment to us.</p></details>
@@ -541,6 +574,12 @@ footer .wrap{display:grid;gap:8px}
   var checkout = document.querySelector('[data-checkout]');
   var form = document.querySelector('[data-form]');
   if (C.CHECKOUT_URL) checkout.setAttribute('href', C.CHECKOUT_URL);
+  var checkout2 = document.querySelector('[data-checkout-prebuilt]');
+  if (C.CHECKOUT_URL_PREBUILT) checkout2.setAttribute('href', C.CHECKOUT_URL_PREBUILT);
+  checkout2.addEventListener('click', function(e){
+    if (checkout2.getAttribute('href') === '#') { e.preventDefault(); alert('Checkout is not connected yet. Set CHECKOUT_URL_PREBUILT in config.js.'); return; }
+    track('InitiateCheckout', { value: 449, currency: 'AUD', content_name: 'prebuilt' });
+  });
   if (C.FORM_ACTION) form.setAttribute('action', C.FORM_ACTION);
   document.querySelectorAll('[data-lessons-date]').forEach(function(el){ if (C.LESSONS_DATE) el.textContent = C.LESSONS_DATE; });
   document.querySelectorAll('[data-abn]').forEach(function(el){ if (C.ABN) el.textContent = C.ABN; });

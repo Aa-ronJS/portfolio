@@ -36,14 +36,16 @@ run up a bill by accident.
 
 ## Wire up before running ads
 
-Everything you must edit is in `public/config.js`: checkout URL, email
-form endpoint, Meta pixel ID, business name, ABN, support email, and
-the date the video lessons will be delivered. Until the checkout and
+Everything you must edit is in `public/config.js`: the two checkout
+URLs (course, and course plus already-built pack), the email form
+endpoint, the build-form endpoint, Meta pixel ID, business name, ABN,
+support email, and the date the video lessons will be delivered. Until the checkout and
 form are set, their buttons show a polite "not connected" alert.
 
 Other pages: `privacy`, `terms` (the 14-day guarantee is stated there),
-`thanks` (post-purchase downloads; point your checkout's redirect at it)
-and `qr-card`. `public/downloads/` holds the three customer zips built
+`thanks` (post-purchase downloads; point your checkout's redirect at it),
+`build-form` (the intake for already-built orders; its field names match
+`quote-and-chase/prebuild/build.py`) and `qr-card`. `public/downloads/` holds the three customer zips built
 by the two `package.sh` scripts; rebuild and copy them after any pack
 change. `public/sample-quote.pdf` is a real output of the `/quote` skill
 on the sample job.

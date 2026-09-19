@@ -1,0 +1,150 @@
+<!doctype html>
+<html lang="en-AU">
+<head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Build form</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,700;12..96,800&family=Instrument+Sans:wght@400;600&family=IBM+Plex+Mono:wght@400;500&display=swap">
+<style>
+:root{--ground:#F7F7F4;--ink:#16181D;--muted:#5B5F66;--line:#DCDED9;--tape:#2B7BD6;--tape-deep:#1B5FAD;--paper:#fff;--soft:#ECEDE8}
+@media (prefers-color-scheme:dark){:root{--ground:#15171B;--ink:#F0F1EC;--muted:#A2A6AD;--line:#2C3037;--tape:#5FA3F0;--tape-deep:#8CC0FA;--paper:#1E2126;--soft:#1A1D21}}
+*{box-sizing:border-box}
+body{margin:0;background:var(--ground);color:var(--ink);font:16px/1.55 "Instrument Sans",system-ui,sans-serif}
+main{max-width:760px;margin:0 auto;padding:40px 20px 90px;display:grid;gap:28px}
+h1,h2{font-family:"Bricolage Grotesque",system-ui,sans-serif;letter-spacing:-.015em;margin:0}
+h1{font-size:2.2rem;line-height:1.05}h2{font-size:1.25rem}
+p{margin:0;color:var(--muted)}
+.eyebrow{font:500 .78rem "IBM Plex Mono",monospace;letter-spacing:.08em;text-transform:uppercase;color:var(--tape-deep)}
+fieldset{border:1px solid var(--line);border-radius:10px;padding:20px;display:grid;gap:14px;background:var(--paper);margin:0}
+legend{font-family:"Bricolage Grotesque",system-ui,sans-serif;font-weight:700;padding:0 6px}
+.g{display:grid;gap:14px}
+@media (min-width:640px){.g2{grid-template-columns:1fr 1fr}.g3{grid-template-columns:1fr 1fr 1fr}}
+label{display:grid;gap:4px;font-size:.92rem;font-weight:600}
+label span{color:var(--muted);font-weight:400;font-size:.85rem}
+input,textarea,select{font:1rem "Instrument Sans",system-ui,sans-serif;padding:.65em .8em;border:1.5px solid var(--line);border-radius:6px;background:var(--ground);color:var(--ink);width:100%}
+textarea{min-height:80px;resize:vertical}
+input:focus,textarea:focus,select:focus{outline:3px solid var(--tape);outline-offset:1px}
+table{width:100%;border-collapse:collapse;font-size:.92rem}
+th{text-align:left;font:500 .72rem "IBM Plex Mono",monospace;letter-spacing:.06em;text-transform:uppercase;color:var(--muted);padding:6px 4px;border-bottom:1px solid var(--line)}
+td{padding:6px 4px;border-bottom:1px solid var(--line);vertical-align:middle}
+td input{width:110px;font-family:"IBM Plex Mono",monospace;text-align:right}
+td.u{color:var(--muted);white-space:nowrap;font-size:.85rem}
+.wrapt{overflow-x:auto}
+.btn{display:inline-flex;justify-content:center;font:600 1rem "Instrument Sans",system-ui,sans-serif;padding:.9em 1.4em;border-radius:6px;border:0;background:var(--tape);color:#fff;cursor:pointer}
+.note{background:var(--soft);border-radius:8px;padding:14px 16px;font-size:.92rem;color:var(--muted)}
+.ok{display:none;background:var(--soft);border-radius:8px;padding:16px}
+</style>
+</head>
+<body><main>
+<div class="g" style="gap:10px">
+  <p class="eyebrow">Already built: your build form</p>
+  <h1>Tell us about your business. We fill in the rest.</h1>
+  <p>Takes about ten minutes. Everything here goes straight into your templates, so write it the way you would want a client to read it. You can change any of it later; that is what the course is for. Your filled-in pack arrives by email within two business days.</p>
+</div>
+
+<form id="build" method="post" action="#" enctype="multipart/form-data" class="g" style="gap:22px">
+  <input type="hidden" name="product" value="quote-and-chase-painters-prebuilt">
+  <fieldset>
+    <legend>Your business</legend>
+    <div class="g g2">
+      <label>Trading name <input name="trading_name" required></label>
+      <label>Your name <input name="owner_name" required></label>
+      <label>ABN <input name="abn" placeholder="00 000 000 000"></label>
+      <label>Mobile <input name="phone" type="tel" required></label>
+      <label>Email (where we send your pack) <input name="email" type="email" required></label>
+      <label>Order number or receipt email <span>from your checkout confirmation</span><input name="order_ref"></label>
+    </div>
+    <label>Business address for invoices <input name="address"></label>
+    <div class="g g2">
+      <label>Service area <span>e.g. Eastern suburbs of Melbourne</span><input name="service_area"></label>
+      <label>Licence or registration number <span>if any</span><input name="licence"></label>
+    </div>
+    <label>Insurance line for quotes <span>e.g. Public liability $10m with XYZ</span><input name="insurance"></label>
+    <label>Logo <span>PNG or JPG. Optional. If this box does not work, email it to us with your trading name.</span><input name="logo" type="file" accept="image/png,image/jpeg"></label>
+  </fieldset>
+
+  <fieldset>
+    <legend>Getting paid</legend>
+    <div class="g g3">
+      <label>Account name <input name="account_name"></label>
+      <label>BSB <input name="bsb" inputmode="numeric"></label>
+      <label>Account number <input name="account_number" inputmode="numeric"></label>
+    </div>
+    <label>Other ways you accept payment <span>e.g. PayID, card on the day, cash</span><input name="other_payments"></label>
+    <div class="g g3">
+      <label>Deposit to book <span>% of quote</span><input name="deposit_pct" type="number" min="0" max="100" value="20"></label>
+      <label>Balance due <span>days after completion</span><input name="balance_days" type="number" min="0" value="7"></label>
+      <label>Quote valid for <span>days</span><input name="quote_valid_days" type="number" min="1" value="30"></label>
+    </div>
+    <label>Registered for GST? <select name="gst_registered"><option value="yes">Yes, add 10% GST</option><option value="no">No, prices are GST-free</option></select></label>
+  </fieldset>
+
+  <fieldset>
+    <legend>Your rates <span style="font-weight:400;color:var(--muted)">(ex GST, labour and mid-range trade paint included)</span></legend>
+    <p>These are typical starting numbers. Change them to yours. Leave a line blank if you never do that work.</p>
+    <div class="wrapt"><table>
+      <thead><tr><th>Interior</th><th>Unit</th><th>Your rate $</th></tr></thead>
+      <tbody>
+        <tr><td>Walls, 2 coats, light prep</td><td class="u">per m²</td><td><input name="p_walls" type="number" step="0.5" value="22"></td></tr>
+        <tr><td>Ceilings, 2 coats</td><td class="u">per m²</td><td><input name="p_ceilings" type="number" step="0.5" value="25"></td></tr>
+        <tr><td>Skirting boards and architraves</td><td class="u">per lineal m</td><td><input name="p_skirting" type="number" step="0.5" value="9"></td></tr>
+        <tr><td>Door, both sides incl. frame</td><td class="u">each</td><td><input name="p_door" type="number" step="1" value="95"></td></tr>
+        <tr><td>Window frame, interior</td><td class="u">each</td><td><input name="p_window" type="number" step="1" value="65"></td></tr>
+        <tr><td>Wardrobe doors, per pair</td><td class="u">each</td><td><input name="p_wardrobe" type="number" step="1" value="120"></td></tr>
+        <tr><td>Feature wall, colour change</td><td class="u">per m²</td><td><input name="p_feature" type="number" step="0.5" value="28"></td></tr>
+        <tr><td>Wallpaper removal</td><td class="u">per m²</td><td><input name="p_wallpaper" type="number" step="0.5" value="16"></td></tr>
+        <tr><td>Moderate prep (patching, sanding)</td><td class="u">per hour</td><td><input name="p_prep_mod" type="number" step="1" value="65"></td></tr>
+        <tr><td>Heavy prep (water damage, peeling)</td><td class="u">per hour</td><td><input name="p_prep_heavy" type="number" step="1" value="80"></td></tr>
+        <tr><td>Stain block or sealer coat</td><td class="u">per m²</td><td><input name="p_sealer" type="number" step="0.5" value="8"></td></tr>
+      </tbody>
+      <thead><tr><th>Exterior</th><th>Unit</th><th>Your rate $</th></tr></thead>
+      <tbody>
+        <tr><td>Weatherboards, 2 coats</td><td class="u">per m²</td><td><input name="p_weatherboard" type="number" step="0.5" value="38"></td></tr>
+        <tr><td>Render or brick, 2 coats</td><td class="u">per m²</td><td><input name="p_render" type="number" step="0.5" value="30"></td></tr>
+        <tr><td>Eaves and fascia</td><td class="u">per lineal m</td><td><input name="p_eaves" type="number" step="0.5" value="16"></td></tr>
+        <tr><td>Gutters and downpipes</td><td class="u">per lineal m</td><td><input name="p_gutters" type="number" step="0.5" value="12"></td></tr>
+        <tr><td>Exterior door, both sides</td><td class="u">each</td><td><input name="p_ext_door" type="number" step="1" value="140"></td></tr>
+        <tr><td>Exterior window, frame and sill</td><td class="u">each</td><td><input name="p_ext_window" type="number" step="1" value="95"></td></tr>
+        <tr><td>Deck oil, 2 coats</td><td class="u">per m²</td><td><input name="p_deck" type="number" step="0.5" value="24"></td></tr>
+        <tr><td>Fence, one side, 2 coats</td><td class="u">per m²</td><td><input name="p_fence" type="number" step="0.5" value="18"></td></tr>
+        <tr><td>Pressure wash before painting</td><td class="u">per m²</td><td><input name="p_pressure" type="number" step="0.5" value="4"></td></tr>
+        <tr><td>Scaffold or high-access allowance</td><td class="u">per day</td><td><input name="p_scaffold" type="number" step="10" value="350"></td></tr>
+      </tbody>
+    </table></div>
+    <div class="g g3">
+      <label>Minimum job charge $<input name="minimum_job" type="number" value="450"></label>
+      <label>Travel beyond service area <span>$ per km</span><input name="travel_per_km" type="number" step="0.1" value="1.5"></label>
+      <label>Premium paint surcharge <span>% on affected lines</span><input name="premium_paint_pct" type="number" value="15"></label>
+    </div>
+    <label>Anything else you charge for that is not on this list <span>one per line, with a rate and a unit</span><textarea name="extra_prices" placeholder="Garage door, both sides, $220 each&#10;Ceiling roses, $45 each"></textarea></label>
+  </fieldset>
+
+  <fieldset>
+    <legend>How you talk and what you promise</legend>
+    <label>How you talk to customers <span>one or two sentences; your reminders and emails will be drafted in this voice</span><textarea name="voice" placeholder="Friendly and direct. First names. Short messages. I say cheers, not kind regards."></textarea></label>
+    <div class="g g2">
+      <label>Sign-off <span>e.g. Cheers, Dave</span><input name="sign_off"></label>
+      <label>Workmanship guarantee <span>years</span><input name="warranty_years" type="number" value="5"></label>
+    </div>
+    <label>Anything you always include that a standard quote might not <span>one per line</span><textarea name="extra_inclusions"></textarea></label>
+    <label>Anything you never do and want excluded in writing <span>one per line</span><textarea name="extra_exclusions"></textarea></label>
+    <label>Anything else we should know <textarea name="notes_to_builder"></textarea></label>
+  </fieldset>
+
+  <div class="note">Your details go into files on your own computer. We keep a copy of this form only until your pack is sent, then delete it. Bank details appear on your invoices exactly as they do today.</div>
+  <button class="btn" type="submit">Send my build form</button>
+</form>
+<div class="ok" id="ok"><b>Got it.</b> Your pack will arrive by email within two business days. Start the lessons in the meantime; lesson one is the set-up and it is the same for everyone.</div>
+</main>
+<script src="config.js"></script>
+<script>
+(function(){
+  var C = window.QC || {}, f = document.getElementById('build');
+  if (C.BUILD_FORM_ACTION) f.setAttribute('action', C.BUILD_FORM_ACTION);
+  f.addEventListener('submit', function(e){
+    if (f.getAttribute('action') === '#') { e.preventDefault(); alert('The build form is not connected yet. Set BUILD_FORM_ACTION in config.js.'); return; }
+    try { if (window.fbq) fbq('track', 'CompleteRegistration', { content_name: 'build_form' }); } catch (err) {}
+  });
+})();
+</script>
+</body>
+</html>

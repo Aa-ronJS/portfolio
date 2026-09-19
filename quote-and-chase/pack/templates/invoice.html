@@ -8,6 +8,7 @@
   * { box-sizing: border-box; }
   body { font: 11pt/1.45 -apple-system, "Segoe UI", Helvetica, Arial, sans-serif; color: #1c1a17; margin: 0; }
   header { display: flex; justify-content: space-between; align-items: flex-start; gap: 24px; border-bottom: 3px solid #1c1a17; padding-bottom: 14px; margin-bottom: 22px; }
+  .biz .logo { height: 44px; width: auto; margin-bottom: 8px; }
   .biz h1 { font-size: 20pt; margin: 0 0 4px; letter-spacing: -0.01em; }
   .biz p, .meta p { margin: 0; font-size: 10pt; color: #4a4640; }
   .meta { text-align: right; }
@@ -30,6 +31,8 @@
 <body>
 <header>
   <div class="biz">
+    <!-- keep the next line only if business/logo.png or logo.jpg exists; otherwise delete it -->
+    <img class="logo" src="../../business/logo.png" alt="">
     <h1>{{business_name}}</h1>
     <p>{{owner_name}} &middot; {{phone}} &middot; {{email}}</p>
     <p>ABN {{abn}} &middot; {{business_address}}</p>

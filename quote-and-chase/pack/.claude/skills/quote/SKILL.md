@@ -34,7 +34,8 @@ each one, briefly.
 6. **Write the quote.** Create the folder
    `quotes/sent/Q-<number> - <client surname> - <street>/` and inside it:
    - `quote.html` built from `templates/quote.html`. Replace every
-     `{{placeholder}}`. One table row per line item. Include the
+     `{{placeholder}}`. If `business/logo.png` (or `.jpg`) exists keep the
+     logo line and point it at the right file name; otherwise delete it. One table row per line item. Include the
      inclusions, exclusions, terms and how-to-accept blocks from
      `business/quote-wording.md` word for word.
    - `working.md` with your quantity table, every assumption you made,
