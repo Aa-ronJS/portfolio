@@ -1,6 +1,11 @@
 {
   "permissions": {
     "defaultMode": "acceptEdits",
+    "allow": [
+      "Bash(bash tools/make-pdf.sh *)",
+      "Bash(powershell -NoProfile -ExecutionPolicy Bypass -File tools/make-pdf.ps1 *)",
+      "PowerShell(powershell -NoProfile -ExecutionPolicy Bypass -File tools\\make-pdf.ps1 *)"
+    ],
     "deny": [
       "Bash(rm -rf *)",
       "Bash(rm -r *)",

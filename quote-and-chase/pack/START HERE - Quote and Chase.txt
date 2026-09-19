@@ -1,0 +1,47 @@
+QUOTE AND CHASE - START HERE
+============================
+
+You have three new commands inside Claude Code. Each one is a word you
+type that starts with a slash.
+
+  /quote     photos + notes  ->  PDF quote
+  /invoice   accepted quote  ->  PDF invoice
+  /chase     who owes you    ->  reminder texts and emails, drafted
+
+Set up once (about 10 minutes)
+  1. Open the "business" folder. Fill in details.md (your business,
+     bank details, how you talk to customers). Save.
+  2. Open price-list.md. Change every price to yours. Save. Claude only
+     ever quotes from this list, so it is worth getting right.
+  3. Read quote-wording.md and change anything you would not say.
+
+Your first quote (about 5 minutes)
+  1. Double-click "Claude Code" on your Desktop.
+  2. Type:   /quote Example - 12 Wattle St Ringwood
+     and press Enter. Watch what it does. It will read the example
+     notes, work out the areas, price them from your list, write the
+     PDF and log the job.
+  3. Open quotes/sent and look at the PDF. Then open working.md next
+     to it and read the assumptions. That is what you check before any
+     real quote goes out.
+
+A real quote
+  1. In quotes/incoming make a folder named after the address.
+  2. Drop in your phone photos and a notes.txt (copy the example).
+  3. /quote <folder name>
+  4. Check the assumptions, then send the PDF from your own email.
+  5. When they say yes:   /mark Q-1001 accepted
+     then                 /invoice Q-1001 deposit
+  6. Every Monday:        /chase
+
+Rules the pack lives by
+  - Claude drafts. You send. It never emails or texts anyone.
+  - Claude only uses prices from your price list.
+  - Everything stays in this folder. Back the folder up.
+
+When you want more
+  Ask in plain English. Good first extensions people build:
+    "Make a page of before-and-after photos I can send clients."
+    "Show me my win rate on quotes this year."
+    "Plan my week's jobs in a sensible driving order."
+  Claude will explain what it needs and build it inside this folder.

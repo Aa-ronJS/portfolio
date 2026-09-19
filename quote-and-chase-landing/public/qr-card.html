@@ -1,0 +1,35 @@
+<!doctype html>
+<html lang="en-AU">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Quote and Chase scan card</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,700;12..96,800&family=Instrument+Sans:wght@400;600&display=swap">
+<style>
+  @page { size: A6; margin: 0; }
+  body { margin: 0; background: #E9EAE5; font-family: "Instrument Sans", system-ui, sans-serif; color: #16181D; display: grid; place-items: center; min-height: 100vh; }
+  .card { width: 105mm; height: 148mm; background: #fff; padding: 12mm 10mm; box-sizing: border-box; display: grid; grid-template-rows: auto 1fr auto; gap: 6mm; position: relative; }
+  .tape { position: absolute; left: 50%; top: -3mm; width: 34mm; height: 7mm; background: #2B7BD6; transform: translateX(-50%) rotate(-2deg); opacity: .9; }
+  h1 { font-family: "Bricolage Grotesque", system-ui, sans-serif; font-weight: 800; font-size: 22pt; line-height: 1.02; letter-spacing: -.02em; margin: 0; text-wrap: balance; }
+  .qr { display: grid; place-items: center; }
+  .qr img { width: 62mm; height: 62mm; image-rendering: pixelated; }
+  p { margin: 0; font-size: 10.5pt; line-height: 1.4; }
+  .small { font-size: 8.5pt; color: #6B6F76; }
+  @media print { body { background: #fff; min-height: auto; } .card { box-shadow: none; } }
+  @media screen { .card { box-shadow: 0 18px 50px -24px rgba(0,0,0,.4); margin: 24px; } }
+</style>
+</head>
+<body>
+  <div class="card">
+    <span class="tape"></span>
+    <div>
+      <h1>Point your phone at a wall. Get it quoted in two minutes.</h1>
+    </div>
+    <div class="qr"><img src="qr.svg" alt="QR code to the Quote and Chase demo"></div>
+    <div>
+      <p><b>Scan with your camera.</b> Take a photo of any room. A sample painting quote comes back in about twenty seconds.</p>
+      <p class="small">Quote &amp; Chase for painters. Your prices, your laptop, no per-job fees.</p>
+    </div>
+  </div>
+</body>
+</html>

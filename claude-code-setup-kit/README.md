@@ -63,11 +63,10 @@ deletes, sudo, disk tools, force pushes, piping downloads into a shell,
 and reading `.env`, SSH, AWS and keychain files. Project settings cannot
 select `auto` or `bypassPermissions` by design, which is what we want.
 
-Known gap: the deny rules are written for the Bash tool. On Windows
-without Git for Windows, Claude Code uses a PowerShell tool instead and
-those rules may not match. That is the reason the Windows setup offers
-Git by default. Verify the PowerShell rule syntax against the current
-permissions docs before shipping, and add matching rules if they exist.
+The deny list covers both the Bash tool and the Windows PowerShell tool
+(rules of the form `PowerShell(...)`, which Claude Code uses on Windows
+when Git Bash is not installed). Git for Windows is still offered by
+default because it gives Claude its full tool set.
 
 ## Build the customer zips
 

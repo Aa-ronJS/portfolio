@@ -1,0 +1,106 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Quote {{quote_no}} - {{business_name}}</title>
+<style>
+  @page { size: A4; margin: 18mm 16mm; }
+  * { box-sizing: border-box; }
+  body { font: 11pt/1.45 -apple-system, "Segoe UI", Helvetica, Arial, sans-serif; color: #1c1a17; margin: 0; }
+  header { display: flex; justify-content: space-between; align-items: flex-start; gap: 24px; border-bottom: 3px solid #1c1a17; padding-bottom: 14px; margin-bottom: 22px; }
+  .biz h1 { font-size: 20pt; margin: 0 0 4px; letter-spacing: -0.01em; }
+  .biz p, .meta p { margin: 0; font-size: 10pt; color: #4a4640; }
+  .meta { text-align: right; }
+  .meta .label { font-size: 9pt; text-transform: uppercase; letter-spacing: 0.08em; color: #7a746b; }
+  .meta .big { font-size: 16pt; font-weight: 700; color: #1c1a17; }
+  h2 { font-size: 11pt; text-transform: uppercase; letter-spacing: 0.08em; color: #7a746b; margin: 22px 0 8px; }
+  .two { display: grid; grid-template-columns: 1fr 1fr; gap: 24px; }
+  table { width: 100%; border-collapse: collapse; margin-top: 6px; }
+  th { text-align: left; font-size: 9pt; text-transform: uppercase; letter-spacing: 0.06em; color: #7a746b; border-bottom: 1px solid #c9c3b8; padding: 6px 4px; }
+  td { padding: 7px 4px; border-bottom: 1px solid #e6e1d8; vertical-align: top; }
+  td.n, th.n { text-align: right; white-space: nowrap; font-variant-numeric: tabular-nums; }
+  tr.total td { border-bottom: none; font-weight: 700; font-size: 12pt; padding-top: 10px; }
+  tr.sub td { border-bottom: none; color: #4a4640; }
+  .confirm { color: #9a4b00; font-weight: 600; }
+  ul { margin: 4px 0 0; padding-left: 18px; }
+  li { margin: 2px 0; }
+  .accept { border: 1.5px solid #1c1a17; padding: 12px 14px; margin-top: 18px; }
+  .pay { background: #f3f0ea; padding: 12px 14px; margin-top: 12px; font-size: 10pt; }
+  footer { margin-top: 26px; font-size: 9pt; color: #7a746b; }
+  .break { page-break-before: always; }
+</style>
+</head>
+<body>
+<header>
+  <div class="biz">
+    <h1>{{business_name}}</h1>
+    <p>{{owner_name}} &middot; {{phone}} &middot; {{email}}</p>
+    <p>ABN {{abn}} &middot; {{business_address}}</p>
+  </div>
+  <div class="meta">
+    <p class="label">Quote</p>
+    <p class="big">{{quote_no}}</p>
+    <p>Date: {{quote_date}}</p>
+    <p>Valid until: {{valid_until}}</p>
+  </div>
+</header>
+
+<div class="two">
+  <div>
+    <h2>Prepared for</h2>
+    <p><strong>{{client_name}}</strong><br>{{client_address}}<br>{{client_phone}} &middot; {{client_email}}</p>
+  </div>
+  <div>
+    <h2>The job</h2>
+    <p>{{job_summary}}</p>
+  </div>
+</div>
+
+<h2>Price</h2>
+<table>
+  <thead>
+    <tr><th>Item</th><th class="n">Qty</th><th>Unit</th><th class="n">Rate</th><th class="n">Amount</th></tr>
+  </thead>
+  <tbody>
+    <!-- one row per line item; add class="confirm" to the first cell of any TO CONFIRM line -->
+    <tr><td>{{item_description}}</td><td class="n">{{qty}}</td><td>{{unit}}</td><td class="n">${{rate}}</td><td class="n">${{amount}}</td></tr>
+  </tbody>
+  <tfoot>
+    <tr class="sub"><td colspan="4" class="n">Subtotal</td><td class="n">${{subtotal}}</td></tr>
+    <tr class="sub"><td colspan="4" class="n">GST 10%</td><td class="n">${{gst}}</td></tr>
+    <tr class="total"><td colspan="4" class="n">Total inc GST</td><td class="n">${{total}}</td></tr>
+  </tfoot>
+</table>
+
+<h2>What this quote is based on</h2>
+<ul>
+  <!-- one li per assumption the client should know about, e.g. ceiling height, prep level, colours -->
+  <li>{{assumption}}</li>
+</ul>
+
+<div class="two">
+  <div>
+    <h2>What is included</h2>
+    <ul>{{included_items}}</ul>
+  </div>
+  <div>
+    <h2>What is not included</h2>
+    <ul>{{excluded_items}}</ul>
+  </div>
+</div>
+
+<h2>Terms</h2>
+<ul>{{terms_items}}</ul>
+
+<div class="accept">
+  <strong>How to accept</strong><br>
+  {{how_to_accept}}
+</div>
+
+<div class="pay">
+  <strong>Deposit of ${{deposit_amount}}</strong> to: {{account_name}} &middot; BSB {{bsb}} &middot; Account {{account_number}} &middot; Reference {{quote_no}}
+</div>
+
+<footer>Thanks for asking us to quote. {{owner_name}}, {{business_name}}</footer>
+</body>
+</html>
