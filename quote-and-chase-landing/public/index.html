@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>Quote and Chase</title>
-<meta name="description" content="A short course for painters: set up Claude Code on your laptop and build your own quote-from-a-photo tool with our templates. You build it, you own it, you can keep extending it.">
+<meta name="description" content="A short course for painters. Build your own quote-from-a-photo tool in an afternoon. No coding.">
 <meta property="og:title" content="Quote and Chase: build your own quoting tool">
 <meta property="og:description" content="A short course for painters. Build a tool that turns phone photos into priced quotes, using your rates, on your own laptop.">
 <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -126,7 +126,7 @@ nav .btn{padding:.6em 1em;font-size:.92rem}
 /* how */
 .steps{display:grid;gap:22px;counter-reset:s}
 @media (min-width:860px){.steps{grid-template-columns:repeat(3,1fr)}}
-.step{background:var(--soft);border-radius:8px;padding:22px;display:grid;gap:10px;align-content:start}
+.step{background:var(--soft);border-radius:8px;padding:22px;display:grid;gap:12px;align-content:start}
 .step::before{counter-increment:s;content:counter(s);font-family:var(--display);font-weight:800;font-size:2rem;line-height:1;color:var(--tape-deep)}
 .step code{font-family:var(--mono);font-size:.9rem;background:var(--paper);color:var(--doc-ink);padding:.35em .55em;border-radius:4px;display:inline-block;border:1px solid var(--line)}
 .step p{color:var(--muted)}
@@ -166,8 +166,8 @@ textarea{width:100%;font:1rem var(--body);padding:.8em .9em;border:1.5px solid v
 
 /* inside */
 .list{display:grid;gap:14px;margin:0;padding:0;list-style:none}
-.list li{display:grid;grid-template-columns:24px 1fr;gap:12px;align-items:start}
-.list li::before{content:"";width:14px;height:14px;margin-top:6px;background:var(--tape);border-radius:2px;transform:rotate(-6deg)}
+.list li{display:grid;grid-template-columns:24px 1fr;gap:12px;align-items:center}
+.list li::before{content:"";width:14px;height:14px;background:var(--tape);border-radius:2px;transform:rotate(-6deg)}
 .list b{display:block}
 .list span{color:var(--muted)}
 .not{border:1.5px solid var(--line);border-radius:8px;padding:22px;display:grid;gap:10px;align-content:start}
@@ -226,14 +226,14 @@ footer .wrap{display:grid;gap:8px}
 <header class="hero wrap" id="top">
   <div class="grid">
     <div class="stack">
-      <p class="eyebrow">A short course for painting businesses with one to five on the tools</p>
-      <h1>Build your own quoting tool. In an afternoon. No coding.</h1>
-      <p class="lede">We show you how to set up Claude Code on your laptop and hand you the templates. You build a tool that turns your phone photos into priced PDF quotes using <em>your</em> rates, writes the invoice, and drafts the reminders when money is late. Because you built it, you can change it. Nobody charges you per job.</p>
+      <p class="eyebrow">A short course for painters</p>
+      <h1>Build your own quoting tool. In an afternoon.</h1>
+      <p class="lede">Phone photos in. Priced PDF quote out. Your rates, your laptop, no coding.</p>
       <div class="actions">
-        <a class="btn tape" href="#try">See what you will build</a>
-        <a class="btn ghost" href="#inside">See what is inside</a>
+        <a class="btn tape" href="#try">See what you'll build</a>
+        <a class="btn ghost" href="#price">Get the course</a>
       </div>
-      <p class="fine">Windows or Mac. Set-up is a double-click. Under an hour of lessons. Prefer it already filled in? <a href="#price">There is an option for that</a>. <a href="sample-quote.pdf" target="_blank" rel="noopener">See a quote built with the templates (PDF)</a>.</p>
+      <p class="fine">Windows or Mac. Under an hour of lessons. <a href="sample-quote.pdf" target="_blank" rel="noopener">See a quote it made (PDF)</a>.</p>
     </div>
 
     <div class="paper" aria-label="Example quote">
@@ -258,12 +258,12 @@ footer .wrap{display:grid;gap:8px}
       <div class="tw"><table>
         <thead><tr><th>Item</th><th class="n">Qty</th><th class="n">Rate</th><th class="n">Amount</th></tr></thead>
         <tbody>
-          <tr><td>Lounge walls, 2 coats, light prep</td><td class="n">39.8 m²</td><td class="n">22</td><td class="n">876</td></tr>
+          <tr><td>Lounge walls, 2 coats</td><td class="n">39.8 m²</td><td class="n">22</td><td class="n">876</td></tr>
           <tr><td>Lounge ceiling, 2 coats</td><td class="n">20 m²</td><td class="n">25</td><td class="n">500</td></tr>
           <tr><td>Skirting boards</td><td class="n">17.1 lm</td><td class="n">9</td><td class="n">154</td></tr>
-          <tr><td>Door, both sides incl. frame</td><td class="n">1</td><td class="n">95</td><td class="n">95</td></tr>
+          <tr><td>Door, both sides</td><td class="n">1</td><td class="n">95</td><td class="n">95</td></tr>
           <tr><td>Window frames</td><td class="n">2</td><td class="n">65</td><td class="n">130</td></tr>
-          <tr><td>Patch and seal where TV bracket was</td><td class="n">0.5 hr</td><td class="n">65</td><td class="n">33</td></tr>
+          <tr><td>Patch where TV bracket was</td><td class="n">0.5 hr</td><td class="n">65</td><td class="n">33</td></tr>
         </tbody>
         <tfoot>
           <tr class="sub"><td colspan="3" class="n">Subtotal</td><td class="n">1,788</td></tr>
@@ -271,7 +271,7 @@ footer .wrap{display:grid;gap:8px}
           <tr class="total"><td colspan="3" class="n">Total inc GST</td><td class="n">$1,967</td></tr>
         </tfoot>
       </table></div>
-      <p class="assume"><b>Based on:</b> 2.4 m ceilings · same colour, low-sheen · client moves furniture to the centre</p>
+      <p class="assume"><b>Based on:</b> 2.4 m ceilings · same colour · client moves furniture</p>
       <span class="tapebit b"></span>
     </div>
   </div>
@@ -287,38 +287,27 @@ footer .wrap{display:grid;gap:8px}
 
 <div class="wrap">
   <div class="strip">
-    <div><b>A course, not a subscription</b><span>Seven short lessons and the templates. Pay once, keep everything.</span></div>
-    <div><b>You end up with a working tool</b><span>By lesson four you have quoted a real job from your own photos.</span></div>
-    <div><b>You understand it</b><span>Plain files in a folder on your laptop. Your prices, your wording, your rules.</span></div>
-    <div><b>You can keep building</b><span>Lesson seven shows you how to add the next thing yourself.</span></div>
+    <div><b>Pay once</b><span>No per-job fees.</span></div>
+    <div><b>You build it</b><span>So you own it.</span></div>
+    <div><b>Nothing sent without you</b><span>It drafts. You send.</span></div>
+    <div><b>Change anything</b><span>It's just files in a folder.</span></div>
   </div>
 </div>
 
 <section id="problem">
-  <div class="wrap grid" style="gap:36px">
-    <div class="grid" style="gap:12px">
-      <p class="eyebrow">The evening problem</p>
-      <h2>You did not start a painting business to type quotes at 9pm.</h2>
-      <p class="lede">The job software you rent still expects you to do the measuring, the pricing and the chasing, and bills you more the month you get busy. This course teaches you to build the tool that does the typing, on your laptop, from your photos. Then it is yours.</p>
-    </div>
-    <div class="facts">
-      <div class="fact"><b>Quoting, paperwork and invoicing</b><p>are three of the four tasks home-service owners say take the most time, in a 2025 survey of 1,050 owners.</p><small>Jobber Home Service Trends Report, Dec 2025</small></div>
-      <div class="fact"><b>Most small businesses chase late payments</b><p>every week, about an hour and a half each time. That is two working weeks a year spent asking to be paid.</p><small>GoCardless Pursuing Payments, ANZ, 2025</small></div>
-      <div class="fact"><b>Job software charges per job, per user, per text</b><p>and steps up a tier the month you get busier. A tool you own costs the same in a good month as a quiet one.</p><small>Published pricing pages, 2026</small></div>
-    </div>
+  <div class="wrap grid" style="gap:14px">
+    <h2>You didn't start a painting business to type quotes at 9pm.</h2>
+    <p class="lede">Job software bills you per job and still leaves you doing the typing.</p>
   </div>
 </section>
 
 <section id="how">
-  <div class="wrap grid" style="gap:36px">
-    <div class="grid" style="gap:12px">
-      <p class="eyebrow">What you build</p>
-      <h2>Three commands. You build all three in the course.</h2>
-    </div>
+  <div class="wrap grid" style="gap:28px">
+    <h2>Three commands. You build all three.</h2>
     <div class="steps">
-      <div class="step"><h3>Lessons 3 and 4: photos in, quote out</h3><code>/quote 12 Wattle St</code><p>Drop your phone photos and a notes file into a folder named after the address. It reads the photos, works out the areas with your measuring rules, prices every line from your list, writes the PDF and lists every assumption it made for you to check.</p></div>
-      <div class="step"><h3>Lesson 6: accepted quote in, invoice out</h3><code>/invoice Q-1007 deposit</code><p>Deposit, final or full. Your bank details, your payment terms, the due date worked out. Every job sits in one spreadsheet you can open any time.</p></div>
-      <div class="step"><h3>Lesson 6: Monday morning, who owes you</h3><code>/chase</code><p>A list of every overdue invoice and every quote waiting on an answer, with a text and an email drafted for each in your voice. Friendly at day 3, firm at day 22. You copy, you send.</p></div>
+      <div class="step"><code>/quote 12 Wattle St</code><p>Photos and notes in. PDF quote out, with every assumption listed.</p></div>
+      <div class="step"><code>/invoice Q-1007 deposit</code><p>Deposit, final or full. Your bank details, your terms.</p></div>
+      <div class="step"><code>/chase</code><p>Who owes you, with the reminders drafted in your voice.</p></div>
     </div>
   </div>
 </section>
@@ -326,31 +315,28 @@ footer .wrap{display:grid;gap:8px}
 <section id="try" class="try">
   <div class="wrap grid">
     <div class="grid" style="gap:18px;align-content:start">
-      <p class="eyebrow">See what you will build</p>
+      <p class="eyebrow">See what you'll build</p>
       <h2>Point your phone at any wall.</h2>
-      <p class="lede">This is what your tool does once you have built it. <span class="only-desk-inline">Scan the code with your phone, take a photo of a room,</span><span class="only-phone-inline">Tap the button, take a photo of a room,</span> and get a sample quote back in about twenty seconds. Ours uses a demo price list; yours will use your rates and land as a PDF with your name on it.</p>
+      <p class="lede">A sample quote in about twenty seconds.</p>
       <div class="qrbox only-desk">
         <div id="qr" aria-label="QR code linking to this demo"><img src="qr.svg" alt="QR code linking to this demo" width="220" height="220"></div>
-        <b style="font-family:var(--display)">Scan with your phone camera</b>
+        <b style="font-family:var(--display)">Scan with your phone</b>
         <span class="url" id="demo-url">this page, #try</span>
       </div>
-      <p class="fine only-desk" style="color:var(--muted);font-size:.9rem">Or upload a photo from this computer using the box on the right.</p>
     </div>
 
     <div class="demo" id="demo">
       <label class="drop" id="drop" for="photo">
         <img id="preview" alt="" hidden>
-        <span id="drop-text" class="only-desk"><b>Choose a photo from this computer</b><br><span style="color:var(--muted)">A room, a wall, a ceiling or the outside of a house</span></span>
+        <span id="drop-text" class="only-desk"><b>Or choose a photo from this computer</b></span>
         <input type="file" id="photo" accept="image/*" capture="environment">
         <span class="btn tape bigbtn" aria-hidden="true"><span class="only-desk-inline">Choose a photo</span><span class="only-phone-inline">Take a photo of a wall</span></span>
-        <span class="only-phone" style="color:var(--muted);font-size:.9rem">Or pick one from your photos. A room, a wall, a ceiling or the outside of a house.</span>
       </label>
-      <label for="notes" style="font-weight:600">Anything the photo does not show <span style="color:var(--muted);font-weight:400">(optional)</span></label>
-      <textarea id="notes" placeholder="e.g. Lounge, about 5 by 4 metres. Walls and ceiling. One patch to fix. Same colour."></textarea>
+      <textarea id="notes" placeholder="Optional: anything the photo doesn't show. e.g. Lounge, 5 by 4 m, same colour."></textarea>
       <button class="btn" id="go" type="button" disabled>Get a sample quote</button>
       <p class="status" id="status" aria-live="polite">Add a photo to start.</p>
       <div class="result" id="result" hidden></div>
-      <p class="fine" style="color:var(--muted);font-size:.85rem">Your photo is sent once to the estimator to make the sample and is not stored. Demo quotes are examples, not offers of work.</p>
+      <p class="fine" style="color:var(--muted);font-size:.85rem">Photo not stored. Demo prices, not an offer of work.</p>
     </div>
   </div>
 </section>
@@ -358,111 +344,87 @@ footer .wrap{display:grid;gap:8px}
 <section id="inside">
   <div class="wrap grid g2" style="gap:40px">
     <div class="grid" style="gap:22px;align-content:start">
-      <div class="grid" style="gap:12px">
-        <p class="eyebrow">What is inside</p>
-        <h2>The lessons, and the templates you build from.</h2>
-      </div>
+      <h2>What's inside</h2>
       <ul class="list">
-        <li><div><b>Seven short lessons, under an hour</b><span>Set up Claude Code, put in your prices, build and run your first quote on the sample job, quote a real job from your own photos, invoice and chase, then how to ask for the next thing you want built.</span></div></li>
-        <li><div><b>Double-click set-up for Windows and Mac</b><span>Lesson one. Installs Claude Code from Anthropic's official installer into your own user folder and creates your business folder. No administrator rights, no passwords stored.</span></div></li>
-        <li><div><b>The command templates</b><span>/quote, /invoice and /chase, plus /mark to keep the job list straight. Written in plain English so you can read them, change them, and see exactly what your tool does.</span></div></li>
-        <li><div><b>A painter's price list and measuring rules</b><span>Interior and exterior rates by m², lineal metre and each, with the rules of thumb for ceilings, doors, windows and prep. You put your numbers in during lesson three.</span></div></li>
-        <li><div><b>Quote and invoice templates</b><span>Clean A4 PDFs with your details, inclusions, exclusions, terms and bank details. Standard wording you can edit once.</span></div></li>
-        <li><div><b>A safety file</b><span>Blocks deleting things, running installers and reading your passwords. Claude asks before any command runs. Lesson two explains every line.</span></div></li>
-        <li><div><b>The sample job</b><span>Three rooms in Ringwood with notes, so your first quote works before you have typed a single price.</span></div></li>
+        <li><div><b>Seven lessons, under an hour</b></div></li>
+        <li><div><b>Double-click set-up, Windows and Mac</b></div></li>
+        <li><div><b>The /quote, /invoice and /chase templates</b></div></li>
+        <li><div><b>A painter's price list and measuring rules</b></div></li>
+        <li><div><b>Quote and invoice templates</b></div></li>
+        <li><div><b>A safety file, and a sample job to practise on</b></div></li>
       </ul>
     </div>
     <div class="grid" style="gap:16px;align-content:start">
       <div class="not">
-        <h3>What it is not</h3>
-        <p>It is not software we host and it is not a subscription. Everything you build runs on your laptop and belongs to you. It is not a scheduling app and does not take payments; if you need those today, keep them. You are building the part that does the typing.</p>
+        <h3>Not included</h3>
+        <p>Scheduling, payments, client logins. Keep what you use for those.</p>
       </div>
       <div class="not">
-        <h3>What you need</h3>
-        <p>A Windows 10 or 11 laptop, or a Mac on macOS 13 or newer. A Claude Pro subscription from Anthropic, about the price of a slab a month, paid to them, not to us. Photos from any phone.</p>
-      </div>
-      <div class="not">
-        <h3>What happens when it changes</h3>
-        <p>Claude Code updates itself. What you built is plain files in your folder, so a template update from us is a re-run of the installer, and your prices and jobs are never overwritten. Lesson seven covers what to do when something breaks: paste the message, ask. That is the skill the course is really teaching.</p>
+        <h3>You need</h3>
+        <p>Windows 10 or 11, or macOS 13+. A Claude Pro subscription, paid to Anthropic.</p>
       </div>
     </div>
   </div>
 </section>
 
 <section id="price">
-  <div class="wrap grid" style="gap:28px">
-    <div class="grid" style="gap:12px">
-      <p class="eyebrow">Price</p>
-      <h2>Less than one lost quote.</h2>
-      <p class="lede">Founding price. The templates, installers and written lessons arrive today; the seven video lessons are delivered <span data-lessons-date>within 14 days of purchase</span>, and founding students keep every later update.</p>
-    </div>
+  <div class="wrap grid" style="gap:24px">
+    <h2>Price</h2>
     <div class="tiers">
       <div class="tier">
         <p class="eyebrow">Build it yourself</p>
         <div class="price">$249<small>AUD, once</small></div>
         <ul>
-          <li>The Claude Code set-up course and installers, Windows and Mac</li>
-          <li>The Quote and Chase templates for painters, written lessons now, the seven videos <span data-lessons-date>within 14 days of purchase</span></li>
-          <li>Template updates for twelve months</li>
-          <li>Email support for the install</li>
+          <li>Seven lessons and the installers</li>
+          <li>All the templates</li>
+          <li>Updates for a year</li>
         </ul>
         <div class="buy">
           <a class="btn tape" href="#" data-checkout>Get the course</a>
-          <small>Secure checkout, GST included. Download link straight away.</small>
         </div>
       </div>
       <div class="tier featured">
-        <p class="eyebrow">Already built, still yours</p>
+        <p class="eyebrow">Already built</p>
         <div class="price">$449<small>AUD, once</small></div>
-        <p class="tierlede">Everything in the course, plus we fill in your templates for you. You answer a form with your business details, your rates, your bank details, your wording and your logo. You get back your pack with all of it in place, ready to quote. You can still change anything, because you have the course.</p>
+        <p class="tierlede">We fill in your prices, details, wording and logo from a short form. Back to you in two business days. You still get the whole course, so you can change anything.</p>
         <ul>
           <li>Everything in the course</li>
-          <li>Your price list, wording, details and logo filled in by us</li>
-          <li>Delivered by email within two business days of your form</li>
-          <li>Same 14-day guarantee</li>
+          <li>Your templates, filled in</li>
+          <li>No call, no meeting</li>
         </ul>
         <div class="buy">
           <a class="btn tape" href="#" data-checkout-prebuilt>Get it already built</a>
-          <small>After checkout you fill in the build form. No call, no meeting.</small>
         </div>
       </div>
     </div>
-    <div class="guarantee" style="max-width:720px"><b>Build one working quote in 14 days, or your money back.</b>If you have not produced a PDF quote from your own photos within two weeks of starting, email us and we refund you. No forms.</div>
+    <div class="guarantee" style="max-width:720px"><b>One working quote in 14 days, or your money back.</b></div>
+    <p class="fine" style="color:var(--muted)">Founding price. Written lessons and templates today; video lessons <span data-lessons-date>within 14 days of purchase</span>.</p>
     <form id="waitlist" action="#" method="post" data-form class="waitform">
-      <label for="email" style="font-weight:600;font-size:.95rem">Not ready? Get the sample quote and the price list by email</label>
+      <label for="email" style="font-weight:600;font-size:.95rem">Not ready? Get the sample quote by email.</label>
       <div class="row">
         <input type="email" id="email" name="email" placeholder="you@yourpainting.com.au" required autocomplete="email">
-        <button class="btn ghost" type="submit">Send them to me</button>
+        <button class="btn ghost" type="submit">Send it</button>
       </div>
-      <small>One email. No newsletter unless you ask.</small>
     </form>
   </div>
 </section>
 
 <section id="faq">
-  <div class="wrap grid" style="gap:28px">
-    <div class="grid" style="gap:12px">
-      <p class="eyebrow">Questions</p>
-      <h2>Straight answers.</h2>
-    </div>
+  <div class="wrap grid" style="gap:20px">
+    <h2>Questions</h2>
     <div>
-      <details><summary>Why teach me to build it instead of just selling me the tool?</summary><p>Because a tool you built, you can change. Next month you will want a before-and-after gallery page, or your week's jobs in driving order, or your quotes in Xero. If you built the first tool, you know how to ask for the second. That is worth more than any one feature, and it is the reason this is a course.</p></details>
-      <details><summary>What is the "already built" option?</summary><p>You still get the whole course. The difference is that we fill in the templates for you. After checkout you answer a form: business details, bank details, your rates for each line, your wording, your logo. Within two business days you get your pack back with all of it in place, so your first real quote is the first thing you do. There is no call and no meeting. Because you have the course, you can change anything later yourself.</p></details>
-      <details><summary>Do I need to know anything about computers?</summary><p>If you can make a folder, drop photos into it and type a sentence, you are qualified. No coding. The installer does the technical part, the templates do the heavy lifting, and Claude explains what it is doing in plain English and asks before it runs anything.</p></details>
-      <details><summary>Is it safe? What can it touch?</summary><p>Your tool works inside one folder in your Documents. The templates include a safety file that blocks deleting things, running installers and reading password files, and Claude asks before any command. It never sends a quote, invoice or message; you do. Your bank details appear on your invoices, the same as they do today.</p></details>
-      <details><summary>What does Claude cost, and who do I pay?</summary><p>You need a Claude Pro subscription from Anthropic. You pay them directly, and you can cancel it any time. We do not see it and do not take a cut. The course is a one-time payment to us.</p></details>
-      <details><summary>How accurate are the quotes from photos?</summary><p>As accurate as your measuring rules and your notes. It assumes standard ceilings unless a photo shows otherwise, and writes every assumption down for you to check before sending. Type the room size in the notes and it uses that instead of guessing. Treat it as the office manager who drafts the quote, not the one who signs it.</p></details>
-      <details><summary>Will it work with ServiceM8, Tradify or Xero?</summary><p>Not connected, out of the box. Everything your tool makes is a PDF and a spreadsheet, so you can attach the PDF or copy the numbers into anything. If you later want it to talk to Xero, that is exactly the kind of thing lesson seven shows you how to ask for.</p></details>
-      <details><summary>Do I get updates when Claude Code changes?</summary><p>Claude Code updates itself. The templates are plain files; when we update them you re-run the installer, and your prices, wording and job list are never overwritten. Twelve months of template updates are included.</p></details>
-      <details><summary>Who is behind this?</summary><p>An independent Australian maker. We are not affiliated with Anthropic; Claude and Claude Code are their products and trademarks. We make the course and the templates that let a painter put them to work.</p></details>
+      <details><summary>Why teach me instead of selling me the tool?</summary><p>A tool you built, you can change. Next month you'll want the next thing, and you'll know how to ask for it.</p></details>
+      <details><summary>Do I need to know computers?</summary><p>If you can make a folder and type a sentence, yes. No coding.</p></details>
+      <details><summary>Is it safe?</summary><p>It lives in one folder, asks before running anything, and never sends a quote or a text. You do.</p></details>
+      <details><summary>What does Claude cost?</summary><p>A Claude Pro subscription, paid to Anthropic. We don't take a cut.</p></details>
+      <details><summary>Does it connect to ServiceM8 or Xero?</summary><p>Not out of the box. It makes PDFs and a spreadsheet you can use anywhere. Lesson seven shows you how to ask for more.</p></details>
     </div>
   </div>
 </section>
 
 <footer>
   <div class="wrap">
-    <p><b>Quote &amp; Chase</b>, a course for painters. Made in Australia.</p>
-    <p>Not affiliated with or endorsed by Anthropic. Claude and Claude Code are trademarks of Anthropic, PBC. Demo photos are processed once to produce a sample quote and are not stored by us.</p>
+    <p><b>Quote &amp; Chase</b>, a course for painters. Not affiliated with Anthropic; Claude and Claude Code are their trademarks.</p>
     <p>ABN <span data-abn>00 000 000 000</span> · <a data-mail href="mailto:hello@example.com">hello@example.com</a> · <a href="privacy">Privacy</a> · <a href="terms">Terms and refunds</a></p>
   </div>
 </footer>
