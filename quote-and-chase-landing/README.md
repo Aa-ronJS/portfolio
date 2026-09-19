@@ -36,20 +36,27 @@ run up a bill by accident.
 
 ## Wire up before running ads
 
-Two placeholders in `public/index.html`:
+Everything you must edit is in `public/config.js`: checkout URL, email
+form endpoint, Meta pixel ID, business name, ABN, support email, and
+the date the video lessons will be delivered. Until the checkout and
+form are set, their buttons show a polite "not connected" alert.
 
-- `data-checkout` on the "Get the pack" button: set `href` to your
-  Stripe Payment Link, Lemon Squeezy or Gumroad URL.
-- The email form's `action`: set to a Formspree, Tally, Kit or
-  ConvertKit endpoint, or your own.
+Other pages: `privacy`, `terms` (the 14-day guarantee is stated there),
+`thanks` (post-purchase downloads; point your checkout's redirect at it)
+and `qr-card`. `public/downloads/` holds the three customer zips built
+by the two `package.sh` scripts; rebuild and copy them after any pack
+change. `public/sample-quote.pdf` is a real output of the `/quote` skill
+on the sample job.
 
-Both currently show a polite "not connected" alert instead of failing
-silently. Add the Meta Pixel and any analytics snippet in `<head>`.
-Replace the ABN and email in the footer.
+The QR code on the page draws itself from the deployed URL, so it is
+correct on any domain. `qr.svg` is the static fallback and the print
+version; regenerate it for the final domain before printing cards.
+
+The full go-live list is in `../quote-and-chase/launch/LAUNCH-CHECKLIST.md`.
 
 ## The demo function
 
-- Model: `claude-opus-5` with structured output, medium effort. Roughly
+- Model: `claude-opus-5` with structured output (zod 4 schema), medium effort. Roughly
   three to five cents per demo at current pricing.
 - The browser shrinks photos to 1280 px JPEG before upload, so requests
   stay under Vercel's body limit and cost stays flat.

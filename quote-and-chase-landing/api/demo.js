@@ -165,6 +165,7 @@ export default async function handler(req, res) {
     if (q.not_paintable) return json(res, 200, { not_paintable: true, job_title: q.job_title, notes: q.notes });
     return json(res, 200, { sample: false, ...q, ...finish(q.line_items) });
   } catch (err) {
+    console.error("demo error:", err && err.constructor && err.constructor.name, err && err.message);
     if (err instanceof Anthropic.RateLimitError) return json(res, 429, { error: "The demo is busy right now. Try again in a minute." });
     if (err instanceof Anthropic.AuthenticationError) return json(res, 500, { error: "The demo server is not set up yet." });
     if (err instanceof Anthropic.APIError) return json(res, 502, { error: "The estimator had a problem. Try again." });

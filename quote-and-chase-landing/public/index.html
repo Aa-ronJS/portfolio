@@ -10,6 +10,8 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,700;12..96,800&family=Instrument+Sans:ital,wght@0,400;0,500;0,600;1,400&family=IBM+Plex+Mono:wght@400;500&display=swap">
+<script src="config.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js" defer></script>
 <style>
 :root{
   --ground:#F7F7F4; --ink:#16181D; --muted:#5B5F66; --line:#DCDED9; --soft:#ECEDE8;
@@ -134,7 +136,8 @@ nav .btn{padding:.6em 1em;font-size:.92rem}
 .try .grid{align-items:start}
 @media (min-width:960px){.try .grid{grid-template-columns:.9fr 1.1fr;gap:48px}}
 .qrbox{background:var(--paper);color:var(--doc-ink);border-radius:8px;padding:22px;display:grid;gap:14px;justify-items:center;text-align:center;box-shadow:var(--shadow);max-width:340px}
-.qrbox img{width:220px;height:220px;image-rendering:pixelated}
+.qrbox #qr{width:220px;height:220px;display:grid;place-items:center}
+.qrbox #qr img,.qrbox #qr canvas{width:220px;height:220px;image-rendering:pixelated}
 .qrbox .url{font-family:var(--mono);font-size:.8rem;color:var(--doc-muted);word-break:break-all}
 .demo{display:grid;gap:14px}
 .drop{border:2px dashed var(--line);border-radius:10px;padding:22px;display:grid;gap:12px;justify-items:center;text-align:center;background:var(--ground)}
@@ -213,7 +216,7 @@ footer .wrap{display:grid;gap:8px}
         <a class="btn tape" href="#try">Try it with a photo</a>
         <a class="btn ghost" href="#inside">See what is inside</a>
       </div>
-      <p class="fine">Runs on Windows or Mac using Claude Code. Set-up is a double-click. Nothing is sent to a client without you.</p>
+      <p class="fine">Runs on Windows or Mac using Claude Code. Set-up is a double-click. Nothing is sent to a client without you. <a href="sample-quote.pdf" target="_blank" rel="noopener">See a quote it produced from the sample job (PDF)</a>.</p>
     </div>
 
     <div class="paper" aria-label="Example quote">
@@ -310,7 +313,7 @@ footer .wrap{display:grid;gap:8px}
       <h2>Point your phone at any wall.</h2>
       <p class="lede">Scan the code, take a photo of a room, and get a sample quote back in about twenty seconds. It uses our demo price list; the pack you buy uses yours.</p>
       <div class="qrbox only-desk">
-        <img src="qr.svg" alt="QR code linking to this demo" width="220" height="220">
+        <div id="qr" aria-label="QR code linking to this demo"><img src="qr.svg" alt="QR code linking to this demo" width="220" height="220"></div>
         <b style="font-family:var(--display)">Scan with your phone camera</b>
         <span class="url" id="demo-url">this page, #try</span>
       </div>
@@ -373,13 +376,14 @@ footer .wrap{display:grid;gap:8px}
     <div class="grid" style="gap:12px">
       <p class="eyebrow">Price</p>
       <h2>Less than one lost quote.</h2>
+      <p class="lede">Founding price. The pack and installers arrive today; the seven video lessons are delivered <span data-lessons-date>within 14 days of purchase</span>, and founding buyers keep every later update.</p>
     </div>
     <div class="pricebox">
       <div class="grid" style="gap:18px">
         <div class="price">$249<small>AUD, once</small></div>
         <ul>
           <li>Core set-up course and installers, Windows and Mac</li>
-          <li>Quote and Chase pack for painters, with all seven lessons</li>
+          <li>Quote and Chase pack for painters, with written lessons now and the seven videos <span data-lessons-date>within 14 days of purchase</span></li>
           <li>Pack updates for twelve months</li>
           <li>Email support for the install</li>
         </ul>
@@ -387,12 +391,12 @@ footer .wrap{display:grid;gap:8px}
       </div>
       <div class="buy">
         <a class="btn tape" href="#" data-checkout>Get the pack</a>
-        <small>Secure checkout. You get a download link and the lessons straight away.</small>
+        <small>Secure checkout, GST included. You get the download link straight away.</small>
         <form id="waitlist" action="#" method="post" data-form>
-          <label for="email" style="font-weight:600;font-size:.95rem">Not ready? Get the two-minute demo video</label>
+          <label for="email" style="font-weight:600;font-size:.95rem">Not ready? Get the sample quote and the price list by email</label>
           <input type="email" id="email" name="email" placeholder="you@yourpainting.com.au" required autocomplete="email">
-          <button class="btn ghost" type="submit" style="border-color:var(--doc-ink);color:var(--doc-ink)">Send me the video</button>
-          <small>One email with the video. No newsletter.</small>
+          <button class="btn ghost" type="submit" style="border-color:var(--doc-ink);color:var(--doc-ink)">Send them to me</button>
+          <small>One email. No newsletter unless you ask.</small>
         </form>
       </div>
     </div>
@@ -421,7 +425,7 @@ footer .wrap{display:grid;gap:8px}
   <div class="wrap">
     <p><b>Quote &amp; Chase</b> for painters. Made in Australia.</p>
     <p>Not affiliated with or endorsed by Anthropic. Claude and Claude Code are trademarks of Anthropic, PBC. Demo photos are processed once to produce a sample quote and are not stored by us.</p>
-    <p>ABN 00 000 000 000 · <a href="mailto:hello@example.com">hello@example.com</a></p>
+    <p>ABN <span data-abn>00 000 000 000</span> · <a data-mail href="mailto:hello@example.com">hello@example.com</a> · <a href="privacy">Privacy</a> · <a href="terms">Terms and refunds</a></p>
   </div>
 </footer>
 
@@ -531,11 +535,43 @@ footer .wrap{display:grid;gap:8px}
     return { sample: true, job_title: 'Lounge room, walls and ceiling', what_i_can_see: 'A lounge about 5 m by 4 m with a standard ceiling, two windows, one door and skirting boards.', line_items: items, subtotal: sub, gst: gst, total: sub + gst, assumptions: ['Ceiling height 2.4 m', 'Two coats, same colour', 'Client moves furniture to the centre'], questions_for_client: ['Changing colour, or the same?'] };
   }
 
-  // Placeholders the seller wires up: checkout link and the email form.
+  // ---- launch config wiring (see window.QC at the top of the file)
+  var C = window.QC || {};
   var checkout = document.querySelector('[data-checkout]');
-  checkout.addEventListener('click', function(e){ if (checkout.getAttribute('href') === '#') { e.preventDefault(); alert('Checkout is not connected yet. Set the data-checkout link in index.html to your payment page.'); } });
   var form = document.querySelector('[data-form]');
-  form.addEventListener('submit', function(e){ if (form.getAttribute('action') === '#') { e.preventDefault(); alert('The email form is not connected yet. Set the form action in index.html to your form endpoint.'); } });
+  if (C.CHECKOUT_URL) checkout.setAttribute('href', C.CHECKOUT_URL);
+  if (C.FORM_ACTION) form.setAttribute('action', C.FORM_ACTION);
+  document.querySelectorAll('[data-lessons-date]').forEach(function(el){ if (C.LESSONS_DATE) el.textContent = C.LESSONS_DATE; });
+  document.querySelectorAll('[data-abn]').forEach(function(el){ if (C.ABN) el.textContent = C.ABN; });
+  document.querySelectorAll('[data-mail]').forEach(function(el){ if (C.SUPPORT_EMAIL) { el.textContent = C.SUPPORT_EMAIL; el.href = 'mailto:' + C.SUPPORT_EMAIL; } });
+
+  checkout.addEventListener('click', function(e){
+    if (checkout.getAttribute('href') === '#') { e.preventDefault(); alert('Checkout is not connected yet. Set CHECKOUT_URL at the top of index.html.'); return; }
+    track('InitiateCheckout', { value: 249, currency: 'AUD' });
+  });
+  form.addEventListener('submit', function(e){
+    if (form.getAttribute('action') === '#') { e.preventDefault(); alert('The email form is not connected yet. Set FORM_ACTION at the top of index.html.'); return; }
+    track('Lead');
+  });
+  var demoTracked = false;
+  go.addEventListener('click', function(){ if (!demoTracked) { demoTracked = true; track('ViewContent', { content_name: 'demo_quote' }); } });
+
+  // ---- Meta pixel, only when an ID is configured
+  function track(ev, data){ try { if (window.fbq) window.fbq('track', ev, data || {}); } catch (e) {} }
+  if (C.META_PIXEL_ID) {
+    !function(f,b,e,v,n,t,s){if(f.fbq)return;n=f.fbq=function(){n.callMethod?n.callMethod.apply(n,arguments):n.queue.push(arguments)};if(!f._fbq)f._fbq=n;n.push=n;n.loaded=!0;n.version='2.0';n.queue=[];t=b.createElement(e);t.async=!0;t.src=v;s=b.getElementsByTagName(e)[0];s.parentNode.insertBefore(t,s)}(window,document,'script','https://connect.facebook.net/en_US/fbevents.js');
+    window.fbq('init', C.META_PIXEL_ID); window.fbq('track', 'PageView');
+  }
+
+  // ---- live QR: always points at the page it is on, so the code never goes stale
+  function drawQR(){
+    var box = document.getElementById('qr');
+    if (!box || !window.QRCode || location.protocol === 'file:') return;
+    var url = location.origin + location.pathname.replace(/\/$/, '') + '/#try';
+    box.innerHTML = '';
+    new QRCode(box, { text: url, width: 220, height: 220, colorDark: '#16181d', colorLight: '#ffffff', correctLevel: QRCode.CorrectLevel.M });
+  }
+  if (document.readyState === 'complete') drawQR(); else window.addEventListener('load', drawQR);
 })();
 </script>
 </body>
