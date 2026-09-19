@@ -1,0 +1,45 @@
+CLAUDE CODE - WINDOWS SETUP
+===========================
+
+What you need
+  - Windows 10 (version 1809 or newer) or Windows 11
+  - An internet connection
+  - A Claude account with a paid plan (Pro or Max). Sign up at
+    https://claude.ai if you do not have one.
+
+Steps
+  1. If you downloaded this as a .zip file, right-click it and choose
+     "Extract All" first. Do not run anything from inside the zip.
+
+  2. Double-click "1 - Setup Claude Code.bat".
+
+     Windows may show a blue "Windows protected your PC" box or an
+     "Open File - Security Warning". That is normal for any downloaded
+     program. Click "More info" then "Run anyway", or click "Run".
+
+  3. Read the messages in the window. It will tell you exactly what it
+     is about to do, and wait for you to press Enter before it starts.
+     Setup takes one to three minutes.
+
+  4. When it finishes there is a new "Claude Code" icon on your Desktop
+     and a folder called "Claude Projects" in your Documents.
+
+  5. Double-click the Desktop icon. Your web browser opens so you can
+     sign in to your Claude account. After that, follow the file
+     called "START HERE.txt" inside your project folder.
+
+What setup does (and does not do)
+  - Downloads Claude Code from Anthropic's official address only
+    (https://claude.ai/install.ps1). No other software is installed
+    unless you say yes to it when asked.
+  - Puts Claude Code in your own user folder. It never asks for
+    administrator rights, and will refuse to run if you give it them.
+  - Creates Documents\Claude Projects\My Business with a few starter
+    files, and a Desktop shortcut.
+  - Writes a log of everything it did to
+    %LOCALAPPDATA%\ClaudeCodeSetupKit\setup-log.txt
+  - Stores no passwords. You sign in through your browser.
+
+If something goes wrong
+  Run "1 - Setup Claude Code.bat" again. It is safe to repeat. If it
+  still fails, send the setup-log.txt file mentioned above to support.
