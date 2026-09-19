@@ -158,8 +158,11 @@ textarea{width:100%;font:1rem var(--body);padding:.8em .9em;border:1.5px solid v
 .result ul{margin:0;padding-left:18px;font-size:.92rem;color:var(--doc-muted)}
 .result .tag{display:inline-block;font:500 .7rem var(--mono);letter-spacing:.06em;text-transform:uppercase;background:var(--tape-soft);color:var(--tape-deep);padding:.25em .6em;border-radius:3px}
 .result .fine{font-size:.82rem;color:var(--doc-muted)}
-.only-phone{display:none}
-@media (max-width:959px){.only-phone{display:block}.only-desk{display:none}}
+.only-phone{display:none}.only-phone-inline{display:none}
+@media (max-width:959px){.only-phone{display:block}.only-phone-inline{display:inline}.only-desk{display:none}.only-desk-inline{display:none}
+  .drop{border:0;padding:0;background:transparent;gap:10px}
+  .drop.has{border:2px solid var(--tape);padding:12px;border-radius:10px}
+  .bigbtn{width:100%;justify-content:center;font-size:1.1rem;padding:1.05em 1.2em}}
 
 /* inside */
 .list{display:grid;gap:14px;margin:0;padding:0;list-style:none}
@@ -325,7 +328,7 @@ footer .wrap{display:grid;gap:8px}
     <div class="grid" style="gap:18px;align-content:start">
       <p class="eyebrow">See what you will build</p>
       <h2>Point your phone at any wall.</h2>
-      <p class="lede">This is what your tool does once you have built it. Scan the code, take a photo of a room, and get a sample quote back in about twenty seconds. Ours uses a demo price list; yours will use your rates and land as a PDF with your name on it.</p>
+      <p class="lede">This is what your tool does once you have built it. <span class="only-desk-inline">Scan the code with your phone, take a photo of a room,</span><span class="only-phone-inline">Tap the button, take a photo of a room,</span> and get a sample quote back in about twenty seconds. Ours uses a demo price list; yours will use your rates and land as a PDF with your name on it.</p>
       <div class="qrbox only-desk">
         <div id="qr" aria-label="QR code linking to this demo"><img src="qr.svg" alt="QR code linking to this demo" width="220" height="220"></div>
         <b style="font-family:var(--display)">Scan with your phone camera</b>
@@ -337,9 +340,10 @@ footer .wrap{display:grid;gap:8px}
     <div class="demo" id="demo">
       <label class="drop" id="drop" for="photo">
         <img id="preview" alt="" hidden>
-        <span id="drop-text"><b>Take or choose a photo</b><br><span style="color:var(--muted)">A room, a wall, a ceiling or the outside of a house</span></span>
+        <span id="drop-text" class="only-desk"><b>Choose a photo from this computer</b><br><span style="color:var(--muted)">A room, a wall, a ceiling or the outside of a house</span></span>
         <input type="file" id="photo" accept="image/*" capture="environment">
-        <span class="btn tape" aria-hidden="true">Open camera or photos</span>
+        <span class="btn tape bigbtn" aria-hidden="true"><span class="only-desk-inline">Choose a photo</span><span class="only-phone-inline">Take a photo of a wall</span></span>
+        <span class="only-phone" style="color:var(--muted);font-size:.9rem">Or pick one from your photos. A room, a wall, a ceiling or the outside of a house.</span>
       </label>
       <label for="notes" style="font-weight:600">Anything the photo does not show <span style="color:var(--muted);font-weight:400">(optional)</span></label>
       <textarea id="notes" placeholder="e.g. Lounge, about 5 by 4 metres. Walls and ceiling. One patch to fix. Same colour."></textarea>
