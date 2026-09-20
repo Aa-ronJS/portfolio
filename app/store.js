@@ -37,7 +37,7 @@
         account_name: '', bsb: '', account_number: '', other_payments: 'Bank transfer or cash', deposit_pct: 20, balance_days: 7, quote_valid_days: 30, gst: true,
         voice: 'friendly', sign_off: 'Cheers', logo: '', postcode: '5000' },
       prices: prices,
-      rules: { minimum_job: 450, travel_per_km: 1.5, premium_paint_pct: 15, ceiling_height_m: 2.4, round_up_cm: 10, free_radius_km: 25, travel_return: true, road_factor: 1.3 },
+      rules: { minimum_job: 450, travel_per_km: 1.5, premium_paint_pct: 15, ceiling_height_m: 2.4, round_up_cm: 0, free_radius_km: 25, travel_return: true, road_factor: 1.3 },
       costing: (window.QCCosting ? QCCosting.defaults() : {}),
       follow_up: { quote_days: [3, 7, 14], invoice_days: [1, 7, 21], remind_hour: 8 },
       stripe: { key: '', enabled: false },
