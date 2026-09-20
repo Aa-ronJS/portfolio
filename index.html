@@ -4,9 +4,9 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>Quote and Chase</title>
-<meta name="description" content="A quoting tool painters own. Photos in, priced quote out, your prices. Set it up in an afternoon. No subscription, ever.">
-<meta property="og:title" content="Quote and Chase: own your quoting tool">
-<meta property="og:description" content="Photos in, priced quote out, your prices. $249 once, no subscription.">
+<meta name="description" content="A free phone app for painters. Measure a wall from one photo with any A4 sheet, quote at your rates, invoice, get paid and follow up on the days you set. Your data stays on your phone.">
+<meta property="og:title" content="Quote and Chase: quote and chase from your phone">
+<meta property="og:description" content="Free quoting app for painters. Measure from a photo, quote at your rates, invoice, follow up. Optional laptop pack $249 once.">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,700;12..96,800&family=Instrument+Sans:ital,wght@0,400;0,500;0,600;1,400&family=IBM+Plex+Mono:wght@400;500&display=swap">
@@ -69,7 +69,7 @@ nav .wrap{display:flex;align-items:center;justify-content:space-between;gap:16px
 .mark{display:flex;align-items:baseline;gap:10px;text-decoration:none}
 .mark b{font-family:var(--display);font-weight:800;font-size:1.15rem;letter-spacing:-.02em}
 .mark span{font-family:var(--mono);font-size:.75rem;color:var(--muted)}
-nav .btn{padding:.6em 1em;font-size:.92rem}
+nav .btn{padding:.6em 1em;font-size:.92rem;white-space:nowrap;flex-shrink:0}
 
 /* hero */
 .hero{padding-block:clamp(40px,7vw,96px)}
@@ -221,6 +221,20 @@ details p{margin-top:10px;color:var(--muted);max-width:60em}
 
 footer{padding-block:36px;color:var(--muted);font-size:.9rem;border-top:1px solid var(--line)}
 footer .wrap{display:grid;gap:8px}
+
+/* W5 additions: install steps, coming-soon buttons, three price tiers */
+.howto{margin:0;padding-left:20px;color:var(--muted);display:grid;gap:8px}
+.howto li b{color:var(--ink)}
+.not .howto li{color:var(--muted)}
+.soon{display:grid;gap:6px;justify-items:center}
+.soon a{font-size:.92rem;color:var(--tape-deep)}
+.soon small{color:var(--doc-muted);font-size:.85rem}
+.btn.is-soon{cursor:default;opacity:.7;transform:none;justify-content:center;width:100%}
+.btn.is-soon:hover{transform:none}
+@media (min-width:1000px){.tiers.three{grid-template-columns:1.15fr 1fr 1fr}}
+@media (min-width:860px) and (max-width:999px){.tiers.three{grid-template-columns:1fr 1fr}.tiers.three .tier.featured{grid-column:1 / -1}}
+.list li{align-items:start}
+.list li::before{margin-top:5px}
 </style>
 </head>
 <body>
@@ -228,24 +242,24 @@ footer .wrap{display:grid;gap:8px}
 <nav>
   <div class="wrap">
     <a class="mark" href="#top"><b>Quote &amp; Chase</b><span>for painters</span></a>
-    <a class="btn" href="#price">Own it, $249</a>
+    <a class="btn tape" href="app/" data-app>Open the app</a>
   </div>
 </nav>
 
 <header class="hero wrap" id="top">
   <div class="grid">
     <div class="stack">
-      <p class="eyebrow">For painters</p>
-      <h1>Own your quoting tool. No subscription, ever.</h1>
-      <p class="lede">Stick a blank A4 sheet on the wall and take one photo. The app finds the page, finds the wall, and measures it to within a couple of percent. You confirm two outlines. Priced at your rates, quote with your name on it. It lives on your phone and your laptop and it's yours.</p>
+      <p class="eyebrow">A free app for painters</p>
+      <h1>Measure it, quote it, chase it. From your phone.</h1>
+      <p class="lede">Stick any A4 sheet on the wall and take one photo. The app finds the sheet, finds the wall and measures it to about one and a half percent. It prices the job at your rates, sends the quote PDF, invoices the deposit and the balance, and follows up on the days you set. Everything stays on your phone.</p>
       <div class="actions">
-        <a class="btn tape" href="#try">Try it on a wall</a>
-        <a class="btn ghost" href="#price">Get it, $249 once</a>
+        <a class="btn tape" href="app/" data-app>Open the app</a>
+        <a class="btn ghost" href="#install">Put it on your home screen</a>
       </div>
-      <p class="fine">Windows or Mac. Set up in an afternoon. <a href="sample-quote.pdf" target="_blank" rel="noopener">See a quote it wrote (PDF)</a>. Or <a href="app/">open the phone app</a> and try the whole thing now.</p>
+      <p class="fine">Free to use. Nothing to download from a store. Works offline once it has loaded. <a href="sample-quote.pdf" target="_blank" rel="noopener">See a quote it makes (PDF)</a>.</p>
     </div>
 
-    <div class="paper" aria-label="Example quote">
+    <div class="paper" aria-label="Example quote layout">
       <div class="photo" aria-hidden="true">
         <svg viewBox="0 0 160 120" xmlns="http://www.w3.org/2000/svg">
           <rect width="160" height="120" fill="#d9d2c4"/>
@@ -261,26 +275,26 @@ footer .wrap{display:grid;gap:8px}
         <span class="tapebit"></span>
       </div>
       <div class="head">
-        <div><b>Your Painting Co</b><small>ABN 00 000 000 000 · 0400 000 000</small></div>
+        <div><b>Your Painting Co</b><small>Licence and insurance on every quote</small></div>
         <div class="q"><small>Quote</small><b>Q-1007</b><small>Valid 30 days</small></div>
       </div>
       <div class="tw"><table>
-        <thead><tr><th>Item</th><th class="n">Qty</th><th class="n">Rate</th><th class="n">Amount</th></tr></thead>
+        <thead><tr><th>Lounge</th><th class="n">Amount</th></tr></thead>
         <tbody>
-          <tr><td>Lounge walls, 2 coats</td><td class="n">39.8 m²</td><td class="n">22</td><td class="n">876</td></tr>
-          <tr><td>Lounge ceiling, 2 coats</td><td class="n">20 m²</td><td class="n">25</td><td class="n">500</td></tr>
-          <tr><td>Skirting boards</td><td class="n">17.1 lm</td><td class="n">9</td><td class="n">154</td></tr>
-          <tr><td>Door, both sides</td><td class="n">1</td><td class="n">95</td><td class="n">95</td></tr>
-          <tr><td>Window frames</td><td class="n">2</td><td class="n">65</td><td class="n">130</td></tr>
-          <tr><td>Patch where TV bracket was</td><td class="n">0.5 hr</td><td class="n">65</td><td class="n">33</td></tr>
+          <tr><td>Walls, 2 coats, light prep</td><td class="n">876.00</td></tr>
+          <tr><td>Ceiling, 2 coats</td><td class="n">500.00</td></tr>
+          <tr><td>Skirting boards</td><td class="n">154.00</td></tr>
+          <tr><td>Door, both sides, and frame</td><td class="n">95.00</td></tr>
+          <tr><td>Window frames, 2</td><td class="n">130.00</td></tr>
+          <tr><td>Patch where the TV bracket was</td><td class="n">33.00</td></tr>
         </tbody>
         <tfoot>
-          <tr class="sub"><td colspan="3" class="n">Subtotal</td><td class="n">1,788</td></tr>
-          <tr class="sub"><td colspan="3" class="n">GST</td><td class="n">179</td></tr>
-          <tr class="total"><td colspan="3" class="n">Total inc GST</td><td class="n">$1,967</td></tr>
+          <tr class="sub"><td class="n">Subtotal</td><td class="n">1,788.00</td></tr>
+          <tr class="sub"><td class="n">GST</td><td class="n">178.80</td></tr>
+          <tr class="total"><td class="n">Total inc GST</td><td class="n">$1,966.80</td></tr>
         </tfoot>
       </table></div>
-      <p class="assume"><b>Based on:</b> 2.4 m ceilings · same colour · client moves furniture</p>
+      <p class="assume"><b>Example layout.</b> Lines grouped by room, no unit rates unless you turn them on. <a href="sample-quote.pdf" target="_blank" rel="noopener">The real PDF</a> is the one to judge.</p>
       <span class="tapebit b"></span>
     </div>
   </div>
@@ -296,28 +310,31 @@ footer .wrap{display:grid;gap:8px}
 
 <div class="wrap">
   <div class="strip">
-    <div><b>Pay once</b><span>Not every month.</span></div>
-    <div><b>Measured, not guessed</b><span>A blank A4 sheet and one photo.</span></div>
-    <div><b>You send it</b><span>It never does.</span></div>
-    <div><b>Yours to keep</b><span>Nobody can switch it off.</span></div>
+    <div><b>Free to use</b><span>The app costs nothing. No account.</span></div>
+    <div><b>Measured, not guessed</b><span>Any A4 sheet and one photo.</span></div>
+    <div><b>Follows up on your days</b><span>Automatically once SMS and email are set up. A tap if not.</span></div>
+    <div><b>On your phone</b><span>Your data stays there. Nobody can switch it off.</span></div>
   </div>
 </div>
 
 <section id="problem">
   <div class="wrap grid" style="gap:14px">
     <h2>You didn't start a painting business to type quotes at 9pm.</h2>
-    <p class="lede">The apps charge you every month, and you still do the typing.</p>
+    <p class="lede">The apps charge you every month, and you still do the typing. This one is free and does the quote on site.</p>
   </div>
 </section>
 
 <section id="how">
   <div class="wrap grid" style="gap:28px">
     <h2>What it does</h2>
-    <p class="lede" style="margin-top:-12px">Photo apps guess. Nobody measures a room from one photo to better than about twenty percent, so this one doesn't try. <a href="measure/measure.html">Try the measuring page</a> with any wall.</p>
+    <p class="lede" style="margin-top:-12px">Photo apps guess. Nobody measures a room from one photo to better than about twenty percent, so this one doesn't try. It uses a sheet of paper as the ruler. <a href="measure/measure.html">Try the measuring page</a> with any wall.</p>
     <div class="steps">
-      <div class="step"><h3>Measures</h3><p>Stick a blank A4 sheet on the wall and photograph the wall corner to corner. The app outlines the page and the wall, you confirm each, and the doors and windows it can see are listed. Every printer tray has the ruler. On Android there is an AR tape too, and an iPhone Pro LiDAR scan imports straight in.</p></div>
-      <div class="step"><h3>Quotes</h3><p>Measurements and a few notes in. A priced PDF quote out, at your rates, with every assumption written down.</p></div>
-      <div class="step"><h3>Gets paid and booked</h3><p>Deposit, final, or the lot, with your bank details and a pay-by-card link if you connect Stripe. Connect your own Twilio and Resend and the follow-up texts and emails send themselves on the days you set, stopping when the client says yes or pays. Or keep it simple and let the reminders land in your phone calendar. Client says yes, one tap books it in.</p></div>
+      <div class="step"><h3>Measures</h3><p>Stick any A4 sheet on the wall, printed or blank, and photograph the wall corner to corner. The app outlines the sheet and the wall, you confirm each, and the doors and windows it can see are listed. Or type the sizes. On Android there is an AR tape too, and an iPhone Pro LiDAR scan imports straight in.</p></div>
+      <div class="step"><h3>Quotes</h3><p>Rooms and a few notes in, a priced PDF out at your rates, with your licence, insurance and terms on it. Lines grouped by room. A private cost card shows your hours, paint and margin; the client never sees it. Send it from the app by email, or through your share sheet.</p></div>
+      <div class="step"><h3>Invoices and gets paid</h3><p>Deposit, progress and final invoices with your bank details, and a pay-by-card link when you connect Stripe. Record payments, print receipts and a statement. Tax invoice only when you are registered for GST.</p></div>
+      <div class="step"><h3>Follows up</h3><p>Quote follow-ups and invoice reminders on the days you set, on business days, in your words. Connect your own Twilio and Resend through a small relay and they send themselves, stopping the moment the client accepts or pays. Without that, the app shows you who to chase and you tap Text or Email.</p></div>
+      <div class="step"><h3>Books</h3><p>Client says yes, mark it accepted and the days go into your phone's calendar. Phone enquiry gives a ballpark while they are still on the line and picks visit slots with the least driving.</p></div>
+      <div class="step"><h3>Backs up</h3><p>One tap saves a back-up file you can put in your own Drive or iCloud. Restore it on a new phone. An optional PIN locks the app.</p></div>
     </div>
   </div>
 </section>
@@ -327,8 +344,8 @@ footer .wrap{display:grid;gap:8px}
     <div class="grid" style="gap:18px;align-content:start">
       <p class="eyebrow">Try it</p>
       <h2>Point your phone at any wall.</h2>
-      <p class="lede">You'll get a sample quote back in about twenty seconds.</p>
-      <p class="fine">Want the real thing? <a class="btn tape" href="app/" style="margin-top:6px">Open the app on your phone</a><br>Measure with the sheet, price at your rates, send the quote PDF, invoice, chase. Free to try, nothing to install, works offline. Add it to your home screen from the share menu.</p>
+      <p class="lede">You'll get a sample quote back in about twenty seconds. Sample prices, not yours.</p>
+      <p class="fine">Want the real thing? <a class="btn tape" href="app/" data-app style="margin-top:6px">Open the app on your phone</a><br>Measure with the sheet, price at your rates, send the quote PDF, invoice, chase. Free, nothing to download, works offline.</p>
       <div class="qrbox only-desk">
         <div id="qr" aria-label="QR code linking to this demo"><img src="qr.svg" alt="QR code linking to this demo" width="220" height="220"></div>
         <b style="font-family:var(--display)">Scan with your phone</b>
@@ -349,10 +366,38 @@ footer .wrap{display:grid;gap:8px}
       <div class="result" id="result" hidden></div>
       <form class="cap laptop" id="laptop" data-capture="laptop" action="#" method="post" hidden>
         <input type="hidden" name="list" value="send-to-laptop">
-        <label for="laptop-email"><b>Setting it up happens on a laptop.</b> Email yourself the link and the sample quote.</label>
-        <div class="row"><input type="email" id="laptop-email" name="email" placeholder="you@yourpainting.com.au" required autocomplete="email"><button class="btn tape" type="submit">Send to my laptop</button></div>
+        <label for="laptop-email"><b>Want this in your inbox?</b> Email yourself the app link and the sample quote.</label>
+        <div class="row"><input type="email" id="laptop-email" name="email" placeholder="you@yourpainting.com.au" required autocomplete="email"><button class="btn tape" type="submit">Send it to me</button></div>
       </form>
-      <p class="fine" style="color:var(--muted);font-size:.85rem">Your photo isn't kept. Sample prices, not an offer of work.</p>
+      <p class="fine" style="color:var(--muted);font-size:.85rem">This demo sends your photo once to an AI model to price it and does not keep it. The app itself measures on the phone and uploads nothing. Sample prices, not an offer of work.</p>
+    </div>
+  </div>
+</section>
+
+<section id="install">
+  <div class="wrap grid g2" style="gap:40px">
+    <div class="grid" style="gap:18px;align-content:start">
+      <h2>Put it on your home screen</h2>
+      <p class="lede">It is a web app, so there is no app store. Open it once in your browser, then add it to your home screen and it behaves like any other app, offline included.</p>
+      <p class="fine">Use the same address every time. The app keeps its data per address, so a bookmark to a different copy starts empty.</p>
+    </div>
+    <div class="grid" style="gap:16px;align-content:start">
+      <div class="not">
+        <h3>iPhone</h3>
+        <ol class="howto">
+          <li>Open <a href="app/" data-app>the app</a> in Safari, not inside another app.</li>
+          <li>Tap Share, the square with the arrow at the bottom.</li>
+          <li>Scroll down and tap <b>Add to Home Screen</b>, then Add.</li>
+        </ol>
+      </div>
+      <div class="not">
+        <h3>Android</h3>
+        <ol class="howto">
+          <li>Open <a href="app/" data-app>the app</a> in Chrome.</li>
+          <li>Tap the three dots at the top right.</li>
+          <li>Tap <b>Install app</b> (on some phones, Add to Home screen), then Install.</li>
+        </ol>
+      </div>
     </div>
   </div>
 </section>
@@ -360,25 +405,30 @@ footer .wrap{display:grid;gap:8px}
 <section id="inside">
   <div class="wrap grid g2" style="gap:40px">
     <div class="grid" style="gap:22px;align-content:start">
-      <h2>What you get</h2>
+      <h2>It's yours, honestly</h2>
+      <p class="lede">Own it means this: the app runs on your phone, your prices and your jobs live on your phone, and it keeps working whether or not this website does. There is no login and no server holding your data, so there is nothing to switch off and nothing to raise the price of.</p>
       <ul class="list">
-        <li><div><b>Set-up that's a double-click, Windows or Mac</b></div></li>
-        <li><div><b>Seven short videos, under an hour all up</b></div></li>
-        <li><div><b>The photo measuring page</b></div></li>
-        <li><div><b>A painter's price list you change to yours</b></div></li>
-        <li><div><b>Quote and invoice layouts with your details on them</b></div></li>
-        <li><div><b>A practice job, so the first one just works</b></div></li>
-        <li><div><b>A person on email when you're stuck</b></div></li>
+        <li><div><b>Free, with no account</b><span>Open it and start. Nothing to sign up for.</span></div></li>
+        <li><div><b>Your data on your phone</b><span>Clients, quotes and invoices are stored in the app on the phone. We cannot see them.</span></div></li>
+        <li><div><b>Which means you back it up</b><span>One tap makes a back-up file. Put it in your own Drive or iCloud after every invoice. A lost phone without a back-up is lost work.</span></div></li>
+        <li><div><b>Sending uses your own accounts</b><span>SMS goes through your Twilio account, email through your Resend account, cards through your Stripe account. Those companies charge their own small fees and hold their own message logs. <a href="privacy">The privacy page</a> lists exactly what each one sees.</span></div></li>
+        <li><div><b>The optional laptop pack needs an AI subscription</b><span>If you buy the $249 pack, the lessons and slash commands run in Claude Code, which needs a Claude subscription paid to Anthropic. The phone app does not need it and keeps working without it.</span></div></li>
       </ul>
     </div>
     <div class="grid" style="gap:16px;align-content:start">
       <div class="not">
-        <h3>Not included</h3>
-        <p>Bookings, taking payments, client logins. Keep what you use for those.</p>
+        <h3>What it does not do (yet)</h3>
+        <ul class="howto">
+          <li>No cloud sync between phones. One phone holds the data; move it with the back-up file.</li>
+          <li>No accountant or bookkeeper login. Export the CSV and the PDFs and send those.</li>
+          <li>No online accept link for clients. They reply by text or email, or sign the acceptance block on the quote, and you mark it accepted.</li>
+          <li>No Square. Card payments are Stripe payment links only.</li>
+          <li>Not plugged into Xero, MYOB or ServiceM8.</li>
+        </ul>
       </div>
       <div class="not">
-        <h3>You need</h3>
-        <p>A Windows or Mac laptop, and a Claude subscription. That's the brains behind it, about $30 a month, paid to them, not us.</p>
+        <h3>It is not legal advice</h3>
+        <p>The default terms, deposit rules and reminder wording are a starting point. Each state has its own rules on licence numbers, deposit caps and written contracts, and the app warns about the ones it knows. Check them for your state before your first real quote.</p>
       </div>
     </div>
   </div>
@@ -394,48 +444,71 @@ footer .wrap{display:grid;gap:8px}
 <section id="price">
   <div class="wrap grid" style="gap:24px">
     <h2>Price</h2>
-    <div class="tiers">
+    <div class="tiers three">
       <div class="tier featured">
-        <p class="eyebrow">Own it</p>
-        <div class="price">$249<small>AUD, once</small></div>
-        <p class="tierlede">You set it up on your laptop in an afternoon, following the videos. Then it's yours.</p>
+        <p class="eyebrow">The app</p>
+        <div class="price">$0<small>free to use</small></div>
+        <p class="tierlede">The whole thing on your phone. This is the product.</p>
         <ul>
-          <li>Everything above</li>
-          <li>Updates for a year</li>
-          <li>Email help with the set-up</li>
+          <li>Measuring from a photo, typed sizes, LiDAR import</li>
+          <li>Quotes, invoices, receipts and statements as PDF</li>
+          <li>Follow-ups and reminders on your days</li>
+          <li>Card payments through your Stripe account</li>
+          <li>Bookings into your phone calendar</li>
+          <li>Back-up file and optional PIN</li>
         </ul>
         <div class="buy">
-          <a class="btn tape" href="#" data-checkout>Get it</a>
+          <a class="btn tape" href="app/" data-app>Open the app</a>
+          <small>SMS and email sending needs your own Twilio and Resend accounts and a small relay you deploy free on Vercel. The app walks you through it.</small>
+        </div>
+      </div>
+      <div class="tier">
+        <p class="eyebrow">Laptop pack</p>
+        <div class="price">$249<small>AUD, once</small></div>
+        <p class="tierlede">Optional extras for painters who also want to run quoting from a laptop with Claude Code.</p>
+        <ul>
+          <li>/quote, /invoice and /chase commands for Claude Code</li>
+          <li>A price list and quote wording you edit in plain text</li>
+          <li>Seven short video lessons, under an hour all up</li>
+          <li>A practice job so the first one just works</li>
+          <li>Email help with the set-up, and updates for a year</li>
+          <li>Needs a Windows or Mac laptop and a Claude subscription, about $30 a month, paid to Anthropic</li>
+        </ul>
+        <div class="buy">
+          <a class="btn ghost" href="#" data-checkout>Buy the pack</a>
         </div>
       </div>
       <div class="tier">
         <p class="eyebrow">We run it for you</p>
-        <div class="price">$39<small>AUD a month</small></div>
-        <p class="tierlede">Nothing to set up. Works on your phone. If you ever leave, you take your prices and your tool with you.</p>
+        <div class="price">$39<small>AUD a month, planned</small></div>
+        <p class="tierlede">For later. A hosted version where we run the relay and the back-ups. Not open yet; this is a waiting list, not a purchase.</p>
         <ul>
-          <li>Founding list, opening <span data-hosted-date>later this year</span></li>
-          <li>Founding members keep this price</li>
-          <li>Cancel any time</li>
+          <li>Nothing to set up, no Twilio or Resend accounts</li>
+          <li>Back-ups held for you</li>
+          <li>Opening <span data-hosted-date>date not set yet</span></li>
+          <li>People on the list keep this price</li>
         </ul>
         <div class="buy">
-          <a class="btn ghost" href="#" data-hosted>Join the founding list</a>
+          <a class="btn ghost" href="#" data-hosted>Join the waiting list</a>
           <form class="cap" data-capture="hosted" action="#" method="post" hidden>
             <input type="hidden" name="list" value="hosted-founding">
-            <input type="email" name="email" placeholder="you@yourpainting.com.au" required autocomplete="email" aria-label="Email for the founding list">
+            <input type="email" name="email" placeholder="you@yourpainting.com.au" required autocomplete="email" aria-label="Email for the waiting list">
             <button class="btn ghost" type="submit">Add me</button>
+            <small class="formstatus" aria-live="polite"></small>
           </form>
         </div>
       </div>
     </div>
-    <div class="guarantee" style="max-width:720px"><b>One real quote out in 14 days, or your money back.</b>Or switch to the run-it-for-you version and we credit the $249.</div>
-    <p class="fine" style="color:var(--muted)">Founding price. The tool and written guide today; the videos <span data-lessons-date>within 14 days of purchase</span>.</p>
-    <form id="waitlist" action="#" method="post" data-form class="waitform">
+    <div class="guarantee" style="max-width:720px"><b>Laptop pack: one real quote out in 14 days, or your money back.</b>The app is free, so there is nothing to refund; if it does not suit you, delete it and your data goes with it.</div>
+    <p class="fine" style="color:var(--muted)">Pack buyers get the files and written guide today; the videos <span data-lessons-date>within 14 days of purchase</span>.</p>
+    <form id="waitlist" action="#" method="post" data-form class="waitform" hidden>
       <input type="hidden" name="list" value="sample-quote">
-      <label for="email" style="font-weight:600;font-size:.95rem">Not ready? Get the sample quote by email.</label>
+      <label for="email" style="font-weight:600;font-size:.95rem">Not ready? Get the sample quote and the app link by email.</label>
       <div class="row">
         <input type="email" id="email" name="email" placeholder="you@yourpainting.com.au" required autocomplete="email">
         <button class="btn ghost" type="submit">Send it</button>
       </div>
+      <small class="formstatus" aria-live="polite"></small>
     </form>
   </div>
 </section>
@@ -444,20 +517,23 @@ footer .wrap{display:grid;gap:8px}
   <div class="wrap grid" style="gap:20px">
     <h2>Questions</h2>
     <div>
-      <details><summary>How accurate is it?</summary><p>With a blank A4 sheet on the wall and the whole wall in the photo, about one to two percent. No page handy? Tap the corners and scale from a door (2.04 m) or the ceiling height, which is similar. With an iPhone Pro scan, a centimetre or two. Typed sizes are estimates, and the quote says so.</p></details>
-      <details><summary>Do I need to be good with computers?</summary><p>If you can make a folder and type a sentence, you're fine. Set-up is double-clicks and the videos show every step.</p></details>
-      <details><summary>What's the catch with "no subscription"?</summary><p>One thing it needs isn't ours: a Claude subscription, about $30 a month, paid to Anthropic. It's the brains. We don't take a cut, and you can cancel it whenever you like.</p></details>
-      <details><summary>What if I get stuck?</summary><p>Email us. A person replies. And if you decide you'd rather we ran it for you, your $249 becomes credit.</p></details>
-      <details><summary>Is my stuff safe?</summary><p>It all lives in one folder on your laptop. It never sends a quote or a message. You do.</p></details>
-      <details><summary>Does it work with ServiceM8 or Xero?</summary><p>It makes PDFs and a spreadsheet, and you can use those anywhere. It isn't plugged into them directly.</p></details>
+      <details><summary>Is the app really free?</summary><p>Yes. The phone app is free to use and there is no account. If you turn on automatic SMS and email, Twilio and Resend charge you their own usage fees directly, a few cents a message. If you take card payments, Stripe takes its usual cut. The $249 laptop pack is optional and separate.</p></details>
+      <details><summary>How accurate is the measuring?</summary><p>With any A4 sheet on the wall and the whole wall in the photo, about one and a half percent. No sheet handy? Tap the corners and scale from a door (2.04 m) or the ceiling height, which is a few percent. With an iPhone Pro scan, a centimetre or two. Typed sizes are what you typed, and the quote says the sizes were supplied by the client when they were.</p></details>
+      <details><summary>Does it send messages by itself?</summary><p>Only if you set that up. Connect your own Twilio and Resend accounts through the relay and quote follow-ups and invoice reminders go out on the days you set, on business days, and stop the moment the client accepts or pays. You can hold or cancel any of them from the Follow-ups tab, and there is a log of everything sent. Without the relay, the app shows you who to chase and you tap Text or Email.</p></details>
+      <details><summary>Where is my data, and what if I lose my phone?</summary><p>On the phone, in the app, and nowhere else unless you send something. That is the good news and the bad news. Save a back-up after every invoice and keep it in your own Drive or iCloud; restore it on the new phone. <a href="privacy">The privacy page</a> lists what Twilio, Resend, Stripe and the relay see when you use them.</p></details>
+      <details><summary>Does it work with Xero, MYOB or ServiceM8?</summary><p>It makes PDFs and a back-up file, and exports your invoices and payments as CSV for your bookkeeper. It is not plugged into any of them directly.</p></details>
+      <details><summary>What does the $249 pack add?</summary><p>A way to run the same quoting from a laptop, typing /quote, /invoice and /chase into Claude Code, with your price list and wording in plain text files, plus seven short video lessons. It suits painters who do their admin at a desk and like to change things. It needs a Claude subscription, about $30 a month, paid to Anthropic, not to us. The phone app does not need it.</p></details>
+      <details><summary>Do I need to be good with computers?</summary><p>For the app, no. Set-up is your name, your bank details and a look at five prices. Turning on automatic sending means creating a Twilio and a Resend account and deploying the relay, which is a copy-and-paste job with instructions in the app; email us if you get stuck. The laptop pack expects you to be comfortable making a folder and typing a sentence.</p></details>
+      <details><summary>Who is behind this?</summary><p>An independent Australian small business. Not affiliated with Anthropic, Twilio, Resend, Stripe or Google. Contact details are in the footer.</p></details>
     </div>
   </div>
 </section>
 
 <footer>
   <div class="wrap">
-    <p><b>Quote &amp; Chase</b>, a quoting tool painters own. Not affiliated with Anthropic; Claude is their trademark.</p>
-    <p>ABN <span data-abn>00 000 000 000</span> · <a data-mail href="mailto:hello@example.com">hello@example.com</a> · <a href="privacy.html">Privacy</a> · <a href="terms.html">Terms and refunds</a></p>
+    <p><b>Quote &amp; Chase</b>, a free quoting app for Australian painters, with an optional laptop pack. Not affiliated with Anthropic, Twilio, Resend, Stripe or Google; their names are their trademarks.</p>
+    <!-- TODO owner: fill BUSINESS_NAME, ABN and SUPPORT_EMAIL in config.js. Until then the footer shows the business name only; no placeholder ABN or email is ever printed. -->
+    <p><span data-name>Quote &amp; Chase</span><span data-abn-line hidden> · ABN <span data-abn></span></span> · <span data-contact>Contact email coming soon</span> · <a href="privacy">Privacy</a> · <a href="terms">Terms</a></p>
   </div>
 </footer>
 
@@ -527,15 +603,14 @@ footer .wrap{display:grid;gap:8px}
       (q.assumptions && q.assumptions.length ? '<div><b style="font-size:.9rem">Based on</b><ul>' + q.assumptions.map(function(a){ return '<li>' + esc(a) + '</li>'; }).join('') + '</ul></div>' : '') +
       (q.questions_for_client && q.questions_for_client.length ? '<div><b style="font-size:.9rem">Worth asking the client</b><ul>' + q.questions_for_client.map(function(a){ return '<li>' + esc(a) + '</li>'; }).join('') + '</ul></div>' : '') +
       (note ? '<p class="fine">' + esc(note) + '</p>' : '') +
-      '<p class="fine">Sample prices. Yours uses your rates and lands as a PDF with your name on it.</p>';
+      '<p class="fine">Sample prices. In the app it uses your rates and lands as a PDF with your name on it.</p>';
     result.hidden = false;
-    if (window.matchMedia('(max-width: 959px)').matches) { var lap = document.getElementById('laptop'); if (lap && !lap.querySelector('.done')) lap.hidden = false; }
+    if (C.FORM_ACTION && window.matchMedia('(max-width: 959px)').matches) { var lap = document.getElementById('laptop'); if (lap && !lap.querySelector('.done')) lap.hidden = false; }
     result.scrollIntoView({ block: 'start', behavior: 'smooth' });
   }
 
   function esc(s){ return String(s == null ? '' : s).replace(/[&<>"']/g, function(c){ return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]; }); }
 
-  var EXAMPLE = null; // filled from the server's sample shape if the demo is offline
   go.addEventListener('click', function(){
     if (!imageB64) return;
     go.disabled = true; setStatus('Pricing it up. About twenty seconds.');
@@ -568,36 +643,60 @@ footer .wrap{display:grid;gap:8px}
     return { sample: true, job_title: 'Lounge room, walls and ceiling', what_i_can_see: 'A lounge about 5 m by 4 m with a standard ceiling, two windows, one door and skirting boards.', line_items: items, subtotal: sub, gst: gst, total: sub + gst, assumptions: ['Ceiling height 2.4 m', 'Two coats, same colour', 'Client moves furniture to the centre'], questions_for_client: ['Changing colour, or the same?'] };
   }
 
-  // ---- launch config wiring (see window.QC at the top of the file)
+  // ---- launch config wiring (see config.js). Nothing here ever alerts: an
+  // unset URL renders as "Coming soon" with a mailto when SUPPORT_EMAIL is set.
   var C = window.QC || {};
+  var mail = (C.SUPPORT_EMAIL || '').trim();
+  function mailto(subject){ return 'mailto:' + mail + '?subject=' + encodeURIComponent(subject); }
+
+  function comingSoon(el, subject){
+    var wrap = document.createElement('div'); wrap.className = 'soon';
+    var pill = document.createElement('span'); pill.className = 'btn ghost is-soon'; pill.setAttribute('aria-disabled', 'true'); pill.textContent = 'Coming soon';
+    wrap.appendChild(pill);
+    if (mail) { var a = document.createElement('a'); a.href = mailto(subject); a.textContent = 'Email me when it opens'; wrap.appendChild(a); }
+    else { var s = document.createElement('small'); s.textContent = 'Check back here.'; wrap.appendChild(s); }
+    el.parentNode.replaceChild(wrap, el);
+  }
+
+  // app links
+  if (C.APP_URL) document.querySelectorAll('[data-app]').forEach(function(a){ a.setAttribute('href', C.APP_URL); });
+
+  // laptop pack checkout
   var checkout = document.querySelector('[data-checkout]');
-  var form = document.querySelector('[data-form]');
-  if (C.CHECKOUT_URL) checkout.setAttribute('href', C.CHECKOUT_URL);
+  if (C.CHECKOUT_URL) {
+    checkout.setAttribute('href', C.CHECKOUT_URL);
+    checkout.addEventListener('click', function(){ track('InitiateCheckout', { value: 249, currency: 'AUD' }); });
+  } else {
+    comingSoon(checkout, 'Quote and Chase laptop pack: tell me when it opens');
+  }
+
+  // hosted waiting list
   var hosted = document.querySelector('[data-hosted]');
-  if (C.HOSTED_URL) hosted.setAttribute('href', C.HOSTED_URL);
-  document.querySelectorAll('[data-hosted-date]').forEach(function(el){ if (C.HOSTED_DATE) el.textContent = C.HOSTED_DATE; });
   var hostedCap = document.querySelector('[data-capture="hosted"]');
-  hosted.addEventListener('click', function(e){
-    if (hosted.getAttribute('href') === '#') {
-      e.preventDefault();
-      if (!C.FORM_ACTION) { alert('Set HOSTED_URL or FORM_ACTION in config.js.'); return; }
-      hosted.hidden = true; hostedCap.hidden = false; hostedCap.querySelector('input[type=email]').focus();
-      return;
-    }
-    track('Lead', { content_name: 'hosted_founding_list' });
-  });
+  document.querySelectorAll('[data-hosted-date]').forEach(function(el){ if (C.HOSTED_DATE) el.textContent = C.HOSTED_DATE; });
+  if (C.HOSTED_URL) {
+    hosted.setAttribute('href', C.HOSTED_URL);
+    hosted.addEventListener('click', function(){ track('Lead', { content_name: 'hosted_founding_list' }); });
+  } else if (C.FORM_ACTION) {
+    hosted.addEventListener('click', function(e){ e.preventDefault(); hosted.hidden = true; hostedCap.hidden = false; hostedCap.querySelector('input[type=email]').focus(); });
+  } else {
+    comingSoon(hosted, 'Quote and Chase hosted version: add me to the waiting list');
+  }
 
   // Every email capture posts to the one FORM_ACTION with a hidden "list" field, in the background.
+  // Without FORM_ACTION the forms stay hidden.
   document.querySelectorAll('form[data-capture], form[data-form]').forEach(function(f){
-    if (C.FORM_ACTION) f.setAttribute('action', C.FORM_ACTION);
+    if (!C.FORM_ACTION) { f.hidden = true; return; }
+    f.setAttribute('action', C.FORM_ACTION);
+    if (f.hasAttribute('data-form')) f.hidden = false;
+    var note = f.querySelector('.formstatus');
     f.addEventListener('submit', function(e){
-      if (f.getAttribute('action') === '#') { e.preventDefault(); alert('The email form is not connected yet. Set FORM_ACTION in config.js.'); return; }
       e.preventDefault();
       var btn = f.querySelector('button[type=submit]'); if (btn) btn.disabled = true;
       var list = (f.querySelector('input[name=list]') || {}).value || 'email';
       fetch(f.getAttribute('action'), { method: 'POST', body: new FormData(f), headers: { 'Accept': 'application/json' } })
         .then(function(r){ if (!r.ok) throw new Error('bad'); track('Lead', { content_name: list }); f.innerHTML = '<p class="done">Done. Check your inbox.</p>'; })
-        .catch(function(){ if (btn) btn.disabled = false; alert('That did not send. Try again, or email ' + (C.SUPPORT_EMAIL || 'us') + '.'); });
+        .catch(function(){ if (btn) btn.disabled = false; if (note) note.textContent = 'That did not send. Try again' + (mail ? ', or email ' + mail : '') + '.'; });
     });
   });
 
@@ -608,12 +707,14 @@ footer .wrap{display:grid;gap:8px}
     if (C.MAKER_PHOTO) { var mp = document.getElementById('maker-photo'); mp.src = C.MAKER_PHOTO; mp.hidden = false; }
   }
   document.querySelectorAll('[data-lessons-date]').forEach(function(el){ if (C.LESSONS_DATE) el.textContent = C.LESSONS_DATE; });
-  document.querySelectorAll('[data-abn]').forEach(function(el){ if (C.ABN) el.textContent = C.ABN; });
-  document.querySelectorAll('[data-mail]').forEach(function(el){ if (C.SUPPORT_EMAIL) { el.textContent = C.SUPPORT_EMAIL; el.href = 'mailto:' + C.SUPPORT_EMAIL; } });
 
-  checkout.addEventListener('click', function(e){
-    if (checkout.getAttribute('href') === '#') { e.preventDefault(); alert('Checkout is not connected yet. Set CHECKOUT_URL at the top of index.html.'); return; }
-    track('InitiateCheckout', { value: 249, currency: 'AUD' });
+  // footer: never print a placeholder. ABN and email appear only when set in config.js.
+  document.querySelectorAll('[data-name]').forEach(function(el){ if (C.BUSINESS_NAME) el.textContent = C.BUSINESS_NAME; });
+  var abn = (C.ABN || '').replace(/[^0-9]/g, '');
+  if (abn.length === 11) { document.querySelectorAll('[data-abn]').forEach(function(el){ el.textContent = C.ABN; }); document.querySelectorAll('[data-abn-line]').forEach(function(el){ el.hidden = false; }); }
+  document.querySelectorAll('[data-contact]').forEach(function(el){
+    if (!mail) return;
+    var a = document.createElement('a'); a.href = 'mailto:' + mail; a.textContent = mail; el.textContent = ''; el.appendChild(a);
   });
 
   var demoTracked = false;
