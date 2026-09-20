@@ -28,7 +28,7 @@
       skirting = widths.reduce(function (s, w) { return s + w; }, 0) - doorWidths;
       ceilingArea = n(room.ceiling_m2) || (widths.length >= 2 ? widths[0] * widths[1] : 0);
       var err = Math.max.apply(null, room.walls.map(function (w) { return n(w.expected_error_pct, 2); }));
-      src = room.walls[0].method === 'roomplan-lidar' ? 'measured (LiDAR)' : 'measured (sheet ±' + err + '%)';
+      src = room.walls[0].method === 'roomplan-lidar' ? 'measured (LiDAR)' : 'measured (photo ±' + err + '%)';
       q.source = 'measured';
       if (room.walls.length < 4) q.assumptions.push(q.room + ': ' + room.walls.length + ' of the walls measured; the rest are not in this quote.');
       if (!n(room.ceiling_m2) && widths.length >= 2) q.assumptions.push(q.room + ': ceiling taken as the two longest measured walls multiplied (' + r1(ceilingArea) + ' m²).');
@@ -39,7 +39,7 @@
         wallArea = perim * H - DOOR_M2 * doorsTotal - WINDOW_M2 * windows;
         ceilingArea = L * W; skirting = perim - DOOR_W * doorsTotal;
         if (!n(room.H)) q.assumptions.push(q.room + ': ceiling height assumed ' + H + ' m.');
-        q.assumptions.push(q.room + ': sizes from your numbers (' + L + ' × ' + W + ' m), not measured. Measure with the sheet to firm this up.');
+        q.assumptions.push(q.room + ': sizes from your numbers (' + L + ' × ' + W + ' m), not measured. Measure from a photo to firm this up.');
       }
     }
     wallArea = Math.max(0, wallArea); skirting = Math.max(0, skirting);
