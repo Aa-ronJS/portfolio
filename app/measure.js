@@ -30,6 +30,7 @@
       '<div class="row" data-part="moderow"><button class="btn sm" data-mode="wall">Wall</button><button class="btn sm" data-mode="door">Door</button><button class="btn sm" data-mode="window">Window</button>' +
       '<button class="btn ghost sm" data-mode="wall2">Can\'t see all corners</button><button class="btn ghost sm" data-part="undo">Undo tap</button></div>' +
       '<p class="hint" data-part="modehint"></p>' +
+      '<div class="scalebox" data-part="roundbox" hidden><b>Round it?</b><p class="hint" data-part="roundhint"></p><div class="row" data-part="roundbtns"></div></div>' +
       '<div class="row" data-part="rescalerow" hidden><button class="btn tape sm" data-part="rescale">Size the wall from this door instead</button><span class="hint">Doors are 2.04 m; ceilings vary.</span></div>' +
       '<div class="scalebox" data-part="scalebox" hidden>' +
         '<b data-part="scaletitle">Sized from an assumed ceiling. Better: use a door.</b>' +
@@ -128,7 +129,7 @@
     opts = opts || {}; root.innerHTML = TEMPLATE;
     var q = function(part){ return root.querySelector('[data-part="' + part + '"]'); };
     var view = q('view'), ctx = view.getContext('2d'), stage = q('stage'), loupe = q('loupe'), loupecv = q('loupecv'), lctx = loupecv.getContext('2d'), status = q('status');
-    var S = { img: null, w: 0, h: 0, gray: null, exif: null, f: null, fSource: '', markers: [], H: null, Hinv: null, planeSrc: '', mode: 'wall', pending: null, taps: [], rect: null, scale: null, ref: null, items: [], photoName: '', edit: null, page: null, auto: null };
+    var S = { img: null, w: 0, h: 0, gray: null, exif: null, f: null, fSource: '', markers: [], H: null, Hinv: null, planeSrc: '', mode: 'wall', pending: null, taps: [], rect: null, scale: null, ref: null, items: [], photoName: '', edit: null, page: null, auto: null, zoom: null };
     function say(msg, cls){ status.textContent = msg; status.className = 'status ' + (cls || ''); }
     function fmt(mm){ return (mm / 1000).toFixed(2); }
 
@@ -146,8 +147,8 @@
       S.img = off; S.w = w; S.h = h;
       var d = oc.getImageData(0, 0, w, h).data, g = new Float32Array(w * h); for (var i = 0, j = 0; i < g.length; i++, j += 4) g[i] = 0.299*d[j] + 0.587*d[j+1] + 0.114*d[j+2];
       S.gray = g; S.items = []; S.pending = null; S.taps = []; S.rect = null; S.scale = null; S.ref = null; S.H = null; S.Hinv = null; S.planeSrc = ''; S.markers = [];
-      view.width = w; view.height = h; q('intro').hidden = true; q('work').hidden = false; q('scalebox').hidden = true; q('refbox').hidden = true; q('stepbox').hidden = true;
-      S.edit = null; S.page = null; S.auto = null; draw(); renderItems(); detectSheet();
+      S.zoom = null; view.width = w; view.height = h; q('intro').hidden = true; q('work').hidden = false; q('scalebox').hidden = true; q('refbox').hidden = true; q('stepbox').hidden = true;
+      S.edit = null; S.page = null; S.auto = null; q('roundbox').hidden = true; draw(); renderItems(); detectSheet();
       autoStart();
     }
 
@@ -215,9 +216,16 @@
     }
 
     // ---------- Drawing
+    function setZoom(z){ // z = {x0,y0,s}: show the region starting at (x0,y0) magnified s times, or null for the whole photo
+      S.zoom = z; if (z) { view.width = Math.round(S.w); view.height = Math.round(S.h * 0.6); } else { view.width = S.w; view.height = S.h; } draw(); }
+    function zoomToQuad(pts){ var xs = pts.map(function(p){ return p.x; }), ys = pts.map(function(p){ return p.y; }), x0 = Math.min.apply(null, xs), x1 = Math.max.apply(null, xs), y0 = Math.min.apply(null, ys), y1 = Math.max.apply(null, ys);
+      var bw = x1 - x0, bh = y1 - y0, vw = S.w, vh = S.h * 0.6, s = Math.min(vw / (bw * 2.6), vh / (bh * 1.8), 12); if (s <= 1.15) { setZoom(null); return; }
+      var cx = (x0 + x1) / 2, cy = (y0 + y1) / 2; setZoom({ s: s, x0: Math.max(0, Math.min(S.w - vw / s, cx - vw / s / 2)), y0: Math.max(0, Math.min(S.h - vh / s, cy - vh / s / 2)) }); }
     function draw(){
-      ctx.clearRect(0, 0, S.w, S.h); if (S.img) ctx.drawImage(S.img, 0, 0);
-      var lw = Math.max(2, S.w / 500);
+      ctx.setTransform(1, 0, 0, 1, 0, 0); ctx.clearRect(0, 0, view.width, view.height);
+      if (S.zoom) ctx.setTransform(S.zoom.s, 0, 0, S.zoom.s, -S.zoom.x0 * S.zoom.s, -S.zoom.y0 * S.zoom.s);
+      if (S.img) ctx.drawImage(S.img, 0, 0);
+      var lw = Math.max(2, S.w / 500) / (S.zoom ? S.zoom.s : 1);
       S.markers.forEach(function(m){ ctx.strokeStyle = '#37d67a'; ctx.lineWidth = lw; ctx.beginPath(); m.corners.forEach(function(p, i){ i ? ctx.lineTo(p.x, p.y) : ctx.moveTo(p.x, p.y); }); ctx.closePath(); ctx.stroke(); });
       if (S.ref) { ctx.strokeStyle = '#37d67a'; ctx.lineWidth = lw; ctx.beginPath(); S.ref.px.forEach(function(p, i){ i ? ctx.lineTo(p.x, p.y) : ctx.moveTo(p.x, p.y); }); ctx.closePath(); ctx.stroke(); }
       if (S.scale && S.scale.px) { ctx.strokeStyle = '#37d67a'; ctx.lineWidth = lw * 1.5; ctx.beginPath(); ctx.moveTo(S.scale.px[0].x, S.scale.px[0].y); ctx.lineTo(S.scale.px[1].x, S.scale.px[1].y); ctx.stroke(); }
@@ -225,7 +233,7 @@
       S.items.forEach(function(it){ drawRect(it, lw); });
       if (S.page && !S.edit) { ctx.strokeStyle = '#37d67a'; ctx.lineWidth = lw; ctx.beginPath(); S.page.corners.forEach(function(p, i){ i ? ctx.lineTo(p.x, p.y) : ctx.moveTo(p.x, p.y); }); ctx.closePath(); ctx.stroke(); }
       if (S.edit) { var E = S.edit, col = E.kind === 'page' ? '#37d67a' : '#2B7BD6'; ctx.strokeStyle = col; ctx.lineWidth = lw * 1.5; ctx.beginPath(); E.pts.forEach(function(p, i){ i ? ctx.lineTo(p.x, p.y) : ctx.moveTo(p.x, p.y); }); ctx.closePath(); ctx.stroke();
-        E.pts.forEach(function(p, i){ ctx.beginPath(); ctx.arc(p.x, p.y, lw * 7, 0, 7); ctx.fillStyle = 'rgba(255,255,255,.85)'; ctx.fill(); ctx.lineWidth = lw * 1.5; ctx.strokeStyle = col; ctx.stroke(); ctx.fillStyle = col; ctx.font = 'bold ' + Math.round(S.w / 70) + 'px system-ui, sans-serif'; ctx.fillText(String(i + 1), p.x - lw * 2.2, p.y + lw * 2.6); }); }
+        E.pts.forEach(function(p, i){ ctx.beginPath(); ctx.arc(p.x, p.y, lw * 7, 0, 7); ctx.fillStyle = 'rgba(255,255,255,.85)'; ctx.fill(); ctx.lineWidth = lw * 1.5; ctx.strokeStyle = col; ctx.stroke(); ctx.fillStyle = col; ctx.font = 'bold ' + Math.max(6, Math.round(S.w / 70 / (S.zoom ? S.zoom.s : 1))) + 'px system-ui, sans-serif'; ctx.fillText(String(i + 1), p.x - lw * 2.2, p.y + lw * 2.6); }); }
       ctx.fillStyle = '#ff5a36';
       if (S.pending) { ctx.beginPath(); ctx.arc(S.pending.img.x, S.pending.img.y, lw * 3, 0, 7); ctx.fill(); }
       S.taps.forEach(function(t){ ctx.beginPath(); ctx.arc(t.x, t.y, lw * 3, 0, 7); ctx.fill(); });
@@ -236,16 +244,16 @@
       var col = it.type === 'wall' ? '#2B7BD6' : it.type === 'door' ? '#F2A33C' : '#B36CE6';
       var c = [{x: it.x1, y: it.y1}, {x: it.x2, y: it.y1}, {x: it.x2, y: it.y2}, {x: it.x1, y: it.y2}].map(function(p){ return apply(Hf, p); });
       ctx.strokeStyle = col; ctx.lineWidth = lw * 1.5; ctx.beginPath(); c.forEach(function(p, i){ i ? ctx.lineTo(p.x, p.y) : ctx.moveTo(p.x, p.y); }); ctx.closePath(); ctx.stroke();
-      ctx.fillStyle = col; ctx.font = 'bold ' + Math.round(S.w / 60) + 'px system-ui, sans-serif';
+      ctx.fillStyle = col; ctx.font = 'bold ' + Math.max(6, Math.round(S.w / 60 / (S.zoom ? S.zoom.s : 1))) + 'px system-ui, sans-serif';
       var mid = apply(Hf, { x: (it.x1 + it.x2) / 2, y: it.y1 }); ctx.fillText(fmt(it.w) + ' × ' + fmt(it.h) + ' m', mid.x - S.w / 30, mid.y - lw * 4);
     }
 
     // ---------- Taps with a loupe
-    function toImg(ev){ var r = view.getBoundingClientRect(); return { x: (ev.clientX - r.left) * S.w / r.width, y: (ev.clientY - r.top) * S.h / r.height }; }
+    function toImg(ev){ var r = view.getBoundingClientRect(), vx = (ev.clientX - r.left) * view.width / r.width, vy = (ev.clientY - r.top) * view.height / r.height; if (S.zoom) return { x: S.zoom.x0 + vx / S.zoom.s, y: S.zoom.y0 + vy / S.zoom.s }; return { x: vx, y: vy }; }
     var down = null;
     var dragIdx = -1;
     stage.addEventListener('pointerdown', function(ev){ if (!S.img) return; ev.preventDefault(); var p = toImg(ev);
-      if (S.edit) { var r = view.getBoundingClientRect(), reach = 30 * S.w / r.width, bi = -1, bd = 1e9; S.edit.pts.forEach(function(c, i){ var d = Math.hypot(c.x - p.x, c.y - p.y); if (d < reach && d < bd) { bd = d; bi = i; } }); dragIdx = bi; if (bi < 0) return; S.edit.pts[bi] = p; draw(); down = p; showLoupe(ev, p); return; }
+      if (S.edit) { var r = view.getBoundingClientRect(), reach = 30 * view.width / r.width / (S.zoom ? S.zoom.s : 1), bi = -1, bd = 1e9; S.edit.pts.forEach(function(c, i){ var d = Math.hypot(c.x - p.x, c.y - p.y); if (d < reach && d < bd) { bd = d; bi = i; } }); dragIdx = bi; if (bi < 0) return; S.edit.pts[bi] = p; draw(); down = p; showLoupe(ev, p); return; }
       down = p; showLoupe(ev, down); });
     stage.addEventListener('pointermove', function(ev){ if (!down) return; ev.preventDefault(); down = toImg(ev); if (S.edit && dragIdx >= 0) { S.edit.pts[dragIdx] = down; draw(); } showLoupe(ev, down); });
     stage.addEventListener('pointerup', function(ev){ if (!down) return; ev.preventDefault(); var p = down; down = null; loupe.style.display = 'none'; if (S.edit) { if (dragIdx >= 0) { S.edit.pts[dragIdx] = p; dragIdx = -1; draw(); } return; } placePoint(p); });
@@ -268,16 +276,16 @@
         var page = null; try { page = QCDetect.findPage(S.gray, S.w, S.h, focalForDetect()); } catch (e) { page = null; }
         S.auto = { page: page };
         if (!page) { say('No A4 page found in the photo. Tap the four corners of the wall instead, and a door or the ceiling height will set the size.', 'warn'); setMode('wall'); return; }
-        S.edit = { kind: 'page', pts: page.corners.map(function(p){ return { x: p.x, y: p.y }; }) }; draw();
+        S.edit = { kind: 'page', pts: page.corners.map(function(p){ return { x: p.x, y: p.y }; }) }; zoomToQuad(S.edit.pts);
         say('Found the page (' + (page.portrait ? 'portrait' : 'landscape') + '). Is the green outline on the A4 sheet?', 'ok');
-        stepUI('Is this the A4 page?', 'Drag a corner if it is off. Hold to see the magnifier.', [
+        stepUI('Is this the A4 page?', 'Zoomed in on the page. The outline should sit on the paper\'s edge, not on its shadow. Drag a corner if it is off.', [
           { label: 'Yes, that is the page', cls: 'tape', fn: confirmPage },
-          { label: 'No page in the shot', fn: function(){ S.edit = null; S.page = null; q('stepbox').hidden = true; draw(); setMode('wall'); say('Tap the four corners of the wall. A door or the ceiling height will set the size.'); } }]);
+          { label: 'No page in the shot', fn: function(){ S.edit = null; S.page = null; q('stepbox').hidden = true; setZoom(null); setMode('wall'); say('Tap the four corners of the wall. A door or the ceiling height will set the size.'); } }]);
       }, 30);
     }
     function confirmPage(){
-      var pts = S.edit.pts.slice(); S.edit = null;
-      var Hq = homography([{x:0,y:0},{x:1,y:0},{x:1,y:1},{x:0,y:1}], pts); if (!Hq) { say('Those corners do not make a page. Drag them onto the page corners.', 'warn'); S.edit = { kind: 'page', pts: pts }; draw(); return; }
+      var pts = S.edit.pts.slice(); S.edit = null; setZoom(null);
+      var Hq = homography([{x:0,y:0},{x:1,y:0},{x:1,y:1},{x:0,y:1}], pts); if (!Hq) { say('Those corners do not make a page. Drag them onto the page corners.', 'warn'); S.edit = { kind: 'page', pts: pts }; zoomToQuad(pts); return; }
       var asp = aspectFromH(Hq, focalForDetect(), S.w / 2, S.h / 2);
       S.page = { corners: pts, portrait: asp > 1, aspect: asp }; q('stepbox').hidden = true; draw();
       say('Now the wall. Looking for its edges…');
@@ -347,8 +355,21 @@
       if (!(S.rect.aspect > 0.1 && S.rect.aspect < 3)) { S.rect = null; return false; }
       return true;
     }
+    function offerRounding(W, Hh){
+      var box = q('roundbox'), btns = q('roundbtns'); btns.innerHTML = '';
+      function chip(label, fn, primary){ var b = document.createElement('button'); b.className = 'btn sm' + (primary ? ' tape' : ''); b.textContent = label; b.addEventListener('click', fn); btns.appendChild(b); }
+      var wLo = Math.floor(W / 100) * 100, wHi = wLo + 100, hLo = Math.floor(Hh / 100) * 100, hHi = hLo + 100;
+      q('roundhint').textContent = 'Measured ' + fmt(W) + ' × ' + fmt(Hh) + ' m. Walls are often a round number; pick one if you know it, or keep the measurement.';
+      chip('Width ' + fmt(wLo), function(){ applyRounded(wLo, null); }); chip('Width ' + fmt(wHi), function(){ applyRounded(wHi, null); });
+      chip('Height ' + fmt(hLo), function(){ applyRounded(null, hLo); }); chip('Height ' + fmt(hHi), function(){ applyRounded(null, hHi); });
+      chip('Keep as measured', function(){ box.hidden = true; }, true);
+      box.hidden = false;
+    }
+    function applyRounded(W, Hh){ if (!S.rect) return; var nW = W || S.rect.W, nH = Hh || S.rect.H; S.rect.W = nW; S.rect.H = nH; S.scale.rounded = true;
+      S.items.forEach(function(it){ if (it.frame === 'wall') { if (it.type === 'wall') { it.w = nW; it.h = nH; it.area = nW * nH / 1e6; } else { var sz = sizeOf(it); it.w = sz.w; it.h = sz.h; it.area = sz.w * sz.h / 1e6; } } });
+      draw(); renderItems(); offerRounding(nW, nH); say('Wall set to ' + fmt(nW) + ' × ' + fmt(nH) + ' m.', 'ok'); }
     function finishWall(W, Hh, scale){
-      S.rect.W = W; S.rect.H = Hh; S.scale = scale;
+      S.rect.W = W; S.rect.H = Hh; S.scale = scale; if (!scale.assumed) offerRounding(W, Hh); else q('roundbox').hidden = true;
       S.items = S.items.filter(function(x){ return x.type !== 'wall'; });
       S.items.push({ type: 'wall', x1: 0, y1: 0, x2: 1, y2: 1, w: W, h: Hh, area: W * Hh / 1e6, frame: 'wall' });
       // re-size any openings already placed in this frame
@@ -458,7 +479,7 @@
       S.mode = m; S.pending = null; S.taps = []; q('moderow').hidden = false; q('modehint').hidden = false; draw();
       root.querySelectorAll('[data-mode]').forEach(function(b){ var on = b.dataset.mode === m; b.classList.toggle('active', on); b.classList.toggle('tape', on); if (b.dataset.mode === 'wall2') b.classList.toggle('ghost', !on); });
       q('modehint').textContent = m === 'wall' ? 'Tap the four corners of the wall: top-left, top-right, bottom-right, bottom-left. Where the paint starts and stops: below the cornice, above the skirting.' : m === 'wall2' ? 'For when a corner is out of shot. Something of known size sets the scale instead.' : 'Tap the top-left corner of the ' + m + ', then the bottom-right.';
-      if (m === 'wall') { q('refbox').hidden = true; q('stepbox').hidden = true; S.edit = null; say('Tap the top-left corner of the wall.'); }
+      if (m === 'wall') { q('refbox').hidden = true; q('stepbox').hidden = true; S.edit = null; if (S.zoom) setZoom(null); say('Tap the top-left corner of the wall.'); }
       if (m === 'wall2') { q('scalebox').hidden = true; if (!S.H) needRef(); else say('Tap the top-left corner of the wall, then the bottom-right.'); }
     }
     root.querySelectorAll('[data-mode]').forEach(function(b){ b.addEventListener('click', function(){ setMode(b.dataset.mode); }); });
@@ -504,11 +525,11 @@
       var openArea = openings.reduce(function(s, o){ return s + o.area_m2; }, 0);
       var rec = { wall: (q('wallname').value || ('Wall ' + (opts.count ? opts.count() + 1 : 1))).trim(),
         width_mm: Math.round(wall.w), height_mm: Math.round(wall.h), gross_area_m2: +wall.area.toFixed(3), openings: openings, paint_area_m2: +(wall.area - openArea).toFixed(3),
-        method: wall.frame === 'wall' ? (S.scale && S.scale.method === 'page' ? 'photo-page' : 'photo-corners') : 'photo-reference', scale: wall.frame === 'wall' ? (S.scale && S.scale.method) : (S.ref ? S.ref.label : 'sheet'), scale_assumed: !!(S.scale && S.scale.assumed),
+        method: wall.frame === 'wall' ? (S.scale && S.scale.method === 'page' ? 'photo-page' : 'photo-corners') : 'photo-reference', scale: wall.frame === 'wall' ? (S.scale && S.scale.method) : (S.ref ? S.ref.label : 'sheet'), scale_assumed: !!(S.scale && S.scale.assumed), rounded: !!(S.scale && S.scale.rounded),
         focal: S.fSource || '', expected_error_pct: confidence(), photo: S.photoName, measured_at: new Date().toISOString() };
       if (opts.onSave) opts.onSave(rec);
       say('Saved ' + rec.wall + '. Take the next wall, or go back to the room.', 'ok');
-      q('wallname').value = ''; S.items = []; S.rect = null; S.scale = null; S.page = null; S.edit = null; draw(); renderItems();
+      q('wallname').value = ''; S.items = []; S.rect = null; S.scale = null; S.page = null; S.edit = null; q('roundbox').hidden = true; draw(); renderItems();
     });
     q('photo').addEventListener('change', function(){ loadFile(this.files[0]); this.value = ''; });
     q('photolib').addEventListener('change', function(){ loadFile(this.files[0]); this.value = ''; });
