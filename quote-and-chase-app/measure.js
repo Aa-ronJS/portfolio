@@ -53,7 +53,7 @@
   var SCALES = { door: { mm: 2040, label: 'door height', hint: 'Tap the top edge of the door leaf, then the bottom edge, at the same spot across.', err: 3 },
                  gpo: { mm: 116, label: 'power point width', hint: 'Tap the left edge of the plate, then the right edge. Zoom in with the loupe.', err: 3.5 },
                  tape: { mm: 1000, label: 'tape length', hint: 'Tap one end, then the other, of the thing you measured. Type its length.', err: 1.5 },
-                 ceiling: { label: 'ceiling height', err: 2 }, assumed: { label: 'assumed ceiling height', err: 6 } };
+                 ceiling: { label: 'ceiling height', err: 2 }, inherited: { label: 'height from an earlier wall in this room', err: 2.5 }, assumed: { label: 'assumed ceiling height', err: 6 } };
 
   // ---------- Linear algebra
   function solve(A, b){
@@ -284,6 +284,7 @@
       S.items.forEach(function(it){ if (it.type !== 'wall' && it.frame === 'wall') { var sz = sizeOf(it); it.w = sz.w; it.h = sz.h; it.area = sz.w * sz.h / 1e6; } });
       q('scalebox').hidden = !scale.assumed; q('rescalerow').hidden = true; draw(); renderItems();
       if (scale.assumed) say('Wall about ' + fmt(W) + ' × ' + fmt(Hh) + ' m if the ceiling is ' + fmt(scale.ref_mm) + ' m. Ceilings vary, so tap a door top and bottom to size it properly, or tap the door as an opening and it will check itself.', 'warn');
+      else if (scale.method === 'inherited') say('Wall: ' + fmt(W) + ' × ' + fmt(Hh) + ' m, using the ' + fmt(Hh) + ' m wall height already measured in this room. Tap doors and windows, or save this wall.', 'ok');
       else say('Wall: ' + fmt(W) + ' × ' + fmt(Hh) + ' m, scaled from the ' + scale.label + '. Now tap doors and windows (two corners each), or save this wall.', 'ok');
       setMode('door');
     }
@@ -297,18 +298,18 @@
       var W = Math.hypot(X[0], Y[0]), Hh = Math.hypot(X[1], Y[1]); if (!(W > 300 && W < 30000 && Hh > 300 && Hh < 10000)) return null;
       return { W: W, H: Hh };
     }
-    function applyScale(kind, valueMm, px, assumed){ // px: the two tapped image points for length references
+    function applyScale(kind, valueMm, px, assumed, inherited){ // px: the two tapped image points for length references
       if (!S.rect) return false;
       var W, Hh, a = S.rect.aspect;
-      if (kind === 'ceiling') { var allow = assumed ? 0 : (parseFloat(q('tapsat').value) || 0); Hh = valueMm - allow; W = Hh / a; }
+      if (kind === 'ceiling') { var allow = (assumed || inherited) ? 0 : (parseFloat(q('tapsat').value) || 0); Hh = valueMm - allow; W = Hh / a; }
       else {
         var p1 = apply(S.rect.HwInv, px[0]), p2 = apply(S.rect.HwInv, px[1]), du = p2.x - p1.x, dv = p2.y - p1.y, unitLen = Math.hypot(du, a * dv); if (unitLen < 1e-6) return false;
         W = valueMm / unitLen; Hh = a * W;
       }
       if (!(W > 300 && W < 30000 && Hh > 1200 && Hh < 8000)) { say('That gives a wall ' + fmt(W) + ' × ' + fmt(Hh) + ' m, which cannot be right. Check the length, or tap again.', 'warn'); return false; }
-      var sk = assumed ? 'assumed' : kind;
+      var sk = assumed ? 'assumed' : inherited ? 'inherited' : kind;
       finishWall(W, Hh, { method: sk, ref_mm: valueMm, label: SCALES[sk].label, err: SCALES[sk].err, px: px || null, assumed: !!assumed });
-      if (kind === 'ceiling' && !assumed && opts.onCeiling) opts.onCeiling(valueMm / 1000);
+      if (!assumed && !inherited && opts.onHeight) opts.onHeight(Hh / 1000, SCALES[sk].label); // the room's wall height is now known for the other walls
       return true;
     }
     function placePoint(img){
@@ -321,8 +322,7 @@
         if (sh) { finishWall(sh.W, sh.H, { method: 'sheet', label: 'measure sheet', err: 1 }); return; }
         draw(); q('scaleval').hidden = true;
         var c = opts.ceiling ? opts.ceiling() : { m: 2.4, assumed: true }; q('ceiling').value = c.m;
-        S.fNote = S.fSource;
-        if (!applyScale('ceiling', c.m * 1000, null, c.assumed)) { q('scalebox').hidden = false; say('Wall shape done. Tap a door top and bottom to set the size.', 'ok'); S.mode = 'scale-wait'; }
+        if (!applyScale('ceiling', c.m * 1000, null, c.assumed, !c.assumed)) { q('scalebox').hidden = false; say('Wall shape done. Tap a door top and bottom to set the size.', 'ok'); S.mode = 'scale-wait'; }
         if (c.assumed) q('scalebox').scrollIntoView({ block: 'nearest', behavior: 'smooth' });
         return;
       }
@@ -373,7 +373,7 @@
       S.items.push(it); draw(); renderItems();
       var msg = it.type === 'wall' ? 'Wall done. Now tap doors and windows, or save this wall.' : (it.type + ' added: ' + fmt(it.w) + ' × ' + fmt(it.h) + ' m. Next one, or save this wall.');
       var cls = 'ok';
-      if (it.type === 'door' && S.scale && (S.scale.method === 'ceiling' || S.scale.method === 'assumed')) { // the door is a free check on the ceiling height
+      if (it.type === 'door' && S.scale && (S.scale.method === 'ceiling' || S.scale.method === 'assumed' || S.scale.method === 'inherited')) { // the door is a free check on the ceiling height
         var dh = it.h, off = Math.abs(dh / 2040 - 1);
         S.lastDoor = it;
         if (off < 0.03 && !S.scale.assumed) msg += ' That door comes out at ' + fmt(dh) + ' m against a standard 2.04, so the ceiling height checks out.';

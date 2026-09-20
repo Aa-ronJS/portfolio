@@ -74,7 +74,7 @@ textarea{width:100%;min-height:120px;font:.9rem ui-monospace,Menlo,Consolas,mono
   window.__qc = QCMeasure.mount($('mount'), {
     count: function(){ return saved.length; },
     ceiling: function(){ var c = ceilings[$('room').value.trim()]; return { m: c || 2.4, assumed: !c }; },
-    onCeiling: function(m){ ceilings[$('room').value.trim()] = m; },
+    onHeight: function(m){ ceilings[$('room').value.trim()] = m; },
     onSave: function(rec){ rec.room = $('room').value.trim() || 'Room'; saved.push(rec); persist(); render(); $('saved').scrollIntoView({ behavior: 'smooth', block: 'start' }); }
   });
   function render(){
