@@ -19,7 +19,7 @@ what only you can do, in order. Nothing else is waiting on me.
    Set-up, Sending, paste `https://<site>/api/msg` and send yourself a
    test SMS and a test email. Then send one real quote to yourself and
    confirm the follow-up arrives on the scheduled day.
-3. **Measure one real wall from a photo.** Stick a blank A4 sheet on a
+3. **Measure one real wall from a photo.** Stick any A4 sheet on a
    wall, photograph the wall corner to corner, open the app (or
    `pack/measure/measure.html`), confirm the page and wall outlines,
    and compare the width and a door to a tape measure. The maths is verified on a physically rendered
@@ -94,7 +94,7 @@ what only you can do, in order. Nothing else is waiting on me.
   bookings as calendar events with a Google Calendar link, Stripe card
   payment links on invoices with a check-payments button (restricted key
   stays on the phone; Stripe API tested with a mock, not a live key).
-- Measuring: nothing to print. A blank A4 sheet is found automatically
+- Measuring: nothing to print. Any A4 sheet, printed or blank, is found automatically
   and sets the scale; the wall outline is found automatically (region
   growing from the page, edge snapping) and confirmed; doors and
   windows are proposed; the camera focal length (EXIF or self-

@@ -1,6 +1,10 @@
 IF SOMETHING GOES WRONG
 =======================
 
+This file is for the optional laptop pack (Claude Code). The free
+phone app has its own Help screen; the last section below covers the
+app's automatic sending because it comes up in both places.
+
 The fastest fix for almost anything: copy the message on the screen,
 paste it into Claude Code, and add "what does this mean and what should
 I do?" It will usually tell you in plain English.
@@ -33,8 +37,9 @@ Common ones
 
   The measuring page cannot find the A4 page
     The whole sheet must be flat on the wall, in the photo, not in
-    glare. Any A4 sheet works, printed or blank. Tap
-    "No page in the shot" and it falls back to tapping the corners.
+    glare. Any A4 sheet works, printed or blank; nothing to print.
+    Tap "No page in the shot" and it falls back to tapping the
+    corners.
 
   The measuring page says the corners did not make a sensible wall
     Tap them in order: top-left, top-right, bottom-right, bottom-left,
@@ -72,8 +77,9 @@ Back this folder up like any other important folder. It is your
 business.
 
 Automatic follow-ups from the phone app (SMS and email)
-  The app can send quotes and invoices by email with the PDF attached,
-  and send the follow-up texts and emails itself on the days you set,
+  This pack never sends anything; you do. The phone app is different:
+  it can send quotes and invoices by email with the PDF attached, and
+  send the follow-up texts and emails itself on the days you set,
   stopping when the client says yes or pays. It needs three things:
     1. A Twilio account with a Messaging Service (for SMS) and/or a
        Resend account with your email domain verified (for email).
@@ -84,5 +90,11 @@ Automatic follow-ups from the phone app (SMS and email)
        they stay on your phone and travel with each message.
     3. In the app, Set-up, Sending: the relay address, and a test
        message to yourself.
-  Without this, the app still works: you send from your share sheet
-  and the reminders go into your calendar.
+  Without this, the app still works: you send from your share sheet,
+  the Follow-ups tab shows who to chase and you tap Text or Email.
+
+  Lost phone? Revoke the keys the app held: the Stripe restricted key
+  (Stripe dashboard), the Twilio auth token or API key (Twilio
+  console), the Resend key (Resend dashboard), and change RELAY_TOKEN
+  on the relay. Then restore your last back-up on the new phone. The
+  back-up leaves keys out unless you ticked "Include keys".

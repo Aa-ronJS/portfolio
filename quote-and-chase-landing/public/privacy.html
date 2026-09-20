@@ -3,52 +3,110 @@
 <head>
 <meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Privacy</title>
+<meta name="description" content="What the Quote and Chase app stores on your phone, what leaves it and when, and what this website collects.">
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,700;12..96,800&family=Instrument+Sans:wght@400;600&display=swap">
 <style>
-:root{--ground:#F7F7F4;--ink:#16181D;--muted:#5B5F66;--line:#DCDED9;--tape:#2B7BD6}
-@media (prefers-color-scheme:dark){:root{--ground:#15171B;--ink:#F0F1EC;--muted:#A2A6AD;--line:#2C3037;--tape:#5FA3F0}}
+:root{--ground:#F7F7F4;--ink:#16181D;--muted:#5B5F66;--line:#DCDED9;--tape:#2B7BD6;--paper:#FFFFFF}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--ground:#15171B;--ink:#F0F1EC;--muted:#A2A6AD;--line:#2C3037;--tape:#5FA3F0;--paper:#1E2126}}
+:root[data-theme="dark"]{--ground:#15171B;--ink:#F0F1EC;--muted:#A2A6AD;--line:#2C3037;--tape:#5FA3F0;--paper:#1E2126}
 body{margin:0;background:var(--ground);color:var(--ink);font:16px/1.6 "Instrument Sans",system-ui,sans-serif}
-main{max-width:680px;margin:0 auto;padding:48px 20px 80px}
-h1,h2{font-family:"Bricolage Grotesque",system-ui,sans-serif;letter-spacing:-.015em}
-h1{font-size:2.2rem;margin:0 0 6px}h2{font-size:1.2rem;margin:28px 0 8px}
+main{max-width:680px;margin:0 auto;padding:48px 16px 80px}
+h1,h2,h3{font-family:"Bricolage Grotesque",system-ui,sans-serif;letter-spacing:-.015em}
+h1{font-size:2.2rem;margin:0 0 6px}h2{font-size:1.25rem;margin:32px 0 8px}h3{font-size:1.02rem;margin:18px 0 4px}
 p,li{color:var(--muted)}a{color:var(--tape)}
+ul{padding-left:20px}li{margin:4px 0}
 .back{display:inline-block;margin-bottom:24px;font-size:.95rem}
+.stamp{font-size:.95rem}
+table{width:100%;border-collapse:collapse;font-size:.93rem;margin:10px 0}
+th,td{text-align:left;vertical-align:top;padding:8px 8px 8px 0;border-bottom:1px solid var(--line);color:var(--muted)}
+th{color:var(--ink);font-weight:600}
+.box{background:var(--paper);border:1px solid var(--line);border-radius:8px;padding:14px 16px;margin:14px 0}
+.box p{margin:0}
+@media (max-width:480px){table,thead,tbody,tr,th,td{display:block}thead{display:none}td{border:0;padding:2px 0}tr{border-bottom:1px solid var(--line);padding:8px 0}td[data-k]::before{content:attr(data-k) ": ";color:var(--ink);font-weight:600}}
 </style>
 </head>
 <body><main>
 <a class="back" href="/">&larr; Back</a>
 <h1>Privacy</h1>
-<p>Last updated: <span data-date>today</span>. This page is written in plain English on purpose. If anything is unclear, email <a data-mail href="mailto:hello@example.com">hello@example.com</a>.</p>
+<p class="stamp">Last updated: 20 September 2026. Plain English on purpose. If anything is unclear, <span data-contact>a contact email will be added here</span>.</p>
 
-<h2>Who we are</h2>
-<p><span data-name>Quote &amp; Chase</span> (ABN <span data-abn>00 000 000 000</span>) is an Australian small business. We sell a set-up course and a software pack that runs on your own computer using Claude Code, a product of Anthropic, PBC. We are not affiliated with Anthropic.</p>
+<h2>Who this covers</h2>
+<p><span data-name>Quote &amp; Chase</span><span data-abn-line hidden> (ABN <span data-abn></span>)</span> is an Australian small business. This page covers three separate things, and the first is the one that matters most:</p>
+<ul>
+  <li><b>The phone app</b>, the free web app you open in your browser and add to your home screen.</li>
+  <li><b>This website</b>, including the photo demo and any email you give us.</li>
+  <li><b>The optional laptop pack</b>, files that run in Claude Code on your own computer.</li>
+</ul>
+<!-- TODO owner: set BUSINESS_NAME and ABN in config.js. The ABN line above stays hidden until a real 11-digit ABN is set. -->
 
-<h2>The photo demo</h2>
-<p>When you use the "point your phone at a wall" demo, the photo and any notes you type are sent once, over an encrypted connection, to Anthropic's API to produce a sample quote. We do not save the photo, the notes or the result. Anthropic handles that request under its own <a href="https://www.anthropic.com/legal/privacy" rel="noopener">privacy policy</a> and API terms. Do not upload photos of people or documents; the demo is for rooms and walls.</p>
+<h2>The phone app</h2>
 
-<h2>Email address</h2>
-<p>If you give us your email to receive the sample quote and price list, we use it to send you those and, if you asked, occasional updates about the pack. You can unsubscribe with one click at any time. We do not sell or rent email addresses.</p>
+<h3>What is stored on the phone</h3>
+<p>Everything the app knows lives in your browser's storage on your phone. We do not run a server that holds it, so we cannot see it, recover it or delete it for you. That includes:</p>
+<ul>
+  <li>Your business details: trading name, your name, ABN, licence and insurance numbers, phone, email, address, logo, and your bank account details as printed on invoices.</li>
+  <li>Your prices, labour and paint settings, quote wording and terms.</li>
+  <li>Your clients: names, phone numbers, email addresses, site and billing addresses, and client type.</li>
+  <li>Jobs, rooms and measurements, photos you attach to a job, quotes (including earlier versions), invoices, payments, credit notes and variations.</li>
+  <li>A log of the messages the app has sent or scheduled: when, to whom, which channel, the first part of the text, and whether it worked.</li>
+  <li>If you set them up: your Stripe restricted key, your Twilio and Resend keys, the relay address and relay token, and a hashed copy of your app PIN. Keys are stored as you typed them; the PIN is stored only as a hash.</li>
+</ul>
+<p>The measuring feature processes photos on the phone. Nothing is uploaded to measure a wall.</p>
+<div class="box"><p><b>Lost or reset phone means lost data</b> unless you have a back-up. Clearing the browser's site data also wipes it. Save a back-up after every invoice and keep it in your own Drive or iCloud.</p></div>
 
-<h2>Purchases</h2>
-<p>Payments are processed by our checkout provider, which collects your card details under its own privacy policy. We receive your name, email and what you bought, so we can deliver the files and provide support. We do not see or store card numbers.</p>
+<h3>What leaves the phone, and when</h3>
+<p>Nothing leaves the phone until you send something or set up sending. When you do, this is exactly what goes where:</p>
+<table>
+  <thead><tr><th>When</th><th>What is sent</th><th>Who receives it and what they keep</th></tr></thead>
+  <tbody>
+  <tr><td data-k="When">You tap Text, Email or Share without the relay set up</td><td data-k="What">The PDF or the message text, handed to your own SMS, email or messaging app.</td><td data-k="Who">Whatever app you choose. It leaves our software at that point and their privacy terms apply.</td></tr>
+  <tr><td data-k="When">You send or schedule through the relay (SMS or email you have set up)</td><td data-k="What">The recipient's phone number or email address, the subject and body of the message, any PDF attachment, the send time, and an idempotency key made from the job and message reference. If your relay is set to accept keys from the phone, your Twilio and Resend keys travel with each request over HTTPS.</td><td data-k="Who">The relay, a small function you deploy on Vercel (a US company). The relay code stores and logs nothing itself; it passes the request on and returns the result. Vercel keeps its own request logs (IP address, path, status, time) for a period set by Vercel. If you use a relay run by someone else, your credentials and every message pass through their server.</td></tr>
+  <tr><td data-k="When">An SMS is sent or scheduled</td><td data-k="What">Phone number, message text, send time.</td><td data-k="Who">Twilio (US). Twilio keeps message logs including the text and delivery status, and holds scheduled messages until they send or you cancel them, up to 35 days ahead.</td></tr>
+  <tr><td data-k="When">An email is sent or scheduled</td><td data-k="What">Email address, subject, body, and the PDF attached.</td><td data-k="Who">Resend (US). Resend keeps email logs including the content and attachments, and holds scheduled emails until they send or you cancel them, up to 30 days ahead.</td></tr>
+  <tr><td data-k="When">You add a card payment link to an invoice</td><td data-k="What">Your invoice number and the amount, using your own Stripe restricted key. The client's card details are entered on Stripe's page and never touch the app.</td><td data-k="Who">Stripe (US). Stripe holds the payment link, the payment and the payer's details in your Stripe account. The app reads back whether the link has been paid.</td></tr>
+  <tr><td data-k="When">You tap Add to Google Calendar</td><td data-k="What">The booking title, dates, times, site address and notes, in a link that opens Google Calendar. The .ics file option goes through your share sheet instead.</td><td data-k="Who">Google (US), in your own Google account, under Google's terms.</td></tr>
+  <tr><td data-k="When">You save a back-up</td><td data-k="What">A file containing everything under "What is stored on the phone" above, including every client's details and your bank details. Your Stripe, Twilio, Resend and relay keys are left out unless you tick "Include keys".</td><td data-k="Who">Wherever you send it: your Drive, iCloud, email or AirDrop. Treat it like a file from your bank.</td></tr>
+  </tbody>
+</table>
+<p><b>Cross-border.</b> Vercel, Twilio, Resend, Stripe and Google are United States companies and may store data outside Australia. Using the sending, card payment or Google Calendar features means the client information listed above is disclosed to them (Australian Privacy Principle 8). If you would rather it did not leave Australia, do not set those features up: the app still works, and you send from your own phone.</p>
 
-<h2>Advertising and analytics</h2>
-<p>This site may use the Meta pixel and similar tools to measure whether our ads work. These set cookies and share visit data with those companies under their policies. You can limit this through your browser settings or your ad preferences on those platforms.</p>
+<h3>Your keys</h3>
+<p>Your Stripe, Twilio and Resend keys stay on the phone. They leave it only in two cases: with each relay request, if you pasted them into the app and your relay allows keys from the phone; or never, if you set them as environment variables on your own relay instead, in which case the phone holds only the relay address and token. Use a restricted Stripe key and, where the provider offers it, an API key rather than an account's master token. If a phone is lost, revoke the keys in the Stripe, Twilio and Resend dashboards and change the relay token.</p>
 
-<h2>The pack itself</h2>
-<p>The pack runs inside a folder on your own computer. Your quotes, invoices, client details and price list stay on your machine. When you use Claude Code, the content you ask it to work on is processed by Anthropic under the terms of your own Claude subscription, which you hold directly with Anthropic. We never see your business data.</p>
+<h3>Your clients' information</h3>
+<p>You are the one collecting your clients' names, numbers and addresses, so their privacy is your responsibility, not ours. Most sole traders are below the Privacy Act's $3 million turnover threshold, but telling clients where their details go is still the right thing to do. A line like "We keep your details on our phone and use a texting and email service to send quotes and reminders" on your quote terms covers it.</p>
+
+<h3>What we can see from the app</h3>
+<p>Nothing. The app does not report usage, does not phone home, and has no analytics. When you open it, your browser fetches the app files from the address it is hosted at (GitHub Pages or Vercel), and those hosts see ordinary web-server logs such as your IP address and the time.</p>
+
+<h2>This website</h2>
+<p><b>The photo demo.</b> When you use "point your phone at a wall" on this site, the photo and any notes you type are sent once, over an encrypted connection, to Anthropic's API to produce a sample quote. We do not save the photo, the notes or the result. Anthropic handles that request under its own <a href="https://www.anthropic.com/legal/privacy" rel="noopener">privacy policy</a> and API terms. Do not upload photos of people or documents; the demo is for rooms and walls. This is different from the app, which measures on the phone and uploads nothing.</p>
+<p><b>Email address.</b> If you give us your email for the sample quote, the app link or the hosted waiting list, we use it to send you those and, if you asked, occasional updates. One-click unsubscribe. We do not sell or rent email addresses. The form is handled by a form provider we name in the form itself.</p>
+<p><b>Purchases of the laptop pack.</b> Payments are processed by our checkout provider, which collects your card details under its own privacy policy. We receive your name, email and what you bought, so we can deliver the files and provide support. We do not see or store card numbers.</p>
+<p><b>Advertising and analytics.</b> This site may use the Meta pixel to measure whether our ads work. It sets cookies and shares visit data with Meta under their policies. You can limit this through your browser settings or your ad preferences on Meta. The app itself carries no pixel and no analytics.</p>
+
+<h2>The laptop pack</h2>
+<p>The pack is a set of files that runs inside a folder on your own computer. Your quotes, invoices, client details and price list stay on your machine. When you use Claude Code with it, the content you ask it to work on is processed by Anthropic under the terms of your own Claude subscription, which you hold directly with Anthropic. We never see your business data. The pack drafts messages; it does not send them.</p>
 
 <h2>Your rights</h2>
-<p>You can ask what personal information we hold about you, ask us to correct it, or ask us to delete it, by emailing us. We handle personal information in line with the Australian Privacy Principles.</p>
-</main>
-<script>document.querySelectorAll("[data-date]").forEach(function(e){e.textContent=new Date().toLocaleDateString("en-AU",{year:"numeric",month:"long"})});</script>
+<p>You can ask what personal information we hold about you (for most people that is at most an email address and a purchase record), ask us to correct it, or ask us to delete it. We handle personal information in line with the Australian Privacy Principles. For anything held in the app on your phone, you already hold it: delete the app's data from the app's Set-up screen or your browser settings.</p>
+
+<h2>Changes</h2>
+<p>When this page changes, the date at the top changes with it. We do not change it silently.</p>
+
+<h2>Contact</h2>
+<p><span data-name>Quote &amp; Chase</span><span data-abn-line hidden>, ABN <span data-abn></span></span>. <span data-contact>Contact email to be added.</span></p>
 </main>
 <script src="config.js"></script>
 <script>
-(function(){var C=window.QC||{SUPPORT_EMAIL:"hello@example.com",BUSINESS_NAME:"Quote & Chase",ABN:"00 000 000 000"};
-document.querySelectorAll('[data-mail]').forEach(function(e){e.textContent=C.SUPPORT_EMAIL;e.href='mailto:'+C.SUPPORT_EMAIL});
-document.querySelectorAll('[data-abn]').forEach(function(e){e.textContent=C.ABN});
-document.querySelectorAll('[data-name]').forEach(function(e){e.textContent=C.BUSINESS_NAME});})();
+(function(){
+  var C = window.QC || {};
+  var mail = (C.SUPPORT_EMAIL || '').trim();
+  document.querySelectorAll('[data-name]').forEach(function(e){ if (C.BUSINESS_NAME) e.textContent = C.BUSINESS_NAME; });
+  var abn = (C.ABN || '').replace(/[^0-9]/g, '');
+  if (abn.length === 11) { document.querySelectorAll('[data-abn]').forEach(function(e){ e.textContent = C.ABN; }); document.querySelectorAll('[data-abn-line]').forEach(function(e){ e.hidden = false; }); }
+  document.querySelectorAll('[data-contact]').forEach(function(e){ if (!mail) return; var a = document.createElement('a'); a.href = 'mailto:' + mail; a.textContent = mail; e.textContent = 'email '; e.appendChild(a); });
+})();
 </script>
 </body>
 </html>

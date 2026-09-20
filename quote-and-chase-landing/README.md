@@ -1,11 +1,21 @@
 # Quote and Chase landing page
 
-The pre-sale landing page for the painters' pack, with a live "point
-your phone at a wall" demo behind a QR code. Static page plus one Vercel
-serverless function that calls the Claude API.
+The landing page for the free Quote and Chase phone app (the product),
+with the optional $249 laptop pack and the hosted waiting list as the
+two paid tiers, plus a live "point your phone at a wall" demo behind a
+QR code. Static page, one Vercel serverless function that calls the
+Claude API for the demo, and the sending relay the app uses.
+
+`public/app/` is a copy of `../quote-and-chase-app/`; keep them
+identical. The app keeps its data per address, so pick one canonical
+address (`APP_URL` in `config.js`; the relative `app/` or
+https://aa-ronjs.github.io/portfolio/app/) and use it everywhere.
 
 ```
-public/index.html   the page (hero, how it works, demo, price, FAQ)
+public/index.html   the page (hero, what it does, demo, install, own-it, price, FAQ)
+public/privacy.html what the app stores, what leaves the phone and to whom; hard-coded date
+public/terms.html   app as-is terms, pack purchase terms and 14-day guarantee, hosted list
+public/config.js    everything the owner fills in (TODO lines: SUPPORT_EMAIL, ABN, BUSINESS_NAME)
 public/qr-card.html printable A6 card with the QR for counters, vans, expos
 public/qr.svg       the QR code; regenerate for the real domain
 api/demo.js         POST /api/demo: photo + notes -> sample quote JSON
@@ -37,10 +47,16 @@ run up a bill by accident.
 ## Wire up before running ads
 
 Everything you must edit is in `public/config.js`: the checkout URL for
-the owned version, the founding-list URL and opening date for the hosted
+the laptop pack, the waiting-list URL and opening date for the hosted
 version, the email form endpoint, Meta pixel ID, business name, ABN,
-support email, and the date the video lessons will be delivered. Until the checkout and
-form are set, their buttons show a polite "not connected" alert.
+support email, and the date the video lessons will be delivered. Until
+the checkout and form are set, their buttons render "Coming soon" (with
+a mailto once `SUPPORT_EMAIL` is set) and the email forms stay hidden.
+Nothing on the site alerts. The footer, privacy and terms pages print
+the ABN and email only when they are set; the placeholders are gone, so
+an empty value shows "Contact email coming soon" rather than a fake one.
+The privacy and terms pages carry a hard-coded "Last updated" date;
+change it by hand when you change the words.
 
 Other pages: `privacy`, `terms` (the 14-day guarantee is stated there),
 `thanks` (post-purchase downloads; point your checkout's redirect at it)
@@ -49,8 +65,9 @@ Other pages: `privacy`, `terms` (the 14-day guarantee is stated there),
 exists; its onboarding will reuse the intake fields in
 `quote-and-chase/prebuild/`. `public/downloads/` holds the three customer zips built
 by the two `package.sh` scripts; rebuild and copy them after any pack
-change. `public/sample-quote.pdf` is a real output of the `/quote` skill
-on the sample job.
+change. `public/sample-quote.pdf` must be a quote the phone app made
+(regenerate it from the app after any PDF change; the landing page links
+it as "See a quote it makes").
 
 The QR code on the page draws itself from the deployed URL, so it is
 correct on any domain. `qr.svg` is the static fallback and the print
@@ -89,17 +106,25 @@ keep them in step if you change the defaults.
 
 ## Copy notes
 
-Every number on the page cites its source in the same block. The
-guarantee ("one working quote in 14 days or your money back") is a
-promise you must honour; if you change it, change the FAQ too. The
-footer's Anthropic trademark line stays.
+The story on every page is: the phone app is free and is the product;
+it stores data on the phone, exports a back-up, sends SMS and email
+through the relay when the painter sets it up (otherwise they tap Text
+or Email), takes cards through Stripe payment links, books into the
+phone calendar; the laptop pack is optional extras and needs a Claude
+subscription. Do not reintroduce "it never sends", "no subscription,
+ever", "not included: bookings, payments" or "makes a spreadsheet".
+No testimonials or usage numbers until there are real ones. The
+guarantee ("one real quote out in 14 days or your money back") applies
+to the pack and is a promise you must honour; if you change it, change
+the terms too. The footer's trademark line stays.
 
 ## The sending relay (`api/msg.js`)
 
 The phone app sends SMS through Twilio and email through Resend via this
-one function. It keeps nothing: Twilio holds scheduled SMS (up to 35 days
-ahead, needs a Messaging Service) and Resend holds scheduled email (up to
-30 days ahead).
+one function. The function itself stores and logs nothing: Twilio holds
+scheduled SMS (up to 35 days ahead, needs a Messaging Service) and Resend
+holds scheduled email (up to 30 days ahead). Vercel still keeps request
+logs, and Twilio and Resend keep message logs; the privacy page says so.
 
 Two ways to run it:
 

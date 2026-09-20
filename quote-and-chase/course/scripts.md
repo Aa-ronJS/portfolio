@@ -1,5 +1,8 @@
 # Lesson scripts
 
+These are the lessons for the optional laptop pack. The free phone app
+is the product; lesson one says so before anything else.
+
 Seven lessons, spoken word for word or close to it. Screen recording
 throughout; no talking head needed except the first thirty seconds of
 lesson one if you want a face on it. Total about fifty minutes.
@@ -16,8 +19,14 @@ re-record only the lesson that shows them.
 
 [Open on the finished folder in Explorer or Finder.]
 
-This is the whole thing. One folder, on your laptop. In about an hour
-it will turn photos of a room into a priced quote with your name on it,
+First, the thing you may already have: the free phone app. It
+measures, quotes, invoices, takes card payments, books the days and
+follows up, all on your phone. If that is all you want, you can stop
+here and keep the app.
+
+This pack is the laptop version of the same idea, for people who do
+their admin at a desk. One folder, on your laptop. In about an hour it
+will turn photos of a room into a priced quote with your name on it,
 write the invoice when the job is done, and tell you on a Monday who
 owes you money.
 
@@ -30,7 +39,9 @@ change. Nobody charges you per job for this. Nobody can switch it off.
 Here's a quote it made from a sample job: three rooms in Ringwood.
 Every number on it came from a price list you'll edit in lesson three.
 Every assumption it made is written down on the second page. You check
-those, then you send it. It never sends anything itself.
+those, then you send it. This pack never sends anything itself; the
+phone app can, once you set up SMS and email there, but that is a
+separate switch you turn on.
 
 [Open the terminal window with Claude Code running, type nothing.]
 
@@ -40,8 +51,9 @@ subscription for it, which you pay to them, not to me. This window is
 the only slightly unusual thing you'll see. You type a sentence, it
 does the work, it asks before it does anything risky.
 
-What this is not: it doesn't book jobs, take payments, or give clients
-a login. Keep whatever you use for those. This does the typing.
+What this pack is not: it doesn't book jobs, take payments or send
+messages. The phone app does the first two and, if you set it up, the
+third. This does the typing at a desk.
 
 Next lesson: install it. Ten minutes, double-clicks only.
 
@@ -229,10 +241,10 @@ Next: a real job with your own photos.
 
 ## Lesson 5: Measure it properly, then a real job (10 min)
 
-[Hold up a blank sheet of A4.]
+[Hold up a sheet of A4, any sheet, a printed letter is fine.]
 
 This is the difference between an estimate and a quote, and it costs
-nothing. A blank page from the printer tray is exactly two hundred and
+nothing. Any A4 sheet, printed or blank, is exactly two hundred and
 ten by two ninety-seven. Stick it flat on the wall.
 
 [Phone footage: step back, take one photo of the whole wall, lights on.]
@@ -264,7 +276,9 @@ it in the job folder next to the photos.
 [Show the confidence line.]
 
 It tells you what it thinks its accuracy is: about one and a half
-percent with the page. No page handy? Tap the four corners yourself
+percent with the sheet. You can do the same thing in the phone app,
+New job, add a room, Measure from photo, and it saves straight into
+the job. No page handy? Tap the four corners yourself
 and use a door, they're two point oh four, or the ceiling height.
 
 [Got an iPhone Pro? Fifteen seconds on LiDAR.]
@@ -290,7 +304,7 @@ price list grows.
 [Open the PDF and working.md. Read the assumptions.]
 
 Read these before you send. Then attach the PDF to a text or an email
-from your own phone. It has never sent anything and it never will.
+from your own phone. This pack has never sent anything; you send.
 
 Next: getting paid.
 
@@ -329,6 +343,8 @@ an email, in your voice from lesson three. First reminder is friendly,
 assumes they forgot. Second is clear. Third names the next step. You
 copy, you paste, you send. It asks if you want it to record that you
 chased them today, so it doesn't nag the same person twice in a week.
+If you want the reminders to go out by themselves on the day, that is
+the phone app with SMS and email set up, not this pack.
 
 [Show the total outstanding line.]
 
@@ -398,4 +414,4 @@ Shot list only; no script.
 5. Open the PDF. Scroll. Open working.md, show the assumptions.
 6. Two seconds: price-list.md, cursor changes a rate, save. Caption:
    "your rates, your file".
-7. End card: "Own it. $249 once." URL.
+7. End card: "Free on your phone. Laptop pack $249 once." URL.

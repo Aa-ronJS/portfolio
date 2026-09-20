@@ -1,9 +1,12 @@
 QUOTE AND CHASE FOR PAINTERS
 ============================
 
-This add-on gives Claude Code three jobs for a painting business:
+The free phone app is the product: measure, quote, invoice, get paid,
+book and follow up, all on your phone. This add-on is the optional
+laptop extra. It gives Claude Code three jobs for a painting business:
 photos and notes in, PDF quote out; accepted quote in, PDF invoice out;
 and a Monday list of who owes you, with the reminder messages drafted.
+It needs a Claude subscription; the phone app does not.
 
 Before you start
   You need Claude Code set up first, using the setup files from the
@@ -22,6 +25,8 @@ Then
   folder. It walks you through filling in your prices and running your
   first quote on the example job.
 
-What it never does
-  It never sends anything. You send every quote, invoice and reminder
-  yourself. It never uses a price that is not in your price list.
+What this pack never does
+  This pack never sends anything. You send every quote, invoice and
+  reminder yourself from your own email or phone. (The phone app can
+  send for you once you set up SMS and email there; that is separate.)
+  It never uses a price that is not in your price list.

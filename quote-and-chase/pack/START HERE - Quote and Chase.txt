@@ -1,21 +1,32 @@
 QUOTE AND CHASE - START HERE
 ============================
 
-You have three new commands inside Claude Code. Each one is a word you
-type that starts with a slash.
+Step one is the phone app, and it is free
+  Everything a painter needs is in the phone app: measure a wall from
+  one photo, quote at your rates, send the PDF, invoice, take card
+  payments, book the days and follow up. It stores everything on your
+  phone. Open it in your phone's browser and add it to your home
+  screen (iPhone: Share, Add to Home Screen. Android: Chrome menu,
+  Install app). The app's own Help screen covers the rest.
+
+This pack is the optional laptop extras
+  If you also like doing admin at a desk, this pack gives Claude Code
+  three commands for the same job. It is for people who are happy in
+  a terminal window; the phone app never needs one. The pack needs a
+  Claude subscription (paid to Anthropic); the phone app does not.
 
   /quote     photos + notes  ->  PDF quote
   /invoice   accepted quote  ->  PDF invoice
   /chase     who owes you    ->  reminder texts and emails, drafted
 
-Set up once (about 10 minutes)
+For laptop users: set up once (about 10 minutes)
   1. Open the "business" folder. Fill in details.md (your business,
      bank details, how you talk to customers). Save.
   2. Open price-list.md. Change every price to yours. Save. Claude only
      ever quotes from this list, so it is worth getting right.
   3. Read quote-wording.md and change anything you would not say.
 
-Your first quote (about 5 minutes)
+For laptop users: your first quote (about 5 minutes)
   1. Double-click "Claude Code" on your Desktop.
   2. Type:   /quote Example - 12 Wattle St Ringwood
      and press Enter. Watch what it does. It will read the example
@@ -26,12 +37,14 @@ Your first quote (about 5 minutes)
      real quote goes out.
 
 Measure it properly (a minute a wall, worth it, nothing to print)
-  1. Stick an A4 sheet flat on the wall. Photograph the whole
-     wall, corner to corner, lights on.
-  2. Open the "measure" folder, double-click measure.html. Choose the
-     photo. It outlines the page: confirm. It outlines the wall:
-     confirm. Doors and windows it can see are listed; add any it
-     missed with two taps. Save.
+  1. Stick any A4 sheet flat on the wall, printed or blank. Photograph
+     the whole wall, corner to corner, lights on. Expect about one and
+     a half percent.
+  2. Easiest: do it in the phone app (New job, add a room, Measure
+     from photo). On a laptop, open the "measure" folder and
+     double-click measure.html, then choose the photo. It outlines the
+     page: confirm. It outlines the wall: confirm. Doors and windows it
+     can see are listed; add any it missed with two taps. Save.
   3. No page in the shot? Tap the four wall corners and use a door
      (2.04 m) or the ceiling height for the size.
   4. Put the measurements.json it makes in the job folder with the
@@ -39,7 +52,7 @@ Measure it properly (a minute a wall, worth it, nothing to print)
   Got an iPhone Pro? Scan the room with any RoomPlan app that exports
   JSON (RoomScan, openPlan3D) and drop the file in the job folder.
 
-A real quote
+For laptop users: a real quote
   1. In quotes/incoming make a folder named after the address.
   2. Drop in your phone photos, a notes.txt (copy the example), and
      measurements.json if you measured.
@@ -50,7 +63,9 @@ A real quote
   6. Every Monday:        /chase
 
 Rules the pack lives by
-  - Claude drafts. You send. It never emails or texts anyone.
+  - In this pack, Claude drafts and you send, from your own email or
+    phone. (The phone app is different: once you set up SMS and email
+    there, it can send quotes and follow-ups for you. See HELP.txt.)
   - Claude only uses prices from your price list.
   - Everything stays in this folder. Back the folder up.
 

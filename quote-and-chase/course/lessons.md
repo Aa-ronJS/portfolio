@@ -1,5 +1,11 @@
 # Quote and Chase for painters: lesson plan and demo script
 
+These lessons are for the optional laptop pack ($249, needs a Claude
+subscription). The free phone app is the product and needs no lesson;
+every video should say so in its first minute and point to it. The
+pack drafts documents; only the phone app can send SMS and email for
+you, and only once the painter sets that up.
+
 Total runtime target: 45 to 55 minutes across seven short videos, plus
 the two-minute demo that doubles as the ad.
 
@@ -15,14 +21,16 @@ Screen recording, phone footage intercut. No talking head.
 3. Let it run unedited for about 40 seconds at 2x speed. Show it
    reading each photo, the quantity table, the price lines.
 4. Open the PDF. Scroll it. Open working.md and show the assumptions.
-5. End card: "Quote from a photo in two minutes. Your prices. Your
-   laptop. No per-job fees." QR code and URL.
+5. End card: "Quote from a photo in two minutes. Your prices. Free
+   on your phone; laptop pack $249 once." QR code and URL.
 
 ## 1. What you are about to build (4 min)
 
 - The evening problem: quoting after dinner, chasing on weekends.
-- What this pack does and does not do. Say plainly it is not a
-  scheduling app and does not take payments.
+- What this pack does and does not do. Say plainly: the pack drafts
+  quotes, invoices and reminders on a laptop and never sends them.
+  Bookings, card payments and automatic follow-ups live in the free
+  phone app, which sits alongside the pack.
 - Show the finished folder, the three commands, one quote PDF.
 
 ## 2. Install the pack (5 min)
@@ -47,11 +55,13 @@ Screen recording, phone footage intercut. No talking head.
 - Read working.md together. Change one assumption in notes.txt (the
   hallway is 2.7 m high) and re-run. Show the total move.
 - Open the PDF. Show what to check before sending.
-- Say out loud: you send it, from your own email.
+- Say out loud: with the pack, you send it, from your own email. (The
+  phone app can send for you once SMS and email are set up there.)
 
 ## 5. Measure it properly, then a real job (10 min)
 
-- The measuring page: an A4 sheet on the wall, one photo per wall,
+- The measuring page: any A4 sheet on the wall, printed or blank, one
+  photo per wall,
   confirm the page outline, confirm the wall outline, doors and
   windows found for you, save. Nothing to print. LiDAR scan as the
   iPhone Pro shortcut; AR tape on Android.
