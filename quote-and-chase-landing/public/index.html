@@ -201,6 +201,15 @@ textarea{width:100%;font:1rem var(--body);padding:.8em .9em;border:1.5px solid v
 .waitform .row{display:flex;flex-wrap:wrap;gap:8px}
 .waitform input[type=email]{flex:1 1 240px;font:1rem var(--body);padding:.8em .9em;border:1.5px solid var(--line);border-radius:6px;background:var(--paper);color:var(--doc-ink)}
 .waitform small{color:var(--muted);font-size:.85rem}
+.cap{display:grid;gap:8px}
+.cap .row{display:flex;flex-wrap:wrap;gap:8px}
+.cap input[type=email]{flex:1 1 200px;font:1rem var(--body);padding:.75em .9em;border:1.5px solid var(--line);border-radius:6px;background:var(--ground);color:var(--ink);min-width:0;width:100%}
+.cap.laptop{background:var(--tape-soft);color:var(--ink);border-radius:8px;padding:14px 16px}
+.cap.laptop label{font-size:.95rem}
+.cap .done{font-weight:600}
+.maker{display:grid;gap:20px;align-items:center;grid-template-columns:1fr}
+@media (min-width:700px){.maker{grid-template-columns:auto 1fr}}
+.maker img{width:112px;height:112px;object-fit:cover;border-radius:8px}
 /* faq */
 details{border-top:1px solid var(--line);padding:16px 0}
 details:last-of-type{border-bottom:1px solid var(--line)}
@@ -336,6 +345,11 @@ footer .wrap{display:grid;gap:8px}
       <button class="btn" id="go" type="button" disabled>Get a sample quote</button>
       <p class="status" id="status" aria-live="polite">Add a photo to start.</p>
       <div class="result" id="result" hidden></div>
+      <form class="cap laptop" id="laptop" data-capture="laptop" action="#" method="post" hidden>
+        <input type="hidden" name="list" value="send-to-laptop">
+        <label for="laptop-email"><b>Building it happens on a laptop.</b> Email yourself the link and the sample quote.</label>
+        <div class="row"><input type="email" id="laptop-email" name="email" placeholder="you@yourpainting.com.au" required autocomplete="email"><button class="btn tape" type="submit">Send to my laptop</button></div>
+      </form>
       <p class="fine" style="color:var(--muted);font-size:.85rem">Photo not stored. Demo prices, not an offer of work.</p>
     </div>
   </div>
@@ -367,6 +381,13 @@ footer .wrap{display:grid;gap:8px}
   </div>
 </section>
 
+<section id="maker" hidden>
+  <div class="wrap maker">
+    <img id="maker-photo" alt="" hidden>
+    <div><p class="eyebrow">Why I made this</p><p id="maker-note" class="lede"></p><p id="maker-name" class="fine" style="color:var(--muted)"></p></div>
+  </div>
+</section>
+
 <section id="price">
   <div class="wrap grid" style="gap:24px">
     <h2>Price</h2>
@@ -395,12 +416,18 @@ footer .wrap{display:grid;gap:8px}
         </ul>
         <div class="buy">
           <a class="btn ghost" href="#" data-hosted>Join the founding list</a>
+          <form class="cap" data-capture="hosted" action="#" method="post" hidden>
+            <input type="hidden" name="list" value="hosted-founding">
+            <input type="email" name="email" placeholder="you@yourpainting.com.au" required autocomplete="email" aria-label="Email for the founding list">
+            <button class="btn ghost" type="submit">Add me</button>
+          </form>
         </div>
       </div>
     </div>
     <div class="guarantee" style="max-width:720px"><b>One working quote in 14 days, or your money back.</b>Or switch to the hosted version and we credit your $249 to the first year.</div>
     <p class="fine" style="color:var(--muted)">Founding price. Written lessons and templates today; video lessons <span data-lessons-date>within 14 days of purchase</span>.</p>
     <form id="waitlist" action="#" method="post" data-form class="waitform">
+      <input type="hidden" name="list" value="sample-quote">
       <label for="email" style="font-weight:600;font-size:.95rem">Not ready? Get the sample quote by email.</label>
       <div class="row">
         <input type="email" id="email" name="email" placeholder="you@yourpainting.com.au" required autocomplete="email">
@@ -499,6 +526,7 @@ footer .wrap{display:grid;gap:8px}
       (note ? '<p class="fine">' + esc(note) + '</p>' : '') +
       '<p class="fine">Demo price list. The one you build uses your rates, and the quote lands as a PDF with your name on it.</p>';
     result.hidden = false;
+    if (window.matchMedia('(max-width: 959px)').matches) { var lap = document.getElementById('laptop'); if (lap && !lap.querySelector('.done')) lap.hidden = false; }
     result.scrollIntoView({ block: 'start', behavior: 'smooth' });
   }
 
@@ -545,11 +573,37 @@ footer .wrap{display:grid;gap:8px}
   var hosted = document.querySelector('[data-hosted]');
   if (C.HOSTED_URL) hosted.setAttribute('href', C.HOSTED_URL);
   document.querySelectorAll('[data-hosted-date]').forEach(function(el){ if (C.HOSTED_DATE) el.textContent = C.HOSTED_DATE; });
+  var hostedCap = document.querySelector('[data-capture="hosted"]');
   hosted.addEventListener('click', function(e){
-    if (hosted.getAttribute('href') === '#') { e.preventDefault(); alert('The founding list is not connected yet. Set HOSTED_URL in config.js.'); return; }
+    if (hosted.getAttribute('href') === '#') {
+      e.preventDefault();
+      if (!C.FORM_ACTION) { alert('Set HOSTED_URL or FORM_ACTION in config.js.'); return; }
+      hosted.hidden = true; hostedCap.hidden = false; hostedCap.querySelector('input[type=email]').focus();
+      return;
+    }
     track('Lead', { content_name: 'hosted_founding_list' });
   });
-  if (C.FORM_ACTION) form.setAttribute('action', C.FORM_ACTION);
+
+  // Every email capture posts to the one FORM_ACTION with a hidden "list" field, in the background.
+  document.querySelectorAll('form[data-capture], form[data-form]').forEach(function(f){
+    if (C.FORM_ACTION) f.setAttribute('action', C.FORM_ACTION);
+    f.addEventListener('submit', function(e){
+      if (f.getAttribute('action') === '#') { e.preventDefault(); alert('The email form is not connected yet. Set FORM_ACTION in config.js.'); return; }
+      e.preventDefault();
+      var btn = f.querySelector('button[type=submit]'); if (btn) btn.disabled = true;
+      var list = (f.querySelector('input[name=list]') || {}).value || 'email';
+      fetch(f.getAttribute('action'), { method: 'POST', body: new FormData(f), headers: { 'Accept': 'application/json' } })
+        .then(function(r){ if (!r.ok) throw new Error('bad'); track('Lead', { content_name: list }); f.innerHTML = '<p class="done">Done. Check your inbox.</p>'; })
+        .catch(function(){ if (btn) btn.disabled = false; alert('That did not send. Try again, or email ' + (C.SUPPORT_EMAIL || 'us') + '.'); });
+    });
+  });
+
+  if (C.MAKER_NOTE) {
+    var mk = document.getElementById('maker'); mk.hidden = false;
+    document.getElementById('maker-note').textContent = C.MAKER_NOTE;
+    document.getElementById('maker-name').textContent = C.MAKER_NAME || '';
+    if (C.MAKER_PHOTO) { var mp = document.getElementById('maker-photo'); mp.src = C.MAKER_PHOTO; mp.hidden = false; }
+  }
   document.querySelectorAll('[data-lessons-date]').forEach(function(el){ if (C.LESSONS_DATE) el.textContent = C.LESSONS_DATE; });
   document.querySelectorAll('[data-abn]').forEach(function(el){ if (C.ABN) el.textContent = C.ABN; });
   document.querySelectorAll('[data-mail]').forEach(function(el){ if (C.SUPPORT_EMAIL) { el.textContent = C.SUPPORT_EMAIL; el.href = 'mailto:' + C.SUPPORT_EMAIL; } });
@@ -558,10 +612,7 @@ footer .wrap{display:grid;gap:8px}
     if (checkout.getAttribute('href') === '#') { e.preventDefault(); alert('Checkout is not connected yet. Set CHECKOUT_URL at the top of index.html.'); return; }
     track('InitiateCheckout', { value: 249, currency: 'AUD' });
   });
-  form.addEventListener('submit', function(e){
-    if (form.getAttribute('action') === '#') { e.preventDefault(); alert('The email form is not connected yet. Set FORM_ACTION at the top of index.html.'); return; }
-    track('Lead');
-  });
+
   var demoTracked = false;
   go.addEventListener('click', function(){ if (!demoTracked) { demoTracked = true; track('ViewContent', { content_name: 'demo_quote' }); } });
 
