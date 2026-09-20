@@ -354,6 +354,12 @@
       var sides = []; for (var k = 0; k < 4; k++) sides.push(Math.hypot(q4[(k + 1) % 4].x - q4[k].x, q4[(k + 1) % 4].y - q4[k].y)); return { ok: true, area: area, minSide: Math.min.apply(null, sides) }; }
     // ---------- The wall frame from four corners
     var ORDER = ['top-left', 'top-right', 'bottom-right', 'bottom-left'];
+    // angle between the wall and the image plane, from the homography and a focal length: 0 = square-on
+    function tiltFromH(H, f, cx, cy){
+      function col(c){ return [(H[0][c] - cx * H[2][c]) / f, (H[1][c] - cy * H[2][c]) / f, H[2][c]]; }
+      var a = col(0), b = col(1), n = [a[1] * b[2] - a[2] * b[1], a[2] * b[0] - a[0] * b[2], a[0] * b[1] - a[1] * b[0]], L = Math.hypot(n[0], n[1], n[2]) || 1;
+      return Math.acos(Math.min(1, Math.abs(n[2]) / L)) * 180 / Math.PI;
+    }
     function chooseFocal(Hw){
       var cx = S.w / 2, cy = S.h / 2, f26 = f35ToPx(26, S.w, S.h), out = { f: f26, source: 'default 26 mm' };
       if (S.exif && S.exif.f35) out = { f: f35ToPx(S.exif.f35, S.w, S.h), source: 'photo data, ' + S.exif.f35 + ' mm equivalent' };
@@ -364,7 +370,11 @@
         pats.forEach(function(pt){ var pts = S.rect.px.map(function(p, i){ return { x: p.x + pt[i], y: p.y - pt[(i + 1) % 4] }; }); var H2 = homography([{x:0,y:0},{x:1,y:0},{x:1,y:1},{x:0,y:1}], pts), f2 = H2 && focalFromH(H2, cx, cy); if (f2) { lo = Math.min(lo, f2); hi = Math.max(hi, f2); } });
         if (hi / lo < 1.35) {
           var fx = S.exif && S.exif.f35 ? f35ToPx(S.exif.f35, S.w, S.h) : 0;
+          // the focal length is only observable when the wall is seen at an angle; straight-on, the self-estimate is noise and the photo data wins
+          var tilt = tiltFromH(Hw, fx || fe, cx, cy);
           if (fx && Math.abs(fe / fx - 1) < 0.15) out = { f: fx, source: 'photo data, ' + S.exif.f35 + ' mm equivalent, confirmed by the wall corners' };
+          else if (fx && tilt < 15) out = { f: fx, source: 'photo data, ' + S.exif.f35 + ' mm equivalent' };
+          else if (!fx && tilt < 12) out = { f: f26, source: 'default 26 mm (wall too square-on to work it out)' };
           else out = { f: fe, source: 'worked out from the wall corners' + (fx ? ' (the photo data disagreed, so it looks cropped or zoomed)' : '') };
         }
       }
@@ -585,7 +595,7 @@
     if (window.QCAR) { QCAR.supported().then(function(ok){ if (!ok) return; q('arbtn').hidden = false; q('arbtn').addEventListener('click', function(){ QCAR.start({ count: opts.count, onSave: function(rec){ if (opts.onSave) opts.onSave(rec); } }).catch(function(e){ say('AR did not start: ' + (e && e.message || e), 'bad'); }); }); }); }
     setMode('wall');
     // Test hooks (used by the automated check; harmless in normal use)
-    return { state: S, loadFile: loadFile, apply: apply, homography: homography, place: placePoint, setMode: setMode,
+    return { state: S, loadFile: loadFile, apply: apply, homography: homography, focalFromH: focalFromH, chooseFocal: chooseFocal, place: placePoint, setMode: setMode,
       wall4: function(pts){ S.mode = 'wall'; S.taps = []; pts.forEach(function(p){ placePoint(p); }); return S.rect; },
       scale: function(kind, mm, px){ if (kind === 'ceiling') return applyScale('ceiling', mm, null); S.scaleKind = kind; return applyScale(kind, mm, px); },
       refRect: function(kind, pts){ var r = REFS[kind]; S.refKind = r; q('refw').value = r.w; q('refh').value = r.h; S.mode = 'ref'; S.taps = []; pts.forEach(function(p){ placePoint(p); }); return S.H; },
