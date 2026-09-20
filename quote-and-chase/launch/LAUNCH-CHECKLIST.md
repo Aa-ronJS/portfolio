@@ -63,6 +63,15 @@ what only you can do, in order. Nothing else is waiting on me.
 - Quote and Chase pack: four skills, price list, wording, templates,
   PDF helper, ledger, sample job, HELP.txt; `/quote`, `/mark`,
   `/invoice` and `/chase` run end to end for real.
+- Phone app workflow: Quick quote (camera first, client details after,
+  Send the quote), walls auto-save when you leave the room, travel worked
+  out from the job postcode against the business postcode (GeoNames
+  centroids, offline, 25 km free radius, both ways), labour-and-paint
+  costing that derives the price list and shows a private hours/litres/
+  margin card, follow-up reminders as calendar events at set days,
+  bookings as calendar events with a Google Calendar link, Stripe card
+  payment links on invoices with a check-payments button (restricted key
+  stays on the phone; Stripe API tested with a mock, not a live key).
 - Measuring: nothing to print. A blank A4 sheet is found automatically
   and sets the scale; the wall outline is found automatically (region
   growing from the page, edge snapping) and confirmed; doors and

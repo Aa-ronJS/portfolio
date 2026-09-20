@@ -278,7 +278,7 @@
     }
 
     // ---------- Automatic flow: find the A4 page, confirm; find the wall, confirm; scale from the page; propose openings
-    function stepUI(title, hint, buttons){ q('stepbox').hidden = false; q('moderow').hidden = true; q('modehint').hidden = true; q('steptitle').textContent = title; q('stephint').textContent = hint || ''; var box = q('stepbtns'); box.innerHTML = '';
+    function stepUI(title, hint, buttons, keepModes){ q('stepbox').hidden = false; q('moderow').hidden = !keepModes; q('modehint').hidden = !keepModes; q('steptitle').textContent = title; q('stephint').textContent = hint || ''; var box = q('stepbtns'); box.innerHTML = '';
       buttons.forEach(function(b){ var el = document.createElement('button'); el.className = 'btn ' + (b.cls || 'sm'); el.textContent = b.label; el.addEventListener('click', b.fn); box.appendChild(el); }); q('stepbox').scrollIntoView({ block: 'nearest', behavior: 'smooth' }); }
     function focalForDetect(){ var f26 = f35ToPx(26, S.w, S.h); return S.exif && S.exif.f35 ? f35ToPx(S.exif.f35, S.w, S.h) : f26; }
     function autoStart(){
@@ -392,6 +392,7 @@
       // re-size any openings already placed in this frame, from the measured (not rounded) wall
       var mm0 = scale.measured; S.items.forEach(function(it){ if (it.type !== 'wall' && it.frame === 'wall') { it.w = mm0.W * (it.x2 - it.x1); it.h = mm0.H * (it.y2 - it.y1); it.area = it.w * it.h / 1e6; } });
       q('scalebox').hidden = !scale.assumed; q('rescalerow').hidden = true; draw(); renderItems(); if (!scale.assumed) offerRounding();
+      stepUI('Wall measured', 'Remove any door or window that is wrong, tap Door or Window to add one, then save.', [{ label: 'Save this wall', cls: 'tape', fn: saveWall }], true);
       if (scale.assumed) say('Wall about ' + fmt(W) + ' × ' + fmt(Hh) + ' m if the ceiling is ' + fmt(scale.ref_mm) + ' m. Ceilings vary, so tap a door top and bottom to size it properly, or tap the door as an opening and it will check itself.', 'warn');
       else if (scale.method === 'inherited') say('Wall: ' + fmt(W) + ' × ' + fmt(Hh) + ' m, using the ' + fmt(Hh) + ' m wall height already measured in this room. Tap doors and windows, or save this wall.', 'ok');
       else say('Wall: ' + fmt(W) + ' × ' + fmt(Hh) + ' m' + (scale.rounded ? ' (rounded up from ' + fmt(scale.measured.W) + ' × ' + fmt(scale.measured.H) + ')' : '') + ', scaled from the ' + scale.label + '. Now tap doors and windows (two corners each), or save this wall.', 'ok');
@@ -541,6 +542,7 @@
     }
 
     // ---------- Saving a wall hands it to the app
+    function saveWall(){ q('savewall').click(); }
     q('savewall').addEventListener('click', function(){
       var wall = S.items.filter(function(i){ return i.type === 'wall'; })[0];
       if (!wall) { say('Tap the corners of the wall first.', 'warn'); return; }
@@ -553,7 +555,8 @@
         method: wall.frame === 'wall' ? (S.scale && S.scale.method === 'page' ? 'photo-page' : 'photo-corners') : 'photo-reference', scale: wall.frame === 'wall' ? (S.scale && S.scale.method) : (S.ref ? S.ref.label : 'sheet'), scale_assumed: !!(S.scale && S.scale.assumed), rounded: !!(S.scale && S.scale.rounded), measured_width_mm: S.scale && S.scale.measured ? Math.round(S.scale.measured.W) : undefined, measured_height_mm: S.scale && S.scale.measured ? Math.round(S.scale.measured.H) : undefined,
         focal: S.fSource || '', expected_error_pct: confidence(), photo: S.photoName, measured_at: new Date().toISOString() };
       if (opts.onSave) opts.onSave(rec);
-      say('Saved ' + rec.wall + '. Take the next wall, or go back to the room.', 'ok');
+      say('Saved ' + rec.wall + '. Next wall: take a new photo. Or go back to the room.', 'ok');
+      stepUI('Saved ' + rec.wall, 'Take a new photo for the next wall, or go back and build the quote.', [], true);
       q('wallname').value = ''; S.items = []; S.rect = null; S.scale = null; S.page = null; S.edit = null; q('roundbox').hidden = true; draw(); renderItems();
     });
     q('photo').addEventListener('change', function(){ loadFile(this.files[0]); this.value = ''; });
@@ -568,7 +571,7 @@
       scale: function(kind, mm, px){ if (kind === 'ceiling') return applyScale('ceiling', mm, null); S.scaleKind = kind; return applyScale(kind, mm, px); },
       refRect: function(kind, pts){ var r = REFS[kind]; S.refKind = r; q('refw').value = r.w; q('refh').value = r.h; S.mode = 'ref'; S.taps = []; pts.forEach(function(p){ placePoint(p); }); return S.H; },
       measure: function(p1, p2){ var inv = S.rect ? S.rect.HwInv : S.Hinv, a = apply(inv, p1), b = apply(inv, p2); var it = { x1: Math.min(a.x,b.x), y1: Math.min(a.y,b.y), x2: Math.max(a.x,b.x), y2: Math.max(a.y,b.y), frame: S.rect ? 'wall' : 'plane' }; return sizeOf(it); },
-      rescale: function(){ q('rescale').click(); }, confirmPage: confirmPage, confirmWall: confirmWall, autoStart: autoStart, manual: function(){ S.edit = null; S.page = null; S.auto = S.auto || { page: null }; q('stepbox').hidden = true; setMode('wall'); }, wall: function(){ return S.items.filter(function(i){ return i.type === 'wall'; })[0]; } };
+      rescale: function(){ q('rescale').click(); }, confirmPage: confirmPage, confirmWall: confirmWall, autoStart: autoStart, saveNow: function(){ var w = S.items.filter(function(i){ return i.type === 'wall'; })[0]; if (!w || !S.rect || !S.rect.W) return false; S.assumedOk = true; q('savewall').click(); return true; }, unsaved: function(){ var w = S.items.filter(function(i){ return i.type === 'wall'; })[0]; return !!(w && S.rect && S.rect.W); }, manual: function(){ S.edit = null; S.page = null; S.auto = S.auto || { page: null }; q('stepbox').hidden = true; setMode('wall'); }, wall: function(){ return S.items.filter(function(i){ return i.type === 'wall'; })[0]; } };
   }
   window.QCMeasure = { mount: mount, exifFocal35: exifFocal35 };
 })();

@@ -99,6 +99,7 @@
     doc.table([{ t: 'Description', w: 140 }, { t: 'Amount', w: 38, align: 'right' }], rows);
     doc.gap(4); doc.box('Amount due by ' + fmtDate(inv.due) + ':  ' + money(inv.total) + '      Reference ' + inv.no, 10.5, 'bold', null, [28, 26, 23]);
     doc.box('Pay by bank transfer: ' + [det.account_name ? 'Account name ' + det.account_name : '', det.bsb ? 'BSB ' + det.bsb : '', det.account_number ? 'Account ' + det.account_number : ''].filter(Boolean).join('  ·  ') + (det.other_payments ? '\n' + det.other_payments : ''), 9, 'normal', [243, 240, 234]);
+    if (inv.pay_url) { doc.need(12); doc.d.setFontSize(10); doc.d.setFont('helvetica', 'bold'); doc.d.setTextColor(27, 95, 173); doc.d.textWithLink('Pay by card online: ' + inv.pay_url, doc.L, doc.y, { url: inv.pay_url }); doc.y += 6; doc.d.setTextColor(28, 26, 23); }
     doc.gap(3); doc.text('Thank you for your business. ' + [det.owner_name, det.trading_name].filter(Boolean).join(', '), 8.5, 'normal', [122, 116, 107]);
     return doc.d;
   }
