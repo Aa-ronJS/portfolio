@@ -63,6 +63,13 @@ coding. Your prices, your laptop, yours to change.
 A short course for painters with one to five on the tools. Tap to see
 what you'll build: [link]
 
+## The hosted option in ads
+
+Keep the ads on the owned angle; it is the differentiated hook. Do not
+advertise the hosted tier until it exists. The landing page offers it
+beside the owned version, so the visitor who wants nothing to install
+self-selects there and joins the founding list.
+
 ## Headlines (pick two to test)
 
 - Build your own quoting tool in an afternoon

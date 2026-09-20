@@ -1,9 +1,9 @@
 // ===== LAUNCH CONFIG: the only things to edit before running ads =====
 window.QC = {
-  CHECKOUT_URL: "",                 // course only: Gumroad / Lemon Squeezy / Stripe Payment Link
-  CHECKOUT_URL_PREBUILT: "",        // course + already-built pack: a second product link
-  FORM_ACTION: "",                  // Formspree / Tally / Kit endpoint for the email form
-  BUILD_FORM_ACTION: "",            // endpoint that receives the "already built" intake form (build-form page)
+  CHECKOUT_URL: "",                 // "Own it": Gumroad / Lemon Squeezy / Stripe Payment Link for the course + templates
+  HOSTED_URL: "",                   // "We run it": founding-list form (Tally/Formspree) or a pre-order payment link
+  HOSTED_DATE: "later this year",   // when the hosted version opens, e.g. "November 2026"
+  FORM_ACTION: "",                  // Formspree / Tally / Kit endpoint for the "not ready" email form
   META_PIXEL_ID: "",                // e.g. "1234567890"; leave empty to disable
   SUPPORT_EMAIL: "hello@example.com",
   BUSINESS_NAME: "Quote & Chase",
