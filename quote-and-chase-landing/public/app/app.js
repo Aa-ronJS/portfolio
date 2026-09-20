@@ -136,7 +136,7 @@
       }
       renderWalls();
       var mount = document.getElementById('measure-mount');
-      var mopts = { count: function () { return room.walls.length; }, ceilingM: function () { return n(room.H) || n(S.rules.ceiling_height_m) || 2.4; }, onCeiling: function (m) { room.H = Math.round(m * 100) / 100; save(); },
+      var mopts = { count: function () { return room.walls.length; }, ceiling: function () { return { m: n(room.H) || n(S.rules.ceiling_height_m) || 2.4, assumed: !n(room.H) }; }, onCeiling: function (m) { room.H = Math.round(m * 100) / 100; save(); },
         onSave: function (rec) { room.walls.push(rec); room.method = 'measured'; save(); renderWalls(); refreshPreview(); toast('Wall saved'); } };
       var mounted = false;
       function ensureMount() { if (!mounted && room.method === 'measured') { window.__qcMeasure = QCMeasure.mount(mount, mopts); mounted = true; } }

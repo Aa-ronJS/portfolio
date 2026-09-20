@@ -28,12 +28,15 @@
       '<div class="row"><button class="btn sm" data-mode="wall">Wall</button><button class="btn sm" data-mode="door">Door</button><button class="btn sm" data-mode="window">Window</button>' +
       '<button class="btn ghost sm" data-mode="wall2">Can\'t see all corners</button><button class="btn ghost sm" data-part="undo">Undo tap</button></div>' +
       '<p class="hint" data-part="modehint"></p>' +
+      '<div class="row" data-part="rescalerow" hidden><button class="btn tape sm" data-part="rescale">Size the wall from this door instead</button><span class="hint">Doors are 2.04 m; ceilings vary.</span></div>' +
       '<div class="scalebox" data-part="scalebox" hidden>' +
-        '<b>Wall corners done. One size sets the scale.</b>' +
-        '<div class="row"><label class="f" style="flex:1 1 8em">Ceiling height, m<span>same for every wall in the room</span><input type="number" step="0.01" min="1.8" max="6" data-part="ceiling"></label><button class="btn tape" data-scale="ceiling">Use ceiling height</button></div>' +
-        '<p class="hint">Or point at something in the photo instead:</p>' +
-        '<div class="row"><button class="btn sm" data-scale="door">A door, 2.04 m tall</button><button class="btn sm" data-scale="gpo">A power point, 116 mm wide</button><button class="btn sm" data-scale="tape">Something you measured</button></div>' +
+        '<b data-part="scaletitle">Sized from an assumed ceiling. Better: use a door.</b>' +
+        '<div class="row"><button class="btn tape" data-scale="door">Tap a door top and bottom (2.04 m)</button><button class="btn ghost sm" data-scale="gpo">A power point, 116 mm</button><button class="btn ghost sm" data-scale="tape">Something you measured</button></div>' +
         '<div class="row" data-part="scaleval" hidden><label class="f">Length, mm<input type="number" step="1" min="20" data-part="refmm" style="width:8em"></label><span class="hint" data-part="scalehint"></span></div>' +
+        '<details><summary class="hint">No door in the shot? Use the ceiling height</summary>' +
+        '<div class="row" style="margin-top:8px"><label class="f" style="flex:1 1 7em">Ceiling height, m<span>floor to ceiling, measured with a tape</span><input type="number" step="0.01" min="1.8" max="6" data-part="ceiling"></label>' +
+        '<label class="f" style="flex:1 1 10em">Where you tapped<select data-part="tapsat"><option value="0">ceiling line and floor</option><option value="180">below the cornice, above the skirting</option></select></label>' +
+        '<button class="btn sm" data-scale="ceiling">Use ceiling height</button></div></details>' +
       '</div>' +
       '<div class="scalebox" data-part="refbox" hidden>' +
         '<b>Tap the four corners of something we know the size of.</b>' +
@@ -50,7 +53,7 @@
   var SCALES = { door: { mm: 2040, label: 'door height', hint: 'Tap the top edge of the door leaf, then the bottom edge, at the same spot across.', err: 3 },
                  gpo: { mm: 116, label: 'power point width', hint: 'Tap the left edge of the plate, then the right edge. Zoom in with the loupe.', err: 3.5 },
                  tape: { mm: 1000, label: 'tape length', hint: 'Tap one end, then the other, of the thing you measured. Type its length.', err: 1.5 },
-                 ceiling: { label: 'ceiling height', err: 2 } };
+                 ceiling: { label: 'ceiling height', err: 2 }, assumed: { label: 'assumed ceiling height', err: 6 } };
 
   // ---------- Linear algebra
   function solve(A, b){
@@ -279,8 +282,9 @@
       S.items.push({ type: 'wall', x1: 0, y1: 0, x2: 1, y2: 1, w: W, h: Hh, area: W * Hh / 1e6, frame: 'wall' });
       // re-size any openings already placed in this frame
       S.items.forEach(function(it){ if (it.type !== 'wall' && it.frame === 'wall') { var sz = sizeOf(it); it.w = sz.w; it.h = sz.h; it.area = sz.w * sz.h / 1e6; } });
-      q('scalebox').hidden = true; draw(); renderItems();
-      say('Wall: ' + fmt(W) + ' × ' + fmt(Hh) + ' m, scaled from the ' + scale.label + '. Now tap doors and windows (two corners each), or save this wall.', 'ok');
+      q('scalebox').hidden = !scale.assumed; q('rescalerow').hidden = true; draw(); renderItems();
+      if (scale.assumed) say('Wall about ' + fmt(W) + ' × ' + fmt(Hh) + ' m if the ceiling is ' + fmt(scale.ref_mm) + ' m. Ceilings vary, so tap a door top and bottom to size it properly, or tap the door as an opening and it will check itself.', 'warn');
+      else say('Wall: ' + fmt(W) + ' × ' + fmt(Hh) + ' m, scaled from the ' + scale.label + '. Now tap doors and windows (two corners each), or save this wall.', 'ok');
       setMode('door');
     }
     function scaleFromSheet(){ // affine fit of the wall's unit frame to sheet millimetres over the marker corners
@@ -293,17 +297,18 @@
       var W = Math.hypot(X[0], Y[0]), Hh = Math.hypot(X[1], Y[1]); if (!(W > 300 && W < 30000 && Hh > 300 && Hh < 10000)) return null;
       return { W: W, H: Hh };
     }
-    function applyScale(kind, valueMm, px){ // px: the two tapped image points for length references
+    function applyScale(kind, valueMm, px, assumed){ // px: the two tapped image points for length references
       if (!S.rect) return false;
       var W, Hh, a = S.rect.aspect;
-      if (kind === 'ceiling') { Hh = valueMm; W = Hh / a; }
+      if (kind === 'ceiling') { var allow = assumed ? 0 : (parseFloat(q('tapsat').value) || 0); Hh = valueMm - allow; W = Hh / a; }
       else {
         var p1 = apply(S.rect.HwInv, px[0]), p2 = apply(S.rect.HwInv, px[1]), du = p2.x - p1.x, dv = p2.y - p1.y, unitLen = Math.hypot(du, a * dv); if (unitLen < 1e-6) return false;
         W = valueMm / unitLen; Hh = a * W;
       }
       if (!(W > 300 && W < 30000 && Hh > 1200 && Hh < 8000)) { say('That gives a wall ' + fmt(W) + ' × ' + fmt(Hh) + ' m, which cannot be right. Check the length, or tap again.', 'warn'); return false; }
-      finishWall(W, Hh, { method: kind, ref_mm: valueMm, label: SCALES[kind].label, err: SCALES[kind].err, px: px || null });
-      if (kind === 'ceiling' && opts.onCeiling) opts.onCeiling(valueMm / 1000);
+      var sk = assumed ? 'assumed' : kind;
+      finishWall(W, Hh, { method: sk, ref_mm: valueMm, label: SCALES[sk].label, err: SCALES[sk].err, px: px || null, assumed: !!assumed });
+      if (kind === 'ceiling' && !assumed && opts.onCeiling) opts.onCeiling(valueMm / 1000);
       return true;
     }
     function placePoint(img){
@@ -314,10 +319,11 @@
         if (!setWallFrame(taps)) { say('Those four corners did not make a sensible wall. Tap them again: top-left, top-right, bottom-right, bottom-left.', 'warn'); draw(); return; }
         var sh = scaleFromSheet();
         if (sh) { finishWall(sh.W, sh.H, { method: 'sheet', label: 'measure sheet', err: 1 }); return; }
-        draw(); q('scalebox').hidden = false; q('scaleval').hidden = true;
-        var cm = opts.ceilingM ? opts.ceilingM() : 0; if (cm) q('ceiling').value = cm;
-        say('Wall shape done (' + S.fSource + '). One known size sets the scale: use the ceiling height, or point at a door or power point.', 'ok');
-        S.mode = 'scale-wait'; q('modehint').textContent = 'Pick how to set the scale below.'; q('scalebox').scrollIntoView({ block: 'nearest', behavior: 'smooth' });
+        draw(); q('scaleval').hidden = true;
+        var c = opts.ceiling ? opts.ceiling() : { m: 2.4, assumed: true }; q('ceiling').value = c.m;
+        S.fNote = S.fSource;
+        if (!applyScale('ceiling', c.m * 1000, null, c.assumed)) { q('scalebox').hidden = false; say('Wall shape done. Tap a door top and bottom to set the size.', 'ok'); S.mode = 'scale-wait'; }
+        if (c.assumed) q('scalebox').scrollIntoView({ block: 'nearest', behavior: 'smooth' });
         return;
       }
       if (S.mode === 'scale') { // two taps on a known length
@@ -366,16 +372,20 @@
       if (it.type === 'wall') S.items = S.items.filter(function(x){ return x.type !== 'wall'; });
       S.items.push(it); draw(); renderItems();
       var msg = it.type === 'wall' ? 'Wall done. Now tap doors and windows, or save this wall.' : (it.type + ' added: ' + fmt(it.w) + ' × ' + fmt(it.h) + ' m. Next one, or save this wall.');
-      if (it.type === 'door' && S.scale && S.scale.method === 'ceiling') { // the door is a free cross-check on the typed ceiling height
-        var dh = it.h; if (dh > 1950 && dh < 2130) msg += ' That door comes out at ' + fmt(dh) + ' m against a standard 2.04, so the ceiling height checks out.'; else msg += ' That door comes out at ' + fmt(dh) + ' m; standard doors are 2.04 m. Check the ceiling height, or scale from the door instead.';
+      var cls = 'ok';
+      if (it.type === 'door' && S.scale && (S.scale.method === 'ceiling' || S.scale.method === 'assumed')) { // the door is a free check on the ceiling height
+        var dh = it.h, off = Math.abs(dh / 2040 - 1);
+        S.lastDoor = it;
+        if (off < 0.03 && !S.scale.assumed) msg += ' That door comes out at ' + fmt(dh) + ' m against a standard 2.04, so the ceiling height checks out.';
+        else { msg += ' That door comes out at ' + fmt(dh) + ' m; standard doors are 2.04 m' + (S.scale.assumed ? ', so the assumed ceiling is ' + Math.round(off * 100) + '% off.' : '.') + ' Tap the button below to size the wall from the door.'; cls = 'warn'; q('rescalerow').hidden = false; }
       }
-      say(msg, 'ok'); if (it.type === 'wall') setMode('door');
+      say(msg, cls); if (it.type === 'wall') setMode('door');
     }
     function needRef(){ q('refbox').hidden = false; q('refbox').scrollIntoView({ block: 'nearest', behavior: 'smooth' }); say('Pick something in the photo we know the size of, then tap its four corners.'); }
     function setMode(m){
       S.mode = m; S.pending = null; S.taps = []; draw();
       root.querySelectorAll('[data-mode]').forEach(function(b){ var on = b.dataset.mode === m; b.classList.toggle('active', on); b.classList.toggle('tape', on); if (b.dataset.mode === 'wall2') b.classList.toggle('ghost', !on); });
-      q('modehint').textContent = m === 'wall' ? 'Tap the four corners of the wall: top-left, top-right, bottom-right, bottom-left. Ceiling line to skirting, corner to corner.' : m === 'wall2' ? 'For when a corner is out of shot. Something of known size sets the scale instead.' : 'Tap the top-left corner of the ' + m + ', then the bottom-right.';
+      q('modehint').textContent = m === 'wall' ? 'Tap the four corners of the wall: top-left, top-right, bottom-right, bottom-left. Where the paint starts and stops: below the cornice, above the skirting.' : m === 'wall2' ? 'For when a corner is out of shot. Something of known size sets the scale instead.' : 'Tap the top-left corner of the ' + m + ', then the bottom-right.';
       if (m === 'wall') { q('refbox').hidden = true; say('Tap the top-left corner of the wall.'); }
       if (m === 'wall2') { q('scalebox').hidden = true; if (!S.H) needRef(); else say('Tap the top-left corner of the wall, then the bottom-right.'); }
     }
@@ -391,12 +401,17 @@
       root.querySelectorAll('[data-ref]').forEach(function(x){ x.classList.toggle('active', x === b); });
       say('Tap the top-left corner of the ' + r.label + '.'); q('modehint').textContent = 'Four corners of the ' + r.label + ': top-left, top-right, bottom-right, bottom-left. Use the loupe, it is small.';
     }); });
+    q('rescale').addEventListener('click', function(){
+      var d = S.lastDoor || S.items.filter(function(i){ return i.type === 'door' && i.frame === 'wall'; }).pop(); if (!d || !S.rect) return;
+      var xm = (d.x1 + d.x2) / 2, top = apply(S.rect.Hw, { x: xm, y: d.y1 }), bot = apply(S.rect.Hw, { x: xm, y: d.y2 });
+      S.scaleKind = 'door'; if (applyScale('door', 2040, [top, bot])) { S.items = S.items.filter(function(i){ return i !== d; }); var sz = sizeOf(d); d.w = sz.w; d.h = sz.h; d.area = sz.w * sz.h / 1e6; S.items.push(d); draw(); renderItems(); say('Wall sized from the door: ' + fmt(S.rect.W) + ' × ' + fmt(S.rect.H) + ' m. Now the windows and any other doors, or save this wall.', 'ok'); }
+    });
     q('undo').addEventListener('click', function(){ if (S.taps.length) { S.taps.pop(); } else if (S.pending) { S.pending = null; } else if (S.items.length) { S.items.pop(); } draw(); renderItems(); say('Undone.'); });
 
     function confidence(){
       var wall = S.items.filter(function(i){ return i.type === 'wall'; })[0]; if (!wall) return null;
       var pct;
-      if (wall.frame === 'wall') { pct = S.scale ? S.scale.err : 3; if (/default/.test(S.fSource)) pct += 1.5; }
+      if (wall.frame === 'wall') { pct = S.scale ? S.scale.err : 3; if (/default/.test(S.fSource)) pct += 1.5; if (S.scale && S.scale.assumed) pct = Math.max(pct, 6); }
       else { pct = S.ref ? (S.ref.w * S.ref.h > 500000 ? 4 : 6) : 2; }
       return Math.round(Math.min(15, pct) * 2) / 2;
     }
@@ -411,11 +426,13 @@
     q('savewall').addEventListener('click', function(){
       var wall = S.items.filter(function(i){ return i.type === 'wall'; })[0];
       if (!wall) { say('Tap the corners of the wall first.', 'warn'); return; }
+      if (S.scale && S.scale.assumed && !S.assumedOk) { S.assumedOk = true; say('This wall is sized from an assumed ' + fmt(S.scale.ref_mm) + ' m ceiling, so it could be 10% out. Tap a door to size it properly, or press Save again to keep it as an estimate.', 'warn'); q('scalebox').hidden = false; return; }
+      S.assumedOk = false;
       var openings = S.items.filter(function(i){ return i.type !== 'wall'; }).map(function(o){ return { type: o.type, width_mm: Math.round(o.w), height_mm: Math.round(o.h), area_m2: +o.area.toFixed(3) }; });
       var openArea = openings.reduce(function(s, o){ return s + o.area_m2; }, 0);
       var rec = { wall: (q('wallname').value || ('Wall ' + (opts.count ? opts.count() + 1 : 1))).trim(),
         width_mm: Math.round(wall.w), height_mm: Math.round(wall.h), gross_area_m2: +wall.area.toFixed(3), openings: openings, paint_area_m2: +(wall.area - openArea).toFixed(3),
-        method: wall.frame === 'wall' ? 'photo-corners' : 'photo-reference', scale: wall.frame === 'wall' ? (S.scale && S.scale.method) : (S.ref ? S.ref.label : 'sheet'),
+        method: wall.frame === 'wall' ? 'photo-corners' : 'photo-reference', scale: wall.frame === 'wall' ? (S.scale && S.scale.method) : (S.ref ? S.ref.label : 'sheet'), scale_assumed: !!(S.scale && S.scale.assumed),
         focal: S.fSource || '', expected_error_pct: confidence(), photo: S.photoName, measured_at: new Date().toISOString() };
       if (opts.onSave) opts.onSave(rec);
       say('Saved ' + rec.wall + '. Take the next wall, or go back to the room.', 'ok');
@@ -432,7 +449,7 @@
       scale: function(kind, mm, px){ if (kind === 'ceiling') return applyScale('ceiling', mm, null); S.scaleKind = kind; return applyScale(kind, mm, px); },
       refRect: function(kind, pts){ var r = REFS[kind]; S.refKind = r; q('refw').value = r.w; q('refh').value = r.h; S.mode = 'ref'; S.taps = []; pts.forEach(function(p){ placePoint(p); }); return S.H; },
       measure: function(p1, p2){ var inv = S.rect ? S.rect.HwInv : S.Hinv, a = apply(inv, p1), b = apply(inv, p2); var it = { x1: Math.min(a.x,b.x), y1: Math.min(a.y,b.y), x2: Math.max(a.x,b.x), y2: Math.max(a.y,b.y), frame: S.rect ? 'wall' : 'plane' }; return sizeOf(it); },
-      wall: function(){ return S.items.filter(function(i){ return i.type === 'wall'; })[0]; } };
+      rescale: function(){ q('rescale').click(); }, wall: function(){ return S.items.filter(function(i){ return i.type === 'wall'; })[0]; } };
   }
   window.QCMeasure = { mount: mount, exifFocal35: exifFocal35 };
 })();
