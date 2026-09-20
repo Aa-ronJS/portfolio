@@ -229,32 +229,41 @@ Next: a real job with your own photos.
 
 ## Lesson 5: Measure it properly, then a real job (10 min)
 
-[Hold up the printed measure sheet.]
+[Hold up your phone.]
 
-This is the difference between an estimate and a quote. A sheet of
-paper. Four squares on it that the computer can recognise, at a size
-it knows exactly. Print it at 100%, and check that bar with a tape: it
-should be 100 millimetres.
+This is the difference between an estimate and a quote, and there's
+nothing to print or buy. One photo of the whole wall, corner to
+corner. The camera's own geometry works out the wall's shape from its
+four corners. Then one known size sets the scale, and the easiest one
+is the ceiling height, which you measure once per room with your tape.
 
-[Phone footage: tape the sheet to a wall, chest height. Step back.
-Take one photo of the whole wall.]
+[Phone footage: step back, take one photo of the whole wall, lights on.]
 
-Tape it flat, anywhere on the wall. Step back until every edge of the
-wall is in the shot. Straight on, lights on, main camera. One photo.
-Do the same for each wall you're quoting.
+Step back until every corner of the wall is in the shot. Lights on,
+main camera, not the wide-angle. One photo. Same for each wall you're
+quoting.
 
 [Laptop: open the measure folder, double-click measure.html. Choose
 the photo.]
 
-Choose the photo. It finds the sheet: four of four markers. Now tap the
-four corners of the wall: top-left, top-right, bottom-right,
-bottom-left. Use the magnifier, get the corner exactly.
+Choose the photo. Tap the four corners of the wall: top-left,
+top-right, bottom-right, bottom-left. Use the magnifier, get the
+corner exactly.
 
-[Tap them. The measurement appears.]
+[Tap them. The scale box appears.]
+
+Now it asks for one size. Type the ceiling height, two point four. Or
+tap the top and bottom of a door, because internal doors are two point
+oh four. Or the two edges of a power point, a hundred and sixteen
+millimetres. Any one of those.
+
+[The measurement appears.]
 
 There's the wall. Four point eight by two point four. Now the door:
 two corners. The window: two corners. It takes the openings off the
-paint area for you.
+paint area for you. And notice: because you gave it the ceiling
+height, it checks the door against the standard and tells you if
+something's off.
 
 [Save the wall. Type the room name. Do a second wall quickly.]
 
@@ -264,10 +273,11 @@ it in the job folder next to the photos.
 
 [Show the confidence line.]
 
-It tells you what it thinks its accuracy is. With all four corners and
-the whole sheet in the shot, that's about one to two percent, which is
-better than most people with a tape on a ladder. If it says "can't
-see all corners", you've used the fallback, and it's a few percent.
+It tells you what it thinks its accuracy is. With all four corners in
+the shot and the ceiling height, that's about one to two percent,
+which is better than most people with a tape on a ladder. If a corner
+is hidden, press "can't see all corners" and use a door as the
+reference instead; that's a few percent.
 
 [Got an iPhone Pro? Fifteen seconds on LiDAR.]
 
@@ -278,7 +288,7 @@ the job folder and the quote converts it.
 
 [Now run /quote on the real job.]
 
-Same command. Watch the source column: "measured, sheet, two percent"
+Same command. Watch the source column: "measured, photo, two percent"
 on the walls you measured, "estimated from photo" on anything you
 didn't. The quote says which is which, and so does the working file.
 That honesty is your protection when a client queries a number.
@@ -392,9 +402,8 @@ Shot list only; no script.
 1. Phone, on site: four photos of a lounge. Voice: "Lounge, five by
    four, walls and ceiling, one patch, skirtings, one door."
 2. Laptop: drag photos and notes into a folder named for the address.
-3. Two seconds: the measure sheet taped to a wall, the phone taking
-   the photo, then the measuring page with four taps and the metres
-   appearing.
+3. Two seconds: the phone taking the photo of a wall, then the
+   measuring page with four taps and the metres appearing.
 4. Desktop icon. Type /quote and the folder name. Run at 2x, about 40
    seconds: the measuring table with "measured" in the source column,
    the price lines, the TO CONFIRM line.

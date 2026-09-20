@@ -47,8 +47,8 @@ unless a line says otherwise. AUD.
 
 ## Measuring rules Claude uses when the notes do not say
 
-- Real measurements first: `measurements.json` from the measure sheet
-  or a LiDAR scan beats everything below. Notes beat photo estimates.
+- Real measurements first: `measurements.json` from the photo measuring
+  page or a LiDAR scan beats everything below. Notes beat photo estimates.
 - Scale from a photo: a standard internal door is 2040 mm high and
   820 mm wide; a brick course is 76 mm plus a 10 mm joint; a light
   switch sits about 1200 to 1350 mm off the floor. Use one of these

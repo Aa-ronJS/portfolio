@@ -25,12 +25,13 @@ Your first quote (about 5 minutes)
      to it and read the assumptions. That is what you check before any
      real quote goes out.
 
-Measure it properly (five minutes a wall, worth it)
-  1. Open the "measure" folder. Print measure-sheet.pdf at 100% size.
-  2. Tape the sheet flat on the wall. Photograph the whole wall,
-     straight on, lights on.
-  3. Double-click measure.html. Choose the photo. Tap the four corners
-     of the wall, then two corners of each door and window. Save.
+Measure it properly (a minute a wall, worth it, nothing to print)
+  1. Photograph the whole wall, corner to corner, lights on.
+  2. Open the "measure" folder, double-click measure.html. Choose the
+     photo. Tap the four corners of the wall.
+  3. Set the scale once: type the ceiling height, or tap a door
+     (2.04 m) or a power point (116 mm). Then two corners of each door
+     and window. Save.
   4. Put the measurements.json it makes in the job folder with the
      photos. The quote then uses real numbers, not estimates.
   Got an iPhone Pro? Scan the room with any RoomPlan app that exports

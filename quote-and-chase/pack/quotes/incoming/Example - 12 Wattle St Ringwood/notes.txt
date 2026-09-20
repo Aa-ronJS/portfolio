@@ -19,7 +19,7 @@ off it (they want the hallway side of those done).
 They will pick colours from the Dulux whites range. Want it done in
 the next three weeks. Wants a price by Friday.
 
-Measured: the lounge was done with the measure sheet, see
+Measured: the lounge was done from photos with the measuring page, see
 measurements.json in this folder. The bedroom and hallway were not,
 so they come from the sizes above.
 

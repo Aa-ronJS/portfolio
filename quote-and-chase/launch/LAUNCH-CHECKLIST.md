@@ -11,13 +11,13 @@ what only you can do, in order. Nothing else is waiting on me.
    quote, mark, invoice and chase chain has run for real on Linux, but
    no Windows machine has executed them. If anything fails, send me the
    screen and stop the launch until it is fixed.
-2. **Print the measure sheet and measure one real wall.** Print
-   `pack/measure/measure-sheet.pdf` at 100%, check the 100 mm bar with
-   a tape, tape it to a wall, photograph it, run `measure.html`, and
-   compare the result to a tape measure. The maths is verified on a
-   synthetic photo to 0.1%; a real print, a real phone lens and your
-   taps are what remain to check. Do this once before you claim the
-   accuracy in an ad.
+2. **Measure one real wall from a photo.** Photograph a wall corner to
+   corner, open the app (or `pack/measure/measure.html`), tap the four
+   corners, type the ceiling height, and compare the width and a door
+   to a tape measure. The maths is verified on a physically rendered
+   photo to well under 1%; a real phone lens (lens distortion is the
+   unknown) and your taps are what remain to check. Do this once
+   before you claim the accuracy in an ad.
 3. **Deploy.** `cd quote-and-chase-landing && npm install && npx vercel
    && npx vercel --prod`. Note the URL.
 4. **Anthropic key.** console.anthropic.com: new key, monthly spend cap
@@ -63,9 +63,11 @@ what only you can do, in order. Nothing else is waiting on me.
 - Quote and Chase pack: four skills, price list, wording, templates,
   PDF helper, ledger, sample job, HELP.txt; `/quote`, `/mark`,
   `/invoice` and `/chase` run end to end for real.
-- Measuring: printable measure sheet (four 68 mm markers), browser
-  measuring page (marker detection, sub-pixel corners, four-corner
-  wall frame plus sheet scale), verified to 0.1% on a synthetic photo;
+- Measuring: nothing to print. Four wall corners give the perspective,
+  the camera focal length (EXIF, or self-calibrated from the wall)
+  gives the wall's shape, and one known size (ceiling height, door,
+  power point, tape) gives the scale; verified to under 1% on a
+  physically rendered photo, with and without EXIF;
   RoomPlan LiDAR JSON converter; quote skill reads measurements first
   and labels every line measured or estimated.
 - Landing page: own-it hero, phone demo with live estimator, QR that

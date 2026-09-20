@@ -31,10 +31,15 @@ Common ones
     it says none was found, open quote.html in your browser, press
     Ctrl+P (Cmd+P on a Mac) and choose Save as PDF.
 
-  The measuring page says "No sheet found"
-    The whole sheet must be in the photo, flat on the wall, not in
-    shadow or glare, and the photo taken with the main camera, not the
-    wide-angle one. Printed at 100%? Check the 100 mm bar with a tape.
+  The measuring page says the corners did not make a sensible wall
+    Tap them in order: top-left, top-right, bottom-right, bottom-left,
+    at the ceiling line and the skirting, exactly in the corners. Use
+    the magnifier. Main camera, not the wide-angle one.
+
+  The measuring page asks how tall the ceiling is
+    That is how it gets the scale. Measure the ceiling once per room
+    with a tape (or use 2.4 if the house is standard), or tap the top
+    and bottom of a door instead: internal doors are 2.04 m.
 
   The measuring numbers look off
     Tap the four wall corners exactly at the corners. If the wall

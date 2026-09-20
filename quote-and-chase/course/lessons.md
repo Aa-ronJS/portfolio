@@ -51,9 +51,9 @@ Screen recording, phone footage intercut. No talking head.
 
 ## 5. Measure it properly, then a real job (10 min)
 
-- The measure sheet: print, check the 100 mm bar, tape it up, one
-  photo per wall. The measuring page: four wall corners, two per
-  opening, save. LiDAR scan as the iPhone Pro shortcut.
+- The measuring page: one photo per wall, four wall corners, ceiling
+  height typed once (or tap a door), two taps per opening, save.
+  Nothing to print. LiDAR scan as the iPhone Pro shortcut.
 - Then the real job below, with the source column showing measured
   versus estimated.
 

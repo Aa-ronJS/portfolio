@@ -69,7 +69,7 @@
     rows.push({ cells: ['', '', '', 'Total' + (priced.gst ? ' inc GST' : ''), money(priced.total)], bold: true, noline: true });
     doc.table([{ t: 'Item', w: 88 }, { t: 'Qty', w: 18, align: 'right' }, { t: 'Unit', w: 16 }, { t: 'Rate', w: 28, align: 'right' }, { t: 'Amount', w: 28, align: 'right' }], rows);
     var based = [];
-    if (priced.measured_rooms) based.push(priced.measured_rooms + ' of ' + priced.total_rooms + ' rooms measured on site with the measure sheet.');
+    if (priced.measured_rooms) based.push(priced.measured_rooms + ' of ' + priced.total_rooms + ' rooms measured on site from photos.');
     based = based.concat(priced.assumptions);
     if (based.length) { doc.h('What this quote is based on'); doc.bullets(based); }
     doc.h('What is included'); doc.bullets(s.wording.included);

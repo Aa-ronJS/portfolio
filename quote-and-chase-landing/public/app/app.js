@@ -54,7 +54,6 @@
     var jobs = S.jobs, setup = S.details.trading_name && Object.keys(S.prices).length;
     var html = '<div class="row between"><h1>Jobs</h1><button class="btn tape" id="newjob">New job</button></div>';
     if (!setup) html += '<div class="card"><h2>Three minutes of set-up first</h2><p class="muted">Your business name, bank details and your prices. They go on every quote.</p><a class="btn" href="#/settings">Set up</a></div>';
-    html += '<div class="card"><div class="row between"><div><b>Measure sheet</b><p class="hint">Print it once at 100%. Tape it to the wall, photograph the wall, tap the corners.</p></div><a class="btn ghost sm" href="measure-sheet.pdf" target="_blank" rel="noopener">Open PDF</a></div></div>';
     if (!jobs.length) html += '<div class="card empty">No jobs yet. Tap New job.</div>';
     else html += '<div class="joblist">' + jobs.map(function (j) {
       var total = j.quote ? money(j.quote.total) : ''; return '<a class="job" href="#/job/' + j.id + '"><div><b>' + esc(j.client.name || 'New job') + '</b><span class="sub">' + esc(j.client.address || j.summary || '') + '</span></div><div style="text-align:right">' + statusPill(j) + '<div class="sub">' + esc(j.quote_no) + (total ? ' · ' + total : '') + '</div></div></a>';
@@ -72,7 +71,7 @@
       '<label class="f">Email<input type="email" data-bind="client.email"></label><label class="f">Job address<input type="text" data-bind="client.address"></label>' +
       '<label class="f">The job, in a sentence<span>goes on the quote</span><input type="text" data-bind="summary" placeholder="Repaint lounge, main bedroom and hallway before sale"></label></div>';
     html += '<div class="card"><div class="row between"><h2>Rooms and surfaces</h2><div class="row"><button class="btn sm" data-add="interior">+ Room</button><button class="btn ghost sm" data-add="exterior">+ Exterior</button></div></div>';
-    if (!job.rooms.length) html += '<p class="muted">Add a room, then measure it with the sheet or type the sizes.</p>';
+    if (!job.rooms.length) html += '<p class="muted">Add a room, then measure it from a photo or type the sizes.</p>';
     html += job.rooms.map(function (r) {
       var q = QCPricing.roomQuantities(r, S.rules), walls = q.lines.filter(function (l) { return l.key === 'p_walls'; })[0];
       var how = r.type === 'exterior' ? 'exterior' : r.method === 'measured' ? (r.walls.length + ' wall' + (r.walls.length === 1 ? '' : 's') + ' measured') : (r.L && r.W ? r.L + ' × ' + r.W + ' m typed' : 'no sizes yet');
@@ -110,8 +109,8 @@
       html += '<p class="hint">Quantities for the outside. Leave blank what you are not doing.</p><div class="g2">' +
         [['weatherboard', 'Weatherboards m²'], ['render', 'Render or brick m²'], ['eaves', 'Eaves and fascia lm'], ['gutters', 'Gutters and downpipes lm'], ['ext_door', 'Exterior doors'], ['ext_window', 'Exterior windows'], ['deck', 'Deck oil m²'], ['fence', 'Fence m²'], ['pressure', 'Pressure wash m²'], ['scaffold', 'Scaffold days']].map(function (f) { return '<label class="f">' + f[1] + '<input type="number" min="0" step="0.5" data-bind="ext.' + f[0] + '" data-refresh="1"></label>'; }).join('') + '</div></div>';
     } else {
-      html += '<div class="row"><button class="btn sm ' + (room.method !== 'measured' ? 'tape' : 'ghost') + '" data-method="typed">Type the sizes</button><button class="btn sm ' + (room.method === 'measured' ? 'tape' : 'ghost') + '" data-method="measured">Measure with the sheet</button></div>';
-      html += '<div id="typed" ' + (room.method === 'measured' ? 'hidden' : '') + '><div class="g3"><label class="f">Length m<input type="number" step="0.1" min="0" data-bind="L" data-refresh="1"></label><label class="f">Width m<input type="number" step="0.1" min="0" data-bind="W" data-refresh="1"></label><label class="f">Height m<span>blank = ' + esc(S.rules.ceiling_height_m) + '</span><input type="number" step="0.1" min="0" data-bind="H" data-refresh="1"></label></div><p class="hint">Typed sizes make an estimate. The quote says so.</p></div>';
+      html += '<div class="row"><button class="btn sm ' + (room.method !== 'measured' ? 'tape' : 'ghost') + '" data-method="typed">Type the sizes</button><button class="btn sm ' + (room.method === 'measured' ? 'tape' : 'ghost') + '" data-method="measured">Measure from a photo</button></div>';
+      html += '<div id="typed" ' + (room.method === 'measured' ? 'hidden' : '') + '><div class="g3"><label class="f">Length m<input type="number" step="0.1" min="0" data-bind="L" data-refresh="1"></label><label class="f">Width m<input type="number" step="0.1" min="0" data-bind="W" data-refresh="1"></label><label class="f">Height m<span>blank = ' + esc(S.rules.ceiling_height_m) + '</span><input type="number" step="0.1" min="0" data-bind="H" data-refresh="1"></label></div><p class="hint">Typed sizes make an estimate. The quote says so. Measuring from a photo takes a minute per wall.</p></div>';
       html += '<div id="measured" ' + (room.method === 'measured' ? '' : 'hidden') + '><div id="walls"></div><div id="measure-mount"></div><label class="f" style="margin-top:8px">Ceiling m²<span>blank = longest two walls multiplied</span><input type="number" step="0.1" min="0" data-bind="ceiling_m2" data-refresh="1"></label></div>';
       html += '</div><div class="card"><h3>What we are painting</h3><div class="row">' +
         [['walls', 'Walls'], ['ceiling', 'Ceiling'], ['skirting', 'Skirting and architraves']].map(function (f) { return '<label class="btn ghost sm"><input type="checkbox" data-bind="surfaces.' + f[0] + '" data-refresh="1"> ' + f[1] + '</label>'; }).join('') + '</div>' +
@@ -132,12 +131,13 @@
     if (!ext) {
       function renderWalls() {
         var box = document.getElementById('walls');
-        box.innerHTML = room.walls.length ? '<table><thead><tr><th>Wall</th><th class="n">W × H m</th><th class="n">Openings</th><th class="n">Paint m²</th><th></th></tr></thead><tbody>' + room.walls.map(function (w, i) { return '<tr><td>' + esc(w.wall) + '<br><span class="hint">' + (w.method === 'roomplan-lidar' ? 'LiDAR' : '±' + w.expected_error_pct + '%') + '</span></td><td class="n">' + (w.width_mm / 1000).toFixed(2) + ' × ' + (w.height_mm / 1000).toFixed(2) + '</td><td class="n">' + w.openings.length + '</td><td class="n">' + w.paint_area_m2.toFixed(2) + '</td><td class="n"><button class="btn ghost sm" data-wdel="' + i + '">remove</button></td></tr>'; }).join('') + '</tbody></table>' : '<p class="muted">No walls measured yet. Tape the sheet up and take the photo below.</p>';
+        box.innerHTML = room.walls.length ? '<table><thead><tr><th>Wall</th><th class="n">W × H m</th><th class="n">Openings</th><th class="n">Paint m²</th><th></th></tr></thead><tbody>' + room.walls.map(function (w, i) { return '<tr><td>' + esc(w.wall) + '<br><span class="hint">' + (w.method === 'roomplan-lidar' ? 'LiDAR' : '±' + w.expected_error_pct + '%') + '</span></td><td class="n">' + (w.width_mm / 1000).toFixed(2) + ' × ' + (w.height_mm / 1000).toFixed(2) + '</td><td class="n">' + w.openings.length + '</td><td class="n">' + w.paint_area_m2.toFixed(2) + '</td><td class="n"><button class="btn ghost sm" data-wdel="' + i + '">remove</button></td></tr>'; }).join('') + '</tbody></table>' : '<p class="muted">No walls measured yet. Photograph the wall below, tap its corners.</p>';
         box.querySelectorAll('[data-wdel]').forEach(function (b) { b.addEventListener('click', function () { room.walls.splice(+b.dataset.wdel, 1); save(); renderWalls(); refreshPreview(); }); });
       }
       renderWalls();
       var mount = document.getElementById('measure-mount');
-      var mopts = { count: function () { return room.walls.length; }, onSave: function (rec) { room.walls.push(rec); room.method = 'measured'; save(); renderWalls(); refreshPreview(); toast('Wall saved'); } };
+      var mopts = { count: function () { return room.walls.length; }, ceilingM: function () { return n(room.H) || n(S.rules.ceiling_height_m) || 2.4; }, onCeiling: function (m) { room.H = Math.round(m * 100) / 100; save(); },
+        onSave: function (rec) { room.walls.push(rec); room.method = 'measured'; save(); renderWalls(); refreshPreview(); toast('Wall saved'); } };
       var mounted = false;
       function ensureMount() { if (!mounted && room.method === 'measured') { window.__qcMeasure = QCMeasure.mount(mount, mopts); mounted = true; } }
       ensureMount();
@@ -183,7 +183,7 @@
     if (priced.confirm.length) html += '<div class="card"><p class="confirm">Lines to confirm before sending:</p><ul class="hint">' + priced.confirm.map(function (c) { return '<li>' + esc(c) + '</li>'; }).join('') + '</ul></div>';
     html += '<div class="card"><table><thead><tr><th>Item</th><th class="n">Qty</th><th class="n">Amount</th></tr></thead><tbody>' + priced.lines.map(function (l) { return '<tr><td>' + (l.room !== 'Extras' && l.room !== 'Travel' ? '<span class="tag">' + esc(l.room) + '</span><br>' : '') + esc(l.desc) + (l.confirm ? ' <span class="confirm">TO CONFIRM</span>' : '') + '<br><span class="hint">' + esc(l.source) + ' · ' + money(l.rate) + '/' + esc(l.unit) + '</span></td><td class="n">' + l.qty + ' ' + esc(l.unit) + '</td><td class="n">' + money(l.amount) + '</td></tr>'; }).join('') + '</tbody><tfoot>' +
       '<tr class="sub"><td colspan="2" class="n">Subtotal' + (priced.minimum_applied ? ' (minimum job)' : '') + '</td><td class="n">' + money(priced.subtotal) + '</td></tr>' + (priced.gst ? '<tr class="sub"><td colspan="2" class="n">GST 10%</td><td class="n">' + money(priced.gst) + '</td></tr>' : '') + '<tr class="total"><td colspan="2" class="n">Total' + (priced.gst ? ' inc GST' : '') + '</td><td class="n">' + money(priced.total) + '</td></tr></tfoot></table>';
-    html += '<p class="hint">' + (priced.measured_rooms ? priced.measured_rooms + ' of ' + priced.total_rooms + ' rooms measured with the sheet. ' : (priced.total_rooms ? 'Nothing measured yet; this is an estimate from typed sizes. ' : '')) + 'Deposit ' + esc(det.deposit_pct) + '%: ' + money(priced.deposit) + '.</p>';
+    html += '<p class="hint">' + (priced.measured_rooms ? priced.measured_rooms + ' of ' + priced.total_rooms + ' rooms measured from photos. ' : (priced.total_rooms ? 'Nothing measured yet; this is an estimate from typed sizes. ' : '')) + 'Deposit ' + esc(det.deposit_pct) + '%: ' + money(priced.deposit) + '.</p>';
     if (priced.assumptions.length) html += '<div><b style="font-size:.9rem">Based on</b><ul class="hint">' + priced.assumptions.map(function (a) { return '<li>' + esc(a) + '</li>'; }).join('') + '</ul></div>';
     html += '</div>';
     html += '<div class="card"><div class="row"><button class="btn tape" id="pdf">Make the PDF</button><button class="btn ghost" id="sharetext">Share a summary</button></div><p class="hint">The PDF opens your share sheet: text it, WhatsApp it, email it. Nothing is sent by the app itself.</p>' +
@@ -293,12 +293,11 @@
   function viewHelp() {
     $app.innerHTML = '<h1>How it works</h1><div class="card"><ol class="steps">' +
       '<li><span><b>Set-up once.</b> Your name, bank details, your prices. Three minutes.</span></li>' +
-      '<li><span><b>Print the measure sheet</b> at 100%. Check the bar is 100 mm. Keep a few in the ute.</span></li>' +
-      '<li><span><b>On site:</b> new job, add a room, tape the sheet to a wall, photograph the whole wall, tap the four corners, then the doors and windows. Save. Next wall.</span></li>' +
+      '<li><span><b>On site:</b> new job, add a room, photograph the whole wall corner to corner, tap its four corners. Type the ceiling height once (or tap a door: they are 2.04 m). Then tap the doors and windows. Save. Next wall.</span></li>' +
       '<li><span><b>Build the quote.</b> Every line shows where its number came from. Fix anything marked TO CONFIRM. Make the PDF and send it from your phone.</span></li>' +
       '<li><span><b>Client says yes:</b> tap it, then invoice the deposit. On completion, the final.</span></li>' +
       '<li><span><b>Monday:</b> the Chase tab writes the reminders. You tap Text.</span></li></ol></div>' +
-      '<div class="card"><h3>Accuracy</h3><p class="muted">With the sheet on the wall and all four wall corners in the photo, about one to two percent. Typed sizes are estimates, and the quote says so. Photo-only guessing is not offered on purpose: nobody does it accurately.</p></div>' +
+      '<div class="card"><h3>How can a photo measure a wall?</h3><p class="muted">The four corners tell the phone the wall\'s exact shape (the camera\'s own lens geometry does the perspective maths). One known size then sets the scale: your ceiling height, a standard door, a power point plate, or anything you put a tape on. Expect about two percent. Typed sizes are estimates, and the quote says so.</p></div>' +
       '<div class="card"><h3>Where is my data?</h3><p class="muted">On this phone, in the browser. Nothing is uploaded anywhere. Save a back-up from Set-up now and then, and email it to yourself.</p></div>';
   }
 

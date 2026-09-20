@@ -16,7 +16,7 @@ each one, briefly.
 
 2. **Look for real measurements first.** In the job folder, in this
    order:
-   - `measurements.json` made with the measure sheet (`measure/measure.html`)
+   - `measurements.json` made with the photo measuring page (`measure/measure.html`)
      or converted from a LiDAR scan. Each wall has `width_mm`,
      `height_mm`, `openings` and `paint_area_m2`, plus `method` and
      `expected_error_pct`. Treat these as measured, not estimated. Use
@@ -40,7 +40,7 @@ each one, briefly.
 4. **Work out the quantities** using the measuring rules in the price
    list. Show your working in a short table: room, surface, quantity,
    unit, how you got it, and a "source" column that says `measured
-   (sheet ±X%)`, `measured (LiDAR)`, `from notes` or `estimated from
+   (photo ±X%)`, `measured (LiDAR)`, `from notes` or `estimated from
    photo` for every line.
 
 5. **Price the lines** from the price list only. Apply the job rules
@@ -59,7 +59,7 @@ each one, briefly.
      inclusions, exclusions, terms and how-to-accept blocks from
      `business/quote-wording.md` word for word.
    - `working.md` with your quantity table, every assumption you made,
-     a line stating how each room was measured (sheet, LiDAR, notes or
+     a line stating how each room was measured (photo, LiDAR, notes or
      estimated) and the expected accuracy, and up to three questions
      the owner should ask the client before sending.
 
@@ -76,8 +76,8 @@ each one, briefly.
 
 10. **Report back** in this shape and nothing longer:
    - Quote number, client, total inc GST
-   - How it was measured (measured with the sheet, LiDAR scan, from
-     notes, or estimated from photos) and the expected accuracy
+   - How it was measured (measured from photos with the measuring page,
+     LiDAR scan, from notes, or estimated from photos) and the expected accuracy
    - The three assumptions most likely to change the price
    - Any TO CONFIRM lines
    - Where the PDF is
@@ -88,4 +88,4 @@ each one, briefly.
 Never send the quote yourself. Never invent rates. If the photos are
 not enough to quote at all, say so and list what you need. If a room
 was estimated from photos alone, say plainly that measuring it with
-the sheet (five minutes) would turn the estimate into a quote.
+the measuring page (a minute a wall) would turn the estimate into a quote.
