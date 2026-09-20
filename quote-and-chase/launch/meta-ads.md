@@ -1,8 +1,9 @@
 # Meta ads: first campaign for the Quote and Chase course (painters)
 
-Positioning: this is a course. We teach a painter to build their own
-quoting tool with our templates. The ad sells the outcome (a tool you
-built, that you own and can change), not software.
+Positioning: "Own it." A quoting tool that is theirs. No subscription,
+ever. They build it from our templates in an afternoon, on their own
+laptop, no coding. The ad sells ownership and the end of per-job fees;
+the page offers the hosted version to anyone who would rather not build.
 
 ## Structure
 
@@ -29,71 +30,62 @@ purchases after 300 visitors, test AUD 199 before touching the copy.
 
 ## Primary text (rotate three)
 
-**1. The evening one.**
-You did not start a painting business to type quotes at 9pm.
+**1. The subscription one.**
+Every quoting app wants $50 a month forever. This one you own.
 
-In one afternoon, using our templates, you can build your own quoting
-tool. Drop your phone photos into a folder, type a few notes, and it
-prices the job from YOUR rates and writes the PDF. Then it writes the
-invoice, and on Monday it lists who owes you and drafts the reminders.
+Quote & Chase is a quoting tool for painters that lives on your laptop.
+Photos of the room in, priced PDF quote out, using YOUR rates. It
+writes the invoice, and on Monday it lists who owes you and drafts the
+reminders.
 
-No coding. Seven short lessons. You build it, so you own it and you can
-change it. Nobody charges you per job.
+You build it yourself from our templates in an afternoon. No coding.
+$249 once, then it's yours. No per-job fees, no per-user seats, no SMS
+credits, nobody can switch it off.
 
-See what you'll build. Point your phone at a wall: [link]
+See what you'd own. Point your phone at a wall: [link]
 
-**2. The rent one.**
-Per job. Per user. Per text message. Job software charges you more the
-month you get busier, and you still do the typing.
+**2. The evening one.**
+You didn't start a painting business to type quotes at 9pm.
 
-We teach painters to build their own instead. One afternoon, our
-templates, no coding. Photos in, priced PDF quote out, using your
-rates. Invoices and payment reminders too. It lives on your laptop and
-it's yours.
+Own the tool that does the typing. Drop your phone photos into a
+folder, add a few notes, and your own quoting tool prices the job from
+your rates and writes the PDF. Invoices and payment reminders too.
 
-$249 once for the course and templates. Build one working quote from
-your own photos in 14 days or your money back.
+Built by you from our templates in an afternoon, no coding, on your
+laptop. Pay once. Change anything you like. Never rent it.
 
-Try what you'll build on any wall: [link]
+Try what you'd build on any wall: [link]
 
 **3. The short one.**
-Learn to build your own quote-from-a-photo tool. One afternoon. No
-coding. Your prices, your laptop, yours to change.
+A quoting tool you own. Photos in, PDF quote out, your rates. Build it
+from our templates in an afternoon. $249 once, no subscription, ever.
 
-A short course for painters with one to five on the tools. Tap to see
-what you'll build: [link]
-
-## The hosted option in ads
-
-Keep the ads on the owned angle; it is the differentiated hook. Do not
-advertise the hosted tier until it exists. The landing page offers it
-beside the owned version, so the visitor who wants nothing to install
-self-selects there and joins the founding list.
+For painters with one to five on the tools. Tap to see it quote a wall: [link]
 
 ## Headlines (pick two to test)
 
-- Build your own quoting tool in an afternoon
-- Learn it once. Own it forever.
+- Own your quoting tool. No subscription, ever.
+- Stop renting software. Build yours in an afternoon.
+- Photos in. PDF quote out. Yours forever.
 - Stop typing quotes at 9pm
-- Photos in. PDF quote out. You built it.
-- The office manager you build yourself
+- $249 once. Never per job.
 
 ## Descriptions
 
-- Course and templates. One-time price. 14-day money-back guarantee.
-- No coding. Under an hour of lessons.
+- Built from our templates. No coding. 14-day money-back guarantee.
+- Runs on your laptop. Your rates, your wording, your files.
 
 ## Creative
 
 **Video (preferred):** 30 seconds. Open on the phone taking a photo of
 a wall, cut to the laptop typing `/quote`, speed through the run, land
 on the PDF total, then a two-second shot of the price list file with
-the cursor changing a number: "your rates". End card: headline and
-URL. Captions on; most Reels play muted.
+the cursor changing a number: "your rates, your file". End card: "Own
+it. $249 once." and the URL. Captions on; most Reels play muted.
 
 **Still (launch tonight if the video is not ready):** screenshot the
-landing page hero's quote card on a plain background, headline
-"Build your own quoting tool in an afternoon" top left. 1:1 and 4:5.
+landing page hero's quote card on a plain background, headline "Own
+your quoting tool. No subscription, ever." top left. 1:1 and 4:5.
 
 ## Landing
 
@@ -105,7 +97,8 @@ and for people watching the ad on a desktop.
 ## What not to say
 
 No income or savings figures you cannot show. No "Anthropic approved"
-or logos. No "replaces ServiceM8" in ad copy; say "nobody charges you
-per job" instead. Do not target under 25. Do not say "AI builds it for
-you"; say "you build it with our templates", which is true and is the
-point.
+or logos. No "replaces ServiceM8" in ad copy; "no subscription, ever"
+makes the point without naming anyone. Do not target under 25. Do not
+say "AI builds it for you"; say "you build it from our templates",
+which is true and is the point. "Own it" must stay literally true: it
+is files on their laptop, and the page says so.
