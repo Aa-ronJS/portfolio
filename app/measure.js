@@ -392,7 +392,7 @@
     }
     // Rounding: measured walls round UP to the next step (default 10 cm) so a quote never comes in under. Openings stay as measured.
     function roundStep(){ var v = opts.roundUpMm ? opts.roundUpMm() : 100; return v > 0 ? v : 0; }
-    function ceilTo(v, step){ return step ? Math.ceil((v - 0.005 * v) / step) * step : v; } // a measurement 0.5% over a round number is noise, not a reason to add a whole step
+    function ceilTo(v, step, errPct){ if (!step) return v; var top = v * (1 + (errPct || 0) / 100); return Math.ceil((top - 0.002 * top) / step) * step; } // round up from the top of the measurement's own uncertainty band, so a quote is not under even at the edge of it
     function setWallSize(nW, nH, rounded){ S.rect.W = nW; S.rect.H = nH; S.scale.rounded = rounded;
       S.items.forEach(function(it){ if (it.type === 'wall') { it.w = nW; it.h = nH; it.area = nW * nH / 1e6; } });
       // openings keep their own measured millimetres: convert back through the measured frame so rounding the wall never shrinks them
@@ -401,14 +401,14 @@
     function offerRounding(){
       var box = q('roundbox'), btns = q('roundbtns'), m = S.scale.measured, step = roundStep(); btns.innerHTML = ''; if (!step && !S.scale.rounded) { box.hidden = true; return; }
       function chip(label, fn, primary){ var b = document.createElement('button'); b.className = 'btn sm' + (primary ? ' tape' : ''); b.textContent = label; b.addEventListener('click', fn); btns.appendChild(b); }
-      var upW = ceilTo(m.W, step || 100), upH = ceilTo(m.H, step || 100);
-      if (S.scale.rounded) { q('roundhint').textContent = 'Rounded up to ' + fmt(S.rect.W) + ' × ' + fmt(S.rect.H) + ' m from a measured ' + fmt(m.W) + ' × ' + fmt(m.H) + '. Walls round up, never down, so the quote is not under.'; chip('Use the measured ' + fmt(m.W) + ' × ' + fmt(m.H), function(){ setWallSize(m.W, m.H, false); offerRounding(); }); }
+      var upW = ceilTo(m.W, step || 100, S.scale.err), upH = ceilTo(m.H, step || 100, S.scale.err);
+      if (S.scale.rounded) { q('roundhint').textContent = 'Rounded up to ' + fmt(S.rect.W) + ' × ' + fmt(S.rect.H) + ' m from a measured ' + fmt(m.W) + ' × ' + fmt(m.H) + ' (±' + (S.scale.err || 1.5) + '%). Rounds up from the top of that band, so the quote is not under.'; chip('Use the measured ' + fmt(m.W) + ' × ' + fmt(m.H), function(){ setWallSize(m.W, m.H, false); offerRounding(); }); }
       else { q('roundhint').textContent = 'Measured ' + fmt(m.W) + ' × ' + fmt(m.H) + ' m.'; chip('Round up to ' + fmt(upW) + ' × ' + fmt(upH), function(){ setWallSize(upW, upH, true); offerRounding(); }, true); }
       box.hidden = false;
     }
     function finishWall(W, Hh, scale){
       S.rect.W = W; S.rect.H = Hh; S.scale = scale; scale.measured = { W: W, H: Hh }; scale.rounded = false;
-      if (!scale.assumed) { var st = roundStep(); if (st) { S.rect.W = ceilTo(W, st); S.rect.H = ceilTo(Hh, st); scale.rounded = true; W = S.rect.W; Hh = S.rect.H; } } else q('roundbox').hidden = true;
+      if (!scale.assumed) { var st = roundStep(); if (st) { S.rect.W = ceilTo(W, st, scale.err); S.rect.H = ceilTo(Hh, st, scale.err); scale.rounded = true; W = S.rect.W; Hh = S.rect.H; } } else q('roundbox').hidden = true;
       S.items = S.items.filter(function(x){ return x.type !== 'wall'; });
       S.items.push({ type: 'wall', x1: 0, y1: 0, x2: 1, y2: 1, w: W, h: Hh, area: W * Hh / 1e6, frame: 'wall' });
       // re-size any openings already placed in this frame, from the measured (not rounded) wall
