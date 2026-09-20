@@ -86,6 +86,12 @@
     var tr = window.QCGeo ? QCGeo.travel(job, settings) : { amount: 0 };
     if (tr.amount > 0) { lines.push({ room: 'Travel', desc: 'Travel, ' + tr.chargeable + ' km beyond ' + n(rules.free_radius_km) + ' km' + (rules.travel_return === false ? '' : ' each way'), qty: tr.chargeable * (rules.travel_return === false ? 1 : 2), unit: 'km', rate: n(rules.travel_per_km), amount: tr.amount, source: tr.source, confirm: false }); }
     if (tr.note) assumptions.push(tr.note);
+    if (window.QCCosting && settings.costing && settings.costing.charge_tins !== false && lines.length) {
+      var bd = QCCosting.breakdown(lines, settings.costing, 0), extraL = bd.paint_extra_litres, extra$ = bd.paint_extra_cost * (1 + Math.max(0, n(settings.costing.margin_pct)) / 100);
+      var tinNote = Object.keys(bd.tins).filter(function (k) { return bd.tins[k].litres > 0; }).map(function (k) { return bd.tins[k].label + ' ' + k; }).join(', ');
+      if (extraL > 0.05 && extra$ >= 1) { var tq = Math.round(extraL * 10) / 10, tamt = Math.round(extra$); lines.push({ key: 'paint_tins', room: 'Paint', desc: 'Paint supplied in full tins', qty: tq, unit: 'L', rate: Math.round(tamt / tq * 100) / 100, amount: tamt, source: tinNote, confirm: false }); }
+      if (tinNote) assumptions.push('Paint in full tins: ' + tinNote + '.');
+    }
     var subtotal = lines.reduce(function (s, l) { return s + l.amount; }, 0), minimum = false;
     if (lines.length && subtotal < n(rules.minimum_job)) { subtotal = n(rules.minimum_job); minimum = true; assumptions.push('Minimum job charge of $' + n(rules.minimum_job) + ' applied.'); }
     var gst = settings.details.gst ? Math.round(subtotal * 0.1) : 0;

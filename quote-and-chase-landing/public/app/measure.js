@@ -391,7 +391,7 @@
       return true;
     }
     // Rounding: measured walls round UP to the next step (default 10 cm) so a quote never comes in under. Openings stay as measured.
-    function roundStep(){ var v = opts.roundUpMm ? opts.roundUpMm() : 100; return v > 0 ? v : 0; }
+    function roundStep(){ var v = opts.roundUpMm ? opts.roundUpMm() : 0; return v > 0 ? v : 0; } // no rounding unless the host asks for it
     function ceilTo(v, step, errPct){ if (!step) return v; var top = v * (1 + (errPct || 0) / 100); return Math.ceil((top - 0.002 * top) / step) * step; } // round up from the top of the measurement's own uncertainty band, so a quote is not under even at the edge of it
     function setWallSize(nW, nH, rounded){ S.rect.W = nW; S.rect.H = nH; S.scale.rounded = rounded;
       S.items.forEach(function(it){ if (it.type === 'wall') { it.w = nW; it.h = nH; it.area = nW * nH / 1e6; } });
