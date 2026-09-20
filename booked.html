@@ -1,0 +1,59 @@
+<!doctype html>
+<html lang="en-AU">
+<head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Set-up call: next steps</title>
+<meta name="robots" content="noindex">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,700;12..96,800&family=Instrument+Sans:wght@400;600&display=swap">
+<style>
+:root{--ground:#F7F7F4;--ink:#16181D;--muted:#5B5F66;--line:#DCDED9;--tape:#2B7BD6;--tape-soft:#DDEBFA;--paper:#fff}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--ground:#15171B;--ink:#F0F1EC;--muted:#A2A6AD;--line:#2C3037;--tape:#5FA3F0;--tape-soft:#1B2B40;--paper:#1E2126}}
+:root[data-theme="dark"]{--ground:#15171B;--ink:#F0F1EC;--muted:#A2A6AD;--line:#2C3037;--tape:#5FA3F0;--tape-soft:#1B2B40;--paper:#1E2126}
+*{box-sizing:border-box}[hidden]{display:none!important}
+body{margin:0;background:var(--ground);color:var(--ink);font:16px/1.6 "Instrument Sans",system-ui,sans-serif}
+main{max-width:680px;margin:0 auto;padding:48px 16px 80px;display:grid;gap:20px}
+h1{font-family:"Bricolage Grotesque",system-ui,sans-serif;letter-spacing:-.02em;font-size:2.3rem;margin:0;line-height:1.05}
+p,li{color:var(--muted);margin:0}ul,ol{margin:0;padding-left:20px;display:grid;gap:6px}
+.box{background:var(--paper);border:1px solid var(--line);border-radius:8px;padding:20px;display:grid;gap:10px}
+.box b{color:var(--ink)}
+a{color:var(--tape)}
+a.btn{display:inline-flex;align-items:center;justify-content:center;background:var(--tape);color:#fff;text-decoration:none;font-weight:600;padding:.85em 1.3em;border-radius:6px;min-height:48px}
+.guarantee{border-left:4px solid var(--tape);background:var(--tape-soft);padding:12px 14px;border-radius:0 6px 6px 0;color:var(--ink)}
+</style>
+</head>
+<body><main>
+<h1>Paid. Now pick your hour.</h1>
+<p>Thanks. The call is about an hour on a screen share, and you leave it with your prices in, your follow-ups switched on and your first real quote sent. Three things to do before then.</p>
+<div class="box">
+  <b>1. Pick a time</b>
+  <p data-booking-yes hidden><a class="btn" href="#" data-booking>Choose a time for the call</a></p>
+  <p data-booking-no>Reply to your receipt email with three times that suit you, or <span data-contact>email me</span>, and I confirm one within a business day.</p>
+  <p>Weekday evenings are fine. Allow a bit over an hour.</p>
+</div>
+<div class="box">
+  <b>2. Send me your last ten quotes</b>
+  <p>Photos of the carbon book, PDFs, a spreadsheet, whatever you have. I turn them into your price list before we talk, so the app prices the way you do. If you have a logo, send that too. Reply to the receipt email with them attached, or <span data-contact>email them</span>.</p>
+</div>
+<div class="box">
+  <b>3. Have these handy on the call</b>
+  <ul>
+    <li>Your ABN, licence number if your state has one, insurer and policy number, and your bank details for the invoice.</li>
+    <li>The phone you quote from, with the free app open. A laptop as well makes the account sign-ups quicker, but a phone alone works.</li>
+    <li>A card for the small accounts we set up in your name (texts, email, card payments). They charge a few cents a message; nothing monthly to me.</li>
+    <li>Five minutes to tell me how you talk to customers. I write your three follow-up messages from that.</li>
+  </ul>
+</div>
+<div class="guarantee"><b>The guarantee stands:</b> 30 days after our call, if you are not sending real quotes from the app, email me and the fee goes back to your card. No form, no reason needed.</div>
+<p>Miss the call? We rebook once at no charge. <a href="terms">Terms</a> · <a href="./">Back to the site</a></p>
+</main>
+<script src="config.js"></script>
+<script>
+(function(){
+  var C = window.QC || {}; var mail = (C.SUPPORT_EMAIL || '').trim();
+  if (C.BOOKING_URL) { document.querySelector('[data-booking]').setAttribute('href', C.BOOKING_URL); document.querySelector('[data-booking-yes]').hidden = false; document.querySelector('[data-booking-no]').hidden = true; }
+  document.querySelectorAll('[data-contact]').forEach(function(e){ if (!mail) return; var a = document.createElement('a'); a.href = 'mailto:' + mail; a.textContent = 'email ' + mail; e.textContent = ''; e.appendChild(a); });
+  if (C.META_PIXEL_ID) {!function(f,b,e,v,n,t,s){if(f.fbq)return;n=f.fbq=function(){n.callMethod?n.callMethod.apply(n,arguments):n.queue.push(arguments)};if(!f._fbq)f._fbq=n;n.push=n;n.loaded=!0;n.version='2.0';n.queue=[];t=b.createElement(e);t.async=!0;t.src=v;s=b.getElementsByTagName(e)[0];s.parentNode.insertBefore(t,s)}(window,document,'script','https://connect.facebook.net/en_US/fbevents.js'); window.fbq('init', C.META_PIXEL_ID); window.fbq('track', 'Purchase', { value: parseFloat(C.SETUP_PRICE) || 249, currency: 'AUD', content_name: 'setup_call' }); }
+})();
+</script>
+</body>
+</html>

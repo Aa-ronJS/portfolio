@@ -1,0 +1,95 @@
+<!doctype html>
+<html lang="en-AU">
+<head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Quote and Chase for Claude Code</title>
+<meta name="description" content="The laptop pack: run painting quotes, invoices and reminder drafts from Claude Code on a Windows or Mac laptop. Optional; the free phone app is the product.">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,700;12..96,800&family=Instrument+Sans:wght@400;600&display=swap">
+<style>
+:root{--ground:#F7F7F4;--ink:#16181D;--muted:#5B5F66;--line:#DCDED9;--tape:#2B7BD6;--tape-soft:#DDEBFA;--paper:#FFFFFF}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--ground:#15171B;--ink:#F0F1EC;--muted:#A2A6AD;--line:#2C3037;--tape:#5FA3F0;--tape-soft:#1B2B40;--paper:#1E2126}}
+:root[data-theme="dark"]{--ground:#15171B;--ink:#F0F1EC;--muted:#A2A6AD;--line:#2C3037;--tape:#5FA3F0;--tape-soft:#1B2B40;--paper:#1E2126}
+*{box-sizing:border-box}[hidden]{display:none!important}
+body{margin:0;background:var(--ground);color:var(--ink);font:16px/1.6 "Instrument Sans",system-ui,sans-serif}
+main{max-width:680px;margin:0 auto;padding:40px 16px 80px;display:grid;gap:22px}
+h1,h2{font-family:"Bricolage Grotesque",system-ui,sans-serif;letter-spacing:-.015em;margin:0}
+h1{font-size:2.2rem;line-height:1.05}h2{font-size:1.2rem;margin-top:6px}
+p,li{color:var(--muted);margin:0}ul{margin:0;padding-left:20px;display:grid;gap:6px}
+a{color:var(--tape)}
+.back{display:inline-block;font-size:.95rem}
+.box{background:var(--paper);border:1px solid var(--line);border-radius:10px;padding:20px;display:grid;gap:12px}
+.price{font-family:"Bricolage Grotesque",system-ui,sans-serif;font-weight:800;font-size:2.6rem;line-height:1;color:var(--ink)}
+.price small{font:500 1rem system-ui,sans-serif;color:var(--muted);margin-left:.3em}
+.btn{display:inline-flex;align-items:center;justify-content:center;background:var(--tape);color:#fff;text-decoration:none;font-weight:600;padding:.85em 1.3em;border-radius:6px;border:0;font:600 1rem "Instrument Sans",system-ui,sans-serif;min-height:48px;cursor:pointer}
+.btn.ghost{background:transparent;color:var(--ink);border:1.5px solid var(--ink)}
+.guarantee{border-left:4px solid var(--tape);background:var(--tape-soft);padding:12px 14px;border-radius:0 6px 6px 0;color:var(--ink)}
+.guarantee b{display:block}
+.cap{display:grid;gap:8px}.cap .row{display:flex;flex-wrap:wrap;gap:8px}
+.cap input[type=email]{flex:1 1 200px;font:1rem "Instrument Sans",system-ui,sans-serif;padding:.75em .9em;border:1.5px solid var(--line);border-radius:6px;background:var(--ground);color:var(--ink);min-width:0}
+.cap .done{font-weight:600;color:var(--ink)}
+code{font-family:ui-monospace,Menlo,Consolas,monospace;background:var(--paper);border:1px solid var(--line);border-radius:4px;padding:.1em .4em;font-size:.95em;color:var(--ink)}
+</style>
+</head>
+<body><main>
+<a class="back" href="./">&larr; Back to the free app</a>
+<div>
+  <p style="font:500 .78rem ui-monospace,Menlo,monospace;letter-spacing:.08em;text-transform:uppercase;color:var(--tape)">The laptop pack</p>
+  <h1>Run your painting quotes from Claude Code.</h1>
+</div>
+<p>For painters, or the person who runs their office, who do the admin at a desk. Type the address, drop in the photos, and the priced quote PDF comes out at your rates. Accepted quote in, invoice out. Monday morning, a list of who owes you with the reminders already drafted. This is the optional extra; <a href="./">the free phone app</a> is the product and does not need any of this.</p>
+
+<div class="box">
+  <div class="price">$<span data-pack-price>249</span><small>once<span data-gst></span></small></div>
+  <ul>
+    <li><code>/quote</code>, <code>/invoice</code> and <code>/chase</code> for Claude Code</li>
+    <li>Your price list and quote wording in plain text files you edit yourself</li>
+    <li>A practice job so the first one just works</li>
+    <li>Seven short video lessons, under an hour all up, <span data-lessons-date>within 14 days of purchase</span></li>
+    <li>Email help with the set-up, and new versions of the files for twelve months; after that the files you have keep working</li>
+    <li>Needs a Windows or Mac laptop and a Claude subscription you buy from Anthropic (their price; about $30 to $35 a month at the time of writing). The phone app never needs it.</li>
+    <li>It drafts; it never sends. You send every quote, invoice and reminder from your own email or phone.</li>
+  </ul>
+  <a class="btn" href="#" data-checkout><span>Buy the pack, $<span data-pack-price>249</span></span></a>
+  <form class="cap" data-capture="laptop-pack" action="#" method="post" hidden>
+    <input type="hidden" name="list" value="laptop-pack">
+    <label for="pack-email"><b style="color:var(--ink)">Not on sale yet.</b> Leave your email and you hear first.</label>
+    <div class="row"><input type="email" id="pack-email" name="email" placeholder="you@yourpainting.com.au" required autocomplete="email"><button class="btn ghost" type="submit">Put me down</button></div>
+    <small class="formstatus" aria-live="polite"></small>
+  </form>
+  <div class="guarantee"><b>One real quote out of the pack, or your money back.</b> Thirty days from the day the videos reach your inbox, not from the day you paid. Email and it goes back to your card within five business days, on top of your Australian Consumer Law rights.</div>
+</div>
+
+<div class="box">
+  <h2>Already paying for Claude?</h2>
+  <p>If you book the <a href="./#setup">set-up call</a> for the phone app and you already have a Claude subscription, say so on the call and I install the laptop commands too, at no charge.</p>
+</div>
+
+<div class="box">
+  <h2>What it is not</h2>
+  <ul>
+    <li>Not the phone app. The app measures walls from a photo, sends, invoices, takes card payments and follows up. The pack drafts documents on a laptop.</li>
+    <li>Not for someone who has never opened a terminal window. Claude Code runs in one; the install scripts do the typing, but you will see it.</li>
+    <li>Not affiliated with Anthropic. Claude and Claude Code are their trademarks and their subscription.</li>
+  </ul>
+</div>
+<p style="font-size:.9rem"><a href="terms">Terms</a> · <a href="privacy">Privacy</a> · <span data-contact></span></p>
+</main>
+<script src="config.js"></script>
+<script>
+(function(){
+  var C = window.QC || {}; var mail = (C.SUPPORT_EMAIL || '').trim();
+  var price = parseFloat(C.PACK_PRICE); if (isNaN(price)) price = 249;
+  document.querySelectorAll('[data-pack-price]').forEach(function(e){ e.textContent = String(price); });
+  document.querySelectorAll('[data-lessons-date]').forEach(function(e){ if (C.LESSONS_DATE) e.textContent = C.LESSONS_DATE; });
+  if (C.GST_REGISTERED) document.querySelectorAll('[data-gst]').forEach(function(e){ e.textContent = ', inc GST'; });
+  var buy = document.querySelector('[data-checkout]'), cap = document.querySelector('[data-capture]');
+  if (C.CHECKOUT_URL) { buy.setAttribute('href', C.CHECKOUT_URL); buy.addEventListener('click', function(){ try { if (window.fbq) window.fbq('track', 'InitiateCheckout', { value: price, currency: 'AUD', content_name: 'laptop_pack' }); } catch (e) {} }); }
+  else if (C.FORM_ACTION) { buy.hidden = true; cap.hidden = false; cap.setAttribute('action', C.FORM_ACTION); cap.addEventListener('submit', function(e){ e.preventDefault(); var b = cap.querySelector('button'); b.disabled = true; fetch(C.FORM_ACTION, { method: 'POST', body: new FormData(cap), headers: { Accept: 'application/json' } }).then(function(r){ if (!r.ok) throw 0; cap.innerHTML = '<p class="done">Done. You will hear first.</p>'; }).catch(function(){ b.disabled = false; cap.querySelector('.formstatus').textContent = 'That did not send. Try again' + (mail ? ', or email ' + mail : '') + '.'; }); }); }
+  else if (mail) { buy.setAttribute('href', 'mailto:' + mail + '?subject=' + encodeURIComponent('Quote and Chase laptop pack')); buy.textContent = 'Email me about the pack'; }
+  else { buy.hidden = true; }
+  if (mail) document.querySelectorAll('[data-contact]').forEach(function(e){ var a = document.createElement('a'); a.href = 'mailto:' + mail; a.textContent = mail; e.appendChild(a); });
+  if (C.META_PIXEL_ID) {!function(f,b,e,v,n,t,s){if(f.fbq)return;n=f.fbq=function(){n.callMethod?n.callMethod.apply(n,arguments):n.queue.push(arguments)};if(!f._fbq)f._fbq=n;n.push=n;n.loaded=!0;n.version='2.0';n.queue=[];t=b.createElement(e);t.async=!0;t.src=v;s=b.getElementsByTagName(e)[0];s.parentNode.insertBefore(t,s)}(window,document,'script','https://connect.facebook.net/en_US/fbevents.js'); window.fbq('init', C.META_PIXEL_ID); window.fbq('track', 'PageView'); }
+})();
+</script>
+</body>
+</html>
