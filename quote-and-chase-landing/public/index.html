@@ -4,9 +4,9 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>Quote and Chase</title>
-<meta name="description" content="A quoting tool for painters that you own. Photos in, PDF quote out, your rates. Build it from our templates in an afternoon. No subscription, ever.">
+<meta name="description" content="A quoting tool painters own. Photos in, priced quote out, your prices. Set it up in an afternoon. No subscription, ever.">
 <meta property="og:title" content="Quote and Chase: own your quoting tool">
-<meta property="og:description" content="Photos in, PDF quote out, your rates. Build it from our templates in an afternoon. $249 once, no subscription.">
+<meta property="og:description" content="Photos in, priced quote out, your prices. $249 once, no subscription.">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,700;12..96,800&family=Instrument+Sans:ital,wght@0,400;0,500;0,600;1,400&family=IBM+Plex+Mono:wght@400;500&display=swap">
@@ -124,10 +124,9 @@ nav .btn{padding:.6em 1em;font-size:.92rem}
 .fact small{font-family:var(--mono);font-size:.72rem;color:var(--muted)}
 
 /* how */
-.steps{display:grid;gap:22px;counter-reset:s}
+.steps{display:grid;gap:22px}
 @media (min-width:860px){.steps{grid-template-columns:repeat(3,1fr)}}
 .step{background:var(--soft);border-radius:8px;padding:22px;display:grid;gap:12px;align-content:start}
-.step::before{counter-increment:s;content:counter(s);font-family:var(--display);font-weight:800;font-size:2rem;line-height:1;color:var(--tape-deep)}
 .step code{font-family:var(--mono);font-size:.9rem;background:var(--paper);color:var(--doc-ink);padding:.35em .55em;border-radius:4px;display:inline-block;border:1px solid var(--line)}
 .step p{color:var(--muted)}
 
@@ -235,14 +234,14 @@ footer .wrap{display:grid;gap:8px}
 <header class="hero wrap" id="top">
   <div class="grid">
     <div class="stack">
-      <p class="eyebrow">A quoting tool for painters. Yours.</p>
+      <p class="eyebrow">For painters</p>
       <h1>Own your quoting tool. No subscription, ever.</h1>
-      <p class="lede">Photos in, priced PDF quote out, your rates. Build it from our templates in an afternoon. No coding.</p>
+      <p class="lede">Take photos of the room. Get a priced quote with your name on it. It lives on your laptop, uses your prices, and it's yours.</p>
       <div class="actions">
-        <a class="btn tape" href="#try">See what you'd own</a>
+        <a class="btn tape" href="#try">Try it on a wall</a>
         <a class="btn ghost" href="#price">Get it, $249 once</a>
       </div>
-      <p class="fine">Windows or Mac. Under an hour of lessons. <a href="sample-quote.pdf" target="_blank" rel="noopener">See a quote it made (PDF)</a>.</p>
+      <p class="fine">Windows or Mac. Set up in an afternoon. <a href="sample-quote.pdf" target="_blank" rel="noopener">See a quote it wrote (PDF)</a>.</p>
     </div>
 
     <div class="paper" aria-label="Example quote">
@@ -296,27 +295,27 @@ footer .wrap{display:grid;gap:8px}
 
 <div class="wrap">
   <div class="strip">
-    <div><b>Pay once</b><span>No per-job fees.</span></div>
-    <div><b>You build it</b><span>So you own it.</span></div>
-    <div><b>Nothing sent without you</b><span>It drafts. You send.</span></div>
-    <div><b>Change anything</b><span>It's just files in a folder.</span></div>
+    <div><b>Pay once</b><span>Not every month.</span></div>
+    <div><b>Your prices</b><span>Not ours.</span></div>
+    <div><b>You send it</b><span>It never does.</span></div>
+    <div><b>Yours to keep</b><span>Nobody can switch it off.</span></div>
   </div>
 </div>
 
 <section id="problem">
   <div class="wrap grid" style="gap:14px">
     <h2>You didn't start a painting business to type quotes at 9pm.</h2>
-    <p class="lede">Job software bills you per job and still leaves you doing the typing.</p>
+    <p class="lede">The apps charge you every month, and you still do the typing.</p>
   </div>
 </section>
 
 <section id="how">
   <div class="wrap grid" style="gap:28px">
-    <h2>Three commands. You build all three.</h2>
+    <h2>What it does</h2>
     <div class="steps">
-      <div class="step"><code>/quote 12 Wattle St</code><p>Photos and notes in. PDF quote out, with every assumption listed.</p></div>
-      <div class="step"><code>/invoice Q-1007 deposit</code><p>Deposit, final or full. Your bank details, your terms.</p></div>
-      <div class="step"><code>/chase</code><p>Who owes you, with the reminders drafted in your voice.</p></div>
+      <div class="step"><h3>Quotes</h3><p>Photos and a few notes in. A priced PDF quote out, with what it assumed written down for you to check.</p></div>
+      <div class="step"><h3>Invoices</h3><p>Deposit, final, or the lot. Your bank details, your terms, the due date worked out.</p></div>
+      <div class="step"><h3>Chasing</h3><p>Every Monday: who owes you, and the reminder messages written in your words. You copy, you send.</p></div>
     </div>
   </div>
 </section>
@@ -324,9 +323,9 @@ footer .wrap{display:grid;gap:8px}
 <section id="try" class="try">
   <div class="wrap grid">
     <div class="grid" style="gap:18px;align-content:start">
-      <p class="eyebrow">See what you'll build</p>
+      <p class="eyebrow">Try it</p>
       <h2>Point your phone at any wall.</h2>
-      <p class="lede">A sample quote in about twenty seconds.</p>
+      <p class="lede">You'll get a sample quote back in about twenty seconds.</p>
       <div class="qrbox only-desk">
         <div id="qr" aria-label="QR code linking to this demo"><img src="qr.svg" alt="QR code linking to this demo" width="220" height="220"></div>
         <b style="font-family:var(--display)">Scan with your phone</b>
@@ -337,9 +336,9 @@ footer .wrap{display:grid;gap:8px}
     <div class="demo" id="demo">
       <label class="drop" id="drop" for="photo">
         <img id="preview" alt="" hidden>
-        <span id="drop-text" class="only-desk"><b>Or choose a photo from this computer</b></span>
+        <span id="drop-text" class="only-desk"><b>Or pick a photo from this computer</b></span>
         <input type="file" id="photo" accept="image/*" capture="environment">
-        <span class="btn tape bigbtn" aria-hidden="true"><span class="only-desk-inline">Choose a photo</span><span class="only-phone-inline">Take a photo of a wall</span></span>
+        <span class="btn tape bigbtn" aria-hidden="true"><span class="only-desk-inline">Pick a photo</span><span class="only-phone-inline">Take a photo of a wall</span></span>
       </label>
       <textarea id="notes" placeholder="Optional: anything the photo doesn't show. e.g. Lounge, 5 by 4 m, same colour."></textarea>
       <button class="btn" id="go" type="button" disabled>Get a sample quote</button>
@@ -347,10 +346,10 @@ footer .wrap{display:grid;gap:8px}
       <div class="result" id="result" hidden></div>
       <form class="cap laptop" id="laptop" data-capture="laptop" action="#" method="post" hidden>
         <input type="hidden" name="list" value="send-to-laptop">
-        <label for="laptop-email"><b>Building it happens on a laptop.</b> Email yourself the link and the sample quote.</label>
+        <label for="laptop-email"><b>Setting it up happens on a laptop.</b> Email yourself the link and the sample quote.</label>
         <div class="row"><input type="email" id="laptop-email" name="email" placeholder="you@yourpainting.com.au" required autocomplete="email"><button class="btn tape" type="submit">Send to my laptop</button></div>
       </form>
-      <p class="fine" style="color:var(--muted);font-size:.85rem">Photo not stored. Demo prices, not an offer of work.</p>
+      <p class="fine" style="color:var(--muted);font-size:.85rem">Your photo isn't kept. Sample prices, not an offer of work.</p>
     </div>
   </div>
 </section>
@@ -358,24 +357,24 @@ footer .wrap{display:grid;gap:8px}
 <section id="inside">
   <div class="wrap grid g2" style="gap:40px">
     <div class="grid" style="gap:22px;align-content:start">
-      <h2>What's inside</h2>
+      <h2>What you get</h2>
       <ul class="list">
-        <li><div><b>Seven lessons, under an hour</b></div></li>
-        <li><div><b>Double-click set-up, Windows and Mac</b></div></li>
-        <li><div><b>The /quote, /invoice and /chase templates</b></div></li>
-        <li><div><b>A painter's price list and measuring rules</b></div></li>
-        <li><div><b>Quote and invoice templates</b></div></li>
-        <li><div><b>A safety file, and a sample job to practise on</b></div></li>
+        <li><div><b>Set-up that's a double-click, Windows or Mac</b></div></li>
+        <li><div><b>Seven short videos, under an hour all up</b></div></li>
+        <li><div><b>A painter's price list you change to yours</b></div></li>
+        <li><div><b>Quote and invoice layouts with your details on them</b></div></li>
+        <li><div><b>A practice job, so the first one just works</b></div></li>
+        <li><div><b>A person on email when you're stuck</b></div></li>
       </ul>
     </div>
     <div class="grid" style="gap:16px;align-content:start">
       <div class="not">
         <h3>Not included</h3>
-        <p>Scheduling, payments, client logins. Keep what you use for those.</p>
+        <p>Bookings, taking payments, client logins. Keep what you use for those.</p>
       </div>
       <div class="not">
         <h3>You need</h3>
-        <p>Windows 10 or 11, or macOS 13+. A Claude Pro subscription, paid to Anthropic.</p>
+        <p>A Windows or Mac laptop, and a Claude subscription. That's the brains behind it, about $30 a month, paid to them, not us.</p>
       </div>
     </div>
   </div>
@@ -395,11 +394,11 @@ footer .wrap{display:grid;gap:8px}
       <div class="tier featured">
         <p class="eyebrow">Own it</p>
         <div class="price">$249<small>AUD, once</small></div>
-        <p class="tierlede">Build it yourself from our templates in an afternoon. Runs on your laptop. No subscription, ever.</p>
+        <p class="tierlede">You set it up on your laptop in an afternoon, following the videos. Then it's yours.</p>
         <ul>
-          <li>Seven lessons and the installers</li>
-          <li>All the templates</li>
+          <li>Everything above</li>
           <li>Updates for a year</li>
+          <li>Email help with the set-up</li>
         </ul>
         <div class="buy">
           <a class="btn tape" href="#" data-checkout>Get it</a>
@@ -408,11 +407,11 @@ footer .wrap{display:grid;gap:8px}
       <div class="tier">
         <p class="eyebrow">We run it for you</p>
         <div class="price">$39<small>AUD a month</small></div>
-        <p class="tierlede">Same tool, hosted by us. Nothing to install, works on your phone. Your prices, wording and templates export any time, and the course is included, so if you ever leave, you leave with the tool.</p>
+        <p class="tierlede">Nothing to set up. Works on your phone. If you ever leave, you take your prices and your tool with you.</p>
         <ul>
           <li>Founding list, opening <span data-hosted-date>later this year</span></li>
           <li>Founding members keep this price</li>
-          <li>Cancel any time, take your tool with you</li>
+          <li>Cancel any time</li>
         </ul>
         <div class="buy">
           <a class="btn ghost" href="#" data-hosted>Join the founding list</a>
@@ -424,8 +423,8 @@ footer .wrap{display:grid;gap:8px}
         </div>
       </div>
     </div>
-    <div class="guarantee" style="max-width:720px"><b>One working quote in 14 days, or your money back.</b>Or switch to the hosted version and we credit your $249 to the first year.</div>
-    <p class="fine" style="color:var(--muted)">Founding price. Written lessons and templates today; video lessons <span data-lessons-date>within 14 days of purchase</span>.</p>
+    <div class="guarantee" style="max-width:720px"><b>One real quote out in 14 days, or your money back.</b>Or switch to the run-it-for-you version and we credit the $249.</div>
+    <p class="fine" style="color:var(--muted)">Founding price. The tool and written guide today; the videos <span data-lessons-date>within 14 days of purchase</span>.</p>
     <form id="waitlist" action="#" method="post" data-form class="waitform">
       <input type="hidden" name="list" value="sample-quote">
       <label for="email" style="font-weight:600;font-size:.95rem">Not ready? Get the sample quote by email.</label>
@@ -441,19 +440,18 @@ footer .wrap{display:grid;gap:8px}
   <div class="wrap grid" style="gap:20px">
     <h2>Questions</h2>
     <div>
-      <details><summary>Why build it myself?</summary><p>No subscription, and a tool you built you can change. Next month you'll want the next thing, and you'll know how to ask for it.</p></details>
-      <details><summary>What if I don't want to build it?</summary><p>Join the hosted list. Same tool, we run it, nothing to install. And if you buy the owned version and get stuck, your $249 becomes credit on the hosted one.</p></details>
-      <details><summary>Do I need to know computers?</summary><p>If you can make a folder and type a sentence, yes. No coding.</p></details>
-      <details><summary>Is it safe?</summary><p>It lives in one folder, asks before running anything, and never sends a quote or a text. You do.</p></details>
-      <details><summary>What does Claude cost?</summary><p>A Claude Pro subscription, paid to Anthropic. We don't take a cut.</p></details>
-      <details><summary>Does it connect to ServiceM8 or Xero?</summary><p>Not out of the box. It makes PDFs and a spreadsheet you can use anywhere. Lesson seven shows you how to ask for more.</p></details>
+      <details><summary>Do I need to be good with computers?</summary><p>If you can make a folder and type a sentence, you're fine. Set-up is double-clicks and the videos show every step.</p></details>
+      <details><summary>What's the catch with "no subscription"?</summary><p>One thing it needs isn't ours: a Claude subscription, about $30 a month, paid to Anthropic. It's the brains. We don't take a cut, and you can cancel it whenever you like.</p></details>
+      <details><summary>What if I get stuck?</summary><p>Email us. A person replies. And if you decide you'd rather we ran it for you, your $249 becomes credit.</p></details>
+      <details><summary>Is my stuff safe?</summary><p>It all lives in one folder on your laptop. It never sends a quote or a message. You do.</p></details>
+      <details><summary>Does it work with ServiceM8 or Xero?</summary><p>It makes PDFs and a spreadsheet, and you can use those anywhere. It isn't plugged into them directly.</p></details>
     </div>
   </div>
 </section>
 
 <footer>
   <div class="wrap">
-    <p><b>Quote &amp; Chase</b>, a quoting tool painters own. Not affiliated with Anthropic; Claude and Claude Code are their trademarks.</p>
+    <p><b>Quote &amp; Chase</b>, a quoting tool painters own. Not affiliated with Anthropic; Claude is their trademark.</p>
     <p>ABN <span data-abn>00 000 000 000</span> · <a data-mail href="mailto:hello@example.com">hello@example.com</a> · <a href="privacy">Privacy</a> · <a href="terms">Terms and refunds</a></p>
   </div>
 </footer>
@@ -498,7 +496,7 @@ footer .wrap{display:grid;gap:8px}
       imageB64 = dataUrl.split(',')[1];
       preview.src = dataUrl; preview.hidden = false; dropText.hidden = true; drop.classList.add('has');
       go.disabled = false; result.hidden = true;
-      setStatus('Ready. Add a note if you like, then get the quote.');
+      setStatus('Got it. Add a note if you like, then get the quote.');
       go.scrollIntoView({ block: 'nearest', behavior: 'smooth' });
     }).catch(function(e){ setStatus(e.message, true); });
   });
@@ -513,7 +511,7 @@ footer .wrap{display:grid;gap:8px}
     var rows = q.line_items.map(function(li){
       return '<tr><td>' + esc(li.description) + '<br><span style="color:var(--doc-muted);font-size:.85em">' + li.qty + ' ' + esc(li.unit) + ' × ' + money(li.rate) + '</span></td><td class="n">' + money(li.amount) + '</td></tr>';
     }).join('');
-    var tag = q.sample ? '<span class="tag">Example result</span>' : '<span class="tag">Sample quote from your photo</span>';
+    var tag = q.sample ? '<span class="tag">Example result</span>' : '<span class="tag">Sample quote from your wall</span>';
     result.innerHTML =
       tag + '<h3>' + esc(q.job_title) + '</h3>' +
       '<p class="see">' + esc(q.what_i_can_see) + '</p>' +
@@ -524,7 +522,7 @@ footer .wrap{display:grid;gap:8px}
       (q.assumptions && q.assumptions.length ? '<div><b style="font-size:.9rem">Based on</b><ul>' + q.assumptions.map(function(a){ return '<li>' + esc(a) + '</li>'; }).join('') + '</ul></div>' : '') +
       (q.questions_for_client && q.questions_for_client.length ? '<div><b style="font-size:.9rem">Worth asking the client</b><ul>' + q.questions_for_client.map(function(a){ return '<li>' + esc(a) + '</li>'; }).join('') + '</ul></div>' : '') +
       (note ? '<p class="fine">' + esc(note) + '</p>' : '') +
-      '<p class="fine">Demo price list. The one you build uses your rates, and the quote lands as a PDF with your name on it.</p>';
+      '<p class="fine">Sample prices. Yours uses your rates and lands as a PDF with your name on it.</p>';
     result.hidden = false;
     if (window.matchMedia('(max-width: 959px)').matches) { var lap = document.getElementById('laptop'); if (lap && !lap.querySelector('.done')) lap.hidden = false; }
     result.scrollIntoView({ block: 'start', behavior: 'smooth' });
@@ -535,7 +533,7 @@ footer .wrap{display:grid;gap:8px}
   var EXAMPLE = null; // filled from the server's sample shape if the demo is offline
   go.addEventListener('click', function(){
     if (!imageB64) return;
-    go.disabled = true; setStatus('Looking at the photo and pricing it up… about twenty seconds.');
+    go.disabled = true; setStatus('Pricing it up. About twenty seconds.');
     var body = JSON.stringify({ image: imageB64, media_type: 'image/jpeg', notes: notes.value.slice(0, 600) });
     var ctrl = ('AbortController' in window) ? new AbortController() : null;
     var timer = ctrl && setTimeout(function(){ ctrl.abort(); }, 75000);
@@ -543,12 +541,12 @@ footer .wrap{display:grid;gap:8px}
       .then(function(r){ return r.json().then(function(j){ return { ok: r.ok, j: j }; }); })
       .then(function(x){
         if (!x.ok) { setStatus(x.j.error || 'Something went wrong. Try again.', true); return; }
-        setStatus(x.j.sample ? 'Showing an example result. The live estimator is not connected on this page yet.' : 'Done. Scroll for the sample quote.');
+        setStatus(x.j.sample ? 'Showing an example. The live version isn\'t switched on for this page yet.' : 'Done. Scroll for the sample quote.');
         render(x.j);
       })
       .catch(function(){
-        setStatus('Could not reach the estimator from here. Showing an example of what comes back.', true);
-        render(exampleQuote(), 'Example only: the demo server is not connected on this copy of the page.');
+        setStatus('Couldn\'t reach the server from here. Showing an example of what comes back.', true);
+        render(exampleQuote(), 'Example only: the live version isn\'t connected on this copy of the page.');
       })
       .finally(function(){ if (timer) clearTimeout(timer); go.disabled = false; });
   });
