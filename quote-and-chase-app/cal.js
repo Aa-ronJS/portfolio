@@ -55,7 +55,8 @@
     NT: ['2026-05-04', '2026-06-08', '2026-08-03', '2027-05-03', '2027-06-14', '2027-08-02'],
     ACT: ['2026-03-09', '2026-04-27', '2026-06-01', '2026-06-08', '2026-10-05', '2027-03-08', '2027-05-31', '2027-06-14', '2027-10-04']
   };
-  function holidays(state) { var st = String(state || '').toUpperCase(), out = {}; Object.keys(NATIONAL).forEach(function (y) { NATIONAL[y].forEach(function (d) { out[d] = 1; }); }); (STATE[st] || []).forEach(function (d) { out[d] = 1; }); return out; }
+  var HOL_CACHE = {};
+  function holidays(state) { var st = String(state || '').toUpperCase(); if (HOL_CACHE[st]) return HOL_CACHE[st]; var out = {}; Object.keys(NATIONAL).forEach(function (y) { NATIONAL[y].forEach(function (d) { out[d] = 1; }); }); (STATE[st] || []).forEach(function (d) { out[d] = 1; }); HOL_CACHE[st] = out; return out; }
   function isHoliday(iso, state) { return !!holidays(state)[iso]; }
   function isBusinessDay(iso, state) { var p = String(iso).split('-'), dow = new Date(+p[0], +p[1] - 1, +p[2]).getDay(); return dow !== 0 && dow !== 6 && !isHoliday(iso, state); }
   function nextBusinessDay(iso, state) { var d = iso, n = 0; while (!isBusinessDay(d, state) && n < 14) { d = addDays(d, 1); n++; } return d; }

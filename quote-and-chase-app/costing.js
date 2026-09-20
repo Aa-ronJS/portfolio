@@ -23,7 +23,7 @@
   var CONSUMABLE = { m2: 1, lm: 0.6, each: 10 };
   function copy(o) { var r = {}; Object.keys(o).forEach(function (k) { r[k] = o[k]; }); return r; }
   function defaults() {
-    return { labour_rate: 80, margin_pct: 40, coats: 2, coverage_m2_per_l: 14, coverage: copy(COVERAGE), paint_price: { walls: 28, ceilings: 16, enamel: 45, exterior: 32, sealer: 22, oil: 30 }, hours_scale: 1,
+    return { labour_rate: 65, margin_pct: 40, coats: 2, coverage_m2_per_l: 14, coverage: copy(COVERAGE), paint_price: { walls: 28, ceilings: 16, enamel: 45, exterior: 32, sealer: 22, oil: 30 }, hours_scale: 1,
       tin_sizes: copy(TIN_SIZES), tin_price_factor: copy(TIN_FACTOR), charge_tins: false, wastage_pct: 8, setup_hours: 1.5, daily_hours: 0.75, consumables_m2: 0.5, crew: 1, hours_per_day: 8 };
   }
   function num(v, d) { var x = parseFloat(v); return isNaN(x) ? d : x; }

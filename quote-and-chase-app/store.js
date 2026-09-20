@@ -124,7 +124,7 @@
     // costing: nested tables filled per key; first-release labour, markup, ceiling paint and tins move to the new defaults when untouched
     var c = state.costing, dc = d.costing;
     if (had.costing.charge_tins === true && (had.costing.labour_rate === 65 || had.costing.labour_rate == null) && (had.costing.margin_pct === 25 || had.costing.margin_pct == null)) c.charge_tins = false;
-    if (had.costing.labour_rate === 65) c.labour_rate = 80; if (had.costing.margin_pct === 25) c.margin_pct = 40;
+    if (had.costing.margin_pct === 25) c.margin_pct = 40;
     c.paint_price = Object.assign({}, dc.paint_price, c.paint_price && typeof c.paint_price === 'object' ? c.paint_price : {}); if (had.costing.paint_price && had.costing.paint_price.ceilings === 24) c.paint_price.ceilings = 16;
     if (!had.costing.coverage || typeof had.costing.coverage !== 'object') { c.coverage = Object.assign({}, dc.coverage); var cov = parseFloat(had.costing.coverage_m2_per_l); if (cov > 0 && cov !== 14) c.coverage.walls = cov; } else c.coverage = Object.assign({}, dc.coverage, had.costing.coverage);
     c.coverage_m2_per_l = c.coverage.walls;

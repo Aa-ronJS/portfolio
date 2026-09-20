@@ -1,4 +1,5 @@
-/* Quote & Chase: calendar files (.ics) for bookings and follow-up reminders, plus a Google Calendar link. */
+/* Quote & Chase: calendar files (.ics) for bookings and follow-up reminders, a Google Calendar link,
+ * and the business-day rules for reminder send times (weekends and public holidays roll forward). */
 (function () {
   'use strict';
   function pad(n) { return (n < 10 ? '0' : '') + n; }
@@ -34,5 +35,38 @@
   }
   function download(blob, filename) { var a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = filename; document.body.appendChild(a); a.click(); setTimeout(function () { URL.revokeObjectURL(a.href); a.remove(); }, 800); return 'downloaded'; }
   function googleUrl(e) { var dates = e.startMin != null ? icsLocal(e.start, Math.floor(e.startMin / 60), e.startMin % 60) + '/' + icsLocal(e.end || e.start, Math.floor((e.endMin || e.startMin + 30) / 60), (e.endMin || e.startMin + 30) % 60) : e.startHour != null ? icsLocal(e.start, e.startHour, 0) + '/' + icsLocal(e.end || e.start, e.endHour != null ? e.endHour : e.startHour + 1, 0) : icsDate(e.start) + '/' + icsDate(e.end || addDays(e.start, 1)); return 'https://calendar.google.com/calendar/render?action=TEMPLATE&text=' + encodeURIComponent(e.summary) + '&dates=' + dates + '&details=' + encodeURIComponent(e.description || '') + '&location=' + encodeURIComponent(e.location || ''); }
-  window.QCCal = { ics: ics, deliver: deliver, googleUrl: googleUrl, addDays: addDays };
+
+  // ---------- public holidays, 2026 and 2027
+  // VERIFY YEARLY against the state government gazettes (all on data.gov.au). Written from memory in September 2026;
+  // the 2027 dates for the Grand Final Friday (VIC) and anything proclaimed late are the usual pattern, not the gazette.
+  // Substitute days: Boxing Day 2026 (Sat) -> Mon 28 Dec everywhere; Christmas 2027 (Sat) -> Mon 27 Dec and Boxing Day 2027 (Sun) -> Tue 28 Dec everywhere;
+  // Anzac Day 2026 (Sat) has a Monday substitute in WA and the ACT only.
+  var NATIONAL = {
+    2026: ['2026-01-01', '2026-01-26', '2026-04-03', '2026-04-04', '2026-04-05', '2026-04-06', '2026-04-25', '2026-12-25', '2026-12-26', '2026-12-28'],
+    2027: ['2027-01-01', '2027-01-26', '2027-03-26', '2027-03-27', '2027-03-28', '2027-03-29', '2027-04-25', '2027-12-25', '2027-12-26', '2027-12-27', '2027-12-28']
+  };
+  var STATE = {
+    NSW: ['2026-06-08', '2026-10-05', '2027-06-14', '2027-10-04'],
+    VIC: ['2026-03-09', '2026-06-08', '2026-09-25', '2026-11-03', '2027-03-08', '2027-06-14', '2027-09-24', '2027-11-02'],
+    QLD: ['2026-05-04', '2026-10-05', '2027-05-03', '2027-10-04'],
+    SA: ['2026-03-09', '2026-06-08', '2026-10-05', '2027-03-08', '2027-06-14', '2027-10-04'],
+    WA: ['2026-03-02', '2026-04-27', '2026-06-01', '2026-09-28', '2027-03-01', '2027-06-07', '2027-09-27'],
+    TAS: ['2026-02-09', '2026-03-09', '2026-06-08', '2026-11-02', '2027-02-08', '2027-03-08', '2027-06-14', '2027-11-01'],
+    NT: ['2026-05-04', '2026-06-08', '2026-08-03', '2027-05-03', '2027-06-14', '2027-08-02'],
+    ACT: ['2026-03-09', '2026-04-27', '2026-06-01', '2026-06-08', '2026-10-05', '2027-03-08', '2027-05-31', '2027-06-14', '2027-10-04']
+  };
+  var HOL_CACHE = {};
+  function holidays(state) { var st = String(state || '').toUpperCase(); if (HOL_CACHE[st]) return HOL_CACHE[st]; var out = {}; Object.keys(NATIONAL).forEach(function (y) { NATIONAL[y].forEach(function (d) { out[d] = 1; }); }); (STATE[st] || []).forEach(function (d) { out[d] = 1; }); HOL_CACHE[st] = out; return out; }
+  function isHoliday(iso, state) { return !!holidays(state)[iso]; }
+  function isBusinessDay(iso, state) { var p = String(iso).split('-'), dow = new Date(+p[0], +p[1] - 1, +p[2]).getDay(); return dow !== 0 && dow !== 6 && !isHoliday(iso, state); }
+  function nextBusinessDay(iso, state) { var d = iso, n = 0; while (!isBusinessDay(d, state) && n < 14) { d = addDays(d, 1); n++; } return d; }
+  // When a reminder dated `iso` should actually go: the next business day at `hour` (floored at 8, capped at 18, default 9).
+  // Local time; the phone's zone. Note DST: a time scheduled in September for October (NSW/VIC/SA/TAS/ACT change on the
+  // first Sunday of October) is converted to UTC at scheduling time by the browser, so 9:00 stays 9:00 local.
+  function nextSendTime(iso, hour, state) {
+    var h = parseInt(hour, 10); if (isNaN(h)) h = 9; h = Math.min(18, Math.max(8, h));
+    var day = nextBusinessDay(String(iso || '').slice(0, 10), state), p = day.split('-'), d = new Date(+p[0], +p[1] - 1, +p[2], h, 0, 0);
+    return { day: day, hour: h, date: d, iso: d.toISOString(), moved: day !== iso };
+  }
+  window.QCCal = { ics: ics, deliver: deliver, googleUrl: googleUrl, addDays: addDays, holidays: holidays, isHoliday: isHoliday, isBusinessDay: isBusinessDay, nextBusinessDay: nextBusinessDay, nextSendTime: nextSendTime, HOLIDAYS: { national: NATIONAL, state: STATE } };
 })();
