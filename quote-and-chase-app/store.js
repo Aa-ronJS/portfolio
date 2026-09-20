@@ -42,7 +42,7 @@
       follow_up: { quote_days: [3, 7, 14], invoice_days: [1, 7, 21], remind_hour: 8 },
       stripe: { key: '', enabled: false },
       sending: { server: '', server_has_creds: false, twilio_sid: '', twilio_token: '', twilio_service: '', twilio_from: '', resend_key: '', resend_from: '', auto_sms: true, auto_email: true, email_quotes: true },
-      booking: { start_hour: 7, end_hour: 15 },
+      booking: { start_hour: 7, end_hour: 15, quote_from: 7, quote_to: 18, visit_minutes: 30, saturdays: true, sundays: false },
       wording: {
         included: ['Protection of floors, furniture and fittings with drop sheets and plastic before work starts.',
           'Preparation as described: filling minor holes and cracks, light sanding, dusting and spot priming.',

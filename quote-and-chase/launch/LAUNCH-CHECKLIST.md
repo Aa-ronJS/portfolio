@@ -71,6 +71,12 @@ what only you can do, in order. Nothing else is waiting on me.
 - Quote and Chase pack: four skills, price list, wording, templates,
   PDF helper, ledger, sample job, HELP.txt; `/quote`, `/mark`,
   `/invoice` and `/chase` run end to end for real.
+- Phone enquiry: room presets with S/M/L sizes and condition give a
+  ballpark range from the painter's own price list while the caller is on
+  the line, text it, save as a job with the rooms typed in; visit slots
+  suggested by least added driving between the day's booked jobs and
+  visits (postcode centroids, town/highway speed curve), calendar file
+  with a 45-minute alarm and a confirmation text. Unit- and browser-tested.
 - Sending relay (`quote-and-chase-landing/api/msg.js`): Twilio SMS
   (send, fixed-time schedule up to 35 days, cancel) and Resend email
   (send with PDF attachment, scheduled_at up to 30 days, cancel), CORS
