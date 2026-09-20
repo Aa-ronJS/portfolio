@@ -37,7 +37,7 @@
         account_name: '', bsb: '', account_number: '', other_payments: 'Bank transfer or cash', deposit_pct: 20, balance_days: 7, quote_valid_days: 30, gst: true,
         voice: 'friendly', sign_off: 'Cheers', logo: '' },
       prices: prices,
-      rules: { minimum_job: 450, travel_per_km: 1.5, premium_paint_pct: 15, ceiling_height_m: 2.4 },
+      rules: { minimum_job: 450, travel_per_km: 1.5, premium_paint_pct: 15, ceiling_height_m: 2.4, round_up_cm: 10 },
       wording: {
         included: ['Protection of floors, furniture and fittings with drop sheets and plastic before work starts.',
           'Preparation as described: filling minor holes and cracks, light sanding, dusting and spot priming.',

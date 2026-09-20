@@ -311,7 +311,7 @@
       found.slice(0, 4).forEach(function(o){ var it = { type: o.type, x1: o.u1, y1: o.v1, x2: o.u2, y2: o.v2, frame: 'wall', auto: true }; var sz = sizeOf(it); it.w = sz.w; it.h = sz.h; it.area = sz.w * sz.h / 1e6; S.items.push(it); });
       draw(); renderItems();
       var doors = found.filter(function(o){ return o.type === 'door'; }).length, wins = found.filter(function(o){ return o.type === 'window'; }).length;
-      say('Wall ' + fmt(sc.W) + ' × ' + fmt(sc.H) + ' m from the A4 page' + (sc.note ? ' (' + sc.note + ')' : '') + '. ' + (found.length ? 'Found ' + (doors ? doors + ' door' + (doors > 1 ? 's' : '') : '') + (doors && wins ? ' and ' : '') + (wins ? wins + ' window' + (wins > 1 ? 's' : '') : '') + ': remove any that are wrong, tap to add more, then save.' : 'Tap doors and windows (two corners each), or save the wall.'), 'ok');
+      say('Wall ' + fmt(S.rect.W) + ' × ' + fmt(S.rect.H) + ' m' + (S.scale.rounded ? ' (rounded up from ' + fmt(sc.W) + ' × ' + fmt(sc.H) + ')' : '') + ' from the A4 page' + (sc.note ? ' (' + sc.note + ')' : '') + '. ' + (found.length ? 'Found ' + (doors ? doors + ' door' + (doors > 1 ? 's' : '') : '') + (doors && wins ? ' and ' : '') + (wins ? wins + ' window' + (wins > 1 ? 's' : '') : '') + ': remove any that are wrong, tap to add more, then save.' : 'Tap doors and windows (two corners each), or save the wall.'), 'ok');
       setMode('door');
     }
     function pageInUnit(){ if (!S.page || !S.rect) return null; var us = S.page.corners.map(function(p){ return apply(S.rect.HwInv, p); }); return { u1: Math.min.apply(null, us.map(function(p){ return p.x; })) - 0.01, u2: Math.max.apply(null, us.map(function(p){ return p.x; })) + 0.01, v1: Math.min.apply(null, us.map(function(p){ return p.y; })) - 0.01, v2: Math.max.apply(null, us.map(function(p){ return p.y; })) + 0.01 }; }
@@ -355,29 +355,33 @@
       if (!(S.rect.aspect > 0.1 && S.rect.aspect < 3)) { S.rect = null; return false; }
       return true;
     }
-    function offerRounding(W, Hh){
-      var box = q('roundbox'), btns = q('roundbtns'); btns.innerHTML = '';
+    // Rounding: measured walls round UP to the next step (default 10 cm) so a quote never comes in under. Openings stay as measured.
+    function roundStep(){ var v = opts.roundUpMm ? opts.roundUpMm() : 100; return v > 0 ? v : 0; }
+    function ceilTo(v, step){ return step ? Math.ceil((v - 0.005 * v) / step) * step : v; } // a measurement 0.5% over a round number is noise, not a reason to add a whole step
+    function setWallSize(nW, nH, rounded){ S.rect.W = nW; S.rect.H = nH; S.scale.rounded = rounded;
+      S.items.forEach(function(it){ if (it.type === 'wall') { it.w = nW; it.h = nH; it.area = nW * nH / 1e6; } });
+      // openings keep their own measured millimetres: convert back through the measured frame so rounding the wall never shrinks them
+      var m = S.scale.measured; S.items.forEach(function(it){ if (it.type !== 'wall' && it.frame === 'wall') { it.w = m.W * (it.x2 - it.x1); it.h = m.H * (it.y2 - it.y1); it.area = it.w * it.h / 1e6; } });
+      draw(); renderItems(); }
+    function offerRounding(){
+      var box = q('roundbox'), btns = q('roundbtns'), m = S.scale.measured, step = roundStep(); btns.innerHTML = '';
       function chip(label, fn, primary){ var b = document.createElement('button'); b.className = 'btn sm' + (primary ? ' tape' : ''); b.textContent = label; b.addEventListener('click', fn); btns.appendChild(b); }
-      var wLo = Math.floor(W / 100) * 100, wHi = wLo + 100, hLo = Math.floor(Hh / 100) * 100, hHi = hLo + 100;
-      q('roundhint').textContent = 'Measured ' + fmt(W) + ' × ' + fmt(Hh) + ' m. Walls are often a round number; pick one if you know it, or keep the measurement.';
-      chip('Width ' + fmt(wLo), function(){ applyRounded(wLo, null); }); chip('Width ' + fmt(wHi), function(){ applyRounded(wHi, null); });
-      chip('Height ' + fmt(hLo), function(){ applyRounded(null, hLo); }); chip('Height ' + fmt(hHi), function(){ applyRounded(null, hHi); });
-      chip('Keep as measured', function(){ box.hidden = true; }, true);
+      var upW = ceilTo(m.W, step || 100), upH = ceilTo(m.H, step || 100);
+      if (S.scale.rounded) { q('roundhint').textContent = 'Rounded up to ' + fmt(S.rect.W) + ' × ' + fmt(S.rect.H) + ' m from a measured ' + fmt(m.W) + ' × ' + fmt(m.H) + '. Walls round up, never down, so the quote is not under.'; chip('Use the measured ' + fmt(m.W) + ' × ' + fmt(m.H), function(){ setWallSize(m.W, m.H, false); offerRounding(); }); }
+      else { q('roundhint').textContent = 'Measured ' + fmt(m.W) + ' × ' + fmt(m.H) + ' m.'; chip('Round up to ' + fmt(upW) + ' × ' + fmt(upH), function(){ setWallSize(upW, upH, true); offerRounding(); }, true); }
       box.hidden = false;
     }
-    function applyRounded(W, Hh){ if (!S.rect) return; var nW = W || S.rect.W, nH = Hh || S.rect.H; S.rect.W = nW; S.rect.H = nH; S.scale.rounded = true;
-      S.items.forEach(function(it){ if (it.frame === 'wall') { if (it.type === 'wall') { it.w = nW; it.h = nH; it.area = nW * nH / 1e6; } else { var sz = sizeOf(it); it.w = sz.w; it.h = sz.h; it.area = sz.w * sz.h / 1e6; } } });
-      draw(); renderItems(); offerRounding(nW, nH); say('Wall set to ' + fmt(nW) + ' × ' + fmt(nH) + ' m.', 'ok'); }
     function finishWall(W, Hh, scale){
-      S.rect.W = W; S.rect.H = Hh; S.scale = scale; if (!scale.assumed) offerRounding(W, Hh); else q('roundbox').hidden = true;
+      S.rect.W = W; S.rect.H = Hh; S.scale = scale; scale.measured = { W: W, H: Hh }; scale.rounded = false;
+      if (!scale.assumed) { var st = roundStep(); if (st) { S.rect.W = ceilTo(W, st); S.rect.H = ceilTo(Hh, st); scale.rounded = true; W = S.rect.W; Hh = S.rect.H; } } else q('roundbox').hidden = true;
       S.items = S.items.filter(function(x){ return x.type !== 'wall'; });
       S.items.push({ type: 'wall', x1: 0, y1: 0, x2: 1, y2: 1, w: W, h: Hh, area: W * Hh / 1e6, frame: 'wall' });
-      // re-size any openings already placed in this frame
-      S.items.forEach(function(it){ if (it.type !== 'wall' && it.frame === 'wall') { var sz = sizeOf(it); it.w = sz.w; it.h = sz.h; it.area = sz.w * sz.h / 1e6; } });
-      q('scalebox').hidden = !scale.assumed; q('rescalerow').hidden = true; draw(); renderItems();
+      // re-size any openings already placed in this frame, from the measured (not rounded) wall
+      var mm0 = scale.measured; S.items.forEach(function(it){ if (it.type !== 'wall' && it.frame === 'wall') { it.w = mm0.W * (it.x2 - it.x1); it.h = mm0.H * (it.y2 - it.y1); it.area = it.w * it.h / 1e6; } });
+      q('scalebox').hidden = !scale.assumed; q('rescalerow').hidden = true; draw(); renderItems(); if (!scale.assumed) offerRounding();
       if (scale.assumed) say('Wall about ' + fmt(W) + ' × ' + fmt(Hh) + ' m if the ceiling is ' + fmt(scale.ref_mm) + ' m. Ceilings vary, so tap a door top and bottom to size it properly, or tap the door as an opening and it will check itself.', 'warn');
       else if (scale.method === 'inherited') say('Wall: ' + fmt(W) + ' × ' + fmt(Hh) + ' m, using the ' + fmt(Hh) + ' m wall height already measured in this room. Tap doors and windows, or save this wall.', 'ok');
-      else say('Wall: ' + fmt(W) + ' × ' + fmt(Hh) + ' m, scaled from the ' + scale.label + '. Now tap doors and windows (two corners each), or save this wall.', 'ok');
+      else say('Wall: ' + fmt(W) + ' × ' + fmt(Hh) + ' m' + (scale.rounded ? ' (rounded up from ' + fmt(scale.measured.W) + ' × ' + fmt(scale.measured.H) + ')' : '') + ', scaled from the ' + scale.label + '. Now tap doors and windows (two corners each), or save this wall.', 'ok');
       setMode('door');
     }
     function scaleFromSheet(){ // affine fit of the wall's unit frame to sheet millimetres over the marker corners
@@ -455,7 +459,7 @@
       }
     }
     function sizeOf(it){
-      if (it.frame === 'wall' && S.rect) return { w: S.rect.W * (it.x2 - it.x1), h: S.rect.H * (it.y2 - it.y1) };
+      if (it.frame === 'wall' && S.rect) { var fr = (it.type !== 'wall' && S.scale && S.scale.measured) ? S.scale.measured : S.rect; return { w: fr.W * (it.x2 - it.x1), h: fr.H * (it.y2 - it.y1) }; }
       return { w: it.x2 - it.x1, h: it.y2 - it.y1 };
     }
     function addItem(it){
@@ -525,7 +529,7 @@
       var openArea = openings.reduce(function(s, o){ return s + o.area_m2; }, 0);
       var rec = { wall: (q('wallname').value || ('Wall ' + (opts.count ? opts.count() + 1 : 1))).trim(),
         width_mm: Math.round(wall.w), height_mm: Math.round(wall.h), gross_area_m2: +wall.area.toFixed(3), openings: openings, paint_area_m2: +(wall.area - openArea).toFixed(3),
-        method: wall.frame === 'wall' ? (S.scale && S.scale.method === 'page' ? 'photo-page' : 'photo-corners') : 'photo-reference', scale: wall.frame === 'wall' ? (S.scale && S.scale.method) : (S.ref ? S.ref.label : 'sheet'), scale_assumed: !!(S.scale && S.scale.assumed), rounded: !!(S.scale && S.scale.rounded),
+        method: wall.frame === 'wall' ? (S.scale && S.scale.method === 'page' ? 'photo-page' : 'photo-corners') : 'photo-reference', scale: wall.frame === 'wall' ? (S.scale && S.scale.method) : (S.ref ? S.ref.label : 'sheet'), scale_assumed: !!(S.scale && S.scale.assumed), rounded: !!(S.scale && S.scale.rounded), measured_width_mm: S.scale && S.scale.measured ? Math.round(S.scale.measured.W) : undefined, measured_height_mm: S.scale && S.scale.measured ? Math.round(S.scale.measured.H) : undefined,
         focal: S.fSource || '', expected_error_pct: confidence(), photo: S.photoName, measured_at: new Date().toISOString() };
       if (opts.onSave) opts.onSave(rec);
       say('Saved ' + rec.wall + '. Take the next wall, or go back to the room.', 'ok');

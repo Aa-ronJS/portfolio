@@ -75,7 +75,7 @@ textarea{width:100%;min-height:120px;font:.9rem ui-monospace,Menlo,Consolas,mono
   function esc(s){ return String(s).replace(/[&<>"]/g, function(c){ return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]; }); }
   var ceilings = {}, cerr = {};
   window.__qc = QCMeasure.mount($('mount'), {
-    count: function(){ return saved.length; },
+    count: function(){ return saved.length; }, roundUpMm: function(){ return 100; },
     ceiling: function(){ var c = ceilings[$('room').value.trim()]; return { m: c || 2.4, assumed: !c }; },
     onHeight: function(m, how, err){ var r = $('room').value.trim(); if (cerr[r] != null && err > cerr[r]) return; ceilings[r] = m; cerr[r] = err; },
     onSave: function(rec){ rec.room = $('room').value.trim() || 'Room'; saved.push(rec); persist(); render(); $('saved').scrollIntoView({ behavior: 'smooth', block: 'start' }); }
