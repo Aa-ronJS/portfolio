@@ -31,6 +31,11 @@ Common ones
     it says none was found, open quote.html in your browser, press
     Ctrl+P (Cmd+P on a Mac) and choose Save as PDF.
 
+  The measuring page cannot find the A4 page
+    The whole sheet must be flat on the wall, in the photo, not in
+    glare. A blank page works best; a printed page confuses it. Tap
+    "No page in the shot" and it falls back to tapping the corners.
+
   The measuring page says the corners did not make a sensible wall
     Tap them in order: top-left, top-right, bottom-right, bottom-left,
     at the ceiling line and the skirting, exactly in the corners. Use

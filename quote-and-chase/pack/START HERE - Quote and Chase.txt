@@ -26,12 +26,14 @@ Your first quote (about 5 minutes)
      real quote goes out.
 
 Measure it properly (a minute a wall, worth it, nothing to print)
-  1. Photograph the whole wall, corner to corner, lights on.
+  1. Stick a blank A4 sheet flat on the wall. Photograph the whole
+     wall, corner to corner, lights on.
   2. Open the "measure" folder, double-click measure.html. Choose the
-     photo. Tap the four corners of the wall.
-  3. Set the scale once: type the ceiling height, or tap a door
-     (2.04 m) or a power point (116 mm). Then two corners of each door
-     and window. Save.
+     photo. It outlines the page: confirm. It outlines the wall:
+     confirm. Doors and windows it can see are listed; add any it
+     missed with two taps. Save.
+  3. No page in the shot? Tap the four wall corners and use a door
+     (2.04 m) or the ceiling height for the size.
   4. Put the measurements.json it makes in the job folder with the
      photos. The quote then uses real numbers, not estimates.
   Got an iPhone Pro? Scan the room with any RoomPlan app that exports

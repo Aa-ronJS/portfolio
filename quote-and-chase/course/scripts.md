@@ -229,13 +229,11 @@ Next: a real job with your own photos.
 
 ## Lesson 5: Measure it properly, then a real job (10 min)
 
-[Hold up your phone.]
+[Hold up a blank sheet of A4.]
 
-This is the difference between an estimate and a quote, and there's
-nothing to print or buy. One photo of the whole wall, corner to
-corner. The camera's own geometry works out the wall's shape from its
-four corners. Then one known size sets the scale, and the easiest one
-is the ceiling height, which you measure once per room with your tape.
+This is the difference between an estimate and a quote, and it costs
+nothing. A blank page from the printer tray is exactly two hundred and
+ten by two ninety-seven. Stick it flat on the wall.
 
 [Phone footage: step back, take one photo of the whole wall, lights on.]
 
@@ -243,27 +241,19 @@ Step back until every corner of the wall is in the shot. Lights on,
 main camera, not the wide-angle. One photo. Same for each wall you're
 quoting.
 
-[Laptop: open the measure folder, double-click measure.html. Choose
-the photo.]
+[Phone or laptop: open the measure page, choose the photo.]
 
-Choose the photo. Tap the four corners of the wall: top-left,
-top-right, bottom-right, bottom-left. Use the magnifier, get the
-corner exactly.
+Choose the photo. It finds the page and draws a green outline. Is that
+the page? Yes. It finds the wall and draws a blue outline, ceiling to
+skirting, corner to corner. Is that the wall? Yes. If an outline is
+off, drag the corner.
 
-[Tap them. The scale box appears.]
+[The measurement appears with the openings listed.]
 
-Now it asks for one size. Type the ceiling height, two point four. Or
-tap the top and bottom of a door, because internal doors are two point
-oh four. Or the two edges of a power point, a hundred and sixteen
-millimetres. Any one of those.
-
-[The measurement appears.]
-
-There's the wall. Four point eight by two point four. Now the door:
-two corners. The window: two corners. It takes the openings off the
-paint area for you. And notice: because you gave it the ceiling
-height, it checks the door against the standard and tells you if
-something's off.
+There's the wall. Four point oh by two point two three, cornice to
+skirting, which is what you paint. It's found the door and the window
+and taken them off the paint area. Anything it missed, two taps.
+Anything wrong, remove it.
 
 [Save the wall. Type the room name. Do a second wall quickly.]
 
@@ -273,11 +263,9 @@ it in the job folder next to the photos.
 
 [Show the confidence line.]
 
-It tells you what it thinks its accuracy is. With all four corners in
-the shot and the ceiling height, that's about one to two percent,
-which is better than most people with a tape on a ladder. If a corner
-is hidden, press "can't see all corners" and use a door as the
-reference instead; that's a few percent.
+It tells you what it thinks its accuracy is: about one and a half
+percent with the page. No page handy? Tap the four corners yourself
+and use a door, they're two point oh four, or the ceiling height.
 
 [Got an iPhone Pro? Fifteen seconds on LiDAR.]
 

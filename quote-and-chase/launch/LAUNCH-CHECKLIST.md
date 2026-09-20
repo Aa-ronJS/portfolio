@@ -11,10 +11,10 @@ what only you can do, in order. Nothing else is waiting on me.
    quote, mark, invoice and chase chain has run for real on Linux, but
    no Windows machine has executed them. If anything fails, send me the
    screen and stop the launch until it is fixed.
-2. **Measure one real wall from a photo.** Photograph a wall corner to
-   corner, open the app (or `pack/measure/measure.html`), tap the four
-   corners, type the ceiling height, and compare the width and a door
-   to a tape measure. The maths is verified on a physically rendered
+2. **Measure one real wall from a photo.** Stick a blank A4 sheet on a
+   wall, photograph the wall corner to corner, open the app (or
+   `pack/measure/measure.html`), confirm the page and wall outlines,
+   and compare the width and a door to a tape measure. The maths is verified on a physically rendered
    photo to well under 1%; a real phone lens (lens distortion is the
    unknown) and your taps are what remain to check. Do this once
    before you claim the accuracy in an ad.
@@ -63,11 +63,15 @@ what only you can do, in order. Nothing else is waiting on me.
 - Quote and Chase pack: four skills, price list, wording, templates,
   PDF helper, ledger, sample job, HELP.txt; `/quote`, `/mark`,
   `/invoice` and `/chase` run end to end for real.
-- Measuring: nothing to print. Four wall corners give the perspective,
-  the camera focal length (EXIF, or self-calibrated from the wall)
-  gives the wall's shape, and one known size (ceiling height, door,
-  power point, tape) gives the scale; verified to under 1% on a
-  physically rendered photo, with and without EXIF;
+- Measuring: nothing to print. A blank A4 sheet is found automatically
+  and sets the scale; the wall outline is found automatically (region
+  growing from the page, edge snapping) and confirmed; doors and
+  windows are proposed; the camera focal length (EXIF or self-
+  calibrated) cross-checks the shape. Verified to under 0.5% width on
+  seven physically rendered photos including a white page on a white
+  wall. Fallbacks: tap the corners with a door, power point, ceiling
+  height or tape for scale; AR tape on Android (WebXR, untested on a
+  device here);
   RoomPlan LiDAR JSON converter; quote skill reads measurements first
   and labels every line measured or estimated.
 - Landing page: own-it hero, phone demo with live estimator, QR that
