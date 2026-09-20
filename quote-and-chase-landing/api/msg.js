@@ -18,6 +18,7 @@
 const ALLOWED = (process.env.ALLOWED_ORIGINS || "https://aa-ronjs.github.io,https://aaronsteele.vercel.app").split(",").map((s) => s.trim()).filter(Boolean);
 const PER_IP_LIMIT = Number(process.env.MSG_PER_IP_LIMIT || 60); // per 10 minutes per instance
 const buckets = new Map();
+const seen = new Map(); // idempotency keys -> the result returned for them (insertion order, oldest first)
 
 function cors(req, res) {
   const origin = req.headers.origin || "";
@@ -36,7 +37,9 @@ function send(res, status, obj) { res.statusCode = status; res.setHeader("Conten
 function creds(body) {
   const c = body.creds && process.env.ALLOW_CLIENT_CREDS === "1" ? body.creds : {};
   return {
-    twilioSid: process.env.TWILIO_ACCOUNT_SID || c.twilio_sid || "", twilioToken: process.env.TWILIO_AUTH_TOKEN || c.twilio_token || "",
+    twilioSid: process.env.TWILIO_ACCOUNT_SID || c.twilio_sid || "", twilioToken: process.env.TWILIO_AUTH_TOKEN || process.env.TWILIO_API_SECRET || c.twilio_token || "",
+    // An API key pair (SK... + secret) is used for Basic auth in place of the account's master token; the Account SID still names the account in the URL.
+    twilioApiKey: process.env.TWILIO_API_KEY || c.twilio_api_key || "",
     twilioService: process.env.TWILIO_MESSAGING_SERVICE_SID || c.twilio_service || "", twilioFrom: process.env.TWILIO_FROM || c.twilio_from || "",
     resendKey: process.env.RESEND_API_KEY || c.resend_key || "", resendFrom: process.env.RESEND_FROM || c.resend_from || "",
   };
@@ -46,9 +49,10 @@ const f = (...a) => (globalThis.__relayFetch || fetch)(...a);
 // ---------- Twilio
 function e164(to) { let s = String(to || "").replace(/[^\d+]/g, ""); if (s.startsWith("0011")) s = "+" + s.slice(4); if (s.startsWith("+610")) s = "+61" + s.slice(4); if (s.startsWith("0")) s = "+61" + s.slice(1); if (!s.startsWith("+")) s = "+" + s; return s; }
 async function twilio(c, path, params) {
-  if (!c.twilioSid || !c.twilioToken) throw new Error("Twilio is not set up (account SID and auth token)");
+  if (!c.twilioSid || !c.twilioToken) throw new Error("Twilio is not set up (account SID and auth token, or API key SID and secret)");
+  const user = /^SK/.test(c.twilioApiKey || "") ? c.twilioApiKey : c.twilioSid;
   const r = await f(`https://api.twilio.com/2010-04-01/Accounts/${encodeURIComponent(c.twilioSid)}/${path}`, {
-    method: "POST", headers: { Authorization: "Basic " + Buffer.from(c.twilioSid + ":" + c.twilioToken).toString("base64"), "Content-Type": "application/x-www-form-urlencoded" },
+    method: "POST", headers: { Authorization: "Basic " + Buffer.from(user + ":" + c.twilioToken).toString("base64"), "Content-Type": "application/x-www-form-urlencoded" },
     body: new URLSearchParams(params).toString(),
   });
   const j = await r.json().catch(() => ({}));
@@ -104,7 +108,13 @@ export default async function handler(req, res) {
   try {
     if (body.action === "test") { const r = ch === "sms" ? await smsSend(c, body.to, "Quote and Chase test: SMS sending works.") : await emailSend(c, { to: body.to, subject: "Quote and Chase test", body: "Email sending works." }); return send(res, 200, { ok: true, ...r }); }
     if (body.action === "send") { if (!body.to || (ch === "sms" ? !body.body : (!body.body && !body.html))) throw new Error("to and body are required"); if (String(body.body || "").length > 1600) throw new Error("Message too long"); const r = ch === "sms" ? await smsSend(c, body.to, body.body) : await emailSend(c, body); return send(res, 200, { ok: true, ...r }); }
-    if (body.action === "schedule") { if (!body.to || !body.body || !body.send_at) throw new Error("to, body and send_at are required"); if (String(body.body).length > 1600) throw new Error("Message too long"); const r = ch === "sms" ? await smsSchedule(c, body.to, body.body, body.send_at) : await emailSchedule(c, body); return send(res, 200, { ok: true, ...r }); }
+    if (body.action === "schedule") { if (!body.to || !body.body || !body.send_at) throw new Error("to, body and send_at are required"); if (String(body.body).length > 1600) throw new Error("Message too long");
+      // Idempotency: the app sends key = job id + ref + quote version. If the same key arrives again (a retry after a lost reply) the id already
+      // created is returned instead of a second message. Best effort: the map lives in this warm instance only and keeps the last 200 keys.
+      const key = body.key != null ? String(body.key).slice(0, 120) : ""; if (key && seen.has(key)) return send(res, 200, { ok: true, ...seen.get(key), reused: true });
+      const r = ch === "sms" ? await smsSchedule(c, body.to, body.body, body.send_at) : await emailSchedule(c, body);
+      if (key) { seen.set(key, r); while (seen.size > 200) seen.delete(seen.keys().next().value); }
+      return send(res, 200, { ok: true, ...r }); }
     if (body.action === "cancel") { if (!body.id) throw new Error("id is required"); const r = ch === "sms" ? await smsCancel(c, body.id) : await emailCancel(c, body.id); return send(res, 200, { ok: true, ...r }); }
     if (body.action === "ping") return send(res, 200, { ok: true, sms: !!(c.twilioSid && c.twilioToken && (c.twilioService || c.twilioFrom)), sms_schedule: !!(c.twilioSid && c.twilioToken && c.twilioService), email: !!(c.resendKey && c.resendFrom), client_creds: process.env.ALLOW_CLIENT_CREDS === "1", token_required: !!process.env.RELAY_TOKEN });
     return send(res, 400, { ok: false, error: "Unknown action" });
