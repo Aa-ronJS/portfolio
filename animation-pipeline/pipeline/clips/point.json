@@ -1,0 +1,11 @@
+{
+  "name": "point",
+  "period": 1.0,
+  "loop": true,
+  "interp": "step",
+  "channels": {
+    "arm_l_upper": {"rot": [[0.0, 88], [0.5, 92]],
+                    "shape": [[0.0, "point"]]},
+    "head": {"rot": [[0.0, -2]]}
+  }
+}

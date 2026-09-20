@@ -1,0 +1,86 @@
+# Sugar's screen test — the first character born from the printed kit
+# sheet (tools/kit_template.pdf). Aaron drew eleven boxes; kit.py ingest
+# turned the sheet into demo/characters/sugar/ (parts, rig, assembled
+# body.png). Nothing here was drawn twice: the walk is the stock clip,
+# the blink and the open mouth are his own drawn heads swapped in, the
+# pockets and the pointing arm are single part drawings.
+#
+# Voice lines are the demo's placeholder mumbles — replace with a real
+# recording and everything re-syncs.
+
+title: sugar's screen test
+size: [1080, 1920]
+fps: 12
+boil: 0.0015
+boil_every: 2
+
+defaults:
+  font: ../fonts/satoshi-var.ttf
+  caption_size: 0.042
+  caption_weight: 700
+  caption_color: [26, 26, 26]
+  caption_y: 0.84
+  audio_tail: 0.3
+
+shots:
+  # Walks in: the slide implies the stock walk, knees bend because
+  # leg_bent was one of the eleven drawings.
+  - bg: backgrounds/chipshop.png
+    duration: 2.2
+    caption: sugar walked off the sheet
+    actors:
+      - char: sugar
+        at: [0.45, 0.76]
+        scale: 0.48
+        moves:
+          - {type: slide, from: [-0.3, 0.76], to: [0.45, 0.76], t: [0, 1.8]}
+
+  # Talks with his own drawn mouth, blinks with his own drawn blink.
+  - bg: backgrounds/chipshop.png
+    audio: vo/line1.wav
+    duration: 3.4
+    caption: his blink is a drawing of his
+    actors:
+      - char: sugar
+        at: [0.45, 0.76]
+        scale: 0.48
+        talk: true
+        clip: idle
+
+  # The angry head, shaking. One drawing bought this expression.
+  - bg: backgrounds/chipshop.png
+    audio: vo/line2.wav
+    caption: the angry head cost one drawing
+    actors:
+      - char: sugar
+        pose: angry
+        at: [0.45, 0.76]
+        scale: 0.48
+        talk: true
+        clip: {name: shake, t: [0.2, 1.6], amp: 0.7}
+
+  # Points at the sign with the arm_point part.
+  - bg: backgrounds/chipshop.png
+    audio: vo/line3.wav
+    caption: and he can point at the specials
+    actors:
+      - char: sugar
+        at: [0.45, 0.76]
+        scale: 0.48
+        talk: true
+        clips:
+          - {name: idle}
+          - {name: point, t: [0.4, 3.4]}
+
+  # Hands in pockets, done, leaves.
+  - bg: backgrounds/chipshop.png
+    duration: 2.6
+    caption: pockets. bye.
+    actors:
+      - char: sugar
+        at: [-0.35, 0.76]
+        scale: 0.48
+        shapes: {arm_l: pocket, arm_r: pocket}
+        clip: {name: walk, t: [0.8, 2.4]}
+        moves:
+          - {type: slide, from: [0.45, 0.76], to: [-0.35, 0.76], t: [0.8, 2.4]}

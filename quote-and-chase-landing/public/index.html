@@ -1,0 +1,640 @@
+<!doctype html>
+<html lang="en-AU">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Quote and Chase</title>
+<meta name="description" content="A quoting tool painters own. Photos in, priced quote out, your prices. Set it up in an afternoon. No subscription, ever.">
+<meta property="og:title" content="Quote and Chase: own your quoting tool">
+<meta property="og:description" content="Photos in, priced quote out, your prices. $249 once, no subscription.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,700;12..96,800&family=Instrument+Sans:ital,wght@0,400;0,500;0,600;1,400&family=IBM+Plex+Mono:wght@400;500&display=swap">
+<script src="config.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js" defer></script>
+<style>
+:root{
+  --ground:#F7F7F4; --ink:#16181D; --muted:#5B5F66; --line:#DCDED9; --soft:#ECEDE8;
+  --paper:#FFFFFF; --doc-ink:#16181D; --doc-muted:#6B6F76; --doc-line:#E3E4DF;
+  --tape:#2B7BD6; --tape-ink:#FFFFFF; --tape-soft:#DDEBFA; --tape-deep:#1B5FAD;
+  --ok:#1F7A4D; --warn:#A35A00;
+  --shadow:0 18px 50px -24px rgba(22,24,29,.35);
+  --display:"Bricolage Grotesque",ui-sans-serif,system-ui,Helvetica,Arial,sans-serif;
+  --body:"Instrument Sans",ui-sans-serif,system-ui,Helvetica,Arial,sans-serif;
+  --mono:"IBM Plex Mono",ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;
+  color-scheme:light;
+}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){
+  --ground:#15171B; --ink:#F0F1EC; --muted:#A2A6AD; --line:#2C3037; --soft:#1E2126;
+  --tape:#5FA3F0; --tape-ink:#0F1A28; --tape-soft:#1B2B40; --tape-deep:#8CC0FA;
+  --ok:#5CC48F; --warn:#F0B35C; --shadow:0 18px 50px -24px rgba(0,0,0,.7); color-scheme:dark;
+}}
+:root[data-theme="dark"]{
+  --ground:#15171B; --ink:#F0F1EC; --muted:#A2A6AD; --line:#2C3037; --soft:#1E2126;
+  --tape:#5FA3F0; --tape-ink:#0F1A28; --tape-soft:#1B2B40; --tape-deep:#8CC0FA;
+  --ok:#5CC48F; --warn:#F0B35C; --shadow:0 18px 50px -24px rgba(0,0,0,.7); color-scheme:dark;
+}
+*{box-sizing:border-box}
+[hidden]{display:none!important}
+html{scroll-behavior:smooth}
+@media (prefers-reduced-motion:reduce){html{scroll-behavior:auto}*{animation:none!important;transition:none!important}}
+body{margin:0;background:var(--ground);color:var(--ink);font:16px/1.55 var(--body);-webkit-font-smoothing:antialiased}
+a{color:inherit}
+img,svg{max-width:100%;display:block}
+.wrap{max-width:1120px;margin:0 auto;padding-inline:20px}
+h1,h2,h3{font-family:var(--display);letter-spacing:-.015em;text-wrap:balance;margin:0}
+h1{font-size:clamp(2.3rem,5.4vw,4.1rem);line-height:1.02;font-weight:800;font-variation-settings:"opsz" 96}
+h2{font-size:clamp(1.7rem,3.2vw,2.5rem);line-height:1.1;font-weight:700}
+h3{font-size:1.15rem;font-weight:700;line-height:1.25}
+p{margin:0}
+.lede{font-size:1.15rem;color:var(--muted);max-width:34em}
+.eyebrow{font-family:var(--mono);font-size:.78rem;letter-spacing:.08em;text-transform:uppercase;color:var(--tape-deep)}
+.mono{font-family:var(--mono)}
+.btn{display:inline-flex;align-items:center;gap:.5em;font:600 1rem var(--body);padding:.85em 1.3em;border-radius:6px;border:1.5px solid var(--ink);background:var(--ink);color:var(--ground);text-decoration:none;cursor:pointer;transition:transform .12s ease}
+.btn:hover{transform:translateY(-1px)}
+.btn:focus-visible,button:focus-visible,input:focus-visible,textarea:focus-visible,a:focus-visible{outline:3px solid var(--tape);outline-offset:3px}
+.btn.ghost{background:transparent;color:var(--ink)}
+.btn.tape{background:var(--tape);border-color:var(--tape);color:var(--tape-ink)}
+.btn[disabled]{opacity:.5;cursor:wait;transform:none}
+section{padding-block:clamp(56px,8vw,104px)}
+section+section{border-top:1px solid var(--line)}
+.grid{display:grid;gap:28px;grid-template-columns:minmax(0,1fr)}
+.grid>*{min-width:0;max-width:100%}
+body{overflow-x:clip}
+@media (min-width:860px){.g2{grid-template-columns:1fr 1fr}.g3{grid-template-columns:repeat(3,1fr)}}
+
+/* nav */
+nav{position:sticky;top:env(safe-area-inset-top,0px);z-index:10;background:color-mix(in srgb,var(--ground) 88%,transparent);backdrop-filter:blur(10px);border-bottom:1px solid var(--line)}
+nav .wrap{display:flex;align-items:center;justify-content:space-between;gap:16px;padding-block:12px}
+.mark{display:flex;align-items:baseline;gap:10px;text-decoration:none}
+.mark b{font-family:var(--display);font-weight:800;font-size:1.15rem;letter-spacing:-.02em}
+.mark span{font-family:var(--mono);font-size:.75rem;color:var(--muted)}
+nav .btn{padding:.6em 1em;font-size:.92rem}
+
+/* hero */
+.hero{padding-block:clamp(40px,7vw,96px)}
+.hero .grid{align-items:center}
+@media (min-width:960px){.hero .grid{grid-template-columns:1.05fr .95fr;gap:48px}}
+.hero .actions{display:flex;flex-wrap:wrap;gap:12px;margin-top:8px}
+.hero .stack{display:grid;gap:22px}
+.hero .fine{font-size:.9rem;color:var(--muted)}
+
+/* the quote paper */
+.paper{position:relative;background:var(--paper);color:var(--doc-ink);border-radius:4px;box-shadow:var(--shadow);padding:46px 26px 22px;font-family:var(--body);transform:rotate(-1.2deg);width:100%;max-width:520px;margin-inline:auto;margin-top:44px}
+@media (min-width:960px){.paper{margin-inline:0 0}}
+.paper .head{display:flex;justify-content:space-between;gap:16px;border-bottom:3px solid var(--doc-ink);padding-bottom:12px;margin-bottom:14px}
+.paper .head b{font-family:var(--display);font-size:1.1rem;display:block}
+.paper .head small{color:var(--doc-muted);font-size:.8rem;display:block}
+.paper .head .q{text-align:right}
+.paper .head .q b{font-family:var(--mono);font-weight:500}
+.paper .tw{overflow-x:auto;max-width:100%}
+.paper table{width:100%;border-collapse:collapse;font-size:.86rem}
+@media (max-width:560px){.paper table{font-size:.78rem}.paper .head b{font-size:1rem}}
+.paper th{text-align:left;font:500 .68rem var(--mono);letter-spacing:.06em;text-transform:uppercase;color:var(--doc-muted);border-bottom:1px solid var(--doc-line);padding:4px 0}
+.paper td{padding:6px 0;border-bottom:1px solid var(--doc-line);vertical-align:top}
+.paper td.n,.paper th.n{text-align:right;font-family:var(--mono);font-variant-numeric:tabular-nums;white-space:nowrap}
+.paper tr.total td{border:0;font-weight:700;padding-top:10px;font-size:1rem}
+.paper tr.sub td{border:0;color:var(--doc-muted);padding:3px 0}
+.paper .assume{margin-top:12px;font-size:.8rem;color:var(--doc-muted)}
+.paper .assume b{color:var(--doc-ink);font-weight:600}
+.photo{position:absolute;right:-14px;top:-58px;width:140px;aspect-ratio:4/3;border-radius:3px;box-shadow:0 10px 24px -12px rgba(0,0,0,.5);transform:rotate(4deg);overflow:hidden;background:#cfd6d1}
+.photo svg{width:100%;height:100%}
+.tapebit{position:absolute;width:74px;height:22px;background:var(--tape);opacity:.9;left:50%;top:-9px;transform:translateX(-50%) rotate(-3deg);box-shadow:0 1px 2px rgba(0,0,0,.15)}
+.tapebit.b{top:auto;bottom:-9px;transform:translateX(-30%) rotate(2deg);width:60px}
+@media (max-width:560px){.photo{width:104px;right:6px;top:-40px}.paper{padding:44px 18px 16px;transform:none;margin-top:36px}}
+
+/* swatch strip */
+.swatches{display:grid;grid-template-columns:repeat(5,1fr);gap:0;border:1px solid var(--line);border-radius:6px;overflow:hidden;margin-top:clamp(28px,5vw,56px)}
+.sw{padding:14px 12px 10px;min-height:76px;display:flex;flex-direction:column;justify-content:flex-end;color:#2b2e33}
+.sw small{font-family:var(--mono);font-size:.68rem;letter-spacing:.04em}
+@media (max-width:640px){.swatches{grid-template-columns:repeat(5,1fr)}.sw{min-height:56px;padding:8px 6px 6px}.sw small{font-size:.58rem}}
+
+/* proof strip */
+.strip{display:grid;gap:16px;padding-block:22px;border-top:1px solid var(--line);border-bottom:1px solid var(--line)}
+@media (min-width:700px){.strip{grid-template-columns:repeat(4,1fr)}}
+.strip div{display:grid;gap:4px}
+.strip b{font-family:var(--display);font-weight:700}
+.strip span{color:var(--muted);font-size:.92rem}
+
+/* problem */
+.facts{display:grid;gap:20px}
+@media (min-width:860px){.facts{grid-template-columns:repeat(3,1fr)}}
+.fact{border-top:2px solid var(--ink);padding-top:14px;display:grid;gap:8px}
+.fact b{font-family:var(--display);font-size:1.35rem;font-weight:700;line-height:1.15}
+.fact p{color:var(--muted)}
+.fact small{font-family:var(--mono);font-size:.72rem;color:var(--muted)}
+
+/* how */
+.steps{display:grid;gap:22px}
+@media (min-width:860px){.steps{grid-template-columns:repeat(3,1fr)}}
+.step{background:var(--soft);border-radius:8px;padding:22px;display:grid;gap:12px;align-content:start}
+.step code{font-family:var(--mono);font-size:.9rem;background:var(--paper);color:var(--doc-ink);padding:.35em .55em;border-radius:4px;display:inline-block;border:1px solid var(--line)}
+.step p{color:var(--muted)}
+
+/* try it */
+.try{background:var(--soft)}
+.try .grid{align-items:start}
+@media (min-width:960px){.try .grid{grid-template-columns:.9fr 1.1fr;gap:48px}}
+.qrbox{background:var(--paper);color:var(--doc-ink);border-radius:8px;padding:22px;display:grid;gap:14px;justify-items:center;text-align:center;box-shadow:var(--shadow);max-width:340px}
+.qrbox #qr{width:220px;height:220px;display:grid;place-items:center}
+.qrbox #qr img,.qrbox #qr canvas{width:220px;height:220px;image-rendering:pixelated}
+.qrbox .url{font-family:var(--mono);font-size:.8rem;color:var(--doc-muted);word-break:break-all}
+.demo{display:grid;gap:14px}
+.drop{border:2px dashed var(--line);border-radius:10px;padding:22px;display:grid;gap:12px;justify-items:center;text-align:center;background:var(--ground)}
+.drop.has{border-style:solid;border-color:var(--tape)}
+.drop img{max-height:220px;border-radius:6px}
+.drop input[type=file]{position:absolute;width:1px;height:1px;opacity:0;overflow:hidden}
+textarea{width:100%;font:1rem var(--body);padding:.8em .9em;border:1.5px solid var(--line);border-radius:8px;background:var(--ground);color:var(--ink);resize:vertical;min-height:72px}
+.status{font-size:.95rem;color:var(--muted);min-height:1.4em}
+.status.err{color:var(--warn)}
+.result{background:var(--paper);color:var(--doc-ink);border-radius:8px;padding:22px;box-shadow:var(--shadow);display:grid;gap:12px}
+.result h3{font-family:var(--display)}
+.result .see{color:var(--doc-muted);font-size:.95rem}
+.result table{width:100%;border-collapse:collapse;font-size:.92rem}
+.result td{padding:6px 0;border-bottom:1px solid var(--doc-line);vertical-align:top}
+.result td.n{text-align:right;padding-left:10px;font-family:var(--mono);font-variant-numeric:tabular-nums;white-space:nowrap}
+.result tr.total td{border:0;font-weight:700;font-size:1.05rem;padding-top:10px}
+.result tr.sub td{border:0;color:var(--doc-muted);padding:3px 0}
+.result ul{margin:0;padding-left:18px;font-size:.92rem;color:var(--doc-muted)}
+.result .tag{display:inline-block;font:500 .7rem var(--mono);letter-spacing:.06em;text-transform:uppercase;background:var(--tape-soft);color:var(--tape-deep);padding:.25em .6em;border-radius:3px}
+.result .fine{font-size:.82rem;color:var(--doc-muted)}
+.only-phone{display:none}.only-phone-inline{display:none}
+@media (max-width:959px){.only-phone{display:block}.only-phone-inline{display:inline}.only-desk{display:none}.only-desk-inline{display:none}
+  .drop{border:0;padding:0;background:transparent;gap:10px}
+  .drop.has{border:2px solid var(--tape);padding:12px;border-radius:10px}
+  .bigbtn{width:100%;justify-content:center;font-size:1.1rem;padding:1.05em 1.2em}}
+
+/* inside */
+.list{display:grid;gap:14px;margin:0;padding:0;list-style:none}
+.list li{display:grid;grid-template-columns:24px 1fr;gap:12px;align-items:center}
+.list li::before{content:"";width:14px;height:14px;background:var(--tape);border-radius:2px;transform:rotate(-6deg)}
+.list b{display:block}
+.list span{color:var(--muted)}
+.not{border:1.5px solid var(--line);border-radius:8px;padding:22px;display:grid;gap:10px;align-content:start}
+.not p{color:var(--muted)}
+
+/* price */
+.pricebox{background:var(--paper);color:var(--doc-ink);border-radius:10px;padding:clamp(24px,4vw,40px);box-shadow:var(--shadow);display:grid;gap:22px}
+@media (min-width:860px){.pricebox{grid-template-columns:1.1fr .9fr;align-items:center}}
+.price{font-family:var(--display);font-weight:800;font-size:clamp(3rem,7vw,4.6rem);line-height:1;letter-spacing:-.03em}
+.price small{font:500 1rem var(--mono);letter-spacing:0;margin-left:.3em;color:var(--doc-muted)}
+.pricebox ul{margin:0;padding-left:18px;color:var(--doc-muted);display:grid;gap:6px}
+.guarantee{border-left:4px solid var(--tape);padding:10px 14px;background:var(--tape-soft);color:var(--doc-ink);border-radius:0 6px 6px 0}
+.guarantee b{display:block;font-family:var(--display)}
+.buy{display:grid;gap:12px}
+.buy .btn{justify-content:center}
+.buy form{display:grid;gap:8px}
+.buy input[type=email]{font:1rem var(--body);padding:.8em .9em;border:1.5px solid var(--doc-line);border-radius:6px;background:#fff;color:var(--doc-ink)}
+.buy small{color:var(--doc-muted);font-size:.85rem}
+
+/* tiers */
+.tiers{display:grid;gap:20px}
+@media (min-width:860px){.tiers{grid-template-columns:1.1fr 1fr;align-items:stretch}}
+.tier{background:var(--paper);color:var(--doc-ink);border-radius:10px;padding:clamp(22px,3.5vw,34px);box-shadow:var(--shadow);display:grid;gap:16px;align-content:start}
+.tier.featured{outline:2px solid var(--tape);outline-offset:-2px}
+.tier .eyebrow{color:var(--tape-deep)}
+.tier ul{margin:0;padding-left:18px;color:var(--doc-muted);display:grid;gap:6px}
+.tierlede{color:var(--doc-muted)}
+.tier .price{font-size:clamp(2.6rem,6vw,3.8rem)}
+.tier .buy .btn{justify-content:center}
+.waitform{display:grid;gap:8px;max-width:720px;margin-top:8px}
+.waitform .row{display:flex;flex-wrap:wrap;gap:8px}
+.waitform input[type=email]{flex:1 1 240px;font:1rem var(--body);padding:.8em .9em;border:1.5px solid var(--line);border-radius:6px;background:var(--paper);color:var(--doc-ink)}
+.waitform small{color:var(--muted);font-size:.85rem}
+.cap{display:grid;gap:8px}
+.cap .row{display:flex;flex-wrap:wrap;gap:8px}
+.cap input[type=email]{flex:1 1 200px;font:1rem var(--body);padding:.75em .9em;border:1.5px solid var(--line);border-radius:6px;background:var(--ground);color:var(--ink);min-width:0;width:100%}
+.cap.laptop{background:var(--tape-soft);color:var(--ink);border-radius:8px;padding:14px 16px}
+.cap.laptop label{font-size:.95rem}
+.cap .done{font-weight:600}
+.maker{display:grid;gap:20px;align-items:center;grid-template-columns:1fr}
+@media (min-width:700px){.maker{grid-template-columns:auto 1fr}}
+.maker img{width:112px;height:112px;object-fit:cover;border-radius:8px}
+/* faq */
+details{border-top:1px solid var(--line);padding:16px 0}
+details:last-of-type{border-bottom:1px solid var(--line)}
+summary{cursor:pointer;font-weight:600;font-family:var(--display);font-size:1.05rem;list-style:none;display:flex;justify-content:space-between;gap:16px}
+summary::-webkit-details-marker{display:none}
+summary::after{content:"+";font-family:var(--mono);color:var(--muted)}
+details[open] summary::after{content:"\2013"}
+details p{margin-top:10px;color:var(--muted);max-width:60em}
+
+footer{padding-block:36px;color:var(--muted);font-size:.9rem;border-top:1px solid var(--line)}
+footer .wrap{display:grid;gap:8px}
+</style>
+</head>
+<body>
+
+<nav>
+  <div class="wrap">
+    <a class="mark" href="#top"><b>Quote &amp; Chase</b><span>for painters</span></a>
+    <a class="btn" href="#price">Own it, $249</a>
+  </div>
+</nav>
+
+<header class="hero wrap" id="top">
+  <div class="grid">
+    <div class="stack">
+      <p class="eyebrow">For painters</p>
+      <h1>Own your quoting tool. No subscription, ever.</h1>
+      <p class="lede">Tape a sheet of paper to the wall, take a photo, tap the corners. Measured to within a couple of percent, priced at your rates, quote with your name on it. It lives on your laptop and it's yours.</p>
+      <div class="actions">
+        <a class="btn tape" href="#try">Try it on a wall</a>
+        <a class="btn ghost" href="#price">Get it, $249 once</a>
+      </div>
+      <p class="fine">Windows or Mac. Set up in an afternoon. <a href="sample-quote.pdf" target="_blank" rel="noopener">See a quote it wrote (PDF)</a>.</p>
+    </div>
+
+    <div class="paper" aria-label="Example quote">
+      <div class="photo" aria-hidden="true">
+        <svg viewBox="0 0 160 120" xmlns="http://www.w3.org/2000/svg">
+          <rect width="160" height="120" fill="#d9d2c4"/>
+          <rect x="0" y="0" width="160" height="88" fill="#e8e2d6"/>
+          <rect x="0" y="88" width="160" height="32" fill="#b9a98c"/>
+          <rect x="0" y="84" width="160" height="5" fill="#f4f1ea"/>
+          <rect x="96" y="16" width="44" height="46" fill="#a9c6e6" stroke="#f4f1ea" stroke-width="4"/>
+          <line x1="118" y1="18" x2="118" y2="60" stroke="#f4f1ea" stroke-width="3"/>
+          <rect x="22" y="36" width="18" height="12" fill="#cfc6b6"/>
+          <rect x="14" y="66" width="52" height="20" rx="3" fill="#6f7f6a"/>
+          <rect x="108" y="98" width="6" height="6" fill="#f4f1ea"/>
+        </svg>
+        <span class="tapebit"></span>
+      </div>
+      <div class="head">
+        <div><b>Your Painting Co</b><small>ABN 00 000 000 000 · 0400 000 000</small></div>
+        <div class="q"><small>Quote</small><b>Q-1007</b><small>Valid 30 days</small></div>
+      </div>
+      <div class="tw"><table>
+        <thead><tr><th>Item</th><th class="n">Qty</th><th class="n">Rate</th><th class="n">Amount</th></tr></thead>
+        <tbody>
+          <tr><td>Lounge walls, 2 coats</td><td class="n">39.8 m²</td><td class="n">22</td><td class="n">876</td></tr>
+          <tr><td>Lounge ceiling, 2 coats</td><td class="n">20 m²</td><td class="n">25</td><td class="n">500</td></tr>
+          <tr><td>Skirting boards</td><td class="n">17.1 lm</td><td class="n">9</td><td class="n">154</td></tr>
+          <tr><td>Door, both sides</td><td class="n">1</td><td class="n">95</td><td class="n">95</td></tr>
+          <tr><td>Window frames</td><td class="n">2</td><td class="n">65</td><td class="n">130</td></tr>
+          <tr><td>Patch where TV bracket was</td><td class="n">0.5 hr</td><td class="n">65</td><td class="n">33</td></tr>
+        </tbody>
+        <tfoot>
+          <tr class="sub"><td colspan="3" class="n">Subtotal</td><td class="n">1,788</td></tr>
+          <tr class="sub"><td colspan="3" class="n">GST</td><td class="n">179</td></tr>
+          <tr class="total"><td colspan="3" class="n">Total inc GST</td><td class="n">$1,967</td></tr>
+        </tfoot>
+      </table></div>
+      <p class="assume"><b>Based on:</b> 2.4 m ceilings · same colour · client moves furniture</p>
+      <span class="tapebit b"></span>
+    </div>
+  </div>
+
+  <div class="swatches" aria-hidden="true">
+    <div class="sw" style="background:#F3F1EA"><small>Primer</small></div>
+    <div class="sw" style="background:#F7F6F1"><small>Ceiling flat</small></div>
+    <div class="sw" style="background:#EDEBE3"><small>Half strength</small></div>
+    <div class="sw" style="background:#E6E7E1"><small>Quarter grey</small></div>
+    <div class="sw" style="background:#F1E9DC"><small>Warm white</small></div>
+  </div>
+</header>
+
+<div class="wrap">
+  <div class="strip">
+    <div><b>Pay once</b><span>Not every month.</span></div>
+    <div><b>Measured, not guessed</b><span>A printed sheet and one photo.</span></div>
+    <div><b>You send it</b><span>It never does.</span></div>
+    <div><b>Yours to keep</b><span>Nobody can switch it off.</span></div>
+  </div>
+</div>
+
+<section id="problem">
+  <div class="wrap grid" style="gap:14px">
+    <h2>You didn't start a painting business to type quotes at 9pm.</h2>
+    <p class="lede">The apps charge you every month, and you still do the typing.</p>
+  </div>
+</section>
+
+<section id="how">
+  <div class="wrap grid" style="gap:28px">
+    <h2>What it does</h2>
+    <p class="lede" style="margin-top:-12px">Photo apps guess. Nobody measures a room from one photo to better than about twenty percent, so this one doesn't try. <a href="measure/measure.html">Try the measuring page</a> with any wall.</p>
+    <div class="steps">
+      <div class="step"><h3>Measures</h3><p>Print the measure sheet, tape it to the wall, photograph the wall. Tap the corners and it gives you the wall, doors and windows in metres. Got an iPhone Pro? A LiDAR scan works too.</p></div>
+      <div class="step"><h3>Quotes</h3><p>Measurements and a few notes in. A priced PDF quote out, at your rates, with every assumption written down.</p></div>
+      <div class="step"><h3>Invoices and chasing</h3><p>Deposit, final, or the lot, with your bank details and terms. Every Monday: who owes you, and the reminders written in your words. You copy, you send.</p></div>
+    </div>
+  </div>
+</section>
+
+<section id="try" class="try">
+  <div class="wrap grid">
+    <div class="grid" style="gap:18px;align-content:start">
+      <p class="eyebrow">Try it</p>
+      <h2>Point your phone at any wall.</h2>
+      <p class="lede">You'll get a sample quote back in about twenty seconds.</p>
+      <div class="qrbox only-desk">
+        <div id="qr" aria-label="QR code linking to this demo"><img src="qr.svg" alt="QR code linking to this demo" width="220" height="220"></div>
+        <b style="font-family:var(--display)">Scan with your phone</b>
+        <span class="url" id="demo-url">this page, #try</span>
+      </div>
+    </div>
+
+    <div class="demo" id="demo">
+      <label class="drop" id="drop" for="photo">
+        <img id="preview" alt="" hidden>
+        <span id="drop-text" class="only-desk"><b>Or pick a photo from this computer</b></span>
+        <input type="file" id="photo" accept="image/*" capture="environment">
+        <span class="btn tape bigbtn" aria-hidden="true"><span class="only-desk-inline">Pick a photo</span><span class="only-phone-inline">Take a photo of a wall</span></span>
+      </label>
+      <textarea id="notes" placeholder="Optional: anything the photo doesn't show. e.g. Lounge, 5 by 4 m, same colour."></textarea>
+      <button class="btn" id="go" type="button" disabled>Get a sample quote</button>
+      <p class="status" id="status" aria-live="polite">Add a photo to start.</p>
+      <div class="result" id="result" hidden></div>
+      <form class="cap laptop" id="laptop" data-capture="laptop" action="#" method="post" hidden>
+        <input type="hidden" name="list" value="send-to-laptop">
+        <label for="laptop-email"><b>Setting it up happens on a laptop.</b> Email yourself the link and the sample quote.</label>
+        <div class="row"><input type="email" id="laptop-email" name="email" placeholder="you@yourpainting.com.au" required autocomplete="email"><button class="btn tape" type="submit">Send to my laptop</button></div>
+      </form>
+      <p class="fine" style="color:var(--muted);font-size:.85rem">Your photo isn't kept. Sample prices, not an offer of work.</p>
+    </div>
+  </div>
+</section>
+
+<section id="inside">
+  <div class="wrap grid g2" style="gap:40px">
+    <div class="grid" style="gap:22px;align-content:start">
+      <h2>What you get</h2>
+      <ul class="list">
+        <li><div><b>Set-up that's a double-click, Windows or Mac</b></div></li>
+        <li><div><b>Seven short videos, under an hour all up</b></div></li>
+        <li><div><b>The measure sheet and measuring page</b></div></li>
+        <li><div><b>A painter's price list you change to yours</b></div></li>
+        <li><div><b>Quote and invoice layouts with your details on them</b></div></li>
+        <li><div><b>A practice job, so the first one just works</b></div></li>
+        <li><div><b>A person on email when you're stuck</b></div></li>
+      </ul>
+    </div>
+    <div class="grid" style="gap:16px;align-content:start">
+      <div class="not">
+        <h3>Not included</h3>
+        <p>Bookings, taking payments, client logins. Keep what you use for those.</p>
+      </div>
+      <div class="not">
+        <h3>You need</h3>
+        <p>A Windows or Mac laptop, and a Claude subscription. That's the brains behind it, about $30 a month, paid to them, not us.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section id="maker" hidden>
+  <div class="wrap maker">
+    <img id="maker-photo" alt="" hidden>
+    <div><p class="eyebrow">Why I made this</p><p id="maker-note" class="lede"></p><p id="maker-name" class="fine" style="color:var(--muted)"></p></div>
+  </div>
+</section>
+
+<section id="price">
+  <div class="wrap grid" style="gap:24px">
+    <h2>Price</h2>
+    <div class="tiers">
+      <div class="tier featured">
+        <p class="eyebrow">Own it</p>
+        <div class="price">$249<small>AUD, once</small></div>
+        <p class="tierlede">You set it up on your laptop in an afternoon, following the videos. Then it's yours.</p>
+        <ul>
+          <li>Everything above</li>
+          <li>Updates for a year</li>
+          <li>Email help with the set-up</li>
+        </ul>
+        <div class="buy">
+          <a class="btn tape" href="#" data-checkout>Get it</a>
+        </div>
+      </div>
+      <div class="tier">
+        <p class="eyebrow">We run it for you</p>
+        <div class="price">$39<small>AUD a month</small></div>
+        <p class="tierlede">Nothing to set up. Works on your phone. If you ever leave, you take your prices and your tool with you.</p>
+        <ul>
+          <li>Founding list, opening <span data-hosted-date>later this year</span></li>
+          <li>Founding members keep this price</li>
+          <li>Cancel any time</li>
+        </ul>
+        <div class="buy">
+          <a class="btn ghost" href="#" data-hosted>Join the founding list</a>
+          <form class="cap" data-capture="hosted" action="#" method="post" hidden>
+            <input type="hidden" name="list" value="hosted-founding">
+            <input type="email" name="email" placeholder="you@yourpainting.com.au" required autocomplete="email" aria-label="Email for the founding list">
+            <button class="btn ghost" type="submit">Add me</button>
+          </form>
+        </div>
+      </div>
+    </div>
+    <div class="guarantee" style="max-width:720px"><b>One real quote out in 14 days, or your money back.</b>Or switch to the run-it-for-you version and we credit the $249.</div>
+    <p class="fine" style="color:var(--muted)">Founding price. The tool and written guide today; the videos <span data-lessons-date>within 14 days of purchase</span>.</p>
+    <form id="waitlist" action="#" method="post" data-form class="waitform">
+      <input type="hidden" name="list" value="sample-quote">
+      <label for="email" style="font-weight:600;font-size:.95rem">Not ready? Get the sample quote by email.</label>
+      <div class="row">
+        <input type="email" id="email" name="email" placeholder="you@yourpainting.com.au" required autocomplete="email">
+        <button class="btn ghost" type="submit">Send it</button>
+      </div>
+    </form>
+  </div>
+</section>
+
+<section id="faq">
+  <div class="wrap grid" style="gap:20px">
+    <h2>Questions</h2>
+    <div>
+      <details><summary>How accurate is it?</summary><p>With the sheet on the wall and all four wall corners in the photo, about one to two percent. With an iPhone Pro scan, a centimetre or two. From a photo with no sheet it estimates, says so, and lists what it assumed.</p></details>
+      <details><summary>Do I need to be good with computers?</summary><p>If you can make a folder and type a sentence, you're fine. Set-up is double-clicks and the videos show every step.</p></details>
+      <details><summary>What's the catch with "no subscription"?</summary><p>One thing it needs isn't ours: a Claude subscription, about $30 a month, paid to Anthropic. It's the brains. We don't take a cut, and you can cancel it whenever you like.</p></details>
+      <details><summary>What if I get stuck?</summary><p>Email us. A person replies. And if you decide you'd rather we ran it for you, your $249 becomes credit.</p></details>
+      <details><summary>Is my stuff safe?</summary><p>It all lives in one folder on your laptop. It never sends a quote or a message. You do.</p></details>
+      <details><summary>Does it work with ServiceM8 or Xero?</summary><p>It makes PDFs and a spreadsheet, and you can use those anywhere. It isn't plugged into them directly.</p></details>
+    </div>
+  </div>
+</section>
+
+<footer>
+  <div class="wrap">
+    <p><b>Quote &amp; Chase</b>, a quoting tool painters own. Not affiliated with Anthropic; Claude is their trademark.</p>
+    <p>ABN <span data-abn>00 000 000 000</span> · <a data-mail href="mailto:hello@example.com">hello@example.com</a> · <a href="privacy">Privacy</a> · <a href="terms">Terms and refunds</a></p>
+  </div>
+</footer>
+
+<script>
+(function(){
+  var $ = function(id){ return document.getElementById(id); };
+  var input = $('photo'), preview = $('preview'), dropText = $('drop-text'), drop = $('drop');
+  var go = $('go'), status = $('status'), result = $('result'), notes = $('notes');
+  var urlEl = $('demo-url');
+  var imageB64 = null;
+
+  try { urlEl.textContent = location.origin + location.pathname.replace(/\/$/, '') + '/#try'; } catch (e) {}
+
+  function setStatus(msg, err){ status.textContent = msg; status.className = 'status' + (err ? ' err' : ''); }
+
+  // Shrink the photo in the browser so uploads stay small and fast.
+  function shrink(file){
+    return new Promise(function(resolve, reject){
+      var img = new Image();
+      var url = URL.createObjectURL(file);
+      img.onload = function(){
+        var max = 1280, w = img.naturalWidth, h = img.naturalHeight;
+        var s = Math.min(1, max / Math.max(w, h));
+        var c = document.createElement('canvas');
+        c.width = Math.round(w * s); c.height = Math.round(h * s);
+        c.getContext('2d').drawImage(img, 0, 0, c.width, c.height);
+        URL.revokeObjectURL(url);
+        var dataUrl = c.toDataURL('image/jpeg', 0.82);
+        resolve(dataUrl);
+      };
+      img.onerror = function(){ URL.revokeObjectURL(url); reject(new Error('That file is not a photo we can read.')); };
+      img.src = url;
+    });
+  }
+
+  input.addEventListener('change', function(){
+    var f = input.files && input.files[0];
+    if (!f) return;
+    setStatus('Getting the photo ready…');
+    shrink(f).then(function(dataUrl){
+      imageB64 = dataUrl.split(',')[1];
+      preview.src = dataUrl; preview.hidden = false; dropText.hidden = true; drop.classList.add('has');
+      go.disabled = false; result.hidden = true;
+      setStatus('Got it. Add a note if you like, then get the quote.');
+      go.scrollIntoView({ block: 'nearest', behavior: 'smooth' });
+    }).catch(function(e){ setStatus(e.message, true); });
+  });
+
+  function money(n){ return '$' + Math.round(n).toLocaleString('en-AU'); }
+
+  function render(q, note){
+    if (q.not_paintable){
+      result.innerHTML = '<h3>' + esc(q.job_title || 'Not a paint job') + '</h3><p class="see">' + esc(q.notes || 'Try a photo of a room or a wall.') + '</p>';
+      result.hidden = false; return;
+    }
+    var rows = q.line_items.map(function(li){
+      return '<tr><td>' + esc(li.description) + '<br><span style="color:var(--doc-muted);font-size:.85em">' + li.qty + ' ' + esc(li.unit) + ' × ' + money(li.rate) + '</span></td><td class="n">' + money(li.amount) + '</td></tr>';
+    }).join('');
+    var tag = q.sample ? '<span class="tag">Example result</span>' : '<span class="tag">Sample quote from your wall</span>';
+    result.innerHTML =
+      tag + '<h3>' + esc(q.job_title) + '</h3>' +
+      '<p class="see">' + esc(q.what_i_can_see) + '</p>' +
+      '<table><tbody>' + rows + '</tbody><tfoot>' +
+      '<tr class="sub"><td class="n">Subtotal' + (q.minimum_applied ? ' (minimum job)' : '') + '</td><td class="n">' + money(q.subtotal) + '</td></tr>' +
+      '<tr class="sub"><td class="n">GST 10%</td><td class="n">' + money(q.gst) + '</td></tr>' +
+      '<tr class="total"><td class="n">Total inc GST</td><td class="n">' + money(q.total) + '</td></tr></tfoot></table>' +
+      (q.assumptions && q.assumptions.length ? '<div><b style="font-size:.9rem">Based on</b><ul>' + q.assumptions.map(function(a){ return '<li>' + esc(a) + '</li>'; }).join('') + '</ul></div>' : '') +
+      (q.questions_for_client && q.questions_for_client.length ? '<div><b style="font-size:.9rem">Worth asking the client</b><ul>' + q.questions_for_client.map(function(a){ return '<li>' + esc(a) + '</li>'; }).join('') + '</ul></div>' : '') +
+      (note ? '<p class="fine">' + esc(note) + '</p>' : '') +
+      '<p class="fine">Sample prices. Yours uses your rates and lands as a PDF with your name on it.</p>';
+    result.hidden = false;
+    if (window.matchMedia('(max-width: 959px)').matches) { var lap = document.getElementById('laptop'); if (lap && !lap.querySelector('.done')) lap.hidden = false; }
+    result.scrollIntoView({ block: 'start', behavior: 'smooth' });
+  }
+
+  function esc(s){ return String(s == null ? '' : s).replace(/[&<>"']/g, function(c){ return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]; }); }
+
+  var EXAMPLE = null; // filled from the server's sample shape if the demo is offline
+  go.addEventListener('click', function(){
+    if (!imageB64) return;
+    go.disabled = true; setStatus('Pricing it up. About twenty seconds.');
+    var body = JSON.stringify({ image: imageB64, media_type: 'image/jpeg', notes: notes.value.slice(0, 600) });
+    var ctrl = ('AbortController' in window) ? new AbortController() : null;
+    var timer = ctrl && setTimeout(function(){ ctrl.abort(); }, 75000);
+    fetch('/api/demo', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: body, signal: ctrl && ctrl.signal })
+      .then(function(r){ return r.json().then(function(j){ return { ok: r.ok, j: j }; }); })
+      .then(function(x){
+        if (!x.ok) { setStatus(x.j.error || 'Something went wrong. Try again.', true); return; }
+        setStatus(x.j.sample ? 'Showing an example. The live version isn\'t switched on for this page yet.' : 'Done. Scroll for the sample quote.');
+        render(x.j);
+      })
+      .catch(function(){
+        setStatus('Couldn\'t reach the server from here. Showing an example of what comes back.', true);
+        render(exampleQuote(), 'Example only: the live version isn\'t connected on this copy of the page.');
+      })
+      .finally(function(){ if (timer) clearTimeout(timer); go.disabled = false; });
+  });
+
+  function exampleQuote(){
+    var items = [
+      { description: 'Walls, 2 coats, light prep', qty: 39.8, unit: 'm2', rate: 22 },
+      { description: 'Ceiling, 2 coats', qty: 20, unit: 'm2', rate: 25 },
+      { description: 'Skirting boards', qty: 17.1, unit: 'lm', rate: 9 },
+      { description: 'Door, both sides incl. frame', qty: 1, unit: 'each', rate: 95 },
+      { description: 'Window frames', qty: 2, unit: 'each', rate: 65 }
+    ].map(function(li){ li.amount = Math.round(li.qty * li.rate); return li; });
+    var sub = items.reduce(function(s, li){ return s + li.amount; }, 0), gst = Math.round(sub * 0.1);
+    return { sample: true, job_title: 'Lounge room, walls and ceiling', what_i_can_see: 'A lounge about 5 m by 4 m with a standard ceiling, two windows, one door and skirting boards.', line_items: items, subtotal: sub, gst: gst, total: sub + gst, assumptions: ['Ceiling height 2.4 m', 'Two coats, same colour', 'Client moves furniture to the centre'], questions_for_client: ['Changing colour, or the same?'] };
+  }
+
+  // ---- launch config wiring (see window.QC at the top of the file)
+  var C = window.QC || {};
+  var checkout = document.querySelector('[data-checkout]');
+  var form = document.querySelector('[data-form]');
+  if (C.CHECKOUT_URL) checkout.setAttribute('href', C.CHECKOUT_URL);
+  var hosted = document.querySelector('[data-hosted]');
+  if (C.HOSTED_URL) hosted.setAttribute('href', C.HOSTED_URL);
+  document.querySelectorAll('[data-hosted-date]').forEach(function(el){ if (C.HOSTED_DATE) el.textContent = C.HOSTED_DATE; });
+  var hostedCap = document.querySelector('[data-capture="hosted"]');
+  hosted.addEventListener('click', function(e){
+    if (hosted.getAttribute('href') === '#') {
+      e.preventDefault();
+      if (!C.FORM_ACTION) { alert('Set HOSTED_URL or FORM_ACTION in config.js.'); return; }
+      hosted.hidden = true; hostedCap.hidden = false; hostedCap.querySelector('input[type=email]').focus();
+      return;
+    }
+    track('Lead', { content_name: 'hosted_founding_list' });
+  });
+
+  // Every email capture posts to the one FORM_ACTION with a hidden "list" field, in the background.
+  document.querySelectorAll('form[data-capture], form[data-form]').forEach(function(f){
+    if (C.FORM_ACTION) f.setAttribute('action', C.FORM_ACTION);
+    f.addEventListener('submit', function(e){
+      if (f.getAttribute('action') === '#') { e.preventDefault(); alert('The email form is not connected yet. Set FORM_ACTION in config.js.'); return; }
+      e.preventDefault();
+      var btn = f.querySelector('button[type=submit]'); if (btn) btn.disabled = true;
+      var list = (f.querySelector('input[name=list]') || {}).value || 'email';
+      fetch(f.getAttribute('action'), { method: 'POST', body: new FormData(f), headers: { 'Accept': 'application/json' } })
+        .then(function(r){ if (!r.ok) throw new Error('bad'); track('Lead', { content_name: list }); f.innerHTML = '<p class="done">Done. Check your inbox.</p>'; })
+        .catch(function(){ if (btn) btn.disabled = false; alert('That did not send. Try again, or email ' + (C.SUPPORT_EMAIL || 'us') + '.'); });
+    });
+  });
+
+  if (C.MAKER_NOTE) {
+    var mk = document.getElementById('maker'); mk.hidden = false;
+    document.getElementById('maker-note').textContent = C.MAKER_NOTE;
+    document.getElementById('maker-name').textContent = C.MAKER_NAME || '';
+    if (C.MAKER_PHOTO) { var mp = document.getElementById('maker-photo'); mp.src = C.MAKER_PHOTO; mp.hidden = false; }
+  }
+  document.querySelectorAll('[data-lessons-date]').forEach(function(el){ if (C.LESSONS_DATE) el.textContent = C.LESSONS_DATE; });
+  document.querySelectorAll('[data-abn]').forEach(function(el){ if (C.ABN) el.textContent = C.ABN; });
+  document.querySelectorAll('[data-mail]').forEach(function(el){ if (C.SUPPORT_EMAIL) { el.textContent = C.SUPPORT_EMAIL; el.href = 'mailto:' + C.SUPPORT_EMAIL; } });
+
+  checkout.addEventListener('click', function(e){
+    if (checkout.getAttribute('href') === '#') { e.preventDefault(); alert('Checkout is not connected yet. Set CHECKOUT_URL at the top of index.html.'); return; }
+    track('InitiateCheckout', { value: 249, currency: 'AUD' });
+  });
+
+  var demoTracked = false;
+  go.addEventListener('click', function(){ if (!demoTracked) { demoTracked = true; track('ViewContent', { content_name: 'demo_quote' }); } });
+
+  // ---- Meta pixel, only when an ID is configured
+  function track(ev, data){ try { if (window.fbq) window.fbq('track', ev, data || {}); } catch (e) {} }
+  if (C.META_PIXEL_ID) {
+    !function(f,b,e,v,n,t,s){if(f.fbq)return;n=f.fbq=function(){n.callMethod?n.callMethod.apply(n,arguments):n.queue.push(arguments)};if(!f._fbq)f._fbq=n;n.push=n;n.loaded=!0;n.version='2.0';n.queue=[];t=b.createElement(e);t.async=!0;t.src=v;s=b.getElementsByTagName(e)[0];s.parentNode.insertBefore(t,s)}(window,document,'script','https://connect.facebook.net/en_US/fbevents.js');
+    window.fbq('init', C.META_PIXEL_ID); window.fbq('track', 'PageView');
+  }
+
+  // ---- live QR: always points at the page it is on, so the code never goes stale
+  function drawQR(){
+    var box = document.getElementById('qr');
+    if (!box || !window.QRCode || location.protocol === 'file:') return;
+    var url = location.origin + location.pathname.replace(/\/$/, '') + '/#try';
+    box.innerHTML = '';
+    new QRCode(box, { text: url, width: 220, height: 220, colorDark: '#16181d', colorLight: '#ffffff', correctLevel: QRCode.CorrectLevel.M });
+  }
+  if (document.readyState === 'complete') drawQR(); else window.addEventListener('load', drawQR);
+})();
+</script>
+</body>
+</html>

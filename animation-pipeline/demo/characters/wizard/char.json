@@ -1,0 +1,11 @@
+{
+  "anchor": [
+    0.5,
+    0.999
+  ],
+  "world_height": 1.1,
+  "flip_to_walk": true,
+  "aliases": [
+    "gandalf"
+  ]
+}

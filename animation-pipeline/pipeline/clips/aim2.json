@@ -1,0 +1,58 @@
+{
+  "period": 1.0,
+  "loop": true,
+  "interp": "step",
+  "name": "aim2",
+  "channels": {
+    "arm_r_upper": {
+      "rot": [
+        [
+          0.0,
+          -86
+        ],
+        [
+          0.5,
+          -89
+        ]
+      ],
+      "shape": [
+        [
+          0.0,
+          "straight"
+        ]
+      ]
+    },
+    "torso": {
+      "rot": [
+        [
+          0.0,
+          6
+        ]
+      ]
+    },
+    "head": {
+      "rot": [
+        [
+          0.0,
+          3
+        ]
+      ]
+    },
+    "leg_l_upper": {
+      "rot": [
+        [
+          0.0,
+          -6
+        ]
+      ]
+    },
+    "leg_r_upper": {
+      "rot": [
+        [
+          0.0,
+          6
+        ]
+      ]
+    }
+  }
+}

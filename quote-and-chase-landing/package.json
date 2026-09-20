@@ -1,0 +1,17 @@
+{
+  "name": "quote-and-chase-landing",
+  "private": true,
+  "version": "0.1.0",
+  "type": "module",
+  "description": "Landing page and phone demo for the Quote and Chase pack for painters",
+  "scripts": {
+    "dev": "vercel dev",
+    "deploy": "vercel --prod",
+    "qr": "python3 tools/make-qr.py"
+  },
+  "dependencies": {
+    "@anthropic-ai/sdk": "^0.80.0",
+    "zod": "^4.0.0"
+  },
+  "engines": { "node": ">=20" }
+}

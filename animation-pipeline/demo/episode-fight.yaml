@@ -1,0 +1,50 @@
+# Sugar vs Doug. Both actors carry a `fight:` naming the other; a
+# seeded choreography decides who swings when (jab, cross, kick),
+# whether the other ducks or leans out of range, and when one lands —
+# punches are reach-solved so the fist arrives ON the opponent's face,
+# and a landed hit snaps the head back and staggers them.
+#
+# Render:   python3 pipeline/render.py demo/episode-fight.yaml
+
+title: sugar v doug
+size: [1080, 1920]
+fps: 12
+boil: 0.0015
+boil_every: 2
+
+defaults:
+  font: ../fonts/satoshi-var.ttf
+  caption_size: 0.042
+  caption_weight: 700
+  caption_color: [26, 26, 26]
+  caption_y: 0.84
+
+shots:
+  - bg: backgrounds/chipshop.png
+    duration: 8.0
+    caption: they had a disagreement
+    actors:
+      - char: sugar
+        at: [0.34, 0.76]
+        scale: 0.46
+        fight: {with: 1, t: [0.4, 7.6], seed: 1}
+      - char: doug
+        at: [0.68, 0.76]
+        scale: 0.46
+        fight: {with: 0, t: [0.4, 7.6], seed: 1}
+
+  # one-sided intent: sugar wants to punch doug. Doug carries no
+  # combat key at all — a rigged actor targeted by someone's attack
+  # defends automatically (guards, dodges, staggers when caught) and
+  # never swings back. `using: [punch]` keeps sugar's feet out of it.
+  - bg: backgrounds/chipshop.png
+    duration: 7.0
+    caption: sugar was not finished
+    actors:
+      - char: sugar
+        at: [0.34, 0.76]
+        scale: 0.46
+        attack: {who: 1, t: [0.4, 6.6], seed: 7, using: [punch]}
+      - char: doug
+        at: [0.68, 0.76]
+        scale: 0.46

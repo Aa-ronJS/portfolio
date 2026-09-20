@@ -1,0 +1,116 @@
+# The fellowship pops in — first outing for the three template-drawn
+# characters (wizard, hobbit, nazgul; the hobbit is much smaller).
+# Voice lines are placeholder mumbles — replace with real recordings
+# under the same names in vo/.
+#
+# Render:   python3 pipeline/render.py demo/episode-fellowship.yaml
+
+title: the fellowship pops in
+size: [1080, 1920]
+fps: 12
+boil: 0.0015
+boil_every: 2
+
+defaults:
+  font: ../fonts/satoshi-var.ttf
+  caption_size: 0.042
+  caption_weight: 700
+  caption_color: [26, 26, 26]
+  caption_y: 0.84
+  audio_tail: 0.35
+
+shots:
+  # 0 — the wizard and the hobbit walk in, wizard already talking.
+  - bg: backgrounds/chipshop.png
+    audio: vo/wiz1.wav
+    caption: the wizard had exciting news
+    actors:
+      - char: wizard
+        at: [0.44, 0.76]
+        scale: 0.55
+        talk: true
+        moves:
+          - {type: slide, from: [-0.20, 0.76], to: [0.44, 0.76], t: [0.2, 2.6]}
+      - char: hobbit
+        at: [0.18, 0.76]
+        scale: 0.32
+        moves:
+          - {type: slide, from: [-0.42, 0.76], to: [0.18, 0.76], t: [0.2, 2.6]}
+
+  # 1 — the news. Wizard turns to the hobbit; idle clips keep the
+  # rigged path (and its stock blink/gaze) running while they stand.
+  - bg: backgrounds/chipshop.png
+    audio: vo/wiz2.wav
+    caption: you simply must throw the ring in the volcano
+    actors:
+      - char: wizard
+        at: [0.44, 0.76]
+        scale: 0.55
+        flip: true
+        talk: true
+        clip: idle
+      - char: hobbit
+        at: [0.18, 0.76]
+        scale: 0.32
+        clip: idle
+
+  # 2 — the hobbit has considered it.
+  - bg: backgrounds/chipshop.png
+    audio: vo/hob1.wav
+    caption: i've got work in the morning
+    actors:
+      - char: wizard
+        at: [0.44, 0.76]
+        scale: 0.55
+        flip: true
+        clip: idle
+      - char: hobbit
+        at: [0.18, 0.76]
+        scale: 0.32
+        talk: true
+        clip: idle
+
+  # 3 — a nazgul arrives, screaming.
+  - bg: backgrounds/chipshop.png
+    audio: vo/naz1.wav
+    caption: then a nazgul arrived, screaming
+    actors:
+      - char: wizard
+        at: [0.44, 0.76]
+        scale: 0.55
+        flip: true
+        clip: idle
+      - char: hobbit
+        at: [0.18, 0.76]
+        scale: 0.32
+        clip: idle
+      - char: nazgul
+        at: [0.80, 0.76]
+        scale: 0.55
+        flip: true
+        talk: true
+        moves:
+          - {type: slide, from: [1.25, 0.76], to: [0.80, 0.76], t: [0.2, 2.2]}
+
+  # 4 — the hobbit solves it. The wizard is not amused.
+  - bg: backgrounds/chipshop.png
+    audio: vo/hob2.wav
+    caption: he can take it then
+    actors:
+      - char: wizard
+        at: [0.44, 0.76]
+        scale: 0.55
+        flip: true
+        pose: angry
+        clip: idle
+      - char: hobbit
+        at: [0.18, 0.76]
+        scale: 0.32
+        talk: true
+        clip: idle
+      - char: nazgul
+        at: [0.80, 0.76]
+        scale: 0.55
+        flip: true
+        look: false   # gazing tilts the whole hood and cracks the neck
+        clip: idle
