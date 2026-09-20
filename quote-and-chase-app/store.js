@@ -41,7 +41,7 @@
       costing: (window.QCCosting ? QCCosting.defaults() : {}),
       follow_up: { quote_days: [3, 7, 14], invoice_days: [1, 7, 21], remind_hour: 8 },
       stripe: { key: '', enabled: false },
-      sending: { server: '', server_has_creds: false, twilio_sid: '', twilio_token: '', twilio_service: '', twilio_from: '', resend_key: '', resend_from: '', auto_sms: true, auto_email: true, email_quotes: true },
+      sending: { server: '', token: '', server_has_creds: false, twilio_sid: '', twilio_token: '', twilio_service: '', twilio_from: '', resend_key: '', resend_from: '', auto_sms: true, auto_email: true, email_quotes: true },
       booking: { start_hour: 7, end_hour: 15, quote_from: 7, quote_to: 18, visit_minutes: 30, saturdays: true, sundays: false },
       wording: {
         included: ['Protection of floors, furniture and fittings with drop sheets and plastic before work starts.',
@@ -65,22 +65,46 @@
   }
 
   var state = null;
-  function load() {
-    if (state) return state;
-    try { var raw = localStorage.getItem(KEY); state = raw ? JSON.parse(raw) : defaults(); } catch (e) { state = defaults(); }
-    // fill any missing keys from defaults (upgrades)
+  function hydrate() {
+    if (!state || typeof state !== 'object' || Array.isArray(state)) state = defaults();
     var d = defaults();
-    ['details', 'prices', 'rules', 'wording', 'costing', 'follow_up', 'stripe', 'booking', 'sending'].forEach(function (k) { state[k] = Object.assign({}, d[k], state[k] || {}); });
+    ['details', 'prices', 'rules', 'wording', 'costing', 'follow_up', 'stripe', 'booking', 'sending'].forEach(function (k) { state[k] = Object.assign({}, d[k], state[k] && typeof state[k] === 'object' ? state[k] : {}); });
     if (!state.costing.paint_price) state.costing.paint_price = d.costing.paint_price;
+    if (!Array.isArray(state.wording.included)) state.wording.included = d.wording.included; if (!Array.isArray(state.wording.excluded)) state.wording.excluded = d.wording.excluded;
+    if (!Array.isArray(state.follow_up.quote_days) || !state.follow_up.quote_days.length) state.follow_up.quote_days = d.follow_up.quote_days; if (!Array.isArray(state.follow_up.invoice_days) || !state.follow_up.invoice_days.length) state.follow_up.invoice_days = d.follow_up.invoice_days;
     if (!Array.isArray(state.jobs)) state.jobs = [];
+    state.jobs = state.jobs.filter(function (j) { return j && typeof j === 'object'; }).map(normaliseJob);
     if (!state.next_quote) state.next_quote = 1001; if (!state.next_invoice) state.next_invoice = 2001;
     return state;
   }
-  function save() { try { localStorage.setItem(KEY, JSON.stringify(state)); return true; } catch (e) { return false; } }
+  function load() {
+    if (state) return state;
+    try { var raw = localStorage.getItem(KEY); state = raw ? JSON.parse(raw) : defaults(); } catch (e) { state = defaults(); }
+    return hydrate();
+  }
+  var lastError = '';
+  function save() { try { if (state && Array.isArray(state.jobs)) state.jobs.forEach(function (j) { if (j && typeof j === 'object') { j.id = String(j.id || '').replace(/[^A-Za-z0-9_-]/g, '') || uid(); (Array.isArray(j.rooms) ? j.rooms : []).forEach(function (r) { if (r && typeof r === 'object') r.id = String(r.id || '').replace(/[^A-Za-z0-9_-]/g, '') || uid(); }); } });
+    state.rev = (state.rev || 0) + 1; state.saved_at = Date.now(); localStorage.setItem(KEY, JSON.stringify(state)); lastError = ''; return true; } catch (e) { lastError = (e && e.message) || 'save failed'; return false; } }
+  // Fill anything a job record may be missing (old backups, hand-edited files) so no screen can trip on it
+  function normaliseJob(j) {
+    j.id = String(j.id || '').replace(/[^A-Za-z0-9_-]/g, '') || uid(); j.quote_no = String(j.quote_no || 'Q-?'); j.status = j.status || 'draft'; j.created = j.created || today();
+    j.client = Object.assign({ name: '', phone: '', email: '', address: '' }, j.client && typeof j.client === 'object' ? j.client : {}); ['name', 'phone', 'email', 'address'].forEach(function (k) { j.client[k] = j.client[k] == null ? '' : String(j.client[k]); });
+    j.summary = j.summary == null ? '' : String(j.summary); j.notes = j.notes == null ? '' : String(j.notes);
+    j.rooms = (Array.isArray(j.rooms) ? j.rooms : []).filter(function (r) { return r && typeof r === 'object'; }).map(function (r) { r.id = String(r.id || '').replace(/[^A-Za-z0-9_-]/g, '') || uid(); r.type = r.type === 'exterior' ? 'exterior' : 'interior'; r.method = r.method === 'measured' ? 'measured' : 'typed'; r.walls = (Array.isArray(r.walls) ? r.walls : []).filter(function (w) { return w && typeof w === 'object'; }).map(function (w) { w.openings = Array.isArray(w.openings) ? w.openings : []; w.width_mm = +w.width_mm || 0; w.height_mm = +w.height_mm || 0; w.paint_area_m2 = +w.paint_area_m2 || 0; w.wall = w.wall || 'Wall'; w.expected_error_pct = w.expected_error_pct == null ? '' : w.expected_error_pct; return w; }); r.surfaces = Object.assign({ walls: true, ceiling: true, skirting: true }, r.surfaces || {}); r.ext = r.ext && typeof r.ext === 'object' ? r.ext : {}; return r; });
+    j.extras = (Array.isArray(j.extras) ? j.extras : []).filter(function (x) { return x && typeof x === 'object'; });
+    j.invoices = (Array.isArray(j.invoices) ? j.invoices : []).filter(function (i) { return i && typeof i === 'object'; }).map(function (i) { i.lines = Array.isArray(i.lines) ? i.lines : []; i.follow_ups = Array.isArray(i.follow_ups) ? i.follow_ups : []; i.total = +i.total || 0; i.no = i.no || 'INV-?'; i.due = i.due || today(); return i; });
+    j.follow_ups = Array.isArray(j.follow_ups) ? j.follow_ups : []; if (j.quote && typeof j.quote !== 'object') j.quote = null; if (j.quote && !Array.isArray(j.quote.lines)) j.quote.lines = [];
+    if (j.booking && (typeof j.booking !== 'object' || !j.booking.start)) j.booking = null; if (j.visit && (typeof j.visit !== 'object' || !j.visit.date)) j.visit = null; if (j.picks && !Array.isArray(j.picks)) j.picks = [];
+    return j;
+  }
+  // another tab or window wrote: drop the cached copy so the next load reads theirs, and re-render if the app is up
+  if (typeof window.addEventListener === 'function') window.addEventListener('storage', function (e) { if (e.key !== KEY) return; state = null; if (window.__qcApp && window.__qcApp.route) { try { window.__qcApp.route(); } catch (err) {} } });
   function uid() { return Math.random().toString(36).slice(2, 8) + Date.now().toString(36).slice(-4); }
-  function today() { return new Date().toISOString().slice(0, 10); }
-  function addDays(iso, n) { var d = new Date(iso + 'T00:00:00'); d.setDate(d.getDate() + n); return d.toISOString().slice(0, 10); }
-  function daysBetween(a, b) { return Math.round((new Date(b + 'T00:00:00') - new Date(a + 'T00:00:00')) / 86400000); }
+  // Dates are LOCAL calendar dates (yyyy-mm-dd), never UTC: a painter in Adelaide is 9.5 hours ahead of UTC.
+  function localIso(d) { return d.getFullYear() + '-' + (d.getMonth() < 9 ? '0' : '') + (d.getMonth() + 1) + '-' + (d.getDate() < 10 ? '0' : '') + d.getDate(); }
+  function today() { return localIso(new Date()); }
+  function addDays(iso, n) { var p = String(iso || today()).split('-'), d = new Date(+p[0], +p[1] - 1, +p[2]); d.setDate(d.getDate() + (parseInt(n, 10) || 0)); return localIso(d); }
+  function daysBetween(a, b) { var pa = String(a).split('-'), pb = String(b).split('-'); return Math.round((new Date(+pb[0], +pb[1] - 1, +pb[2]) - new Date(+pa[0], +pa[1] - 1, +pa[2])) / 86400000); }
 
   function newJob() {
     var s = load();
@@ -99,9 +123,9 @@
   function nextInvoiceNo() { var s = load(); var n = 'INV-' + s.next_invoice; s.next_invoice += 1; save(); return n; }
 
   function exportAll() { return JSON.stringify(load(), null, 2); }
-  function importAll(json) { var obj = JSON.parse(json); if (!obj || !Array.isArray(obj.jobs)) throw new Error('Not a Quote & Chase backup'); state = obj; save(); state = null; return load(); }
-  function reset() { state = defaults(); save(); }
+  function importAll(json) { var obj = JSON.parse(json); if (!obj || typeof obj !== 'object' || Array.isArray(obj) || !Array.isArray(obj.jobs)) throw new Error('Not a Quote & Chase backup'); var prev = state; state = obj; hydrate(); if (!save()) { state = prev; throw new Error('Could not save the restore: ' + lastError); } return state; }
+  function reset() { state = defaults(); hydrate(); save(); }
 
-  window.QCStore = { PRICE_ITEMS: PRICE_ITEMS, load: load, save: save, uid: uid, today: today, addDays: addDays, daysBetween: daysBetween,
+  window.QCStore = { PRICE_ITEMS: PRICE_ITEMS, load: load, save: save, lastError: function () { return lastError; }, normaliseJob: normaliseJob, uid: uid, today: today, addDays: addDays, daysBetween: daysBetween,
     newJob: newJob, newRoom: newRoom, getJob: getJob, deleteJob: deleteJob, nextInvoiceNo: nextInvoiceNo, exportAll: exportAll, importAll: importAll, reset: reset, defaults: defaults };
 })();

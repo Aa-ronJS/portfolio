@@ -11,13 +11,13 @@
   var PAINT = { walls: 'Wall paint, low sheen', ceilings: 'Ceiling flat', enamel: 'Enamel, doors and trim', exterior: 'Exterior acrylic', sealer: 'Sealer / stain block', oil: 'Decking oil' };
   function defaults() { return { labour_rate: 65, margin_pct: 25, coats: 2, coverage_m2_per_l: 14, paint_price: { walls: 28, ceilings: 24, enamel: 45, exterior: 32, sealer: 22, oil: 30 }, hours_scale: 1 }; }
   function unitCost(key, c) {
-    var b = BASE[key]; if (!b) return null; var hrs = b[0] * (parseFloat(c.hours_scale) || 1), litres = b[2], type = b[1];
+    var b = BASE[key]; if (!b) return null; var hrs = b[0] * Math.max(0.1, parseFloat(c.hours_scale) || 1), litres = b[2], type = b[1];
     if (type === 'walls' || type === 'ceilings' || type === 'exterior' || type === 'sealer' || type === 'oil') { if (b[2] >= 0.1) litres = (parseFloat(c.coats) || 2) / (parseFloat(c.coverage_m2_per_l) || 14); }
-    var paint$ = type === 'none' ? 0 : litres * (parseFloat((c.paint_price || {})[type]) || 0);
-    var labour$ = hrs * (parseFloat(c.labour_rate) || 0), other$ = b[3];
+    var paint$ = type === 'none' ? 0 : litres * Math.max(0, parseFloat((c.paint_price || {})[type]) || 0);
+    var labour$ = hrs * Math.max(0, parseFloat(c.labour_rate) || 0), other$ = b[3];
     return { hours: hrs, litres: type === 'none' ? 0 : litres, paint_type: type, paint: paint$, labour: labour$, other: other$, cost: labour$ + paint$ + other$ };
   }
-  function deriveRates(c) { var out = {}; Object.keys(BASE).forEach(function (k) { var u = unitCost(k, c); if (!u) return; var rate = u.cost * (1 + (parseFloat(c.margin_pct) || 0) / 100); out[k] = rate >= 20 ? Math.round(rate) : Math.round(rate * 2) / 2; }); return out; }
+  function deriveRates(c) { var out = {}; Object.keys(BASE).forEach(function (k) { var u = unitCost(k, c); if (!u) return; var rate = u.cost * (1 + Math.max(0, parseFloat(c.margin_pct) || 0) / 100); out[k] = rate >= 20 ? Math.round(rate) : Math.round(rate * 2) / 2; }); return out; }
   // lines: priced quote lines with .key and .qty; returns hours, litres by type, $ labour, $ paint, $ other, cost, and margin against the quoted subtotal
   function breakdown(lines, c, subtotal) {
     var t = { hours: 0, labour: 0, paint: 0, other: 0, litres: {} };

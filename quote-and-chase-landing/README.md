@@ -115,5 +115,9 @@ Two ways to run it:
    into the app; they are sent with each request over HTTPS and never
    stored or logged by the relay.
 
-`MSG_PER_IP_LIMIT` (default 60 per 10 minutes) caps abuse. Test with
+Always set `RELAY_TOKEN` to a long random string (`openssl rand -hex 24`) and
+paste the same string into the app under Set-up, Sending, "Relay token":
+the Origin check is hygiene, not security, and without a token anyone who
+learns the URL can send on your account. `MSG_PER_IP_LIMIT` (default 60 per
+10 minutes) caps abuse. Test with
 `node tools/msg-relay-test.mjs` (mocked Twilio and Resend).

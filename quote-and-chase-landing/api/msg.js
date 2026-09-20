@@ -3,7 +3,8 @@
 // Twilio holds scheduled SMS (ScheduleType=fixed, up to 35 days ahead, needs a Messaging Service SID) and
 // Resend holds scheduled email (scheduled_at, up to 30 days ahead), so this relay keeps no data at all.
 //
-// Credentials come from environment variables when you run your own copy (TWILIO_ACCOUNT_SID, TWILIO_AUTH_TOKEN,
+// Set RELAY_TOKEN to a long random string and put the same string in the app (Set-up, Sending): without it,
+// anyone who guesses the URL can send messages on your account. Credentials come from environment variables when you run your own copy (TWILIO_ACCOUNT_SID, TWILIO_AUTH_TOKEN,
 // TWILIO_MESSAGING_SERVICE_SID, RESEND_API_KEY, RESEND_FROM), or from the request body (fields under "creds")
 // when ALLOW_CLIENT_CREDS=1, in which case they are used for that one call and never stored or logged.
 //
@@ -43,7 +44,7 @@ function creds(body) {
 const f = (...a) => (globalThis.__relayFetch || fetch)(...a);
 
 // ---------- Twilio
-function e164(to) { let s = String(to || "").replace(/[^\d+]/g, ""); if (s.startsWith("0")) s = "+61" + s.slice(1); if (!s.startsWith("+")) s = "+" + s; return s; }
+function e164(to) { let s = String(to || "").replace(/[^\d+]/g, ""); if (s.startsWith("0011")) s = "+" + s.slice(4); if (s.startsWith("+610")) s = "+61" + s.slice(4); if (s.startsWith("0")) s = "+61" + s.slice(1); if (!s.startsWith("+")) s = "+" + s; return s; }
 async function twilio(c, path, params) {
   if (!c.twilioSid || !c.twilioToken) throw new Error("Twilio is not set up (account SID and auth token)");
   const r = await f(`https://api.twilio.com/2010-04-01/Accounts/${encodeURIComponent(c.twilioSid)}/${path}`, {
@@ -74,10 +75,10 @@ async function resend(c, method, path, payload) {
   return j;
 }
 function emailPayload(c, b) {
-  if (!c.resendFrom) throw new Error("Resend needs a From address on a verified domain");
+  if (!c.resendKey) throw new Error("Resend is not set up (API key)"); if (!c.resendFrom) throw new Error("Resend needs a From address on a verified domain");
   const p = { from: c.resendFrom, to: [String(b.to)], subject: b.subject || "Message", text: b.body || "" };
   if (b.html) p.html = b.html; if (b.reply_to) p.reply_to = b.reply_to;
-  if (Array.isArray(b.attachments) && b.attachments.length) p.attachments = b.attachments.slice(0, 3).map((a) => ({ filename: String(a.filename || "file.pdf").slice(0, 80), content: String(a.content || "") }));
+  if (Array.isArray(b.attachments) && b.attachments.length) { const list = b.attachments.filter((a) => a && typeof a === "object"); if (list.length > 3) throw new Error("At most 3 attachments"); p.attachments = list.map((a) => ({ filename: String(a.filename || "file.pdf").slice(0, 80), content: String(a.content || "") })); }
   return p;
 }
 async function emailSend(c, b) { const j = await resend(c, "POST", "/emails", emailPayload(c, b)); return { id: j.id }; }
@@ -96,13 +97,16 @@ export default async function handler(req, res) {
   const ip = (req.headers["x-forwarded-for"] || "").split(",")[0].trim() || (req.socket && req.socket.remoteAddress) || "?";
   if (limited(ip)) return send(res, 429, { ok: false, error: "Slow down" });
   let body; try { body = await readJson(req); } catch { return send(res, 400, { ok: false, error: "Bad JSON" }); }
-  const c = creds(body), ch = body.channel === "email" ? "email" : "sms";
+  if (!body || typeof body !== "object" || Array.isArray(body)) return send(res, 400, { ok: false, error: "Bad JSON" });
+  if (process.env.RELAY_TOKEN && body.token !== process.env.RELAY_TOKEN) return send(res, 401, { ok: false, error: "Relay token missing or wrong" });
+  if (body.to != null) body.to = String(body.to).trim();
+  const c = creds(body), ch = String(body.channel || "").toLowerCase() === "email" ? "email" : "sms";
   try {
     if (body.action === "test") { const r = ch === "sms" ? await smsSend(c, body.to, "Quote and Chase test: SMS sending works.") : await emailSend(c, { to: body.to, subject: "Quote and Chase test", body: "Email sending works." }); return send(res, 200, { ok: true, ...r }); }
-    if (body.action === "send") { if (!body.to || (!body.body && !body.html)) throw new Error("to and body are required"); if (String(body.body || "").length > 1600) throw new Error("Message too long"); const r = ch === "sms" ? await smsSend(c, body.to, body.body) : await emailSend(c, body); return send(res, 200, { ok: true, ...r }); }
-    if (body.action === "schedule") { if (!body.to || !body.body || !body.send_at) throw new Error("to, body and send_at are required"); const r = ch === "sms" ? await smsSchedule(c, body.to, body.body, body.send_at) : await emailSchedule(c, body); return send(res, 200, { ok: true, ...r }); }
+    if (body.action === "send") { if (!body.to || (ch === "sms" ? !body.body : (!body.body && !body.html))) throw new Error("to and body are required"); if (String(body.body || "").length > 1600) throw new Error("Message too long"); const r = ch === "sms" ? await smsSend(c, body.to, body.body) : await emailSend(c, body); return send(res, 200, { ok: true, ...r }); }
+    if (body.action === "schedule") { if (!body.to || !body.body || !body.send_at) throw new Error("to, body and send_at are required"); if (String(body.body).length > 1600) throw new Error("Message too long"); const r = ch === "sms" ? await smsSchedule(c, body.to, body.body, body.send_at) : await emailSchedule(c, body); return send(res, 200, { ok: true, ...r }); }
     if (body.action === "cancel") { if (!body.id) throw new Error("id is required"); const r = ch === "sms" ? await smsCancel(c, body.id) : await emailCancel(c, body.id); return send(res, 200, { ok: true, ...r }); }
-    if (body.action === "ping") return send(res, 200, { ok: true, sms: !!(c.twilioSid && c.twilioToken && (c.twilioService || c.twilioFrom)), email: !!(c.resendKey && c.resendFrom), client_creds: process.env.ALLOW_CLIENT_CREDS === "1" });
+    if (body.action === "ping") return send(res, 200, { ok: true, sms: !!(c.twilioSid && c.twilioToken && (c.twilioService || c.twilioFrom)), sms_schedule: !!(c.twilioSid && c.twilioToken && c.twilioService), email: !!(c.resendKey && c.resendFrom), client_creds: process.env.ALLOW_CLIENT_CREDS === "1", token_required: !!process.env.RELAY_TOKEN });
     return send(res, 400, { ok: false, error: "Unknown action" });
   } catch (e) { return send(res, 400, { ok: false, error: e.message || String(e) }); }
 }

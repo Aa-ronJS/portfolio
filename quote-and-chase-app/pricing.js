@@ -19,7 +19,7 @@
       q.source = 'typed';
       return q;
     }
-    var doorsTotal = n(room.doors) + n(room.doors_one_side), windows = n(room.windows);
+    var doorsTotal = Math.max(0, n(room.doors)) + Math.max(0, n(room.doors_one_side)), windows = Math.max(0, n(room.windows));
     var wallArea = 0, ceilingArea = 0, skirting = 0, src = 'from your numbers';
     if (room.method === 'measured' && room.walls && room.walls.length) {
       wallArea = room.walls.reduce(function (s, w) { return s + n(w.paint_area_m2); }, 0);
@@ -49,6 +49,7 @@
     if (s.skirting !== false && skirting > 0) q.lines.push({ key: 'p_skirting', qty: r1(skirting), source: src });
     if (n(room.doors) > 0) q.lines.push({ key: 'p_door', qty: n(room.doors), source: 'count' });
     if (n(room.doors_one_side) > 0) q.lines.push({ key: 'p_door_one', qty: n(room.doors_one_side), source: 'count' });
+    if (n(room.wardrobe_pairs) < 0) room.wardrobe_pairs = 0; if (n(room.feature_m2) < 0) room.feature_m2 = 0; if (n(room.wallpaper_m2) < 0) room.wallpaper_m2 = 0;
     if (windows > 0) q.lines.push({ key: 'p_window', qty: windows, source: 'count' });
     if (n(room.wardrobe_pairs) > 0) q.lines.push({ key: 'p_wardrobe', qty: n(room.wardrobe_pairs), source: 'count' });
     if (n(room.feature_m2) > 0) q.lines.push({ key: 'p_feature', qty: r1(n(room.feature_m2)), source: 'from your numbers' });
@@ -78,9 +79,9 @@
       assumptions = assumptions.concat(q.assumptions);
     });
     (job.extras || []).forEach(function (x) {
-      var qty = n(x.qty, 1), rate = n(x.rate, 0), amount = Math.round(qty * rate);
-      lines.push({ room: 'Extras', desc: x.desc || 'Extra item', qty: qty, unit: x.unit || 'each', rate: rate, amount: amount, source: 'added by you', confirm: !!x.confirm || !x.rate });
-      if (!!x.confirm || !x.rate) confirm.push('Extras: "' + (x.desc || 'Extra item') + '" marked TO CONFIRM.');
+      var qty = n(x.qty, 1), rateOk = x.rate !== '' && x.rate != null && !isNaN(parseFloat(x.rate)), rate = rateOk ? n(x.rate, 0) : 0, amount = Math.round(qty * rate), needs = !!x.confirm || !rateOk;
+      lines.push({ room: 'Extras', desc: x.desc || 'Extra item', qty: qty, unit: x.unit || 'each', rate: rate, amount: amount, source: 'added by you', confirm: needs });
+      if (needs) confirm.push('Extras: "' + (x.desc || 'Extra item') + '" marked TO CONFIRM.');
     });
     var tr = window.QCGeo ? QCGeo.travel(job, settings) : { amount: 0 };
     if (tr.amount > 0) { lines.push({ room: 'Travel', desc: 'Travel, ' + tr.chargeable + ' km beyond ' + n(rules.free_radius_km) + ' km' + (rules.travel_return === false ? '' : ' each way'), qty: tr.chargeable * (rules.travel_return === false ? 1 : 2), unit: 'km', rate: n(rules.travel_per_km), amount: tr.amount, source: tr.source, confirm: false }); }
@@ -91,8 +92,10 @@
     var measured = (job.rooms || []).filter(function (r) { return r.method === 'measured' && r.walls && r.walls.length; }).length, total_rooms = (job.rooms || []).length;
     var cost = window.QCCosting && settings.costing ? QCCosting.breakdown(lines, settings.costing, subtotal) : null;
     return { lines: lines, subtotal: subtotal, gst: gst, total: subtotal + gst, minimum_applied: minimum, assumptions: assumptions, confirm: confirm, travel: tr, cost: cost,
-      measured_rooms: measured, total_rooms: total_rooms, deposit: Math.round((subtotal + gst) * n(settings.details.deposit_pct, 20) / 100) };
+      measured_rooms: measured, total_rooms: total_rooms, deposit: Math.round((subtotal + gst) * depositPct(settings) / 100) };
+  }
+  function depositPct(settings) { var v = settings.details.deposit_pct; if (v === '' || v == null || isNaN(parseFloat(v))) return 20; return Math.min(100, Math.max(0, parseFloat(v))); 
   }
 
-  window.QCPricing = { roomQuantities: roomQuantities, priceJob: priceJob, label: label };
+  window.QCPricing = { roomQuantities: roomQuantities, priceJob: priceJob, label: label, depositPct: depositPct };
 })();

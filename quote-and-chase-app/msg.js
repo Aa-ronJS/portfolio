@@ -6,6 +6,7 @@
   function ready(channel) { var c = cfg(); if (!c.server) return false; if (c.server_has_creds) return true; if (channel === 'sms') return !!(c.twilio_sid && c.twilio_token && (c.twilio_service || c.twilio_from)); return !!(c.resend_key && c.resend_from); }
   function call(payload) {
     var c = cfg(); if (!c.server) return Promise.reject(new Error('No sending server set up'));
+    if (c.token) payload.token = c.token;
     if (!c.server_has_creds) payload.creds = { twilio_sid: c.twilio_sid, twilio_token: c.twilio_token, twilio_service: c.twilio_service, twilio_from: c.twilio_from, resend_key: c.resend_key, resend_from: c.resend_from };
     var f = window.__qcRelayFetch || window.fetch;
     return f(c.server, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload) })

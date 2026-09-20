@@ -7,13 +7,14 @@
   function form(obj, prefix, out) { out = out || []; Object.keys(obj).forEach(function (k) { var v = obj[k], key = prefix ? prefix + '[' + k + ']' : k; if (v == null) return; if (typeof v === 'object') form(v, key, out); else out.push(encodeURIComponent(key) + '=' + encodeURIComponent(v)); }); return out.join('&'); }
   function call(key, method, path, body) {
     var f = window.__qcFetch || window.fetch;
-    return f(API + path, { method: method, headers: { Authorization: 'Bearer ' + key, 'Content-Type': 'application/x-www-form-urlencoded' }, body: method === 'GET' ? undefined : form(body || {}) })
-      .then(function (r) { return r.json().then(function (j) { if (!r.ok || j.error) throw new Error(j.error && j.error.message || ('Stripe error ' + r.status)); return j; }); });
+    key = String(key || '').trim();
+    return Promise.resolve().then(function () { return f(API + path, { method: method, headers: { Authorization: 'Bearer ' + key, 'Content-Type': 'application/x-www-form-urlencoded' }, body: method === 'GET' ? undefined : form(body || {}) })
+    ; }).then(function (r) { return r.json().then(function (j) { if (!r.ok || j.error) throw new Error(j.error && j.error.message || ('Stripe error ' + r.status)); return j; }); });
   }
   function keyLooksRight(key) { return /^rk_(live|test)_[A-Za-z0-9]{10,}$/.test(String(key || '').trim()); }
   // Creates a one-off Price and a Payment Link for an invoice. amount in dollars.
   function createPaymentLink(key, opts) {
-    var cents = Math.round(opts.amount * 100);
+    var cents = Math.round(opts.amount * 100); if (!(cents >= 50)) return Promise.reject(new Error('Amount must be at least $0.50 for a card payment'));
     return call(key, 'POST', 'prices', { currency: opts.currency || 'aud', unit_amount: cents, product_data: { name: opts.name } })
       .then(function (price) { return call(key, 'POST', 'payment_links', { 'line_items[0][price]': price.id, 'line_items[0][quantity]': 1, metadata: { invoice: opts.invoiceNo, job: opts.jobId || '' }, 'payment_intent_data[description]': opts.name, after_completion: { type: 'hosted_confirmation', hosted_confirmation: { custom_message: opts.thanks || 'Thanks, payment received. ' + opts.name } } }); })
       .then(function (link) { return { id: link.id, url: link.url }; });

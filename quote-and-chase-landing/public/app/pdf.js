@@ -2,6 +2,7 @@
 (function () {
   'use strict';
   function money(n) { var v = Math.round(n); return (v < 0 ? '-$' : '$') + Math.abs(v).toLocaleString('en-AU'); }
+  function rate(r) { return Math.abs(r - Math.round(r)) < 0.005 ? money(r) : (r < 0 ? '-$' : '$') + Math.abs(Math.round(r * 100) / 100).toFixed(2); }
   function fmtDate(iso) { if (!iso) return ''; var d = new Date(iso + 'T00:00:00'); return d.toLocaleDateString('en-AU', { day: 'numeric', month: 'long', year: 'numeric' }); }
 
   function Doc() {
@@ -9,26 +10,30 @@
     this.d.setFont('helvetica', 'normal');
   }
   Doc.prototype.need = function (h) { if (this.y + h > 280) { this.d.addPage(); this.y = 18; } };
+  // jsPDF's built-in fonts cover Latin-1 only: map curly quotes and dashes, drop emoji and other symbols rather than print garbage
+  function clean(s) { return String(s == null ? '' : s).replace(/[\u2018\u2019\u201A]/g, "'").replace(/[\u201C\u201D\u201E]/g, '"').replace(/[\u2013\u2014]/g, '-').replace(/\u2026/g, '...').replace(/\u00A0/g, ' ').replace(/[^\x09\x0A\x0D\x20-\x7E\xA0-\xFF]/g, ''); }
   Doc.prototype.text = function (s, size, style, color, x, w) {
     this.d.setFontSize(size || 10); this.d.setFont('helvetica', style || 'normal'); this.d.setTextColor.apply(this.d, color || [28, 26, 23]);
-    var lines = this.d.splitTextToSize(String(s || ''), w || this.W), lh = (size || 10) * 0.42;
-    this.need(lines.length * lh); this.d.text(lines, x || this.L, this.y); this.y += lines.length * lh; return this;
+    var lines = this.d.splitTextToSize(clean(s), w || this.W), lh = (size || 10) * 0.42;
+    for (var i = 0; i < lines.length; i++) { this.need(lh); this.d.text(lines[i], x || this.L, this.y); this.y += lh; }
+    return this;
   };
   Doc.prototype.gap = function (n) { this.y += n || 3; return this; };
-  Doc.prototype.h = function (s) { this.gap(5); this.text(s.toUpperCase(), 8.5, 'bold', [122, 116, 107]); this.gap(1.5); return this; };
+  Doc.prototype.h = function (s) { this.gap(5); this.need(18); this.text(s.toUpperCase(), 8.5, 'bold', [122, 116, 107]); this.gap(1.5); return this; }; // need(18) keeps a heading with at least two lines of what follows
   Doc.prototype.rule = function (w, c) { this.need(2); this.d.setDrawColor.apply(this.d, c || [28, 26, 23]); this.d.setLineWidth(w || 0.8); this.d.line(this.L, this.y, this.R, this.y); this.y += 3; return this; };
   Doc.prototype.bullets = function (arr) { var self = this; (arr || []).forEach(function (t) { self.text('•  ' + t, 9.5, 'normal', [60, 56, 50], self.L + 1, self.W - 2); self.gap(0.8); }); return this; };
   Doc.prototype.table = function (cols, rows, total) {
     // cols: [{t, w, align}], rows: [[...]]
     var self = this, d = this.d, x0 = this.L;
-    this.need(8); d.setFontSize(7.5); d.setFont('helvetica', 'bold'); d.setTextColor(122, 116, 107);
-    var x = x0; cols.forEach(function (c) { d.text(c.t.toUpperCase(), c.align === 'right' ? x + c.w - 1 : x + 1, self.y, { align: c.align === 'right' ? 'right' : 'left' }); x += c.w; });
-    this.y += 1.5; d.setDrawColor(201, 195, 184); d.setLineWidth(0.3); d.line(x0, this.y, this.R, this.y); this.y += 4;
+    function header() { self.need(8); d.setFontSize(7.5); d.setFont('helvetica', 'bold'); d.setTextColor(122, 116, 107);
+      var x = x0; cols.forEach(function (c) { d.text(c.t.toUpperCase(), c.align === 'right' ? x + c.w - 1 : x + 1, self.y, { align: c.align === 'right' ? 'right' : 'left' }); x += c.w; });
+      self.y += 1.5; d.setDrawColor(201, 195, 184); d.setLineWidth(0.3); d.line(x0, self.y, self.R, self.y); self.y += 4; }
+    header();
     rows.forEach(function (r) {
       d.setFontSize(9.5); d.setFont('helvetica', r.bold ? 'bold' : 'normal'); d.setTextColor.apply(d, r.color || [28, 26, 23]);
-      var cells = r.cells || r, wrapped = cells.map(function (c, i) { return d.splitTextToSize(String(c == null ? '' : c), cols[i].w - 2); });
+      var cells = r.cells || r, wrapped = cells.map(function (c, i) { return d.splitTextToSize(clean(c), cols[i].w - 2); });
       var lines = Math.max.apply(null, wrapped.map(function (w) { return w.length; })), rh = lines * 4.2 + 1.8;
-      self.need(rh); var xx = x0;
+      if (self.y + rh > 280) { d.addPage(); self.y = 18; header(); d.setFontSize(9.5); d.setFont('helvetica', r.bold ? 'bold' : 'normal'); d.setTextColor.apply(d, r.color || [28, 26, 23]); } var xx = x0;
       wrapped.forEach(function (w, i) { d.text(w, cols[i].align === 'right' ? xx + cols[i].w - 1 : xx + 1, self.y, { align: cols[i].align === 'right' ? 'right' : 'left' }); xx += cols[i].w; });
       self.y += rh; if (!r.noline) { d.setDrawColor(230, 225, 216); d.setLineWidth(0.2); d.line(x0, self.y - 1.2, self.R, self.y - 1.2); }
     });
@@ -57,13 +62,13 @@
   };
 
   function quotePDF(job, s, priced) {
-    var det = s.details, doc = new Doc(), valid = QCStore.addDays(job.quote.date, parseInt(det.quote_valid_days, 10) || 30);
-    doc.header(s, 'Quote', job.quote_no, ['Date: ' + fmtDate(job.quote.date), 'Valid until: ' + fmtDate(valid)]);
+    var det = s.details, doc = new Doc(), qDate = (job.quote && job.quote.date) || QCStore.today(), valid = QCStore.addDays(qDate, parseInt(det.quote_valid_days, 10) || 30);
+    doc.header(s, 'Quote', job.quote_no, ['Date: ' + fmtDate(qDate), 'Valid until: ' + fmtDate(valid)]);
     var c = job.client;
     doc.h('Prepared for'); doc.text(c.name || '', 10, 'bold'); doc.text([c.address, [c.phone, c.email].filter(Boolean).join('  ·  ')].filter(Boolean).join('\n'), 9.5);
     doc.h('The job'); doc.text(job.summary || '', 9.5);
     doc.h('Price');
-    var rows = priced.lines.map(function (l) { return { cells: [(l.room && l.room !== 'Extras' && l.room !== 'Travel' ? l.room + ': ' : '') + l.desc + (l.confirm ? '  (TO CONFIRM)' : ''), l.qty, l.unit, l.rate ? money(l.rate) : '', money(l.amount)], color: l.confirm ? [154, 75, 0] : null }; });
+    var rows = priced.lines.map(function (l) { return { cells: [(l.room && l.room !== 'Extras' && l.room !== 'Travel' ? l.room + ': ' : '') + l.desc + (l.confirm ? '  (TO CONFIRM)' : ''), l.qty, l.unit, l.rate ? rate(l.rate) : '', money(l.amount)], color: l.confirm ? [154, 75, 0] : null }; });
     rows.push({ cells: ['', '', '', 'Subtotal', money(priced.subtotal)], noline: true, color: [74, 70, 64] });
     if (priced.gst) rows.push({ cells: ['', '', '', 'GST 10%', money(priced.gst)], noline: true, color: [74, 70, 64] });
     rows.push({ cells: ['', '', '', 'Total' + (priced.gst ? ' inc GST' : ''), money(priced.total)], bold: true, noline: true });
@@ -76,11 +81,11 @@
     doc.h('What is not included'); doc.bullets(s.wording.excluded);
     doc.h('Terms'); doc.bullets([
       'This quote is valid for ' + (det.quote_valid_days || 30) + ' days from the date above.',
-      'A ' + (det.deposit_pct || 20) + '% deposit confirms your booking. The balance is due within ' + (det.balance_days || 7) + ' days of completion.',
+      (QCPricing.depositPct(s) >= 100 ? 'Full payment confirms your booking.' : QCPricing.depositPct(s) > 0 ? 'A ' + QCPricing.depositPct(s) + '% deposit confirms your booking. The balance is due within ' + (det.balance_days || 7) + ' days of completion.' : 'Payment is due within ' + (det.balance_days || 7) + ' days of completion.'),
       'Weather can move exterior dates. We will keep you informed.',
       'Workmanship is guaranteed for ' + (s.wording.warranty_years || 5) + ' years against peeling and flaking caused by our application.']);
     doc.h('How to accept'); doc.text(s.wording.accept, 9.5);
-    doc.gap(3); doc.box('Deposit of ' + money(priced.deposit) + '  ·  ' + [det.account_name ? 'Account: ' + det.account_name : '', det.bsb ? 'BSB ' + det.bsb : '', det.account_number ? 'Acc ' + det.account_number : '', 'Ref ' + job.quote_no].filter(Boolean).join('  ·  '), 9, 'bold', [243, 240, 234]);
+    doc.gap(3); doc.box((priced.deposit > 0 ? 'Deposit of ' + money(priced.deposit) : 'Payment') + '  ·  ' + [det.account_name ? 'Account: ' + det.account_name : '', det.bsb ? 'BSB ' + det.bsb : '', det.account_number ? 'Acc ' + det.account_number : '', 'Ref ' + job.quote_no].filter(Boolean).join('  ·  '), 9, 'bold', [243, 240, 234]);
     doc.gap(3); doc.text('Thanks for asking us to quote. ' + [det.owner_name, det.trading_name].filter(Boolean).join(', '), 8.5, 'normal', [122, 116, 107]);
     return doc.d;
   }
