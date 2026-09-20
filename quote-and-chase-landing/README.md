@@ -93,3 +93,27 @@ Every number on the page cites its source in the same block. The
 guarantee ("one working quote in 14 days or your money back") is a
 promise you must honour; if you change it, change the FAQ too. The
 footer's Anthropic trademark line stays.
+
+## The sending relay (`api/msg.js`)
+
+The phone app sends SMS through Twilio and email through Resend via this
+one function. It keeps nothing: Twilio holds scheduled SMS (up to 35 days
+ahead, needs a Messaging Service) and Resend holds scheduled email (up to
+30 days ahead).
+
+Two ways to run it:
+
+1. **Your own copy, credentials on the server.** Deploy this folder to
+   Vercel and set `TWILIO_ACCOUNT_SID`, `TWILIO_AUTH_TOKEN`,
+   `TWILIO_MESSAGING_SERVICE_SID` (or `TWILIO_FROM`), `RESEND_API_KEY`,
+   `RESEND_FROM` (an address on a domain verified in Resend) and
+   `ALLOWED_ORIGINS` (the app's origin, e.g. `https://aa-ronjs.github.io`).
+   In the app's Set-up, paste the URL `https://<your-site>/api/msg` and
+   tick "the server already has my Twilio and Resend details".
+2. **Shared relay, credentials on the phone.** Set `ALLOW_CLIENT_CREDS=1`
+   on the deployment. Painters paste their own Twilio and Resend details
+   into the app; they are sent with each request over HTTPS and never
+   stored or logged by the relay.
+
+`MSG_PER_IP_LIMIT` (default 60 per 10 minutes) caps abuse. Test with
+`node tools/msg-relay-test.mjs` (mocked Twilio and Resend).

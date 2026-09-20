@@ -11,7 +11,15 @@ what only you can do, in order. Nothing else is waiting on me.
    quote, mark, invoice and chase chain has run for real on Linux, but
    no Windows machine has executed them. If anything fails, send me the
    screen and stop the launch until it is fixed.
-2. **Measure one real wall from a photo.** Stick a blank A4 sheet on a
+2. **Stand up the sending relay.** Deploy `quote-and-chase-landing` to
+   Vercel (`npx vercel --prod`), set `ALLOWED_ORIGINS` to
+   `https://aa-ronjs.github.io` and either the Twilio/Resend env vars or
+   `ALLOW_CLIENT_CREDS=1`. Create a Twilio Messaging Service (scheduled
+   SMS needs one) and verify a sending domain in Resend. In the app,
+   Set-up, Sending, paste `https://<site>/api/msg` and send yourself a
+   test SMS and a test email. Then send one real quote to yourself and
+   confirm the follow-up arrives on the scheduled day.
+3. **Measure one real wall from a photo.** Stick a blank A4 sheet on a
    wall, photograph the wall corner to corner, open the app (or
    `pack/measure/measure.html`), confirm the page and wall outlines,
    and compare the width and a door to a tape measure. The maths is verified on a physically rendered
@@ -63,6 +71,14 @@ what only you can do, in order. Nothing else is waiting on me.
 - Quote and Chase pack: four skills, price list, wording, templates,
   PDF helper, ledger, sample job, HELP.txt; `/quote`, `/mark`,
   `/invoice` and `/chase` run end to end for real.
+- Sending relay (`quote-and-chase-landing/api/msg.js`): Twilio SMS
+  (send, fixed-time schedule up to 35 days, cancel) and Resend email
+  (send with PDF attachment, scheduled_at up to 30 days, cancel), CORS
+  locked to the app origin, per-IP cap, credentials from env or from the
+  phone with ALLOW_CLIENT_CREDS=1. Unit-tested against mocked Twilio and
+  Resend; the app flow (email quote with PDF, schedule 3 follow-ups,
+  cancel on accept, invoice reminders, cancel on paid, send now) tested
+  with the relay mocked. NOT yet run against live Twilio or Resend.
 - Phone app workflow: Quick quote (camera first, client details after,
   Send the quote), walls auto-save when you leave the room, travel worked
   out from the job postcode against the business postcode (GeoNames

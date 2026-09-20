@@ -70,3 +70,19 @@ says. Include the file working.md if it is about a quote.
 
 Back this folder up like any other important folder. It is your
 business.
+
+Automatic follow-ups from the phone app (SMS and email)
+  The app can send quotes and invoices by email with the PDF attached,
+  and send the follow-up texts and emails itself on the days you set,
+  stopping when the client says yes or pays. It needs three things:
+    1. A Twilio account with a Messaging Service (for SMS) and/or a
+       Resend account with your email domain verified (for email).
+    2. The small relay from the landing-page project (api/msg.js)
+       running on Vercel. Free tier is fine. Either put your Twilio and
+       Resend details in its environment variables, or set
+       ALLOW_CLIENT_CREDS=1 and paste them into the app instead; then
+       they stay on your phone and travel with each message.
+    3. In the app, Set-up, Sending: the relay address, and a test
+       message to yourself.
+  Without this, the app still works: you send from your share sheet
+  and the reminders go into your calendar.
