@@ -26,6 +26,8 @@
     var nDays = rules.travel_per_day === false ? 1 : Math.max(1, parseInt(days, 10) || 1), perDay = nDays > 1 ? ' × ' + nDays + ' days' : '';
     var manual = parseFloat(job.travel_km) || 0;
     if (manual > 0) { var per0 = round2(manual * rate * (both ? 2 : 1)); return { km: manual, chargeable: manual, per_trip: per0, days: nDays, amount: round2(per0 * nDays), source: 'km typed on the job', note: manual + ' km each way typed on the job' + (both ? ', charged both ways' : '') + perDay + '.' }; }
+    var js = job.site || {}, hs = det.site || {};
+    if (js.lat && hs.lat) { var kmMap = Math.round(haversineKm([hs.lat, hs.lng], [js.lat, js.lng]) * (parseFloat(rules.road_factor) || 1.2) * 10) / 10, freeM = parseFloat(rules.free_radius_km) || 0, chM = Math.max(0, Math.round((kmMap - freeM) * 10) / 10), perM = round2(chM * rate * (both ? 2 : 1)); return { km: kmMap, chargeable: chM, per_trip: perM, days: nDays, amount: round2(perM * nDays), source: 'map addresses', note: chM > 0 ? ('Travel: about ' + kmMap + ' km from your address to the job, ' + freeM + ' km free, ' + chM + ' km charged' + (both ? ' each way' : '') + ' at $' + rate + '/km' + perDay + '.') : '' }; }
     var to = postcodeOf(job.client && job.client.address), from = String(det.postcode || '').trim();
     if (!to || !from) return { km: 0, chargeable: 0, per_trip: 0, days: nDays, amount: 0, source: to ? 'no business postcode set' : 'no postcode in the job address', note: '' };
     var d = distance(from, to, parseFloat(rules.road_factor) || 1.2); if (!d) return { km: 0, chargeable: 0, per_trip: 0, days: nDays, amount: 0, source: 'postcode not recognised', note: 'Postcode ' + (centroid(from) ? to : from) + ' not recognised, travel not charged.' };
