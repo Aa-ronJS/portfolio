@@ -33,7 +33,7 @@ Common ones
 
   The measuring page cannot find the A4 page
     The whole sheet must be flat on the wall, in the photo, not in
-    glare. A blank page works best; a printed page confuses it. Tap
+    glare. Any A4 sheet works, printed or blank. Tap
     "No page in the shot" and it falls back to tapping the corners.
 
   The measuring page says the corners did not make a sensible wall

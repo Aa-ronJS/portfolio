@@ -39,7 +39,7 @@
         wallArea = perim * H - DOOR_M2 * doorsTotal - WINDOW_M2 * windows;
         ceilingArea = L * W; skirting = perim - DOOR_W * doorsTotal;
         if (!n(room.H)) q.assumptions.push(q.room + ': ceiling height assumed ' + H + ' m.');
-        q.assumptions.push(q.room + ': sizes from your numbers (' + L + ' × ' + W + ' m), not measured. Measure from a photo to firm this up.');
+        q.assumptions.push(q.room + ': room size ' + L + ' × ' + W + ' m as advised, not measured.');
       }
     }
     wallArea = Math.max(0, wallArea); skirting = Math.max(0, skirting);

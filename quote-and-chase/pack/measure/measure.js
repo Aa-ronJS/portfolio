@@ -15,7 +15,7 @@
   var TEMPLATE =
     '<div class="qm">' +
     '<div data-part="intro">' +
-      '<p class="muted">Stick a plain A4 sheet flat on the wall, any blank page from the printer tray. Stand back so the whole wall is in the shot, corner to corner, lights on. The app finds the page and the wall; you just confirm.</p>' +
+      '<p class="muted">Stick an A4 sheet flat on the wall, printed or blank. Stand back so the whole wall is in the shot, corner to corner, lights on. The app finds the page and the wall; you just confirm.</p>' +
       '<div class="row"><label class="btn tape">Take the photo<input type="file" data-part="photo" accept="image/*" capture="environment"></label>' +
       '<label class="btn ghost">Choose from photos<input type="file" data-part="photolib" accept="image/*"></label>' +
       '<button class="btn ghost" data-part="arbtn" hidden>Measure with AR instead</button></div><p class="status" data-part="introstatus"></p>' +
@@ -293,7 +293,7 @@
         if (!page) { setMode('wall'); say('No A4 page found. Tap the four wall corners; a door or the ceiling height sets the size.', 'warn'); return; }
         S.edit = { kind: 'page', pts: page.corners.map(function(p){ return { x: p.x, y: p.y }; }) }; zoomToQuad(S.edit.pts);
         say('Page found (' + (page.portrait ? 'portrait' : 'landscape') + '). Is the outline on the A4 sheet?', 'ok');
-        stepUI('Is this the A4 page?', 'Must be a blank A4 sheet. Outline on the paper\'s edge, not its shadow. Drag a corner to fix.', [
+        stepUI('Is this the A4 page?', 'Outline on the paper\'s edge, not its shadow. Drag a corner to fix.', [
           { label: 'Yes', cls: 'tape', fn: confirmPage },
           { label: 'No page', fn: function(){ S.edit = null; S.page = null; q('stepbox').hidden = true; setZoom(null); setMode('wall'); say('Tap the four corners of the wall. A door or the ceiling height will set the size.'); } }]);
       }, 30);

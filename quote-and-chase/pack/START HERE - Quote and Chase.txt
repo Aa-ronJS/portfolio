@@ -26,7 +26,7 @@ Your first quote (about 5 minutes)
      real quote goes out.
 
 Measure it properly (a minute a wall, worth it, nothing to print)
-  1. Stick a blank A4 sheet flat on the wall. Photograph the whole
+  1. Stick an A4 sheet flat on the wall. Photograph the whole
      wall, corner to corner, lights on.
   2. Open the "measure" folder, double-click measure.html. Choose the
      photo. It outlines the page: confirm. It outlines the wall:

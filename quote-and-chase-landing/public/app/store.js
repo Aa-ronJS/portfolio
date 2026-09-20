@@ -44,18 +44,18 @@
       sending: { server: '', token: '', server_has_creds: false, twilio_sid: '', twilio_token: '', twilio_service: '', twilio_from: '', resend_key: '', resend_from: '', auto_sms: true, auto_email: true, email_quotes: true },
       booking: { start_hour: 7, end_hour: 15, quote_from: 7, quote_to: 18, visit_minutes: 30, saturdays: true, sundays: false },
       wording: {
-        included: ['Protection of floors, furniture and fittings with drop sheets and plastic before work starts.',
-          'Preparation as described: filling minor holes and cracks, light sanding, dusting and spot priming.',
-          'Two full coats of quality trade paint in the colours you choose.',
-          'Daily clean up and removal of all our rubbish at the end of the job.',
-          'All labour, materials, ladders and equipment.'],
+        included: ['Drop sheets and plastic protection for floors, furniture and fittings.',
+          'Preparation: filling minor holes and cracks, light sanding, dusting and spot priming.',
+          'Two coats of quality trade paint in your chosen colours.',
+          'Daily clean-up and rubbish removal.',
+          'All labour, materials and equipment.'],
         excluded: ['Moving heavy furniture, pianos or built-in items.',
-          'Repairs to plaster, timber or render beyond the prep described.',
-          'Testing or removal of lead paint or asbestos.',
-          'Colour consulting. Please have colours chosen before we start.',
-          'Anything not written in this quote. Extra work is agreed in writing before it starts.'],
+          'Plaster, timber or render repairs beyond the preparation described.',
+          'Lead paint or asbestos testing or removal.',
+          'Colour consulting. Colours to be chosen before work starts.',
+          'Anything not listed in this quote. Extra work is agreed in writing before it starts.'],
         warranty_years: 5,
-        accept: 'Reply to this quote by text or email with "accepted" and your preferred start week, and pay the deposit to the account below. We will confirm your date within one business day.'
+        accept: 'To accept, reply by text or email with your preferred start week and pay the deposit to the account below. We will confirm the date within one business day.'
       },
       jobs: [],
       next_quote: 1001,
@@ -71,6 +71,10 @@
     ['details', 'prices', 'rules', 'wording', 'costing', 'follow_up', 'stripe', 'booking', 'sending'].forEach(function (k) { state[k] = Object.assign({}, d[k], state[k] && typeof state[k] === 'object' ? state[k] : {}); });
     if (!state.costing.paint_price) state.costing.paint_price = d.costing.paint_price;
     if (!Array.isArray(state.wording.included)) state.wording.included = d.wording.included; if (!Array.isArray(state.wording.excluded)) state.wording.excluded = d.wording.excluded;
+    // older installs carry the first-release wording; if it was never edited, move it to the current defaults
+    if (/^Reply to this quote by text or email with "accepted"/.test(state.wording.accept || '')) state.wording.accept = d.wording.accept;
+    if (/^Protection of floors, furniture and fittings/.test(state.wording.included[0] || '')) state.wording.included = d.wording.included;
+    if (/beyond the prep described/.test(state.wording.excluded[1] || '')) state.wording.excluded = d.wording.excluded;
     if (!Array.isArray(state.follow_up.quote_days) || !state.follow_up.quote_days.length) state.follow_up.quote_days = d.follow_up.quote_days; if (!Array.isArray(state.follow_up.invoice_days) || !state.follow_up.invoice_days.length) state.follow_up.invoice_days = d.follow_up.invoice_days;
     if (!Array.isArray(state.jobs)) state.jobs = [];
     state.jobs = state.jobs.filter(function (j) { return j && typeof j === 'object'; }).map(normaliseJob);

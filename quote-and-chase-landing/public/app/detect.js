@@ -65,7 +65,9 @@
 
   // ---------- Page detection: bright, blank, roughly rectangular blob whose 3D shape (given f) is an A4 sheet
   function findPage(gray, w, h, f){
-    var D = downscale(gray, w, h, 1400), g = D.g, dw = D.w, dh = D.h, I = integral(g, dw, dh), refine = makeRefiner(gray, w, h);
+    // a printed page is mostly white with thin dark strokes; a small grey-level max filter turns it back into a white blob before the search
+    var gm = maxFilter(gray, w, h, Math.max(1, Math.round(Math.max(w, h) / 1500)));
+    var D = downscale(gray, w, h, 1400), g = D.g, dw = D.w, dh = D.h, I = integral(g, dw, dh), refine = makeRefiner(gray, w, h), gW = downscale(gm, w, h, 1400).g;
     var cx = w / 2, cy = h / 2, cands = [], seenKeys = {};
     [Math.round(dw / 8), Math.round(dw / 16)].forEach(function(r){
       [3, 5, 9, 14].forEach(function(T){
@@ -82,6 +84,18 @@
         });
       });
     });
+    // third source: near-white blobs. Paper is about the brightest thing in a room photo; walls are rarely as white. Printed pages
+    // come through as a white margin ring around the text, so enclosed holes are filled before taking the blob's corners.
+    var brightW = percentile(gW, 0.995), nw = new Uint8Array(dw * dh);
+    for (var wi = 0; wi < nw.length; wi++) nw[wi] = gW[wi] >= brightW - 10 ? 1 : 0;
+    fillSmallHoles(nw, dw, dh, 0.06 * dw * dh); // no closing here: it would bridge the page to a bright frame a few pixels away
+    components(nw, dw, dh, function(comp){
+      var area = comp.n, bw = comp.x1 - comp.x0 + 1, bh = comp.y1 - comp.y0 + 1;
+      if (area < 0.00015 * dw * dh || area > 0.06 * dw * dh || bw < 8 || bh < 8 || area / (bw * bh) < 0.45) return;
+      var q = comp.quad.map(function(pt){ return { x: (pt.x + 0.5) / D.s, y: (pt.y + 0.5) / D.s }; }); if (!isConvex(q) || quadArea(q) <= 0) return;
+      var key = 'w' + Math.round(q[0].x / 6) + ':' + Math.round(q[0].y / 6) + ':' + Math.round(q[2].x / 6) + ':' + Math.round(q[2].y / 6); if (seenKeys[key]) return; seenKeys[key] = 1;
+      cands.push({ q: q, comp: comp, white: true });
+    });
     // second source: blank regions enclosed by a closed edge (works for white paper on a white wall)
     var Sb = sobel(g, dw, dh), thrEdge = Math.max(12, percentile(Sb.mag, 0.9)), nonEdge = new Uint8Array(dw * dh);
     for (var ne = 0; ne < nonEdge.length; ne++) nonEdge[ne] = Sb.mag[ne] < thrEdge ? 1 : 0;
@@ -94,7 +108,7 @@
       var key = 'e' + Math.round(q[0].x / 6) + ':' + Math.round(q[0].y / 6) + ':' + Math.round(q[2].x / 6) + ':' + Math.round(q[2].y / 6); if (seenKeys[key]) return; seenKeys[key] = 1;
       cands.push({ q: q, comp: comp, edge: true });
     });
-    var bright = percentile(g, 0.995), best = null, dbg = { cands: cands.length, rejected: {}, bright: bright }; QCDetect.lastPageDebug = dbg; function rej(k){ dbg.rejected[k] = (dbg.rejected[k] || 0) + 1; }
+    var bright = percentile(g, 0.995), best = null, dbg = { cands: cands.length, rejected: {}, bright: bright }; QCDetect.lastPageDebug = dbg; dbg.raw = cands.map(function(c){ return c.q.map(function(pp){ return [Math.round(pp.x), Math.round(pp.y)]; }).concat([c.edge ? 'edge' : c.white ? 'white' : 'bright']); }); function rej(k){ dbg.rejected[k] = (dbg.rejected[k] || 0) + 1; }
     cands.forEach(function(c){
       var q = refine(c.q, 8, -1), H = homography(UNIT, q); if (!H) return rej('H');
       var asp = aspectFromH(H, f, cx, cy), portrait = Math.abs(asp / 1.4142 - 1), landscape = Math.abs(asp / 0.7071 - 1), fit = Math.min(portrait, landscape); (dbg.asp = dbg.asp || []).push([+asp.toFixed(3), q.map(function(pp){ return [Math.round(pp.x), Math.round(pp.y)]; })]); if (fit > 0.12) return rej('aspect');
@@ -102,12 +116,37 @@
       var L = []; for (var i = 0; i < 4; i++) L.push(Math.hypot(q[(i + 1) % 4].x - q[i].x, q[(i + 1) % 4].y - q[i].y)); if (Math.min(L[0], L[2]) / Math.max(L[0], L[2]) < 0.6 || Math.min(L[1], L[3]) / Math.max(L[1], L[3]) < 0.6) return rej('sides');
       if (Math.min.apply(null, L) < 0.009 * Math.max(w, h) || Math.max.apply(null, L) > 0.45 * Math.max(w, h)) return rej('size'); // an A4 at 1.5 to 9 m on a phone photo
       // brightness inside vs ring outside, and interior uniformity, on the full-res image
-      var st = quadStats(gray, w, h, q); if (!st || st.contrast < 2.5 || st.std > 9) return rej(!st ? 'stats' : st.contrast < 2.5 ? 'contrast' : 'std');
-      if (st.mean < 0.82 * bright) return rej('dark'); // paper is about the brightest thing in a room photo
+      var st = quadStats(gray, w, h, q); if (!st || st.contrast < 2.5 || st.std > 9) return rej(!st ? 'stats' : st.contrast < 2.5 ? 'contrast' : 'std'); // measured on the margin band, which is white on a printed page too
+      if (st.mean < 0.82 * bright) return rej('dark');
+      if (st.darkerSides < 3) return rej('sides-flat'); // paper on a wall is brighter than its surroundings on at least three sides; a frame segment or a glare patch is not // paper is about the brightest thing in a room photo
       var score = Math.min(st.contrast, 25) * (1 - fit / 0.18) * (1 / (1 + st.std / 12)) * Math.sqrt(Math.min(L[0], L[1]) / 40) * Math.pow(st.mean / bright, 3);
       if (!best || score > best.score) best = { corners: q, portrait: portrait < landscape, score: score, contrast: st.contrast, aspect: asp, std: st.std };
     });
     return best;
+  }
+  // grey-level max over a (2r+1) square, separable; used so thin dark print does not break a page into strips
+  function maxFilter(src, w, h, r){
+    var tmp = new Uint8ClampedArray(w * h), out = new Uint8ClampedArray(w * h), x, y, k, v, i, row;
+    for (y = 0; y < h; y++) { row = y * w; for (x = 0; x < w; x++) { v = 0; for (k = -r; k <= r; k++) { i = x + k; if (i < 0 || i >= w) continue; if (src[row + i] > v) v = src[row + i]; } tmp[row + x] = v; } }
+    for (x = 0; x < w; x++) for (y = 0; y < h; y++) { v = 0; for (k = -r; k <= r; k++) { i = y + k; if (i < 0 || i >= h) continue; if (tmp[i * w + x] > v) v = tmp[i * w + x]; } out[y * w + x] = v; }
+    return out;
+  }
+  // fill enclosed background regions smaller than maxArea (a text block inside white margins); big enclosed regions (a wall section framed by trims) are left alone
+  function fillSmallHoles(mask, w, h, maxArea){
+    var seen = new Uint8Array(w * h), stack = [], px = [];
+    for (var s0 = 0; s0 < w * h; s0++) { if (mask[s0] || seen[s0]) continue; var touches = false; px.length = 0; stack.push(s0); seen[s0] = 1;
+      while (stack.length) { var i = stack.pop(), x = i % w, y = (i / w) | 0; px.push(i); if (x === 0 || y === 0 || x === w - 1 || y === h - 1) touches = true;
+        if (x > 0 && !mask[i - 1] && !seen[i - 1]) { seen[i - 1] = 1; stack.push(i - 1); } if (x < w - 1 && !mask[i + 1] && !seen[i + 1]) { seen[i + 1] = 1; stack.push(i + 1); }
+        if (y > 0 && !mask[i - w] && !seen[i - w]) { seen[i - w] = 1; stack.push(i - w); } if (y < h - 1 && !mask[i + w] && !seen[i + w]) { seen[i + w] = 1; stack.push(i + w); } }
+      if (!touches && px.length < maxArea) for (var k = 0; k < px.length; k++) mask[px[k]] = 1; }
+  }
+  // morphological closing (dilate then erode) with a square window of radius r, separable passes
+  function closeMask(mask, w, h, r){
+    function pass(src, op){ var tmp = new Uint8Array(w * h), out = new Uint8Array(w * h), x, y, k, v, i;
+      for (y = 0; y < h; y++) for (x = 0; x < w; x++) { v = op; for (k = -r; k <= r; k++) { i = x + k; if (i < 0 || i >= w) continue; var m = src[y * w + i]; if (op === 0 ? m > v : m < v) v = m; } tmp[y * w + x] = v; }
+      for (y = 0; y < h; y++) for (x = 0; x < w; x++) { v = op; for (k = -r; k <= r; k++) { i = y + k; if (i < 0 || i >= h) continue; var m2 = tmp[i * w + x]; if (op === 0 ? m2 > v : m2 < v) v = m2; } out[y * w + x] = v; }
+      return out; }
+    return pass(pass(mask, 0), 1); // op 0 = max (dilate), op 1 = min (erode)
   }
   // connected components with a bounding box and a quad from the extreme points along the diagonals
   function components(mask, w, h, cb){
@@ -120,10 +159,13 @@
       comp.quad = [comp.e[0][1], comp.e[1][1], comp.e[2][1], comp.e[3][1]]; cb(comp); }
   }
   function quadStats(gray, w, h, q){
-    var H = homography(UNIT, q); if (!H) return null; var sIn = 0, sIn2 = 0, nIn = 0, sOut = 0, nOut = 0, N = 14;
-    for (var i = 0; i < N; i++) for (var j = 0; j < N; j++) { var u = 0.15 + 0.7 * i / (N - 1), v = 0.15 + 0.7 * j / (N - 1), p = apply(H, { x: u, y: v }), xi = Math.round(p.x), yi = Math.round(p.y); if (xi < 0 || yi < 0 || xi >= w || yi >= h) continue; var val = gray[yi * w + xi]; sIn += val; sIn2 += val * val; nIn++; }
-    for (var k = 0; k < 4 * N; k++) { var t = (k % N) / (N - 1), side = (k / N) | 0, u2 = side === 0 ? t : side === 1 ? 1.25 : side === 2 ? t : -0.25, v2 = side === 0 ? -0.25 : side === 1 ? t : side === 2 ? 1.25 : t, p2 = apply(H, { x: u2, y: v2 }), x2 = Math.round(p2.x), y2 = Math.round(p2.y); if (x2 < 0 || y2 < 0 || x2 >= w || y2 >= h) continue; sOut += gray[y2 * w + x2]; nOut++; }
-    if (nIn < 20 || nOut < 10) return null; var mIn = sIn / nIn; return { mean: mIn, std: Math.sqrt(Math.max(0, sIn2 / nIn - mIn * mIn)), contrast: mIn - sOut / nOut };
+    var H = homography(UNIT, q); if (!H) return null; var sIn = 0, sIn2 = 0, nIn = 0, sOut = 0, nOut = 0, N = 20, ins = [];
+    [0.03, 0.05, 0.07].forEach(function(dIn){ for (var i = 0; i < N; i++) { var t0 = dIn + (1 - 2 * dIn) * i / (N - 1); [{ x: t0, y: dIn }, { x: 1 - dIn, y: t0 }, { x: t0, y: 1 - dIn }, { x: dIn, y: t0 }].forEach(function(uv){ var p = apply(H, uv), xi = Math.round(p.x), yi = Math.round(p.y); if (xi < 0 || yi < 0 || xi >= w || yi >= h) return; var val = gray[yi * w + xi]; sIn += val; sIn2 += val * val; nIn++; ins.push(val); }); } }); // the margin band: white on a printed page too
+    var sideS = [0, 0, 0, 0], sideN = [0, 0, 0, 0];
+    for (var k = 0; k < 4 * N; k++) { var t = (k % N) / (N - 1), side = (k / N) | 0, u2 = side === 0 ? t : side === 1 ? 1.25 : side === 2 ? t : -0.25, v2 = side === 0 ? -0.25 : side === 1 ? t : side === 2 ? 1.25 : t, p2 = apply(H, { x: u2, y: v2 }), x2 = Math.round(p2.x), y2 = Math.round(p2.y); if (x2 < 0 || y2 < 0 || x2 >= w || y2 >= h) continue; sOut += gray[y2 * w + x2]; nOut++; sideS[side] += gray[y2 * w + x2]; sideN[side]++; }
+    if (nIn < 20 || nOut < 10) return null; ins.sort(function(a, b){ return a - b; }); var keep = ins.slice(Math.floor(ins.length * 0.4)), mIn = 0, m2 = 0; keep.forEach(function(v){ mIn += v; m2 += v * v; }); mIn /= keep.length; m2 /= keep.length; // printed text is dark and thin: the brighter 60% of samples is the paper itself
+    var darkerSides = 0; for (var sd = 0; sd < 4; sd++) if (sideN[sd] && mIn - sideS[sd] / sideN[sd] > 2.5) darkerSides++;
+    return { mean: mIn, std: Math.sqrt(Math.max(0, m2 - mIn * mIn)), contrast: mIn - sOut / nOut, darkerSides: darkerSides };
   }
 
   // ---------- Wall detection. The page is on the wall, so the wall is the smooth region around the page. Its boundary
@@ -227,5 +269,5 @@
     return out;
   }
 
-  window.QCDetect = { _downscale: downscale, _integral: integral, _boxMean: boxMean, _components: components, findPage: findPage, findWall: findWall, findOpenings: findOpenings, homography: homography, apply: apply, inv3: inv3, aspectFromH: aspectFromH, makeRefiner: makeRefiner };
+  window.QCDetect = { _quadStats: quadStats, _closeMask: closeMask, _fillSmallHoles: fillSmallHoles, _maxFilter: maxFilter, _downscale: downscale, _integral: integral, _boxMean: boxMean, _components: components, findPage: findPage, findWall: findWall, findOpenings: findOpenings, homography: homography, apply: apply, inv3: inv3, aspectFromH: aspectFromH, makeRefiner: makeRefiner };
 })();

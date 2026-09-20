@@ -66,7 +66,7 @@
     doc.header(s, 'Quote', job.quote_no, ['Date: ' + fmtDate(qDate), 'Valid until: ' + fmtDate(valid)]);
     var c = job.client;
     doc.h('Prepared for'); doc.text(c.name || '', 10, 'bold'); doc.text([c.address, [c.phone, c.email].filter(Boolean).join('  ·  ')].filter(Boolean).join('\n'), 9.5);
-    doc.h('The job'); doc.text(job.summary || '', 9.5);
+    doc.h('Description'); doc.text(job.summary || '', 9.5);
     doc.h('Price');
     var rows = priced.lines.map(function (l) { return { cells: [(l.room && l.room !== 'Extras' && l.room !== 'Travel' ? l.room + ': ' : '') + l.desc + (l.confirm ? '  (TO CONFIRM)' : ''), l.qty, l.unit, l.rate ? rate(l.rate) : '', money(l.amount)], color: l.confirm ? [154, 75, 0] : null }; });
     rows.push({ cells: ['', '', '', 'Subtotal', money(priced.subtotal)], noline: true, color: [74, 70, 64] });
@@ -76,17 +76,17 @@
     var based = [];
     if (priced.measured_rooms) based.push(priced.measured_rooms + ' of ' + priced.total_rooms + ' rooms measured on site from photos.');
     based = based.concat(priced.assumptions);
-    if (based.length) { doc.h('What this quote is based on'); doc.bullets(based); }
-    doc.h('What is included'); doc.bullets(s.wording.included);
-    doc.h('What is not included'); doc.bullets(s.wording.excluded);
+    if (based.length) { doc.h('Basis'); doc.bullets(based); }
+    doc.h('Included'); doc.bullets(s.wording.included);
+    doc.h('Not included'); doc.bullets(s.wording.excluded);
     doc.h('Terms'); doc.bullets([
-      'This quote is valid for ' + (det.quote_valid_days || 30) + ' days from the date above.',
+      'Valid for ' + (det.quote_valid_days || 30) + ' days from the date above.',
       (QCPricing.depositPct(s) >= 100 ? 'Full payment confirms your booking.' : QCPricing.depositPct(s) > 0 ? 'A ' + QCPricing.depositPct(s) + '% deposit confirms your booking. The balance is due within ' + (det.balance_days || 7) + ' days of completion.' : 'Payment is due within ' + (det.balance_days || 7) + ' days of completion.'),
-      'Weather can move exterior dates. We will keep you informed.',
-      'Workmanship is guaranteed for ' + (s.wording.warranty_years || 5) + ' years against peeling and flaking caused by our application.']);
-    doc.h('How to accept'); doc.text(s.wording.accept, 9.5);
+      'Exterior dates may move with the weather.',
+      'Workmanship guaranteed for ' + (s.wording.warranty_years || 5) + ' years against peeling and flaking from our application.']);
+    doc.h('To accept'); doc.text(s.wording.accept, 9.5);
     doc.gap(3); doc.box((priced.deposit > 0 ? 'Deposit of ' + money(priced.deposit) : 'Payment') + '  ·  ' + [det.account_name ? 'Account: ' + det.account_name : '', det.bsb ? 'BSB ' + det.bsb : '', det.account_number ? 'Acc ' + det.account_number : '', 'Ref ' + job.quote_no].filter(Boolean).join('  ·  '), 9, 'bold', [243, 240, 234]);
-    doc.gap(3); doc.text('Thanks for asking us to quote. ' + [det.owner_name, det.trading_name].filter(Boolean).join(', '), 8.5, 'normal', [122, 116, 107]);
+    doc.gap(3); doc.text([det.owner_name, det.trading_name].filter(Boolean).join(', '), 8.5, 'normal', [122, 116, 107]);
     return doc.d;
   }
 
@@ -95,7 +95,7 @@
     doc.header(s, 'Tax invoice', inv.no, ['Date: ' + fmtDate(inv.date), 'Due: ' + fmtDate(inv.due), 'Quote ref: ' + job.quote_no]);
     var c = job.client;
     doc.h('Bill to'); doc.text(c.name || '', 10, 'bold'); doc.text([c.address, [c.phone, c.email].filter(Boolean).join('  ·  ')].filter(Boolean).join('\n'), 9.5);
-    doc.h('Work'); doc.text((job.summary || '') + '\n' + inv.kind_line, 9.5);
+    doc.h('Description'); doc.text((job.summary || '') + '\n' + inv.kind_line, 9.5);
     doc.h('Amount');
     var rows = inv.lines.map(function (l) { return { cells: [l.desc, money(l.amount)] }; });
     rows.push({ cells: ['Subtotal', money(inv.subtotal)], noline: true, color: [74, 70, 64] });
@@ -105,7 +105,7 @@
     doc.gap(4); doc.box('Amount due by ' + fmtDate(inv.due) + ':  ' + money(inv.total) + '      Reference ' + inv.no, 10.5, 'bold', null, [28, 26, 23]);
     doc.box('Pay by bank transfer: ' + [det.account_name ? 'Account name ' + det.account_name : '', det.bsb ? 'BSB ' + det.bsb : '', det.account_number ? 'Account ' + det.account_number : ''].filter(Boolean).join('  ·  ') + (det.other_payments ? '\n' + det.other_payments : ''), 9, 'normal', [243, 240, 234]);
     if (inv.pay_url) { doc.need(12); doc.d.setFontSize(10); doc.d.setFont('helvetica', 'bold'); doc.d.setTextColor(27, 95, 173); doc.d.textWithLink('Pay by card online: ' + inv.pay_url, doc.L, doc.y, { url: inv.pay_url }); doc.y += 6; doc.d.setTextColor(28, 26, 23); }
-    doc.gap(3); doc.text('Thank you for your business. ' + [det.owner_name, det.trading_name].filter(Boolean).join(', '), 8.5, 'normal', [122, 116, 107]);
+    doc.gap(3); doc.text('Thank you. ' + [det.owner_name, det.trading_name].filter(Boolean).join(', '), 8.5, 'normal', [122, 116, 107]);
     return doc.d;
   }
 
