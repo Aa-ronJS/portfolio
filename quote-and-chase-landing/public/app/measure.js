@@ -309,7 +309,7 @@
       if (!(W > 300 && W < 30000 && Hh > 1200 && Hh < 8000)) { say('That gives a wall ' + fmt(W) + ' × ' + fmt(Hh) + ' m, which cannot be right. Check the length, or tap again.', 'warn'); return false; }
       var sk = assumed ? 'assumed' : inherited ? 'inherited' : kind;
       finishWall(W, Hh, { method: sk, ref_mm: valueMm, label: SCALES[sk].label, err: SCALES[sk].err, px: px || null, assumed: !!assumed });
-      if (!assumed && !inherited && opts.onHeight) opts.onHeight(Hh / 1000, SCALES[sk].label); // the room's wall height is now known for the other walls
+      if (!assumed && !inherited && opts.onHeight) opts.onHeight(Hh / 1000, SCALES[sk].label, SCALES[sk].err); // the room's wall height is now known for the other walls
       return true;
     }
     function placePoint(img){

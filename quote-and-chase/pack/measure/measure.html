@@ -70,11 +70,11 @@ textarea{width:100%;min-height:120px;font:.9rem ui-monospace,Menlo,Consolas,mono
   function persist(){ try { localStorage.setItem(KEY, JSON.stringify(saved)); } catch (e) {} }
   function fmt(mm){ return (mm / 1000).toFixed(2); }
   function esc(s){ return String(s).replace(/[&<>"]/g, function(c){ return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]; }); }
-  var ceilings = {};
+  var ceilings = {}, cerr = {};
   window.__qc = QCMeasure.mount($('mount'), {
     count: function(){ return saved.length; },
     ceiling: function(){ var c = ceilings[$('room').value.trim()]; return { m: c || 2.4, assumed: !c }; },
-    onHeight: function(m){ ceilings[$('room').value.trim()] = m; },
+    onHeight: function(m, how, err){ var r = $('room').value.trim(); if (cerr[r] != null && err > cerr[r]) return; ceilings[r] = m; cerr[r] = err; },
     onSave: function(rec){ rec.room = $('room').value.trim() || 'Room'; saved.push(rec); persist(); render(); $('saved').scrollIntoView({ behavior: 'smooth', block: 'start' }); }
   });
   function render(){
