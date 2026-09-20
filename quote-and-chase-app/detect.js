@@ -42,14 +42,14 @@
     function at(x, y){ if (x < 0 || y < 0 || x >= w - 1 || y >= h - 1) return 128; var x0 = x | 0, y0 = y | 0, fx = x - x0, fy = y - y0; var a = gray[y0 * w + x0], b = gray[y0 * w + x0 + 1], c = gray[(y0 + 1) * w + x0], d = gray[(y0 + 1) * w + x0 + 1]; return a * (1 - fx) * (1 - fy) + b * fx * (1 - fy) + c * (1 - fx) * fy + d * fx * fy; }
     function fitLine(pts){ var n = pts.length, cx = 0, cy = 0, i; for (i = 0; i < n; i++) { cx += pts[i].x; cy += pts[i].y; } cx /= n; cy /= n; var sxx = 0, sxy = 0, syy = 0; for (i = 0; i < n; i++) { var dx = pts[i].x - cx, dy = pts[i].y - cy; sxx += dx * dx; sxy += dx * dy; syy += dy * dy; } var th = 0.5 * Math.atan2(2 * sxy, sxx - syy); return { x: cx, y: cy, dx: Math.cos(th), dy: Math.sin(th) }; }
     function intersect(l1, l2){ var den = l1.dx * l2.dy - l1.dy * l2.dx; if (Math.abs(den) < 1e-9) return null; var t = ((l2.x - l1.x) * l2.dy - (l2.y - l1.y) * l2.dx) / den; return { x: l1.x + t * l1.dx, y: l1.y + t * l1.dy }; }
-    return function refine(q, maxShift){
-      maxShift = maxShift || 6; var cx = 0, cy = 0, i; for (i = 0; i < 4; i++) { cx += q[i].x; cy += q[i].y; } cx /= 4; cy /= 4; var lines = [];
+    return function refine(q, maxShift, sign){
+      maxShift = maxShift || 6; sign = sign || 0; var cx = 0, cy = 0, i; for (i = 0; i < 4; i++) { cx += q[i].x; cy += q[i].y; } cx /= 4; cy /= 4; var lines = [];
       for (i = 0; i < 4; i++) {
         var a = q[i], b = q[(i + 1) % 4], len = Math.hypot(b.x - a.x, b.y - a.y); if (len < 12) return q;
         var ux = (b.x - a.x) / len, uy = (b.y - a.y) / len, nx = -uy, ny = ux, mx = (a.x + b.x) / 2, my = (a.y + b.y) / 2; if ((mx - cx) * nx + (my - cy) * ny < 0) { nx = -nx; ny = -ny; }
         var R = Math.max(3, Math.min(maxShift * 2, len * 0.06)), pts = [], k, N = Math.max(12, Math.min(40, Math.round(len / 8)));
         for (k = 0; k < N; k++) { var t = 0.1 + 0.8 * k / (N - 1), px = a.x + ux * len * t, py = a.y + uy * len * t, best = -1, bs = 0, s, grads = [];
-          for (s = -R; s <= R; s += 1) { var g1 = 0, g2 = 0; for (var tk = -2; tk <= 2; tk++) { var ox = ux * tk * 1.2, oy = uy * tk * 1.2; g1 += at(px + (s - 1) * nx + ox, py + (s - 1) * ny + oy); g2 += at(px + (s + 1) * nx + ox, py + (s + 1) * ny + oy); } var gr = Math.abs(g2 - g1) / 5; grads.push(gr); if (gr > best) { best = gr; bs = s; } }
+          for (s = -R; s <= R; s += 1) { var g1 = 0, g2 = 0; for (var tk = -2; tk <= 2; tk++) { var ox = ux * tk * 1.2, oy = uy * tk * 1.2; g1 += at(px + (s - 1) * nx + ox, py + (s - 1) * ny + oy); g2 += at(px + (s + 1) * nx + ox, py + (s + 1) * ny + oy); } var d12 = (g2 - g1) / 5, gr = sign ? (d12 * sign > 0 ? Math.abs(d12) : 0) : Math.abs(d12); grads.push(gr); if (gr > best) { best = gr; bs = s; } }
           if (best < 3.5) continue; var idx = bs + R, sub = 0; if (idx > 0 && idx < grads.length - 1) { var gm = grads[idx - 1], g0 = grads[idx], gp = grads[idx + 1], den = gm - 2 * g0 + gp; if (Math.abs(den) > 1e-6) sub = Math.max(-1, Math.min(1, 0.5 * (gm - gp) / den)); }
           pts.push({ x: px + (bs + sub) * nx, y: py + (bs + sub) * ny }); }
         if (pts.length < 5) return q;
@@ -96,7 +96,7 @@
     });
     var bright = percentile(g, 0.995), best = null, dbg = { cands: cands.length, rejected: {}, bright: bright }; QCDetect.lastPageDebug = dbg; function rej(k){ dbg.rejected[k] = (dbg.rejected[k] || 0) + 1; }
     cands.forEach(function(c){
-      var q = refine(c.q, 8), H = homography(UNIT, q); if (!H) return rej('H');
+      var q = refine(c.q, 8, -1), H = homography(UNIT, q); if (!H) return rej('H');
       var asp = aspectFromH(H, f, cx, cy), portrait = Math.abs(asp / 1.4142 - 1), landscape = Math.abs(asp / 0.7071 - 1), fit = Math.min(portrait, landscape); (dbg.asp = dbg.asp || []).push([+asp.toFixed(3), q.map(function(pp){ return [Math.round(pp.x), Math.round(pp.y)]; })]); if (fit > 0.18) return rej('aspect');
       // sides: opposite sides should be similar in length in the image (perspective allows some difference)
       var L = []; for (var i = 0; i < 4; i++) L.push(Math.hypot(q[(i + 1) % 4].x - q[i].x, q[(i + 1) % 4].y - q[i].y)); if (Math.min(L[0], L[2]) / Math.max(L[0], L[2]) < 0.6 || Math.min(L[1], L[3]) / Math.max(L[1], L[3]) < 0.6) return rej('sides');
