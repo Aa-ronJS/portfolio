@@ -97,9 +97,10 @@
     var bright = percentile(g, 0.995), best = null, dbg = { cands: cands.length, rejected: {}, bright: bright }; QCDetect.lastPageDebug = dbg; function rej(k){ dbg.rejected[k] = (dbg.rejected[k] || 0) + 1; }
     cands.forEach(function(c){
       var q = refine(c.q, 8, -1), H = homography(UNIT, q); if (!H) return rej('H');
-      var asp = aspectFromH(H, f, cx, cy), portrait = Math.abs(asp / 1.4142 - 1), landscape = Math.abs(asp / 0.7071 - 1), fit = Math.min(portrait, landscape); (dbg.asp = dbg.asp || []).push([+asp.toFixed(3), q.map(function(pp){ return [Math.round(pp.x), Math.round(pp.y)]; })]); if (fit > 0.18) return rej('aspect');
+      var asp = aspectFromH(H, f, cx, cy), portrait = Math.abs(asp / 1.4142 - 1), landscape = Math.abs(asp / 0.7071 - 1), fit = Math.min(portrait, landscape); (dbg.asp = dbg.asp || []).push([+asp.toFixed(3), q.map(function(pp){ return [Math.round(pp.x), Math.round(pp.y)]; })]); if (fit > 0.12) return rej('aspect');
       // sides: opposite sides should be similar in length in the image (perspective allows some difference)
       var L = []; for (var i = 0; i < 4; i++) L.push(Math.hypot(q[(i + 1) % 4].x - q[i].x, q[(i + 1) % 4].y - q[i].y)); if (Math.min(L[0], L[2]) / Math.max(L[0], L[2]) < 0.6 || Math.min(L[1], L[3]) / Math.max(L[1], L[3]) < 0.6) return rej('sides');
+      if (Math.min.apply(null, L) < 0.009 * Math.max(w, h) || Math.max.apply(null, L) > 0.45 * Math.max(w, h)) return rej('size'); // an A4 at 1.5 to 9 m on a phone photo
       // brightness inside vs ring outside, and interior uniformity, on the full-res image
       var st = quadStats(gray, w, h, q); if (!st || st.contrast < 2.5 || st.std > 9) return rej(!st ? 'stats' : st.contrast < 2.5 ? 'contrast' : 'std');
       if (st.mean < 0.82 * bright) return rej('dark'); // paper is about the brightest thing in a room photo
