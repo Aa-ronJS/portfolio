@@ -331,8 +331,7 @@
       draw(); renderItems();
       var doors = found.filter(function(o){ return o.type === 'door'; }).length, wins = found.filter(function(o){ return o.type === 'window'; }).length;
       var dItem = S.items.filter(function(i){ return i.type === 'door'; })[0]; if (dItem) { var offD = Math.abs(dItem.h / 2040 - 1); S.lastDoor = dItem; if (offD > 0.04 && dItem.h < 2300) { q('rescalerow').hidden = false; sc.note = (sc.note ? sc.note + '; ' : '') + 'the door reads ' + fmt(dItem.h) + ' m against a standard 2.04, check the page outline or size from the door'; } }
-      say('Wall ' + fmt(S.rect.W) + ' × ' + fmt(S.rect.H) + ' m' + (S.scale.rounded ? ' (rounded up from ' + fmt(sc.W) + ' × ' + fmt(sc.H) + ')' : '') + ' from the A4 page' + (sc.note ? ' (' + sc.note + ')' : '') + '. ' + (found.length ? 'Found ' + (doors ? doors + ' door' + (doors > 1 ? 's' : '') : '') + (doors && wins ? ' and ' : '') + (wins ? wins + ' window' + (wins > 1 ? 's' : '') : '') + ': remove any that are wrong, tap to add more, then save.' : 'Tap doors and windows (two corners each), or save the wall.'), 'ok');
-      setMode('door');
+      if (S.settle) S.settle(sc.note || ''); else { say('Wall ' + fmt(S.rect.W) + ' × ' + fmt(S.rect.H) + ' m from the A4 page' + (sc.note ? ' (' + sc.note + ')' : '') + '.', 'ok'); setMode('door'); }
     }
     function pageInUnit(){ if (!S.page || !S.rect) return null; var us = S.page.corners.map(function(p){ return apply(S.rect.HwInv, p); }); return { u1: Math.min.apply(null, us.map(function(p){ return p.x; })) - 0.01, u2: Math.max.apply(null, us.map(function(p){ return p.x; })) + 0.01, v1: Math.min.apply(null, us.map(function(p){ return p.y; })) - 0.01, v2: Math.max.apply(null, us.map(function(p){ return p.y; })) + 0.01 }; }
     function scaleFromPage(){ // affine fit of the wall's unit frame to millimetres over the page's four corners, cross-checked against the camera geometry
@@ -405,11 +404,18 @@
       // re-size any openings already placed in this frame, from the measured (not rounded) wall
       var mm0 = scale.measured; S.items.forEach(function(it){ if (it.type !== 'wall' && it.frame === 'wall') { it.w = mm0.W * (it.x2 - it.x1); it.h = mm0.H * (it.y2 - it.y1); it.area = it.w * it.h / 1e6; } });
       q('scalebox').hidden = !scale.assumed; q('rescalerow').hidden = true; draw(); renderItems(); if (!scale.assumed) offerRounding();
-      stepUI('Wall measured', 'Remove any door or window that is wrong, tap Door or Window to add one, then save.', [{ label: 'Save this wall', cls: 'tape', fn: saveWall }], true);
+      var adjust = function(){ S.adjusting = true; if (scale.rounded) q('roundbox').hidden = false; stepUI('Adjust', 'Tap Door or Window, then the top-left and bottom-right corners of it. Remove anything wrong in the list below.', [{ label: 'Save this wall', cls: 'tape', fn: saveWall }], true); setMode('door'); };
+      // the calm version of this panel: what was measured, Save, or Adjust; re-run after openings are proposed
+      S.settle = scale.assumed ? null : function(note){
+        var nD = S.items.filter(function(x){ return x.type === 'door'; }).length, nW = S.items.filter(function(x){ return x.type === 'window'; }).length;
+        var found = (nD || nW) ? 'Found ' + [nD ? nD + ' door' + (nD > 1 ? 's' : '') : '', nW ? nW + ' window' + (nW > 1 ? 's' : '') : ''].filter(Boolean).join(' and ') + ', taken off the paint area.' : 'No doors or windows found on it.';
+        S.adjusting = false; q('roundbox').hidden = true; stepUI('Wall measured', found + ' Save it, or Adjust to add or remove openings.', [{ label: 'Save this wall', cls: 'tape', fn: saveWall }, { label: 'Adjust', fn: adjust }], false);
+        say('Wall ' + fmt(S.rect.W) + ' × ' + fmt(S.rect.H) + ' m' + (scale.rounded ? ' (rounded up from ' + fmt(scale.measured.W) + ' × ' + fmt(scale.measured.H) + ')' : '') + ', from the ' + scale.label + (note ? ' (' + note + ')' : '') + '.', note ? 'warn' : 'ok');
+        S.mode = 'done'; S.pending = null; S.taps = []; q('moderow').hidden = true; q('modehint').hidden = true; draw(); };
+      if (scale.assumed) stepUI('Wall measured', 'Remove any door or window that is wrong, tap Door or Window to add one, then save.', [{ label: 'Save this wall', cls: 'tape', fn: saveWall }], true);
       if (scale.assumed) say('Wall about ' + fmt(W) + ' × ' + fmt(Hh) + ' m if the ceiling is ' + fmt(scale.ref_mm) + ' m. Ceilings vary, so tap a door top and bottom to size it properly, or tap the door as an opening and it will check itself.', 'warn');
       else if (scale.method === 'inherited') say('Wall: ' + fmt(W) + ' × ' + fmt(Hh) + ' m, using the ' + fmt(Hh) + ' m wall height already measured in this room. Tap doors and windows, or save this wall.', 'ok');
-      else say('Wall: ' + fmt(W) + ' × ' + fmt(Hh) + ' m' + (scale.rounded ? ' (rounded up from ' + fmt(scale.measured.W) + ' × ' + fmt(scale.measured.H) + ')' : '') + ', scaled from the ' + scale.label + '. Now tap doors and windows (two corners each), or save this wall.', 'ok');
-      setMode('door');
+      if (scale.assumed) setMode('door'); else S.settle('');
     }
     function scaleFromSheet(){ // affine fit of the wall's unit frame to sheet millimetres over the marker corners
       if (!S.sheet || !S.markers.length || !S.rect) return null;
