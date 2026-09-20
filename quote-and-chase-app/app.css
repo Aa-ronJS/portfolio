@@ -3,8 +3,8 @@
 *{box-sizing:border-box}
 [hidden]{display:none!important}
 html,body{margin:0;background:var(--ground);color:var(--ink);font:16px/1.5 -apple-system,"Segoe UI",system-ui,Helvetica,Arial,sans-serif;-webkit-font-smoothing:antialiased}
-.top{position:sticky;top:0;z-index:5;background:var(--paper);border-bottom:1px solid var(--line);display:flex;justify-content:space-between;align-items:center;padding:calc(10px + env(safe-area-inset-top,0px)) 16px 10px}
-.brand{font-weight:800;text-decoration:none;color:var(--ink);letter-spacing:-.01em;font-size:1.05rem;white-space:nowrap}.brand span{color:var(--tape-deep)}
+.top{position:sticky;top:0;z-index:5;background:var(--paper);border-bottom:1px solid var(--line);display:flex;flex-wrap:wrap;gap:2px 8px;justify-content:space-between;align-items:center;padding:calc(8px + env(safe-area-inset-top,0px)) 16px 8px}
+.brand{font-weight:800;text-decoration:none;color:var(--ink);letter-spacing:-.01em;font-size:clamp(.92rem,4.2vw,1.05rem);white-space:nowrap}.brand span{color:var(--tape-deep)}
 .top nav{display:flex;gap:2px}.top nav a{text-decoration:none;color:var(--muted);padding:6px 8px;border-radius:8px;font-weight:600;font-size:.92rem;white-space:nowrap}.top nav a.on{background:var(--soft);color:var(--ink)}
 .wrap{max-width:760px;margin:0 auto;padding:16px 16px calc(40px + env(safe-area-inset-bottom,0px));display:grid;grid-template-columns:minmax(0,1fr);gap:14px}
 body{overflow-x:clip}.wrap>*,.card>*,.qm>*,.g2>*,.g3>*,.job>*,.row>*{min-width:0}
@@ -12,8 +12,8 @@ h1{font-size:1.45rem;margin:0;letter-spacing:-.01em}h2{font-size:1.1rem;margin:0
 p{margin:0}.muted{color:var(--muted)}.hint{font-size:.9rem;color:var(--muted)}a{color:var(--tape-deep)}
 .card{background:var(--paper);border:1px solid var(--line);border-radius:12px;padding:14px;display:grid;grid-template-columns:minmax(0,1fr);gap:10px}
 .row{display:flex;flex-wrap:wrap;gap:8px;align-items:center}.between{justify-content:space-between}
-.btn{font:600 1rem inherit;padding:.75em 1.1em;border-radius:10px;border:1.5px solid var(--ink);background:var(--ink);color:var(--ground);cursor:pointer;text-decoration:none;display:inline-flex;align-items:center;justify-content:center;gap:.4em;min-height:44px}
-.btn.tape{background:var(--tape);border-color:var(--tape);color:#fff}.btn.ghost{background:transparent;color:var(--ink)}.btn.sm{padding:.5em .8em;font-size:.92rem;min-height:40px}.btn.danger{border-color:var(--bad);color:var(--bad);background:transparent}
+.btn{font:600 1rem inherit;padding:.75em 1.1em;border-radius:10px;border:1.5px solid var(--ink);background:var(--ink);color:var(--ground);cursor:pointer;text-decoration:none;display:inline-flex;align-items:center;justify-content:center;gap:.4em;min-height:48px}
+.btn.tape{background:var(--tape);border-color:var(--tape);color:#fff}.btn.ghost{background:transparent;color:var(--ink)}.btn.sm{padding:.5em .8em;font-size:.92rem;min-height:44px}.btn.danger{border-color:var(--bad);color:var(--bad);background:transparent}
 .btn.active{outline:3px solid var(--tape);outline-offset:2px}.btn[disabled]{opacity:.45;cursor:default}.btn.wide{width:100%}
 label.f{display:grid;gap:4px;font-size:.92rem;font-weight:600}label.f span{color:var(--muted);font-weight:400;font-size:.85rem}
 input[type=text],input[type=number],input[type=email],input[type=tel],input[type=date],input[type=password],input[type=url],select,textarea{font:1rem inherit;padding:.65em .8em;border:1.5px solid var(--line);border-radius:10px;background:var(--ground);color:var(--ink);width:100%;min-height:44px}
@@ -63,3 +63,19 @@ input[type=search]{font:1rem inherit;padding:.65em .8em;border:1.5px solid var(-
 .pgrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(140px,1fr));gap:10px}.ph{margin:0;display:grid;gap:6px}.ph img{width:100%;aspect-ratio:4/3;object-fit:cover;border-radius:8px;background:var(--soft)}.ph input[type=text]{min-height:38px;padding:.4em .6em;font-size:.9rem}
 details.adv summary{min-height:36px;display:flex;align-items:center}details.adv>:not(summary){margin-top:8px}
 .steps li span b{font-weight:700}
+
+/* C (round two): 360 px at 120% text with no sideways scroll, two-line quote lines, inline .block messages, chase cards, set-up ticks */
+.top nav{flex-wrap:wrap;justify-content:flex-end}.top nav a{font-size:clamp(.8rem,3.4vw,.92rem);padding:6px 7px}
+@media (max-width:380px){.top nav a{padding:6px 5px;min-height:40px}}
+h1{font-size:clamp(1.2rem,5.5vw,1.45rem)}
+.block{flex:1 1 100%;display:flex;gap:10px;align-items:flex-start;justify-content:space-between;background:var(--paper);border:1.5px solid var(--warn);border-left-width:5px;border-radius:10px;padding:10px 12px;font-size:.95rem;color:var(--ink);text-align:left}.block.bad{border-color:var(--bad)}.block.ok{border-color:var(--ok)}.block>span{flex:1 1 auto}.block .x{min-height:36px;padding:.3em .7em;flex:0 0 auto}
+.legal{color:var(--bad);font-weight:700}
+.steps li.done::before{content:'\2713';background:var(--ok)}.steps li.done>span{color:var(--muted)}
+.card.chase .row .btn{min-height:48px}.card.chase .row.second{border-top:1px solid var(--line);padding-top:8px;margin-top:2px}.card.chase .row.second .btn{min-height:44px}
+.btn.danger ~ #dupjob{margin-left:auto}#deljob,#canceljob{margin-top:4px}
+.btn.slot{width:100%;justify-content:flex-start;flex-wrap:wrap;text-align:left;margin:3px 0}
+.presetline{display:flex;flex-wrap:wrap;gap:6px 8px;align-items:center;background:var(--tape-soft);border-radius:10px;padding:8px 10px;color:var(--ink)}.presetline .hint{flex-basis:100%}
+.chip{min-height:40px}
+@media (max-width:480px){table.lines thead{display:none}table.lines tr{display:grid;grid-template-columns:minmax(0,1fr) auto;column-gap:8px;border-bottom:1px solid var(--line);padding-bottom:6px}table.lines td{border:0;padding:4px 4px}table.lines td:first-child{grid-column:1/-1;padding-top:8px;padding-bottom:0}table.lines td.n:nth-child(2){text-align:left;color:var(--muted);white-space:normal}table.lines td.n:last-child{text-align:right}table.lines tr.total,table.lines tr.sub{border:0}table.lines tr.total td:first-child,table.lines tr.sub td:first-child{grid-column:auto;padding:6px 4px}}
+.empty .hint{display:inline-block;margin-top:6px}
+.status:empty{display:none}
