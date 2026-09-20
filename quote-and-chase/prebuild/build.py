@@ -20,6 +20,7 @@ INTERIOR = [
     ("p_ceilings", "Ceilings, 2 coats", "m2", 25, "flat ceiling white"),
     ("p_skirting", "Skirting boards and architraves, 2 coats", "lineal m", 9, "gloss or semi-gloss enamel"),
     ("p_door", "Door, both sides incl. frame", "each", 95, "flush door; add 30 for panelled"),
+    ("p_door_one", "Door, one side only incl. frame", "each", 55, "e.g. hallway side of bedroom doors"),
     ("p_window", "Window frame, interior", "each", 65, "standard size"),
     ("p_wardrobe", "Wardrobe doors, per pair", "each", 120, ""),
     ("p_feature", "Feature wall, colour change", "m2", 28, "extra coat allowed"),

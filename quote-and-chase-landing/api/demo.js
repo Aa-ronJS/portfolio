@@ -21,6 +21,7 @@ Interior (ex GST, labour and mid-range trade paint included):
 - Ceilings, 2 coats: $25 per m2
 - Skirting boards and architraves: $9 per lineal m
 - Door, both sides incl. frame: $95 each
+- Door, one side only incl. frame: $55 each
 - Window frame, interior: $65 each
 - Feature wall colour change: $28 per m2
 - Moderate prep (patching, sanding): $65 per hour

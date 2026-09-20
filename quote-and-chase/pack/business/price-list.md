@@ -12,6 +12,7 @@ unless a line says otherwise. AUD.
 | Ceilings, 2 coats | m2 | 25 | flat ceiling white |
 | Skirting boards and architraves, 2 coats | lineal m | 9 | gloss or semi-gloss enamel |
 | Door, both sides incl. frame | each | 95 | flush door; add 30 for panelled |
+| Door, one side only incl. frame | each | 55 | e.g. hallway side of bedroom doors |
 | Window frame, interior | each | 65 | standard size |
 | Wardrobe doors, per pair | each | 120 | |
 | Feature wall, colour change | m2 | 28 | extra coat allowed |
