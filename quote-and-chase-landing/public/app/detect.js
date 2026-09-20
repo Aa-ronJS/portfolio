@@ -42,7 +42,7 @@
     function at(x, y){ if (x < 0 || y < 0 || x >= w - 1 || y >= h - 1) return 128; var x0 = x | 0, y0 = y | 0, fx = x - x0, fy = y - y0; var a = gray[y0 * w + x0], b = gray[y0 * w + x0 + 1], c = gray[(y0 + 1) * w + x0], d = gray[(y0 + 1) * w + x0 + 1]; return a * (1 - fx) * (1 - fy) + b * fx * (1 - fy) + c * (1 - fx) * fy + d * fx * fy; }
     function fitLine(pts){ var n = pts.length, cx = 0, cy = 0, i; for (i = 0; i < n; i++) { cx += pts[i].x; cy += pts[i].y; } cx /= n; cy /= n; var sxx = 0, sxy = 0, syy = 0; for (i = 0; i < n; i++) { var dx = pts[i].x - cx, dy = pts[i].y - cy; sxx += dx * dx; sxy += dx * dy; syy += dy * dy; } var th = 0.5 * Math.atan2(2 * sxy, sxx - syy); return { x: cx, y: cy, dx: Math.cos(th), dy: Math.sin(th) }; }
     function intersect(l1, l2){ var den = l1.dx * l2.dy - l1.dy * l2.dx; if (Math.abs(den) < 1e-9) return null; var t = ((l2.x - l1.x) * l2.dy - (l2.y - l1.y) * l2.dx) / den; return { x: l1.x + t * l1.dx, y: l1.y + t * l1.dy }; }
-    return function refine(q, maxShift, sign){
+    function refineOnce(q, maxShift, sign){
       maxShift = maxShift || 6; sign = sign || 0; var cx = 0, cy = 0, i; for (i = 0; i < 4; i++) { cx += q[i].x; cy += q[i].y; } cx /= 4; cy /= 4; var lines = [];
       for (i = 0; i < 4; i++) {
         var a = q[i], b = q[(i + 1) % 4], len = Math.hypot(b.x - a.x, b.y - a.y); if (len < 12) return q;
@@ -56,11 +56,14 @@
         // drop outliers once
         var l0 = fitLine(pts), res = pts.map(function(p){ return Math.abs((p.x - l0.x) * -l0.dy + (p.y - l0.y) * l0.dx); }), med = res.slice().sort(function(a, b){ return a - b; })[res.length >> 1];
         var keep = pts.filter(function(p, j){ return res[j] <= Math.max(1.5, med * 3); }); if (keep.length < 5) return q;
-        lines.push(fitLine(keep));
+        var l1 = fitLine(keep), res2 = keep.map(function(p){ return Math.abs((p.x - l1.x) * -l1.dy + (p.y - l1.y) * l1.dx); }), med2 = res2.slice().sort(function(a, b){ return a - b; })[res2.length >> 1];
+        var keep2 = keep.filter(function(p, j){ return res2[j] <= Math.max(1.0, med2 * 2.5); }); if (keep2.length >= 5) keep = keep2;
+        lines.push(fitLine(keep)); if (QCDetect._refineDebug) QCDetect._refineDebug.push({ side: i, pts: pts.map(function(pp){ return [+pp.x.toFixed(1), +pp.y.toFixed(1)]; }), kept: keep.length });
       }
       var out = []; for (i = 0; i < 4; i++) { var p = intersect(lines[(i + 3) % 4], lines[i]); if (!p || Math.hypot(p.x - q[i].x, p.y - q[i].y) > maxShift * 3) return q; out.push(p); }
       return out;
-    };
+    }
+    return function refine(q, maxShift, sign){ var q1 = refineOnce(q, maxShift, sign); return refineOnce(q1, Math.min(4, maxShift || 6), sign); }; // coarse pass to land on the edge, fine pass to settle on it
   }
 
   // ---------- Page detection: bright, blank, roughly rectangular blob whose 3D shape (given f) is an A4 sheet
