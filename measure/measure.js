@@ -26,6 +26,7 @@
       '<label class="btn ghost sm">From photos<input type="file" data-part="photo2lib" accept="image/*"></label></div>' +
       '<div class="stage" data-part="stage"><canvas data-part="view"></canvas><div class="loupe" data-part="loupe"><canvas data-part="loupecv" width="140" height="140"></canvas></div></div>' +
       '<p class="status" data-part="status">Loading photo…</p>' +
+      '<div class="insets" data-part="insets" hidden></div>' +
       '<div class="scalebox" data-part="stepbox" hidden><b data-part="steptitle"></b><p class="hint" data-part="stephint">Drag a corner if it is off. Hold to see the magnifier.</p><div class="row" data-part="stepbtns"></div></div>' +
       '<div class="row" data-part="moderow"><button class="btn sm" data-mode="wall">Wall</button><button class="btn sm" data-mode="door">Door</button><button class="btn sm" data-mode="window">Window</button>' +
       '<button class="btn ghost sm" data-mode="wall2">Can\'t see all corners</button><button class="btn ghost sm" data-part="undo">Undo tap</button></div>' +
@@ -47,7 +48,7 @@
         '<div class="row"><label class="f">Width mm<input type="number" data-part="refw" style="width:7em"></label><label class="f">Height mm<input type="number" data-part="refh" style="width:7em"></label><span class="hint">Edit if yours is different. Then tap top-left, top-right, bottom-right, bottom-left.</span></div>' +
       '</div>' +
       '<table data-part="items"><thead><tr><th>Item</th><th class="n">Width</th><th class="n">Height</th><th class="n">Area</th><th></th></tr></thead><tbody></tbody></table>' +
-      '<div class="row" style="justify-content:space-between"><span class="hint" data-part="confidence"></span><button class="btn sm" data-part="savewall">Save this wall</button></div>' +
+      '<div class="row" style="justify-content:space-between"><span class="hint" data-part="confidence"></span><div class="row"><button class="btn ghost sm" data-part="diag">Copy details</button><button class="btn sm" data-part="savewall">Save this wall</button></div></div>' +
     '</div></div>';
 
   // Optional printed sheet (kept for anyone who has one). Units mm, origin top-left of A4.
@@ -221,6 +222,16 @@
     function zoomToQuad(pts){ var xs = pts.map(function(p){ return p.x; }), ys = pts.map(function(p){ return p.y; }), x0 = Math.min.apply(null, xs), x1 = Math.max.apply(null, xs), y0 = Math.min.apply(null, ys), y1 = Math.max.apply(null, ys);
       var bw = x1 - x0, bh = y1 - y0, vw = S.w, vh = S.h * 0.6, s = Math.min(vw / (bw * 2.6), vh / (bh * 1.8), 12); if (s <= 1.15) { setZoom(null); return; }
       var cx = (x0 + x1) / 2, cy = (y0 + y1) / 2; setZoom({ s: s, x0: Math.max(0, Math.min(S.w - vw / s, cx - vw / s / 2)), y0: Math.max(0, Math.min(S.h - vh / s, cy - vh / s / 2)) }); }
+    function renderInsets(){
+      var box = q('insets'); if (!S.edit) { box.hidden = true; box.innerHTML = ''; return; }
+      var E = S.edit, col = E.kind === 'page' ? '#37d67a' : '#2B7BD6', names = ['top-left', 'top-right', 'bottom-right', 'bottom-left'];
+      if (!box.childElementCount) { box.innerHTML = ''; for (var i = 0; i < 4; i++) { var wrap = document.createElement('div'); wrap.className = 'inset'; wrap.innerHTML = '<canvas width="160" height="160"></canvas><span class="hint">' + (i + 1) + ' ' + names[i] + '</span>'; (function(idx){ wrap.addEventListener('click', function(){ var c = S.edit && S.edit.pts[idx]; if (!c) return; var vw = S.w, vh = S.h * 0.6, sc = Math.min(8, Math.max(3, S.w / 600)); setZoom({ s: sc, x0: Math.max(0, Math.min(S.w - vw / sc, c.x - vw / sc / 2)), y0: Math.max(0, Math.min(S.h - vh / sc, c.y - vh / sc / 2)) }); say('Zoomed on corner ' + (idx + 1) + '. Drag it onto the exact corner, then tap "Whole photo".'); }); })(i); box.appendChild(wrap); }
+        var out = document.createElement('button'); out.className = 'btn ghost sm'; out.textContent = 'Whole photo'; out.addEventListener('click', function(){ setZoom(null); }); box.appendChild(out); }
+      var cvs = box.querySelectorAll('canvas'), R = Math.max(24, Math.round(S.w / 45));
+      E.pts.forEach(function(c, i){ var cv = cvs[i]; if (!cv) return; var g = cv.getContext('2d'); g.fillStyle = '#111'; g.fillRect(0, 0, 160, 160); g.drawImage(S.img, c.x - R, c.y - R, 2 * R, 2 * R, 0, 0, 160, 160);
+        var k = 160 / (2 * R); g.strokeStyle = col; g.lineWidth = 2; g.beginPath(); var a = E.pts[(i + 3) % 4], b = E.pts[(i + 1) % 4]; g.moveTo(80 + (a.x - c.x) * k, 80 + (a.y - c.y) * k); g.lineTo(80, 80); g.lineTo(80 + (b.x - c.x) * k, 80 + (b.y - c.y) * k); g.stroke(); g.beginPath(); g.arc(80, 80, 6, 0, 7); g.stroke(); });
+      box.hidden = false;
+    }
     function draw(){
       ctx.setTransform(1, 0, 0, 1, 0, 0); ctx.clearRect(0, 0, view.width, view.height);
       if (S.zoom) ctx.setTransform(S.zoom.s, 0, 0, S.zoom.s, -S.zoom.x0 * S.zoom.s, -S.zoom.y0 * S.zoom.s);
@@ -237,6 +248,7 @@
       ctx.fillStyle = '#ff5a36';
       if (S.pending) { ctx.beginPath(); ctx.arc(S.pending.img.x, S.pending.img.y, lw * 3, 0, 7); ctx.fill(); }
       S.taps.forEach(function(t){ ctx.beginPath(); ctx.arc(t.x, t.y, lw * 3, 0, 7); ctx.fill(); });
+      renderInsets();
     }
     function frameH(it){ return it.frame === 'wall' ? (S.rect && S.rect.Hw) : S.H; }
     function drawRect(it, lw){
@@ -294,7 +306,7 @@
         var quad = wall && wall.corners && wall.corners.length === 4 ? wall.corners : [{ x: S.w * 0.08, y: S.h * 0.12 }, { x: S.w * 0.92, y: S.h * 0.12 }, { x: S.w * 0.92, y: S.h * 0.88 }, { x: S.w * 0.08, y: S.h * 0.88 }];
         S.edit = { kind: 'wall', pts: quad.map(function(p){ return { x: p.x, y: p.y }; }), guessed: !wall }; draw();
         say(wall ? 'Is the blue outline on the wall? Ceiling line (under any cornice) to skirting, corner to corner.' : 'Could not find the wall edges. Drag the four blue corners onto the wall corners.', wall ? 'ok' : 'warn');
-        stepUI('Is this the wall?', 'Drag a corner if it is off. The wall is what gets painted: under the cornice, above the skirting.', [
+        stepUI('Is this the wall?', 'Check the four corner close-ups below. Tap one to zoom there and drag the corner exactly. The wall is what gets painted: under the cornice, above the skirting.', [
           { label: 'Yes, that is the wall', cls: 'tape', fn: confirmWall },
           { label: 'Back to the page', fn: function(){ S.edit = null; S.page = null; autoStart(); } }]);
       }, 30);
@@ -311,6 +323,7 @@
       found.slice(0, 4).forEach(function(o){ var it = { type: o.type, x1: o.u1, y1: o.v1, x2: o.u2, y2: o.v2, frame: 'wall', auto: true }; var sz = sizeOf(it); it.w = sz.w; it.h = sz.h; it.area = sz.w * sz.h / 1e6; S.items.push(it); });
       draw(); renderItems();
       var doors = found.filter(function(o){ return o.type === 'door'; }).length, wins = found.filter(function(o){ return o.type === 'window'; }).length;
+      var dItem = S.items.filter(function(i){ return i.type === 'door'; })[0]; if (dItem) { var offD = Math.abs(dItem.h / 2040 - 1); S.lastDoor = dItem; if (offD > 0.04 && dItem.h < 2300) { q('rescalerow').hidden = false; sc.note = (sc.note ? sc.note + '; ' : '') + 'the door reads ' + fmt(dItem.h) + ' m against a standard 2.04, check the page outline or size from the door'; } }
       say('Wall ' + fmt(S.rect.W) + ' × ' + fmt(S.rect.H) + ' m' + (S.scale.rounded ? ' (rounded up from ' + fmt(sc.W) + ' × ' + fmt(sc.H) + ')' : '') + ' from the A4 page' + (sc.note ? ' (' + sc.note + ')' : '') + '. ' + (found.length ? 'Found ' + (doors ? doors + ' door' + (doors > 1 ? 's' : '') : '') + (doors && wins ? ' and ' : '') + (wins ? wins + ' window' + (wins > 1 ? 's' : '') : '') + ': remove any that are wrong, tap to add more, then save.' : 'Tap doors and windows (two corners each), or save the wall.'), 'ok');
       setMode('door');
     }
@@ -470,10 +483,11 @@
       S.items.push(it); draw(); renderItems();
       var msg = it.type === 'wall' ? 'Wall done. Now tap doors and windows, or save this wall.' : (it.type + ' added: ' + fmt(it.w) + ' × ' + fmt(it.h) + ' m. Next one, or save this wall.');
       var cls = 'ok';
-      if (it.type === 'door' && S.scale && (S.scale.method === 'ceiling' || S.scale.method === 'assumed' || S.scale.method === 'inherited')) { // the door is a free check on the ceiling height
+      if (it.type === 'door' && S.scale && (S.scale.method === 'ceiling' || S.scale.method === 'assumed' || S.scale.method === 'inherited' || S.scale.method === 'page')) { // the door is a free check on the ceiling height
         var dh = it.h, off = Math.abs(dh / 2040 - 1);
         S.lastDoor = it;
-        if (off < 0.03 && !S.scale.assumed) msg += ' That door comes out at ' + fmt(dh) + ' m against a standard 2.04, so the ceiling height checks out.';
+        if (off < 0.03 && !S.scale.assumed) msg += ' That door comes out at ' + fmt(dh) + ' m against a standard 2.04, so the ' + (S.scale.method === 'page' ? 'page scale' : 'ceiling height') + ' checks out.';
+        else if (S.scale.method === 'page') { msg += ' That door comes out at ' + fmt(dh) + ' m; standard doors are 2.04 m, so either it is not standard or the page scale is ' + Math.round(off * 100) + '% off. Check the page outline, or size from the door.'; cls = 'warn'; q('rescalerow').hidden = false; }
         else { msg += ' That door comes out at ' + fmt(dh) + ' m; standard doors are 2.04 m' + (S.scale.assumed ? ', so the assumed ceiling is ' + Math.round(off * 100) + '% off.' : '.') + ' Tap the button below to size the wall from the door.'; cls = 'warn'; q('rescalerow').hidden = false; }
       }
       say(msg, cls); if (it.type === 'wall') setMode('door');
@@ -502,6 +516,13 @@
       var d = S.lastDoor || S.items.filter(function(i){ return i.type === 'door' && i.frame === 'wall'; }).pop(); if (!d || !S.rect) return;
       var xm = (d.x1 + d.x2) / 2, top = apply(S.rect.Hw, { x: xm, y: d.y1 }), bot = apply(S.rect.Hw, { x: xm, y: d.y2 });
       S.scaleKind = 'door'; if (applyScale('door', 2040, [top, bot])) { S.items = S.items.filter(function(i){ return i !== d; }); var sz = sizeOf(d); d.w = sz.w; d.h = sz.h; d.area = sz.w * sz.h / 1e6; S.items.push(d); draw(); renderItems(); say('Wall sized from the door: ' + fmt(S.rect.W) + ' × ' + fmt(S.rect.H) + ' m. Now the windows and any other doors, or save this wall.', 'ok'); }
+    });
+    q('diag').addEventListener('click', function(){
+      var r4 = function(p){ return [Math.round(p.x * 10) / 10, Math.round(p.y * 10) / 10]; };
+      var d = { app: 'qc-app-v10', photo: [S.w, S.h], name: S.photoName, exif: S.exif, f_px: S.f && Math.round(S.f), f_source: S.fSource, page: S.page ? { corners: S.page.corners.map(r4), portrait: S.page.portrait, aspect: +S.page.aspect.toFixed(4) } : null,
+        wall_corners: S.rect ? S.rect.px.map(r4) : null, wall_aspect_camera: S.rect && +S.rect.aspect.toFixed(4), measured_mm: S.scale && S.scale.measured ? [Math.round(S.scale.measured.W), Math.round(S.scale.measured.H)] : null, shown_mm: S.rect ? [Math.round(S.rect.W), Math.round(S.rect.H)] : null,
+        scale: S.scale && { method: S.scale.method, err: S.scale.err, rounded: S.scale.rounded }, items: S.items.map(function(i){ return [i.type, Math.round(i.w), Math.round(i.h)]; }), ua: navigator.userAgent.slice(0, 80) };
+      var txt = JSON.stringify(d); if (navigator.clipboard) navigator.clipboard.writeText(txt).then(function(){ say('Details copied. Paste them to whoever is helping you.', 'ok'); }, function(){ say(txt); }); else say(txt);
     });
     q('undo').addEventListener('click', function(){ if (S.taps.length) { S.taps.pop(); } else if (S.pending) { S.pending = null; } else if (S.items.length) { S.items.pop(); } draw(); renderItems(); say('Undone.'); });
 
