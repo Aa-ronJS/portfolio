@@ -131,7 +131,7 @@
     if (!ext) {
       function renderWalls() {
         var box = document.getElementById('walls');
-        box.innerHTML = room.walls.length ? '<table><thead><tr><th>Wall</th><th class="n">W × H m</th><th class="n">Openings</th><th class="n">Paint m²</th><th></th></tr></thead><tbody>' + room.walls.map(function (w, i) { return '<tr><td>' + esc(w.wall) + '<br><span class="hint">' + (w.method === 'roomplan-lidar' ? 'LiDAR' : '±' + w.expected_error_pct + '%') + '</span></td><td class="n">' + (w.width_mm / 1000).toFixed(2) + ' × ' + (w.height_mm / 1000).toFixed(2) + '</td><td class="n">' + w.openings.length + '</td><td class="n">' + w.paint_area_m2.toFixed(2) + '</td><td class="n"><button class="btn ghost sm" data-wdel="' + i + '">remove</button></td></tr>'; }).join('') + '</tbody></table>' : '<p class="muted">No walls measured yet. Photograph the wall below, tap its corners.</p>';
+        box.innerHTML = room.walls.length ? '<table><thead><tr><th>Wall</th><th class="n">W × H m</th><th class="n">Openings</th><th class="n">Paint m²</th><th></th></tr></thead><tbody>' + room.walls.map(function (w, i) { return '<tr><td>' + esc(w.wall) + '<br><span class="hint">' + (w.method === 'roomplan-lidar' ? 'LiDAR' : '±' + w.expected_error_pct + '%') + '</span></td><td class="n">' + (w.width_mm / 1000).toFixed(2) + ' × ' + (w.height_mm / 1000).toFixed(2) + '</td><td class="n">' + w.openings.length + '</td><td class="n">' + w.paint_area_m2.toFixed(2) + '</td><td class="n"><button class="btn ghost sm" data-wdel="' + i + '">remove</button></td></tr>'; }).join('') + '</tbody></table>' : '<p class="muted">No walls measured yet. Stick a blank A4 sheet on the wall and photograph the wall below.</p>';
         box.querySelectorAll('[data-wdel]').forEach(function (b) { b.addEventListener('click', function () { room.walls.splice(+b.dataset.wdel, 1); save(); renderWalls(); refreshPreview(); }); });
       }
       renderWalls();
@@ -293,11 +293,11 @@
   function viewHelp() {
     $app.innerHTML = '<h1>How it works</h1><div class="card"><ol class="steps">' +
       '<li><span><b>Set-up once.</b> Your name, bank details, your prices. Three minutes.</span></li>' +
-      '<li><span><b>On site:</b> new job, add a room, photograph the whole wall corner to corner, tap its four corners. Type the ceiling height once (or tap a door: they are 2.04 m). Then tap the doors and windows. Save. Next wall.</span></li>' +
+      '<li><span><b>On site:</b> new job, add a room, stick a blank A4 sheet on the wall, photograph the whole wall corner to corner. The app outlines the page, you confirm; it outlines the wall, you confirm; doors and windows it can see are listed. Save. Next wall.</span></li>' +
       '<li><span><b>Build the quote.</b> Every line shows where its number came from. Fix anything marked TO CONFIRM. Make the PDF and send it from your phone.</span></li>' +
       '<li><span><b>Client says yes:</b> tap it, then invoice the deposit. On completion, the final.</span></li>' +
       '<li><span><b>Monday:</b> the Chase tab writes the reminders. You tap Text.</span></li></ol></div>' +
-      '<div class="card"><h3>How can a photo measure a wall?</h3><p class="muted">The four corners tell the phone the wall\'s exact shape (the camera\'s own lens geometry does the perspective maths). One known size then sets the scale: your ceiling height, a standard door, a power point plate, or anything you put a tape on. Expect about two percent. Typed sizes are estimates, and the quote says so.</p></div>' +
+      '<div class="card"><h3>How can a photo measure a wall?</h3><p class="muted">A blank A4 sheet is exactly 210 by 297 mm, and every printer tray has one. The app finds it in the photo and uses it as the ruler; the wall\'s four corners and the camera\'s own lens geometry do the perspective maths. Expect one to two percent. No page handy? Tap the corners and use a door (2.04 m) or the ceiling height. On Android there is an AR tape as well. Typed sizes are estimates, and the quote says so.</p></div>' +
       '<div class="card"><h3>Where is my data?</h3><p class="muted">On this phone, in the browser. Nothing is uploaded anywhere. Save a back-up from Set-up now and then, and email it to yourself.</p></div>';
   }
 
