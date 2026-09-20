@@ -72,7 +72,7 @@
         var rate = prices[l.key], lab = label(prices, l.key), missing = (rate === null || rate === undefined || rate === '');
         var eff = missing ? 0 : n(rate) * (PAINT_KEYS[l.key] ? prem : 1);
         var amount = Math.round(l.qty * eff);
-        lines.push({ room: q.room, desc: lab.label, qty: l.qty, unit: lab.unit, rate: Math.round(eff * 100) / 100, amount: amount, source: l.source, confirm: missing });
+        lines.push({ key: l.key, room: q.room, desc: lab.label, qty: l.qty, unit: lab.unit, rate: Math.round(eff * 100) / 100, amount: amount, source: l.source, confirm: missing });
         if (missing) confirm.push(q.room + ': no rate for "' + lab.label + '" in your price list.');
       });
       assumptions = assumptions.concat(q.assumptions);
@@ -82,12 +82,15 @@
       lines.push({ room: 'Extras', desc: x.desc || 'Extra item', qty: qty, unit: x.unit || 'each', rate: rate, amount: amount, source: 'added by you', confirm: !!x.confirm || !x.rate });
       if (!!x.confirm || !x.rate) confirm.push('Extras: "' + (x.desc || 'Extra item') + '" marked TO CONFIRM.');
     });
-    var km = n(job.travel_km); if (km > 0 && n(rules.travel_per_km) > 0) lines.push({ room: 'Travel', desc: 'Travel beyond service area', qty: km, unit: 'km', rate: n(rules.travel_per_km), amount: Math.round(km * n(rules.travel_per_km)), source: 'from your numbers', confirm: false });
+    var tr = window.QCGeo ? QCGeo.travel(job, settings) : { amount: 0 };
+    if (tr.amount > 0) { lines.push({ room: 'Travel', desc: 'Travel, ' + tr.chargeable + ' km beyond ' + n(rules.free_radius_km) + ' km' + (rules.travel_return === false ? '' : ' each way'), qty: tr.chargeable * (rules.travel_return === false ? 1 : 2), unit: 'km', rate: n(rules.travel_per_km), amount: tr.amount, source: tr.source, confirm: false }); }
+    if (tr.note) assumptions.push(tr.note);
     var subtotal = lines.reduce(function (s, l) { return s + l.amount; }, 0), minimum = false;
     if (lines.length && subtotal < n(rules.minimum_job)) { subtotal = n(rules.minimum_job); minimum = true; assumptions.push('Minimum job charge of $' + n(rules.minimum_job) + ' applied.'); }
     var gst = settings.details.gst ? Math.round(subtotal * 0.1) : 0;
     var measured = (job.rooms || []).filter(function (r) { return r.method === 'measured' && r.walls && r.walls.length; }).length, total_rooms = (job.rooms || []).length;
-    return { lines: lines, subtotal: subtotal, gst: gst, total: subtotal + gst, minimum_applied: minimum, assumptions: assumptions, confirm: confirm,
+    var cost = window.QCCosting && settings.costing ? QCCosting.breakdown(lines, settings.costing, subtotal) : null;
+    return { lines: lines, subtotal: subtotal, gst: gst, total: subtotal + gst, minimum_applied: minimum, assumptions: assumptions, confirm: confirm, travel: tr, cost: cost,
       measured_rooms: measured, total_rooms: total_rooms, deposit: Math.round((subtotal + gst) * n(settings.details.deposit_pct, 20) / 100) };
   }
 

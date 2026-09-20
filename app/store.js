@@ -35,9 +35,13 @@
       version: 1,
       details: { trading_name: '', owner_name: '', abn: '', phone: '', email: '', address: '', service_area: '', licence: '', insurance: '',
         account_name: '', bsb: '', account_number: '', other_payments: 'Bank transfer or cash', deposit_pct: 20, balance_days: 7, quote_valid_days: 30, gst: true,
-        voice: 'friendly', sign_off: 'Cheers', logo: '' },
+        voice: 'friendly', sign_off: 'Cheers', logo: '', postcode: '5000' },
       prices: prices,
-      rules: { minimum_job: 450, travel_per_km: 1.5, premium_paint_pct: 15, ceiling_height_m: 2.4, round_up_cm: 10 },
+      rules: { minimum_job: 450, travel_per_km: 1.5, premium_paint_pct: 15, ceiling_height_m: 2.4, round_up_cm: 10, free_radius_km: 25, travel_return: true, road_factor: 1.3 },
+      costing: (window.QCCosting ? QCCosting.defaults() : {}),
+      follow_up: { quote_days: [3, 7, 14], invoice_days: [1, 7, 21], remind_hour: 8 },
+      stripe: { key: '', enabled: false },
+      booking: { start_hour: 7, end_hour: 15 },
       wording: {
         included: ['Protection of floors, furniture and fittings with drop sheets and plastic before work starts.',
           'Preparation as described: filling minor holes and cracks, light sanding, dusting and spot priming.',
@@ -65,7 +69,8 @@
     try { var raw = localStorage.getItem(KEY); state = raw ? JSON.parse(raw) : defaults(); } catch (e) { state = defaults(); }
     // fill any missing keys from defaults (upgrades)
     var d = defaults();
-    ['details', 'prices', 'rules', 'wording'].forEach(function (k) { state[k] = Object.assign({}, d[k], state[k] || {}); });
+    ['details', 'prices', 'rules', 'wording', 'costing', 'follow_up', 'stripe', 'booking'].forEach(function (k) { state[k] = Object.assign({}, d[k], state[k] || {}); });
+    if (!state.costing.paint_price) state.costing.paint_price = d.costing.paint_price;
     if (!Array.isArray(state.jobs)) state.jobs = [];
     if (!state.next_quote) state.next_quote = 1001; if (!state.next_invoice) state.next_invoice = 2001;
     return state;
@@ -80,7 +85,7 @@
     var s = load();
     var job = { id: uid(), quote_no: 'Q-' + s.next_quote, created: today(), status: 'draft',
       client: { name: '', phone: '', email: '', address: '' }, summary: '', rooms: [], extras: [], travel_km: 0, premium_paint: false,
-      quote: null, invoices: [], notes: '', last_chased: '', sent_date: '' };
+      quote: null, invoices: [], notes: '', last_chased: '', sent_date: '', booking: null, follow_ups: [] };
     s.next_quote += 1; s.jobs.unshift(job); save(); return job;
   }
   function newRoom(type) {
