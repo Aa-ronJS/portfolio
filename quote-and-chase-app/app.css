@@ -64,7 +64,7 @@ input[type=search]{font:1rem inherit;padding:.65em .8em;border:1.5px solid var(-
 details.adv summary{min-height:36px;display:flex;align-items:center}details.adv>:not(summary){margin-top:8px}
 .steps li span b{font-weight:700}
 
-/* C (round two): 360 px at 120% text with no sideways scroll, two-line quote lines, inline .block messages, chase cards, set-up ticks */
+/* C (round two): 360 px at 120% text with no sideways scroll, two-line quote and room-total lines, inline .block messages, chase cards, set-up ticks */
 .top nav{flex-wrap:wrap;justify-content:flex-end}.top nav a{font-size:clamp(.8rem,3.4vw,.92rem);padding:6px 7px}
 @media (max-width:380px){.top nav a{padding:6px 5px;min-height:40px}}
 h1{font-size:clamp(1.2rem,5.5vw,1.45rem)}
@@ -75,7 +75,23 @@ h1{font-size:clamp(1.2rem,5.5vw,1.45rem)}
 .btn.danger ~ #dupjob{margin-left:auto}#deljob,#canceljob{margin-top:4px}
 .btn.slot{width:100%;justify-content:flex-start;flex-wrap:wrap;text-align:left;margin:3px 0}
 .presetline{display:flex;flex-wrap:wrap;gap:6px 8px;align-items:center;background:var(--tape-soft);border-radius:10px;padding:8px 10px;color:var(--ink)}.presetline .hint{flex-basis:100%}
-.chip{min-height:40px}
-@media (max-width:480px){table.lines thead{display:none}table.lines tr{display:grid;grid-template-columns:minmax(0,1fr) auto;column-gap:8px;border-bottom:1px solid var(--line);padding-bottom:6px}table.lines td{border:0;padding:4px 4px}table.lines td:first-child{grid-column:1/-1;padding-top:8px;padding-bottom:0}table.lines td.n:nth-child(2){text-align:left;color:var(--muted);white-space:normal}table.lines td.n:last-child{text-align:right}table.lines tr.total,table.lines tr.sub{border:0}table.lines tr.total td:first-child,table.lines tr.sub td:first-child{grid-column:auto;padding:6px 4px}}
+.chip{min-height:40px}.pill{white-space:nowrap}.job>.row:last-child{flex-wrap:wrap;gap:4px 10px}.job>.row:last-child .sub{white-space:normal;flex:1 1 auto}
+@media (max-width:480px){table.lines thead{display:none}:is(table.lines,#preview table) tr{display:grid;grid-template-columns:minmax(0,1fr) auto;column-gap:8px;border-bottom:1px solid var(--line);padding-bottom:6px}:is(table.lines,#preview table) td{border:0;padding:4px 4px}:is(table.lines,#preview table) td:first-child{grid-column:1/-1;padding-top:8px;padding-bottom:0}:is(table.lines,#preview table) td.n:nth-child(2){text-align:left;color:var(--muted);white-space:normal}:is(table.lines,#preview table) td.n:last-child{text-align:right}:is(table.lines,#preview table) tr.total,:is(table.lines,#preview table) tr.sub{border:0}:is(table.lines,#preview table) tr.total td:first-child,:is(table.lines,#preview table) tr.sub td:first-child{grid-column:auto;padding:6px 4px}}
 .empty .hint{display:inline-block;margin-top:6px}
 .status:empty{display:none}
+
+/* A2: document viewer ("Look at the quote"), the Did-it-go question, body lock while viewing */
+.qcview{position:fixed;inset:0;z-index:30;background:var(--paper);display:flex;flex-direction:column;overflow:hidden}
+.qcview-bar{padding:calc(10px + env(safe-area-inset-top,0px)) 16px 8px;border-bottom:1px solid var(--line)}
+.qcview-body{flex:1 1 auto;min-height:0;overflow:auto;-webkit-overflow-scrolling:touch;background:var(--soft)}
+.qcview-frame{display:block;width:100%;height:100%;min-height:60vh;border:0;background:#fff}
+.qcview-foot{display:flex;gap:10px;padding:10px 16px calc(12px + env(safe-area-inset-bottom,0px));border-top:1px solid var(--line);background:var(--paper)}.qcview-foot .btn{flex:1 1 0;min-height:48px}
+body.viewing{overflow:hidden}
+.didgo{display:grid;gap:8px;background:var(--tape-soft);border:1.5px solid var(--tape);border-radius:12px;padding:12px 14px;margin-top:6px}.didgo p{margin:0}.didgo .btn{min-height:44px}
+.didgo.fixed{position:fixed;left:12px;right:12px;bottom:calc(12px + env(safe-area-inset-bottom,0px));z-index:12;box-shadow:0 8px 30px rgba(0,0,0,.25);max-width:520px;margin:0 auto}
+#billline:empty{display:none}
+
+/* A1: Set-up Done button, the two-second Saved tick, folded sub-sections (More prices, More (optional), Show me the set-up steps) */
+.a1done{position:sticky;bottom:calc(12px + env(safe-area-inset-bottom,0px));z-index:4;display:flex;justify-content:flex-end;pointer-events:none}.a1done .btn{pointer-events:auto;min-width:9em;min-height:48px;box-shadow:0 4px 16px rgba(0,0,0,.22)}
+.tick{margin-left:auto;padding-right:12px;font-size:.85rem;font-weight:600;color:var(--ok)}
+details.sec.sub{border-top:1px solid var(--line);padding-top:6px;display:grid;gap:10px}details.sec.sub:not([open]){display:block;padding:6px 0 0}details.sec.sub>summary{min-height:40px;margin:0}details.sec.sub>summary h3{font-size:.95rem}
