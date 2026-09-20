@@ -41,6 +41,7 @@
       costing: (window.QCCosting ? QCCosting.defaults() : {}),
       follow_up: { quote_days: [3, 7, 14], invoice_days: [1, 7, 21], remind_hour: 8 },
       stripe: { key: '', enabled: false },
+      sending: { server: '', server_has_creds: false, twilio_sid: '', twilio_token: '', twilio_service: '', twilio_from: '', resend_key: '', resend_from: '', auto_sms: true, auto_email: true, email_quotes: true },
       booking: { start_hour: 7, end_hour: 15 },
       wording: {
         included: ['Protection of floors, furniture and fittings with drop sheets and plastic before work starts.',
@@ -69,7 +70,7 @@
     try { var raw = localStorage.getItem(KEY); state = raw ? JSON.parse(raw) : defaults(); } catch (e) { state = defaults(); }
     // fill any missing keys from defaults (upgrades)
     var d = defaults();
-    ['details', 'prices', 'rules', 'wording', 'costing', 'follow_up', 'stripe', 'booking'].forEach(function (k) { state[k] = Object.assign({}, d[k], state[k] || {}); });
+    ['details', 'prices', 'rules', 'wording', 'costing', 'follow_up', 'stripe', 'booking', 'sending'].forEach(function (k) { state[k] = Object.assign({}, d[k], state[k] || {}); });
     if (!state.costing.paint_price) state.costing.paint_price = d.costing.paint_price;
     if (!Array.isArray(state.jobs)) state.jobs = [];
     if (!state.next_quote) state.next_quote = 1001; if (!state.next_invoice) state.next_invoice = 2001;
