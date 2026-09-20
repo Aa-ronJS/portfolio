@@ -23,6 +23,9 @@ every job is `jobs.csv`. Keep it accurate; the owner relies on it.
 
 # How to estimate from photos and notes
 
+0. Look for `measurements.json` in the job folder first. It comes from
+   the measure sheet (`measure/`) or a LiDAR scan and is measured, not
+   guessed. Use it. Only estimate what it does not cover.
 1. Read every photo and the notes file in the job folder. Photos come
    from a phone; they may be dark, angled or partial.
 2. Work out each room or surface: what is being painted, rough size,

@@ -139,6 +139,12 @@ otherwise. AUD. Change any number any time.
 
 ## Measuring rules Claude uses when the notes do not say
 
+- Real measurements first: `measurements.json` from the measure sheet
+  or a LiDAR scan beats everything below. Notes beat photo estimates.
+- Scale from a photo: a standard internal door is 2040 mm high and
+  820 mm wide; a brick course is 76 mm plus a 10 mm joint; a light
+  switch sits about 1200 to 1350 mm off the floor. Use one of these
+  if visible and say which.
 - Ceiling height: assume 2.4 m unless the photo clearly shows higher.
 - Wall area of a room = perimeter x height, minus 1.7 m2 per door and
   1.5 m2 per standard window.

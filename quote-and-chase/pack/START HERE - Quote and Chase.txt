@@ -25,9 +25,21 @@ Your first quote (about 5 minutes)
      to it and read the assumptions. That is what you check before any
      real quote goes out.
 
+Measure it properly (five minutes a wall, worth it)
+  1. Open the "measure" folder. Print measure-sheet.pdf at 100% size.
+  2. Tape the sheet flat on the wall. Photograph the whole wall,
+     straight on, lights on.
+  3. Double-click measure.html. Choose the photo. Tap the four corners
+     of the wall, then two corners of each door and window. Save.
+  4. Put the measurements.json it makes in the job folder with the
+     photos. The quote then uses real numbers, not estimates.
+  Got an iPhone Pro? Scan the room with any RoomPlan app that exports
+  JSON (RoomScan, openPlan3D) and drop the file in the job folder.
+
 A real quote
   1. In quotes/incoming make a folder named after the address.
-  2. Drop in your phone photos and a notes.txt (copy the example).
+  2. Drop in your phone photos, a notes.txt (copy the example), and
+     measurements.json if you measured.
   3. /quote <folder name>
   4. Check the assumptions, then send the PDF from your own email.
   5. When they say yes:   /mark Q-1001 accepted

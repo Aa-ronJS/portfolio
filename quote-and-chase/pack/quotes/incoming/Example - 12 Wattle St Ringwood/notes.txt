@@ -19,5 +19,9 @@ off it (they want the hallway side of those done).
 They will pick colours from the Dulux whites range. Want it done in
 the next three weeks. Wants a price by Friday.
 
+Measured: the lounge was done with the measure sheet, see
+measurements.json in this folder. The bedroom and hallway were not,
+so they come from the sizes above.
+
 Photos: drop your phone photos of each room in this folder. This
-example has none, so the quote will rely on these notes.
+example has none.

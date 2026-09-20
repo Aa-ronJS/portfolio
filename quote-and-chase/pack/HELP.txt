@@ -31,6 +31,17 @@ Common ones
     it says none was found, open quote.html in your browser, press
     Ctrl+P (Cmd+P on a Mac) and choose Save as PDF.
 
+  The measuring page says "No sheet found"
+    The whole sheet must be in the photo, flat on the wall, not in
+    shadow or glare, and the photo taken with the main camera, not the
+    wide-angle one. Printed at 100%? Check the 100 mm bar with a tape.
+
+  The measuring numbers look off
+    Tap the four wall corners exactly at the corners. If the wall
+    corners are not all in the photo, use "Can't see all corners" and
+    expect a few percent less accuracy. Two photos from further back
+    beat one from close up.
+
   Claude asks permission for everything
     That is deliberate for commands. Read what it wants to run; press
     Enter to allow. Edits to files inside this folder do not ask.

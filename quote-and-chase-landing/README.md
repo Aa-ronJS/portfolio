@@ -44,7 +44,8 @@ form are set, their buttons show a polite "not connected" alert.
 
 Other pages: `privacy`, `terms` (the 14-day guarantee is stated there),
 `thanks` (post-purchase downloads; point your checkout's redirect at it)
-and `qr-card`. The hosted tier is a founding list until the hosted app
+`measure/` (the measure sheet and measuring page, copied from
+`quote-and-chase/pack/measure/`; keep them identical) and `qr-card`. The hosted tier is a founding list until the hosted app
 exists; its onboarding will reuse the intake fields in
 `quote-and-chase/prebuild/`. `public/downloads/` holds the three customer zips built
 by the two `package.sh` scripts; rebuild and copy them after any pack

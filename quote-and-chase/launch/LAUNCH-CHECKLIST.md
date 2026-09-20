@@ -11,14 +11,21 @@ what only you can do, in order. Nothing else is waiting on me.
    quote, mark, invoice and chase chain has run for real on Linux, but
    no Windows machine has executed them. If anything fails, send me the
    screen and stop the launch until it is fixed.
-2. **Deploy.** `cd quote-and-chase-landing && npm install && npx vercel
+2. **Print the measure sheet and measure one real wall.** Print
+   `pack/measure/measure-sheet.pdf` at 100%, check the 100 mm bar with
+   a tape, tape it to a wall, photograph it, run `measure.html`, and
+   compare the result to a tape measure. The maths is verified on a
+   synthetic photo to 0.1%; a real print, a real phone lens and your
+   taps are what remain to check. Do this once before you claim the
+   accuracy in an ad.
+3. **Deploy.** `cd quote-and-chase-landing && npm install && npx vercel
    && npx vercel --prod`. Note the URL.
-3. **Anthropic key.** console.anthropic.com: new key, monthly spend cap
+4. **Anthropic key.** console.anthropic.com: new key, monthly spend cap
    (AUD 50 is plenty for week one). `npx vercel env add
    ANTHROPIC_API_KEY production`, redeploy. Photograph a wall from your
    phone and confirm the result says "Sample quote from your photo",
    not "Example result".
-4. **One form endpoint.** A Formspree form (free tier is fine). Paste
+5. **One form endpoint.** A Formspree form (free tier is fine). Paste
    its URL into FORM_ACTION in `public/config.js`. Every capture on the
    page posts there with a `list` field, so one form covers the sample
    quote request, the send-to-laptop hand-off and the hosted founding
@@ -26,27 +33,27 @@ what only you can do, in order. Nothing else is waiting on me.
    `launch/emails.md`. If Formspree's plan will not branch on a field,
    send one autoresponder with all three links; it is not worth a
    second tool tonight.
-5. **Checkout.** Gumroad or Lemon Squeezy product, AUD 249, upload the
+6. **Checkout.** Gumroad or Lemon Squeezy product, AUD 249, upload the
    three zips from `quote-and-chase-landing/public/downloads/` or set
    the redirect to `https://your-domain/thanks`. Paste the product URL
    into CHECKOUT_URL. Set the buyer email sequence from `emails.md`
    (day 0, 2, 7, 12). Buy it yourself with a real card; refund yourself.
-6. **config.js, the rest.** BUSINESS_NAME, ABN, SUPPORT_EMAIL,
+7. **config.js, the rest.** BUSINESS_NAME, ABN, SUPPORT_EMAIL,
    HOSTED_DATE (a month you can hold), and MAKER_NOTE plus MAKER_NAME
    plus a photo of you as `public/maker.jpg`. Two sentences in your
    voice about why you made this. This block is the only proof on the
    page until you have testimonials.
-7. **Meta.** Business Manager, pixel ID into META_PIXEL_ID, domain
+8. **Meta.** Business Manager, pixel ID into META_PIXEL_ID, domain
    verified, events prioritised (Purchase, Lead, ViewContent,
    InitiateCheckout). Ad account in AUD. Campaign from
    `launch/meta-ads.md`; stills are in `launch/creative/` (re-render
    `ad-still-source.html` on your machine if you want the web fonts
    rather than the sandbox fallbacks). Video when you have it; the shot
    list is in `course/scripts.md`.
-8. **Record lesson one to seven** from `course/scripts.md` within the
+9. **Record lesson one to seven** from `course/scripts.md` within the
    window you promised in LESSONS_DATE. Record after the first sales,
    not before, and re-record only the lesson whose screens change.
-9. **Support inbox** watched morning and evening for the first week.
+10. **Support inbox** watched morning and evening for the first week.
    Reply templates are at the end of `emails.md`.
 
 ## Done
@@ -56,6 +63,11 @@ what only you can do, in order. Nothing else is waiting on me.
 - Quote and Chase pack: four skills, price list, wording, templates,
   PDF helper, ledger, sample job, HELP.txt; `/quote`, `/mark`,
   `/invoice` and `/chase` run end to end for real.
+- Measuring: printable measure sheet (four 68 mm markers), browser
+  measuring page (marker detection, sub-pixel corners, four-corner
+  wall frame plus sheet scale), verified to 0.1% on a synthetic photo;
+  RoomPlan LiDAR JSON converter; quote skill reads measurements first
+  and labels every line measured or estimated.
 - Landing page: own-it hero, phone demo with live estimator, QR that
   draws itself from the deployed domain, two tiers (owned, hosted
   founding list), guarantee with hosted credit, five FAQs, single-

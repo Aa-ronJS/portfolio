@@ -227,45 +227,72 @@ Next: a real job with your own photos.
 
 ---
 
-## Lesson 5: A real job (8 min)
+## Lesson 5: Measure it properly, then a real job (10 min)
 
-[Phone footage: walk into a room, take four photos, dictate notes.]
+[Hold up the printed measure sheet.]
 
-On site. Four photos per room: two corners, the ceiling, anything
-damaged. And say the size out loud: "Lounge, about five by four, walls
-and ceiling, one patch where the TV bracket was." That sentence is
-worth more than the photos.
+This is the difference between an estimate and a quote. A sheet of
+paper. Four squares on it that the computer can recognise, at a size
+it knows exactly. Print it at 100%, and check that bar with a tape: it
+should be 100 millimetres.
 
-[Laptop: make a folder in quotes/incoming named for the address. Drop
-photos and a notes.txt in.]
+[Phone footage: tape the sheet to a wall, chest height. Step back.
+Take one photo of the whole wall.]
 
-Folder named after the address. Photos in. Notes in. If you dictated on
-the phone, paste the transcript; if you didn't, type what you said.
+Tape it flat, anywhere on the wall. Step back until every edge of the
+wall is in the shot. Straight on, lights on, main camera. One photo.
+Do the same for each wall you're quoting.
 
-[Run /quote with the folder name.]
+[Laptop: open the measure folder, double-click measure.html. Choose
+the photo.]
 
-Same command. Watch it read each photo and say what it sees.
+Choose the photo. It finds the sheet: four of four markers. Now tap the
+four corners of the wall: top-left, top-right, bottom-right,
+bottom-left. Use the magnifier, get the corner exactly.
 
-[Pause on a dark or partial photo.]
+[Tap them. The measurement appears.]
 
-Here's one it can't judge. It says so, quotes that wall at "good", and
-writes the assumption down. It doesn't pretend.
+There's the wall. Four point eight by two point four. Now the door:
+two corners. The window: two corners. It takes the openings off the
+paint area for you.
+
+[Save the wall. Type the room name. Do a second wall quickly.]
+
+Save the wall, next photo, same again. Two adjacent walls and it works
+out the ceiling. When you're done, save the measurements file and put
+it in the job folder next to the photos.
+
+[Show the confidence line.]
+
+It tells you what it thinks its accuracy is. With all four corners and
+the whole sheet in the shot, that's about one to two percent, which is
+better than most people with a tape on a ladder. If it says "can't
+see all corners", you've used the fallback, and it's a few percent.
+
+[Got an iPhone Pro? Fifteen seconds on LiDAR.]
+
+If you've got an iPhone Pro, there's a faster way: any room-scanning
+app that exports a RoomPlan file. A one-minute walk around the room
+gives every wall, door and window to the centimetre. Drop the file in
+the job folder and the quote converts it.
+
+[Now run /quote on the real job.]
+
+Same command. Watch the source column: "measured, sheet, two percent"
+on the walls you measured, "estimated from photo" on anything you
+didn't. The quote says which is which, and so does the working file.
+That honesty is your protection when a client queries a number.
 
 [Pause on a TO CONFIRM line, e.g. a garage door.]
 
-And here's a rate my list doesn't have. TO CONFIRM. So: open
-price-list.md, add the line, save, run /quote again.
-
-[Do it. Re-run. Line is now priced.]
-
-Gone. That's how the price list grows: every TO CONFIRM becomes a rate
-you never have to think about again.
+And here's a rate my list doesn't have. TO CONFIRM. Open
+price-list.md, add the line, save, run /quote again. That's how the
+price list grows.
 
 [Open the PDF and working.md. Read the assumptions.]
 
 Read these before you send. Then attach the PDF to a text or an email
-from your own phone, like any other file. It has never sent anything
-and it never will.
+from your own phone. It has never sent anything and it never will.
 
 Next: getting paid.
 
@@ -365,10 +392,13 @@ Shot list only; no script.
 1. Phone, on site: four photos of a lounge. Voice: "Lounge, five by
    four, walls and ceiling, one patch, skirtings, one door."
 2. Laptop: drag photos and notes into a folder named for the address.
-3. Desktop icon. Type /quote and the folder name. Run at 2x, about 40
-   seconds: reading photos, the measuring table, the price lines, the
-   TO CONFIRM line.
-4. Open the PDF. Scroll. Open working.md, show the assumptions.
-5. Two seconds: price-list.md, cursor changes a rate, save. Caption:
+3. Two seconds: the measure sheet taped to a wall, the phone taking
+   the photo, then the measuring page with four taps and the metres
+   appearing.
+4. Desktop icon. Type /quote and the folder name. Run at 2x, about 40
+   seconds: the measuring table with "measured" in the source column,
+   the price lines, the TO CONFIRM line.
+5. Open the PDF. Scroll. Open working.md, show the assumptions.
+6. Two seconds: price-list.md, cursor changes a rate, save. Caption:
    "your rates, your file".
-6. End card: "Own it. $249 once." URL.
+7. End card: "Own it. $249 once." URL.
