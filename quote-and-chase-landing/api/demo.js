@@ -30,8 +30,10 @@ Exterior: weatherboards $38/m2, render or brick $30/m2, eaves and fascia $16/lm,
 gutters and downpipes $12/lm, exterior door $140, exterior window $95, deck oil $24/m2, fence $18/m2.
 Rules: minimum job $450. GST 10% is added to the subtotal.
 Measuring: assume 2.4 m ceilings unless the photo clearly shows higher. Wall area = perimeter x height
-minus 1.7 m2 per door and 1.5 m2 per window. Condition: good = included; fair = +1 hr moderate prep per 20 m2;
-poor = +1 hr heavy prep per 10 m2 plus sealer coat.
+minus 1.7 m2 per door and 1.5 m2 per window. Condition, notes first then photo: good = clean or nothing said (included);
+fair = scuffs, marks, small dents, "some/decent prep", "patching" (+1 hr moderate prep per 20 m2);
+poor = peeling, flaking, water damage, cracks, large holes, "heavy/major/rough" (+1 hr heavy prep per 10 m2 plus sealer coat).
+Do not upgrade fair to poor on a hunch; note it as an assumption instead.
 `;
 
 const SYSTEM = `You are the estimator for a small Australian house-painting business. You produce a fast,

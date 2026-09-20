@@ -51,8 +51,16 @@ unless a line says otherwise. AUD.
   1.5 m2 per standard window.
 - If only a floor size is known, assume the room is roughly square.
 - Skirting length = perimeter minus door widths (0.9 m each).
-- Condition from photos: "good" = light prep included in rate;
-  "fair" = add 1 hour moderate prep per 20 m2; "poor" = add 1 hour
-  heavy prep per 10 m2 plus sealer coat.
+- Condition, from the notes first and the photos second:
+  "good" = clean walls, or the notes say nothing about prep. Light
+  prep is included in the rate.
+  "fair" = scuffs, marks, small dents, a few holes to fill, or the
+  notes say "some prep", "decent prep", "patching". Add 1 hour
+  moderate prep per 20 m2.
+  "poor" = peeling, flaking, water damage, cracks, large holes,
+  previous wallpaper, or the notes say "heavy", "major", "rough",
+  "bad". Add 1 hour heavy prep per 10 m2 plus a sealer coat.
+  If the notes fit "fair" do not upgrade to "poor" on a hunch; say
+  so in the assumptions instead.
 - If a photo is too dark or partial to judge, say so and quote the
   room at "good" with the assumption written down.
