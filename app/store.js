@@ -54,6 +54,7 @@
       costing: (window.QCCosting ? QCCosting.defaults() : {}),
       follow_up: { quote_days: [3, 7, 14], invoice_days: [3, 10, 21], remind_hour: 9, business_days_only: true },
       stripe: { key: '', enabled: false },
+      maps: { key: '' },
       sending: { server: '', token: '', server_has_creds: false, twilio_sid: '', twilio_token: '', twilio_service: '', twilio_from: '', resend_key: '', resend_from: '', auto_sms: true, auto_email: true, email_quotes: true },
       booking: { start_hour: 7, end_hour: 15, quote_from: 7, quote_to: 18, visit_minutes: 30, saturdays: true, sundays: false, visit_pref: 'any', boss_on_tools: true },
       wording: {
@@ -109,6 +110,7 @@
   function hydrate() {
     if (!state || typeof state !== 'object' || Array.isArray(state)) state = defaults();
     var d = defaults(), had = {};
+    if (!state.maps || typeof state.maps !== 'object') state.maps = { key: '' }; if (state.details && typeof state.details === 'object' && (!state.details.site || typeof state.details.site !== 'object')) state.details.site = { lat: null, lng: null, place_id: '' };
     ['prices', 'rules', 'costing', 'follow_up', 'details', 'wording'].forEach(function (k) { had[k] = state[k] && typeof state[k] === 'object' ? state[k] : {}; });
     // an install that never edited a price still carries the first-release list: move it to the current defaults
     var firstRelease = Object.keys(FIRST_PRICES).every(function (k) { return had.prices[k] === FIRST_PRICES[k]; });
@@ -164,7 +166,7 @@
   // Fill anything a job record may be missing (old backups, hand-edited files) so no screen can trip on it
   function normaliseJob(j) {
     j.id = String(j.id || '').replace(/[^A-Za-z0-9_-]/g, '') || uid(); j.quote_no = String(j.quote_no || 'Q-?'); j.status = j.status || 'draft'; j.created = j.created || today();
-    j.client = Object.assign({ name: '', phone: '', email: '', address: '', first_name: '', type: 'homeowner', abn: '', bill_to: '', accounts_email: '' }, j.client && typeof j.client === 'object' ? j.client : {}); ['name', 'phone', 'email', 'address', 'first_name', 'abn', 'bill_to', 'accounts_email'].forEach(function (k) { j.client[k] = j.client[k] == null ? '' : String(j.client[k]); });
+    j.client = Object.assign({ name: '', phone: '', email: '', address: '', first_name: '', type: 'homeowner', abn: '', bill_to: '', accounts_email: '' }, j.client && typeof j.client === 'object' ? j.client : {}); ['name', 'phone', 'email', 'address', 'first_name', 'abn', 'bill_to', 'accounts_email'].forEach(function (k) { j.client[k] = j.client[k] == null ? '' : String(j.client[k]); }); j.site = Object.assign({ place_id: '', address: '', lat: null, lng: null, postcode: '', state: '', footprint_m2: null, perimeter_m: null, roof_m2: null, source: '', traced: [], storeys: 1, checked: false }, j.site && typeof j.site === 'object' ? j.site : {}); if (!Array.isArray(j.site.traced)) j.site.traced = [];
     if (['homeowner', 'agent', 'strata', 'builder', 'commercial'].indexOf(j.client.type) < 0) j.client.type = 'homeowner';
     j.summary = j.summary == null ? '' : String(j.summary); j.notes = j.notes == null ? '' : String(j.notes); j.notes_client = j.notes_client == null ? '' : String(j.notes_client);
     j.deposit_pct = (j.deposit_pct === '' || j.deposit_pct == null || isNaN(parseFloat(j.deposit_pct))) ? null : parseFloat(j.deposit_pct); j.balance_days = (j.balance_days === '' || j.balance_days == null || isNaN(parseInt(j.balance_days, 10))) ? null : parseInt(j.balance_days, 10);
@@ -248,7 +250,7 @@
   function exportAll(opts) {
     var s = load(), inc = (opts && opts.include_keys != null) ? !!opts.include_keys : !!(s.security && s.security.backup_include_keys);
     var out = JSON.parse(JSON.stringify(s)); delete out.trash;
-    if (!inc) { out.stripe = Object.assign({}, out.stripe, { key: '' }); out.sending = Object.assign({}, out.sending); ['token', 'twilio_sid', 'twilio_token', 'twilio_api_key', 'twilio_service', 'twilio_from', 'resend_key'].forEach(function (k) { if (k in out.sending) out.sending[k] = ''; }); out.keys_removed = true; }
+    if (!inc) { out.stripe = Object.assign({}, out.stripe, { key: '' }); out.maps = Object.assign({}, out.maps, { key: '' }); out.sending = Object.assign({}, out.sending); ['token', 'twilio_sid', 'twilio_token', 'twilio_api_key', 'twilio_service', 'twilio_from', 'resend_key'].forEach(function (k) { if (k in out.sending) out.sending[k] = ''; }); out.keys_removed = true; }
     else delete out.keys_removed;
     return JSON.stringify(out, null, 2);
   }
