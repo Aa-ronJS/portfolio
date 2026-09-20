@@ -63,6 +63,11 @@
     return '';
   }
   function contractThreshold(det, job, total, state) { var st = THRESHOLDS[String(state || '').toUpperCase()] ? String(state).toUpperCase() : stateOf(det, job), list = THRESHOLDS[st] || [], hit = 0; list.forEach(function (t) { if (total >= t) hit = t; }); return hit; }
+  function contractState(det, job, state) { return THRESHOLDS[String(state || '').toUpperCase()] ? String(state).toUpperCase() : stateOf(det, job); }
+  // split a term into sentences so one clause can be dropped (a room clause on an exterior job, a deposit clause when there is no deposit)
+  function sentences(t) { return String(t || '').match(/[^.!?]+[.!?]+(\s+|$)|[^.!?]+$/g) || []; }
+  function dropSentences(terms, re) { var out = []; (terms || []).forEach(function (t) { var keep = sentences(t).filter(function (s) { return !re.test(s); }).join('').trim(); if (keep) out.push(keep); }); return out; }
+  function hasBank(det) { return !!(String(det.bsb || '').trim() && String(det.account_number || '').trim()); }
   function balanceDays(job, det) { var v = job && job.balance_days != null && job.balance_days !== '' ? job.balance_days : det.balance_days; var n = parseInt(v, 10); return isNaN(n) || n < 0 ? 7 : n; }
   function depositPct(s, job, det) { try { if (window.QCPricing && QCPricing.depositPct) return num(QCPricing.depositPct(s, job)); } catch (e) {} var v = job && job.deposit_pct != null && job.deposit_pct !== '' ? job.deposit_pct : det.deposit_pct; return v === '' || v == null || isNaN(parseFloat(v)) ? 10 : Math.min(100, Math.max(0, parseFloat(v))); }
   function isOptional(l, job) { if (l.optional) return true; if (l.key) return false; return ((job && job.extras) || []).some(function (x) { return x && x.optional && (x.desc || 'Extra item') === l.desc; }); }
@@ -192,21 +197,31 @@
   };
 
   // ---- shared blocks -------------------------------------------------------------------------
-  function clientBlock(doc, title, job, snap) {
-    var c = (job && job.client) || {}, name = (snap && snap.name) || c.name || '', address = (snap && snap.address) || c.address || '', abn = (snap && snap.abn) || c.abn || '';
+  // the address block; the site address prints here (once) when the bill goes elsewhere. opts: noSite (client-wide statement), accounts (accounts email line)
+  function clientBlock(doc, title, job, snap, opts) {
+    opts = opts || {}; var c = (job && job.client) || {}, name = (snap && snap.name) || c.name || '', address = (snap && snap.address) || c.address || '', abn = (snap && snap.abn) || c.abn || '';
+    var billTo = (snap && snap.bill_to) || c.bill_to || '', accounts = opts.accounts ? String((snap && snap.accounts_email) || c.accounts_email || '').trim() : '';
     var contact = [(snap && snap.phone) || c.phone, (snap && snap.email) || c.email].filter(Boolean).join('  ·  '), rest = [];
     doc.h(title);
-    if (c.bill_to) { var bl = String(c.bill_to).split(/\r?\n/).filter(function (x) { return x.trim(); }); doc.text(bl[0] || name, 9.5, 'bold'); rest = bl.slice(1); if (abn) rest.push('ABN ' + abn); if (address) rest.push('Site: ' + address); }
-    else { doc.text(name, 9.5, 'bold'); if (abn) rest.push('ABN ' + abn); if (address) rest.push(address); }
+    if (billTo) { var bl = String(billTo).split(/\r?\n/).filter(function (x) { return x.trim(); }); doc.text(bl[0] || name, 9.5, 'bold'); rest = bl.slice(1); if (abn) rest.push('ABN ' + abn); if (address && !opts.noSite) rest.push('Site: ' + address); }
+    else { doc.text(name, 9.5, 'bold'); if (abn) rest.push('ABN ' + abn); if (address && !opts.noSite) rest.push(address); }
     if (contact) rest.push(contact);
+    if (accounts && accounts !== ((snap && snap.email) || c.email || '')) rest.push('Accounts: ' + accounts);
     if (rest.length) doc.text(rest.join('\n'), 9);
   }
+  // the payment box. With no BSB and account number there is nothing to transfer to, so it says how to pay instead of printing "Pay by bank transfer" over a blank.
   function payItems(doc, det, ref, lead, payUrl) {
-    var parts = [det.account_name ? 'Account name ' + det.account_name : '', det.bsb ? 'BSB ' + det.bsb : '', det.account_number ? 'Account ' + det.account_number : '', ref ? 'Ref ' + ref : ''].filter(Boolean);
-    var items = [{ t: lead + (parts.length ? '  ·  ' + parts.join('  ·  ') : ''), size: 9, style: 'bold' }];
+    var items = [];
+    if (hasBank(det)) {
+      var parts = [det.account_name ? 'Account name ' + det.account_name : '', 'BSB ' + det.bsb, 'Account ' + det.account_number, ref ? 'Ref ' + ref : ''].filter(Boolean);
+      items.push({ t: lead + '  ·  ' + parts.join('  ·  '), size: 9, style: 'bold' });
+    } else {
+      var alt = 'Pay by cash, or phone us for bank details' + (det.phone ? ' on ' + det.phone : '') + '.';
+      items.push({ t: /^Pay by bank transfer$/i.test(lead) ? alt : lead + '. ' + alt, size: 9, style: 'bold' });
+    }
     if (det.other_payments) items.push({ t: det.other_payments, size: 8.3 });
     var u = safeUrl(payUrl); if (u) items.push({ t: 'Pay by card (no surcharge): ' + u, size: 8.6, style: 'bold', color: doc.accent, url: u });
-    items.push({ t: 'We will never change our bank details by text or email. If you receive a message saying we have, phone us' + (det.phone ? ' on ' + det.phone : '') + ' before paying.', size: 8, color: MUTE });
+    if (hasBank(det)) items.push({ t: 'We will never change our bank details by text or email. If you receive a message saying we have, phone us' + (det.phone ? ' on ' + det.phone : '') + ' before paying.', size: 8, color: MUTE });
     return items;
   }
   function payBox(doc, det, ref, lead, payUrl) { doc.box(payItems(doc, det, ref, lead, payUrl), PAPER); }
@@ -243,7 +258,7 @@
     var coats = parseInt(s.costing.coats, 10) || 2, rooms = (job.rooms || []), used = {}, out = [];
     lines.forEach(function (l) { var b = BASE[l.key], t = b ? b[1] : (l.paint_type || ''); if (l.key === 'p_feature') t = 'feature'; if (l.key === 'p_colour_change') t = 'walls'; if (t && t !== 'none') used[t] = true; });
     var wallRooms = rooms.filter(function (r) { return r && r.type !== 'exterior' && (!r.surfaces || r.surfaces.walls !== false); }), changed = wallRooms.filter(function (r) { return r.colour_change; }).length;
-    var extCoats = coats; rooms.forEach(function (r) { if (r && r.type === 'exterior' && parseInt(r.ext && r.ext.coats, 10) > extCoats) extCoats = parseInt(r.ext.coats, 10); });
+    var extCoats = coats; rooms.forEach(function (r) { if (!r || r.type !== 'exterior') return; var c = parseInt(r.coats != null && r.coats !== '' ? r.coats : (r.ext && r.ext.coats), 10); if (c > extCoats) extCoats = c; }); // same field order as the engine
     ['walls', 'ceilings', 'feature', 'enamel', 'exterior', 'oil', 'sealer'].forEach(function (t) {
       if (!used[t]) return; var n = coats, note = '';
       if (t === 'walls' && changed) { if (changed === wallRooms.length) { n = coats + 1; note = ' (colour change)'; } else note = ', ' + (coats + 1) + ' where the colour changes'; }
@@ -300,11 +315,17 @@
       doc.table(cols, opt.map(function (l) { return { cells: lineCells(doc, l, showRates), color: l.confirm ? ORANGE : null }; }).concat([{ kv: ['Options subtotal' + (gstOn ? ', ex GST' : ''), doc.m(sum(opt, function (l) { return l.amount; }))], bold: true, noline: true }]), { noHeader: true });
     }
 
-    // basis: only what the client needs to know
-    var based = [], typed = (job.rooms || []).some(function (r) { return r && !(r.method === 'measured' && r.walls && r.walls.length) && (num(r.L) > 0 || num(r.perimeter_m) > 0 || num(r.ceiling_m2) > 0 || r.type === 'exterior'); });
-    if (typed && main.length) based.push('Room sizes supplied by the client, confirmed on site before work starts.');
-    if (num(priced.measured_rooms) > 0) based.push(priced.measured_rooms + ' of ' + priced.total_rooms + ' rooms measured on site.');
-    (priced.assumptions || []).forEach(function (a) { if (!/ceiling height assumed|as advised, not measured|supplied by (the )?client|travel|paint in full tins|minimum job charge|premium paint requested|ceiling taken as|tins?:/i.test(String(a))) based.push(a); });
+    // basis: only what the client needs to know. One sizes line per quote: measured on site by us unless a room's sizes came from the client (room.measured_by 'client').
+    var based = [], sizedRooms = (job.rooms || []).filter(function (r) { return r && (num(r.L) > 0 || num(r.perimeter_m) > 0 || num(r.ceiling_m2) > 0 || r.type === 'exterior' || (r.walls && r.walls.length)); });
+    var appMeasured = function (r) { return r.method === 'measured' && r.walls && r.walls.length; }, typedRooms = sizedRooms.filter(function (r) { return !appMeasured(r); }), byClient = typedRooms.filter(function (r) { return r.measured_by === 'client'; });
+    var roomWord = hasInt ? 'room' : 'area', roomName = function (r, i) { return String(r.name || (roomWord === 'room' ? 'Room ' : 'Area ') + (i + 1)); };
+    if (main.length && sizedRooms.length) {
+      if (!byClient.length) based.push('Sizes measured on site by us.');
+      else if (byClient.length === sizedRooms.length) based.push((hasInt ? 'Room sizes' : 'Sizes') + ' supplied by the client, confirmed on site before work starts.');
+      else if (byClient.length === typedRooms.length) based.push(sizedRooms.length - byClient.length + ' of ' + sizedRooms.length + ' ' + roomWord + 's measured on site by us; the other sizes were supplied by the client and are confirmed on site before work starts.');
+      else based.push('Sizes measured on site by us, except ' + byClient.map(function (r) { return roomName(r, sizedRooms.indexOf(r)); }).join(', ') + ' (sizes supplied by the client, confirmed on site before work starts).');
+    }
+    (priced.assumptions || []).forEach(function (a) { if (!/ceiling height assumed|as advised, not measured|supplied by (the )?client|sizes measured on site|measured on site by us|travel|paint in full tins|minimum job charge|premium paint requested|ceiling taken as|tins?:/i.test(String(a))) based.push(a); });
     var coats = coatsLines(job, s, main);
     if (based.length || coats.length) { doc.h(based.length && coats.length ? 'Basis, coats and products' : based.length ? 'Basis' : 'Coats and products'); doc.bullets(based.concat(coats)); }
     var colours = colourRows(job);
@@ -315,26 +336,41 @@
     if (job.client_paint) { inc = inc.filter(function (t) { return !/materials/i.test(t); }); if (!based.some(function (a) { return /paint supplied by (the )?client/i.test(a); })) inc = inc.concat(['Paint supplied by the client; we supply sundries and equipment.']); }
     doc.twoCol([{ title: 'Included', items: inc }, { title: 'Not included', items: exc }]);
 
-    var terms = ['Valid until ' + fmtDate(valid) + '. Fixed price for the work and areas described.'].concat(Array.isArray(wd.terms) ? wd.terms.filter(Boolean) : []);
-    var dueTxt = days > 0 ? 'within ' + days + ' ' + plural(days, 'day', 'days') + ' of completion' : 'on completion';
-    var depositApplies = pct > 0 && deposit > 0;
-    if (!depositApplies) terms.push('No deposit required. Payment is due ' + dueTxt + '.');
+    // terms: the painter's standard terms, minus clauses that do not fit this job. The deposit clause is replaced by the specific line below;
+    // on a job with no interior rooms every sentence about rooms goes and the exterior access clause is used instead.
+    var depositApplies = pct > 0 && deposit > 0, dueTxt = days > 0 ? 'within ' + days + ' ' + plural(days, 'day', 'days') + ' of completion' : 'on completion';
+    var std = dropSentences(Array.isArray(wd.terms) ? wd.terms.filter(Boolean) : [], depositApplies ? /deposit shown/i : /\bdeposit\b/i);
+    if (!hasInt) std = dropSentences(std, /\brooms?\b|clear access/i);
+    if (!hasInt && main.length) { var at = std.length; std.forEach(function (t, i) { if (at === std.length && /variations? are priced/i.test(t)) at = i + 1; }); std.splice(at, 0, 'Please keep the areas being painted clear on the booked days: move vehicles, pot plants, outdoor furniture and anything else near the walls, and leave power and water available.'); }
+    var terms = ['Valid until ' + fmtDate(valid) + '. Fixed price for the work and areas described.'].concat(std);
+    if (!depositApplies) terms.push('No deposit required. Payment ' + dueTxt + '.');
     else if (pct >= 100 && !cap) terms.push('Full payment (' + doc.m(deposit) + ') confirms the booking.');
     else if (cap) terms.push('A deposit of ' + doc.m(deposit) + ' confirms the booking, the most allowed for this work' + (cap.state ? ' under ' + cap.state + ' rules' : '') + '. The balance is due ' + dueTxt + '.');
     else terms.push('A ' + (Math.round(pct * 10) / 10) + '% deposit (' + doc.m(deposit) + ') confirms the booking. The balance is due ' + dueTxt + '.');
     if (Array.isArray(job.progress_schedule) && job.progress_schedule.length) terms.push('Payment schedule: ' + job.progress_schedule.map(function (p) { return (p.label || '') + ' ' + num(p.pct) + '%'; }).join(', ') + '. Each claim is due ' + (days > 0 ? 'within ' + days + ' ' + plural(days, 'day', 'days') : 'on receipt') + '.');
-    if (hasExt) terms.push('Exterior dates may move with the weather. We do not paint in rain, on wet surfaces or in extreme heat; days lost this way extend the finish date.');
+    if (hasExt) { var wx = Array.isArray(wd.terms_ext) ? wd.terms_ext.filter(Boolean) : []; terms = terms.concat(wx.length ? wx : ['Exterior dates may move with the weather. We do not paint in rain, on wet surfaces or in extreme heat; days lost this way extend the finish date.']); }
     var wy = parseInt(wd.warranty_years, 10); if (isNaN(wy)) wy = 5;
     if (wy > 0) terms.push('Workmanship guarantee: ' + wy + ' ' + plural(wy, 'year', 'years') + ' against peeling and flaking caused by our application (excludes decks, exterior horizontal surfaces, substrate movement, moisture ingress and pre-existing coating failure). Statutory warranties apply and are not limited by this quote.');
     else terms.push('Statutory warranties apply and are not limited by this quote.');
     doc.h('Terms'); doc.bullets(terms);
 
-    var acc = String(wd.accept || ''); if (!depositApplies) acc = wd.accept_no_deposit || acc.replace(/,? and pay the deposit[^.]*(?=\.)/i, '').replace(/[^.]*pay the deposit[^.]*\.\s*/i, '');
-    doc.h('To accept'); if (acc) doc.text(acc, 8.8);
-    var thr = contractThreshold(det, job, fig.total, priced.state);
-    if (thr) { doc.gap(1); doc.text('This work is above ' + money(thr) + ', so a written contract signed by both of us is required before work starts; acceptance by text or email alone does not form the contract.', 8.8, 'bold'); }
+    // to accept: one story. At or above the state's written-contract figure the quote is signed and sent back (by both sides); below it a reply by text or email is enough.
+    var thr = contractThreshold(det, job, fig.total, priced.state), thrState = thr ? contractState(det, job, priced.state) : '', acc;
+    if (thr) {
+      var payStep = !depositApplies ? '' : (pct >= 100 && !cap ? ' Then pay the full amount of ' + doc.m(deposit) + ' shown below.' : ' Then pay the deposit of ' + doc.m(deposit) + ' shown below.');
+      acc = String(wd.accept_contract || '').trim() || ('To accept, sign and date below and send this page back to us; a photo of it by text or email is fine.' + payStep + ' Tell us your preferred start week and we will book you in.');
+    } else {
+      acc = String(wd.accept || ''); if (!depositApplies) acc = wd.accept_no_deposit || acc.replace(/,? and pay the deposit[^.]*(?=\.)/i, '').replace(/[^.]*pay the deposit[^.]*\.\s*/i, '');
+    }
+    var thrText = thr ? 'This job is over ' + money(thr) + ', so ' + (thrState ? 'in ' + thrState + ' ' : '') + 'the law needs a written contract signed by both of us before work starts. This quote, signed below by you and by us, is that contract. A reply by text or email on its own does not form the contract.' : '';
     var pay = payItems(doc, det, no, depositApplies ? (pct >= 100 && !cap ? 'Full payment of ' : 'Deposit of ') + doc.m(deposit) : 'Pay by bank transfer', q.pay_url || job.pay_url);
-    doc.need(17 + 1.5 + doc.boxHeight(pay)); doc.signature(['Accepted by (name and signature)', 'Date']);
+    // keep the To accept heading, its words, the signature lines and the payment box on one page rather than leaving the signature lines alone on a new one
+    doc.d.setFontSize(8.8); var accH = (doc.d.splitTextToSize(clean(acc), doc.W).length + (thrText ? doc.d.splitTextToSize(clean(thrText), doc.W).length + 1 : 0)) * 8.8 * 0.42;
+    doc.need(Math.min(3.2 + 6 + accH + 17 * (thr ? 2 : 1) + 1.5 + doc.boxHeight(pay), doc.B - 20));
+    doc.h('To accept'); if (acc) doc.text(acc, 8.8);
+    if (thr) { doc.gap(1); doc.text(thrText, 8.8, 'bold'); }
+    doc.need(17 * (thr ? 2 : 1) + 1.5 + doc.boxHeight(pay)); doc.signature(['Accepted by (name and signature)', 'Date']);
+    if (thr) doc.signature(['For ' + (det.trading_name || 'us') + ' (name and signature)', 'Date']);
     doc.gap(1.5); doc.box(pay, PAPER);
     doc.signoff(det);
     return doc.finish(no);
@@ -388,7 +424,7 @@
     doc.header(det, title, inv.no || 'INV-?', meta);
     if (!gstOn) { doc.text('No GST has been charged.', 8.6, 'normal', MUTE); doc.gap(0.5); }
     clientBlock(doc, 'Bill to', job, inv.client_snapshot);
-    var descr = [job.summary, kindLine(inv, job)].filter(Boolean); if (job.client && job.client.bill_to && job.client.address) descr.push('Site: ' + job.client.address);
+    var descr = [job.summary, kindLine(inv, job)].filter(Boolean); // the site address is in the Bill to block; it does not print again here
     var acc = job.acceptance; if (acc && acc.date && /final|full|progress/.test(inv.kind || '')) descr.push('Quote ' + quoteNo(job) + ' accepted' + (acc.how ? ' by ' + acc.how : '') + ' on ' + fmtDate(acc.date) + (acc.by ? ' (' + acc.by + ')' : '') + '.');
     doc.h('Description'); doc.text(descr.join('\n'), 9.2);
     if (isVoid) { doc.gap(1); doc.text('VOID. This invoice was cancelled on ' + fmtDate(inv.void.date || inv.date) + (inv.void.reason ? ': ' + inv.void.reason : '') + '. Nothing is owed on it.', 9, 'bold', RED); }
@@ -411,21 +447,32 @@
   }
 
   // ---- RECEIPT -------------------------------------------------------------------------------
+  // payment: the payment object itself (matched by identity, then by id), or its index in inv.payments. Two equal payments on one day are told apart,
+  // and the balance shown is the balance after THAT payment: earlier-dated payments, plus same-day payments recorded before it.
   function receiptPDF(job, inv, payment, s0) {
     var s = settingsOf(s0); job = job || {}; inv = inv || {}; var det = Object.assign({}, s.details), doc = new Doc(s0 && s0.details ? s0 : { details: det });
-    var pays = payments(inv), p = payment || pays[pays.length - 1] || { date: today(), amount: inv.total, method: '' }, idx = -1;
-    pays.forEach(function (x, i) { if (idx < 0 && x.date === (p.date || '') && Math.abs(x.amount - r2(p.amount)) < 0.005 && (x.ref || '') === (p.ref || '')) idx = i; });
-    if (idx < 0) idx = pays.length; var upTo = pays.slice(0, Math.min(idx + 1, pays.length)), received = idx >= pays.length ? r2(sum(pays, function (x) { return x.amount; }) + num(p.amount)) : sum(upTo, function (x) { return x.amount; });
-    var remaining = r2(num(inv.total) - received - sum(creditNotes(inv), function (c) { return c.amount; })), no = p.no || 'R-' + String(inv.no || '').replace(/^INV-/i, '') + (idx > 0 ? '-' + (idx + 1) : '');
+    var raw = (inv.payments || []), rawIdx = -1, p = null;
+    if (typeof payment === 'number' && raw[payment]) rawIdx = payment;
+    else if (payment && typeof payment === 'object') { rawIdx = raw.indexOf(payment); if (rawIdx < 0 && payment.id != null) raw.forEach(function (x, i) { if (rawIdx < 0 && x && x.id != null && String(x.id) === String(payment.id)) rawIdx = i; }); if (rawIdx < 0) raw.forEach(function (x, i) { if (rawIdx < 0 && x && x.date === (payment.date || '') && Math.abs(num(x.amount) - num(payment.amount)) < 0.005 && (x.ref || '') === (payment.ref || '')) rawIdx = i; }); }
+    else if (payment == null) { for (var k = raw.length - 1; k >= 0; k--) { if (raw[k] && num(raw[k].amount) !== 0) { rawIdx = k; break; } } }
+    var pays = payments(inv); // filtered list used for totals (old data: paid_date only)
+    if (rawIdx >= 0) p = { date: raw[rawIdx].date || '', amount: r2(raw[rawIdx].amount), method: raw[rawIdx].method || '', ref: raw[rawIdx].ref || '', no: raw[rawIdx].no };
+    else if (payment && typeof payment === 'object') p = { date: payment.date || '', amount: r2(payment.amount), method: payment.method || '', ref: payment.ref || '', no: payment.no };
+    else p = pays[pays.length - 1] || { date: today(), amount: r2(inv.total), method: '' };
+    var pDate = p.date || today(), received = 0, seq = 0, ordinal = 0;
+    if (rawIdx >= 0) { raw.forEach(function (x, i) { if (!x || num(x.amount) === 0) return; var before = (x.date || '') < pDate || ((x.date || '') === pDate && i <= rawIdx); if (before) { received = r2(received + num(x.amount)); seq++; } if (i <= rawIdx) ordinal++; }); }
+    else { received = r2(sum(pays, function (x) { return x.amount; }) + (pays.indexOf(p) < 0 ? num(p.amount) : 0)); ordinal = pays.length + (pays.indexOf(p) < 0 ? 1 : 0); }
+    var credits = creditNotes(inv).filter(function (c) { return !c.date || c.date <= pDate; });
+    var remaining = r2(num(inv.total) - received - sum(credits, function (c) { return c.amount; })), no = p.no || 'R-' + String(inv.no || '').replace(/^INV-/i, '') + (ordinal > 1 ? '-' + ordinal : '');
     doc.cents = [p.amount, inv.total, inv.gst, received, remaining].some(hasCents);
-    doc.header(det, 'Receipt', no, ['Date ' + fmtDate(p.date || today()), 'Invoice ' + (inv.no || ''), 'Quote ' + quoteNo(job)]);
+    doc.header(det, 'Receipt', no, ['Date ' + fmtDate(pDate), 'Invoice ' + (inv.no || ''), 'Quote ' + quoteNo(job)]);
     clientBlock(doc, 'Received from', job, inv.client_snapshot);
     doc.h('Payment');
-    doc.box([{ t: 'Received ' + doc.m(p.amount) + ' by ' + (METHOD[p.method] || p.method || 'payment') + (p.ref ? ', reference ' + p.ref : '') + ' on ' + fmtDate(p.date || today()) + '.', size: 10.5, style: 'bold' }], PAPER);
+    doc.box([{ t: 'Received ' + doc.m(p.amount) + ' by ' + (METHOD[p.method] || p.method || 'payment') + (p.ref ? ', reference ' + p.ref : '') + ' on ' + fmtDate(pDate) + (seq > 1 ? ' (payment ' + seq + ' on this invoice)' : '') + '.', size: 10.5, style: 'bold' }], PAPER);
     doc.h('Against');
     var rows = [{ cells: [invoiceKindWord(inv) + ' ' + (inv.no || '') + ' dated ' + fmtDate(inv.date) + (job.summary ? ', ' + job.summary : ''), doc.m(inv.total)] }];
     if (num(inv.gst)) rows.push({ cells: ['GST shown on that invoice', doc.m(inv.gst)], color: MUTE, size: 8.3 });
-    rows.push({ kv: ['Paid to date', doc.m(received)], noline: true, color: MUTE });
+    rows.push({ kv: ['Paid to date, including this payment', doc.m(received)], noline: true, color: MUTE });
     rows.push({ kv: [remaining > 0.005 ? 'Balance remaining' : 'Balance remaining', remaining > 0.005 ? doc.m(remaining) : 'Nil, paid in full'], bold: true, noline: true, fill: doc.accent, color: onAccent(doc.accent), size: 10 });
     doc.table([{ t: 'Invoice', w: 150 }, { t: 'Amount', w: 28, align: 'right' }], rows);
     if (remaining > 0.005) { doc.gap(1); doc.text('The balance of ' + doc.m(remaining) + ' is due ' + (inv.due ? 'by ' + fmtDate(inv.due) : 'on receipt') + '. Reference ' + (inv.no || '') + '.', 9); }
@@ -435,12 +482,18 @@
   }
 
   // ---- STATEMENT -----------------------------------------------------------------------------
-  function statementPDF(jobs, s0) {
-    var s = settingsOf(s0); jobs = (Array.isArray(jobs) ? jobs : [jobs]).filter(function (j) { return j && typeof j === 'object'; }); var det = Object.assign({}, s.details), doc = new Doc(s0 && s0.details ? s0 : { details: det });
-    var first = jobs[0] || {}, asAt = today(), entries = [], k = 0;
+  // statementPDF(jobs, s, opts): jobs is the client's jobs (an array; a single job object is wrapped). Client-wide by default: every invoice, payment
+  // and credit note across those jobs, addressed to the bill-to (or the client) with the accounts email when set. opts.perJob prints one job only.
+  // opts.client (optional) overrides the address block. Old call shape statementPDF(job, s) still works.
+  function statementPDF(jobs, s0, opts) {
+    opts = opts || {}; var s = settingsOf(s0); jobs = (Array.isArray(jobs) ? jobs : [jobs]).filter(function (j) { return j && typeof j === 'object'; }); if (opts.perJob) jobs = jobs.slice(0, 1);
+    var det = Object.assign({}, s.details), doc = new Doc(s0 && s0.details ? s0 : { details: det });
+    var first = jobs[0] || {}, asAt = today(), entries = [], k = 0, multi = jobs.length > 1, perJob = !!opts.perJob;
+    var billed = !!((first.client && first.client.bill_to) || (opts.client && opts.client.bill_to));
     jobs.forEach(function (job) {
       (job.invoices || []).filter(Boolean).forEach(function (inv) {
-        var what = String(job.summary || quoteNo(job)); if (what.length > 60) what = what.slice(0, 57).replace(/\s+\S*$/, '') + '...';
+        var what = String((multi && billed && job.client && job.client.address) ? job.client.address : (job.summary || quoteNo(job))); if (what.length > 60) what = what.slice(0, 57).replace(/\s+\S*$/, '') + '...';
+        if (multi && !/\bQ-?\d/.test(what)) what += ' (' + quoteNo(job) + ')';
         if (inv.void) { entries.push({ date: inv.date || '', ref: inv.no || '', detail: invoiceKindWord(inv) + ', void' + (inv.void.reason ? ' (' + inv.void.reason + ')' : ''), debit: 0, credit: 0, k: k++, muted: true }); return; }
         entries.push({ date: inv.date || '', ref: inv.no || '', detail: invoiceKindWord(inv) + ', ' + what + (inv.due ? ', due ' + shortDate(inv.due) : ''), debit: r2(inv.total), credit: 0, k: k++, inv: inv });
         payments(inv).forEach(function (p) { entries.push({ date: p.date || '', ref: p.ref || (METHOD[p.method] || ''), detail: 'Payment received, ' + (inv.no || '') + (p.method && p.ref ? ' (' + (METHOD[p.method] || p.method) + ')' : ''), debit: 0, credit: p.amount, k: k++ }); });
@@ -451,13 +504,14 @@
     var bal = 0, overdue = 0, oldestOpen = '';
     entries.forEach(function (e) { bal = r2(bal + e.debit - e.credit); e.bal = bal; if (e.inv) { var b = balanceOf(e.inv); if (b > 0.005) { if (!oldestOpen) oldestOpen = e.inv.no; if (e.inv.due && e.inv.due < asAt) overdue = r2(overdue + b); } } });
     doc.cents = entries.some(function (e) { return hasCents(e.debit) || hasCents(e.credit) || hasCents(e.bal); });
-    doc.header(det, 'Statement', fmtDate(asAt), ['Statement of account', jobs.length > 1 ? jobs.length + ' jobs' : quoteNo(first)]);
-    clientBlock(doc, 'For', first, null);
+    var scope = perJob ? 'This job only, ' + quoteNo(first) : multi ? 'All jobs (' + jobs.length + ')' : quoteNo(first);
+    doc.header(det, 'Statement', fmtDate(asAt), ['Statement of account', scope]);
+    clientBlock(doc, 'For', opts.client ? { client: opts.client } : first, null, { noSite: multi, accounts: true });
     doc.h('Account');
     var rows = entries.map(function (e) { return { cells: [shortDate(e.date), e.ref, e.detail, e.debit ? doc.m(e.debit) : '', e.credit ? doc.m(e.credit) : '', e.muted ? '' : doc.m(e.bal)], color: e.muted ? FAINT : null }; });
     if (!rows.length) rows.push({ cells: ['', '', 'No invoices yet', '', '', ''], color: MUTE });
     rows.push({ kv: [bal > 0.005 ? 'Balance due' : bal < -0.005 ? 'In credit' : 'Balance', doc.m(Math.abs(bal))], bold: true, noline: true, fill: doc.accent, color: onAccent(doc.accent), size: 10 });
-    doc.table([{ t: 'Date', w: 24 }, { t: 'Ref', w: 22 }, { t: 'Detail', w: 72 }, { t: 'Charged', w: 20, align: 'right' }, { t: 'Received', w: 20, align: 'right' }, { t: 'Balance', w: 20, align: 'right' }], rows, { size: 8.3 });
+    doc.table([{ t: 'Date', w: 24 }, { t: 'Ref', w: 22 }, { t: 'Detail', w: 72 }, { t: 'Charged', w: 20, align: 'right' }, { t: 'Received', w: 20, align: 'right' }, { t: 'Balance', w: 20, align: 'right' }], rows, { size: entries.length > 26 ? 7.6 : 8.3 }); // smaller rows keep a long account on one page
     doc.gap(2);
     if (bal > 0.005) { doc.box([{ t: 'Balance due ' + doc.m(bal) + (overdue > 0.005 ? ', of which ' + doc.m(overdue) + ' is past its due date.' : '.'), size: 10.5, style: 'bold' }], null, INK); payBox(doc, det, oldestOpen || 'the invoice number', 'Pay by bank transfer', null); }
     else if (bal < -0.005) doc.box([{ t: 'Your account is in credit by ' + doc.m(-bal) + '. We will take it off the next invoice or refund it, whichever you prefer.', size: 10, style: 'bold' }], null, INK);
@@ -473,7 +527,7 @@
     doc.cents = [ex, gst, total].some(hasCents);
     doc.header(det, 'Variation', label, ['Date ' + fmtDate(v.date || today()), 'Quote ' + qn]);
     clientBlock(doc, 'Prepared for', job);
-    doc.h('Job'); doc.text([job.summary, job.client && job.client.address].filter(Boolean).join('\n') || qn, 9.2);
+    doc.h('Job'); doc.text(job.summary || qn, 9.2); // the address is already in the block above
     doc.h(label + ' to quote ' + qn); doc.text(v.desc || '', 9.5);
     doc.gap(1.5);
     var rows = gstOn ? [{ kv: ['Amount ex GST', doc.m(ex)], noline: true, color: MUTE }, { kv: ['GST 10%', doc.m(gst)], noline: true, color: MUTE }] : [];

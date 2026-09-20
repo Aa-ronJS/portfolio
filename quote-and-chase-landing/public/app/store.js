@@ -49,7 +49,8 @@
         voice: 'friendly', sign_off: 'Cheers', logo: '', postcode: '', quote_prefix: 'Q-', invoice_prefix: 'INV-', first_name_signoff: true, contact_phone_in_texts: true, brand_colour: '', show_rates: false },
       prices: prices,
       rules: { minimum_job: 600, travel_per_km: 1.2, travel_per_day: true, premium_paint_pct: 15, ceiling_height_m: 2.4, free_radius_km: 30, travel_return: true, road_factor: 1.2,
-        deposit_pct: 10, balance_days: 7, deposit_due_days: 5, deposit_terms_business_days: 14, poor_seal_pct: 30, storey_uplift_pct: 20 },
+        deposit_pct: 10, balance_days: 7, deposit_due_days: 5, deposit_terms_business_days: 14, poor_seal_pct: 30, storey_uplift_pct: 20,
+        business_deposit_pct: 0, business_days: 30 }, // business terms: agents, strata, builders and commercial clients get no deposit and 30 days unless the job says otherwise
       costing: (window.QCCosting ? QCCosting.defaults() : {}),
       follow_up: { quote_days: [3, 7, 14], invoice_days: [3, 10, 21], remind_hour: 9, business_days_only: true },
       stripe: { key: '', enabled: false },
@@ -121,6 +122,8 @@
     if (had.rules.deposit_pct == null) { var dp = parseFloat(had.details.deposit_pct); r.deposit_pct = !isNaN(dp) && dp !== 20 ? dp : 10; }
     if (had.rules.balance_days == null) { var bd = parseInt(had.details.balance_days, 10); r.balance_days = !isNaN(bd) ? bd : 7; }
     if (had.details.deposit_pct === 20 || had.details.deposit_pct == null) state.details.deposit_pct = r.deposit_pct;
+    // business terms (round two): older installs get the defaults, no deposit and 30 days for business clients
+    if (had.rules.business_deposit_pct == null || isNaN(parseFloat(had.rules.business_deposit_pct))) r.business_deposit_pct = 0; if (had.rules.business_days == null || isNaN(parseInt(had.rules.business_days, 10))) r.business_days = 30;
     // costing: nested tables filled per key; first-release labour, markup, ceiling paint and tins move to the new defaults when untouched
     var c = state.costing, dc = d.costing;
     if (had.costing.charge_tins === true && (had.costing.labour_rate === 65 || had.costing.labour_rate == null) && (had.costing.margin_pct === 25 || had.costing.margin_pct == null)) c.charge_tins = false;
@@ -161,19 +164,21 @@
   // Fill anything a job record may be missing (old backups, hand-edited files) so no screen can trip on it
   function normaliseJob(j) {
     j.id = String(j.id || '').replace(/[^A-Za-z0-9_-]/g, '') || uid(); j.quote_no = String(j.quote_no || 'Q-?'); j.status = j.status || 'draft'; j.created = j.created || today();
-    j.client = Object.assign({ name: '', phone: '', email: '', address: '', first_name: '', type: 'homeowner', abn: '', bill_to: '' }, j.client && typeof j.client === 'object' ? j.client : {}); ['name', 'phone', 'email', 'address', 'first_name', 'abn', 'bill_to'].forEach(function (k) { j.client[k] = j.client[k] == null ? '' : String(j.client[k]); });
+    j.client = Object.assign({ name: '', phone: '', email: '', address: '', first_name: '', type: 'homeowner', abn: '', bill_to: '', accounts_email: '' }, j.client && typeof j.client === 'object' ? j.client : {}); ['name', 'phone', 'email', 'address', 'first_name', 'abn', 'bill_to', 'accounts_email'].forEach(function (k) { j.client[k] = j.client[k] == null ? '' : String(j.client[k]); });
     if (['homeowner', 'agent', 'strata', 'builder', 'commercial'].indexOf(j.client.type) < 0) j.client.type = 'homeowner';
     j.summary = j.summary == null ? '' : String(j.summary); j.notes = j.notes == null ? '' : String(j.notes); j.notes_client = j.notes_client == null ? '' : String(j.notes_client);
     j.deposit_pct = (j.deposit_pct === '' || j.deposit_pct == null || isNaN(parseFloat(j.deposit_pct))) ? null : parseFloat(j.deposit_pct); j.balance_days = (j.balance_days === '' || j.balance_days == null || isNaN(parseInt(j.balance_days, 10))) ? null : parseInt(j.balance_days, 10);
+    j.sent_how = ['text', 'email', 'other'].indexOf(j.sent_how) >= 0 ? j.sent_how : ''; j.sent_confirmed = j.sent_confirmed == null ? !!j.sent_date : !!j.sent_confirmed; j.sent_date = j.sent_date == null ? '' : String(j.sent_date); // A1: how the quote went out, set only by the Did-it-go step
     j.auto_follow_ups = j.auto_follow_ups !== false; j.hold = j.hold && typeof j.hold === 'object' ? { on: !!j.hold.on, note: j.hold.note == null ? '' : String(j.hold.note) } : { on: false, note: '' }; j.client_paint = !!j.client_paint;
     j.rooms = (Array.isArray(j.rooms) ? j.rooms : []).filter(function (r) { return r && typeof r === 'object'; }).map(function (r) { r.id = String(r.id || '').replace(/[^A-Za-z0-9_-]/g, '') || uid(); r.type = r.type === 'exterior' ? 'exterior' : 'interior'; r.method = r.method === 'measured' ? 'measured' : 'typed'; r.walls = (Array.isArray(r.walls) ? r.walls : []).filter(function (w) { return w && typeof w === 'object'; }).map(function (w) { w.openings = Array.isArray(w.openings) ? w.openings : []; w.width_mm = +w.width_mm || 0; w.height_mm = +w.height_mm || 0; w.paint_area_m2 = +w.paint_area_m2 || 0; w.wall = w.wall || 'Wall'; w.expected_error_pct = w.expected_error_pct == null ? '' : w.expected_error_pct; return w; }); r.surfaces = Object.assign({ walls: true, ceiling: true, skirting: true }, r.surfaces || {}); r.ext = r.ext && typeof r.ext === 'object' ? r.ext : {};
       r.colour_change = !!r.colour_change; r.cornice = !!r.cornice; r.high_access = !!r.high_access; r.exclude_m2 = r.exclude_m2 == null ? '' : r.exclude_m2; r.perimeter_m = r.perimeter_m == null ? '' : r.perimeter_m; r.ceiling_m2 = r.ceiling_m2 == null ? '' : r.ceiling_m2; r.window_kind = r.window_kind === 'timber' ? 'timber' : 'alu'; r.panelled_doors = +r.panelled_doors || 0;
-      if (r.type === 'exterior') { r.ext.condition = ['good', 'fair', 'poor'].indexOf(r.ext.condition) >= 0 ? r.ext.condition : 'good'; r.ext.storeys = +r.ext.storeys === 2 ? 2 : 1; r.ext.coats = +r.ext.coats === 3 ? 3 : 2; }
+      r.measured_by = r.measured_by === 'client' ? 'client' : 'us'; r.price_override = (r.price_override === '' || r.price_override == null || isNaN(parseFloat(r.price_override))) ? null : Math.max(0, parseFloat(r.price_override)); // A1: who measured typed sizes; the painter's own price for the room
+      if (r.type === 'exterior') { r.ext.condition = ['good', 'fair', 'poor'].indexOf(r.ext.condition) >= 0 ? r.ext.condition : 'good'; r.ext.storeys = +r.ext.storeys === 2 ? 2 : 1; r.ext.coats = +r.ext.coats === 3 ? 3 : 2; r.ext.condition_scope = ['all', 'half', 'side'].indexOf(r.ext.condition_scope) >= 0 ? r.ext.condition_scope : 'all'; }
       return r; });
     j.extras = (Array.isArray(j.extras) ? j.extras : []).filter(function (x) { return x && typeof x === 'object'; }).map(function (x) { x.optional = !!x.optional; return x; });
     j.invoices = (Array.isArray(j.invoices) ? j.invoices : []).filter(function (i) { return i && typeof i === 'object'; }).map(function (i) {
       i.lines = Array.isArray(i.lines) ? i.lines : []; i.follow_ups = Array.isArray(i.follow_ups) ? i.follow_ups : []; i.total = Math.round((+i.total || 0) * 100) / 100; i.no = i.no || 'INV-?'; i.due = i.due || today(); i.date = i.date || i.due;
-      i.kind = ['deposit', 'progress', 'final', 'full', 'variations'].indexOf(i.kind) >= 0 ? i.kind : 'final'; i.paid_date = i.paid_date || '';
+      i.kind = ['deposit', 'progress', 'final', 'full', 'variations'].indexOf(i.kind) >= 0 ? i.kind : 'final'; i.paid_date = i.paid_date || ''; i.sent_how = ['text', 'email', 'other'].indexOf(i.sent_how) >= 0 ? i.sent_how : ''; i.sent_confirmed = i.sent_confirmed == null ? true : !!i.sent_confirmed;
       i.payments = (Array.isArray(i.payments) ? i.payments : []).filter(function (p) { return p && typeof p === 'object'; }).map(function (p) { p.amount = Math.round((+p.amount || 0) * 100) / 100; p.date = p.date || today(); p.method = p.method || 'other'; p.ref = p.ref == null ? '' : String(p.ref); p.id = p.id || uid(); return p; });
       // migration: an invoice marked paid before payments existed becomes one payment for the full amount on that day
       if (i.paid_date && !i.payments.length && i.total > 0 && !i.void) i.payments.push({ id: uid(), date: i.paid_date, amount: i.total, method: i.paid_by === 'card' ? 'card' : 'other', ref: '', migrated: true });
@@ -200,19 +205,39 @@
   function newJob() {
     var s = load();
     var job = { id: uid(), quote_no: nextQuoteNo(true), created: today(), status: 'draft',
-      client: { name: '', phone: '', email: '', address: '', first_name: '', type: 'homeowner', abn: '', bill_to: '' }, summary: '', notes_client: '', rooms: [], extras: [], travel_km: 0, premium_paint: false, client_paint: false,
+      client: { name: '', phone: '', email: '', address: '', first_name: '', type: 'homeowner', abn: '', bill_to: '', accounts_email: '' }, summary: '', notes_client: '', rooms: [], extras: [], travel_km: 0, premium_paint: false, client_paint: false,
       deposit_pct: null, balance_days: null, auto_follow_ups: true, hold: { on: false, note: '' }, colours: [], photos: [], variations: [], acceptance: null,
-      quote: null, invoices: [], notes: '', last_chased: '', sent_date: '', booking: null, follow_ups: [] };
+      quote: null, invoices: [], notes: '', last_chased: '', sent_date: '', sent_how: '', sent_confirmed: false, booking: null, follow_ups: [] };
     s.jobs.unshift(job); save(); return job;
   }
   function newRoom(type) {
     var r = { id: uid(), name: '', type: type || 'interior', method: 'typed', L: '', W: '', H: '', walls: [], ceiling_m2: '', perimeter_m: '', exclude_m2: '',
       condition: 'good', surfaces: { walls: true, ceiling: true, skirting: true }, doors: 0, doors_one_side: 0, windows: 0, wardrobe_pairs: 0, panelled_doors: 0, window_kind: 'alu',
-      colour_change: false, cornice: false, high_access: false, feature_m2: 0, wallpaper_m2: 0, ext: {} };
-    if (r.type === 'exterior') r.ext = { condition: 'good', storeys: 1, coats: 2 };
+      colour_change: false, cornice: false, high_access: false, feature_m2: 0, wallpaper_m2: 0, measured_by: 'us', price_override: null, ext: {} };
+    if (r.type === 'exterior') r.ext = { condition: 'good', storeys: 1, coats: 2, condition_scope: 'all' };
     return r;
   }
   function getJob(id) { return load().jobs.filter(function (j) { return j.id === id; })[0] || null; }
+  // A1: a job nobody typed anything into (New job or Quick quote backed out of) is not a job. purgeEmpty drops them and hands the quote number back when it was the last one given out.
+  function roomEmpty(r) {
+    if (!r || typeof r !== 'object') return true; if ((r.walls || []).length) return false; var nm = String(r.name || '').trim(); if (nm && !/^(Room \d+|Exterior|Room)$/.test(nm)) return false;
+    if (['L', 'W', 'H', 'perimeter_m', 'ceiling_m2', 'doors', 'doors_one_side', 'windows', 'wardrobe_pairs', 'feature_m2', 'wallpaper_m2', 'exclude_m2', 'panelled_doors', 'price_override'].some(function (k) { return parseFloat(r[k]) > 0; })) return false;
+    var e = r.ext || {}; return !Object.keys(e).some(function (k) { return ['condition', 'storeys', 'coats', 'condition_scope'].indexOf(k) < 0 && parseFloat(e[k]) > 0; });
+  }
+  function jobEmpty(j) {
+    if (!j || j.status !== 'draft' || j.quote || (j.invoices || []).length || j.booking || j.visit || j.ballpark) return false;
+    var c = j.client || {}; if (['name', 'phone', 'email', 'address', 'first_name', 'bill_to', 'abn', 'accounts_email'].some(function (k) { return String(c[k] || '').trim(); })) return false;
+    if (String(j.summary || '').trim() || String(j.notes || '').trim() || String(j.notes_client || '').trim() || (j.extras || []).length || (j.photos || []).length || (j.colours || []).length || (j.variations || []).length) return false;
+    return (j.rooms || []).every(roomEmpty);
+  }
+  function purgeEmpty(exceptId) {
+    var s = load(), gone = s.jobs.filter(function (j) { return j && j.id !== exceptId && jobEmpty(j); }); if (!gone.length) return 0;
+    s.jobs = s.jobs.filter(function (j) { return gone.indexOf(j) < 0; });
+    var prefix = String(s.details.quote_prefix == null ? 'Q-' : s.details.quote_prefix), used = {}; s.jobs.concat((s.trash || []).map(function (t) { return t && t.job; })).forEach(function (j) { if (j) used[j.quote_no] = 1; });
+    gone.map(function (j) { var m = String(j.quote_no || ''); return m.indexOf(prefix) === 0 ? parseInt(m.slice(prefix.length), 10) : NaN; }).filter(function (v) { return !isNaN(v); }).sort(function (a, b) { return b - a; })
+      .forEach(function (v) { if (v === (parseInt(s.next_quote, 10) || 1001) - 1 && !used[prefix + v]) s.next_quote = v; });
+    save(); return gone.length;
+  }
   function deleteJob(id) { var s = load(); s.jobs = s.jobs.filter(function (j) { return j.id !== id; }); save(); }
   // Numbers: prefix from Set-up, counter never reused. noSave is for newJob, which saves once itself.
   function nextQuoteNo(noSave) { var s = load(); var no = String(s.details.quote_prefix == null ? 'Q-' : s.details.quote_prefix) + (parseInt(s.next_quote, 10) || 1001); s.next_quote = (parseInt(s.next_quote, 10) || 1001) + 1; if (!noSave) save(); return no; }
@@ -232,5 +257,5 @@
   function reset() { state = defaults(); hydrate(); save(); }
 
   window.QCStore = { PRICE_ITEMS: PRICE_ITEMS, load: load, save: save, lastError: function () { return lastError; }, normaliseJob: normaliseJob, uid: uid, today: today, addDays: addDays, daysBetween: daysBetween,
-    newJob: newJob, newRoom: newRoom, getJob: getJob, deleteJob: deleteJob, nextQuoteNo: nextQuoteNo, nextInvoiceNo: nextInvoiceNo, nextCreditNo: nextCreditNo, exportAll: exportAll, importAll: importAll, reset: reset, defaults: defaults, addLog: addLog };
+    newJob: newJob, newRoom: newRoom, getJob: getJob, deleteJob: deleteJob, nextQuoteNo: nextQuoteNo, nextInvoiceNo: nextInvoiceNo, nextCreditNo: nextCreditNo, exportAll: exportAll, importAll: importAll, reset: reset, defaults: defaults, addLog: addLog, purgeEmpty: purgeEmpty, jobEmpty: jobEmpty };
 })();
