@@ -10,6 +10,8 @@
   function toast(msg, opt) { msg = String(msg); var item = { m: msg, action: opt && opt.action, onAction: opt && opt.onAction, ms: opt && opt.ms }; if (toastQ.length && isBad(toastQ[0].m) && !isBad(msg) && Date.now() - (toast.at || 0) < 4000 && !((toast.userAt || 0) > (toast.at || 0))) { toastQ = [toastQ[0], item]; return; } toastQ = [item]; toast.at = Date.now(); showToast(); } // a failure holds the screen against a follow-on success from the same action; anything the user does after it lets the next toast through
   ['click', 'change', 'input'].forEach(function (ev) { document.addEventListener(ev, function () { toast.userAt = Date.now(); }, true); });
   function showToast() { var t = document.getElementById('toast'); if (!toastQ.length) { t.hidden = true; return; } var cur = toastQ[0]; t.textContent = ''; var sp = document.createElement('span'); sp.textContent = cur.m; t.appendChild(sp); if (cur.action) { var b = document.createElement('button'); b.type = 'button'; b.className = 'toastbtn'; b.textContent = cur.action; b.addEventListener('click', function () { clearTimeout(toast.t); toastQ.shift(); showToast(); if (cur.onAction) cur.onAction(); }); t.appendChild(b); } t.hidden = false; clearTimeout(toast.t); toast.t = setTimeout(function () { toastQ.shift(); showToast(); }, cur.ms || (isBad(cur.m) ? 4500 : 2200)); }
+  // showBlock(button, msg): a message that stops an action stays on screen next to the button until the person taps OK (a toast vanishes before it is read). showBlock(button, '') removes it. Returns the box so a caller can add an input to it.
+  function showBlock(el, msg, opts) { if (!el) { if (msg) toast(msg); return null; } var host = el.parentNode; if (!host) return null; var old = host.querySelector('.block[data-for]'); if (old && old.getAttribute('data-for') === (el.id || el.textContent)) old.parentNode.removeChild(old); if (!msg) return null; var box = document.createElement('div'); box.className = 'block' + (opts && opts.kind ? ' ' + opts.kind : ''); box.setAttribute('role', 'alert'); box.setAttribute('data-for', el.id || el.textContent); var sp = document.createElement('span'); sp.textContent = String(msg); box.appendChild(sp); var x = document.createElement('button'); x.type = 'button'; x.className = 'btn ghost sm x'; x.textContent = (opts && opts.dismiss) || 'OK'; x.addEventListener('click', function () { if (box.parentNode) box.parentNode.removeChild(box); if (opts && opts.onDismiss) opts.onDismiss(); }); box.appendChild(x); if (el.nextSibling) host.insertBefore(box, el.nextSibling); else host.appendChild(box); try { box.scrollIntoView({ block: 'nearest' }); } catch (e) {} return box; }
   function go(h) { location.hash = h; }
   var openUrl = function (u) { location.href = u; };
   // Turn each settings card into a tap-to-open section so the page is a list of headings, not a 20-screen scroll
@@ -121,15 +123,17 @@
   function route() {
     if (window.__qcMeasure && window.__qcMeasure.unsaved && window.__qcMeasure.unsaved()) { window.__qcMeasure.saveNow(); toast('Wall saved'); }
     window.__qcMeasure = null; creating = false;
-    S = QCStore.load(); ['pending_cancels', 'local_queue', 'trash'].forEach(function (k) { if (!Array.isArray(S[k])) S[k] = []; }); if (!S.security || typeof S.security !== 'object') S.security = { pin: '', backup_include_keys: false }; if (!S.log || typeof S.log !== 'object') S.log = { sent: [] };
+    S = QCStore.load(); ['pending_cancels', 'local_queue', 'trash'].forEach(function (k) { if (!Array.isArray(S[k])) S[k] = []; }); if (!S.security || typeof S.security !== 'object') S.security = { pin: '', backup_include_keys: false }; if (!S.log || typeof S.log !== 'object') S.log = { sent: [] }; if (!S.ui || typeof S.ui !== 'object') S.ui = {};
     var h = location.hash.replace(/^#\/?/, ''), p = h.split('/');
+    try { window.scrollTo(0, 0); } catch (e) {} // every screen opens at the top; a form never opens scrolled to its bottom
+    setTimeout(afterRoute, 0);
     var navKey = { '': 'home', job: 'home', enquiry: 'home', help: '', chase: 'chase', settings: 'settings' }[p[0] || '']; if (navKey == null) navKey = 'home';
     document.querySelectorAll('[data-nav]').forEach(function (a) { a.classList.toggle('on', a.dataset.nav === navKey); });
     refreshPreview = function () {};
     if (locked()) return viewLock();
     if (!route.booted) { route.booted = true; purgeTrash(); try { if (navigator.storage && navigator.storage.persist && (S.jobs.length || S.details.trading_name)) navigator.storage.persist().catch(function () {}); } catch (e) {} setTimeout(function () { retryPendingCancels().then(function () { return retryLocalQueue(); }).catch(function () {}); }, 800); window.addEventListener('online', function () { retryPendingCancels().catch(function () {}); }); }
     if (!p[0]) return viewHome();
-    if (p[0] === 'settings') return p[1] === 'log' ? viewSentLog() : viewSettings();
+    if (p[0] === 'settings') { if (p[1] === 'log') return viewSentLog(); viewSettings(); if (p[1]) openSection({ backup: 'Back-up', prices: 'Prices', bank: 'Bank details' }[p[1]] || ''); return; }
     if (p[0] === 'chase') return viewChase();
     if (p[0] === 'help') return viewHelp();
     if (p[0] === 'enquiry') { if (p[1] && !QCStore.getJob(p[1])) return bounce('/'); return viewEnquiry(p[1] ? QCStore.getJob(p[1]) : null); }
@@ -143,19 +147,33 @@
     bounce('/');
   }
   window.addEventListener('hashchange', route);
+  // #/settings/backup opens Set-up with that section open and on screen (the Home "Save copy" link); titles match the Set-up headings
+  function openSection(title) { if (!title) return; var det = Array.prototype.filter.call($app.querySelectorAll('details.sec'), function (d) { var s = d.querySelector('summary'); return s && s.textContent.trim().toLowerCase().indexOf(title.toLowerCase()) === 0; })[0]; if (!det) return; det.open = true; setTimeout(function () { try { det.scrollIntoView({ block: 'start' }); window.scrollBy(0, -70); } catch (e) {} }, 0); }
+  // after any screen renders: quote-style line tables (Item / Qty / Amount) get the two-line layout on narrow phones (app.css table.lines)
+  function afterRoute() { $app.querySelectorAll('table').forEach(function (t) { var th = t.querySelectorAll('thead th'); if (th.length === 3 && /^(Qty|Quantity)$/i.test(th[1].textContent.trim())) t.classList.add('lines'); }); }
 
   // ---------- Home
+  function depositPaidOnly(j) { if (j.status !== 'invoiced') return false; var live = liveInvoices(j); return live.some(function (i) { return i.kind === 'deposit' && i.total > 0 && invBal(i) <= 0.004; }) && live.every(function (i) { return i.kind === 'deposit' || invPaid(i) <= 0.004; }); }
   function statusPill(j) {
     var map = { enquiry: ['Enquiry', 'warn'], draft: ['Draft', ''], quoted: ['Quoted', 'ok'], accepted: ['Accepted', 'ok'], invoiced: ['Invoiced', 'warn'], paid: ['Paid', 'ok'], declined: ['Declined', 'bad'], cancelled: ['Cancelled', 'bad'] };
-    var m = map[j.status] || ['', '']; return '<span class="pill ' + m[1] + '">' + m[0] + '</span>' + (j.hold && j.hold.on ? ' <span class="pill warn">On hold</span>' : '');
+    var m = map[j.status] || ['', '']; if (depositPaidOnly(j)) m = ['Deposit paid', 'ok'];
+    return '<span class="pill ' + m[1] + '">' + m[0] + '</span>' + (j.hold && j.hold.on ? ' <span class="pill warn">On hold</span>' : '');
   }
   var homeFilter = 'all', homeQuery = '';
   function jobCard(j) {
-    var total = j.quote ? money(j.quote.total) : (j.ballpark ? money(j.ballpark.low) + ' to ' + money(j.ballpark.high) : '');
-    return '<a class="job" href="' + (j.status === 'enquiry' ? '#/enquiry/' + j.id : '#/job/' + j.id) + '"><div class="row between"><b>' + esc(j.client.name || 'New job') + '</b><span class="sub">' + esc(j.client.address || (jobDesc(j) === 'the painting' ? '' : j.summary)) + '</span></div><div class="row between"><span>' + statusPill(j) + '</span><span class="sub">' + esc(j.quote_no) + (total ? ' · ' + total : '') + '</span></div></a>';
+    var total = j.quote ? money(j.quote.total) : (j.ballpark ? money(j.ballpark.low) + ' to ' + money(j.ballpark.high) : ''), owing = j.status === 'invoiced' ? jobOwing(j) : 0;
+    return '<a class="job" href="' + (j.status === 'enquiry' ? '#/enquiry/' + j.id : '#/job/' + j.id) + '"><div class="row between"><b>' + esc(j.client.name || 'New job') + '</b><span class="sub">' + esc(j.client.address || (jobDesc(j) === 'the painting' ? '' : j.summary)) + '</span></div><div class="row between"><span>' + statusPill(j) + '</span><span class="sub">' + esc(j.quote_no) + (total ? ' · ' + total : '') + (owing > 0 ? ' · owing ' + money(owing) : '') + '</span></div></a>';
   }
+  // the three first-run steps: done when the detail is there; the card goes once all three are, or when the painter hides it
+  function setupSteps() { var d = S.details, defaults = (QCStore.defaults && QCStore.defaults().prices) || {}, touched = Object.keys(defaults).some(function (k) { return S.prices[k] !== defaults[k]; });
+    return [{ label: 'Your name and business name', done: !!(String(d.trading_name || '').trim() || String(d.owner_name || '').trim()) },
+      { label: 'Your bank details', hint: 'Printed on your invoices so clients can pay you. Stay on this phone.', done: !!(String(d.bsb || '').trim() && String(d.account_number || '').trim()) },
+      { label: 'Look at the five prices: Walls, Ceilings, Door, Prep per hour, Set-up per job', hint: 'They are filled in already; change any you like.', done: !!(S.security.setup_done || touched) }]; }
   function viewHome() {
-    var jobs = S.jobs, setup = !!(S.details.trading_name && S.details.bsb), today = QCStore.today();
+    if (typeof QCStore.purgeEmpty === 'function') { try { QCStore.purgeEmpty(); } catch (e) {} S = QCStore.load(); if (!S.ui || typeof S.ui !== 'object') S.ui = {}; } // a Quick quote or New job that was backed out of with nothing typed goes, and its number comes back
+    var jobs = S.jobs, today = QCStore.today(), steps = setupSteps(), allDone = steps.every(function (s) { return s.done; });
+    if (allDone && !S.security.setup_done) { S.security.setup_done = true; save(); }
+    var showSetup = !allDone && !S.security.setup_done && !S.ui.dismissed_setup_card;
     var html = pendingBanner();
     html += '<div class="row between"><h1>Jobs</h1><div class="row"><button class="btn tape" id="newjob">New job</button><a class="btn ghost sm" href="#/enquiry">Phone enquiry</a><button class="btn ghost sm" id="quick">Quick quote</button></div></div>';
     if (window.__qcInstallPrompt) html += '<div class="card"><div class="row between"><span><b>Put it on your home screen</b><span class="hint"> · opens like an app and works offline</span></span><button class="btn sm" id="install">Install</button></div></div>';
@@ -163,14 +181,15 @@
     if (visits.length) html += '<div class="card"><h3>Quote visits</h3>' + visits.slice(0, 5).map(function (j) { return '<a class="row between" href="#/enquiry/' + j.id + '" style="text-decoration:none;color:inherit"><span><b>' + esc(j.client.name || j.quote_no) + '</b> <span class="hint">' + esc(j.client.address || '') + '</span></span><span class="hint">' + QCPdf.fmtDate(j.visit.date) + ' ' + QCSched.nice(j.visit.start_min) + '</span></a>'; }).join('') + '</div>';
     var booked = jobs.filter(function (j) { return j.booking && j.booking.end >= today; }).sort(function (a, b) { return a.booking.start < b.booking.start ? -1 : 1; });
     if (booked.length) html += '<div class="card"><h3>Booked</h3>' + booked.slice(0, 4).map(function (j) { return '<div class="row between"><span><b>' + esc(j.client.name || j.quote_no) + '</b> <span class="hint">' + esc(j.client.address || '') + '</span></span><span class="hint">' + QCPdf.fmtDate(j.booking.start) + (j.booking.days > 1 ? ', ' + j.booking.days + ' days' : '') + '</span></div>'; }).join('') + '</div>';
-    if (!setup) html += '<div class="card"><h2>Set up</h2><ol class="steps"><li><span>Your name and business name</span></li><li><span>Your bank details</span></li><li><span>Check five prices</span></li></ol><p class="hint">Three minutes. Everything else can wait.</p><div class="row"><button class="btn tape" id="setupgo">Set up</button></div></div>';
+    if (showSetup) html += '<div class="card" id="setupcard"><div class="row between"><h2>Set up</h2><span class="hint">' + steps.filter(function (s) { return s.done; }).length + ' of 3 done</span></div><ol class="steps">' + steps.map(function (s) { return '<li class="' + (s.done ? 'done' : '') + '"><span>' + esc(s.label) + (s.done ? ' <span class="tag">done</span>' : '') + (s.hint ? '<br><span class="hint">' + esc(s.hint) + '</span>' : '') + '</span></li>'; }).join('') + '</ol><p class="hint">Three minutes. Everything else can wait.</p><div class="row between"><button class="btn tape" id="setupgo">' + (steps[0].done ? 'Finish set-up' : 'Set up') + '</button><button class="btn ghost sm" id="setuphide">Hide this</button></div></div>';
     var counts = { all: jobs.length, enquiry: 0, quoted: 0, accepted: 0, invoiced: 0, paid: 0 }; jobs.forEach(function (j) { if (counts[j.status] != null) counts[j.status]++; });
-    var chips = [['all', 'All'], ['enquiry', 'Enquiry'], ['quoted', 'Quoted'], ['accepted', 'Accepted'], ['invoiced', 'Invoiced'], ['paid', 'Paid']];
+    var chips = [['all', 'All'], ['enquiry', 'Enquiry'], ['quoted', 'Quoted'], ['accepted', 'Accepted'], ['invoiced', 'Invoiced'], ['paid', 'Paid']].filter(function (c) { return c[0] === 'all' || counts[c[0]] > 0 || homeFilter === c[0]; }); // no "Paid 0" chips
     if (!jobs.length) html += '<div class="card empty">No jobs yet. Tap New job.</div>';
     else html += '<div class="card"><input type="search" id="q" placeholder="Search name, address or quote number" aria-label="Search jobs" value="' + esc(homeQuery) + '" autocomplete="off"><div class="chips" id="chips">' + chips.map(function (c) { return '<button class="chip' + (homeFilter === c[0] ? ' on' : '') + '" data-chip="' + c[0] + '">' + c[1] + ' <span>' + counts[c[0]] + '</span></button>'; }).join('') + '</div></div><div class="joblist" id="joblist"></div>';
     var lb = S.security && S.security.last_backup, invoiced = jobs.some(function (j) { return (j.invoices || []).length; }), stale = !lb || QCStore.daysBetween(lb, today) > 7;
-    html += '<p class="hint">' + (invoiced && stale ? '<span class="confirm">Back up: ' + (lb ? 'last backed up ' + QCPdf.fmtDate(lb) : 'never backed up') + ' and you have issued invoices since.</span> ' : 'Last backed up: ' + (lb ? QCPdf.fmtDate(lb) : 'never') + '. ') + '<a href="#/settings">Back up</a> · <a href="#/help">How it works</a></p>';
-    if (!(window.matchMedia && window.matchMedia('(display-mode: standalone)').matches) && !navigator.standalone && !window.__qcInstallPrompt) html += '<p class="hint">' + (/Android/i.test(navigator.userAgent) ? 'Android: Chrome menu, then Install app.' : /iPhone|iPad/i.test(navigator.userAgent) ? 'iPhone: Share, then Add to Home Screen.' : 'On your phone: add this page to the home screen.') + ' Then it opens like an app and works offline.</p>';
+    html += '<p class="hint" id="backupline">' + (invoiced && stale ? '<span class="confirm">You have sent invoices since your last saved copy' + (lb ? ' (' + QCPdf.fmtDate(lb) + ')' : '') + '.</span> ' : lb ? 'Last copy of your jobs saved ' + QCPdf.fmtDate(lb) + '. ' : 'Save a copy of your jobs (in case the phone is lost). ') + '<a href="#/settings/backup">Save copy</a> · <a href="#/help">How it works</a></p>';
+    var onPhone = /Android|iPhone|iPad/i.test(navigator.userAgent), standalone = (window.matchMedia && window.matchMedia('(display-mode: standalone)').matches) || navigator.standalone;
+    if (onPhone && !standalone && !window.__qcInstallPrompt) html += '<p class="hint">' + (/Android/i.test(navigator.userAgent) ? 'To keep it on your home screen: Chrome menu, then Install app.' : 'To keep it on your home screen: tap Share, then Add to Home Screen.') + ' Then it opens like an app and works offline.</p>';
     $app.innerHTML = html; wireBanner();
     function renderList() {
       var box = document.getElementById('joblist'); if (!box) return; var q = homeQuery.trim().toLowerCase();
@@ -183,6 +202,7 @@
     document.getElementById('newjob').addEventListener('click', once(function () { var j = QCStore.newJob(); checkStore(); go('/job/' + j.id); }));
     document.getElementById('quick').addEventListener('click', once(function () { var j = QCStore.newJob(); var r = QCStore.newRoom('interior'); r.name = 'Room 1'; r.method = 'typed'; j.rooms.push(r); j.quick = true; save(); go('/job/' + j.id + '/room/' + r.id); }));
     var sg = document.getElementById('setupgo'); if (sg) sg.addEventListener('click', function () { try { var pref = JSON.parse(localStorage.getItem('qc-sections') || '{}'); ['Business', 'Bank details', 'Prices'].forEach(function (t) { pref[t] = true; }); localStorage.setItem('qc-sections', JSON.stringify(pref)); } catch (e) {} go('/settings'); });
+    var sh = document.getElementById('setuphide'); if (sh) sh.addEventListener('click', function () { S.ui.dismissed_setup_card = true; save(); viewHome(); });
     var ins = document.getElementById('install'); if (ins) ins.addEventListener('click', function () { var ev = window.__qcInstallPrompt; if (!ev) return; ins.disabled = true; ev.prompt(); (ev.userChoice || Promise.resolve({})).then(function (r) { if (r && r.outcome === 'accepted') { window.__qcInstallPrompt = null; toast('Installed'); route(); } else ins.disabled = false; }).catch(function () { ins.disabled = false; }); });
   }
 
@@ -752,24 +772,43 @@
   // Tiers use strict boundaries on the configured days: quote days < q[1] first, < q[2] second, else last; invoice days < i[1] first, < i[2] second, else final.
   // opts.auto caps invoices at the second tier: the final notice is only ever sent by hand. Business clients (agent, strata, builder, commercial)
   // get statement-style wording with no payment-plan or collection line.
+  var DOW = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'], MON = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+  function dayDate(iso) { if (!iso) return ''; var d = new Date(String(iso).slice(0, 10) + 'T00:00:00'); if (isNaN(d.getTime())) return ''; return DOW[d.getDay()] + ' ' + d.getDate() + ' ' + MON[d.getMonth()] + (d.getFullYear() !== new Date().getFullYear() ? ' ' + d.getFullYear() : ''); } // "Wed 30 Sep"
+  // has this invoice ever been chased? a sent reminder (relay log or a scheduled one that went), or Mark chased / Send now after the invoice was issued
+  function invChased(job, inv) { return remindersSent(job, inv.no) > 0 || (inv.follow_ups || []).some(function (x) { return x.sent; }) || !!(job.last_chased && inv.date && job.last_chased >= inv.date); }
+  // chaseText('quote'|'invoice'|'statement', job, item, daysOverdue, opts). opts.auto: written for the scheduler (never the final notice). opts.tier: ask for that reminder. opts.chased: override the never-chased check.
   function chaseText(kind, job, item, days, opts) {
+    opts = opts || {};
     var det = S.details, hi = greet(job), so = signoff(S), biz = isBizClient(job), phone = det.contact_phone_in_texts !== false && det.phone ? String(det.phone).trim() : '', callMe = phone ? 'call me on ' + phone : 'give me a call', today = QCStore.today(), what = jobDesc(job);
     var tail = (det.trading_name ? '\n' + det.trading_name : '') + (phone ? (det.trading_name ? ' · ' : '\n') + phone : ''), cap = function (s) { return s.charAt(0).toUpperCase() + s.slice(1); }, body, subject;
     if (kind === 'quote') {
-      var q = item || job.quote || {}, qd = S.follow_up.quote_days || [3, 7, 14], t1 = qd.length > 1 ? qd[1] : 7, t2 = qd.length > 2 ? qd[2] : (qd.length > 1 ? qd[1] : 14), tier = days < t1 ? 1 : days < t2 ? 2 : 3;
+      var q = item || job.quote || {}, qd = S.follow_up.quote_days || [3, 7, 14], t1 = qd.length > 1 ? qd[1] : 7, t2 = qd.length > 2 ? qd[2] : (qd.length > 1 ? qd[1] : 14), tier = opts.tier || (days < t1 ? 1 : days < t2 ? 2 : 3);
       var total = money(q.total || 0), no = job.quote_no, valid = shortDate(QCStore.addDays(q.date || job.sent_date || today, parseInt(det.quote_valid_days, 10) || 30)), week = shortDate(nextFreeWeek());
       if (tier === 1) { body = 'just checking quote ' + no + ' (' + total + ') for ' + what + ' came through OK. If there is anything you would like me to explain, just ask.'; subject = 'Checking in on your quote ' + no; }
       else if (tier === 2) { body = 'following up on quote ' + no + ' (' + total + ') for ' + what + '. I have a start slot the week of ' + week + ' if that suits, and I am happy to answer any questions first.'; subject = 'Quote ' + no + ': a start slot is open'; }
       else { body = 'last note from me on quote ' + no + ' (' + total + ') for ' + what + '. It is valid until ' + valid + '. If the timing is not right, no problem at all, just let me know either way.'; subject = 'Quote ' + no + ', valid until ' + valid; }
       return { tier: tier, sms: hi + ' ' + body + ' ' + so, subject: subject, email: hi + '\n\n' + cap(body) + '\n\n' + so + tail };
     }
-    var inv = item, idays = S.follow_up.invoice_days || [3, 10, 21], i1 = idays.length > 1 ? idays[1] : 10, i2 = idays.length > 2 ? idays[2] : (idays.length > 1 ? idays[1] : 21), itier = days < i1 ? 1 : days < i2 ? 2 : 3; if (opts && opts.auto && itier > 2) itier = 2;
+    if (kind === 'statement') { // one message for a business client, every open invoice on it
+      var c = item, cnt = c.invs.length, list = c.invs.map(function (x) { return x.inv.no + ' due ' + shortDate(x.inv.due); }).join(', ');
+      body = 'statement for ' + (c.name || 'your account') + ': ' + cnt + ' invoice' + (cnt > 1 ? 's' : '') + ', ' + money(c.total) + ' owing (' + list + '). Could accounts let me know when ' + (cnt > 1 ? 'these are' : 'this is') + ' scheduled for payment?' + (phone ? ' Any query, ' + callMe + '.' : '');
+      return { tier: c.days >= 21 ? 3 : c.days >= 10 ? 2 : 1, biz: true, statement: true, sms: hi + ' ' + body + ' ' + so, subject: 'Statement of account: ' + (c.name || '') + ' (' + money(c.total) + ' owing)', email: hi + '\n\n' + cap(body) + '\n\n' + so + tail };
+    }
+    var inv = item, idays = S.follow_up.invoice_days || [3, 10, 21], i1 = idays.length > 1 ? idays[1] : 10, i2 = idays.length > 2 ? idays[2] : (idays.length > 1 ? idays[1] : 21), itier = days < i1 ? 1 : days < i2 ? 2 : 3;
+    var chased = opts.chased != null ? !!opts.chased : invChased(job, inv); if (!chased && !biz) itier = 1; // the first note anyone gets is the friendly one, however late it is
+    if (opts.auto && itier > 2) itier = 2; if (opts.tier) itier = opts.tier;
     var bal = invBalance(inv), amt = money(bal.balance), ino = inv.no, due = shortDate(inv.due), amtText = bal.paid > 0 ? amt + ' still owing after your payment of ' + money(bal.paid) : amt;
     if (biz) {
-      body = 'Statement of account: ' + ino + ' ' + amt + (bal.paid > 0 ? ' (after ' + money(bal.paid) + ' received)' : '') + ' due ' + due + (itier >= 2 ? ', now ' + days + ' days past due' : '') + '. Please advise the expected payment date' + (itier >= 2 && phone ? ', or ' + callMe + ' if there is a query' : '') + '.' + (inv.pay_url ? ' Pay by card: ' + inv.pay_url : '') + ' Ref ' + ino + '.';
+      body = 'Statement of account: ' + ino + ' ' + amt + (bal.paid > 0 ? ' (after ' + money(bal.paid) + ' received)' : '') + ' due ' + due + (itier >= 2 ? ', now ' + days + ' days past due' : '') + '. Could accounts let me know when it is scheduled for payment' + (itier >= 2 && phone ? ', or ' + callMe + ' if there is a query' : '') + '?' + (inv.pay_url ? ' Pay by card: ' + inv.pay_url : '') + ' Ref ' + ino + '.';
       return { tier: itier, biz: true, sms: hi + ' ' + body + ' ' + so, subject: 'Statement of account: ' + ino + ' (' + amt + ')', email: hi + '\n\n' + body + '\n\n' + so + tail };
     }
     var card = inv.pay_url ? 'Pay by card: ' + inv.pay_url + ', or by transfer to the account on the invoice, ref ' + ino + '.' : 'Bank details are on the invoice, ref ' + ino + '.';
+    if (inv.kind === 'deposit') { // an unpaid deposit means the job has not started: ask gently, never threaten
+      var bk = job.booking && job.booking.start ? ' for the booking on ' + shortDate(job.booking.start) : ' for your job';
+      if (itier === 1) { body = 'a friendly reminder that the deposit' + bk + ' (invoice ' + ino + ', ' + amtText + ') was due on ' + due + '. If it is already on its way, thank you and please ignore this. ' + card; subject = 'Deposit' + bk + ' (' + amt + ')'; }
+      else { body = 'we have not received the deposit' + bk + ' (invoice ' + ino + ', ' + amtText + '). The dates are held for you once it arrives. If you would rather not go ahead, just let me know, no problem at all. ' + card; subject = 'Deposit' + bk; }
+      return { tier: Math.min(itier, 2), deposit: true, sms: hi + ' ' + body + ' ' + so, subject: subject, email: hi + '\n\n' + cap(body) + '\n\n' + so + tail };
+    }
     if (itier === 1) { body = 'a friendly reminder that invoice ' + ino + ' (' + amtText + ') was due on ' + due + '. If it is already on its way, thank you and please ignore this. ' + card; subject = 'Invoice ' + ino + ' (' + amt + ')'; }
     else if (itier === 2) { body = 'invoice ' + ino + ' (' + amtText + ') was due ' + due + ' and we have not received it. Could you pay by ' + shortDate(addBusinessDays(today, 5)) + ', or ' + callMe + ' if there is a problem or you need more time? Ref ' + ino + '.' + (inv.pay_url ? ' Pay by card: ' + inv.pay_url : ''); subject = 'Overdue: invoice ' + ino + ' (' + amt + ')'; }
     else {
@@ -782,56 +821,85 @@
   function refLabel(ref) { var m = /^(.*)\+(\d+)$/.exec(ref || ''); if (!m) return ref || ''; return (m[1] === 'quote' ? 'quote' : m[1]) + ', day ' + m[2]; }
   function textForRef(job, ref) { var m = /^(.*)\+(\d+)$/.exec(ref || ''); if (!m) return ''; try { if (m[1] === 'quote') return chaseText('quote', job, job.quote, +m[2], { auto: true }).sms; var inv = (job.invoices || []).filter(function (i) { return i.no === m[1]; })[0]; return inv ? chaseText('invoice', job, inv, +m[2], { auto: true }).sms : ''; } catch (e) { return ''; } }
   function fmtTime(iso) { var d = new Date(iso); if (isNaN(d.getTime())) return ''; var h = d.getHours(), m = d.getMinutes(); return (h % 12 || 12) + (m ? ':' + (m < 10 ? '0' : '') + m : '') + (h >= 12 ? 'pm' : 'am'); }
+  // "Automatic follow-ups" on a job is only true when a sender is set up; otherwise the app writes the words and the painter taps Text
+  function autoSendReady() { var sd = S.sending || {}; return !!((sd.auto_sms !== false && QCMsg.ready('sms')) || (sd.auto_email !== false && QCMsg.ready('email'))); }
+  function autoSendLabel() { return autoSendReady() ? 'Automatic follow-ups (they go by themselves on the day)' : 'Remind me to follow up (nothing is sent without you; the message waits under Follow-ups on the day)'; }
+  var chaseShowFinal = {};
   function viewChase() {
     var dirty = false;
     var today = QCStore.today(), rows = [], owed = 0, fu = S.follow_up || {}, qd = fu.quote_days || [3, 7, 14], idays = fu.invoice_days || [3, 10, 21];
     var q0 = qd[0] == null ? 3 : qd[0], q1 = qd.length > 1 ? qd[1] : 7, q2 = qd.length > 2 ? qd[2] : (qd.length > 1 ? qd[1] : 14), i0 = idays[0] == null ? 3 : idays[0], i1 = idays.length > 1 ? idays[1] : 10, i2 = idays.length > 2 ? idays[2] : (idays.length > 1 ? idays[1] : 21);
-    var byDay = function (a, b) { return a.day < b.day ? -1 : a.day > b.day ? 1 : 0; };
+    var byDay = function (a, b) { return a.day < b.day ? -1 : a.day > b.day ? 1 : 0; }, bizMap = {}, bizOrder = [];
     S.jobs.forEach(function (j) {
       if (j.status === 'cancelled') return;
-      (j.invoices || []).forEach(function (i) { if (invOpen(i) && i.due < today) { var d = QCStore.daysBetween(i.due, today); owed += invBalance(i).balance; if (d >= i0) rows.push({ kind: 'invoice', job: j, item: i, days: d, tier: d < i1 ? 1 : d < i2 ? 2 : 3, tone: d < i1 ? 'First reminder' : d < i2 ? 'Second reminder' : 'Final reminder' }); } });
+      var biz = isBizClient(j), c = j.client || {};
+      (j.invoices || []).forEach(function (i) {
+        if (!invOpen(i)) return; var d = i.due < today ? QCStore.daysBetween(i.due, today) : 0; if (d > 0) owed += invBalance(i).balance;
+        if (biz) { var key = String(c.accounts_email || c.bill_to || c.name || j.id).trim().toLowerCase(); var g = bizMap[key]; if (!g) { g = bizMap[key] = { kind: 'statement', name: c.bill_to || c.name || j.quote_no, job: j, jobs: [], invs: [], total: 0, days: 0, accounts_email: c.accounts_email || '', email: c.email || '', phone: c.phone || '' }; bizOrder.push(g); } if (g.jobs.indexOf(j) < 0) g.jobs.push(j); g.invs.push({ job: j, inv: i }); g.total += invBalance(i).balance; if (d > g.days) g.days = d; if (!g.accounts_email && c.accounts_email) g.accounts_email = c.accounts_email; return; }
+        if (d < i0) return; var chased = invChased(j, i), tier = !chased ? 1 : d < i1 ? 1 : d < i2 ? 2 : 3; if (i.kind === 'deposit') tier = Math.min(tier, 2);
+        rows.push({ kind: 'invoice', job: j, item: i, days: d, chased: chased, tier: tier, tone: i.kind === 'deposit' ? (tier === 1 ? 'Deposit reminder' : 'Deposit, second note') : tier === 1 ? 'First reminder' : tier === 2 ? 'Second reminder' : 'Final reminder' });
+      });
       if (j.status === 'quoted' && j.quote) { var since = QCStore.daysBetween(j.sent_date || j.quote.date, today); if (since >= q0) rows.push({ kind: 'quote', job: j, item: j.quote, days: since, tier: since < q1 ? 1 : since < q2 ? 2 : 3, tone: since < q1 ? 'Friendly follow-up' : since < q2 ? 'Second follow-up' : 'Last follow-up' }); }
     });
+    bizOrder.forEach(function (g) { if (g.days >= i0) { g.item = g; g.tier = g.days >= i2 ? 3 : g.days >= i1 ? 2 : 1; g.tone = 'Statement'; g.invs.sort(function (a, b) { return a.inv.due < b.inv.due ? -1 : 1; }); rows.push(g); } });
     rows.sort(function (a, b) { return b.days - a.days; });
     var relay = QCMsg.ready('sms') || QCMsg.ready('email');
     var html = pendingBanner() + '<h1>Follow-ups</h1><p class="muted">Quotes at ' + qd.join(', ') + ' days after sending and unpaid invoices at ' + idays.join(', ') + ' days after due, set in Set-up. The message is written; read it, then send.</p>';
+    if (!relay) html += '<p class="hint"><b>Nothing here sends by itself.</b> Tap Text to open Messages with the words ready; you press send.</p>';
     html += '<div class="card"><div class="row between"><span>Overdue</span><h2>' + money(owed) + '</h2></div></div>';
     var groups = [], flat = []; S.jobs.forEach(function (j) { var pend = pendingFollowUps(j).sort(byDay), wait = waitingFollowUps(j); if (pend.length || wait.length) groups.push({ job: j, pend: pend, wait: wait }); });
     if (groups.length) html += '<div class="card"><h3>Scheduled</h3><p class="hint">These go by themselves on the day. Cancel any you do not want.</p>' + groups.map(function (g) {
       return '<div class="sgroup"><b>' + esc(g.job.client.name || g.job.quote_no) + '</b> <span class="hint">' + esc(g.job.quote_no) + (g.job.hold && g.job.hold.on ? ' · on hold' : '') + '</span>' +
-        g.pend.map(function (x) { var k = flat.push({ job: g.job, x: x }) - 1; return '<div class="sitem"><div class="row between"><span><b>' + QCPdf.fmtDate(x.day) + '</b>' + (x.send_at ? ' ' + fmtTime(x.send_at) : '') + ' by ' + (x.channel === 'sms' ? 'SMS' : 'email') + ' <span class="hint">' + esc(refLabel(x.what)) + '</span></span><button class="btn ghost sm" data-cancelfu="' + k + '">Cancel</button></div><div class="msg small">' + esc(x.text || textForRef(g.job, x.what)) + '</div></div>'; }).join('') +
-        g.wait.map(function (w) { var k = flat.push({ job: g.job, w: w }) - 1; return '<div class="sitem"><div class="row between"><span><b>' + QCPdf.fmtDate(w.day) + '</b> by ' + (w.channel === 'sms' ? 'SMS' : 'email') + ' <span class="pill warn">waiting to schedule</span> <span class="hint">' + esc(refLabel(w.ref)) + '</span></span><button class="btn ghost sm" data-cancelfu="' + k + '">Cancel</button></div><div class="msg small">' + esc(w.body || '') + '</div></div>'; }).join('') + '</div>';
+        g.pend.map(function (x) { var k = flat.push({ job: g.job, x: x }) - 1; return '<div class="sitem"><div class="row between"><span><b>' + QCPdf.fmtDate(x.day) + '</b>' + (x.send_at ? ' ' + fmtTime(x.send_at) : '') + ' by ' + (x.channel === 'sms' ? 'text' : 'email') + ' <span class="hint">' + esc(refLabel(x.what)) + '</span></span><button class="btn ghost sm" data-cancelfu="' + k + '">Cancel</button></div><div class="msg small">' + esc(x.text || textForRef(g.job, x.what)) + '</div></div>'; }).join('') +
+        g.wait.map(function (w) { var k = flat.push({ job: g.job, w: w }) - 1; return '<div class="sitem"><div class="row between"><span><b>' + QCPdf.fmtDate(w.day) + '</b> by ' + (w.channel === 'sms' ? 'text' : 'email') + ' <span class="pill warn">waiting to schedule</span> <span class="hint">' + esc(refLabel(w.ref)) + '</span></span><button class="btn ghost sm" data-cancelfu="' + k + '">Cancel</button></div><div class="msg small">' + esc(w.body || '') + '</div></div>'; }).join('') + '</div>';
     }).join('') + (groups.some(function (g) { return g.wait.length; }) ? '<p class="hint">Waiting: too far ahead for the sender to hold. Scheduled the next time the app opens within the window.</p>' : '') + '</div>';
-    else if (!relay) html += '<p class="hint">Want these to send themselves? Set up SMS and email in Set-up.</p>';
-    if (!rows.length) html += '<div class="card empty">Nothing due. Good week.</div>';
+    if (!rows.length) {
+      var nx = null; S.jobs.forEach(function (j) { if (j.status === 'cancelled') return; (j.invoices || []).forEach(function (i) { if (!invOpen(i)) return; var when = QCStore.addDays(i.due, i0); if (when >= today && (!nx || when < nx.day)) nx = { day: when, job: j, what: i.kind === 'deposit' ? 'deposit reminder' : 'invoice ' + i.no + ' reminder' }; }); if (j.status === 'quoted' && j.quote) { var w2 = QCStore.addDays(j.sent_date || j.quote.date, q0); if (w2 >= today && (!nx || w2 < nx.day)) nx = { day: w2, job: j, what: 'quote follow-up' }; } });
+      html += '<div class="card empty">Nothing due. Good week.' + (nx ? '<br><span class="hint">Next: ' + esc(nx.job.client.name || nx.job.quote_no) + ', ' + esc(nx.what) + ', ' + dayDate(nx.day) + (relay && pendingFollowUps(nx.job).length ? ' (goes by itself)' : ' (you tap Text on the day)') + '.</span>' : '') + '</div>';
+    }
+    var ho = window.__qcApp && typeof window.__qcApp.handOff === 'function' ? window.__qcApp.handOff : null;
     rows.forEach(function (r, k) {
-      var j = r.job, hold = j.hold && j.hold.on;
-      if (r.kind === 'invoice' && r.tier === 3 && !isBizClient(j) && !r.item.final_by) { r.item.final_by = QCStore.addDays(today, 7); dirty = true; } // saved once after the loop, not per job
-      var t = chaseText(r.kind, j, r.item, r.days); r.text = t;
+      var j = r.job, hold = j.hold && j.hold.on, key = r.kind === 'invoice' ? r.item.no : r.kind === 'statement' ? 'st:' + r.name : 'q:' + j.id, showFinal = r.tier === 3 && r.kind === 'invoice' && !!chaseShowFinal[key];
+      if (r.kind === 'invoice' && r.tier === 3 && !r.item.final_by) { r.item.final_by = QCStore.addDays(today, 7); dirty = true; } // saved once after the loop, not per job
+      var t = chaseText(r.kind, j, r.item, r.days, r.kind === 'invoice' && r.tier === 3 && !showFinal ? { tier: 2, chased: true } : r.kind === 'invoice' ? { chased: r.chased } : {}); r.text = t;
       var lc = lastContact(j), lcDays = lc ? QCStore.daysBetween(lc.date, today) : null;
-      var landline = QCMsg.isLandline(j.client.phone), phoneOk = j.client.phone && !landline;
-      var auto = pendingFollowUps(j).filter(function (x) { return r.kind === 'quote' ? x.what.indexOf('quote+') === 0 : x.what.indexOf(r.item.no + '+') === 0; }).sort(byDay)[0];
-      var sms = 'sms:' + (j.client.phone || '').replace(/[^\d+]/g, '') + '?&body=' + encodeURIComponent(t.sms), mail = 'mailto:' + (j.client.email || '').replace(/[\s"'<>?#&]/g, '') + '?subject=' + encodeURIComponent(t.subject) + '&body=' + encodeURIComponent(t.email);
-      html += '<div class="card' + (hold ? ' held' : '') + '"><div class="row between"><div><b>' + esc(j.client.name || j.quote_no) + '</b><span class="hint"> · ' + (r.kind === 'invoice' ? esc(r.item.no) + ', ' + money(invBalance(r.item).balance) + ' owing, ' + r.days + ' days overdue' : esc(j.quote_no) + ', ' + money(j.quote.total) + ', waiting ' + r.days + ' days') + '</span></div><span class="pill ' + (r.tier === 3 && r.kind === 'invoice' ? 'bad' : r.tier >= 2 ? 'warn' : '') + '">' + (hold ? 'On hold' : r.tone) + '</span></div>' +
-        '<p class="hint">' + (lc ? 'Last contact: ' + QCPdf.fmtDate(lc.date) + (lc.channel ? ' by ' + lc.channel : '') + (lcDays === 0 ? ', chased today. ' : lcDays === 1 ? ', chased yesterday. ' : '. ') : 'No contact recorded yet. ') + (auto ? 'Auto reminder scheduled for ' + QCPdf.fmtDate(auto.day) + '. ' : '') + (landline ? 'Landline number, so no SMS. ' : '') + (t.final ? 'Final notice: only ever sent by hand, and it names a collection agency or the tribunal. ' : '') + (t.biz ? 'Business client: statement wording. ' : '') + '</p>' +
+      var toPhone = r.kind === 'statement' ? r.phone : j.client.phone, toEmail = r.kind === 'statement' ? (r.accounts_email || r.email) : j.client.email;
+      var landline = QCMsg.isLandline(toPhone), phoneOk = toPhone && !landline;
+      var auto = r.kind === 'statement' ? null : pendingFollowUps(j).filter(function (x) { return r.kind === 'quote' ? x.what.indexOf('quote+') === 0 : x.what.indexOf(r.item.no + '+') === 0; }).sort(byDay)[0];
+      var sms = 'sms:' + (toPhone || '').replace(/[^\d+]/g, '') + '?&body=' + encodeURIComponent(t.sms), mail = 'mailto:' + (toEmail || '').replace(/[\s"'<>?#&]/g, '') + '?subject=' + encodeURIComponent(t.subject) + '&body=' + encodeURIComponent(t.email);
+      var head = r.kind === 'invoice' ? esc(r.item.no) + ', ' + money(invBalance(r.item).balance) + ' owing, ' + r.days + ' days overdue' : r.kind === 'statement' ? r.invs.length + ' invoice' + (r.invs.length > 1 ? 's' : '') + ', ' + money(r.total) + ' owing, oldest ' + r.days + ' days overdue' : esc(j.quote_no) + ', ' + money(j.quote.total) + ', waiting ' + r.days + ' days';
+      var note = (lc ? 'Last contact: ' + QCPdf.fmtDate(lc.date) + (lc.channel ? ' by ' + lc.channel : '') + (lcDays === 0 ? ', chased today. ' : lcDays === 1 ? ', chased yesterday. ' : '. ') : 'No contact recorded yet. ') + (auto ? 'Goes by itself on ' + QCPdf.fmtDate(auto.day) + '. ' : '') + (landline ? 'Landline number, so no text. ' : '') +
+        (r.kind === 'invoice' && !r.chased && r.days >= i1 ? 'Never reminded, so this is the friendly first note. ' : '') + (t.deposit ? 'An unpaid deposit means the job has not started, so this asks gently and never threatens. ' : '') +
+        (r.kind === 'invoice' && r.tier === 3 && !showFinal ? 'Third time. The final notice (it names a collection agency or ' + esc(tribunalFor(stateCode())) + ') is behind Show final notice. ' : '') +
+        (r.kind === 'statement' ? 'Business client: one statement instead of a reminder per invoice. ' + (r.accounts_email ? 'Goes to accounts: ' + esc(r.accounts_email) + '. ' : 'No accounts email on the job, so it goes to ' + esc(r.email || 'the contact') + '. ') : t.biz ? 'Business client: statement wording. ' : '');
+      html += '<div class="card chase' + (hold ? ' held' : '') + '"><div class="row between"><div><b>' + esc(r.kind === 'statement' ? r.name : (j.client.name || j.quote_no)) + '</b><span class="hint"> · ' + head + '</span></div><span class="pill ' + (showFinal ? 'bad' : r.tier >= 2 ? 'warn' : '') + '">' + (hold ? 'On hold' : showFinal ? 'Final notice' : r.tone) + '</span></div>' +
+        '<p class="hint">' + note + '</p>' +
         (hold ? '<p class="muted">Reminders are on hold' + (j.hold.note ? ': ' + esc(j.hold.note) : '') + '.</p><div class="row"><button class="btn sm" data-hold="' + k + '">Resume reminders</button><a class="btn ghost sm" href="#/job/' + j.id + '">Open job</a></div>' :
-          '<div class="msg">' + esc(t.sms) + '</div><div class="row">' + (QCMsg.ready('sms') && phoneOk ? '<button class="btn tape sm" data-sendnow="' + k + '" data-ch="sms">Send SMS now</button>' : '') + (QCMsg.ready('email') && j.client.email ? '<button class="btn sm" data-sendnow="' + k + '" data-ch="email">Send email now</button>' : '') + (phoneOk ? '<a class="btn ' + (QCMsg.ready('sms') ? 'ghost ' : 'tape ') + 'sm" href="' + esc(sms) + '">Text</a>' : '') + (j.client.email ? '<a class="btn ' + (QCMsg.ready('email') ? 'ghost ' : '') + 'sm" href="' + esc(mail) + '">Email</a>' : '') + '<button class="btn ghost sm" data-share="' + k + '">Share</button><button class="btn ghost sm" data-copy="' + k + '">Copy</button><button class="btn ghost sm" data-chased="' + j.id + '">Mark chased</button><button class="btn ghost sm" data-hold="' + k + '">Hold</button><a class="btn ghost sm" href="#/job/' + j.id + '">Open job</a></div>') + '</div>';
+          (showFinal ? '<p class="legal">This threatens legal action. Send it only if you mean it.</p>' : '') + '<div class="msg">' + esc(t.sms) + '</div>' +
+          '<div class="row">' + (QCMsg.ready('sms') && phoneOk ? '<button class="btn tape" data-sendnow="' + k + '" data-ch="sms">Send text now</button>' : '') + (QCMsg.ready('email') && toEmail ? '<button class="btn" data-sendnow="' + k + '" data-ch="email">Send email now</button>' : '') + (phoneOk ? '<a class="btn ' + (QCMsg.ready('sms') ? 'ghost' : 'tape') + '" href="' + esc(sms) + '">Text</a>' : '') + (toEmail ? '<a class="btn ' + (QCMsg.ready('email') || phoneOk ? 'ghost' : '') + '" href="' + esc(mail) + '">Email</a>' : '') +
+          (r.kind === 'statement' && ho && window.QCPdf && QCPdf.statementPDF ? '<button class="btn ghost" data-stmt="' + k + '">Send the statement</button>' : '') + (r.kind === 'invoice' && ho && window.QCPdf && QCPdf.invoicePDF ? '<button class="btn ghost" data-invcopy="' + k + '">Send a copy of the invoice</button>' : '') +
+          (r.kind === 'invoice' && r.tier === 3 ? '<button class="btn ghost" data-final="' + k + '">' + (showFinal ? 'Back to the reminder' : 'Show final notice') + '</button>' : '') + '</div>' +
+          '<div class="row second"><button class="btn ghost sm" data-share="' + k + '">Share</button><button class="btn ghost sm" data-copy="' + k + '">Copy</button><button class="btn ghost sm" data-chased="' + (r.kind === 'statement' ? r.jobs.map(function (x) { return x.id; }).join(',') : j.id) + '">Mark chased</button><button class="btn ghost sm" data-hold="' + k + '">Hold</button><a class="btn ghost sm" href="#/job/' + j.id + '">Open job</a></div>') + '</div>';
     });
     if (dirty) save();
     $app.innerHTML = html; wireBanner();
     $app.querySelectorAll('[data-copy]').forEach(function (b) { b.addEventListener('click', function () { var t = rows[+b.dataset.copy].text.sms; if (navigator.clipboard) navigator.clipboard.writeText(t); toast('Copied'); }); });
     $app.querySelectorAll('[data-share]').forEach(function (b) { b.addEventListener('click', function () { var t = rows[+b.dataset.share].text.sms; if (navigator.share) navigator.share({ text: t }).catch(function () {}); else { if (navigator.clipboard) navigator.clipboard.writeText(t); toast('Copied. Paste it into WhatsApp or Messages.'); } }); });
+    $app.querySelectorAll('[data-final]').forEach(function (b) { b.addEventListener('click', function () { var r = rows[+b.dataset.final]; chaseShowFinal[r.item.no] = !chaseShowFinal[r.item.no]; var y = window.scrollY; viewChase(); window.scrollTo(0, y); }); });
     $app.querySelectorAll('[data-sendnow]').forEach(function (b) { b.addEventListener('click', function () {
-      var r = rows[+b.dataset.sendnow], ch = b.dataset.ch, j = r.job, name = j.client.name || j.quote_no, lc = lastContact(j), lcDays = lc ? QCStore.daysBetween(lc.date, today) : null;
+      var r = rows[+b.dataset.sendnow], ch = b.dataset.ch, j = r.job, name = r.kind === 'statement' ? r.name : (j.client.name || j.quote_no), lc = lastContact(j), lcDays = lc ? QCStore.daysBetween(lc.date, today) : null;
       if (lcDays != null && lcDays < 2 && !confirm('You contacted ' + name + ' ' + (lcDays === 0 ? 'today' : 'yesterday') + '. Send this as well?')) return;
       if (r.text.final && !confirm('This is the final notice. It names a collection agency or the tribunal. Send it?')) return;
-      b.disabled = true; var ref = r.kind === 'invoice' ? r.item.no + '+' + r.days : 'quote+' + r.days;
-      var payload = ch === 'sms' ? { action: 'send', channel: 'sms', to: j.client.phone, body: r.text.sms, meta: { job: j.id, ref: ref } } : { action: 'send', channel: 'email', to: j.client.email, subject: r.text.subject, body: r.text.email, reply_to: S.details.email || undefined, meta: { job: j.id, ref: ref } };
-      QCMsg.call(payload).then(function () { j.last_chased = today; save(); toast('Sent by ' + (ch === 'sms' ? 'SMS' : 'email')); viewChase(); }).catch(function (e) { b.disabled = false; toast('Failed: ' + e.message); });
+      b.disabled = true; var ref = r.kind === 'invoice' ? r.item.no + '+' + r.days : r.kind === 'statement' ? 'statement+' + r.days : 'quote+' + r.days, toEmail = r.kind === 'statement' ? (r.accounts_email || r.email) : j.client.email, toPhone = r.kind === 'statement' ? r.phone : j.client.phone;
+      var payload = ch === 'sms' ? { action: 'send', channel: 'sms', to: toPhone, body: r.text.sms, meta: { job: j.id, ref: ref } } : { action: 'send', channel: 'email', to: toEmail, subject: r.text.subject, body: r.text.email, reply_to: S.details.email || undefined, meta: { job: j.id, ref: ref } };
+      QCMsg.call(payload).then(function () { (r.jobs || [j]).forEach(function (x) { x.last_chased = today; }); save(); toast('Sent by ' + (ch === 'sms' ? 'text' : 'email')); viewChase(); }).catch(function (e) { b.disabled = false; showBlock(b, 'Could not send: ' + e.message, { kind: 'bad' }); });
     }); });
-    $app.querySelectorAll('[data-chased]').forEach(function (b) { b.addEventListener('click', function () { var j = QCStore.getJob(b.dataset.chased); j.last_chased = today; save(); toast('Noted'); viewChase(); }); });
+    $app.querySelectorAll('[data-chased]').forEach(function (b) { b.addEventListener('click', function () { b.dataset.chased.split(',').forEach(function (id) { var j = QCStore.getJob(id); if (j) j.last_chased = today; }); save(); toast('Noted'); viewChase(); }); });
+    var handDoc = function (b, r, kind, doc, filename, who) { if (!doc) return; var done = function (res) { if (res && res.sent) { (r.jobs || [r.job]).forEach(function (x) { x.last_chased = today; }); save(); viewChase(); } }; if (ho) ho({ kind: kind, doc: doc, filename: filename, whoName: who.name, whoPhone: who.phone, whoEmail: who.email, onResult: done }); else if (QCPdf.deliver) QCPdf.deliver(doc, filename); };
+    $app.querySelectorAll('[data-stmt]').forEach(function (b) { b.addEventListener('click', function () { var r = rows[+b.dataset.stmt], doc = null; try { doc = QCPdf.statementPDF(r.jobs, S, { client: r.job.client }); } catch (e) { showBlock(b, 'Could not make the statement: ' + e.message, { kind: 'bad' }); return; } handDoc(b, r, 'statement', doc, 'Statement ' + String(r.name || '').replace(/[^\w ]+/g, '') + '.pdf', { name: r.name, phone: r.phone, email: r.accounts_email || r.email }); }); });
+    $app.querySelectorAll('[data-invcopy]').forEach(function (b) { b.addEventListener('click', function () { var r = rows[+b.dataset.invcopy], doc = null; try { doc = QCPdf.invoicePDF(r.job, r.item, S); } catch (e) { showBlock(b, 'Could not make the invoice: ' + e.message, { kind: 'bad' }); return; } handDoc(b, r, 'invoice', doc, r.item.no + '.pdf', { name: r.job.client.name, phone: r.job.client.phone, email: r.job.client.email }); }); });
     $app.querySelectorAll('[data-hold]').forEach(function (b) { b.addEventListener('click', function () {
-      var r = rows[+b.dataset.hold], j = r.job, name = j.client.name || j.quote_no;
+      var r = rows[+b.dataset.hold], j = r.job, name = r.kind === 'statement' ? r.name : (j.client.name || j.quote_no);
       if (j.hold && j.hold.on) { j.hold.on = false; save(); toast('Reminders resume. Reschedule them from the quote or invoice page if you want them automatic.'); viewChase(); return; }
       var note = prompt('Hold reminders for ' + name + '. Why? (optional, kept on the job)', ''); if (note === null) return;
       j.hold = { on: true, note: String(note).slice(0, 200) }; save(); b.disabled = true;

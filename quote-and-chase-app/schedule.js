@@ -21,8 +21,9 @@
     });
     return out;
   }
+  // scope: 'walls' | 'walls_ceilings' | 'all', as a string or {scope}; default all
   function ballpark(picks, condition, settings, address, opts) {
-    opts = opts || {}; var scope = SCOPES[opts.scope] ? opts.scope : 'all';
+    opts = typeof opts === 'string' ? { scope: opts } : (opts || {}); var scope = SCOPES[opts.scope] ? opts.scope : 'all';
     var rooms = roomsFrom(picks, condition, settings.rules.ceiling_height_m, scope), job = { rooms: rooms, extras: [], travel_km: 0, premium_paint: false, client: { address: address || '' } };
     var p = QCPricing.priceJob(job, settings), lo = Math.floor(p.total * (1 - BAND) / 50) * 50, hi = Math.ceil(p.total * (1 + BAND) / 50) * 50;
     return { low: lo, high: hi, mid: p.total, rooms: rooms, priced: p, scope: scope, scope_label: SCOPES[scope], band_pct: BAND * 100 };
