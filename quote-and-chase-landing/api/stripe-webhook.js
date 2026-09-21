@@ -41,7 +41,7 @@ export default async function handler(req, res) {
   let ev; try { ev = JSON.parse(raw.toString("utf8")); } catch (e) { return send(res, 400, { ok: false, error: "Bad JSON" }); }
   const type = ev && ev.type, s = ev && ev.data && ev.data.object;
   if (type !== "checkout.session.completed" && type !== "checkout.session.async_payment_succeeded") return send(res, 200, { ok: true, ignored: type });
-  if (!s || (s.payment_status !== "paid" && s.status !== "complete")) return send(res, 200, { ok: true, ignored: "not paid yet" });
+  if (!s || (s.payment_status !== "paid" && s.payment_status !== "no_payment_required")) return send(res, 200, { ok: true, ignored: "not paid yet" }); // a bank debit still clearing comes back later as async_payment_succeeded
   if (ev.id && done.has(ev.id)) return send(res, 200, { ok: true, duplicate: true });
   if (ev.id) { done.set(ev.id, 1); while (done.size > 500) done.delete(done.keys().next().value); }
 
