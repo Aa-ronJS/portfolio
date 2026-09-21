@@ -8,14 +8,24 @@ window.QC = {
 
   // ---- the paid offer: "Set up with you", a one-off call. Price and founding terms live here so the page,
   //      the FAQ and the guarantee never disagree with the receipt.
-  SETUP_URL: "",                    // Stripe Payment Link (or paid Calendly/Cal.com) for the set-up call. Empty + FORM_ACTION = email list; empty + nothing = button hidden
-  SETUP_PRICE: 249,                 // AUD, the price charged today
-  SETUP_PRICE_AFTER: 349,           // AUD, the price after the founding places are gone. Only honest if you actually raise it.
-  FOUNDING_PLACES: 20,              // how many at the founding price. 0 hides the founding line.
-  FOUNDING_LEFT: "",                // optional live count you update by hand, e.g. 14. Empty = no count shown. Never type a number you have not counted.
-  SETUP_SLOTS_WEEK: "",             // optional, e.g. 5: "I do these myself, 5 a week". Empty = not shown.
-  BOOKING_URL: "",                  // where a paid painter picks a time (Calendly, Cal.com, Google appointment page). Used on booked.html
+  OFFER_NAME: "The Founding Painters' Set-Up Hour",  // rename to "The Painters' Set-Up Hour" the day the founding places are gone
+  SETUP_URL: "",                    // Stripe Payment Link for the Set-Up Hour, with booked.html as its success page. Empty + FORM_ACTION = email list; empty + nothing = button hidden
+  SETUP_PRICE: 349,                 // AUD, the price charged today (founding)
+  SETUP_PRICE_AFTER: 495,           // AUD, the price after the founding places are gone. Only honest if you actually raise it and keep it there.
+  FOUNDING_PLACES: 20,              // how many at the founding price. 0 hides every founding line and the founding-only extras.
+  FOUNDING_ENDS: "",                // optional end date for the founding price, e.g. "30 November 2026": rises at 20 or on this date, whichever first. Set once, never extend.
+  FOUNDING_LEFT: "",                // optional live count you update by hand from Stripe receipts, e.g. 14. Empty = no count shown. Never type a number you have not counted.
+  FOUNDING_COUNTED: "",             // the date you last counted, e.g. "3 October 2026". Shown next to the count.
+  SETUP_SLOTS_WEEK: "",             // optional, e.g. 4: "I do these myself, 4 a week". Shown only once SETUP_URL is set. Empty = not shown.
+  LAST_CALL: "",                    // optional, e.g. "Thursday 17 December": the last Set-Up Hour before the Christmas break. Needs BREAK_FROM and BREAK_TO too.
+  BREAK_FROM: "",                   // e.g. "19 December"
+  BREAK_TO: "",                     // e.g. "11 January"
+  HELP_SAME_DAY: true,              // true: "a message that did not send: the same business day". false: "within one business day". Say only what you will do.
+  BONUSES_READY: false,             // true only when the state pages, first-quote card, message library, unpaid invoice playbook and bookkeeper page exist and go out the day someone pays
+  BOOKING_URL: "",                  // where a paid painter picks a time (Cal.com, Calendly, Google appointment page). Used on booked.html
   GST_REGISTERED: false,            // true adds "inc GST" and "tax invoice" wording. Only set true when you are registered.
+  BUSINESS_ADDRESS: "",             // TODO owner: a postal address (a PO box is fine) for the terms. The service guarantee needs the giver's address and phone published.
+  BUSINESS_PHONE: "",               // TODO owner: a phone number for the terms (a VoIP number is fine).
 
   // ---- the laptop pack, sold on laptop.html to the Claude Code crowd, not on the painter page
   CHECKOUT_URL: "",                 // laptop pack checkout: Gumroad / Lemon Squeezy / Stripe Payment Link. Empty = the page asks for an email instead
