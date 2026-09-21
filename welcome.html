@@ -24,13 +24,13 @@ code{font-family:ui-monospace,Menlo,monospace;font-size:.85rem;word-break:break-
 </head>
 <body><main>
 <h1>You're on.</h1>
-<p>Your card is charged, your receipt is in your email, and the chasing is switched on. One tap sets the app up. Nobody is going to phone you, and there is nothing to arrange.</p>
+<p>Your card is charged, your receipt is in your email, and your messages are topped up. One tap puts it on the phone you quote from. Nobody is going to phone you, and there is nothing to arrange.</p>
 
 <div class="box">
   <b>1. Set up your app</b>
   <p data-my-wait>Getting your set-up link…</p>
   <p data-my-ready hidden><a class="btn" href="#" data-my-link>Set up my app</a></p>
-  <p data-my-ready hidden>Open this on the phone you quote from and tap Load. Your business name, ABN, licence and your state's deposit rule go in, and your follow-ups are on from that moment. The same link is in your welcome email, so you can do it on the ute tomorrow instead.</p>
+  <p data-my-ready hidden>Open this on the phone you quote from and tap Load. Your business name, ABN, licence and your state's deposit rule go in, and your month's messages are on it from that moment. The same link is in your email, so you can do it on the ute tomorrow instead.</p>
   <p data-my-fail hidden>Your set-up link is in the welcome email, arriving now at the address you paid with. Open it on the phone you quote from and tap Load. Not there in an hour? <span data-contact>Email me</span> and I will send it again.</p>
   <p class="guarantee" data-my-ready hidden>Open it on the phone you actually quote from. The app keeps everything on that phone, so the link is worth nothing to anyone else and it is the only set-up there is.</p>
 </div>
@@ -43,12 +43,12 @@ code{font-family:ui-monospace,Menlo,monospace;font-size:.85rem;word-break:break-
 
 <div class="box">
   <b>3. Anyone who already owes you</b>
-  <p>Add them as jobs, then tap Start the chasing. Anything already past its date goes out the next morning, the rest on their days. Nothing is sent to a customer before you tap that button.</p>
+  <p>Add them as jobs, then tap Start the chasing. Anything already past its date goes out the next morning, the rest on their days. Nothing is sent to a customer before you tap that button, and each one that goes comes off your month's messages.</p>
 </div>
 
 <div class="box">
-  <b>Cancelling, and your card</b>
-  <p>Both live inside the app: Set-up, then Manage or cancel. It opens your own Stripe page where you can change the card, read the receipts, or stop. There is no notice period and no email to send. Cancel and the app keeps working free, writing every message for you to send by hand.</p>
+  <b>Your messages, your card, cancelling</b>
+  <p>All three live inside the app. The Follow-ups tab shows how many messages are left this month. Set-up, then Manage or cancel, opens your own Stripe page to change the card, read receipts, or stop. There is no notice period and no email to send. Cancel and the app keeps working, writing every message for you to send by hand.</p>
 </div>
 
 <div class="guarantee"><b>Thirty days, money back:</b> if the chasing has not happened the way the website says, email me inside 30 days of your first payment and I refund that month, whether you cancelled or not. <a href="terms#guarantee">The wording</a>.</div>
@@ -69,7 +69,7 @@ code{font-family:ui-monospace,Menlo,monospace;font-size:.85rem;word-break:break-
       .then(function(j){ if (j && j.ok && j.paid && j.link) { document.querySelector('[data-my-link]').setAttribute('href', j.link); show('[data-my-ready]'); } else show('[data-my-fail]'); })
       .catch(function(){ show('[data-my-fail]'); });
   }
-  if (C.META_PIXEL_ID) {!function(f,b,e,v,n,t,s){if(f.fbq)return;n=f.fbq=function(){n.callMethod?n.callMethod.apply(n,arguments):n.queue.push(arguments)};if(!f._fbq)f._fbq=n;n.push=n;n.loaded=!0;n.version='2.0';n.queue=[];t=b.createElement(e);t.async=!0;t.src=v;s=b.getElementsByTagName(e)[0];s.parentNode.insertBefore(t,s)}(window,document,'script','https://connect.facebook.net/en_US/fbevents.js'); window.fbq('init', C.META_PIXEL_ID); window.fbq('track', 'Subscribe', { value: parseFloat(C.HOSTED_PRICE) || 39, currency: 'AUD', content_name: 'chasing_on' }); }
+  if (C.META_PIXEL_ID) {!function(f,b,e,v,n,t,s){if(f.fbq)return;n=f.fbq=function(){n.callMethod?n.callMethod.apply(n,arguments):n.queue.push(arguments)};if(!f._fbq)f._fbq=n;n.push=n;n.loaded=!0;n.version='2.0';n.queue=[];t=b.createElement(e);t.async=!0;t.src=v;s=b.getElementsByTagName(e)[0];s.parentNode.insertBefore(t,s)}(window,document,'script','https://connect.facebook.net/en_US/fbevents.js'); window.fbq('init', C.META_PIXEL_ID); window.fbq('track', 'Subscribe', { value: parseFloat(C.PLAN_PRICE) || 49, currency: 'AUD', content_name: 'plan' }); }
 })();
 </script>
 </body>

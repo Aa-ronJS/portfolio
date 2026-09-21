@@ -6,13 +6,17 @@ window.QC = {
   APP_URL: "app/",                  // where the free phone app lives. Relative "app/" serves the copy in this project;
                                     // or the canonical https://aa-ronjs.github.io/portfolio/app/ (data is per address, pick one and keep it)
 
-  // ---- the one thing for sale: "Chasing on", a monthly subscription the painter starts and stops himself
-  SUBSCRIBE_URL: "",                // TODO owner: the Stripe Payment Link (subscription mode) for the monthly plan.
-                                    //   On the link: collect name, email, phone and billing address, plus three custom TEXT fields keyed
-                                    //   trading_name, abn, licence (the webhook reads those keys).
+  // ---- one product, one price, messages included. The painter starts inside the app with his email; the card comes later, from inside.
+  PLAN_PRICE: 49,                   // AUD a month. Must match the Stripe Payment Link and the relay. Shown on the card, the FAQ and the terms.
+  INCLUDED_MESSAGES: 100,           // messages a month in the plan. Must match INCLUDED_MESSAGES on the relay.
+  FREE_MESSAGES: 5,                 // what an email alone gets him, so he can send a quote and chase it twice. Must match FREE_MESSAGES on the relay.
+  TOPUP_MESSAGES: 100,              // messages in a top-up pack. Must match TOPUP_MESSAGES on the relay.
+  TOPUP_PRICE: 20,                  // AUD for a pack. Must match the top-up Stripe Payment Link.
+  SUBSCRIBE_URL: "",                // TODO owner: the Stripe Payment Link (subscription mode) at PLAN_PRICE. The app links to it from inside;
+                                    //   collect name, email, phone and billing address, plus custom TEXT fields keyed trading_name, abn, licence.
                                     //   Success URL: <this site>/welcome?session={CHECKOUT_SESSION_ID}
-                                    //   Empty + FORM_ACTION = the button collects emails instead; empty + nothing = the button is hidden.
-  HOSTED_PRICE: 39,                 // AUD a month, shown on the card, in the FAQ and in the terms. Change it here and in Stripe together.
+  TOPUP_URL: "",                    // TODO owner: a second Payment Link, one-off, at TOPUP_PRICE, with metadata qc=topup. The app appends
+                                    //   ?client_reference_id=<his Stripe customer> so the webhook knows whose account to credit.
   SETUP_LINK_API: "",               // TODO owner: "https://your-site.vercel.app/api/setup-link". Lets the welcome page show the
                                     // "Set up my app" button the second they pay. Empty = the page tells them to use the emailed link.
 
