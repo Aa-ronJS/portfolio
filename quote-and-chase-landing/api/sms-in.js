@@ -7,7 +7,7 @@
 import { rawBody, twilioSigned, creds, sms } from "./_setup.js";
 
 export const config = { api: { bodyParser: false } };
-export const REPLY = "This number sends messages for a painting business and cannot take replies. Please text or call the mobile in the message you received.";
+export const REPLY = "This number sends messages for a painting business and cannot take replies. Please use the phone number or email in the message you received.";
 const xml = (s) => String(s).replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
 function twiml(res, status, msg) { res.statusCode = status; res.setHeader("Content-Type", "text/xml"); res.end("<?xml version=\"1.0\" encoding=\"UTF-8\"?><Response>" + (msg ? "<Message>" + xml(msg) + "</Message>" : "") + "</Response>"); }
 
