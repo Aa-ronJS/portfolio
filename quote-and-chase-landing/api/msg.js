@@ -24,6 +24,8 @@
 //   { action: "ping" }                                                                     -> what is set up; for a mapped token also { hosted: true, until, name }
 // Every action returns { ok: true, ... } or { ok: false, error }.
 
+import { readToken } from "./_setup.js";
+
 const ALLOWED = (process.env.ALLOWED_ORIGINS || "https://aa-ronjs.github.io,https://aaronsteele.vercel.app").split(",").map((s) => s.trim()).filter(Boolean);
 const PER_IP_LIMIT = Number(process.env.MSG_PER_IP_LIMIT || 60); // per 10 minutes per instance
 const buckets = new Map();
@@ -67,9 +69,15 @@ function tokenMap() {
 }
 function hostedEntry(token) {
   if (typeof token !== "string" || !token) return null;
-  const map = tokenMap(); if (!Object.prototype.hasOwnProperty.call(map, token)) return null;
-  const e = map[token]; return e && typeof e === "object" ? e : null;
+  const map = tokenMap(); if (Object.prototype.hasOwnProperty.call(map, token)) { const e = map[token]; return e && typeof e === "object" ? e : null; }
+  // a self-service token: signed by us when the subscription started or was last renewed, so it needs no entry anywhere
+  const p = readToken(token, process.env.RELAY_SIGNING_SECRET);
+  if (!p) return null;
+  if (revoked(p.sub)) return { name: p.name, reply_to: p.reply_to, until: p.until, disabled: true, signed: true };
+  return { name: p.name, reply_to: p.reply_to, until: p.until, signed: true, sub: p.sub };
 }
+// the only reason to touch an env var: stopping one account at once, ahead of its expiry
+function revoked(sub) { return !!sub && (process.env.RELAY_REVOKED || "").split(/[,\s]+/).filter(Boolean).indexOf(sub) >= 0; }
 // `until` is a date ("2026-12-20", good through the end of that day, Australian time) or a full ISO instant. A value that does not parse is treated as no expiry, and ping shows it as given.
 function hostedEnded(e) {
   if (!e || e.disabled === true || e.disabled === "true" || e.disabled === 1) return true;
@@ -143,7 +151,9 @@ export default async function handler(req, res) {
   if (!body || typeof body !== "object" || Array.isArray(body)) return send(res, 400, { ok: false, error: "Bad JSON" });
   const hosted = hostedEntry(body.token);
   if (hosted) { if (hostedEnded(hosted)) return send(res, 403, { ok: false, error: HOSTED_ENDED, hosted: true, until: hosted.until || null, name: hosted.name || "" }); }
-  else if (process.env.RELAY_TOKEN || Object.keys(tokenMap()).length) { if (!process.env.RELAY_TOKEN || body.token !== process.env.RELAY_TOKEN) return send(res, 401, { ok: false, error: "Relay token missing or wrong" }); }
+  // anything shaped like one of our signed tokens that did not verify is a forgery, whatever else is configured
+  else if (typeof body.token === "string" && body.token.slice(0, 4) === "qc1.") return send(res, 401, { ok: false, error: "That sending token is not one of ours" });
+  else if (process.env.RELAY_TOKEN || process.env.RELAY_SIGNING_SECRET || Object.keys(tokenMap()).length) { if (!process.env.RELAY_TOKEN || body.token !== process.env.RELAY_TOKEN) return send(res, 401, { ok: false, error: "Relay token missing or wrong" }); }
   if (body.to != null) body.to = String(body.to).trim();
   // A hosted token never brings its own credentials: the server's are used whatever the request carries.
   const c = hosted ? Object.assign(creds({}), { hostedName: hosted.name || "", hostedReplyTo: cleanHeader(hosted.reply_to, 200) }) : creds(body), ch = String(body.channel || "").toLowerCase() === "email" ? "email" : "sms";
@@ -160,8 +170,8 @@ export default async function handler(req, res) {
       if (key) { seen.set(key, r); while (seen.size > 200) seen.delete(seen.keys().next().value); }
       return send(res, 200, { ok: true, ...r }); }
     if (body.action === "cancel") { if (!body.id) throw new Error("id is required"); const r = ch === "sms" ? await smsCancel(c, body.id) : await emailCancel(c, body.id); return send(res, 200, { ok: true, ...r }); }
-    if (body.action === "ping") { const p = { ok: true, sms: !!(c.twilioSid && c.twilioToken && (c.twilioService || c.twilioFrom)), sms_schedule: !!(c.twilioSid && c.twilioToken && c.twilioService), email: !!(c.resendKey && c.resendFrom), client_creds: process.env.ALLOW_CLIENT_CREDS === "1", token_required: !!process.env.RELAY_TOKEN || Object.keys(tokenMap()).length > 0 };
-      if (hosted) { p.hosted = true; p.until = hosted.until || null; p.name = hosted.name || ""; p.client_creds = false; }
+    if (body.action === "ping") { const p = { ok: true, sms: !!(c.twilioSid && c.twilioToken && (c.twilioService || c.twilioFrom)), sms_schedule: !!(c.twilioSid && c.twilioToken && c.twilioService), email: !!(c.resendKey && c.resendFrom), client_creds: process.env.ALLOW_CLIENT_CREDS === "1", token_required: !!process.env.RELAY_TOKEN || !!process.env.RELAY_SIGNING_SECRET || Object.keys(tokenMap()).length > 0 };
+      if (hosted) { p.hosted = true; p.until = hosted.until || null; p.name = hosted.name || ""; p.client_creds = false; if (hosted.signed) { p.signed = true; p.renew = "/api/renew"; p.portal = "/api/portal"; } }
       return send(res, 200, p); }
     return send(res, 400, { ok: false, error: "Unknown action" });
   } catch (e) { return send(res, 400, { ok: false, error: e.message || String(e) }); }

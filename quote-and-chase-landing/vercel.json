@@ -20,6 +20,14 @@
     "api/sms-in.js": {
       "maxDuration": 10,
       "memory": 256
+    },
+    "api/renew.js": {
+      "maxDuration": 10,
+      "memory": 256
+    },
+    "api/portal.js": {
+      "maxDuration": 10,
+      "memory": 256
     }
   },
   "headers": [

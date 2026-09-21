@@ -11,6 +11,7 @@ export function cors(req, res, methods) {
   res.setHeader("Vary", "Origin"); res.setHeader("Access-Control-Allow-Methods", methods || "GET, OPTIONS"); res.setHeader("Access-Control-Allow-Headers", "content-type"); res.setHeader("Access-Control-Max-Age", "600");
   return ok;
 }
+export async function readJson(req, max) { const b = await rawBody(req, max || 100000); if (!b.length) return {}; const j = JSON.parse(b.toString("utf8")); if (!j || typeof j !== "object" || Array.isArray(j)) throw new Error("Bad JSON"); return j; }
 export async function rawBody(req, max) { const chunks = []; let n = 0; for await (const c of req) { n += c.length; if (n > (max || 1_000_000)) throw new Error("Body too large"); chunks.push(c); } return Buffer.concat(chunks); }
 
 // ---- the set-up code the app reads at #/setup?d=<code>: "j:" + base64url(JSON), the same shape encodeSetup() writes in the app
@@ -40,7 +41,48 @@ export function detailsFromSession(s) {
   return d;
 }
 export function linkOnePayload(details, note) {
-  return { v: 1, settings: { details }, jobs: [], note: note || "Link one from Aaron: your details and your state's deposit rule, so the first quote already carries your name. Your prices and your open jobs come after we talk." };
+  return { v: 1, settings: { details }, jobs: [], note: note || "Your details and your state's deposit rule, so your first quote already carries your name. Nothing you have already typed is replaced." };
+}
+
+// ---- self-service hosted tokens: signed, not stored. "qc1.<base64url payload>.<base64url HMAC-SHA256>"
+// Minted by the Stripe webhook when a subscription starts, refreshed by /api/renew while the subscription is live.
+// The relay trusts the signature, so no database, no per-painter env var and nothing for a human to paste.
+export function signToken(payload, secret) {
+  const body = b64url(Buffer.from(JSON.stringify(payload), "utf8"));
+  return "qc1." + body + "." + b64url(createHmac("sha256", secret || "").update(body).digest());
+}
+export function readToken(token, secret) {
+  if (typeof token !== "string" || token.slice(0, 4) !== "qc1." || !secret) return null;
+  const parts = token.split("."); if (parts.length !== 3) return null;
+  const want = b64url(createHmac("sha256", secret).update(parts[1]).digest());
+  const a = Buffer.from(parts[2]), b = Buffer.from(want);
+  if (a.length !== b.length || !timingSafeEqual(a, b)) return null;
+  try { const p = JSON.parse(Buffer.from(parts[1].replace(/-/g, "+").replace(/_/g, "/"), "base64").toString("utf8")); return p && typeof p === "object" && p.v === 1 ? p : null; } catch { return null; }
+}
+// A token lasts to the end of the paid period plus a few days' grace, so a renewal that is a day late never stops the chasing.
+export const GRACE_DAYS = 5;
+export function untilFor(periodEndSec) {
+  const ms = (Number(periodEndSec) > 0 ? Number(periodEndSec) * 1000 : Date.now() + 30 * 86400000) + GRACE_DAYS * 86400000;
+  return new Date(ms).toISOString().slice(0, 10);
+}
+export function mintToken(o) { return signToken({ v: 1, sub: o.sub || "", cus: o.cus || "", name: o.name || "", reply_to: o.reply_to || "", until: o.until || "", iat: Math.floor(Date.now() / 1000) }, process.env.RELAY_SIGNING_SECRET); }
+
+// ---- Stripe REST, form-encoded, no SDK
+export async function stripe(path, form, method) {
+  const key = process.env.STRIPE_SECRET_KEY; if (!key) throw new Error("Not set up: STRIPE_SECRET_KEY");
+  const r = await f("https://api.stripe.com/v1/" + path, {
+    method: method || (form ? "POST" : "GET"),
+    headers: Object.assign({ Authorization: "Bearer " + key }, form ? { "Content-Type": "application/x-www-form-urlencoded" } : {}),
+    body: form ? new URLSearchParams(form).toString() : undefined,
+  });
+  const j = await r.json().catch(() => ({}));
+  if (!r.ok) throw new Error((j.error && j.error.message) || "Stripe " + r.status);
+  return j;
+}
+export const LIVE_STATUS = ["active", "trialing", "past_due"];
+// what the app is given so one tap turns the chasing on, with nothing to open and nobody to ask
+export function sendingSettings(token, until, name, relayUrl) {
+  return { server: relayUrl || process.env.RELAY_URL || "", token: token, server_has_creds: true, hosted: true, hosted_until: until, hosted_name: name || "" };
 }
 
 // ---- Stripe webhook signature: header "t=<unix>,v1=<hex>[,v1=<hex>]", signed payload "<t>.<raw body>", HMAC-SHA256 with the endpoint secret
