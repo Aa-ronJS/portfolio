@@ -71,7 +71,7 @@
       '<form id="joinform" novalidate><label class="f">Your email<span>so your app is yours, and so the first messages can go out in your name</span><input type="email" id="join_email" autocomplete="email" inputmode="email" required></label>' +
       '<label class="f">Your business name<span>optional, it goes on your quotes</span><input type="text" id="join_name" autocomplete="organization"></label>' +
       '<div class="row" style="margin-top:8px"><button class="btn tape" type="submit" id="join_go">Start quoting</button><span class="hint" id="join_msg"></span></div></form>' +
-      '<p class="hint">Your first ' + FREE_SENDS + ' messages are on us. A message is one text or one email the app sends for you. After that it is $' + PLAN_PRICE + ' a month for ' + PLAN_INCLUDED + ' of them, and a pack of ' + TOPUP_MESSAGES + ' more is $' + TOPUP_PRICE + ' whenever you want it.</p>' +
+      '<p class="hint">Your first ' + FREE_SENDS + ' messages are on us. A message is one text or one email the app sends for you; a job start to finish is usually four or five of them, the quote plus a chase-up or two and the same again on the invoice. After that it is $' + PLAN_PRICE + ' a month for ' + PLAN_INCLUDED + ', which is about 30 jobs, and a pack of ' + TOPUP_MESSAGES + ' more is $' + TOPUP_PRICE + ' whenever you want it.</p>' +
       '<p class="hint">Your jobs, prices and clients stay on this phone. We keep your email so the app is yours and so we can tell you when something changes.' + (url ? '' : ' <span class="confirm">Sign-up is not switched on yet.</span>') + '</p>' +
       '<p class="hint">Already have a set-up link? Open it on this phone and it does all of this for you.</p></div>';
     var f = document.getElementById('joinform');
@@ -180,14 +180,40 @@
   }
   function pendingBanner() { var n = (S.pending_cancels || []).length; if (!n) return ''; return '<div class="card banner"><p><b>' + n + ' reminder cancellation' + (n > 1 ? 's' : '') + ' waiting</b><span class="hint"> · could not reach the sending server. They retry when you are back online.</span></p><div class="row"><button class="btn sm" id="retrycancel">Retry now</button></div></div>'; }
   function wireBanner() { var b = document.getElementById('retrycancel'); if (b) b.addEventListener('click', function () { b.disabled = true; retryPendingCancels().then(function (n) { if (!n) toast('Still could not reach the sending server.'); route(); }); }); }
+  // One booked reminder per chase at a time. A scheduled message costs a message the moment it is BOOKED, not when it
+  // goes, so booking all three nudges the day a quote goes out spends three on a job that usually answers after the
+  // first. Only the next reminder in a chase is ever booked; the one after it is booked when the app next opens, once
+  // the one before it has gone. Nothing is lost if he never opens it: the dates are still in local_queue.
+  function chaseKey(it) { return String(it.job || '') + '|' + String(it.inv || ''); }
+  function chaseBooked(job, invNo) {
+    var list = invNo ? ((((job && job.invoices) || []).filter(function (i) { return i.no === invNo; })[0] || {}).follow_ups || []) : ((job && job.follow_ups) || []);
+    return list.some(function (x) { return x && x.id && !x.cancelled && new Date(x.send_at || (x.day + 'T12:00:00')).getTime() > Date.now(); });
+  }
+  function bySendAt(a, b) { var x = String(a.send_at || a.day), y = String(b.send_at || b.day); return x < y ? -1 : x > y ? 1 : 0; }
+  // Split would-be reminders into the ones to book now (at most the next one in each chase, and only inside the
+  // provider's window) and the ones to hold in the local queue.
+  function nextInChase(items, needReady) {
+    var byChase = {}, order = [], now = [], later = [];
+    items.forEach(function (it) { var k = chaseKey(it); if (!byChase[k]) { byChase[k] = []; order.push(k); } byChase[k].push(it); });
+    order.forEach(function (k) {
+      var grp = byChase[k].slice().sort(bySendAt), head = chaseBooked(QCStore.getJob(grp[0].job), grp[0].inv) ? null : grp[0];
+      grp.forEach(function (it) {
+        var book = it === head && QCMsg.withinWindow(it.send_at, it.channel) && (!needReady || QCMsg.ready(it.channel));
+        (book ? now : later).push(it);
+      });
+    });
+    return { now: now, later: later };
+  }
+
   function retryLocalQueue() {
     var st = QCStore.load(), q = st.local_queue || []; if (!q.length) return Promise.resolve();
-    var keep = [], now = []; q.forEach(function (it) {
+    var wanted = []; q.forEach(function (it) {
       var job = QCStore.getJob(it.job), inv = job && it.inv ? (job.invoices || []).filter(function (i) { return i.no === it.inv; })[0] : null;
       var alive = job && !(job.hold && job.hold.on) && (it.inv ? (inv && invOpen(inv)) : (job.status === 'quoted' && job.auto_follow_ups !== false));
       if (!alive || new Date(it.send_at).getTime() < Date.now()) return; // dropped: no longer wanted, or its day has passed
-      if (QCMsg.withinWindow(it.send_at, it.channel) && QCMsg.ready(it.channel)) now.push(it); else keep.push(it);
+      wanted.push(it);
     });
+    var pick = nextInChase(wanted, true), keep = pick.later, now = pick.now;
     st.local_queue = keep.concat(now); if (!now.length) { if (keep.length !== q.length) save(); return Promise.resolve(); }
     return QCMsg.scheduleAll(now, fuHour()).then(function (res) {
       var okd = res.filter(function (r) { return r.ok; }); okd.forEach(function (r) { var job = QCStore.getJob(r.job || (now.filter(function (i) { return i.key === r.key; })[0] || {}).job); if (!job) return; var it = now.filter(function (i) { return i.key === r.key; })[0]; if (it && it.inv) { var inv = job.invoices.filter(function (i) { return i.no === it.inv; })[0]; if (inv) inv.follow_ups = (inv.follow_ups || []).concat([r]); } else job.follow_ups = (job.follow_ups || []).concat([r]); });
@@ -835,7 +861,7 @@
     html += '<div class="card"><div class="row" id="sendrow">' + (cancelled ? '' : '<button class="btn ghost" id="lookq">Look at the quote</button><button class="btn tape" id="pdf">' + sendLabel + '</button>') + '</div><p class="hint">' + sendNote + '</p>' +
       '<div class="row" id="afterSend" ' + (sent && job.status === 'quoted' ? '' : 'hidden') + '>' + ((QCMsg.ready('sms') && job.client.phone) || (QCMsg.ready('email') && job.client.email) ? '<button class="btn sm" id="autofu">Schedule follow-ups (' + (QCMsg.ready('sms') && S.sending.auto_sms && job.client.phone ? 'SMS' : 'email') + ')</button>' : (QCMsg.ready('sms') || QCMsg.ready('email') ? '<span class="hint">Add a mobile or email to schedule follow-ups.</span>' : '')) + '<button class="btn ghost sm" id="remind">Calendar reminders</button></div>' +
       (QCMsg.ready('email') && job.client.email && !cancelled ? '<div class="row"><button class="btn sm" id="emailq">Email to ' + esc(job.client.email) + (job.emailed_date ? ' again' : '') + '</button></div>' : '') +
-      (job.follow_up_error ? '<p class="confirm">' + esc(job.follow_up_error) + '</p>' : '') + (pendingFollowUps(job).length ? '<p class="hint">Scheduled: ' + pendingFollowUps(job).map(function (x) { return QCPdf.fmtDate(x.day) + ' by ' + esc(x.channel); }).join(', ') + '. Cancelled when the quote is accepted or declined.</p>' : '') +
+      (job.follow_up_error ? '<p class="confirm">' + esc(job.follow_up_error) + '</p>' : '') + (function () { var pd = pendingFollowUps(job), wt = waitingFollowUps(job).filter(function (q) { return !q.inv; }).sort(bySendAt); if (!pd.length && !wt.length) return ''; return '<p class="hint">' + (pd.length ? 'Booked: ' + pd.map(function (x) { return QCPdf.fmtDate(x.day) + ' by ' + esc(x.channel); }).join(', ') + '. ' : '') + (wt.length ? 'Then ' + wt.map(function (q) { return QCPdf.fmtDate(q.day); }).join(' and ') + ', booked as each one falls due, so each costs a message only when it is needed. ' : '') + 'All of it stops when the quote is accepted or declined.</p>'; })() +
       '<div class="row"><button class="btn ghost" id="sharetext">Share summary</button>' + (locked && !cancelled ? '<button class="btn ghost" id="revise">Revise quote</button>' : '') + '</div>' +
       '<div class="row">' + (seats().seats > 1 ? '<button class="btn ghost sm" id="handoff">Send to the other phone</button>' : '') + (job.status === 'quoted' ? '<button class="btn sm" id="accepted">Accepted</button><button class="btn ghost sm" id="declined">Declined</button>' : job.status === 'draft' ? '<span class="hint">Once it has gone to ' + esc(whoShort) + ', mark it accepted here.</span>' : job.status === 'declined' ? '<button class="btn sm" id="reopen">Reopen quote</button>' : '') + (job.status === 'accepted' || job.status === 'invoiced' || job.status === 'paid' ? '<a class="btn sm" href="#/job/' + job.id + '/invoice">Invoice</a>' + (job.booking ? '' : '<button class="btn tape sm" id="book">Book</button>') : '') + '</div>';
     // booking: A1 owns the form (bookBox / wireBooking); the old markup stays as the fallback
@@ -869,6 +895,23 @@
     }
     var bankNote = document.getElementById('sendrow'); if (bankNote && !cancelled && !det.bsb && !det.account_number) { var bn = document.createElement('p'); bn.className = 'hint'; bn.id = 'banknote'; bn.innerHTML = 'Bank details missing, so the quote and invoices cannot say where to pay. <a href="#/settings">Add them in Set-up</a>.'; bankNote.parentNode.insertBefore(bn, bankNote.nextSibling); }
     if (!cancelled) showSendBlock(sendBlock());
+    // A job is not one message: the quote goes, and the first chase-up is booked behind it. Say so before he sends,
+    // so he is never surprised by a quote that went out with no chasing behind it.
+    (function () {
+      var row = document.getElementById('sendrow'); if (!row || cancelled || locked) return;
+      var chasing = job.status !== 'accepted' && job.auto_follow_ups !== false && !(job.hold && job.hold.on) && (QCMsg.ready('sms') || QCMsg.ready('email'));
+      var left = messagesLeft(); if (!chasing || left == null || left >= 2 || pendingFollowUps(job).length) return;
+      var paid = QCMsg.balance().plan === 'paid';
+      var n = document.createElement('p'); n.className = 'hint'; n.id = 'shortnote';
+      n.innerHTML = (left <= 0 ? 'No messages left. ' : 'One message left, and this job needs two: the quote, then the first chase-up behind it. ')
+        + 'Send it and ' + (left <= 0 ? 'the quote and every chase-up wait for you to tap Send yourself' : 'the quote goes, but the chase-up waits for you to tap Send yourself')
+        + '. That never stops working and never costs anything. ' + (paid ? '<a href="#" id="shortup">Top up ' + TOPUP_MESSAGES + ' for $' + TOPUP_PRICE + '</a> and it chases her by itself.' : '<a href="#/settings">Set-up</a> if you want it chasing by itself.');
+      row.parentNode.insertBefore(n, row.nextSibling);
+      var up = document.getElementById('shortup'); if (up) up.addEventListener('click', function (e) {
+        e.preventDefault(); toast('Charging your card\u2026');
+        topUp({ buy: true }).then(function (j) { toast(j.messages + ' messages added, $' + j.charged + ' charged.'); viewQuote(job, true); }).catch(function (err) { toast(err.needsCard ? 'Your card needs a look. Set-up, then Manage.' : err.message); });
+      });
+    })();
     function quoteDoc() { return QCPdf.quotePDF(job, S, job.quote || live); }
     function afterSend() { if (job.status === 'quoted' && job.auto_follow_ups !== false && !(job.hold && job.hold.on) && (QCMsg.ready('sms') || QCMsg.ready('email')) && !pendingFollowUps(job).length) return scheduleFollowUps(job, 'quote'); }
     function onQuoteResult(r) { job.handed_at = ''; job.handed_how = ''; if (r && r.sent) { markQuoteSent(job, r.how); Promise.resolve(afterSend()).then(function () { viewQuote(job, true); }); } else { save(); viewQuote(job, true); } }
@@ -1117,7 +1160,9 @@
   // Build the follow-up messages for a job (quote or unpaid invoices) at the configured days, then hand them to Twilio/Resend to hold.
   // Rules: quote follow-ups only while the quote is waiting (status quoted) and the job allows them; nothing while on hold; never a time in the
   // past; weekends and public holidays roll forward to the next business day at remind_hour; deposit reminders wait 3 business days after due;
-  // the final notice is never automatic (auto texts cap at the second tier); anything beyond the provider window waits in state.local_queue.
+  // the final notice is never automatic (auto texts cap at the second tier). Only the NEXT reminder in a chase is booked
+  // with the sender -- a booked message is a spent message, so the one after it waits in state.local_queue and is booked
+  // the next time the app opens, once the one before it has gone.
   function outOfMessagesToast() { var paid = QCMsg.balance().plan === 'paid'; toast('Out of messages. The app still writes every one; you tap Send.', { action: paid ? 'Top up $' + TOPUP_PRICE : 'Set-up', onAction: function () { if (!paid) return go('/settings'); toast('Charging your card…'); topUp({ buy: true }).then(function (j) { toast(j.messages + ' messages added, $' + j.charged + ' charged. Try that again.'); }).catch(function (e) { toast(e.needsCard ? 'Your card needs a look. Set-up, then Manage.' : e.message); }); } }); }
   function scheduleFollowUps(job, kind, opts) {
     opts = opts || {}; var say = opts.quiet ? function () {} : toast;
@@ -1139,10 +1184,10 @@
     // a date already passed and nothing sent yet: the first reminder goes at the next send time (friendly), the later dates stay; when every date has passed, that one reminder is all
     if (kind === 'quote') { var base = job.sent_date || today, qChased = (job.follow_ups || []).some(function (x) { return x.sent; }) || !!(job.last_chased && job.last_chased >= base), qr = (fu.quote_days || [3, 7, 14]).map(function (d) { return add(QCStore.addDays(base, d), chaseText('quote', job, job.quote, d, { auto: true }), 'quote+' + d); }); if (anyPast(qr) && !qChased && add(soon(), chaseText('quote', job, job.quote, QCStore.daysBetween(base, today), { auto: true, tier: allPast(qr) ? 2 : 1 }), 'quote+late') === 'ok') late.push('quote+late'); }
     else { (job.invoices || []).filter(function (i) { return invOpen(i) && invOut(i); }).forEach(function (inv) { var floor = inv.kind === 'deposit' ? addBusinessDays(inv.due, 3, st) : inv.due; var ir = (fu.invoice_days || [3, 10, 21]).map(function (d) { var day = QCStore.addDays(inv.due, d); if (day < floor) day = floor; return add(day, chaseText('invoice', job, inv, d, { auto: true }), inv.no + '+' + d, inv.no); }); if (anyPast(ir) && !invChased(job, inv) && add(soon(), chaseText('invoice', job, inv, Math.max(0, QCStore.daysBetween(inv.due, today)), { auto: true }), inv.no + '+late', inv.no) === 'ok') late.push(inv.no + '+late'); }); }
-    var later = items.filter(function (it) { return !QCMsg.withinWindow(it.send_at, it.channel); }), now = items.filter(function (it) { return QCMsg.withinWindow(it.send_at, it.channel); });
+    var pick = nextInChase(items, false), later = pick.later, now = pick.now;
     if (later.length) S.local_queue = (S.local_queue || []).concat(later.map(function (it) { return Object.assign({ kind: kind, queued: today }, it); }));
     if (landline && canEmail) toast('Landline number, so reminders go by email.');
-    var summary = function (okRes, bad) { var bits = []; if (bad.length) bits.push(bad.length + ' follow-up' + (bad.length > 1 ? 's' : '') + ' could not be scheduled: ' + bad[0].error); if (okRes.length) bits.push(okRes.length + ' follow-up' + (okRes.length > 1 ? 's' : '') + ' scheduled by ' + (okRes[0].channel === 'sms' ? 'SMS' : 'email')); if (later.length) bits.push(later.length + ' waiting: too far ahead for the sender, scheduled when the app opens nearer the day'); if (skipped.length) bits.push(late.length ? skipped.length + ' past date' + (skipped.length > 1 ? 's' : '') + ' folded into one reminder at the next send time' : skipped.length + ' skipped, the date has passed'); return bits.join('. ') + '.'; };
+    var summary = function (okRes, bad) { var bits = []; if (bad.length) bits.push(bad.length + ' follow-up' + (bad.length > 1 ? 's' : '') + ' could not be scheduled: ' + bad[0].error); if (okRes.length) bits.push(okRes.length + ' follow-up' + (okRes.length > 1 ? 's' : '') + ' scheduled by ' + (okRes[0].channel === 'sms' ? 'SMS' : 'email')); if (later.length) bits.push(later.length + ' after that, booked as each one falls due'); if (skipped.length) bits.push(late.length ? skipped.length + ' past date' + (skipped.length > 1 ? 's' : '') + ' folded into one reminder at the next send time' : skipped.length + ' skipped, the date has passed'); return bits.join('. ') + '.'; };
     if (!now.length) { if (!later.length && !skipped.length) return stop('Follow-ups already scheduled', 'have'); save(); say(summary([], [])); return Promise.resolve({ scheduled: [], failed: [], waiting: later, skipped: skipped }); }
     return QCMsg.scheduleAll(now, hr).then(function (res) {
       var okRes = res.filter(function (r) { return r.ok; }), bad = res.filter(function (r) { return !r.ok; });
@@ -1538,7 +1583,7 @@
     var hosted = S.sending.hosted === true, hostedEnded = hosted && QCMsg.hostedEnded && QCMsg.hostedEnded(S.sending), hostedStopped = hosted && !hostedEnded && S.sending.hosted_cancelled === true, hostedTo = /^\d{4}-\d{2}-\d{2}$/.test(String(S.sending.hosted_until || '')) ? shortDate(S.sending.hosted_until) : '';
     html += '<div class="card"><h2>Automatic texting and emailing</h2><p class="hint">' + (hostedEnded ? '<span class="confirm">The chasing is off: your sending ran to ' + esc(hostedTo) + '. Turn it back on at <a href="' + esc(SITE + '#price') + '" target="_blank" rel="noopener">the website</a> and one tap in the email puts it back, or connect your own accounts below. Nothing on this phone is lost.</span>' : hostedStopped ? '<span class="confirm">Cancelled. The chasing keeps running to ' + esc(hostedTo) + ' and stops after that. Change your mind any time with Manage below.</span>' : hosted ? 'On, and paid' + (hostedTo ? ' to ' + esc(hostedTo) + ', when it renews itself' : '') + '. Texts and emails go out in your name and there is nothing to open. Every text it sends ends with a way to reach you' + (String(S.details.phone || '').trim() ? ' on ' + esc(String(S.details.phone).trim()) + ', because the number it comes from cannot take replies.' : (String(S.details.email || '').trim() ? ' by email, because the number it comes from cannot take replies. <span class="confirm">Add your mobile in Your business above and texts point them there instead.</span>' : ', because the number it comes from cannot take replies. <span class="confirm">Add your mobile in Your business above so there is one to give.</span>')) : 'Your own texting and emailing accounts, instead of ours. Almost nobody needs this: it takes a computer and about an hour, and your plan already does the sending. Without either, the app writes every text and email and you press Send yourself; nothing goes out without you.' + (autoReady() ? ' Set up and working.' : ' Rather not? <a href="' + esc(SITE + '#price') + '" target="_blank" rel="noopener">Turn the chasing on</a>: one card, one tap, cancel from this page any time.')) + '</p>' +
       (hosted && QCMsg.balance().left != null ? '<p class="hint" id="balcard"><b>' + esc(balanceLine()) + '</b></p>' +
-        (QCMsg.balance().plan === 'paid' ? '<div class="row" id="toprow"><button class="btn ghost sm" id="topnow">Top up ' + TOPUP_MESSAGES + ' messages, $' + TOPUP_PRICE + '</button><label class="btn ghost sm"><input type="checkbox" id="topauto"' + (S.sending.auto_topup ? ' checked' : '') + '> Top up by itself when I run out</label><span class="hint" id="topres"></span></div>' : '<p class="hint"><a href="' + esc(topUpLink()) + '" target="_blank" rel="noopener">Go monthly: ' + PLAN_INCLUDED + ' messages for $' + PLAN_PRICE + ' a month</a></p>') : '') +
+        (QCMsg.balance().plan === 'paid' ? '<div class="row" id="toprow"><button class="btn ghost sm" id="topnow">Top up ' + TOPUP_MESSAGES + ' messages, $' + TOPUP_PRICE + '</button><label class="btn ghost sm"><input type="checkbox" id="topauto"' + (S.sending.auto_topup ? ' checked' : '') + '> Top up by itself when I run out</label><span class="hint" id="topres"></span></div>' : '<p class="hint"><a href="' + esc(topUpLink()) + '" target="_blank" rel="noopener">Go monthly: ' + PLAN_INCLUDED + ' messages for $' + PLAN_PRICE + ' a month</a>, which is about 30 jobs, quote to paid.</p>') : '') +
       (hosted && QCMsg.balance().plan === 'paid' ? (function () { var st2 = seats();
         if (st2.seat > 1) return '<p class="hint" id="seatcard">This is the second phone on your plan. It quotes and invoices in the same business name and draws on the same messages; jobs stay on the phone they were made on.</p>';
         if (st2.seats > 1) return '<div class="card sub" id="seatcard"><h3>Your second phone</h3><p class="hint">For whoever does the books or the other set of ladders. Same business name on the quotes, same pile of messages, and each phone keeps its own jobs. Doing this again replaces the second phone, so a lost handset is just this button.</p><div class="row"><button class="btn ghost sm" id="seatgo">Set up the second phone</button><span class="hint" id="seatres"></span></div><div id="seatout" hidden></div></div>';
@@ -1817,7 +1862,7 @@
   route();
   window.__qcApp = { route: route, store: QCStore, pricing: QCPricing, openUrl: function (u) { openUrl(u); }, setOpen: function (f) { openUrl = f; } };
   // W4 helpers for other screens: soft delete with Undo, duplicate, client picker data, paint order text, photo card, message text and greeting
-  Object.assign(window.__qcApp, { showBlock: showBlock, autoSendReady: autoSendReady, autoSendLabel: autoSendLabel, dayDate: dayDate, statusPill: statusPill, deleteJob: deleteJob, restoreJob: restoreJob, duplicateJob: duplicateJob, clients: clients, materialsText: materialsText, photosCard: photosCard, wirePhotos: wirePhotos, chaseText: chaseText, greet: greet, signoff: signoff, jobDesc: jobDesc, scheduleFollowUps: scheduleFollowUps, cancelJobFollowUps: cancelJobFollowUps, cancelQuoteFollowUps: cancelQuoteFollowUps, cancelInvoiceFollowUps: cancelInvoiceFollowUps, pendingFollowUps: pendingFollowUps, waitingFollowUps: waitingFollowUps, lastContact: lastContact, isLandline: QCMsg.isLandline, nextSendTime: function (d, h, st) { return QCCal.nextSendTime(d, h == null ? fuHour() : h, st == null ? stateCode() : st); } });
+  Object.assign(window.__qcApp, { retryLocalQueue: retryLocalQueue, showBlock: showBlock, autoSendReady: autoSendReady, autoSendLabel: autoSendLabel, dayDate: dayDate, statusPill: statusPill, deleteJob: deleteJob, restoreJob: restoreJob, duplicateJob: duplicateJob, clients: clients, materialsText: materialsText, photosCard: photosCard, wirePhotos: wirePhotos, chaseText: chaseText, greet: greet, signoff: signoff, jobDesc: jobDesc, scheduleFollowUps: scheduleFollowUps, cancelJobFollowUps: cancelJobFollowUps, cancelQuoteFollowUps: cancelQuoteFollowUps, cancelInvoiceFollowUps: cancelInvoiceFollowUps, pendingFollowUps: pendingFollowUps, waitingFollowUps: waitingFollowUps, lastContact: lastContact, isLandline: QCMsg.isLandline, nextSendTime: function (d, h, st) { return QCCal.nextSendTime(d, h == null ? fuHour() : h, st == null ? stateCode() : st); } });
   // ---------- CSV for the bookkeeper (W3): Xero and MYOB sales-invoice style columns. W4 wires the buttons in Back-up.
   function csvCell(v) { var t = v == null ? '' : String(v); return /[",\n\r]/.test(t) ? '"' + t.replace(/"/g, '""') + '"' : t; }
   function csvRows(head, rows) { return [head].concat(rows).map(function (r) { return r.map(csvCell).join(','); }).join('\r\n') + '\r\n'; }
