@@ -3,6 +3,56 @@
 Everything below the line is done and in the repo. Above the line is
 what only you can do, in order. Nothing else is waiting on me.
 
+## The Driveway Quote Hour: what to do before the first booking
+
+The page, terms, booked page and app are built and live. Bookings stay
+closed (the button is hidden) until you fill these, in this order.
+
+1. **Trust plumbing, config.js.** SUPPORT_EMAIL, ABN, BUSINESS_NAME,
+   BUSINESS_ADDRESS (a PO box is fine), BUSINESS_PHONE and PHONE_HOURS,
+   MAKER_NOTE, MAKER_NAME, MAKER_PHOTO. The guarantee is a service
+   warranty, so the terms must carry your address and phone.
+2. **Hosted sending on your relay.** Redeploy the landing to Vercel with
+   the env vars in `scratchpad/council5/build-relay.md` (or ask me for
+   the list): your Twilio Messaging Service, your Resend key and a
+   verified RESEND_FROM address, RELAY_TOKEN as now, and the new
+   RELAY_TOKENS map, one token per painter with name, reply_to and
+   until. Send yourself a scheduled text and an email through a mapped
+   token before you take money. Decide alphanumeric sender (no replies,
+   no monthly number fee) or a rented +61 number (replies, a monthly fee
+   to Twilio), and keep the page's "nothing monthly to me" true either
+   way, since the fee is Twilio's not yours.
+3. **Checkout and calendar.** A Stripe Payment Link for the hour at
+   SETUP_PRICE with booked.html as the success page, in SETUP_URL. A
+   Cal.com or Calendly page with 75-minute evening slots in BOOKING_URL.
+   Set SETUP_SLOTS_WEEK to the true number. Rehearse an on-screen refund
+   on a $1 test payment so promise 1 is a ten-second action on the call.
+4. **The set-up link.** `public/prefill.html` on the landing site (not
+   linked anywhere) builds the link and the code. Link one goes in the
+   confirmation email (details, state, starter prices); link two after
+   the fifteen-minute call (real prices, open book, sending token,
+   scoreboard start). The painter taps it on his phone and taps Load.
+   Nothing is stored anywhere but inside the link. Delete his details
+   from the page after you send it.
+5. **The Set-Up Log.** After each paid hour, add one line to SETUP_LOG in
+   config.js (date, state, who with his OK, quote out on the call,
+   sending live, second session, refund). It is the public count and
+   the proof. Update FOUNDING_LEFT and FOUNDING_COUNTED the same day.
+6. **The float.** Keep every fee untouched until that painter's day 90.
+   Promise 3 can refund up to day 100.
+7. **The bonus pages.** BONUSES_READY stays false until the state pages,
+   first-quote card, message library, unpaid invoice playbook and
+   bookkeeper page exist and go out the day someone pays. About 22
+   hours; not needed to open.
+8. **Founding decisions.** FOUNDING_ENDS if you want a date as well as
+   the count; LAST_CALL, BREAK_FROM, BREAK_TO for the Christmas line;
+   HELP_SAME_DAY false if the inbox is not on your phone.
+9. **The launch play the council recommended.** Five painters at no
+   charge, recruited by message with the same conditions (one live job,
+   use it 30 days, a ten-minute day-30 call), before paid bookings open,
+   so the log and the page carry real results. The recruiting message
+   and the day-30 questions are in `scratchpad/council5/tenx.md`.
+
 ## Only you can do these (in this order)
 
 1. **Windows test, 15 minutes.** Fresh user account if possible. Setup
