@@ -19,6 +19,8 @@ window.QC = {
   FOUNDING_LEFT: "",                // optional live count you update by hand from Stripe receipts, e.g. 14. Empty = no count shown. Never type a number you have not counted.
   FOUNDING_COUNTED: "",             // the date you last counted, e.g. "3 October 2026". Shown next to the count.
   SETUP_SLOTS_WEEK: "",             // optional, e.g. 4: "I do these myself, 4 a week". Shown only once SETUP_URL is set. Empty = not shown.
+  NEXT_FREE_HOUR: "",               // e.g. "Thursday 7pm": the next free hour on your calendar, shown on the card once SETUP_URL is set. Update it when you count FOUNDING_LEFT; blank it if you cannot keep it true.
+  SAME_EVENING_CALL: true,          // with SETUP_LINK_API set, the page promises the fifteen-minute call "that evening if you paid before 6pm on a weekday". Needs OWNER_MOBILE on the relay so you know. Set false if you cannot keep it.
   HOSTED_DAYS: 90,                  // days of sending through your relay included with the hour, before the free switch-over or $HOSTED_PRICE a month. Match RELAY_TOKENS "until" dates to it.
                                     // The council's advice: 365 for the founding painters (about $50 a painter in Twilio and Resend over the year) turns the day-90 cliff into nothing. The app warns at 30 and 7 days either way.
   PHONE_HOURS: "",                  // e.g. "weekdays 4 to 7pm, or text and I ring back". Shown with BUSINESS_PHONE on the card once bookings are open.

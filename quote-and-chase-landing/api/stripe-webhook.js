@@ -6,8 +6,9 @@
 // custom text fields keyed trading_name, abn and licence; success URL <site>/booked?session={CHECKOUT_SESSION_ID}.
 // A webhook endpoint at <this site>/api/stripe-webhook for checkout.session.completed and
 // checkout.session.async_payment_succeeded; its signing secret goes in STRIPE_WEBHOOK_SECRET.
-// Also: APP_URL (the app's address; default the GitHub Pages copy), BOOKING_URL (calendar, optional), OWNER_MOBILE (a text on
-// every payment, optional), OWNER_EMAIL (Reply-To on the link email and a copy of it), RESEND_API_KEY and RESEND_FROM (already set for hosted sending).
+// Also: APP_URL (the app's address; default the GitHub Pages copy), BOOKING_URL (calendar, optional; keep it the same as config.js),
+// OWNER_MOBILE (a text on every payment; with it set the email promises the call "this evening if you paid before 6pm on a weekday",
+// SAME_EVENING_CALL=0 turns that sentence off), OWNER_EMAIL (Reply-To on the link email and a copy of it), RESEND_API_KEY and RESEND_FROM.
 import { rawBody, send, stripeSigned, detailsFromSession, linkOnePayload, setupLink, creds, sms, email } from "./_setup.js";
 
 export const config = { api: { bodyParser: false } };
@@ -26,7 +27,7 @@ It puts your name${details.trading_name ? ", " + details.trading_name : ""}${det
 
 ${book}
 
-I ring the number on your receipt the next business day for about fifteen minutes: what you charge, who owes you money right now, and one job you are about to quote. Rather do it now? Reply with a time and I ring then.
+I ring the number on your receipt ${env.SAME_EVENING ? "this evening if you paid before 6pm on a weekday, otherwise the next business day" : "the next business day"}, for about fifteen minutes: what you charge, who owes you money right now, and one job you are about to quote. Rather do it now? Reply with a time and I ring then.
 
 Aaron`;
   return { subject: "Your Driveway Quote Hour: one tap makes the app yours", text };
@@ -44,7 +45,7 @@ export default async function handler(req, res) {
   if (ev.id) { done.set(ev.id, 1); while (done.size > 500) done.delete(done.keys().next().value); }
   const details = detailsFromSession(s), link = setupLink(process.env.APP_URL, linkOnePayload(details));
   const out = { ok: true, emailed: false, texted: false, link_length: link.length };
-  const c = creds(), env = { BOOKING_URL: process.env.BOOKING_URL || "" };
+  const c = creds(), env = { BOOKING_URL: process.env.BOOKING_URL || "", SAME_EVENING: !!process.env.OWNER_MOBILE && process.env.SAME_EVENING_CALL !== "0" };
   if (details.email) { try { const m = linkEmail(details, link, env); await email(c, { to: [details.email], reply_to: process.env.OWNER_EMAIL || undefined, subject: m.subject, text: m.text, ...(process.env.OWNER_EMAIL ? { bcc: [process.env.OWNER_EMAIL] } : {}) }); out.emailed = true; } catch (e) { out.email_error = e.message; } }
   if (process.env.OWNER_MOBILE) { try { await sms(c, process.env.OWNER_MOBILE, `PAID: ${details.trading_name || details.owner_name || "a painter"}${details.state ? ", " + details.state : ""}${details.phone ? ", " + details.phone : ""}${details.email ? ", " + details.email : ""}. Link one ${out.emailed ? "emailed" : "NOT emailed: " + (out.email_error || "no email")}.`); out.texted = true; } catch (e) { out.sms_error = e.message; } }
   return send(res, 200, out);

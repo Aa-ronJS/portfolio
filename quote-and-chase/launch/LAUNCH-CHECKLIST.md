@@ -51,9 +51,15 @@ closed (the button is hidden) until you fill these, in this order.
    (`stripe listen --forward-to`), one live $1 product, then delete it.
    Link two (real prices, open book, sending token, scoreboard start) is
    still built by hand on prefill.html after the fifteen-minute call.
-   Loading link two now queues a reminder, for the next morning, on
-   every invoice in the book that is already overdue; on the call, send
-   the first one by hand from the Follow-ups tab while he watches.
+   Loading link two sends nothing: Home shows "Your book, from Aaron"
+   with a Start the chasing button. On the call, read the wording on the
+   Follow-ups tab with him, send the first nudge by hand to whoever owes
+   him most, then tap Start: anything already overdue goes the next
+   morning, the rest on their dates. prefill.html now takes a real due
+   date per book line (last column) and his three nudges in his words.
+   NEXT_FREE_HOUR in config.js prints the next free slot on the card;
+   SAME_EVENING_CALL (with OWNER_MOBILE on the relay) is the only thing
+   that makes "that evening" appear.
 4a. **Text replies.** On the Twilio Messaging Service, set "A message
    comes in" to `https://<your vercel site>/api/sms-in` (HTTP POST).
    Customers who reply to a hosted text get an automatic answer pointing
