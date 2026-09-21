@@ -20,6 +20,18 @@ Test added: scratchpad/smoke/send/relay-tokens.cjs (plain node, requires the ESM
 - 401 `Relay token missing or wrong` (unchanged wording; now also for an unmapped token when only RELAY_TOKENS is set)
 - Everything else unchanged (`Origin not allowed`, `Slow down`, `Bad JSON`, `Unknown action`, provider messages).
 
+## Council six additions (api/stripe-webhook.js, api/setup-link.js, api/sms-in.js)
+
+- From name on hosted email is now `"<Trading Name>" <RESEND_FROM address>`; "via Quote & Chase" is gone.
+- `POST /api/stripe-webhook`: verifies `Stripe-Signature` with `STRIPE_WEBHOOK_SECRET`, and on `checkout.session.completed`
+  (paid) builds link one from customer_details + custom fields (`trading_name`, `abn`, `licence`), emails it to the painter
+  (Reply-To/BCC `OWNER_EMAIL`), texts `OWNER_MOBILE`. Needs `APP_URL`, optional `BOOKING_URL`.
+- `GET /api/setup-link?session=cs_...`: the booked page asks for the same link with `STRIPE_SECRET_KEY`; CORS for the Pages site.
+- `POST /api/sms-in`: Twilio inbound. Signed with `TWILIO_AUTH_TOKEN` (override the URL with `TWILIO_INBOUND_URL`). Answers
+  "This number sends messages for a painting business and cannot take replies. Please text or call the mobile in the message
+  you received." and copies the reply to `INBOUND_FORWARD_TO` when set. STOP words get no answer (Twilio handles opt-out).
+- Test: `node scratchpad/smoke/send/webhook.cjs` (all pass, stubbed Stripe/Twilio/Resend).
+
 ## Env vars the owner must set on Vercel (project quote-and-chase-landing, Production)
 Already required for hosted sending (the server's own accounts, used for every mapped token):
 - TWILIO_ACCOUNT_SID = ACxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx

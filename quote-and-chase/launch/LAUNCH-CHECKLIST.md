@@ -23,21 +23,60 @@ closed (the button is hidden) until you fill these, in this order.
    to Twilio), and keep the page's "nothing monthly to me" true either
    way, since the fee is Twilio's not yours.
 3. **Checkout and calendar.** A Stripe Payment Link for the hour at
-   SETUP_PRICE with booked.html as the success page, in SETUP_URL. A
-   Cal.com or Calendly page with 75-minute evening slots in BOOKING_URL.
-   Set SETUP_SLOTS_WEEK to the true number. Rehearse an on-screen refund
-   on a $1 test payment so promise 1 is a ten-second action on the call.
-4. **The set-up link.** `public/prefill.html` on the landing site (not
-   linked anywhere) builds the link and the code. Link one goes in the
-   confirmation email (details, state, starter prices); link two after
-   the fifteen-minute call (real prices, open book, sending token,
-   scoreboard start). The painter taps it on his phone and taps Load.
-   Nothing is stored anywhere but inside the link. Delete his details
-   from the page after you send it.
+   SETUP_PRICE, in SETUP_URL. On the link: collect phone number and
+   billing address, and three custom text fields with the keys
+   `trading_name`, `abn`, `licence` (the webhook reads those keys). Its
+   success URL: `https://aa-ronjs.github.io/portfolio/booked?session={CHECKOUT_SESSION_ID}`.
+   A Cal.com or Calendly page with 75-minute evening slots in
+   BOOKING_URL, minimum notice 20 hours, one slot an evening. Set
+   SETUP_SLOTS_WEEK to the true number (three is honest at four hours a
+   painter). Rehearse an on-screen refund on a $1 test payment so
+   promise 1 is a ten-second action on the call.
+4. **Link one, automatic (council six).** The relay now has
+   `api/stripe-webhook.js`, `api/setup-link.js` and `api/sms-in.js`.
+   In Stripe, add a webhook endpoint at
+   `https://<your vercel site>/api/stripe-webhook` for
+   `checkout.session.completed` and
+   `checkout.session.async_payment_succeeded`; its signing secret goes in
+   `STRIPE_WEBHOOK_SECRET`. Also on Vercel: `STRIPE_SECRET_KEY` (a
+   restricted key that can read Checkout Sessions is enough), `APP_URL`
+   (`https://aa-ronjs.github.io/portfolio/app/`), `BOOKING_URL`,
+   `OWNER_MOBILE` (you get a text on every payment), `OWNER_EMAIL`
+   (Reply-To and a copy of every link email). Then set
+   `SETUP_LINK_API` in config.js to `https://<your vercel site>/api/setup-link`:
+   the page switches to "the app is yours the minute you pay" and the
+   booked page shows the Make the app yours button. Until it is set the
+   page says "within the hour, 7am to 9pm" and you send link one by hand
+   from `public/prefill.html`. Test with Stripe CLI in test mode
+   (`stripe listen --forward-to`), one live $1 product, then delete it.
+   Link two (real prices, open book, sending token, scoreboard start) is
+   still built by hand on prefill.html after the fifteen-minute call.
+   Loading link two now queues a reminder, for the next morning, on
+   every invoice in the book that is already overdue; on the call, send
+   the first one by hand from the Follow-ups tab while he watches.
+4a. **Text replies.** On the Twilio Messaging Service, set "A message
+   comes in" to `https://<your vercel site>/api/sms-in` (HTTP POST).
+   Customers who reply to a hosted text get an automatic answer pointing
+   them to the painter's mobile, and every hosted text now ends with
+   "This number does not take replies: text or call me on 04xx". Set
+   `INBOUND_FORWARD_TO` to your own mobile to get a copy of each reply
+   to pass on. If you use a custom domain in front of Vercel, set
+   `TWILIO_INBOUND_URL` to the exact public URL, because the signature
+   covers it. Emails already go out as "<Trading Name>" on your address
+   (the "via Quote & Chase" is gone) with Reply-To the painter.
 5. **The Set-Up Log.** After each paid hour, add one line to SETUP_LOG in
    config.js (date, state, who with his OK, quote out on the call,
    sending live, second session, refund). It is the public count and
    the proof. Update FOUNDING_LEFT and FOUNDING_COUNTED the same day.
+   New: `days_to_paid` (from the Scoreboard screenshot he sends, the
+   number the page will one day be judged on) and `practice: true` for
+   a run on a mate's phone before launch, which the page labels as such.
+   The council's row zero: do one practice hour on a mate's phone,
+   record it unedited, and put it in the log labelled practice.
+5a. **Hosted for a year.** The council's effort scorer: set HOSTED_DAYS
+   to 365 for the founding painters (about $50 a painter in Twilio and
+   Resend over the year) and match RELAY_TOKENS `until` to it. The app
+   shows a banner at 30 and 7 days and once it ends, either way.
 6. **The float.** Keep every fee untouched until that painter's day 90.
    Promise 3 can refund up to day 100.
 7. **The bonus pages.** BONUSES_READY stays false until the state pages,
