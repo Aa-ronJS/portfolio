@@ -1,0 +1,79 @@
+// Shared by stripe-webhook.js, setup-link.js and sms-in.js. Files starting with _ are not routes on Vercel.
+import { createHmac, timingSafeEqual } from "node:crypto";
+
+export const f = (...a) => (globalThis.__relayFetch || fetch)(...a);
+export function send(res, status, obj) { res.statusCode = status; res.setHeader("Content-Type", "application/json"); res.end(JSON.stringify(obj)); }
+const ALLOWED = (process.env.ALLOWED_ORIGINS || "https://aa-ronjs.github.io,https://aaronsteele.vercel.app").split(",").map((s) => s.trim()).filter(Boolean);
+export function cors(req, res, methods) {
+  const origin = req.headers.origin || "";
+  const ok = ALLOWED.includes("*") || ALLOWED.includes(origin) || /^https?:\/\/(localhost|127\.0\.0\.1)(:\d+)?$/.test(origin);
+  if (ok && origin) res.setHeader("Access-Control-Allow-Origin", origin);
+  res.setHeader("Vary", "Origin"); res.setHeader("Access-Control-Allow-Methods", methods || "GET, OPTIONS"); res.setHeader("Access-Control-Allow-Headers", "content-type"); res.setHeader("Access-Control-Max-Age", "600");
+  return ok;
+}
+export async function rawBody(req, max) { const chunks = []; let n = 0; for await (const c of req) { n += c.length; if (n > (max || 1_000_000)) throw new Error("Body too large"); chunks.push(c); } return Buffer.concat(chunks); }
+
+// ---- the set-up code the app reads at #/setup?d=<code>: "j:" + base64url(JSON), the same shape encodeSetup() writes in the app
+export function b64url(buf) { return Buffer.from(buf).toString("base64").replace(/\+/g, "-").replace(/\//g, "_").replace(/=+$/, ""); }
+export function setupCode(payload) { return "j:" + b64url(Buffer.from(JSON.stringify(payload), "utf8")); }
+export function setupLink(appUrl, payload) { return String(appUrl || "https://aa-ronjs.github.io/portfolio/app/").replace(/\/?$/, "/") + "#/setup?d=" + setupCode(payload); }
+
+const STATES = { nsw: "NSW", "new south wales": "NSW", vic: "VIC", victoria: "VIC", qld: "QLD", queensland: "QLD", sa: "SA", "south australia": "SA", wa: "WA", "western australia": "WA", tas: "TAS", tasmania: "TAS", act: "ACT", "australian capital territory": "ACT", nt: "NT", "northern territory": "NT" };
+export function stateCode(v) { return STATES[String(v || "").trim().toLowerCase()] || ""; }
+const clean = (v, n) => String(v == null ? "" : v).replace(/[\u0000-\u001f]/g, " ").replace(/\s+/g, " ").trim().slice(0, n);
+
+// What a paid Checkout Session tells us about the painter: customer_details (name, email, phone, address) and the
+// Payment Link's custom fields (keys trading_name, abn, licence). Anything missing is left out; the app never overwrites a filled field with a blank.
+export function detailsFromSession(s) {
+  const cd = (s && s.customer_details) || {}, addr = cd.address || {}, cf = {};
+  (Array.isArray(s && s.custom_fields) ? s.custom_fields : []).forEach((x) => { if (!x || !x.key) return; const v = x.text ? x.text.value : x.dropdown ? x.dropdown.value : x.numeric ? x.numeric.value : ""; if (v != null && String(v).trim()) cf[String(x.key).toLowerCase()] = clean(v, 120); });
+  const d = {};
+  const tn = cf.trading_name || cf.business || cf.business_name || ""; if (tn) d.trading_name = tn;
+  if (cd.name) d.owner_name = clean(cd.name, 80);
+  if (cf.abn) d.abn = cf.abn.replace(/[^\d ]/g, "").trim();
+  if (cf.licence || cf.license) d.licence = cf.licence || cf.license;
+  if (cd.email) d.email = clean(cd.email, 120);
+  if (cd.phone) d.phone = clean(cd.phone, 30).replace(/^\+61 ?/, "0");
+  const st = stateCode(addr.state); if (st) d.state = st;
+  if (addr.postal_code && /^\d{4}$/.test(String(addr.postal_code).trim())) d.postcode = String(addr.postal_code).trim();
+  const line = [addr.line1, addr.line2, addr.city, st, addr.postal_code].filter(Boolean).map((x) => clean(x, 80)).join(" "); if (line) d.address = line;
+  return d;
+}
+export function linkOnePayload(details, note) {
+  return { v: 1, settings: { details }, jobs: [], note: note || "Link one from Aaron: your details and your state's deposit rule, so the first quote already carries your name. Your prices and your open jobs come after we talk." };
+}
+
+// ---- Stripe webhook signature: header "t=<unix>,v1=<hex>[,v1=<hex>]", signed payload "<t>.<raw body>", HMAC-SHA256 with the endpoint secret
+export function stripeSigned(rawBuf, header, secret, tolSec, now) {
+  if (!secret || !header) return false;
+  const parts = Object.create(null); String(header).split(",").forEach((kv) => { const i = kv.indexOf("="); if (i < 0) return; const k = kv.slice(0, i).trim(), v = kv.slice(i + 1).trim(); (parts[k] = parts[k] || []).push(v); });
+  const t = parts.t && parts.t[0]; if (!t || !/^\d+$/.test(t)) return false;
+  if (Math.abs(((now || Date.now()) / 1000) - Number(t)) > (tolSec || 300)) return false;
+  const exp = createHmac("sha256", secret).update(t + ".").update(rawBuf).digest();
+  return (parts.v1 || []).some((v) => { try { const got = Buffer.from(v, "hex"); return got.length === exp.length && timingSafeEqual(got, exp); } catch (e) { return false; } });
+}
+// ---- Twilio request signature: base64(HMAC-SHA1(url + params sorted by key with values appended, auth token))
+export function twilioSigned(url, params, header, token) {
+  if (!token || !header) return false;
+  const data = url + Object.keys(params).sort().map((k) => k + params[k]).join("");
+  const exp = createHmac("sha1", token).update(data).digest("base64");
+  try { const a = Buffer.from(exp), b = Buffer.from(String(header)); return a.length === b.length && timingSafeEqual(a, b); } catch (e) { return false; }
+}
+
+// ---- send with this server's own accounts (never the request's)
+export function creds() {
+  return { twilioSid: process.env.TWILIO_ACCOUNT_SID || "", twilioToken: process.env.TWILIO_AUTH_TOKEN || process.env.TWILIO_API_SECRET || "", twilioApiKey: process.env.TWILIO_API_KEY || "", twilioService: process.env.TWILIO_MESSAGING_SERVICE_SID || "", twilioFrom: process.env.TWILIO_FROM || "", resendKey: process.env.RESEND_API_KEY || "", resendFrom: process.env.RESEND_FROM || "" };
+}
+export function e164(to) { let s = String(to || "").replace(/[^\d+]/g, ""); if (s.startsWith("0011")) s = "+" + s.slice(4); if (s.startsWith("+610")) s = "+61" + s.slice(4); if (s.startsWith("0")) s = "+61" + s.slice(1); if (!s.startsWith("+")) s = "+" + s; return s; }
+export async function sms(c, to, body) {
+  if (!c.twilioSid || !c.twilioToken || !(c.twilioService || c.twilioFrom)) throw new Error("Twilio is not set up");
+  const user = /^SK/.test(c.twilioApiKey || "") ? c.twilioApiKey : c.twilioSid;
+  const params = { To: e164(to), Body: String(body).slice(0, 1000) }; if (c.twilioService) params.MessagingServiceSid = c.twilioService; else params.From = c.twilioFrom;
+  const r = await f(`https://api.twilio.com/2010-04-01/Accounts/${encodeURIComponent(c.twilioSid)}/Messages.json`, { method: "POST", headers: { Authorization: "Basic " + Buffer.from(user + ":" + c.twilioToken).toString("base64"), "Content-Type": "application/x-www-form-urlencoded" }, body: new URLSearchParams(params).toString() });
+  const j = await r.json().catch(() => ({})); if (!r.ok) throw new Error(j.message || "Twilio " + r.status); return j;
+}
+export async function email(c, msg) {
+  if (!c.resendKey || !c.resendFrom) throw new Error("Resend is not set up");
+  const r = await f("https://api.resend.com/emails", { method: "POST", headers: { Authorization: "Bearer " + c.resendKey, "Content-Type": "application/json" }, body: JSON.stringify({ from: c.resendFrom, ...msg }) });
+  const j = await r.json().catch(() => ({})); if (!r.ok) throw new Error(j.message || "Resend " + r.status); return j;
+}

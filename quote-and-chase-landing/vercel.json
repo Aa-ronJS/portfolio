@@ -8,6 +8,18 @@
     "api/msg.js": {
       "maxDuration": 30,
       "memory": 256
+    },
+    "api/stripe-webhook.js": {
+      "maxDuration": 15,
+      "memory": 256
+    },
+    "api/setup-link.js": {
+      "maxDuration": 10,
+      "memory": 256
+    },
+    "api/sms-in.js": {
+      "maxDuration": 10,
+      "memory": 256
     }
   },
   "headers": [

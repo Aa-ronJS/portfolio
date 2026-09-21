@@ -11,7 +11,7 @@
 // Hosted sending: RELAY_TOKENS is a JSON map of per-painter tokens, each with a name, reply_to, until and disabled:
 //   { "qc_abc...": { "name": "Dave's Painting", "reply_to": "dave@example.com", "until": "2026-12-20", "disabled": false } }
 // A request carrying a mapped token always uses this server's Twilio and Resend credentials (never the request's), sends
-// email as "<name> via Quote & Chase" on RESEND_FROM's verified address with Reply-To set to the request's reply_to or the
+// email as "<name>" on RESEND_FROM's verified address (the display name is the painter's alone) with Reply-To set to the request's reply_to or the
 // entry's, and changes nothing about SMS (the app signs texts itself). A disabled or expired entry gets 403
 // "Hosted sending has ended for this account". Set RELAY_TOKENS on Vercel as one line of JSON. When it is set, an unmapped
 // token must still equal RELAY_TOKEN; with no RELAY_TOKEN at all, only mapped tokens are accepted.
@@ -78,10 +78,11 @@ function hostedEnded(e) {
   return !isNaN(t) && Date.now() > t;
 }
 const cleanHeader = (v, n) => String(v == null ? "" : v).replace(/[\r\n\t"\\]/g, " ").replace(/\s+/g, " ").trim().slice(0, n);
-// "Dave's Painting via Quote & Chase" <hello@example.com>: the verified address stays ours, only the display name is the painter's.
+// "Dave's Painting" <hello@example.com>: the verified address stays ours, the display name is the painter's and nothing else.
+// The page promises the customer never sees our name; the painter's own name, ABN and mobile in the body meet the Spam Act's identification rule.
 function hostedFrom(resendFrom, name) {
   const m = /<([^<>\s]+@[^<>\s]+)>/.exec(resendFrom || ""); const addr = m ? m[1] : String(resendFrom || "").trim();
-  const n = cleanHeader(name, 80); return n && addr ? `"${n} via Quote & Chase" <${addr}>` : resendFrom;
+  const n = cleanHeader(name, 80); return n && addr ? `"${n}" <${addr}>` : resendFrom;
 }
 
 // ---------- Twilio
