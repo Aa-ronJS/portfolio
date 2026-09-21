@@ -3,100 +3,55 @@
 Everything below the line is done and in the repo. Above the line is
 what only you can do, in order. Nothing else is waiting on me.
 
-## The Driveway Quote Hour: what to do before the first booking
+## Self-service: what to do before the first painter can pay
 
-The page, terms, booked page and app are built and live. Bookings stay
-closed (the button is hidden) until you fill these, in this order.
+Nothing in the product needs you. The page, the app, the welcome page and
+the relay are built so a painter can sign up at 9pm on a Sunday and be
+chasing money by 9:05, with no call, no reply from you and nothing for you
+to type. What is left is switching it on.
 
-1. **Trust plumbing, config.js.** SUPPORT_EMAIL, ABN, BUSINESS_NAME,
-   BUSINESS_ADDRESS (a PO box is fine), BUSINESS_PHONE and PHONE_HOURS,
-   MAKER_NOTE, MAKER_NAME, MAKER_PHOTO. The guarantee is a service
-   warranty, so the terms must carry your address and phone.
-2. **Hosted sending on your relay.** Redeploy the landing to Vercel with
-   the env vars in `scratchpad/council5/build-relay.md` (or ask me for
-   the list): your Twilio Messaging Service, your Resend key and a
-   verified RESEND_FROM address, RELAY_TOKEN as now, and the new
-   RELAY_TOKENS map, one token per painter with name, reply_to and
-   until. Send yourself a scheduled text and an email through a mapped
-   token before you take money. Decide alphanumeric sender (no replies,
-   no monthly number fee) or a rented +61 number (replies, a monthly fee
-   to Twilio), and keep the page's "nothing monthly to me" true either
-   way, since the fee is Twilio's not yours.
-3. **Checkout and calendar.** A Stripe Payment Link for the hour at
-   SETUP_PRICE, in SETUP_URL. On the link: collect phone number and
-   billing address, and three custom text fields with the keys
-   `trading_name`, `abn`, `licence` (the webhook reads those keys). Its
-   success URL: `https://aa-ronjs.github.io/portfolio/booked?session={CHECKOUT_SESSION_ID}`.
-   A Cal.com or Calendly page with 75-minute evening slots in
-   BOOKING_URL, minimum notice 20 hours, one slot an evening. Set
-   SETUP_SLOTS_WEEK to the true number (three is honest at four hours a
-   painter). Rehearse an on-screen refund on a $1 test payment so
-   promise 1 is a ten-second action on the call.
-4. **Link one, automatic (council six).** The relay now has
-   `api/stripe-webhook.js`, `api/setup-link.js` and `api/sms-in.js`.
-   In Stripe, add a webhook endpoint at
-   `https://<your vercel site>/api/stripe-webhook` for
-   `checkout.session.completed` and
-   `checkout.session.async_payment_succeeded`; its signing secret goes in
-   `STRIPE_WEBHOOK_SECRET`. Also on Vercel: `STRIPE_SECRET_KEY` (a
-   restricted key that can read Checkout Sessions is enough), `APP_URL`
-   (`https://aa-ronjs.github.io/portfolio/app/`), `BOOKING_URL`,
-   `OWNER_MOBILE` (you get a text on every payment), `OWNER_EMAIL`
-   (Reply-To and a copy of every link email). Then set
-   `SETUP_LINK_API` in config.js to `https://<your vercel site>/api/setup-link`:
-   the page switches to "the app is yours the minute you pay" and the
-   booked page shows the Make the app yours button. Until it is set the
-   page says "within the hour, 7am to 9pm" and you send link one by hand
-   from `public/prefill.html`. Test with Stripe CLI in test mode
-   (`stripe listen --forward-to`), one live $1 product, then delete it.
-   Link two (real prices, open book, sending token, scoreboard start) is
-   still built by hand on prefill.html after the fifteen-minute call.
-   Loading link two sends nothing: Home shows "Your book, from Aaron"
-   with a Start the chasing button. On the call, read the wording on the
-   Follow-ups tab with him, send the first nudge by hand to whoever owes
-   him most, then tap Start: anything already overdue goes the next
-   morning, the rest on their dates. prefill.html now takes a real due
-   date per book line (last column) and his three nudges in his words.
-   NEXT_FREE_HOUR in config.js prints the next free slot on the card;
-   SAME_EVENING_CALL (with OWNER_MOBILE on the relay) is the only thing
-   that makes "that evening" appear.
-4a. **Text replies.** On the Twilio Messaging Service, set "A message
-   comes in" to `https://<your vercel site>/api/sms-in` (HTTP POST).
-   Customers who reply to a hosted text get an automatic answer pointing
-   them to the painter's mobile, and every hosted text now ends with
-   "This number does not take replies: text or call me on 04xx". Set
-   `INBOUND_FORWARD_TO` to your own mobile to get a copy of each reply
-   to pass on. If you use a custom domain in front of Vercel, set
-   `TWILIO_INBOUND_URL` to the exact public URL, because the signature
-   covers it. Emails already go out as "<Trading Name>" on your address
-   (the "via Quote & Chase" is gone) with Reply-To the painter.
-5. **The Set-Up Log.** After each paid hour, add one line to SETUP_LOG in
-   config.js (date, state, who with his OK, quote out on the call,
-   sending live, second session, refund). It is the public count and
-   the proof. Update FOUNDING_LEFT and FOUNDING_COUNTED the same day.
-   New: `days_to_paid` (from the Scoreboard screenshot he sends, the
-   number the page will one day be judged on) and `practice: true` for
-   a run on a mate's phone before launch, which the page labels as such.
-   The council's row zero: do one practice hour on a mate's phone,
-   record it unedited, and put it in the log labelled practice.
-5a. **Hosted for a year.** The council's effort scorer: set HOSTED_DAYS
-   to 365 for the founding painters (about $50 a painter in Twilio and
-   Resend over the year) and match RELAY_TOKENS `until` to it. The app
-   shows a banner at 30 and 7 days and once it ends, either way.
-6. **The float.** Keep every fee untouched until that painter's day 90.
-   Promise 3 can refund up to day 100.
-7. **The bonus pages.** BONUSES_READY stays false until the state pages,
-   first-quote card, message library, unpaid invoice playbook and
-   bookkeeper page exist and go out the day someone pays. About 22
-   hours; not needed to open.
-8. **Founding decisions.** FOUNDING_ENDS if you want a date as well as
-   the count; LAST_CALL, BREAK_FROM, BREAK_TO for the Christmas line;
-   HELP_SAME_DAY false if the inbox is not on your phone.
-9. **The launch play the council recommended.** Five painters at no
-   charge, recruited by message with the same conditions (one live job,
-   use it 30 days, a ten-minute day-30 call), before paid bookings open,
-   so the log and the page carry real results. The recruiting message
-   and the day-30 questions are in `scratchpad/council5/tenx.md`.
+1. **Trust plumbing, config.js.** SUPPORT_EMAIL (the only way anyone can
+   reach you), ABN, BUSINESS_NAME, BUSINESS_ADDRESS (a PO box is fine),
+   MAKER_NOTE, MAKER_NAME, MAKER_PHOTO. The refund guarantee is a service
+   warranty, so the terms need the giver's address.
+2. **The relay, on Vercel** (project quote-and-chase-landing). Env:
+   `STRIPE_SECRET_KEY`, `STRIPE_WEBHOOK_SECRET`, `RELAY_SIGNING_SECRET`
+   (a long random string; every painter's token is signed with it, so
+   changing it stops everyone's sending), `RELAY_URL` =
+   `https://<site>/api/msg`, `APP_URL` =
+   `https://aa-ronjs.github.io/portfolio/app/`, `SUPPORT_EMAIL`, your
+   `TWILIO_ACCOUNT_SID` / `TWILIO_AUTH_TOKEN` /
+   `TWILIO_MESSAGING_SERVICE_SID`, `RESEND_API_KEY`, `RESEND_FROM` (a
+   verified address), and optionally `OWNER_MOBILE` (a text on every
+   sign-up), `OWNER_EMAIL` (a copy of every welcome email) and
+   `INBOUND_FORWARD_TO` (customer replies copied to you).
+   `RELAY_TOKEN` and `RELAY_TOKENS` are no longer needed; leave them if
+   you have hand-issued tokens out there, they still work.
+3. **Stripe.** A Payment Link in **subscription** mode at HOSTED_PRICE a
+   month. On it: collect name, email, phone and billing address, and add
+   three custom text fields keyed `trading_name`, `abn`, `licence`. Success
+   URL `https://aa-ronjs.github.io/portfolio/welcome?session={CHECKOUT_SESSION_ID}`.
+   A webhook endpoint at `https://<site>/api/stripe-webhook` for
+   `checkout.session.completed` and `checkout.session.async_payment_succeeded`;
+   its signing secret goes in `STRIPE_WEBHOOK_SECRET`. Turn the **customer
+   portal** on in Stripe settings (Billing, Customer portal) or the app's
+   Manage button has nothing to open. Then put the link in `SUBSCRIBE_URL`
+   and the relay's setup-link address in `SETUP_LINK_API`.
+4. **Twilio inbound.** On the Messaging Service, set "a message comes in"
+   to `https://<site>/api/sms-in` (HTTP POST), so a customer who replies to
+   your number is answered instead of shouting into a void.
+5. **Test it end to end as a stranger.** With Stripe in test mode: pay,
+   check the welcome page shows the button, tap it on a phone, confirm the
+   app says "On, and paid to <date>", send yourself a scheduled text and
+   email, then cancel from the app's Manage button and confirm the app says
+   "Cancelled". `node scratchpad/smoke/send/selfserve.cjs` covers the same
+   chain against stubbed Stripe, Twilio and Resend.
+6. **Watch the first week, then leave it.** The only recurring work is the
+   support inbox and a monthly look at Stripe. There is no calendar, no
+   set-up link to build by hand, no token to paste, and no renewal to
+   chase: the app renews its own token and stops itself when a painter
+   cancels. `public/prefill.html` is still there, unlinked, if you ever
+   want to hand-build a link for someone.
 
 ## Only you can do these (in this order)
 
