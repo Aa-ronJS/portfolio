@@ -7,16 +7,18 @@ window.QC = {
                                     // or the canonical https://aa-ronjs.github.io/portfolio/app/ (data is per address, pick one and keep it)
 
   // ---- one product, one price, messages included. The painter starts inside the app with his email; the card comes later, from inside.
-  PLAN_PRICE: 49,                   // AUD a month. Must match the Stripe Payment Link and the relay. Shown on the card, the FAQ and the terms.
-  INCLUDED_MESSAGES: 100,           // messages a month in the plan. Must match INCLUDED_MESSAGES on the relay.
+  PLAN_PRICE: 99,                   // AUD a month. Must match the Stripe Payment Link and the relay. Shown on the card, the FAQ and the terms.
+  INCLUDED_MESSAGES: 150,           // messages a month in the plan. Must match INCLUDED_MESSAGES on the relay.
   FREE_MESSAGES: 5,                 // what an email alone gets him, so he can send a quote and chase it twice. Must match FREE_MESSAGES on the relay.
   TOPUP_MESSAGES: 100,              // messages in a top-up pack. Must match TOPUP_MESSAGES on the relay.
-  TOPUP_PRICE: 20,                  // AUD for a pack. Must match the top-up Stripe Payment Link.
+  TOPUP_PRICE: 35,                  // AUD for a pack. Must match TOPUP_PRICE on the relay. Packs are bought adversely (only heavy
+                                    // senders buy one), so this has to sit near the real cost of sending them, not at a token price.
   SUBSCRIBE_URL: "",                // TODO owner: the Stripe Payment Link (subscription mode) at PLAN_PRICE. The app links to it from inside;
                                     //   collect name, email, phone and billing address, plus custom TEXT fields keyed trading_name, abn, licence.
                                     //   Success URL: <this site>/welcome?session={CHECKOUT_SESSION_ID}
-  TOPUP_URL: "",                    // TODO owner: a second Payment Link, one-off, at TOPUP_PRICE, with metadata qc=topup. The app appends
-                                    //   ?client_reference_id=<his Stripe customer> so the webhook knows whose account to credit.
+  TOPUP_URL: "",                    // optional fallback only. The app buys packs with one tap on the card Stripe already holds (api/topup.js),
+                                    //   so nobody is sent to a checkout page. Set this only if you also want a link for someone with no card on file:
+                                    //   a one-off Payment Link at TOPUP_PRICE with metadata qc=topup.
   SETUP_LINK_API: "",               // TODO owner: "https://your-site.vercel.app/api/setup-link". Lets the welcome page show the
                                     // "Set up my app" button the second they pay. Empty = the page tells them to use the emailed link.
 

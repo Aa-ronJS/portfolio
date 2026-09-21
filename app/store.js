@@ -56,7 +56,7 @@
       stripe: { key: '', enabled: false },
       maps: { key: '' },
       account: { email: '', joined: '', offline: false },
-      sending: { server: '', token: '', server_has_creds: false, hosted: false, hosted_until: '', hosted_name: '', hosted_cancelled: false, hosted_past_due: false, renew_checked: '', twilio_sid: '', twilio_token: '', twilio_service: '', twilio_from: '', resend_key: '', resend_from: '', auto_sms: true, auto_email: true, email_quotes: true },
+      sending: { server: '', token: '', server_has_creds: false, hosted: false, hosted_until: '', hosted_name: '', hosted_cancelled: false, hosted_past_due: false, renew_checked: '', auto_topup: false, twilio_sid: '', twilio_token: '', twilio_service: '', twilio_from: '', resend_key: '', resend_from: '', auto_sms: true, auto_email: true, email_quotes: true },
       booking: { start_hour: 7, end_hour: 15, quote_from: 7, quote_to: 18, visit_minutes: 30, saturdays: true, sundays: false, visit_pref: 'any', boss_on_tools: true },
       wording: {
         nudges: { quote: '', deposit: '', invoice: '' },
