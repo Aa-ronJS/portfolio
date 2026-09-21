@@ -3,55 +3,59 @@
 Everything below the line is done and in the repo. Above the line is
 what only you can do, in order. Nothing else is waiting on me.
 
-## Self-service: what to do before the first painter can pay
+## One product, messages included: what to switch on
 
-Nothing in the product needs you. The page, the app, the welcome page and
-the relay are built so a painter can sign up at 9pm on a Sunday and be
-chasing money by 9:05, with no call, no reply from you and nothing for you
-to type. What is left is switching it on.
+A painter gives an email inside the app, gets five messages, and quotes.
+When they run out he pays from inside the app and has a hundred a month.
+Nothing needs you: no call, no set-up link to build, no token to paste, and
+no cap to police, because the messages are the cap.
 
-1. **Trust plumbing, config.js.** SUPPORT_EMAIL (the only way anyone can
-   reach you), ABN, BUSINESS_NAME, BUSINESS_ADDRESS (a PO box is fine),
-   MAKER_NOTE, MAKER_NAME, MAKER_PHOTO. The refund guarantee is a service
-   warranty, so the terms need the giver's address.
+1. **Your details, config.js.** SUPPORT_EMAIL (the only way anyone reaches
+   you), ABN, BUSINESS_NAME, BUSINESS_ADDRESS, MAKER_NOTE, MAKER_NAME,
+   MAKER_PHOTO. The refund guarantee is a service warranty, so the terms
+   need the giver's address.
 2. **The relay, on Vercel** (project quote-and-chase-landing). Env:
    `STRIPE_SECRET_KEY`, `STRIPE_WEBHOOK_SECRET`, `RELAY_SIGNING_SECRET`
-   (a long random string; every painter's token is signed with it, so
-   changing it stops everyone's sending), `RELAY_URL` =
-   `https://<site>/api/msg`, `APP_URL` =
-   `https://aa-ronjs.github.io/portfolio/app/`, `SUPPORT_EMAIL`, your
-   `TWILIO_ACCOUNT_SID` / `TWILIO_AUTH_TOKEN` /
-   `TWILIO_MESSAGING_SERVICE_SID`, `RESEND_API_KEY`, `RESEND_FROM` (a
-   verified address), and optionally `OWNER_MOBILE` (a text on every
-   sign-up), `OWNER_EMAIL` (a copy of every welcome email) and
-   `INBOUND_FORWARD_TO` (customer replies copied to you).
-   `RELAY_TOKEN` and `RELAY_TOKENS` are no longer needed; leave them if
-   you have hand-issued tokens out there, they still work.
-3. **Stripe.** A Payment Link in **subscription** mode at HOSTED_PRICE a
-   month. On it: collect name, email, phone and billing address, and add
-   three custom text fields keyed `trading_name`, `abn`, `licence`. Success
-   URL `https://aa-ronjs.github.io/portfolio/welcome?session={CHECKOUT_SESSION_ID}`.
-   A webhook endpoint at `https://<site>/api/stripe-webhook` for
-   `checkout.session.completed` and `checkout.session.async_payment_succeeded`;
-   its signing secret goes in `STRIPE_WEBHOOK_SECRET`. Turn the **customer
-   portal** on in Stripe settings (Billing, Customer portal) or the app's
-   Manage button has nothing to open. Then put the link in `SUBSCRIBE_URL`
-   and the relay's setup-link address in `SETUP_LINK_API`.
-4. **Twilio inbound.** On the Messaging Service, set "a message comes in"
-   to `https://<site>/api/sms-in` (HTTP POST), so a customer who replies to
-   your number is answered instead of shouting into a void.
-5. **Test it end to end as a stranger.** With Stripe in test mode: pay,
-   check the welcome page shows the button, tap it on a phone, confirm the
-   app says "On, and paid to <date>", send yourself a scheduled text and
-   email, then cancel from the app's Manage button and confirm the app says
-   "Cancelled". `node scratchpad/smoke/send/selfserve.cjs` covers the same
-   chain against stubbed Stripe, Twilio and Resend.
-6. **Watch the first week, then leave it.** The only recurring work is the
-   support inbox and a monthly look at Stripe. There is no calendar, no
-   set-up link to build by hand, no token to paste, and no renewal to
-   chase: the app renews its own token and stops itself when a painter
-   cancels. `public/prefill.html` is still there, unlinked, if you ever
-   want to hand-build a link for someone.
+   (a long random string; every token is signed with it, so changing it
+   stops everyone's sending), `RELAY_URL` = `https://<site>/api/msg`,
+   `APP_URL`, `SUPPORT_EMAIL`, `FREE_MESSAGES` (5), `INCLUDED_MESSAGES`
+   (100), `TOPUP_MESSAGES` (100), your `TWILIO_ACCOUNT_SID` /
+   `TWILIO_AUTH_TOKEN` / `TWILIO_MESSAGING_SERVICE_SID`, `RESEND_API_KEY`,
+   `RESEND_FROM` (a verified address), and optionally `OWNER_MOBILE`,
+   `OWNER_EMAIL` and `INBOUND_FORWARD_TO`. Keep the four message numbers
+   the same in config.js and on the relay or the page will lie.
+3. **The app's own config**, `quote-and-chase-app/config.js`: set
+   `signup_url` to `https://<site>/api/signup`. Without it the app still
+   opens on an email, but every message is written for the painter to send
+   himself.
+4. **Stripe.** Two Payment Links. One in **subscription** mode at
+   PLAN_PRICE: collect name, email, phone and billing address, with custom
+   text fields keyed `trading_name`, `abn`, `licence`, success URL
+   `https://aa-ronjs.github.io/portfolio/welcome?session={CHECKOUT_SESSION_ID}`.
+   One in **payment** mode at TOPUP_PRICE with metadata `qc=topup` for a
+   pack of messages. A webhook at `https://<site>/api/stripe-webhook` for
+   `checkout.session.completed` and `checkout.session.async_payment_succeeded`.
+   Turn the **customer portal** on in Stripe settings or the app's Manage
+   button has nothing to open. Then fill SUBSCRIBE_URL, TOPUP_URL and
+   SETUP_LINK_API in config.js.
+5. **Twilio inbound.** On the Messaging Service, set "a message comes in"
+   to `https://<site>/api/sms-in`, so a customer who replies is answered.
+6. **Test it as a stranger**, Stripe in test mode: sign up with an email,
+   watch five messages appear, send them, watch the sixth be refused and
+   the app fall back to writing it for you, then subscribe and watch the
+   count become a hundred. `node scratchpad/smoke/send/credits.cjs` runs
+   the same chain against a stubbed Stripe, Twilio and Resend.
+
+### The counter, and where the money can leak
+
+Messages are counted on the Stripe customer record (`qc_used`,
+`qc_period`, `qc_extra`), so there is still no database. Two things to know.
+Every painter's texts leave through **one shared Twilio Messaging Service**:
+if one of them ever texts a bought list, that number can be filtered for
+everybody, so split the sender pool before this gets big. And two messages
+sent in the same instant can both read the same balance, so a painter could
+very occasionally get one more than he paid for; that is cheaper to accept
+than to lock.
 
 ## Only you can do these (in this order)
 

@@ -29,9 +29,21 @@
     var f = window.__qcRelayFetch || window.fetch;
     return f(c.server, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload) })
       .then(function (r) { return r.json().catch(function () { return { ok: false, error: 'Bad reply from server' }; }); })
-      .then(function (j) { if (!j.ok) throw new Error(j.error || 'Sending failed'); if (logged) addLog(Object.assign({}, base, { id: j.id || payload.id || '', ok: true })); return j; })
+      .then(function (j) {
+        // every reply carries what is left of this month's messages; the app keeps it so a screen can say so without asking again
+        if (j && (j.left != null || j.included != null)) balance({ left: j.left, used: j.used, included: j.included, plan: j.plan, period: j.period, at: Date.now() });
+        if (!j.ok) { var err = new Error(j.error || 'Sending failed'); if (j.out_of_messages) err.outOfMessages = true; throw err; }
+        if (logged) addLog(Object.assign({}, base, { id: j.id || payload.id || '', ok: true })); return j; })
       .catch(function (e) { if (logged) addLog(Object.assign({}, base, { kind: 'fail', ok: false, error: e.message })); throw e; });
   }
+  // what the relay last told us about the allowance, kept on the phone so no screen has to ask before it can draw
+  function balance(next) {
+    try { var st = QCStore.load(); if (!st.sending || typeof st.sending !== 'object') st.sending = {};
+      if (next) { ['left', 'used', 'included', 'plan', 'period', 'at'].forEach(function (k) { if (next[k] != null) st.sending['bal_' + k] = next[k]; }); QCStore.save(); }
+      var c = st.sending; return { left: c.bal_left == null ? null : +c.bal_left, used: +c.bal_used || 0, included: c.bal_included == null ? null : +c.bal_included, plan: c.bal_plan || '', period: c.bal_period || '', at: +c.bal_at || 0 };
+    } catch (e) { return { left: null, used: 0, included: null, plan: '', period: '', at: 0 }; }
+  }
+  function outOfMessages() { var b = balance(); return b.left != null && b.left <= 0; }
   function atHour(dayIso, hour) { return new Date(dayIso + 'T' + (hour < 10 ? '0' : '') + hour + ':00:00').toISOString(); }
   function pdfBase64(doc) { var ab = doc.output('arraybuffer'), u = new Uint8Array(ab), s = ''; for (var i = 0; i < u.length; i += 0x8000) s += String.fromCharCode.apply(null, u.subarray(i, i + 0x8000)); return btoa(s); }
   // Provider windows: Twilio holds an SMS 35 days ahead, Resend an email 30 days ahead. Anything later waits in the app's local queue.
@@ -47,5 +59,5 @@
     }));
   }
   function cancelAll(list, jobId) { return Promise.all((list || []).filter(function (x) { return x && x.id && !x.cancelled && !x.sent; }).map(function (x) { return call({ action: 'cancel', channel: x.channel, id: x.id, meta: { job: jobId || x.job || '', ref: x.what || '' } }).then(function () { x.cancelled = true; x.cancel_error = ''; return true; }).catch(function (e) { x.cancel_error = e.message; return false; }); })); }
-  window.QCMsg = { cfg: cfg, ready: ready, hostedEnded: hostedEnded, call: call, scheduleAll: scheduleAll, cancelAll: cancelAll, pdfBase64: pdfBase64, atHour: atHour, isLandline: isLandline, isMobile: isMobile, addLog: addLog, withinWindow: withinWindow, WINDOW_DAYS: WINDOW_DAYS };
+  window.QCMsg = { cfg: cfg, ready: ready, balance: balance, outOfMessages: outOfMessages, hostedEnded: hostedEnded, call: call, scheduleAll: scheduleAll, cancelAll: cancelAll, pdfBase64: pdfBase64, atHour: atHour, isLandline: isLandline, isMobile: isMobile, addLog: addLog, withinWindow: withinWindow, WINDOW_DAYS: WINDOW_DAYS };
 })();

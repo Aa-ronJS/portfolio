@@ -59,6 +59,42 @@
   var unlocked = false, hiddenAt = 0;
   function sha256(s) { try { if (window.crypto && crypto.subtle && crypto.subtle.digest) return crypto.subtle.digest('SHA-256', new TextEncoder().encode(String(s))).then(function (buf) { return Array.prototype.map.call(new Uint8Array(buf), function (x) { return (x < 16 ? '0' : '') + x.toString(16); }).join(''); }); } catch (e) {} var h = 2166136261; for (var i = 0; i < s.length; i++) { h ^= s.charCodeAt(i); h = Math.imul(h, 16777619) >>> 0; } return Promise.resolve('fnv:' + h.toString(16)); }
   function locked() { return !!(S.security && S.security.pin) && !unlocked; }
+  // The app opens once it knows who it belongs to: an email, which brings back a set-up link carrying the sending token and
+  // the five messages everyone starts with. A set-up link from an email or a receipt joins the same way, without typing anything.
+  function joined() { return !!(S.account && S.account.email) || !!(S.sending && S.sending.token); }
+  function signupUrl() { var u = String((S.sending && S.sending.server) || window.QC_APP && window.QC_APP.signup_url || '').trim(); if (u) return u.replace(/\/[^\/]*$/, '/signup'); return (window.QC_APP && window.QC_APP.signup_url) || ''; }
+  function viewJoin(msg) {
+    var url = signupUrl();
+    $app.innerHTML = '<div class="card" style="max-width:420px;margin:24px auto 0"><h1>Quote &amp; Chase</h1>' +
+      '<p class="hint">Measure a room with a sheet of paper, price it your way, and the quote is in their inbox before you are back in the ute. Then it chases the quote and the invoice for you.</p>' +
+      (msg ? '<p class="confirm">' + esc(msg) + '</p>' : '') +
+      '<form id="joinform" novalidate><label class="f">Your email<span>so your app is yours, and so the first messages can go out in your name</span><input type="email" id="join_email" autocomplete="email" inputmode="email" required></label>' +
+      '<label class="f">Your business name<span>optional, it goes on your quotes</span><input type="text" id="join_name" autocomplete="organization"></label>' +
+      '<div class="row" style="margin-top:8px"><button class="btn tape" type="submit" id="join_go">Start quoting</button><span class="hint" id="join_msg"></span></div></form>' +
+      '<p class="hint">Your first ' + FREE_SENDS + ' messages are on us. A message is one text or one email the app sends for you. After that it is $<span>' + PLAN_PRICE + '</span> a month for ' + PLAN_INCLUDED + ', or top up when you need to.</p>' +
+      '<p class="hint">Your jobs, prices and clients stay on this phone. We keep your email so the app is yours and so we can tell you when something changes.' + (url ? '' : ' <span class="confirm">Sign-up is not switched on yet.</span>') + '</p>' +
+      '<p class="hint">Already have a set-up link? Open it on this phone and it does all of this for you.</p></div>';
+    var f = document.getElementById('joinform');
+    f.addEventListener('submit', function (e) {
+      e.preventDefault();
+      var em = String(document.getElementById('join_email').value || '').trim(), nm = String(document.getElementById('join_name').value || '').trim(), out = document.getElementById('join_msg'), btn = document.getElementById('join_go');
+      if (!/^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(em)) { out.textContent = 'That does not look like an email address.'; return; }
+      if (!url) { S.account = { email: em, joined: QCStore.today(), offline: true }; if (nm) S.details.trading_name = nm; save(); toast('Ready. Sending is not switched on, so the app writes each message and you send it.'); go('/'); return; }
+      btn.disabled = true; out.textContent = 'One moment…';
+      var fetcher = window.__qcRelayFetch || window.fetch;
+      fetcher(url, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ email: em, trading_name: nm }) })
+        .then(function (r) { return r.json(); })
+        .then(function (j) {
+          if (!j || !j.ok || !j.link) throw new Error((j && j.error) || 'Could not start your account');
+          S.account = { email: em, joined: QCStore.today() }; if (nm && !String(S.details.trading_name || '').trim()) S.details.trading_name = nm; save();
+          var m = /#\/setup\?d=([^&]+)/.exec(j.link);
+          if (m) { location.hash = '#/setup?d=' + m[1]; route(); return; }
+          go('/');
+        })
+        .catch(function (e2) { btn.disabled = false; out.textContent = e2.message; });
+    });
+  }
+  var FREE_SENDS = 5, PLAN_INCLUDED = 100, PLAN_PRICE = 49;
   document.addEventListener('visibilitychange', function () { if (document.hidden) { hiddenAt = Date.now(); return; } if (unlocked && hiddenAt && Date.now() - hiddenAt > 5 * 60000 && S && S.security && S.security.pin) { unlocked = false; route(); } });
   function viewLock() {
     $app.innerHTML = '<div class="card" style="max-width:360px;margin:30px auto 0"><h1>Enter your PIN</h1><form id="pinform"><label class="f">PIN<input type="password" id="pin" inputmode="numeric" pattern="[0-9]*" autocomplete="off" maxlength="6" autofocus></label><div class="row" style="margin-top:8px"><button class="btn tape" type="submit">Unlock</button></div><p class="status bad" id="pinmsg"></p></form>' +
@@ -186,6 +222,7 @@
     document.querySelectorAll('[data-nav]').forEach(function (a) { a.classList.toggle('on', a.dataset.nav === navKey); });
     refreshPreview = function () {};
     if (locked()) return viewLock();
+    if (!joined() && p[0] !== 'setup' && p[0] !== 'help') return viewJoin();
     if (!route.booted) { route.booted = true; purgeTrash(); try { if (navigator.storage && navigator.storage.persist && (S.jobs.length || S.details.trading_name)) navigator.storage.persist().catch(function () {}); } catch (e) {} setTimeout(function () { retryPendingCancels().then(function () { return retryLocalQueue(); }).catch(function () {}); }, 800); setTimeout(function () { renewHosted().catch(function () {}); }, 1500); window.addEventListener('online', function () { retryPendingCancels().catch(function () {}); }); }
     if (!p[0]) return viewHome();
     if (p[0] === 'settings') { if (p[1] === 'log') return viewSentLog(); viewSettings(); if (p[1]) openSection({ backup: 'Back-up', prices: 'Prices', bank: 'Bank details' }[p[1]] || ''); return; }
@@ -410,6 +447,14 @@
   var SURFACES = ['Walls', 'Ceiling', 'Trim', 'Doors', 'Feature wall', 'Exterior walls', 'Eaves and fascia', 'Gutters', 'Deck', 'Fence', 'Other'], SHEENS = ['Low sheen', 'Matt', 'Flat', 'Satin', 'Semi-gloss', 'Gloss'], HOWS = ['text', 'email', 'phone', 'in person', 'signed'];
   var TYPE_WORD = { agent: 'Agency', strata: 'Strata', builder: 'Builder', commercial: 'Commercial' };
   // A1: C decides when sending is truly automatic (window.__qcApp.autoSendReady); until then reminders are things you tap
+  function messagesLeft() { var b = QCMsg.balance(); return b.left; }
+  function balanceLine() {
+    var b = QCMsg.balance(); if (b.left == null) return '';
+    var plan = b.plan === 'paid' ? 'this month' : 'to start';
+    if (b.left <= 0) return 'No messages left' + (b.plan === 'paid' ? ' this month' : '') + '. The app still writes every message; you send it.';
+    return b.left + ' of ' + (b.included == null ? b.left : b.included) + ' messages left ' + plan + '.';
+  }
+  function topUpLink() { return siteUrl('#price'); }
   function autoReady() { var a = window.__qcApp; if (a && typeof a.autoSendReady === 'function') { try { return !!a.autoSendReady(); } catch (e) {} } return !!(S.sending && S.sending.server && (QCMsg.ready('sms') || QCMsg.ready('email'))); }
   function fuLabel() { var a = window.__qcApp; if (a && typeof a.followUpLabel === 'function') { try { return String(a.followUpLabel()); } catch (e) {} } return autoReady() ? 'Automatic follow-ups' : 'Remind me to follow up'; }
   function fuHint() { return autoReady() ? 'Follow-up texts and emails go by themselves on the day. Hold reminders stops them.' : 'Nothing is sent without you. On the day, the Follow-ups tab shows the message written out; you tap Send.'; }
@@ -1071,8 +1116,10 @@
   // Rules: quote follow-ups only while the quote is waiting (status quoted) and the job allows them; nothing while on hold; never a time in the
   // past; weekends and public holidays roll forward to the next business day at remind_hour; deposit reminders wait 3 business days after due;
   // the final notice is never automatic (auto texts cap at the second tier); anything beyond the provider window waits in state.local_queue.
+  function outOfMessagesToast() { toast('Out of messages. The app still writes every one; you tap Send. Top up or go monthly in Set-up.', { action: 'Set-up', onAction: function () { go('/settings'); } }); }
   function scheduleFollowUps(job, kind, opts) {
     opts = opts || {}; var say = opts.quiet ? function () {} : toast;
+    if (QCMsg.outOfMessages()) return (function () { if (!opts.quiet) outOfMessagesToast(); return Promise.resolve({ scheduled: [], failed: [], waiting: [], skipped: [], reason: 'out of messages' }); })();
     var fu = S.follow_up, sd = S.sending, items = [], hr = fuHour(), st = stateCode(), skipped = [], late = [], today = QCStore.today(), nowMs = Date.now();
     var stop = function (msg, why) { say(msg); return Promise.resolve({ scheduled: [], failed: [], waiting: [], skipped: [], reason: why }); };
     if (job.hold && job.hold.on) return stop('Reminders are on hold for this job.', 'hold');
@@ -1273,6 +1320,7 @@
     var relay = QCMsg.ready('sms') || QCMsg.ready('email');
     var html = pendingBanner() + '<h1>Follow-ups</h1><p class="muted">Quotes at ' + qd.join(', ') + ' days after sending and unpaid invoices at ' + idays.join(', ') + ' days after due, set in Set-up. The message is written; read it, then send.</p>';
     if (!relay) html += '<p class="hint"><b>Nothing here sends by itself.</b> Tap Text to open Messages with the words ready; you press send.</p>';
+    else { var bl = QCMsg.balance(); if (bl.left != null) html += '<p class="hint" id="balline">' + (bl.left <= 0 ? '<span class="confirm"><b>' + esc(balanceLine()) + '</b></span> <a href="' + esc(topUpLink()) + '" target="_blank" rel="noopener">Top up or go monthly</a>' : esc(balanceLine()) + (bl.left <= 3 ? ' <a href="' + esc(topUpLink()) + '" target="_blank" rel="noopener">Top up</a>' : '')) + '</p>'; }
     html += '<div class="card"><div class="row between"><span>Overdue</span><h2>' + money(owed) + '</h2></div></div>';
     var groups = [], flat = []; S.jobs.forEach(function (j) { var pend = pendingFollowUps(j).sort(byDay), wait = waitingFollowUps(j); if (pend.length || wait.length) groups.push({ job: j, pend: pend, wait: wait }); });
     if (groups.length) html += '<div class="card"><h3>Scheduled</h3><p class="hint">These go by themselves on the day. Cancel any you do not want.</p>' + groups.map(function (g) {
@@ -1465,6 +1513,7 @@
     var relayOn = !!S.sending.server, dis = relayOn ? '' : ' disabled';
     var hosted = S.sending.hosted === true, hostedEnded = hosted && QCMsg.hostedEnded && QCMsg.hostedEnded(S.sending), hostedStopped = hosted && !hostedEnded && S.sending.hosted_cancelled === true, hostedTo = /^\d{4}-\d{2}-\d{2}$/.test(String(S.sending.hosted_until || '')) ? shortDate(S.sending.hosted_until) : '';
     html += '<div class="card"><h2>Automatic texting and emailing</h2><p class="hint">' + (hostedEnded ? '<span class="confirm">The chasing is off: your sending ran to ' + esc(hostedTo) + '. Turn it back on at <a href="' + esc(SITE + '#price') + '" target="_blank" rel="noopener">the website</a> and one tap in the email puts it back, or connect your own accounts below. Nothing on this phone is lost.</span>' : hostedStopped ? '<span class="confirm">Cancelled. The chasing keeps running to ' + esc(hostedTo) + ' and stops after that. Change your mind any time with Manage below.</span>' : hosted ? 'On, and paid' + (hostedTo ? ' to ' + esc(hostedTo) + ', when it renews itself' : '') + '. Texts and emails go out in your name and there is nothing to open. Every text it sends ends with a way to reach you' + (String(S.details.phone || '').trim() ? ' on ' + esc(String(S.details.phone).trim()) + ', because the number it comes from cannot take replies.' : (String(S.details.email || '').trim() ? ' by email, because the number it comes from cannot take replies. <span class="confirm">Add your mobile in Your business above and texts point them there instead.</span>' : ', because the number it comes from cannot take replies. <span class="confirm">Add your mobile in Your business above so there is one to give.</span>')) : 'Optional. Needs a computer and about an hour. Without it, the app writes every text and email and you press Send yourself; nothing goes out without you.' + (autoReady() ? ' Set up and working.' : ' Rather not? <a href="' + esc(SITE + '#price') + '" target="_blank" rel="noopener">Turn the chasing on</a>: one card, one tap, cancel from this page any time.')) + '</p>' +
+      (hosted && QCMsg.balance().left != null ? '<p class="hint" id="balcard"><b>' + esc(balanceLine()) + '</b>' + (QCMsg.balance().left <= 5 ? ' <a href="' + esc(topUpLink()) + '" target="_blank" rel="noopener">Top up or go monthly</a>' : '') + '</p>' : '') +
       (hosted || hostedStopped ? '<div class="row" id="hostedrow"><button class="btn ghost sm" id="hostedmanage">Manage or cancel</button><button class="btn ghost sm" id="hostedcheck">Check my subscription</button><span class="hint" id="hostedres"></span></div>' : '') +
       '<label class="f">Paste a set-up code<span>or the whole set-up link from your welcome email; it loads your details, prices and jobs without wiping anything</span><textarea id="setupcode" rows="2" autocomplete="off" spellcheck="false" autocapitalize="off" placeholder="j:… or z:…"></textarea></label><div class="row"><button class="btn sm" id="setupcodego">Load</button><span class="hint" id="setupcoderes"></span></div>' +
       '<details class="sec sub"><summary><h3>Show me the set-up steps</h3></summary>' + (hosted ? '<p class="hint">You do not need any of this while the chasing is on. It is here for the day you would rather run your own accounts.</p>' : '') + '<p class="hint">Texts go through Twilio and emails through Resend, via a relay (a small web service of your own, set up on a computer). Keys stay on this phone and are left out of back-ups unless you tick the box under Back-up.</p>' +
@@ -1619,7 +1668,7 @@
         if (w.to_chase.invoices || w.to_chase.quotes) rows.push(['To chase', [w.to_chase.invoices ? w.to_chase.invoices + ' unpaid invoice' + (w.to_chase.invoices > 1 ? 's' : '') : '', w.to_chase.quotes ? w.to_chase.quotes + ' open quote' + (w.to_chase.quotes > 1 ? 's' : '') : ''].filter(Boolean).join(', ') + '. Nothing is sent until you tap Start the chasing.']);
         if (w.scoreboard_start) rows.push(['Scoreboard', 'counts from ' + shortDate(w.scoreboard_start)]);
         $app.innerHTML = '<h1>Set up your app?</h1>' + (w.note ? '<p class="hint">' + esc(w.note) + '</p>' : '') + '<div class="card"><h3>What is in it</h3>' + rows.map(function (r) { return '<div class="row between" style="border-top:1px solid var(--line);padding-top:6px"><span>' + esc(r[0]) + '</span><b>' + esc(r[1]) + '</b></div>'; }).join('') + '<p class="hint">It adds to what is on this phone. Nothing you have typed is replaced by a blank, and jobs already here are left alone.</p><div class="row between"><button class="btn tape" id="setupload">Load</button><a class="btn ghost sm" href="#/">Not now</a></div></div>';
-        document.getElementById('setupload').addEventListener('click', function () { var b = this; b.disabled = true; try { var res = applySetup(obj); toast(setupToast(res).replace(/\.?$/, '') + (res.loaded.some(chaseable) ? '. Nothing is sent until you tap Start the chasing.' : '.')); go('/'); } catch (e) { b.disabled = false; showBlock(b, e.message, { kind: 'bad' }); } });
+        document.getElementById('setupload').addEventListener('click', function () { var b = this; b.disabled = true; try { var res = applySetup(obj); if (!isObj(S.account)) S.account = {}; if (!S.account.email) { S.account.email = String((((obj.settings || {}).details) || {}).email || (S.sending && S.sending.hosted_name) || 'set-up link'); S.account.joined = QCStore.today(); save(); } toast(setupToast(res).replace(/\.?$/, '') + (res.loaded.some(chaseable) ? '. Nothing is sent until you tap Start the chasing.' : '.')); go('/'); } catch (e) { b.disabled = false; showBlock(b, e.message, { kind: 'bad' }); } });
       }).catch(function (e) { paste(e.message); });
     }
     if (code) show(code); else paste(badLink ? 'That does not look like a set-up code. Copy the whole link from your welcome email and try again.' : '');
