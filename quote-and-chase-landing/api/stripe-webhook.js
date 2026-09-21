@@ -5,8 +5,8 @@
 // taps Load, and his follow-ups send themselves. Renewals and cancellations need nothing from us either: the app checks with
 // /api/renew, and a cancelled subscription stops when its token runs out a few days after the period he paid for.
 //
-// Stripe set-up (once): a Payment Link in subscription mode that collects name, email, phone and billing address, with custom
-// text fields keyed trading_name, abn and licence; success URL <site>/welcome?session={CHECKOUT_SESSION_ID}. A webhook endpoint
+// Stripe set-up (once): a Payment Link in subscription mode that collects name, email, phone and billing address and nothing
+// else; success URL <site>/welcome?session={CHECKOUT_SESSION_ID}. A webhook endpoint
 // here for checkout.session.completed and checkout.session.async_payment_succeeded; its signing secret in STRIPE_WEBHOOK_SECRET.
 // Env: STRIPE_SECRET_KEY, RELAY_SIGNING_SECRET, RELAY_URL (<site>/api/msg), APP_URL, SUPPORT_EMAIL, optional OWNER_MOBILE and
 // OWNER_EMAIL (a heads-up text and a copy of the email; neither is needed for the painter to be up and running).

@@ -23,8 +23,10 @@ const STATES = { nsw: "NSW", "new south wales": "NSW", vic: "VIC", victoria: "VI
 export function stateCode(v) { return STATES[String(v || "").trim().toLowerCase()] || ""; }
 const clean = (v, n) => String(v == null ? "" : v).replace(/[\u0000-\u001f]/g, " ").replace(/\s+/g, " ").trim().slice(0, n);
 
-// What a paid Checkout Session tells us about the painter: customer_details (name, email, phone, address) and the
-// Payment Link's custom fields (keys trading_name, abn, licence). Anything missing is left out; the app never overwrites a filled field with a blank.
+// What a paid Checkout Session tells us about the painter: customer_details (name, email, phone, address). Checkout asks
+// him nothing else -- business name, ABN and licence are his to type in the app, once, if he wants them on his quotes --
+// but if a Payment Link still carries those custom fields we read them. Anything missing is left out; the app never
+// overwrites a filled field with a blank.
 export function detailsFromSession(s) {
   const cd = (s && s.customer_details) || {}, addr = cd.address || {}, cf = {};
   (Array.isArray(s && s.custom_fields) ? s.custom_fields : []).forEach((x) => { if (!x || !x.key) return; const v = x.text ? x.text.value : x.dropdown ? x.dropdown.value : x.numeric ? x.numeric.value : ""; if (v != null && String(v).trim()) cf[String(x.key).toLowerCase()] = clean(v, 120); });

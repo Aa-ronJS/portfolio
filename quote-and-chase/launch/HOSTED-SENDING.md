@@ -24,7 +24,7 @@ Test added: scratchpad/smoke/send/relay-tokens.cjs (plain node, requires the ESM
 
 - From name on hosted email is now `"<Trading Name>" <RESEND_FROM address>`; "via Quote & Chase" is gone.
 - `POST /api/stripe-webhook`: verifies `Stripe-Signature` with `STRIPE_WEBHOOK_SECRET`, and on `checkout.session.completed`
-  (paid) builds link one from customer_details + custom fields (`trading_name`, `abn`, `licence`), emails it to the painter
+  (paid) builds link one from customer_details (name, email, phone, billing address), emails it to the painter
   (Reply-To/BCC `OWNER_EMAIL`), texts `OWNER_MOBILE`. Needs `APP_URL`, optional `BOOKING_URL`.
 - `GET /api/setup-link?session=cs_...`: the booked page asks for the same link with `STRIPE_SECRET_KEY`; CORS for the Pages site.
 - `POST /api/sms-in`: Twilio inbound. Signed with `TWILIO_AUTH_TOKEN` (override the URL with `TWILIO_INBOUND_URL`). Answers

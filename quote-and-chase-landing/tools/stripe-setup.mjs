@@ -4,7 +4,7 @@
 //   node tools/stripe-setup.mjs --key sk_test_... --site https://aa-ronjs.github.io/portfolio --relay https://your-site.vercel.app
 //
 // It makes: one product, three prices (solo monthly, two-phone monthly, a top-up pack), three Payment Links with the right
-// metadata, custom fields and success URL, and a webhook endpoint pointed at your relay. It is safe to run twice: everything is
+// metadata and success URL, and a webhook endpoint pointed at your relay. It is safe to run twice: everything is
 // looked up by a lookup key or metadata first, so a second run reports what already exists instead of making duplicates.
 //
 // The key needs write access to Products, Prices, Payment Links and Webhook Endpoints. A test key (sk_test_) is the sensible
@@ -37,20 +37,6 @@ async function stripe(path, form, method) {
 }
 const money = (n) => String(Math.round(n * 100));
 const log = (...a) => console.log(...a);
-
-// custom fields: Stripe wants alphanumeric keys, so no underscores. The relay reads both spellings.
-function customFields(prefix) {
-  const f = {};
-  const add = (i, key, label, optional) => {
-    f[`${prefix}[${i}][key]`] = key; f[`${prefix}[${i}][type]`] = "text";
-    f[`${prefix}[${i}][label][type]`] = "custom"; f[`${prefix}[${i}][label][custom]`] = label;
-    f[`${prefix}[${i}][optional]`] = optional ? "true" : "false";
-  };
-  add(0, "tradingname", "Business name (goes on your quotes)", false);
-  add(1, "abn", "ABN", true);
-  add(2, "licence", "Licence number", true);
-  return f;
-}
 
 async function findPrice(lookup) {
   const r = await stripe("prices?limit=1&lookup_keys[]=" + encodeURIComponent(lookup));
@@ -115,9 +101,9 @@ async function findHook(url) {
   // ---- three Payment Links
   const welcome = SITE + "/welcome?session={CHECKOUT_SESSION_ID}";
   const linkSpecs = [
-    { tag: "solo", price: "qc_solo_monthly", plan: "solo", redirect: welcome, fields: true, key: "SUBSCRIBE_URL" },
-    { tag: "two", price: "qc_two_monthly", plan: "two", redirect: welcome, fields: true, key: "SUBSCRIBE2_URL" },
-    { tag: "topup", price: "qc_topup_pack", plan: "", redirect: SITE + "/app/", fields: false, key: "TOPUP_URL" },
+    { tag: "solo", price: "qc_solo_monthly", plan: "solo", redirect: welcome, key: "SUBSCRIBE_URL" },
+    { tag: "two", price: "qc_two_monthly", plan: "two", redirect: welcome, key: "SUBSCRIBE2_URL" },
+    { tag: "topup", price: "qc_topup_pack", plan: "", redirect: SITE + "/app/", key: "TOPUP_URL" },
   ];
   for (const spec of linkSpecs) {
     let l = await findLink(spec.tag);
@@ -130,7 +116,6 @@ async function findHook(url) {
       };
       if (spec.plan) { form["metadata[qc_plan]"] = spec.plan; form["subscription_data[metadata][qc_plan]"] = spec.plan; }
       if (spec.tag === "topup") { form["metadata[qc]"] = "topup"; form["payment_intent_data[metadata][qc]"] = "topup"; }
-      if (spec.fields) Object.assign(form, customFields("custom_fields"));
       l = await stripe("payment_links", form);
       log("  link " + spec.tag + ": created");
     } else log("  link " + spec.tag + ": already there");
