@@ -9,7 +9,9 @@ window.QC = {
   // ---- the paid offer: "Set up with you", a one-off call. Price and founding terms live here so the page,
   //      the FAQ and the guarantee never disagree with the receipt.
   OFFER_NAME: "The Driveway Quote Hour",  // the name on the card, the button, the receipt and the terms. Founding wording lives in its own tag, so nothing needs renaming at painter 21.
-  SETUP_URL: "",                    // Stripe Payment Link for the hour, with booked.html as its success page. Empty + FORM_ACTION = email list; empty + nothing = button hidden
+  SETUP_URL: "",                    // Stripe Payment Link for the hour. Its success URL: <this site>/booked?session={CHECKOUT_SESSION_ID}. Empty + FORM_ACTION = email list; empty + nothing = button hidden
+  SETUP_LINK_API: "",               // the relay's /api/setup-link, e.g. "https://your-site.vercel.app/api/setup-link". Set it once the Stripe webhook is live (api/stripe-webhook.js on the relay, LAUNCH-CHECKLIST):
+                                    // the page then says "the app is yours the minute you pay" and booked.html shows the Make the app yours button. Empty = "within the hour, 7am to 9pm" wording and the email link only.
   SETUP_PRICE: 495,                 // AUD, the price charged, the same for founding painters and everyone after (founding painters get more, not less)
   SETUP_PRICE_AFTER: "",            // leave empty. Only set a number if you will actually charge it after the founding places for a real period; the page then prints "Then $X".
   FOUNDING_PLACES: 20,              // how many get the founding terms (the 90-day money-in promise in writing and the price rebuild). 0 hides every founding line.
@@ -18,9 +20,12 @@ window.QC = {
   FOUNDING_COUNTED: "",             // the date you last counted, e.g. "3 October 2026". Shown next to the count.
   SETUP_SLOTS_WEEK: "",             // optional, e.g. 4: "I do these myself, 4 a week". Shown only once SETUP_URL is set. Empty = not shown.
   HOSTED_DAYS: 90,                  // days of sending through your relay included with the hour, before the free switch-over or $HOSTED_PRICE a month. Match RELAY_TOKENS "until" dates to it.
+                                    // The council's advice: 365 for the founding painters (about $50 a painter in Twilio and Resend over the year) turns the day-90 cliff into nothing. The app warns at 30 and 7 days either way.
   PHONE_HOURS: "",                  // e.g. "weekdays 4 to 7pm, or text and I ring back". Shown with BUSINESS_PHONE on the card once bookings are open.
   SETUP_LOG: [],                    // the public Set-Up Log, one object per paid set-up, newest last. Only real ones, only with the painter's OK on the name:
-                                    //   { date: "6 Oct", state: "VIC", who: "Dave, Ballarat", quote_on_call: true, sending_live: true, second_session: false, refund: false, note: "" }
+                                    //   { date: "6 Oct", state: "VIC", who: "Dave, Ballarat", quote_on_call: true, sending_live: true, second_session: false, refund: false, days_to_paid: 13, note: "" }
+                                    // days_to_paid: days from the call to the first invoice paid, from the Scoreboard screenshot the painter sends, blank until then.
+                                    // A practice run on a mate's phone before launch may go in with practice: true; the page labels it "practice run, unpaid, before launch". Never an unlabelled one.
   LAST_CALL: "",                    // optional, e.g. "Thursday 17 December": the last Set-Up Hour before the Christmas break. Needs BREAK_FROM and BREAK_TO too.
   BREAK_FROM: "",                   // e.g. "19 December"
   BREAK_TO: "",                     // e.g. "11 January"
