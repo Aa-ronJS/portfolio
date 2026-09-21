@@ -3,9 +3,14 @@
 Everything below the line is done and in the repo. Above the line is
 what only you can do, in order. Nothing else is waiting on me.
 
-> **Start here instead:**  is the
+> **Start here instead:** [`LAUNCH.md`](LAUNCH.md) is the
 > step-by-step version, with the two scripts that do most of it for you.
 > What follows is the reference for what each piece is and why.
+>
+> **Who this is sold to, and how:** [`GO-TO-MARKET.md`](GO-TO-MARKET.md) —
+> the painter, the channel, the hook, the free allowance, where the offer
+> appears and the number that decides more ad spend, with the reasoning
+> and what was rejected. The council's full argument is in `council/`.
 
 ## One product, messages included: what to switch on
 
