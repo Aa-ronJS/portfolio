@@ -2,7 +2,7 @@
 <html lang="en-AU">
 <head>
 <meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Your Set-Up Hour: next steps</title>
+<title>Your Driveway Quote Hour: next steps</title>
 <meta name="robots" content="noindex">
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,700;12..96,800&family=Instrument+Sans:wght@400;600&display=swap">
 <style>
@@ -23,38 +23,37 @@ a.btn{display:inline-flex;align-items:center;justify-content:center;background:v
 </head>
 <body><main>
 <h1>Paid. Now pick your hour.</h1>
-<p>Thanks. About an hour on a screen share, and you leave it quoting from the driveway with your name on it and the follow-ups running. Two things now, one later.</p>
+<p>Thanks. About an hour on a screen share or the phone, and you leave it quoting from the driveway with your name on it and the follow-ups running. Two things now, nothing to dig out.</p>
 <div class="box">
   <b>1. Pick your hour</b>
   <p data-booking-yes hidden><a class="btn" href="#" data-booking>Choose a time for the call</a></p>
   <p data-booking-no>Reply to your receipt email with three evenings that suit you, or <span data-contact>email me</span>, and I confirm one within a business day.</p>
-  <p>Weekday evenings are fine. Allow a bit over an hour. The confirmation email has the meeting link.</p>
+  <p>Weekday evenings are fine. Allow a bit over an hour. The confirmation email has the meeting link, and one link that makes the app yours: tap it on the phone you quote from.</p>
 </div>
 <div class="box">
-  <b>2. Reply to that email with your last three quotes</b>
-  <p>Photos off the carbon book are fine. Ten if they are handy. A logo if you have one. Also tell me your business name and suburb; I look up the ABN and licence number myself and you check them. No quotes yet? Say so and I ring you for fifteen minutes and build your prices from your head.</p>
-  <p>Got open quotes or unpaid invoices on the go? Send up to five (a photo or a line each) and I type them in before the call, so the chasing starts the day we hang up.</p>
+  <b>2. Answer your phone tomorrow</b>
+  <p>I ring the number on your receipt the next business day for about fifteen minutes: what you charge, who owes you money right now, and one job you are about to quote. That is the whole of your homework. Rather text me your last three quotes? Reply to the receipt email with the photos instead. Got a lot of open quotes and unpaid invoices? Have the book near the phone; up to twenty go in before the call.</p>
 </div>
 <div class="box">
-  <b>3. Later, on the day of the call, have handy</b>
+  <b>On the day, have handy</b>
   <ul>
-    <li>The phone you quote from, with the free app open.</li>
-    <li>Your bank details for the invoice, and your insurer's certificate if you can find it; otherwise we add it after.</li>
-    <li>One job you are about to quote, rough sizes are fine. No job this week? We re-quote your last one.</li>
-    <li>A card for the two small accounts we make in your name (a few cents a message, nothing monthly to me). A laptop helps if there is one in the house; a phone alone works.</li>
+    <li>The phone you quote from, with the app open.</li>
+    <li>Your bank details for the invoice. You type them; I never see them.</li>
+    <li>The job we talked about. No job this week? We send the oldest quote in your book, re-priced, or re-quote your last one.</li>
   </ul>
-  <p>The day before the call you get one of your own jobs priced by the app at your rates, on your letterhead. Tell me if anything is off.</p>
+  <p>No laptop, no card, no accounts to make. Your follow-ups run through my system for the first <span data-hosted-days>90</span> days. The day before the call you get one of your own jobs priced by the app at your rates, on your letterhead; tell me if anything is off.</p>
 </div>
-<div class="guarantee"><b>Sent or it's free still stands:</b> quote out on the call or the fee back that day; 30 days after the call, any reason, email me; and if your follow-ups are not sending when we hang up, I keep going with you until they are. Sending the quotes ahead and bringing one job to quote is what makes the first promise work.</div>
-<p>Miss the call? We rebook once at no charge. <a href="terms">Terms</a> · <a href="./">Back to the site</a></p>
+<div class="guarantee"><b>Money in or money back still stands:</b> quote out on the call or refunded on the call, on screen; 30 days after it, any reason, email me; and once you have sent five quotes from the app, a deposit in by day 60 or I keep working with you, or the fee back by day 90. Bringing one job to quote is what makes the first promise work; sending five real ones afterwards is what makes the third.</div>
+<p>Miss the call? We rebook once at no charge. <a href="terms#guarantee">Terms</a> · <a href="./">Back to the site</a></p>
 </main>
 <script src="config.js"></script>
 <script>
 (function(){
   var C = window.QC || {}; var mail = (C.SUPPORT_EMAIL || '').trim();
   if (C.BOOKING_URL) { document.querySelector('[data-booking]').setAttribute('href', C.BOOKING_URL); document.querySelector('[data-booking-yes]').hidden = false; document.querySelector('[data-booking-no]').hidden = true; }
+  document.querySelectorAll('[data-hosted-days]').forEach(function(e){ e.textContent = String(parseInt(C.HOSTED_DAYS, 10) > 0 ? parseInt(C.HOSTED_DAYS, 10) : 90); });
   document.querySelectorAll('[data-contact]').forEach(function(e){ if (!mail) return; var a = document.createElement('a'); a.href = 'mailto:' + mail; a.textContent = 'email ' + mail; e.textContent = ''; e.appendChild(a); });
-  if (C.META_PIXEL_ID) {!function(f,b,e,v,n,t,s){if(f.fbq)return;n=f.fbq=function(){n.callMethod?n.callMethod.apply(n,arguments):n.queue.push(arguments)};if(!f._fbq)f._fbq=n;n.push=n;n.loaded=!0;n.version='2.0';n.queue=[];t=b.createElement(e);t.async=!0;t.src=v;s=b.getElementsByTagName(e)[0];s.parentNode.insertBefore(t,s)}(window,document,'script','https://connect.facebook.net/en_US/fbevents.js'); window.fbq('init', C.META_PIXEL_ID); window.fbq('track', 'Purchase', { value: parseFloat(C.SETUP_PRICE) || 349, currency: 'AUD', content_name: 'setup_hour' }); }
+  if (C.META_PIXEL_ID) {!function(f,b,e,v,n,t,s){if(f.fbq)return;n=f.fbq=function(){n.callMethod?n.callMethod.apply(n,arguments):n.queue.push(arguments)};if(!f._fbq)f._fbq=n;n.push=n;n.loaded=!0;n.version='2.0';n.queue=[];t=b.createElement(e);t.async=!0;t.src=v;s=b.getElementsByTagName(e)[0];s.parentNode.insertBefore(t,s)}(window,document,'script','https://connect.facebook.net/en_US/fbevents.js'); window.fbq('init', C.META_PIXEL_ID); window.fbq('track', 'Purchase', { value: parseFloat(C.SETUP_PRICE) || 495, currency: 'AUD', content_name: 'driveway_quote_hour' }); }
 })();
 </script>
 </body>
