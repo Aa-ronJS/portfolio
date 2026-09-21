@@ -58,6 +58,7 @@
       sending: { server: '', token: '', server_has_creds: false, twilio_sid: '', twilio_token: '', twilio_service: '', twilio_from: '', resend_key: '', resend_from: '', auto_sms: true, auto_email: true, email_quotes: true },
       booking: { start_hour: 7, end_hour: 15, quote_from: 7, quote_to: 18, visit_minutes: 30, saturdays: true, sundays: false, visit_pref: 'any', boss_on_tools: true },
       wording: {
+        nudges: { quote: '', deposit: '', invoice: '' },
         included: ['Drop sheets and plastic protection for floors, fittings and any furniture left in the room.',
           'We move and cover light furniture to the middle of the room; you clear small items, pictures, curtains, blinds and wardrobe contents before we start.',
           'Preparation: filling minor holes and cracks (up to about 10 fills per room), light sanding, dusting and spot priming.',
@@ -152,6 +153,7 @@
     // W3: numbering prefixes, the first-release "Bank transfer or cash" (it duplicated the bank box on invoices), products per surface
     if (!state.details.quote_prefix) state.details.quote_prefix = 'Q-'; if (!state.details.invoice_prefix) state.details.invoice_prefix = 'INV-';
     if (state.details.other_payments === 'Bank transfer or cash') state.details.other_payments = '';
+    if (!state.wording.nudges || typeof state.wording.nudges !== 'object') state.wording.nudges = { quote: '', deposit: '', invoice: '' }; ['quote', 'deposit', 'invoice'].forEach(function (k) { state.wording.nudges[k] = state.wording.nudges[k] == null ? '' : String(state.wording.nudges[k]).slice(0, 600); });
     if (!state.wording.products || typeof state.wording.products !== 'object') state.wording.products = d.wording.products && typeof d.wording.products === 'object' ? Object.assign({}, d.wording.products) : {};
     return state;
   }

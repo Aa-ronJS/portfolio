@@ -50,8 +50,16 @@ small{color:var(--muted)}
 
 <div class="box">
   <h2>Open jobs <small>(up to twenty; one per line)</small></h2>
-  <p>Format: <code>name | phone | address | description | quoted total ex GST | status</code>. Status is <code>quoted</code> for an open quote or <code>invoiced</code> for an unpaid invoice (the app makes a final invoice for the total, due seven days ago, so the first reminder can go tonight). Leave the total blank for a job you will price on the call.</p>
-  <textarea id="jobs" placeholder="Margaret Hanley | 0411 222 333 | 8 Beaumont St Hamilton NSW 2303 | Lounge and hall repaint | 2450 | quoted"></textarea>
+  <p>Format: <code>name | phone | address | description | quoted total ex GST | status | due or sent</code>. Status is <code>quoted</code> for an open quote or <code>invoiced</code> for an unpaid invoice (the app makes a final invoice for the total). The last column is the real date the invoice fell due, or the quote went out: <code>2026-08-30</code>, or a number of days ago such as <code>12</code>; blank means three weeks ago. The app queues nothing when the painter loads it; on the call he taps Start the chasing, and the first reminder on anything already overdue goes the next morning, the rest on their dates. Leave the total blank for a job you will price on the call.</p>
+  <textarea id="jobs" placeholder="Margaret Hanley | 0411 222 333 | 8 Beaumont St Hamilton NSW 2303 | Lounge and hall repaint | 2450 | quoted | 12"></textarea>
+</div>
+
+<div class="box">
+  <h2>His three nudges <small>(link two; what he told you on the fifteen-minute call, in his words)</small></h2>
+  <p>Each starts after "Hi Margaret," and ends before his sign-off. Tokens the app fills: <code>{name} {job} {quote} {total} {week} {valid} {invoice} {amount} {due} {card} {phone}</code>. Leave one blank to keep the app's own words.</p>
+  <label>Quote nudge<textarea id="n_quote" rows="2" placeholder="just checking quote {quote} ({total}) for {job} came through OK. Any questions, ring me on {phone}."></textarea></label>
+  <label>Deposit nudge<textarea id="n_deposit" rows="2" placeholder="a friendly reminder that the deposit for your job (invoice {invoice}, {amount}) was due on {due}. {card}"></textarea></label>
+  <label>Overdue nudge<textarea id="n_invoice" rows="2" placeholder="a friendly reminder that invoice {invoice} ({amount}) was due on {due}. If it is already on its way, thank you and please ignore this. {card}"></textarea></label>
 </div>
 
 <div class="box">
@@ -89,12 +97,15 @@ small{color:var(--muted)}
     if (Object.keys(d).length) p.settings.details = d;
     var prices = {}; val('prices').split('\n').forEach(function(line){ var m = line.match(/^\s*([a-z_0-9]+)\s*=\s*([0-9.]+)\s*$/i); if (m) prices[m[1]] = parseFloat(m[2]); });
     if (Object.keys(prices).length) p.settings.prices = prices;
-    var today = new Date(), iso = function(dt){ return dt.toISOString().slice(0, 10); }, weekAgo = new Date(today.getTime() - 7 * 86400000), monthAgo = new Date(today.getTime() - 21 * 86400000);
+    var today = new Date(), iso = function(dt){ return dt.toISOString().slice(0, 10); }, daysAgo = function(n){ return iso(new Date(today.getTime() - n * 86400000)); };
+    function when(v, dflt){ v = String(v || '').trim(); if (/^\d{4}-\d{2}-\d{2}$/.test(v)) return v; if (/^\d+$/.test(v)) return daysAgo(parseInt(v, 10)); return daysAgo(dflt); }
     val('jobs').split('\n').forEach(function(line){ if (!line.trim()) return; var c = line.split('|').map(function(x){ return x.trim(); }); var name = c[0] || ''; if (!name) return; var total = parseFloat(c[4]); var status = (c[5] || 'quoted').toLowerCase();
       var job = { id: uid(), client: { name: name, phone: c[1] || '', address: c[2] || '' }, summary: c[3] || '', notes: 'Loaded from your book by Aaron before the call. Check the figure.', status: 'draft' };
-      if (total > 0) { job.quote = { number: '', total: Math.round(total * 110) / 100, subtotal: total, sent_date: iso(monthAgo) }; job.manual_total = total; job.status = status === 'invoiced' ? 'invoiced' : 'quoted'; job.sent_date = iso(monthAgo); job.sent_how = 'other'; job.sent_confirmed = true; }
-      if (status === 'invoiced' && total > 0) { job.invoices = [{ no: '', kind: 'final', total: Math.round(total * 110) / 100, subtotal: total, date: iso(monthAgo), due: iso(weekAgo), sent_date: iso(monthAgo), sent_how: 'other', sent_confirmed: true, lines: [{ desc: c[3] || 'Painting as quoted', qty: 1, unit: 'job', amount: total }], payments: [] }]; }
+      var dueOrSent = when(c[6], 21), sent = status === 'invoiced' ? (dueOrSent < daysAgo(14) ? daysAgo(35) : daysAgo(14)) : dueOrSent; if (sent > dueOrSent) sent = dueOrSent;
+      if (total > 0) { job.quote = { number: '', total: Math.round(total * 110) / 100, subtotal: total, sent_date: sent }; job.manual_total = total; job.status = status === 'invoiced' ? 'invoiced' : 'quoted'; job.sent_date = sent; job.sent_how = 'other'; job.sent_confirmed = true; }
+      if (status === 'invoiced' && total > 0) { var invDate = daysAgo(Math.max(0, Math.round((today.getTime() - new Date(dueOrSent + 'T00:00:00').getTime()) / 86400000) + 7)); job.invoices = [{ no: '', kind: 'final', total: Math.round(total * 110) / 100, subtotal: total, date: invDate, due: dueOrSent, sent_date: invDate, sent_how: 'other', sent_confirmed: true, lines: [{ desc: c[3] || 'Painting as quoted', qty: 1, unit: 'job', amount: total }], payments: [] }]; }
       p.jobs.push(job); });
+    var nud = {}; [['n_quote', 'quote'], ['n_deposit', 'deposit'], ['n_invoice', 'invoice']].forEach(function(k){ var v = val(k[0]); if (v) nud[k[1]] = v.slice(0, 600); }); if (Object.keys(nud).length) p.settings.wording = { nudges: nud };
     p.jobs = p.jobs.slice(0, 20);
     var srv = val('server'), tok = val('token'); if (srv && tok) { p.settings.sending = { server: srv, token: tok, server_has_creds: true, hosted: true, hosted_until: val('hosted_until'), hosted_name: d.trading_name || '' }; }
     if (val('scoreboard_start')) p.scoreboard_start = val('scoreboard_start');
