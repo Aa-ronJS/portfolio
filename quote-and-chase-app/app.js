@@ -176,11 +176,11 @@
     if (window.__qcMeasure && window.__qcMeasure.unsaved && window.__qcMeasure.unsaved()) { window.__qcMeasure.saveNow(); toast('Wall saved'); }
     window.__qcMeasure = null; creating = false;
     S = QCStore.load(); ['pending_cancels', 'local_queue', 'trash'].forEach(function (k) { if (!Array.isArray(S[k])) S[k] = []; }); if (!S.security || typeof S.security !== 'object') S.security = { pin: '', backup_include_keys: false }; if (!S.log || typeof S.log !== 'object') S.log = { sent: [] }; if (!S.ui || typeof S.ui !== 'object') S.ui = {};
-    var h = location.hash.replace(/^#\/?/, ''), p = h.split('/');
+    var h = location.hash.replace(/^#\/?/, ''), qs = '', qi = h.indexOf('?'); if (qi >= 0) { qs = h.slice(qi + 1); h = h.slice(0, qi); } var p = h.split('/'); // #/setup?d=... carries the set-up code after the ?
     try { if (window.event && window.event.type === 'storage') route.storageAt = Date.now(); } catch (e) {} // store.js re-routes this tab when another tab writes: Home must not purge the job that tab is typing into
     try { window.scrollTo(0, 0); } catch (e) {} // every screen opens at the top; a form never opens scrolled to its bottom
     setTimeout(afterRoute, 0);
-    var navKey = { '': 'home', job: 'home', enquiry: 'home', help: '', chase: 'chase', settings: 'settings' }[p[0] || '']; if (navKey == null) navKey = 'home';
+    var navKey = { '': 'home', job: 'home', enquiry: 'home', help: '', chase: 'chase', settings: 'settings', setup: 'settings', scoreboard: 'home' }[p[0] || '']; if (navKey == null) navKey = 'home';
     document.querySelectorAll('[data-nav]').forEach(function (a) { a.classList.toggle('on', a.dataset.nav === navKey); });
     refreshPreview = function () {};
     if (locked()) return viewLock();
@@ -189,6 +189,8 @@
     if (p[0] === 'settings') { if (p[1] === 'log') return viewSentLog(); viewSettings(); if (p[1]) openSection({ backup: 'Back-up', prices: 'Prices', bank: 'Bank details' }[p[1]] || ''); return; }
     if (p[0] === 'chase') return viewChase();
     if (p[0] === 'help') return viewHelp();
+    if (p[0] === 'setup') return viewSetupLink(qs);
+    if (p[0] === 'scoreboard') return viewScoreboard();
     if (p[0] === 'enquiry') { if (p[1] && !QCStore.getJob(p[1])) return bounce('/'); return viewEnquiry(p[1] ? QCStore.getJob(p[1]) : null); }
     if (p[0] === 'job' && p[1]) {
       var job = QCStore.getJob(p[1]); if (!job) return bounce('/');
@@ -242,6 +244,7 @@
     else html += '<div class="card"><input type="search" id="q" placeholder="Search name, address or quote number" aria-label="Search jobs" value="' + esc(homeQuery) + '" autocomplete="off"><div class="chips" id="chips">' + chips.map(function (c) { return '<button class="chip' + (homeFilter === c[0] ? ' on' : '') + '" data-chip="' + c[0] + '">' + c[1] + ' <span>' + counts[c[0]] + '</span></button>'; }).join('') + '</div></div><div class="joblist" id="joblist"></div>';
     var lb = S.security && S.security.last_backup, invoiced = jobs.some(function (j) { return (j.invoices || []).length; }), stale = !lb || QCStore.daysBetween(lb, today) > 7;
     html += '<p class="hint" id="backupline">' + (invoiced && stale ? '<span class="confirm">You have sent invoices since your last saved copy' + (lb ? ' (' + QCPdf.fmtDate(lb) + ')' : '') + '.</span> ' : lb ? 'Last copy of your jobs saved ' + QCPdf.fmtDate(lb) + '. ' : 'Save a copy of your jobs (in case the phone is lost). ') + '<a href="#/settings/backup">Save copy</a> · <a href="#/help">How it works</a></p>';
+    if (S.ui.scoreboard_start) html += '<div class="card" id="scorecard"><div class="row between"><span><b>How it is going</b><span class="hint"> · since ' + esc(shortDate(S.ui.scoreboard_start)) + '</span></span><a class="btn sm" href="#/scoreboard">Scoreboard</a></div></div>';
     var onPhone = /Android|iPhone|iPad/i.test(navigator.userAgent), standalone = (window.matchMedia && window.matchMedia('(display-mode: standalone)').matches) || navigator.standalone;
     if (onPhone && !standalone && !window.__qcInstallPrompt) html += '<p class="hint">' + (/Android/i.test(navigator.userAgent) ? 'To keep it on your home screen: Chrome menu, then Install app.' : 'To keep it on your home screen: tap Share, then Add to Home Screen.') + ' Then it opens like an app and works offline.</p>';
     $app.innerHTML = html; wireBanner();
@@ -632,7 +635,8 @@
 
   // ---------- Quote
   // The frozen quote is what the client holds. Locked once accepted or invoiced: the page renders the snapshot and only Revise quote reopens it.
-  function quoteLocked(job) { return !!(job.quote && ['accepted', 'invoiced', 'paid', 'cancelled'].indexOf(job.status) >= 0); }
+  function fromBook(job) { return !!(job && job.quote && parseFloat(job.manual_total) > 0 && !(job.rooms || []).length); } // loaded from the painter's book by Aaron's set-up link: a figure, no rooms
+  function quoteLocked(job) { return !!(job.quote && (['accepted', 'invoiced', 'paid', 'cancelled'].indexOf(job.status) >= 0 || fromBook(job))); }
   function quoteDiffers(q, p) {
     if (!q) return true; if (Math.abs(r2(q.total) - r2(p.total)) >= 0.005) return true;
     var key = function (arr) { return JSON.stringify((arr || []).map(function (l) { return [l.desc, +l.qty || 0, r2(l.amount)]; })); };
@@ -653,7 +657,7 @@
       var v = (q.version || 1) + 1;
       if (opts.confirm !== false && !confirm('Issue revision ' + v + '? The client keeps the old quote too.')) return { ok: false };
       q.history = q.history || []; q.history.push({ version: q.version || 1, number: q.number || job.quote_no, date: q.date, sent_date: quoteSentDate(job), total: q.total, subtotal: q.subtotal, gst: q.gst, lines: q.lines, options: q.options || [] });
-      job.quote = snap({ date: d, version: v, number: job.quote_no + '-R' + v, history: q.history, sent_date: '' }); revised = true;
+      job.quote = snap({ date: d, version: v, number: job.quote_no + '-R' + v, history: q.history, sent_date: '' }); revised = true; if (job.manual_total != null) job.manual_total = null; // revised in the app: the figure from the book no longer holds the quote
     }
     save(); return { ok: true, revised: revised };
   }
@@ -733,7 +737,7 @@
     var html = '<a class="hint" href="#/job/' + job.id + '">&larr; Edit job</a><div class="row between"><h1>Quote ' + esc(qno) + '</h1>' + statusPill(job) + '</div>';
     if (q && q.version > 1 && q.history && q.history.length) html += '<p class="hint">Revision ' + q.version + ' of ' + esc(job.quote_no) + ', replaces the quote dated ' + QCPdf.fmtDate(q.history[q.history.length - 1].date) + '. Earlier: ' + q.history.map(function (h) { return esc(h.number) + ' ' + money(h.total); }).join(', ') + '.</p>';
     if (changed) html += '<div class="card"><p class="confirm">The quote sent on ' + QCPdf.fmtDate(qSent) + ' was ' + money(q.total) + '. With the changes since, it comes to ' + money(live.total) + '. Sending issues revision ' + ((q.version || 1) + 1) + '; ' + esc(who) + ' keeps the old one.</p></div>';
-    if (locked) html += '<div class="card"><p class="hint">' + (cancelled ? 'Job cancelled. ' : job.status === 'accepted' ? 'Accepted. ' : 'Invoiced. ') + 'Showing the quote as ' + (sent ? 'sent on ' + QCPdf.fmtDate(qSent) : 'accepted') + '. Prices in Set-up or on the job do not change it.' + (cancelled ? '' : ' Revise quote reopens it as the next revision.') + '</p></div>';
+    if (locked) html += '<div class="card"><p class="hint">' + (fromBook(job) && job.status === 'quoted' ? 'From your book, loaded by Aaron. Showing the quote as ' + (sent ? 'sent on ' + QCPdf.fmtDate(qSent) : 'written down') + '. To price it in the app, add rooms on the job, then Revise quote.' : (cancelled ? 'Job cancelled. ' : job.status === 'accepted' ? 'Accepted. ' : 'Invoiced. ') + 'Showing the quote as ' + (sent ? 'sent on ' + QCPdf.fmtDate(qSent) : 'accepted') + '. Prices in Set-up or on the job do not change it.' + (cancelled ? '' : ' Revise quote reopens it as the next revision.')) + '</p></div>';
     var warn = jobWarnings(job, view); if (warn.length && (view.lines || []).length) html += '<div class="card"><ul class="hint" style="margin:0;padding-left:1.2em">' + warn.map(function (x) { return '<li class="confirm">' + esc(x) + '</li>'; }).join('') + '</ul></div>';
     if (!job.client.name || !(job.client.phone || job.client.email)) html += '<div class="card"><h3>Client</h3><div class="g2"><label class="f">Name<input type="text" data-bind="client.name"></label><label class="f">Mobile<input type="tel" data-bind="client.phone"></label></div><label class="f">Email<input type="email" data-bind="client.email"></label><label class="f">Job address<span>include postcode</span><input type="text" data-bind="client.address" data-refresh="1"></label><label class="f">Description<input type="text" data-bind="summary" placeholder="Repaint lounge and hall"></label></div>';
     var showRates = !!det.show_rates;
@@ -1041,7 +1045,7 @@
     if (!canSms && !canEmail) return stop(landline && !job.client.email ? 'That number is a landline, so no SMS. Add an email to schedule reminders.' : (!job.client.phone && !job.client.email ? 'No mobile or email on the job, so nothing can be scheduled.' : 'No sending channel is ready for this client.'), 'no channel ready');
     var have = {}; (job.follow_ups || []).forEach(function (x) { if (x.id && !x.cancelled) have[x.what] = 1; }); (job.invoices || []).forEach(function (i) { (i.follow_ups || []).forEach(function (x) { if (x.id && !x.cancelled) have[x.what] = 1; }); }); (S.local_queue || []).forEach(function (q) { if (q.job === job.id) have[q.ref] = 1; });
     var ver = (job.quote && job.quote.version) || 1;
-    function add(day, t, ref, invNo) { if (have[ref]) return; var when = QCCal.nextSendTime(day, hr, st); if (when.date.getTime() < nowMs + 10 * 60000) { skipped.push(ref); return; } var it = { day: when.day, send_at: when.iso, ref: ref, key: job.id + ':' + ref + ':v' + ver, job: job.id, inv: invNo || '' }; if (canSms) { it.channel = 'sms'; it.to = job.client.phone; it.body = t.sms; } else { it.channel = 'email'; it.to = job.client.email; it.subject = t.subject; it.body = t.email; } items.push(it); }
+    function add(day, t, ref, invNo) { if (have[ref]) return; var when = QCCal.nextSendTime(day, hr, st); if (when.date.getTime() < nowMs + 10 * 60000) { skipped.push(ref); return; } var it = { day: when.day, send_at: when.iso, ref: ref, key: job.id + ':' + ref + ':v' + ver, job: job.id, inv: invNo || '' }; if (canSms) { it.channel = 'sms'; it.to = job.client.phone; it.body = t.sms; } else { it.channel = 'email'; it.to = job.client.email; it.subject = t.subject; it.body = t.email; it.reply_to = String(S.details.email || '').trim() || undefined; } items.push(it); }
     if (kind === 'quote') { var base = job.sent_date || today; (fu.quote_days || [3, 7, 14]).forEach(function (d) { add(QCStore.addDays(base, d), chaseText('quote', job, job.quote, d, { auto: true }), 'quote+' + d); }); }
     else { (job.invoices || []).filter(function (i) { return invOpen(i) && invOut(i); }).forEach(function (inv) { var floor = inv.kind === 'deposit' ? addBusinessDays(inv.due, 3, st) : inv.due; (fu.invoice_days || [3, 10, 21]).forEach(function (d) { var day = QCStore.addDays(inv.due, d); if (day < floor) day = floor; add(day, chaseText('invoice', job, inv, d, { auto: true }), inv.no + '+' + d, inv.no); }); }); }
     var later = items.filter(function (it) { return !QCMsg.withinWindow(it.send_at, it.channel); }), now = items.filter(function (it) { return QCMsg.withinWindow(it.send_at, it.channel); });
@@ -1360,8 +1364,10 @@
     html += '<div class="card"><h2>Maps and house size</h2><p class="hint">Optional. With a Google Maps key, addresses fill in as you type, the job shows a satellite photo of the house, and the size of the house is worked out for the outside quote.' + (mapsOn() ? ' On.' : (QCMaps.key(S) ? ' Key saved; works when you are online.' : '')) + '</p><details class="sec sub"><summary><h3>Show me the set-up steps</h3></summary><p class="hint">On a computer, go to console.cloud.google.com, make a project, turn on Places API (New), Maps Static API and Solar API, then make an API key and restrict it to this app\'s web address. Google gives a free monthly amount that covers a painter\'s use; the Solar API (house size) is charged per look-up beyond it, so check the pricing page.</p><label class="f">Google Maps key<input type="text" data-bind="maps.key" autocomplete="off" spellcheck="false" placeholder="AIza…"></label></details></div>';
     html += '<div class="card"><h2>Card payments</h2><p class="hint">Optional. Lets customers pay by card from a link on the invoice. Needs a Stripe account, set up on a computer. No surcharge is added.' + (S.stripe.key && S.stripe.enabled ? ' Card links are on.' : '') + '</p><details class="sec sub"><summary><h3>Show me the set-up steps</h3></summary><p class="hint">In Stripe make a restricted key that can write Products, Prices and Payment Links and read Checkout Sessions, then paste it here. It stays on this phone.</p><label class="f">Stripe restricted key<span>starts with rk_live_</span><input type="text" data-bind="stripe.key" autocomplete="off" spellcheck="false"></label><p class="confirm" id="skwarn" ' + (S.stripe.key && !QCStripe.keyLooksRight(S.stripe.key) ? '' : 'hidden') + '>Not a restricted key (rk_live_ or rk_test_). Card links are off until it is.</p><label class="btn ghost sm"><input type="checkbox" data-bind="stripe.enabled"> Put a card payment link on invoices</label></details></div>';
     var relayOn = !!S.sending.server, dis = relayOn ? '' : ' disabled';
-    html += '<div class="card"><h2>Automatic texting and emailing</h2><p class="hint">Optional. Needs a computer and about an hour. Without it, the app writes every text and email and you press Send yourself; nothing goes out without you.' + (autoReady() ? ' Set up and working.' : ' Rather not do this yourself? <a href="../#setup" target="_blank" rel="noopener">Book a set-up call</a> and it is switched on with you on a screen share.') + '</p>' +
-      '<details class="sec sub"><summary><h3>Show me the set-up steps</h3></summary><p class="hint">Texts go through Twilio and emails through Resend, via a relay (a small web service of your own, set up on a computer). Keys stay on this phone and are left out of back-ups unless you tick the box under Back-up.</p>' +
+    var hosted = S.sending.hosted === true, hostedEnded = hosted && QCMsg.hostedEnded && QCMsg.hostedEnded(S.sending), hostedTo = /^\d{4}-\d{2}-\d{2}$/.test(String(S.sending.hosted_until || '')) ? shortDate(S.sending.hosted_until) : '';
+    html += '<div class="card"><h2>Automatic texting and emailing</h2><p class="hint">' + (hostedEnded ? '<span class="confirm">Hosted sending ended on ' + esc(hostedTo) + '. Ask Aaron to extend it, or connect your own accounts.</span>' : hosted ? 'Sending runs through Aaron\'s system' + (hostedTo ? ' until ' + esc(hostedTo) : '') + ', in your name. Nothing to set up.' : 'Optional. Needs a computer and about an hour. Without it, the app writes every text and email and you press Send yourself; nothing goes out without you.' + (autoReady() ? ' Set up and working.' : ' Rather not do this yourself? <a href="../#setup" target="_blank" rel="noopener">Book a set-up call</a> and it is switched on with you on a screen share.')) + '</p>' +
+      '<label class="f">Paste the code from Aaron<span>or the whole set-up link; it loads your details, prices and jobs without wiping anything</span><textarea id="setupcode" rows="2" autocomplete="off" spellcheck="false" autocapitalize="off" placeholder="j:… or z:…"></textarea></label><div class="row"><button class="btn sm" id="setupcodego">Load</button><span class="hint" id="setupcoderes"></span></div>' +
+      '<details class="sec sub"><summary><h3>Show me the set-up steps</h3></summary>' + (hosted ? '<p class="hint">Moving to your own accounts? Aaron does this with you on a free call; the fields are here for after.</p>' : '') + '<p class="hint">Texts go through Twilio and emails through Resend, via a relay (a small web service of your own, set up on a computer). Keys stay on this phone and are left out of back-ups unless you tick the box under Back-up.</p>' +
       '<label class="f">Relay address<span>e.g. https://your-site.vercel.app/api/msg</span><input type="url" data-bind="sending.server" placeholder="https://" autocomplete="off"></label><label class="f">Relay token<span>the RELAY_TOKEN set on the relay</span><input type="password" data-bind="sending.token" autocomplete="off"></label>' + (S.sending.server && !S.sending.token ? '<p class="confirm">No relay token. Anyone who finds the address could send as you. Set one on the relay and here.</p>' : '') + '<label class="btn ghost sm"><input type="checkbox" data-bind="sending.server_has_creds"> The relay already has my Twilio and Resend details</label>' +
       '<div class="g2" id="credbox"><label class="f">Twilio Account SID<span>AC…</span><input type="text" data-bind="sending.twilio_sid" autocomplete="off" spellcheck="false"></label><label class="f">Twilio API key SID<span>SK…, safer than the account token; optional</span><input type="text" data-bind="sending.twilio_api_key" autocomplete="off" spellcheck="false"></label><label class="f">Twilio secret<span>the API key secret, or the account auth token</span><input type="password" data-bind="sending.twilio_token" autocomplete="off"></label><label class="f">Twilio Messaging Service SID<span>MG…, needed for texts that send later</span><input type="text" data-bind="sending.twilio_service" autocomplete="off" spellcheck="false"></label><label class="f">Twilio From number<span>only if no Messaging Service</span><input type="text" data-bind="sending.twilio_from" placeholder="+61..."></label><label class="f">Resend API key<span>make a sending-only key</span><input type="password" data-bind="sending.resend_key" autocomplete="off"></label><label class="f">Email from<span>on a domain verified in Resend</span><input type="text" data-bind="sending.resend_from" placeholder="Name <you@yourdomain.com.au>"></label></div>' +
       '<div class="row"><label class="btn ghost sm"><input type="checkbox" data-bind="sending.auto_sms"' + dis + '> Follow-ups by text</label><label class="btn ghost sm"><input type="checkbox" data-bind="sending.auto_email"' + dis + '> By email when no mobile</label><label class="btn ghost sm"><input type="checkbox" data-bind="sending.email_quotes"' + dis + '> Email quotes and invoices straight to the client</label></div>' + (relayOn ? '' : '<p class="hint">Not working yet: these need the boxes above filled in.</p>') +
@@ -1384,6 +1390,7 @@
     var bc = document.getElementById('brandcol'); if (bc) bc.addEventListener('input', function () { S.details.brand_colour = /^#[0-9a-f]{6}$/i.test(bc.value) ? bc.value : ''; save(); });
     var br = document.getElementById('brandreset'); if (br) br.addEventListener('click', function () { S.details.brand_colour = ''; save(); viewSettings(); });
     ['testsms', 'testemail'].forEach(function (id) { document.getElementById(id).addEventListener('click', function () { var to = document.getElementById('testto').value.trim(), out = document.getElementById('testres'); if (!to) { out.textContent = 'Type a number or email first.'; return; } out.textContent = 'Sending…'; QCMsg.call({ action: 'test', channel: id === 'testsms' ? 'sms' : 'email', to: to }).then(function (r) { out.textContent = 'Sent (' + (r.id || 'ok') + ').'; }).catch(function (e) { out.textContent = 'Failed: ' + e.message; }); }); });
+    var scg = document.getElementById('setupcodego'); if (scg) scg.addEventListener('click', function () { var v = document.getElementById('setupcode').value, out = document.getElementById('setupcoderes'), code = setupCode(v); if (!v.trim()) { out.textContent = 'Paste the code first.'; return; } if (!code) { out.textContent = 'That does not look like a code from Aaron. Copy the whole thing and try again.'; return; } out.textContent = ''; go('/setup?d=' + code); });
     var sk = $app.querySelector('[data-bind="stripe.key"]'); sk.addEventListener('input', function () { S.stripe.key = sk.value.trim(); save(); document.getElementById('skwarn').hidden = !(S.stripe.key && !QCStripe.keyLooksRight(S.stripe.key)); });
     document.getElementById('derive').addEventListener('click', function () {
       // before/after per rate, in a confirm, before the price list is changed
@@ -1429,6 +1436,113 @@
     if (!line) return 'In ' + stateName(st) + ' there is no legal limit on deposits. Your ' + pct + '% applies as typed.';
     return line + ' We keep you under it' + (pct > 10 || (st === 'WA' && pct > 6.5) || st === 'SA' ? ': where your ' + pct + '% is over, the quote holds the deposit at the limit and says so.' : '.');
   }
+  // ---------- the set-up link / "the code from Aaron": <app>#/setup?d=<code>. code = 'j:' + base64url(UTF-8 JSON) or 'z:' + base64url(deflate-raw of it). Loading MERGES; nothing on the phone is wiped.
+  var SETUP_SECTIONS = ['details', 'prices', 'rules', 'wording', 'costing', 'sending', 'follow_up', 'booking'], SETUP_MAX = 200 * 1024;
+  function b64uDecode(str) { str = String(str || '').replace(/-/g, '+').replace(/_/g, '/'); while (str.length % 4) str += '='; var bin = atob(str), u = new Uint8Array(bin.length); for (var i = 0; i < bin.length; i++) u[i] = bin.charCodeAt(i); return u; }
+  function b64uEncode(u) { var str = ''; for (var i = 0; i < u.length; i += 0x8000) str += String.fromCharCode.apply(null, u.subarray(i, i + 0x8000)); return btoa(str).replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, ''); }
+  function utf8Decode(u) { if (window.TextDecoder) return new TextDecoder().decode(u); var str = ''; for (var i = 0; i < u.length; i++) str += String.fromCharCode(u[i]); return decodeURIComponent(escape(str)); }
+  function utf8Encode(str) { if (window.TextEncoder) return new TextEncoder().encode(str); var b = unescape(encodeURIComponent(str)), u = new Uint8Array(b.length); for (var i = 0; i < b.length; i++) u[i] = b.charCodeAt(i); return u; }
+  // the whole link, a bare code, or the code with spaces from a text message -> 'j:...' / 'z:...', or '' when it is nothing of the kind
+  function setupCode(raw) { var str = String(raw || '').trim(), m = /[?&]d=([^&#\s]+)/.exec(str); if (m) str = m[1]; try { str = decodeURIComponent(str); } catch (e) {} str = str.replace(/\s+/g, ''); return /^[jz]:[A-Za-z0-9_-]+$/.test(str) ? str : ''; }
+  var CANT_READ = 'This phone\'s browser cannot read that code. Open the link in Chrome or Safari.';
+  function inflateRaw(u) { if (!window.DecompressionStream || !window.Response) return Promise.reject(new Error(CANT_READ)); try { var ds = new DecompressionStream('deflate-raw'), w = ds.writable.getWriter(); w.write(u).catch(function () {}); w.close().catch(function () {}); return new Response(ds.readable).arrayBuffer().then(function (ab) { return new Uint8Array(ab); }, function () { throw new Error('That code is not complete. Copy the whole thing and try again.'); }); } catch (e) { return Promise.reject(new Error(CANT_READ)); } }
+  // Promise of the payload object; rejects with a sentence for the screen
+  function decodeSetup(raw) {
+    var code = setupCode(raw); if (!code) return Promise.reject(new Error('That does not look like a set-up code from Aaron.'));
+    if (code.length > SETUP_MAX * 1.4) return Promise.reject(new Error('That set-up is too big to load.'));
+    var bytes; try { bytes = b64uDecode(code.slice(2)); } catch (e) { return Promise.reject(new Error('That code is not complete. Copy the whole thing and try again.')); }
+    return (code.charAt(0) === 'z' ? inflateRaw(bytes) : Promise.resolve(bytes)).then(function (u) {
+      if (u.length > SETUP_MAX) throw new Error('That set-up is too big to load.');
+      var obj; try { obj = JSON.parse(utf8Decode(u)); } catch (e) { throw new Error('That code is not complete. Copy the whole thing and try again.'); }
+      if (!obj || typeof obj !== 'object' || Array.isArray(obj) || obj.v !== 1) throw new Error('That code is for a different version of the app. Ask Aaron for a new one.');
+      return obj;
+    });
+  }
+  function encodeSetup(obj) { return 'j:' + b64uEncode(utf8Encode(JSON.stringify(obj))); }
+  function isObj(v) { return !!v && typeof v === 'object' && !Array.isArray(v); }
+  function blank(v) { return v == null || v === '' || (Array.isArray(v) && !v.length); }
+  // copy only the keys the payload has; a blank never replaces something already filled in; nested objects merge the same way
+  function mergeSection(dst, src) { var n = 0; if (!isObj(src)) return 0; Object.keys(src).forEach(function (k) { var v = src[k]; if (v === undefined) return; if (blank(v) && !blank(dst[k])) return; if (isObj(v) && isObj(dst[k])) { n += mergeSection(dst[k], v); return; } if (isObj(v)) v = JSON.parse(JSON.stringify(v)); else if (Array.isArray(v)) v = v.slice(); if (JSON.stringify(dst[k]) === JSON.stringify(v)) return; dst[k] = v; n++; }); return n; }
+  // what a payload holds, for the confirm screen and the toast
+  function setupContents(obj) {
+    var st = isObj(obj.settings) ? obj.settings : {}, d = isObj(st.details) ? st.details : {}, out = {};
+    out.details = Object.keys(d).some(function (k) { return !blank(d[k]); }); out.prices = isObj(st.prices) ? Object.keys(st.prices).length : 0;
+    out.other = ['rules', 'wording', 'costing', 'follow_up', 'booking'].filter(function (k) { return isObj(st[k]) && Object.keys(st[k]).length; });
+    out.jobs = Array.isArray(obj.jobs) ? obj.jobs.filter(isObj).length : 0; var sd = isObj(st.sending) ? st.sending : {};
+    out.sending = sd.hosted === true ? 'hosted' : sd.server ? 'own' : ''; out.hosted_until = /^\d{4}-\d{2}-\d{2}$/.test(String(sd.hosted_until || '')) ? String(sd.hosted_until) : '';
+    out.scoreboard_start = /^\d{4}-\d{2}-\d{2}$/.test(String(obj.scoreboard_start || '')) ? String(obj.scoreboard_start) : ''; out.note = String(obj.note || '').slice(0, 200);
+    return out;
+  }
+  // merge into S and save; returns counts for the toast. Throws a plain sentence when the payload is not one of ours.
+  function applySetup(obj) {
+    if (!isObj(obj) || obj.v !== 1) throw new Error('That code is for a different version of the app. Ask Aaron for a new one.');
+    if (JSON.stringify(obj).length > SETUP_MAX) throw new Error('That set-up is too big to load.');
+    var st = isObj(obj.settings) ? obj.settings : {}, res = { details: 0, prices: 0, settings: 0, jobs: 0, skipped: 0 };
+    SETUP_SECTIONS.forEach(function (k) { if (!isObj(st[k])) return; if (!isObj(S[k])) S[k] = {}; var n = mergeSection(S[k], st[k]); res.settings += n; if (k === 'details') res.details = n; if (k === 'prices') res.prices = n; });
+    if (st.details && S.rules) { if (!blank(st.details.deposit_pct)) S.rules.deposit_pct = S.details.deposit_pct; if (!blank(st.details.balance_days)) S.rules.balance_days = S.details.balance_days; } // the engine reads rules.*; Set-up keeps both in step, so does this
+    var have = {}; S.jobs.forEach(function (j) { have[j.id] = 1; }); var prefix = String(S.details.quote_prefix == null ? 'Q-' : S.details.quote_prefix);
+    (Array.isArray(obj.jobs) ? obj.jobs : []).forEach(function (j) {
+      if (!isObj(j)) return; var id = String(j.id || '').replace(/[^A-Za-z0-9_-]/g, ''); if (id && have[id]) { res.skipped++; return; }
+      var raw = JSON.parse(JSON.stringify(j)); if (!raw.quote_no || raw.quote_no === 'Q-?') raw.quote_no = QCStore.nextQuoteNo(true); if (raw.quote && isObj(raw.quote) && !raw.quote.number) raw.quote.number = raw.quote_no;
+      (Array.isArray(raw.invoices) ? raw.invoices : []).forEach(function (inv) { if (!isObj(inv)) return; if (!inv.no || inv.no === 'INV-?') inv.no = QCStore.nextInvoiceNo(); if (inv.gst == null && inv.total != null && inv.subtotal != null) inv.gst = r2((+inv.total || 0) - (+inv.subtotal || 0)); if (inv.sent_confirmed == null) inv.sent_confirmed = !!inv.sent_date; });
+      var job = QCStore.normaliseJob(raw); if (job.quote && parseFloat(job.manual_total) > 0) bookQuote(job);
+      var num = job.quote_no.indexOf(prefix) === 0 ? parseInt(job.quote_no.slice(prefix.length), 10) : NaN; if (num >= (parseInt(S.next_quote, 10) || 1001)) S.next_quote = num + 1; // the painter's next quote number never repeats one Aaron loaded
+      have[job.id] = 1; S.jobs.push(job); res.jobs++;
+    });
+    if (/^\d{4}-\d{2}-\d{2}$/.test(String(obj.scoreboard_start || ''))) { if (!isObj(S.ui)) S.ui = {}; S.ui.scoreboard_start = String(obj.scoreboard_start); }
+    save(); return res;
+  }
+  // the link-builder sends {number, total, subtotal, sent_date} and manual_total (ex GST): fill in what the quote screen, PDF and follow-ups read from a snapshot
+  function bookQuote(job) {
+    var q = job.quote, gstOn = S.details.gst !== false, sub = r2(parseFloat(q.subtotal) || parseFloat(job.manual_total) || 0), tot = r2(parseFloat(q.total) || 0); if (!tot && sub) tot = gstOn ? r2(sub * 1.1) : sub; if (!sub && tot) sub = gstOn ? r2(tot / 1.1) : tot;
+    var desc = String(job.summary || '').trim() || 'Painting as quoted';
+    if (!(q.lines || []).length) q.lines = [{ key: 'room_price', room: 'Job', group: 'Job', desc: desc, client_desc: desc, qty: 1, unit: 'job', rate: sub, base_rate: sub, loading: 0, loading_desc: '', amount: sub, source: 'from your book', provenance: 'from your book', confirm: false, override: true }];
+    q.subtotal = sub; q.gst = r2(tot - sub); q.total = tot; q.sent_date = q.sent_date || job.sent_date || ''; q.date = q.date || q.sent_date || job.created; q.version = q.version || 1; q.number = q.number || job.quote_no; q.history = q.history || []; q.options = q.options || []; q.assumptions = q.assumptions || []; q.measured_rooms = 0; q.total_rooms = 0;
+    if (q.deposit == null) { try { var dp = depositFor(job, tot); q.deposit = dp.amount; q.deposit_pct = dp.pct; } catch (e) { q.deposit = 0; } }
+    if (!job.sent_date && q.sent_date) { job.sent_date = q.sent_date; job.sent_how = job.sent_how || 'other'; job.sent_confirmed = true; }
+  }
+  function setupToast(res) { var bits = []; if (res.prices) bits.push('your prices'); if (res.details) bits.push('details'); bits.push(res.jobs + ' job' + (res.jobs === 1 ? '' : 's')); return 'Loaded: ' + bits.join(bits.length > 2 ? ', ' : ' and ').replace(/, (\d+ jobs?)$/, ' and $1'); }
+  function viewSetupLink(qs) {
+    var m = /(?:^|&)d=([^&]*)/.exec(qs || ''), code = m ? setupCode(m[1]) : '';
+    function paste(msg) { $app.innerHTML = '<h1>Set-up from Aaron</h1>' + (msg ? '<p class="confirm">' + esc(msg) + '</p>' : '') + '<div class="card"><label class="f">Paste the code from Aaron<span>or the whole set-up link</span><textarea id="setupcode" rows="3" autocomplete="off" spellcheck="false" autocapitalize="off" placeholder="j:… or z:…"></textarea></label><div class="row between"><button class="btn tape" id="setupcodego">Load</button><a class="btn ghost sm" href="#/">Not now</a></div></div>'; document.getElementById('setupcodego').addEventListener('click', function () { var c = setupCode(document.getElementById('setupcode').value); if (!c) { paste('That does not look like a code from Aaron. Copy the whole thing and try again.'); return; } show(c); }); }
+    function show(c) {
+      $app.innerHTML = '<h1>Set-up from Aaron</h1><p class="hint">Reading the code…</p>';
+      decodeSetup(c).then(function (obj) {
+        var w = setupContents(obj), rows = [];
+        rows.push(['Business details', w.details ? 'yes' : 'no']); rows.push(['Prices', w.prices ? String(w.prices) : 'none']); rows.push(['Jobs', w.jobs ? String(w.jobs) : 'none']);
+        rows.push(['Sending', w.sending === 'hosted' ? 'through Aaron\'s system' + (w.hosted_until ? ' until ' + shortDate(w.hosted_until) : '') + ', in your name' : w.sending === 'own' ? 'your own relay' : 'not included']);
+        if (w.other.length) rows.push(['Also', w.other.map(function (k) { return { rules: 'quote rules', wording: 'wording', costing: 'costing', follow_up: 'follow-up days', booking: 'working hours' }[k]; }).join(', ')]);
+        if (w.scoreboard_start) rows.push(['Scoreboard', 'counts from ' + shortDate(w.scoreboard_start)]);
+        $app.innerHTML = '<h1>Load the set-up from Aaron?</h1>' + (w.note ? '<p class="hint">' + esc(w.note) + '</p>' : '') + '<div class="card"><h3>What is in it</h3>' + rows.map(function (r) { return '<div class="row between" style="border-top:1px solid var(--line);padding-top:6px"><span>' + esc(r[0]) + '</span><b>' + esc(r[1]) + '</b></div>'; }).join('') + '<p class="hint">It adds to what is on this phone. Nothing you have typed is replaced by a blank, and jobs already here are left alone.</p><div class="row between"><button class="btn tape" id="setupload">Load</button><a class="btn ghost sm" href="#/">Not now</a></div></div>';
+        document.getElementById('setupload').addEventListener('click', function () { var b = this; b.disabled = true; try { var res = applySetup(obj); toast(setupToast(res)); go('/'); } catch (e) { b.disabled = false; showBlock(b, e.message, { kind: 'bad' }); } });
+      }).catch(function (e) { paste(e.message); });
+    }
+    if (code) show(code); else paste('');
+  }
+  // ---------- Scoreboard: what happened since the start date Aaron set, counted from this phone only. Nothing leaves it unless the painter taps Share.
+  function scoreboardData(start) {
+    var now = Date.now(), log = (S.log && S.log.sent) || [], cancelled = {}; log.forEach(function (e) { if (e && e.kind === 'cancel' && e.ok && e.id) cancelled[e.id] = 1; });
+    var named = S.jobs.filter(function (j) { return String(j.client && j.client.name || '').trim(); });
+    var quoted = named.filter(function (j) { return j.sent_confirmed && j.sent_date && j.sent_date >= start; });
+    var measured = quoted.filter(function (j) { return (j.rooms || []).some(function (r) { return r.method === 'measured' && r.walls && r.walls.length; }); });
+    var auto = log.filter(function (e) { if (!e || !e.ok) return false; var day = String(e.send_at || e.t || '').slice(0, 10); if (!day || day < start) return false; if (e.kind === 'send' && e.auto) return true; return e.kind === 'schedule' && e.send_at && new Date(e.send_at).getTime() <= now && !(e.id && cancelled[e.id]); });
+    var paid = [], deposits = [];
+    named.forEach(function (j) { (j.invoices || []).forEach(function (i) { if (i.void) return; if (i.paid_date && i.paid_date >= start) paid.push({ no: i.no, date: i.paid_date, total: +i.total || 0, job: j }); if (i.kind === 'deposit' && invOut(i) && i.date && i.date >= start) deposits.push({ no: i.no, date: i.date, total: +i.total || 0 }); }); });
+    paid.sort(function (a, b) { return a.date < b.date ? -1 : a.date > b.date ? 1 : 0; });
+    var first = paid[0] || null, depTotal = deposits.reduce(function (t, d) { return t + d.total; }, 0), paidTotal = paid.reduce(function (t, d) { return t + d.total; }, 0);
+    var text = 'Since ' + shortDate(start) + ': ' + (quoted.length ? quoted.length + ' quote' + (quoted.length === 1 ? '' : 's') + ' sent, ' + measured.length + ' measured with the sheet.' : 'no quotes sent yet.') + ' ' + (auto.length ? auto.length + ' follow-up' + (auto.length === 1 ? '' : 's') + ' went by ' + (auto.length === 1 ? 'itself' : 'themselves') + '.' : 'No follow-ups have gone by themselves yet.') + ' ' + (first ? 'First invoice paid ' + shortDate(first.date) + ', ' + QCStore.daysBetween(start, first.date) + ' days in' + (paid.length > 1 ? '; ' + paid.length + ' paid so far, ' + money(paidTotal) : '') + '.' : 'No invoice paid yet.') + (deposits.length ? ' ' + deposits.length + ' deposit invoice' + (deposits.length === 1 ? '' : 's') + ' sent, ' + money(depTotal) + '.' : '');
+    return { start: start, quotes: quoted.length, measured: measured.length, auto: auto.length, paid: paid, first_paid: first, first_paid_days: first ? QCStore.daysBetween(start, first.date) : null, paid_total: paidTotal, deposits: deposits.length, deposit_total: depTotal, text: text };
+  }
+  function viewScoreboard() {
+    var start = S.ui && S.ui.scoreboard_start; if (!/^\d{4}-\d{2}-\d{2}$/.test(String(start || ''))) { $app.innerHTML = '<h1>Scoreboard</h1><div class="card empty">No start date yet. It is set when Aaron\'s set-up is loaded.</div><p><a class="btn ghost sm" href="#/">Back to jobs</a></p>'; return; }
+    var d = scoreboardData(start), row = function (label, val, hint) { return '<div class="row between" style="border-top:1px solid var(--line);padding-top:6px"><span>' + esc(label) + (hint ? '<br><span class="hint">' + esc(hint) + '</span>' : '') + '</span><b>' + esc(val) + '</b></div>'; };
+    var html = '<h1>Scoreboard</h1><p class="hint">Since ' + esc(shortDate(start)) + '. Counted on this phone; nothing leaves it unless you tap Share.</p><div class="card">';
+    html += row('Quotes sent to customers', String(d.quotes)) + row('Measured with the sheet', String(d.measured), 'of those quotes, at least one room measured from a photo') + row('Follow-ups that went by themselves', String(d.auto)) + row('First invoice paid', d.first_paid ? shortDate(d.first_paid.date) : 'not yet', d.first_paid ? d.first_paid_days + ' days in' + (d.first_paid.job && d.first_paid.job.client.name ? ' · ' + d.first_paid.job.client.name : '') : '') + row('Invoices paid', d.paid.length ? d.paid.length + ' · ' + money(d.paid_total) : '0') + row('Deposit invoices sent', d.deposits ? d.deposits + ' · ' + money(d.deposit_total) : '0');
+    html += '</div><div class="card"><p id="sbtext">' + esc(d.text) + '</p><div class="row between"><button class="btn tape" id="sbshare">Share</button><a class="btn ghost sm" href="#/">Back to jobs</a></div></div>';
+    $app.innerHTML = html;
+    document.getElementById('sbshare').addEventListener('click', function () { handOff({ kind: 'summary', text: d.text, filename: 'scoreboard.txt', whoName: '', ask: false, anchor: this }); });
+  }
+
   function viewHelp() {
     $app.innerHTML = '<h1>How it works</h1><div class="card"><ol class="steps">' +
       '<li><span><b>Set-up.</b> Your name, your bank details (printed on your invoices, kept on this phone), a look at the prices. Three minutes.</span></li>' +
@@ -1492,5 +1606,6 @@
     return csvRows(['QuoteNumber', 'QuoteVersion', 'Status', 'ClientType', 'Client', 'ContactFirstName', 'Phone', 'Email', 'SiteAddress', 'BillTo', 'ClientABN', 'Description', 'Created', 'QuoteDate', 'SentDate', 'QuoteExGST', 'QuoteGST', 'QuoteTotal', 'AcceptedDate', 'AcceptedHow', 'BookedStart', 'BookedDays', 'Invoiced', 'Paid', 'Owing', 'AgreedVariations', 'Invoices'], rows);
   }
   window.__qcApp = window.__qcApp || {}; Object.assign(window.__qcApp, { exportInvoicesCsv: exportInvoicesCsv, exportPaymentsCsv: exportPaymentsCsv, exportJobsCsv: exportJobsCsv, priceLive: priceLive, depositFor: depositFor, freeze: freeze });
+  Object.assign(window.__qcApp, { applySetup: applySetup, encodeSetup: encodeSetup, decodeSetup: decodeSetup, setupCode: setupCode, setupContents: setupContents, scoreboardData: scoreboardData });
   Object.assign(window.__qcApp, { handOff: handOff, didItGo: didItGo, markQuoteSent: markQuoteSent, markInvoiceSent: markInvoiceSent, quoteSentDate: quoteSentDate, invOut: invOut, dispName: dispName }); // A2 exports
 })();

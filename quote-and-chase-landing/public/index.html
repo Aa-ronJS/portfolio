@@ -163,8 +163,6 @@ textarea{width:100%;font:1rem var(--body);padding:.8em .9em;border:1.5px solid v
 .guarantee{border-left:4px solid var(--tape);padding:14px 16px;background:var(--tape-soft);color:var(--doc-ink);border-radius:0 6px 6px 0;display:grid;gap:8px}
 .guarantee b{display:block;font-family:var(--display);font-size:1.05rem}
 .guarantee p{color:var(--doc-ink)}
-.hostedline{display:grid;gap:10px;max-width:720px;padding:16px 18px;border:1.5px solid var(--line);border-radius:8px}
-.hostedline p{color:var(--muted)}
 .waitform{display:grid;gap:8px;max-width:720px}
 .waitform .row{display:flex;flex-wrap:wrap;gap:8px}
 .waitform input[type=email]{flex:1 1 240px;font:1rem var(--body);padding:.8em .9em;border:1.5px solid var(--line);border-radius:6px;background:var(--paper);color:var(--doc-ink);min-width:0}
@@ -187,6 +185,7 @@ textarea{width:100%;font:1rem var(--body);padding:.8em .9em;border:1.5px solid v
 .stackhead{font:600 .78rem var(--mono);letter-spacing:.08em;text-transform:uppercase;color:var(--doc-muted);margin-top:4px}
 .tier .tw{overflow-x:auto;max-width:100%}.diy{width:100%;border-collapse:collapse;font-size:.88rem;color:var(--doc-muted)}.diy th{text-align:left;font:600 .72rem var(--mono);letter-spacing:.06em;text-transform:uppercase;color:var(--doc-muted);border-bottom:1px solid var(--doc-line);padding:6px 8px 6px 0;vertical-align:bottom}.diy td{padding:8px 8px 8px 0;border-bottom:1px solid var(--doc-line);vertical-align:top}.diy td:last-child{color:var(--doc-ink);font-weight:600}
 .buy .gline{color:var(--doc-ink);font-weight:600;text-align:center}
+.walkaway{gap:9px!important}.gshort{font-size:.92rem;color:var(--doc-muted)!important;margin:0}details.group summary{font-family:var(--body);font-weight:600;font-size:.95rem}.log{max-width:820px;display:grid;gap:8px}.loglist{margin:0;padding-left:18px;color:var(--muted);display:grid;gap:6px}.loglist li{font-size:.92rem}.hostedline{max-width:720px}
 .tier details.fold{border:0;padding:0}.tier details.fold summary{font-size:.95rem;min-height:40px}.tier details.fold summary::after{color:var(--doc-muted)}
 .guarantee p b{font-family:var(--body)}
 /* faq and folds */
@@ -300,7 +299,7 @@ footer .wrap{display:grid;gap:8px}
 <section id="price">
   <div class="wrap grid" style="gap:24px">
     <h2>Price</h2>
-    <p class="lede" style="margin-top:-8px">The app is free. The only thing for sale is my time: one hour with you, and the work I do before and after it.</p>
+    <p class="lede" style="margin-top:-8px">The app is free. The one thing for sale is an hour with me that ends with your first real quote sent and the chasing switched on, in your name.</p>
     <div class="tiers">
       <div class="tier featured">
         <p class="eyebrow">The app</p>
@@ -316,86 +315,100 @@ footer .wrap{display:grid;gap:8px}
         </ul>
         <div class="buy">
           <a class="btn tape" href="app/" data-app>Open the app</a>
-          <small>Quoting one job a month? Do the five prices yourself in here; you do not need me. Follow-ups: the app writes them and you tap Send. To have them send themselves, connect your own text and email accounts (the app walks you through it), or book the hour below and it is done with you.</small>
+          <small>Quoting one job a month? Do the five prices yourself in here. Quoting every week and want it done with you, in your name, in an hour? The card below.</small>
         </div>
       </div>
       <div class="tier" id="setup">
-        <p class="eyebrow" data-offer-name>The Founding Painters' Set-Up Hour</p>
-        <p class="avatar"><b>Built for the painter who writes the quotes.</b> One to three on the tools, mostly residential repaints, and you do the quoting yourself after the day's work. You have lost a job this year to whoever quoted first, and you have been stung by a monthly app before. If you run an office and someone else types the quotes, the free app still suits you; this hour is not for you.</p>
-        <p class="tierlede"><b style="color:var(--doc-ink)">One hour on a screen share with me, the bloke who built it.</b> The Tuesday after it, you measure the lounge with a sheet of paper, the quote is in their inbox before you are back in the ute, and on Thursday the app nudges them without you. Deposit invoice, reminders, all in your name and your words. You never type a quote at the kitchen table again, and you never touch the technical bits: I do them with you, once.</p>
-        <p class="stackhead">Before we talk</p>
-        <ul>
-          <li><b>The Carbon-Book Rate Card.</b> Photograph your last three quotes (ten if they are handy) and I build your price list before the call, gaps included, so the app prices the way you do. No quotes yet? Fifteen minutes on the phone and I build it from your head.</li>
-          <li><b>Letterhead and state rules.</b> Your logo, ABN, licence, insurance, bank details and terms on every document, with the deposit rule for your state. I look up the ABN and licence number myself; you just check them.</li>
-          <li><b>Your open jobs loaded.</b> Up to five open quotes or unpaid invoices typed in before the call, so the chasing starts the day we hang up.</li>
-          <li><b>A preview of your own job.</b> The day before the call, one of your jobs priced by the app at your rates, on your letterhead. If it is wrong, I fix it before we talk.</li>
+        <p class="eyebrow"><span data-offer-name>The Driveway Quote Hour</span><span data-founding-line> · Founding painters' terms, <span data-founding-places>20</span> places</span></p>
+        <p class="tierlede"><b style="color:var(--doc-ink)">For the painter who writes his own quotes after work, from one phone.</b> One hour on a screen share with the bloke who built it, on your phone. You open no accounts and fill in nothing. The Tuesday after, you measure the lounge with a sheet of paper, the quote is in their inbox before you are back in the ute, and on Thursday the app nudges them without you.</p>
+        <p class="stackhead">You walk away with</p>
+        <ul class="walkaway">
+          <li><b>Your prices, in.</b> I ring you for fifteen minutes and take them from you. The app prices the way you do before we meet.</li>
+          <li><b>Your name on every quote.</b> Logo, licence, insurance, bank details and your state's deposit rule, on a three-page PDF that says nothing about us. Yours within the hour of paying, from one link.</li>
+          <li><b>Your open book loaded.</b> Every open quote and unpaid invoice you have, up to twenty, in the app before the call, so the first reminder goes out the night we hang up to someone who already owes you.</li>
+          <li><b>Your first real quote sent on the call,</b> to a real customer, while we both watch.</li>
+          <li><b>Follow-ups sending themselves</b> in your name and your words before we hang up, through my system for the first <span data-hosted-days>90</span> days. No accounts to open, no passwords, nothing to verify.</li>
+          <li><b>Me for 30 days,</b> and a second look inside the month.<span data-founding-only> Founding painters also get a rebuild of their prices inside 90 days.</span></li>
         </ul>
-        <p class="stackhead">On the call, about an hour</p>
-        <ul>
-          <li><b>First Quote Out.</b> Bring one job you are about to quote, rough sizes are fine, and it goes to your customer while we are both looking at it. No job this week? We re-quote your last one, and you watch the number land where you priced it.</li>
-          <li><b>The Switch-On.</b> Email follow-ups sending themselves before we hang up. Texts and card payments on the same call where the checks clear, or a fifteen-minute finish when they do, no charge. You make the accounts with me watching and type your own passwords; I do the copy-and-paste. You keep every login, I keep none.</li>
-          <li><b>Three nudges in your words.</b> You tell me how you would chase a slow payer; I write the quote nudge, the deposit nudge and the overdue nudge the way you said it, while you watch.</li>
-          <li><b>Your first back-up</b> saved to your own Drive or iCloud, and the restore shown, so a lost phone is not lost work.</li>
-        </ul>
-        <p class="stackhead">The first month</p>
-        <ul>
-          <li><b>Thirty days on the line.</b> Email help from me, not a helpdesk. A message that did not send: <span data-help-speed>the same business day</span>. Everything else: within two business days.</li>
-          <li><b>A second look.</b> Fifteen minutes on a call inside the first month to fix whatever has stuck. You book it from the email you get the day after our call.</li>
-          <li data-founding-only><b>Founding painters only: the Rate Card rebuild.</b> After your first ten real jobs the rates move. Inside 90 days, send me five recent quotes and I rebuild your price list once, back within five business days.</li>
-        </ul>
-        <div data-bonuses hidden>
-          <p class="stackhead">In your inbox the day you pay</p>
-          <ul>
-            <li><b>Your state's rules, on one page.</b> Deposit cap, licence line, when a written contract is needed, and what to check with your regulator. A head start, not legal advice.</li>
-            <li><b>The first-quote card.</b> One page for the ute: sheet flat, whole wall, corner to corner, lights on, and what to do when the client wants a change.</li>
-            <li><b>The message library.</b> Every message the app can send and the ones it does not yet: extra work, "what we agreed", the review ask, the next-room ask, the quote-lapsing nudge.</li>
-            <li><b>The unpaid invoice playbook.</b> What to do when reminder three has gone and nothing has come: the phone script, a final notice letter, the small-claims limits for your state. Not legal advice; the steps most painters never take.</li>
-            <li><b>The bookkeeper page.</b> One page your bookkeeper reads at BAS time: where the invoices are and how to export them.</li>
-          </ul>
-        </div>
-        <p class="fine" style="color:var(--doc-muted)">Do your admin at a desk and already pay for Claude? Say so and I install the <a href="laptop">laptop pack</a> too, listed at $<span data-pack-price>249</span> on its own page, at no charge.</p>
-        <details class="fold"><summary>Could I do it myself?</summary><div class="tw"><table class="diy">
-          <thead><tr><th>You could do it yourself, free</th><th>What it takes you</th><th>Done with you</th></tr></thead>
-          <tbody>
-            <tr><td>Type thirty rates into the app</td><td>An evening, and you will guess some</td><td>Built from your quotes before the call</td></tr>
-            <tr><td>Find your state's deposit rule and licence line</td><td>An evening on a government website</td><td>Loaded before the call</td></tr>
-            <tr><td>Open the text and email accounts and connect them</td><td>The evening most people quit on</td><td>Done on the call, in your name</td></tr>
-            <tr><td>Write follow-ups that do not sound like begging</td><td>Every time, at 9pm</td><td>Three in your voice, on the call</td></tr>
-          </tbody>
-        </table></div></details>
-        <div class="price">$<span data-setup-price>349</span><small><span data-gst></span>once</small><span class="founding" data-founding-line>Founding price for the first <span data-founding-places>20</span> painters<span data-founding-ends-line hidden> or until <span data-founding-ends></span>, whichever comes first</span>. Then $<span data-setup-after>495</span>, and it does not come back down.</span></div>
-        <p class="fine" data-founding-line style="color:var(--doc-muted)"><b style="color:var(--doc-ink)">Why the first <span data-founding-places>20</span> pay less.</b> I have done this set-up with painters I know and with none who paid me for it yet. The first <span data-founding-places>20</span> are taking a punt on a bloke with no track record, and I am still learning what trips painters up on the call. In return I ask each of you, once, for an honest sentence about how it went, which you are free to refuse. Founding painters keep the price, the Rate Card rebuild, and the hosted price if that ever opens.</p>
+        <div class="price">$<span data-setup-price>495</span><small><span data-gst></span>once</small><span class="founding" data-founding-line>Founding terms for the first <span data-founding-places>20</span> painters<span data-founding-ends-line hidden>, or until <span data-founding-ends></span></span>: the 90-day money-in promise in writing, and the price rebuild.<span data-after-line hidden> Then $<span data-setup-after></span>.</span></span><span class="founding">Roughly the four evenings you would spend doing it yourself, and you would guess some of the rates.</span></div>
+        <p class="fine" data-bonuses hidden style="color:var(--doc-muted)"><i>And in your inbox the day you pay, no extra:</i> your state's rules on one page, the first-quote card for the ute, the message library, the unpaid invoice playbook and the bookkeeper page.</p>
         <div class="buy">
-          <a class="btn tape" href="#" data-setup><span>Book your Set-Up Hour, $<span data-setup-price>349</span></span></a>
-          <small class="gline" data-setup-gline>Sent or it's free. Details below.</small>
+          <a class="btn tape" href="#" data-setup><span>Book your <span data-offer-short>Driveway Quote Hour</span>, $<span data-setup-price>495</span></span></a>
+          <small class="gline" data-setup-gline>Money in or money back.</small>
+          <p class="gshort" data-setup-gline>Quote out on the call or I refund you on the call, on screen. Thirty days after, any reason, email me. Send five quotes from the app and if no job has paid you a deposit through it by day 60, I keep working with you for free; still nothing by day 90 and the fee comes back. You keep the lot either way. <a href="terms#guarantee">The wording</a>.</p>
           <form class="cap" data-capture="setup" action="#" method="post" hidden>
             <input type="hidden" name="list" value="setup-call">
-            <label for="setup-email" style="font-size:.95rem"><b>Bookings are not open yet.</b> Leave your email and you hear first, at the founding price. Nothing charged.</label>
+            <label for="setup-email" style="font-size:.95rem"><b>Bookings are not open yet.</b> Leave your email and you hear first, with the founding terms. Nothing charged.</label>
             <div class="row"><input type="email" id="setup-email" name="email" placeholder="you@yourpainting.com.au" required autocomplete="email"><button class="btn ghost" type="submit">Put me down</button></div>
             <small class="formstatus" aria-live="polite"></small>
           </form>
-          <small>Pay by card, get a receipt<span data-gst-note></span> and pick your hour from my calendar on the next page. Nothing monthly to me, ever. The text and email accounts stay in your name and charge a few cents a message.</small>
-          <small data-capacity hidden>I do these myself<span data-slots-line hidden>, <span data-slots></span> a week, evenings and Saturdays</span><span data-left-line hidden>. <span data-left></span> of <span data-founding-places>20</span> founding places left<span data-counted-line hidden>, counted on <span data-counted></span></span></span>.</small>
-          <small data-xmas hidden>Set up before the December quotes come in. Last Set-Up Hour before Christmas: <span data-last-call></span>. No calls from <span data-break-from></span> to <span data-break-to></span>.</small>
+          <small data-capacity hidden>I do these myself<span data-slots-line hidden>, <span data-slots></span> a week, evenings and Saturdays</span><span data-left-line hidden>. <span data-left></span> of <span data-founding-places>20</span> founding places left<span data-counted-line hidden>, counted <span data-counted></span></span></span>.</small>
+          <small data-xmas hidden>Set up before the December quotes come in. Last hour before Christmas: <span data-last-call></span>. No calls from <span data-break-from></span> to <span data-break-to></span>.</small>
+          <small data-phone-line hidden>Ring me before you pay: <a data-phone-link href="#"><span data-phone></span></a><span data-phone-hours-line hidden>, <span data-phone-hours></span></span>. It is me, not a line.</small>
+          <small>Card, receipt<span data-gst-note></span>, pick your hour on the next page. Nothing monthly to me unless you choose to keep me running your sending after <span data-hosted-days>90</span> days; moving to your own accounts is free and I do it with you.</small>
         </div>
+        <p class="stackhead">Everything in it, in the order you'll use it</p>
+        <details class="fold group"><summary><span>Before we talk: the app made yours, fifteen minutes on the phone, your open book, a preview of your own job. Done for you.</span></summary><ul>
+          <li><b>The app is yours within the hour.</b> Your confirmation email has one link. Tap it on your phone and the app opens with your business name, ABN, licence, state rule and logo already in, and a starter price list so the quote page works tonight. Your real prices replace it after the next step.</li>
+          <li><b>Fifteen minutes on the phone, the next business day.</b> I ring you. You tell me what you charge, who owes you money right now, and one job you are about to quote. No photos, no forms. Rather text me your last three quotes? Do that instead. No quotes yet? We build your prices from your day rate, your last boss's rates and the paint counter's price; nothing invented.</li>
+          <li><b>Your open book, entered.</b> Every open quote and unpaid invoice, up to twenty, typed in before the call. A second link the same day puts your real prices, your open jobs and three draft nudges in your words on your phone.</li>
+          <li><b>A preview of your own job.</b> The day before the call, one of your jobs priced by the app at your rates, on your letterhead. If it is wrong, I fix it before we talk.</li>
+        </ul></details>
+        <details class="fold group"><summary><span>On the call, about an hour: first quote out, sending already on, three nudges in your words, your first back-up. Done with you.</span></summary><ul>
+          <li><b>First Quote Out.</b> Bring one job you are about to quote, rough sizes are fine, and it goes to your customer while we are both looking at it. No job this week? We send the oldest quote in your open book, re-priced, or re-quote your last one and you watch the number land where you priced it.</li>
+          <li><b>Sending is already on.</b> For the first <span data-hosted-days>90</span> days your texts and emails go through my system, with your business name on them and replies to you. Nothing to open, nothing to verify, no laptop, no card, no domain. At day <span data-hosted-days>90</span> we do a free twenty-minute switch-over to accounts in your own name, or you stay on mine for $<span data-hosted-price>39</span> a month. The free app's tap-to-send never costs anything, and if my system ever stopped the app goes back to that by itself.</li>
+          <li><b>Three nudges in your words.</b> You tell me how you would chase a slow payer; I write the quote nudge, the deposit nudge and the overdue nudge the way you said it, while you watch. The first one goes out that night to someone who already owes you.</li>
+          <li><b>Your first back-up</b> saved to your own Drive or iCloud, and the restore shown, so a lost phone is not lost work. Card payments through your own Stripe if you want them, ten more minutes, or at your second look.</li>
+        </ul></details>
+        <details class="fold group"><summary><span>The first month: me on email, a second look, and for founding painters a rebuild of your prices.</span></summary><ul>
+          <li><b>Thirty days on the line.</b> Email help from me, not a helpdesk. While your sending runs through my system, a message that did not send is mine to fix, <span data-help-speed>the same business day</span>. Everything else: within two business days.</li>
+          <li><b>A second look.</b> Fifteen minutes on a call inside the first month to fix whatever has stuck. You book it from the email you get the day after our call.</li>
+          <li data-founding-only><b>Founding painters only: the Rate Card rebuild.</b> After your first ten real jobs the rates move. Inside 90 days, send me five recent quotes and I rebuild your price list once, back within five business days.</li>
+        </ul></details>
+        <details class="fold group" data-bonuses hidden><summary><span>In your inbox the day you pay: five pages you will actually use. No extra.</span></summary><ul>
+          <li><b>Your state's rules, on one page.</b> Deposit cap, licence line, when a written contract is needed, and what to check with your regulator. A head start, not legal advice.</li>
+          <li><b>The first-quote card.</b> One page for the ute: sheet flat, whole wall, corner to corner, lights on, and what to do when the client wants a change.</li>
+          <li><b>The message library.</b> Every message the app can send and the ones it does not yet: extra work, "what we agreed", the review ask, the next-room ask, the quote-lapsing nudge.</li>
+          <li><b>The unpaid invoice playbook.</b> What to do when reminder three has gone and nothing has come: the phone script, a final notice letter, the small-claims limits for your state. Not legal advice; the steps most painters never take.</li>
+          <li><b>The bookkeeper page.</b> One page your bookkeeper reads at BAS time: where the invoices are and how to export them.</li>
+        </ul></details>
+        <details class="fold"><summary><span>Before you say no</span></summary>
+          <p><b>"I've got thirty quotes out, not five."</b> Bring the lot. Up to twenty go in before the call; the rest we do on the call or you add as you go. You are not running two systems for a month.</p>
+          <p><b>"I'm on gmail."</b> Fine. Your follow-ups go out through my system with your business name on them and replies land in your gmail. No domain, no new email address.</p>
+          <p><b>"There's two of us."</b> One phone quotes and invoices. The diary the app keeps goes into your phone's calendar, and on the call we share that calendar to the other phone, so he sees tomorrow without touching your quotes. Two people quoting from two phones is not this; join the hosted list instead.</p>
+          <p><b>"My bookkeeper's on Xero."</b> Your invoices and payments export as a spreadsheet, and every document is a PDF. It is not plugged into Xero directly; your bookkeeper loads the spreadsheet at BAS time.</p>
+          <p><b>"I'd rather not do a screen share."</b> Same price, a phone call instead. Everything arrives on the link, you tap Load, and we check it together on the phone.</p>
+          <p data-founding-line><b>"I've got no quotes yet."</b> Use the free app; it is the product. Put your name down and the founding terms are held for you for six months from today.</p>
+        </details>
+        <details class="fold"><summary><span>Is it for me, and could I do it myself?</span></summary>
+          <p>Built for one or two on the tools, mostly residential repaints, quoting yourself after the day's work, from one phone. If you run an office and someone else types the quotes, the free app still suits you; this hour is not for you. Quoting one job a month? Do the five prices yourself in the free app; you do not need me.</p>
+          <div class="tw"><table class="diy">
+          <thead><tr><th>You could do it yourself, free</th><th>What it takes you</th><th>Done with you</th></tr></thead>
+          <tbody>
+            <tr><td>Type thirty rates into the app</td><td>An evening, and you will guess some</td><td>Taken from you on a fifteen-minute call</td></tr>
+            <tr><td>Find your state's deposit rule and licence line</td><td>An evening on a government website</td><td>Loaded before the call</td></tr>
+            <tr><td>Open the text and email accounts and connect them</td><td>The evening most people quit on</td><td>Not needed for <span data-hosted-days>90</span> days; then done with you, free</td></tr>
+            <tr><td>Write follow-ups that do not sound like begging</td><td>Every time, at 9pm</td><td>Three in your voice, on the call</td></tr>
+          </tbody>
+          </table></div>
+        </details>
+        <details class="fold" data-founding-line><summary><span>Why the same price for the first <span data-founding-places>20</span>?</span></summary>
+          <p>I am not discounting the hour; I am guaranteeing what it is for. I have done this set-up with painters I know and with none who paid me for it yet, so the first <span data-founding-places>20</span> are taking a punt on a bloke with no track record. In return, instead of a cheaper receipt, you get the third promise in writing: a deposit in from a job the app quoted, or I keep working with you, or the money back. You also get the price rebuild inside 90 days. After <span data-founding-places>20</span> I sit down with the refund numbers and decide whether the 90-day promise stays and what the hour costs; what the first <span data-founding-places>20</span> have in their terms does not change. I ask each of you, once, for an honest sentence about how it went, which you are free to refuse.</p>
+        </details>
+        <p class="fine"><a href="#" data-setup>Book your <span data-offer-short>Driveway Quote Hour</span>, $<span data-setup-price>495</span></a></p>
       </div>
     </div>
-    <div class="guarantee" id="guarantee" style="max-width:820px">
-      <b>Sent or it's free. Three promises, one fee, me not a helpdesk.</b>
-      <p><b style="display:inline">1. Quote out on the call.</b> Send me your quotes ahead of time, turn up with one job to quote and the phone with the app open, and that quote goes to your customer before we hang up. If it does not, say so on the call and the $<span data-setup-price>349</span> goes back to your card that day. No waiting 30 days, no asking twice.</p>
-      <p><b style="display:inline">2. Thirty days, any reason.</b> For 30 days after the call, if you want your money back, email me. Any reason, or none. No form. Back on your card within five business days.</p>
-      <p><b style="display:inline">3. I keep going till it sends.</b> If your follow-ups are not sending themselves when we hang up (a carrier check can run past the hour), I keep booking short sessions with you until they are, for 60 days. If they still are not, for any reason on my side or the services' side, the fee goes back.</p>
-      <p>Whatever happens, you keep the lot: your price list, your messages, the set-up, and the app, which is free anyway. The only thing that stops is the email help. The app lives on your phone and keeps working if this website disappears. All of this sits on top of your rights under the Australian Consumer Law, not instead of them.</p>
+    <div class="log" id="setuplog">
+      <p class="stackhead" style="color:var(--muted)">The Set-Up Log</p>
+      <p class="fine">Every paid set-up, in order: the state, whether the quote went out on the call, whether sending was live when we hung up, whether a second session was needed, and any refund. First names or suburbs with the painter's OK.</p>
+      <ul class="loglist" data-setuplog><li class="fine" data-log-empty>No paid set-ups yet. The first <span data-founding-places>20</span> go here, good or bad.</li></ul>
     </div>
-    <div class="hostedline">
-      <p><b style="color:var(--ink)">Later: a hosted version</b> where I run the sending and hold the back-ups, $<span data-hosted-price>39</span> a month ($<span data-hosted-year>468</span> a year). Not open, <span data-hosted-date>no date</span>, no money taken. People on the list keep that price for as long as they stay subscribed.</p>
-      <div><a class="btn ghost" href="#" data-hosted>Join the waiting list</a></div>
-      <form class="cap" data-capture="hosted" action="#" method="post" hidden>
-        <input type="hidden" name="list" value="hosted-founding">
-        <div class="row"><input type="email" name="email" placeholder="you@yourpainting.com.au" required autocomplete="email" aria-label="Email for the waiting list"><button class="btn ghost" type="submit">Add me</button></div>
-        <small class="formstatus" aria-live="polite"></small>
-      </form>
-    </div>
+    <p class="fine hostedline">Later there may be a hosted version where I run the sending and hold the back-ups for anyone, $<span data-hosted-price>39</span> a month ($<span data-hosted-year>468</span> a year). Not open, <span data-hosted-date>no date</span>, no money taken. <a href="#" data-hosted>Put me on the list</a> and you keep that price for as long as you stay subscribed.</p>
+    <form class="cap" data-capture="hosted" action="#" method="post" hidden style="max-width:720px">
+      <input type="hidden" name="list" value="hosted-founding">
+      <div class="row"><input type="email" name="email" placeholder="you@yourpainting.com.au" required autocomplete="email" aria-label="Email for the waiting list"><button class="btn ghost" type="submit">Add me</button></div>
+      <small class="formstatus" aria-live="polite"></small>
+    </form>
     <form id="waitlist" action="#" method="post" data-form class="waitform" hidden>
       <input type="hidden" name="list" value="sample-quote">
       <label for="email" style="font-weight:600;font-size:.95rem">Not ready? Get the sample quote and the app link by email.</label>
@@ -411,13 +424,13 @@ footer .wrap{display:grid;gap:8px}
 <section id="afterpay">
   <div class="wrap grid" style="gap:20px">
     <h2>What happens after you pay</h2>
-    <p class="lede" style="margin-top:-8px">Nothing waits on an email chain. You pick your hour before you leave the page, your one piece of homework is three photos, and a preview of your own job priced your way lands the day before the call.</p>
-    <details class="fold"><summary>Minute by minute</summary>
+    <p class="lede" style="margin-top:-8px">Nothing waits on you. You pick your hour before you leave the page, the app is yours within the hour, I ring you the next business day, and a preview of your own job priced your way lands the day before the call.</p>
+    <details class="fold"><summary><span>Minute by minute</span></summary>
     <div class="steps" style="margin-top:14px">
-      <div class="step"><h3>In the first minute</h3><p>You pay by card and get a receipt. On the next page you pick your hour from my calendar, weekday evenings included. The confirmation lands with the meeting link, the real sample quote (by our call it says your name), and your one piece of homework.</p></div>
-      <div class="step"><h3>Your one piece of homework</h3><p>Photograph your last three quotes off the carbon book and reply to that email with them. Ten if they are handy. A logo too, if you have one. Tell me your business name and suburb; I look up the ABN and licence myself. That is all.</p></div>
-      <div class="step"><h3>Before the call</h3><p>The same business day you get an email from me, not a robot, saying I have your quotes and what I found for your ABN and licence. The day before the call, one of your own jobs arrives priced by the app at your rates, on your letterhead.</p></div>
-      <div class="step"><h3>On the call and after</h3><p>You type your bank details and make two accounts with me watching; I do the copy-and-paste. We quote your job and send it, and save your first back-up. Card payments if you want them, ten more minutes. After that there are two habits: mark it paid, and tap Back up when the app asks.</p></div>
+      <div class="step"><h3>In the first minute</h3><p>You pay by card and get a receipt. On the next page you pick your hour from my calendar, weekday evenings included. The confirmation lands with the meeting link and one link that makes the app yours: tap it on the phone you quote from and your business name, ABN, licence, state rule and logo are in.</p></div>
+      <div class="step"><h3>The next business day</h3><p>I ring you for about fifteen minutes. What you charge, who owes you money right now, one job you are about to quote. That is the whole of your homework. Later that day a second link puts your real prices, your open jobs and three draft nudges in your words on your phone.</p></div>
+      <div class="step"><h3>The day before</h3><p>One of your own jobs arrives priced by the app at your rates, on your letterhead. If anything is off, you tell me and I fix it before we talk.</p></div>
+      <div class="step"><h3>On the call and after</h3><p>You type your bank details and nothing else. We quote your job and send it, your follow-ups are already sending through my system, we save your first back-up. After that there are two habits: mark it paid, and tap Back up when the app asks. The first reminder goes out that night to someone who already owes you.</p></div>
     </div>
     </details>
   </div>
@@ -437,7 +450,7 @@ footer .wrap{display:grid;gap:8px}
     </div>
     <div class="grid" style="gap:0;align-content:start">
       <details>
-        <summary>What it does not do (yet)</summary>
+        <summary><span>What it does not do (yet)</span></summary>
         <ul class="howto">
           <li>No cloud sync between phones. One phone holds the data; move it with the back-up file.</li>
           <li>No bookkeeper login. Export the CSV and the PDFs and send those.</li>
@@ -447,7 +460,7 @@ footer .wrap{display:grid;gap:8px}
         </ul>
       </details>
       <details>
-        <summary>It is not legal advice</summary>
+        <summary><span>It is not legal advice</span></summary>
         <p>The default terms, deposit rules and reminder wording are a starting point. Each state has its own rules on licence numbers, deposit limits and written contracts, and the app warns about the ones it knows. Check them for your state before your first real quote.</p>
       </details>
     </div>
@@ -458,21 +471,25 @@ footer .wrap{display:grid;gap:8px}
   <div class="wrap grid" style="gap:20px">
     <h2>Questions</h2>
     <div>
-      <details><summary>Is it really free, and will it start charging me later?</summary><p>Yes, and no. The phone app is free with no account, and it stays free: it runs on your phone, not on a server I could put a paywall on. If you turn on automatic texts and emails, the accounts they go through (Twilio and Resend) bill you directly, a few cents a message. Card payments cost Stripe's usual cut. Nothing comes to me unless you book the set-up call.</p></details>
-      <details><summary>What's the catch?</summary><p>There is no monthly one. I make money one way: a one-off call where I set the app up with you. Plenty of painters will do the five prices themselves and never talk to me. The small print is that your data lives on your phone, so you tap Back up after every invoice.</p></details>
-      <details><summary>How accurate is the measuring?</summary><p>With any A4 sheet on the wall and the whole wall in the photo, within about 6 cm on a 4 m wall (about one and a half percent). No sheet handy? Tap the corners and scale from a door or the ceiling height, which is a few percent. With an iPhone Pro scan, a centimetre or two. Typed sizes are what you typed, and the quote says who measured.</p></details>
-      <details><summary>Does it chase people by itself?</summary><p>It remembers for you and writes every follow-up and reminder in your words. On the day you set, it shows you who to chase and you tap Text or Email. If you want them to go by themselves on business days and stop the moment the client accepts or pays, that needs text and email accounts in your name: book the set-up call and we switch it on together, or follow the steps in the app's Help. You can hold or cancel any message, and there is a log of everything sent.</p></details>
-      <details><summary>What do I get for $<span data-setup-price>349</span>, and why charge if the app is free?</summary><p>The Tuesday after our call, you quote from the driveway with your name and licence on it, and the chasing happens without you. To get you there I read your last quotes and build your price list so the app prices like you do, load your logo, licence, bank details, terms and your state's deposit rule, type in your open jobs, switch the sending on with you in accounts you own, send your first real quote with you, save your first back-up, and stay on email for a month with a second look inside it. That is about three and a half hours of my time per painter. Set-up is the bit people quit at; doing it with you takes my time, not a file. The app never needs it, and plenty of painters do the five prices themselves.</p></details>
-      <details data-founding-line><summary>Why does the price go up after <span data-founding-places>20</span>?</summary><p>Because I do every one myself and each is about three and a half hours, on top of the free app. $<span data-setup-price>349</span> is the price for taking a punt on someone new; $<span data-setup-after>495</span> is the price of the time once <span data-founding-places>20</span> painters can tell you it works. If there is an end date on the page as well, it is so there is an end either way. It does not come back down.</p></details>
-      <details><summary>What if I want my money back?</summary><p>Email me. Within 30 days of the call it comes back to your card within five business days, for any reason or none. If your first quote did not go out on the call, you do not wait the 30 days; it comes back that day. You keep everything we built and the app. One refund per business, and I do not rebook a painter I have refunded. That is on top of your Australian Consumer Law rights, which apply whatever this page says.</p></details>
-      <details><summary>What happens after the call?</summary><p>A check-in email the day after, with a link to book your fifteen-minute second look. Email help for 30 days: a message that did not send gets looked at <span data-help-speed>the same business day</span>, everything else within two business days. If your follow-ups were not sending when we hung up, short sessions until they are, for 60 days. Founding painters also get one price list rebuild inside 90 days.</p></details>
-      <details><summary>Do I need to be good with computers?</summary><p>For the app, no. Set-up is your name, your bank details and a look at five prices. If you can send a text, you can quote with it. Switching on automatic sending is the only fiddly part, which is why I do it with you: you make two accounts with me watching, you type your own email and password, I do the copy-and-paste parts on screen, and you never open them again unless you want to. A phone is enough; a laptop in the house makes the sign-ups quicker.</p></details>
-      <details><summary>Will my customers know it's a free app?</summary><p>No. The quote is a three-page PDF with your name, licence, insurance, colour schedule and terms. Nothing on it says Quote &amp; Chase. <a href="sample-quote.pdf" target="_blank" rel="noopener">Open the sample</a> and check.</p></details>
-      <details><summary>Where is my data, and what if I lose my phone or you disappear?</summary><p>On your phone and nowhere else unless you send something. Save the back-up after every invoice and keep it in your own Drive or iCloud; restore it on the new phone. If this website vanished, the app on your phone keeps working and the set-up you paid for stays done. <a href="privacy">The privacy page</a> lists what Twilio, Resend, Stripe and Google see when you use them.</p></details>
-      <details><summary>Does it work with Xero, MYOB or ServiceM8?</summary><p>Not directly. It exports invoices and payments as CSV, and every document is a PDF, so your bookkeeper gets what they need.</p></details>
-      <details><summary>Is there a laptop version?</summary><p>There is a <a href="laptop">laptop pack for Claude Code</a>: type the address, drop in the photos, get the PDF, on a Windows or Mac laptop. It suits painters, or their office, who do the admin at a desk. It needs a Claude subscription from Anthropic and sends nothing; the phone app is the product and does not need it.</p></details>
-      <details><summary>Who is behind this?</summary><p><span data-maker-faq>One independent Australian small business, not a company with a call centre.</span> Not affiliated with Anthropic, Twilio, Resend, Stripe or Google. <span data-contact-faq>The contact email and ABN are in the footer</span>, and a person reads the inbox on business days.</p></details>
-      <details id="install"><summary>How do I put it on my home screen?</summary><p>It is a web app, so there is no app store. Open it once in your browser, then add it to your home screen and it behaves like any other app, offline included. Use the same address every time: the app keeps its data per address, so a bookmark to a different copy starts empty.</p>
+      <details><summary><span>Is it really free, and will it start charging me later?</span></summary><p>Yes, and no. The phone app is free with no account, and it stays free: it runs on your phone, not on a server I could put a paywall on. If you turn on automatic texts and emails, the accounts they go through (Twilio and Resend) bill you directly, a few cents a message. Card payments cost Stripe's usual cut. Nothing comes to me unless you book the set-up call.</p></details>
+      <details><summary><span>What's the catch?</span></summary><p>There is no monthly one. I make money one way: a one-off call where I set the app up with you. Plenty of painters will do the five prices themselves and never talk to me. The small print is that your data lives on your phone, so you tap Back up after every invoice.</p></details>
+      <details><summary><span>How accurate is the measuring?</span></summary><p>With any A4 sheet on the wall and the whole wall in the photo, within about 6 cm on a 4 m wall (about one and a half percent). No sheet handy? Tap the corners and scale from a door or the ceiling height, which is a few percent. With an iPhone Pro scan, a centimetre or two. Typed sizes are what you typed, and the quote says who measured.</p></details>
+      <details><summary><span>Does it chase people by itself?</span></summary><p>It remembers for you and writes every follow-up and reminder in your words. On the day you set, it shows you who to chase and you tap Text or Email. If you want them to go by themselves on business days and stop the moment the client accepts or pays, that needs text and email accounts in your name: book the set-up call and we switch it on together, or follow the steps in the app's Help. You can hold or cancel any message, and there is a log of everything sent.</p></details>
+      <details><summary><span>What do I get for $<span data-setup-price>495</span>, and why charge if the app is free?</span></summary><p>The Tuesday after our call, you quote from the driveway with your name and licence on it, and the chasing happens without you. To get you there I take your prices on a fifteen-minute call, load your details and your state's deposit rule, type in your open book, run your sending through my system for <span data-hosted-days>90</span> days so you open nothing, send your first real quote with you, save your first back-up, and stay on email for a month with a second look inside it. About four hours of my time per painter. Set-up is the bit people quit at; doing it with you takes my time, not a file. The app never needs it, and plenty of painters do the five prices themselves.</p></details>
+      <details><summary><span>Do I have to open accounts with Twilio, Resend or Stripe?</span></summary><p>No. For the first <span data-hosted-days>90</span> days your follow-ups go through my system with your business name on them and replies to you. After that you can switch to accounts in your own name on a free twenty-minute call, or stay on mine at $<span data-hosted-price>39</span> a month. Card payments are optional and use your own Stripe, because that is your money; we add it on the call or at your second look if you want it. If my system ever stopped, the app goes back to writing the message and you tapping Send, by itself.</p></details>
+      <details><summary><span>What does your sending system see?</span></summary><p>The messages you send and the number or email they go to, which pass through my relay and sit in the text and email providers' logs for up to 90 days, as any sending service logs them. I do not see your quotes, prices or jobs; those never leave your phone. I read a message only to fix one that failed, and your log is deleted when you switch over or leave. <a href="privacy">The privacy page</a> has the list.</p></details>
+      <details data-founding-line><summary><span>What changes after <span data-founding-places>20</span>?</span></summary><p>The first <span data-founding-places>20</span> have the 90-day money-in promise and the price rebuild written into their terms. Once <span data-founding-places>20</span> painters have been through, I look at how many asked for their money back, decide whether that promise stays for the next lot and what the hour costs, and change the page. Nothing changes for the <span data-founding-places>20</span> who already have it.</p></details>
+      <details data-founding-line><summary><span>Why does the price go up after <span data-founding-places>20</span>?</span></summary><p>Because I do every one myself and each is about three and a half hours, on top of the free app. $<span data-setup-price>349</span> is the price for taking a punt on someone new; $<span data-setup-after>495</span> is the price of the time once <span data-founding-places>20</span> painters can tell you it works. If there is an end date on the page as well, it is so there is an end either way. It does not come back down.</p></details>
+      <details><summary><span>What if I want my money back?</span></summary><p>Say so on the call or email me. If your first quote does not go out on the call, I refund you on the call, on screen, while you watch. Inside 30 days, any reason, back on your card within five business days. And if you have sent five quotes from the app and no job has paid you a deposit through it by day 60, I work with you free until one does; still nothing by day 90 and the fee comes back. You keep everything we built and the app. One refund per business, and I do not rebook a painter I have refunded. That is on top of your Australian Consumer Law rights, which apply whatever this page says.</p></details>
+      <details><summary><span>How do you know whether I have had a deposit?</span></summary><p>I don't. The app is on your phone and I see nothing; you do. The app's Scoreboard page counts quotes sent since our call and shows the date of the first invoice marked paid. If you claim under the third promise, I ask for a screenshot of that page and of your quotes list with the client names covered. That is the whole claim.</p></details>
+      <details><summary><span>What happens after the call?</span></summary><p>A check-in email the day after, with a link to book your fifteen-minute second look. Email help for 30 days: while your sending runs through my system, a message that did not send is mine to fix, <span data-help-speed>the same business day</span>; everything else within two business days. At day <span data-hosted-days>90</span>, a free switch-over to your own accounts or you stay on mine. Founding painters also get one price rebuild inside 90 days.</p></details>
+      <details><summary><span>Do I need to be good with computers?</span></summary><p>For the app, no. Set-up is your name, your bank details and a look at five prices. If you can send a text, you can quote with it. The hour takes the technical bits off you entirely: the app arrives already yours from a link, your sending runs through my system, and you type your bank details and nothing else. A phone is enough. If you would rather not do a screen share, we do it on a phone call for the same price.</p></details>
+      <details><summary><span>Will my customers know it's a free app?</span></summary><p>No. The quote is a three-page PDF with your name, licence, insurance, colour schedule and terms. Nothing on it says Quote &amp; Chase. <a href="sample-quote.pdf" target="_blank" rel="noopener">Open the sample</a> and check.</p></details>
+      <details><summary><span>Where is my data, and what if I lose my phone or you disappear?</span></summary><p>On your phone and nowhere else unless you send something. Save the back-up after every invoice and keep it in your own Drive or iCloud; restore it on the new phone. If this website vanished, the app on your phone keeps working and the set-up you paid for stays done. <a href="privacy">The privacy page</a> lists what Twilio, Resend, Stripe and Google see when you use them.</p></details>
+      <details><summary><span>Does it work with Xero, MYOB or ServiceM8?</span></summary><p>Not directly. It exports invoices and payments as CSV, and every document is a PDF, so your bookkeeper gets what they need.</p></details>
+      <details><summary><span>Is there a laptop version?</span></summary><p>There is a <a href="laptop">laptop pack for Claude Code</a>: type the address, drop in the photos, get the PDF, on a Windows or Mac laptop. It suits painters, or their office, who do the admin at a desk. It needs a Claude subscription from Anthropic and sends nothing; the phone app is the product and does not need it. Painters who already pay for Claude get it installed on the call at no charge; ask.</p></details>
+      <details><summary><span>Who is behind this?</span></summary><p><span data-maker-faq>One independent Australian small business, not a company with a call centre.</span> Not affiliated with Anthropic, Twilio, Resend, Stripe or Google. <span data-contact-faq>The contact email and ABN are in the footer</span>, and a person reads the inbox on business days.</p></details>
+      <details id="install"><summary><span>How do I put it on my home screen?</span></summary><p>It is a web app, so there is no app store. Open it once in your browser, then add it to your home screen and it behaves like any other app, offline included. Use the same address every time: the app keeps its data per address, so a bookmark to a different copy starts empty.</p>
         <div class="g2 grid" style="gap:16px">
           <div class="not"><h3>iPhone</h3><ol class="howto"><li>Open <a href="app/" data-app>the app</a> in Safari, not inside another app.</li><li>Tap Share, the square with the arrow at the bottom.</li><li>Scroll down and tap <b>Add to Home Screen</b>, then Add.</li></ol></div>
           <div class="not"><h3>Android</h3><ol class="howto"><li>Open <a href="app/" data-app>the app</a> in Chrome.</li><li>Tap the three dots at the top right.</li><li>Tap <b>Install app</b> (on some phones, Add to Home screen), then Install.</li></ol></div>
@@ -609,7 +626,6 @@ footer .wrap{display:grid;gap:8px}
   setAll('[data-setup-price]', String(setupPrice)); setAll('[data-setup-after]', String(setupAfter)); setAll('[data-hosted-price]', String(num(C.HOSTED_PRICE, 39)));
   if (places > 0) setAll('[data-founding-places]', String(places)); else document.querySelectorAll('[data-founding-line]').forEach(function(el){ el.hidden = true; });
   if (C.GST_REGISTERED) { setAll('[data-gst]', 'inc GST, '); setAll('[data-gst-note]', ' (a tax invoice with GST shown)'); }
-  if (C.OFFER_NAME) setAll('[data-offer-name]', C.OFFER_NAME);
   setAll('[data-pack-price]', String(num(C.PACK_PRICE, 249))); setAll('[data-hosted-year]', String(Math.round(num(C.HOSTED_PRICE, 39) * 12)));
   if (C.HELP_SAME_DAY === false) setAll('[data-help-speed]', 'within one business day');
   if (C.BONUSES_READY) document.querySelectorAll('[data-bonuses]').forEach(function(el){ el.hidden = false; });
@@ -624,20 +640,27 @@ footer .wrap{display:grid;gap:8px}
   }
   if (C.SETUP_URL && C.LAST_CALL && C.BREAK_FROM && C.BREAK_TO) { setAll('[data-last-call]', C.LAST_CALL); setAll('[data-break-from]', C.BREAK_FROM); setAll('[data-break-to]', C.BREAK_TO); document.querySelectorAll('[data-xmas]').forEach(function(el){ el.hidden = false; }); }
 
-  // set-up call: a checkout when there is one, an email list when there is a form, else a mailto, else the card goes quiet
-  var setup = document.querySelector('[data-setup]'), setupCap = document.querySelector('[data-capture="setup"]');
+  // the paid offer: every [data-setup] link becomes the checkout when there is one; else an email list; else a mailto; else quiet
+  var setups = Array.prototype.slice.call(document.querySelectorAll('[data-setup]')), setupCap = document.querySelector('[data-capture="setup"]'), glines = document.querySelectorAll('[data-setup-gline]');
+  function hideGlines(){ glines.forEach(function(el){ el.hidden = true; }); }
   if (C.SETUP_URL) {
-    setup.setAttribute('href', C.SETUP_URL);
-    setup.addEventListener('click', function(){ track('InitiateCheckout', { value: setupPrice, currency: 'AUD', content_name: 'setup_call' }); });
+    setups.forEach(function(a){ a.setAttribute('href', C.SETUP_URL); a.addEventListener('click', function(){ track('InitiateCheckout', { value: setupPrice, currency: 'AUD', content_name: 'setup_hour' }); }); });
   } else if (C.FORM_ACTION) {
-    setup.hidden = true; setupCap.hidden = false; document.querySelectorAll('[data-setup-gline]').forEach(function(el){ el.hidden = true; });
+    setups.forEach(function(a, i){ if (i === 0) { a.hidden = true; } else { a.addEventListener('click', function(e){ e.preventDefault(); setupCap.scrollIntoView({ block: 'center' }); setupCap.querySelector('input[type=email]').focus(); }); } }); setupCap.hidden = false; hideGlines();
   } else if (mail) {
-    setup.setAttribute('href', mailto('Quote and Chase Set-Up Hour')); setup.textContent = 'Email me about the Set-Up Hour'; document.querySelectorAll('[data-setup-gline]').forEach(function(el){ el.hidden = true; });
+    setups.forEach(function(a){ a.setAttribute('href', mailto('Quote and Chase: ' + (C.OFFER_NAME || 'the set-up hour'))); a.textContent = 'Email me about it'; }); hideGlines();
   } else {
-    setup.hidden = true; document.querySelectorAll('[data-setup-gline]').forEach(function(el){ el.hidden = true; }); var q = document.createElement('small'); q.textContent = 'Bookings open soon.'; setup.parentNode.insertBefore(q, setup);
+    setups.forEach(function(a, i){ a.hidden = true; if (i === 0) { var q = document.createElement('small'); q.textContent = 'Bookings open soon.'; a.parentNode.insertBefore(q, a); } }); hideGlines();
   }
-
-  // hosted waiting list
+  // offer name, hosted days, after-price line, phone, the Set-Up Log, folds open on wide screens
+  if (C.OFFER_NAME) { setAll('[data-offer-name]', C.OFFER_NAME); setAll('[data-offer-short]', String(C.OFFER_NAME).replace(/^The\s+/i, '')); }
+  setAll('[data-hosted-days]', String(parseInt(C.HOSTED_DAYS, 10) > 0 ? parseInt(C.HOSTED_DAYS, 10) : 90));
+  if (parseFloat(C.SETUP_PRICE_AFTER) > 0 && places > 0) { setAll('[data-setup-after]', String(num(C.SETUP_PRICE_AFTER, 0))); document.querySelectorAll('[data-after-line]').forEach(function(el){ el.hidden = false; }); }
+  var phone = String(C.BUSINESS_PHONE || '').trim(); if (phone && C.SETUP_URL) { setAll('[data-phone]', phone); document.querySelectorAll('[data-phone-link]').forEach(function(a){ a.setAttribute('href', 'tel:' + phone.replace(/[^+0-9]/g, '')); }); if (C.PHONE_HOURS) { setAll('[data-phone-hours]', C.PHONE_HOURS); document.querySelectorAll('[data-phone-hours-line]').forEach(function(el){ el.hidden = false; }); } document.querySelectorAll('[data-phone-line]').forEach(function(el){ el.hidden = false; }); }
+  var logRows = Array.isArray(C.SETUP_LOG) ? C.SETUP_LOG.filter(function(r){ return r && r.date; }) : [];
+  if (logRows.length) { var ul = document.querySelector('[data-setuplog]'); ul.innerHTML = ''; logRows.forEach(function(r){ var li = document.createElement('li'); var bits = [r.date + (r.state ? ', ' + r.state : '') + (r.who ? ', ' + r.who : '')]; bits.push(r.quote_on_call === false ? 'no quote out on the call' : 'quote out on the call'); bits.push(r.sending_live === false ? 'sending not live at hang-up' : 'sending live at hang-up'); if (r.second_session) bits.push('second session needed'); if (r.refund) bits.push('refunded'); if (r.note) bits.push(String(r.note)); li.textContent = bits.join(': ').replace(': ', ': ').replace(/: (?=[a-z])/g, ': '); li.textContent = bits[0] + ': ' + bits.slice(1).join(', ') + '.'; ul.appendChild(li); }); }
+  if (window.matchMedia && matchMedia('(min-width: 900px)').matches) document.querySelectorAll('#setup details.group').forEach(function(d){ d.open = true; });
+  // hosted waiting list: a plain link that reveals the capture form, or a mailto, or nothing
   var hosted = document.querySelector('[data-hosted]');
   var hostedCap = document.querySelector('[data-capture="hosted"]');
   document.querySelectorAll('[data-hosted-date]').forEach(function(el){ if (C.HOSTED_DATE) el.textContent = 'opening ' + C.HOSTED_DATE; });
@@ -645,13 +668,12 @@ footer .wrap{display:grid;gap:8px}
     hosted.setAttribute('href', C.HOSTED_URL);
     hosted.addEventListener('click', function(){ track('Lead', { content_name: 'hosted_founding_list' }); });
   } else if (C.FORM_ACTION) {
-    hosted.addEventListener('click', function(e){ e.preventDefault(); hosted.hidden = true; hostedCap.hidden = false; hostedCap.querySelector('input[type=email]').focus(); });
+    hosted.addEventListener('click', function(e){ e.preventDefault(); hostedCap.hidden = false; hostedCap.querySelector('input[type=email]').focus(); });
   } else if (mail) {
     hosted.setAttribute('href', mailto('Quote and Chase hosted version: add me to the waiting list'));
   } else {
-    hosted.hidden = true;
+    hosted.textContent = 'A list opens with bookings'; hosted.removeAttribute('href');
   }
-
   // Every email capture posts to the one FORM_ACTION with a hidden "list" field, in the background. Without FORM_ACTION the forms stay hidden.
   document.querySelectorAll('form[data-capture], form[data-form]').forEach(function(f){
     if (!C.FORM_ACTION) { f.hidden = true; return; }

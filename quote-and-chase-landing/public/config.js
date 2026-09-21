@@ -8,15 +8,19 @@ window.QC = {
 
   // ---- the paid offer: "Set up with you", a one-off call. Price and founding terms live here so the page,
   //      the FAQ and the guarantee never disagree with the receipt.
-  OFFER_NAME: "The Founding Painters' Set-Up Hour",  // rename to "The Painters' Set-Up Hour" the day the founding places are gone
-  SETUP_URL: "",                    // Stripe Payment Link for the Set-Up Hour, with booked.html as its success page. Empty + FORM_ACTION = email list; empty + nothing = button hidden
-  SETUP_PRICE: 349,                 // AUD, the price charged today (founding)
-  SETUP_PRICE_AFTER: 495,           // AUD, the price after the founding places are gone. Only honest if you actually raise it and keep it there.
-  FOUNDING_PLACES: 20,              // how many at the founding price. 0 hides every founding line and the founding-only extras.
-  FOUNDING_ENDS: "",                // optional end date for the founding price, e.g. "30 November 2026": rises at 20 or on this date, whichever first. Set once, never extend.
+  OFFER_NAME: "The Driveway Quote Hour",  // the name on the card, the button, the receipt and the terms. Founding wording lives in its own tag, so nothing needs renaming at painter 21.
+  SETUP_URL: "",                    // Stripe Payment Link for the hour, with booked.html as its success page. Empty + FORM_ACTION = email list; empty + nothing = button hidden
+  SETUP_PRICE: 495,                 // AUD, the price charged, the same for founding painters and everyone after (founding painters get more, not less)
+  SETUP_PRICE_AFTER: "",            // leave empty. Only set a number if you will actually charge it after the founding places for a real period; the page then prints "Then $X".
+  FOUNDING_PLACES: 20,              // how many get the founding terms (the 90-day money-in promise in writing and the price rebuild). 0 hides every founding line.
+  FOUNDING_ENDS: "",                // optional end date for the founding terms, e.g. "30 November 2026". Set once, never extend.
   FOUNDING_LEFT: "",                // optional live count you update by hand from Stripe receipts, e.g. 14. Empty = no count shown. Never type a number you have not counted.
   FOUNDING_COUNTED: "",             // the date you last counted, e.g. "3 October 2026". Shown next to the count.
   SETUP_SLOTS_WEEK: "",             // optional, e.g. 4: "I do these myself, 4 a week". Shown only once SETUP_URL is set. Empty = not shown.
+  HOSTED_DAYS: 90,                  // days of sending through your relay included with the hour, before the free switch-over or $HOSTED_PRICE a month. Match RELAY_TOKENS "until" dates to it.
+  PHONE_HOURS: "",                  // e.g. "weekdays 4 to 7pm, or text and I ring back". Shown with BUSINESS_PHONE on the card once bookings are open.
+  SETUP_LOG: [],                    // the public Set-Up Log, one object per paid set-up, newest last. Only real ones, only with the painter's OK on the name:
+                                    //   { date: "6 Oct", state: "VIC", who: "Dave, Ballarat", quote_on_call: true, sending_live: true, second_session: false, refund: false, note: "" }
   LAST_CALL: "",                    // optional, e.g. "Thursday 17 December": the last Set-Up Hour before the Christmas break. Needs BREAK_FROM and BREAK_TO too.
   BREAK_FROM: "",                   // e.g. "19 December"
   BREAK_TO: "",                     // e.g. "11 January"

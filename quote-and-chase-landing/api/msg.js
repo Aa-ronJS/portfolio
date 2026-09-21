@@ -8,11 +8,20 @@
 // TWILIO_MESSAGING_SERVICE_SID, RESEND_API_KEY, RESEND_FROM), or from the request body (fields under "creds")
 // when ALLOW_CLIENT_CREDS=1, in which case they are used for that one call and never stored or logged.
 //
+// Hosted sending: RELAY_TOKENS is a JSON map of per-painter tokens, each with a name, reply_to, until and disabled:
+//   { "qc_abc...": { "name": "Dave's Painting", "reply_to": "dave@example.com", "until": "2026-12-20", "disabled": false } }
+// A request carrying a mapped token always uses this server's Twilio and Resend credentials (never the request's), sends
+// email as "<name> via Quote & Chase" on RESEND_FROM's verified address with Reply-To set to the request's reply_to or the
+// entry's, and changes nothing about SMS (the app signs texts itself). A disabled or expired entry gets 403
+// "Hosted sending has ended for this account". Set RELAY_TOKENS on Vercel as one line of JSON. When it is set, an unmapped
+// token must still equal RELAY_TOKEN; with no RELAY_TOKEN at all, only mapped tokens are accepted.
+//
 // Actions (JSON body):
 //   { action: "test",     channel: "sms"|"email", to }                                  -> sends a short test message
 //   { action: "send",     channel, to, body, subject?, html?, attachments?: [{ filename, content(base64) }] }
 //   { action: "schedule", channel, to, body, subject?, send_at: ISO string, ref? }        -> { id }
 //   { action: "cancel",   channel, id }                                                   -> { cancelled: true }
+//   { action: "ping" }                                                                     -> what is set up; for a mapped token also { hosted: true, until, name }
 // Every action returns { ok: true, ... } or { ok: false, error }.
 
 const ALLOWED = (process.env.ALLOWED_ORIGINS || "https://aa-ronjs.github.io,https://aaronsteele.vercel.app").split(",").map((s) => s.trim()).filter(Boolean);
@@ -45,6 +54,35 @@ function creds(body) {
   };
 }
 const f = (...a) => (globalThis.__relayFetch || fetch)(...a);
+
+// ---------- hosted tokens (RELAY_TOKENS)
+const HOSTED_ENDED = "Hosted sending has ended for this account";
+let tokenCache = { raw: undefined, map: {} };
+function tokenMap() {
+  const raw = process.env.RELAY_TOKENS || "";
+  if (raw === tokenCache.raw) return tokenCache.map;
+  let map = {};
+  try { const j = raw ? JSON.parse(raw) : {}; if (j && typeof j === "object" && !Array.isArray(j)) map = j; } catch { map = {}; }
+  tokenCache = { raw, map }; return map;
+}
+function hostedEntry(token) {
+  if (typeof token !== "string" || !token) return null;
+  const map = tokenMap(); if (!Object.prototype.hasOwnProperty.call(map, token)) return null;
+  const e = map[token]; return e && typeof e === "object" ? e : null;
+}
+// `until` is a date ("2026-12-20", good through the end of that day, Australian time) or a full ISO instant. A value that does not parse is treated as no expiry, and ping shows it as given.
+function hostedEnded(e) {
+  if (!e || e.disabled === true || e.disabled === "true" || e.disabled === 1) return true;
+  const u = e.until == null ? "" : String(e.until).trim(); if (!u) return false;
+  const t = new Date(/^\d{4}-\d{2}-\d{2}$/.test(u) ? u + "T23:59:59+10:00" : u).getTime();
+  return !isNaN(t) && Date.now() > t;
+}
+const cleanHeader = (v, n) => String(v == null ? "" : v).replace(/[\r\n\t"\\]/g, " ").replace(/\s+/g, " ").trim().slice(0, n);
+// "Dave's Painting via Quote & Chase" <hello@example.com>: the verified address stays ours, only the display name is the painter's.
+function hostedFrom(resendFrom, name) {
+  const m = /<([^<>\s]+@[^<>\s]+)>/.exec(resendFrom || ""); const addr = m ? m[1] : String(resendFrom || "").trim();
+  const n = cleanHeader(name, 80); return n && addr ? `"${n} via Quote & Chase" <${addr}>` : resendFrom;
+}
 
 // ---------- Twilio
 function e164(to) { let s = String(to || "").replace(/[^\d+]/g, ""); if (s.startsWith("0011")) s = "+" + s.slice(4); if (s.startsWith("+610")) s = "+61" + s.slice(4); if (s.startsWith("0")) s = "+61" + s.slice(1); if (!s.startsWith("+")) s = "+" + s; return s; }
@@ -80,8 +118,8 @@ async function resend(c, method, path, payload) {
 }
 function emailPayload(c, b) {
   if (!c.resendKey) throw new Error("Resend is not set up (API key)"); if (!c.resendFrom) throw new Error("Resend needs a From address on a verified domain");
-  const p = { from: c.resendFrom, to: [String(b.to)], subject: b.subject || "Message", text: b.body || "" };
-  if (b.html) p.html = b.html; if (b.reply_to) p.reply_to = b.reply_to;
+  const p = { from: c.hostedName ? hostedFrom(c.resendFrom, c.hostedName) : c.resendFrom, to: [String(b.to)], subject: b.subject || "Message", text: b.body || "" };
+  if (b.html) p.html = b.html; if (b.reply_to) p.reply_to = b.reply_to; else if (c.hostedReplyTo) p.reply_to = c.hostedReplyTo;
   if (Array.isArray(b.attachments) && b.attachments.length) { const list = b.attachments.filter((a) => a && typeof a === "object"); if (list.length > 3) throw new Error("At most 3 attachments"); p.attachments = list.map((a) => ({ filename: String(a.filename || "file.pdf").slice(0, 80), content: String(a.content || "") })); }
   return p;
 }
@@ -102,21 +140,28 @@ export default async function handler(req, res) {
   if (limited(ip)) return send(res, 429, { ok: false, error: "Slow down" });
   let body; try { body = await readJson(req); } catch { return send(res, 400, { ok: false, error: "Bad JSON" }); }
   if (!body || typeof body !== "object" || Array.isArray(body)) return send(res, 400, { ok: false, error: "Bad JSON" });
-  if (process.env.RELAY_TOKEN && body.token !== process.env.RELAY_TOKEN) return send(res, 401, { ok: false, error: "Relay token missing or wrong" });
+  const hosted = hostedEntry(body.token);
+  if (hosted) { if (hostedEnded(hosted)) return send(res, 403, { ok: false, error: HOSTED_ENDED, hosted: true, until: hosted.until || null, name: hosted.name || "" }); }
+  else if (process.env.RELAY_TOKEN || Object.keys(tokenMap()).length) { if (!process.env.RELAY_TOKEN || body.token !== process.env.RELAY_TOKEN) return send(res, 401, { ok: false, error: "Relay token missing or wrong" }); }
   if (body.to != null) body.to = String(body.to).trim();
-  const c = creds(body), ch = String(body.channel || "").toLowerCase() === "email" ? "email" : "sms";
+  // A hosted token never brings its own credentials: the server's are used whatever the request carries.
+  const c = hosted ? Object.assign(creds({}), { hostedName: hosted.name || "", hostedReplyTo: cleanHeader(hosted.reply_to, 200) }) : creds(body), ch = String(body.channel || "").toLowerCase() === "email" ? "email" : "sms";
+  // Idempotency keys are kept apart per hosted token so two painters' job ids cannot collide in the shared map.
+  const keyPrefix = hosted ? body.token.slice(-8) + ":" : "";
   try {
     if (body.action === "test") { const r = ch === "sms" ? await smsSend(c, body.to, "Quote and Chase test: SMS sending works.") : await emailSend(c, { to: body.to, subject: "Quote and Chase test", body: "Email sending works." }); return send(res, 200, { ok: true, ...r }); }
     if (body.action === "send") { if (!body.to || (ch === "sms" ? !body.body : (!body.body && !body.html))) throw new Error("to and body are required"); if (String(body.body || "").length > 1600) throw new Error("Message too long"); const r = ch === "sms" ? await smsSend(c, body.to, body.body) : await emailSend(c, body); return send(res, 200, { ok: true, ...r }); }
     if (body.action === "schedule") { if (!body.to || !body.body || !body.send_at) throw new Error("to, body and send_at are required"); if (String(body.body).length > 1600) throw new Error("Message too long");
       // Idempotency: the app sends key = job id + ref + quote version. If the same key arrives again (a retry after a lost reply) the id already
       // created is returned instead of a second message. Best effort: the map lives in this warm instance only and keeps the last 200 keys.
-      const key = body.key != null ? String(body.key).slice(0, 120) : ""; if (key && seen.has(key)) return send(res, 200, { ok: true, ...seen.get(key), reused: true });
+      const key = body.key != null ? keyPrefix + String(body.key).slice(0, 120) : ""; if (key && seen.has(key)) return send(res, 200, { ok: true, ...seen.get(key), reused: true });
       const r = ch === "sms" ? await smsSchedule(c, body.to, body.body, body.send_at) : await emailSchedule(c, body);
       if (key) { seen.set(key, r); while (seen.size > 200) seen.delete(seen.keys().next().value); }
       return send(res, 200, { ok: true, ...r }); }
     if (body.action === "cancel") { if (!body.id) throw new Error("id is required"); const r = ch === "sms" ? await smsCancel(c, body.id) : await emailCancel(c, body.id); return send(res, 200, { ok: true, ...r }); }
-    if (body.action === "ping") return send(res, 200, { ok: true, sms: !!(c.twilioSid && c.twilioToken && (c.twilioService || c.twilioFrom)), sms_schedule: !!(c.twilioSid && c.twilioToken && c.twilioService), email: !!(c.resendKey && c.resendFrom), client_creds: process.env.ALLOW_CLIENT_CREDS === "1", token_required: !!process.env.RELAY_TOKEN });
+    if (body.action === "ping") { const p = { ok: true, sms: !!(c.twilioSid && c.twilioToken && (c.twilioService || c.twilioFrom)), sms_schedule: !!(c.twilioSid && c.twilioToken && c.twilioService), email: !!(c.resendKey && c.resendFrom), client_creds: process.env.ALLOW_CLIENT_CREDS === "1", token_required: !!process.env.RELAY_TOKEN || Object.keys(tokenMap()).length > 0 };
+      if (hosted) { p.hosted = true; p.until = hosted.until || null; p.name = hosted.name || ""; p.client_creds = false; }
+      return send(res, 200, p); }
     return send(res, 400, { ok: false, error: "Unknown action" });
   } catch (e) { return send(res, 400, { ok: false, error: e.message || String(e) }); }
 }

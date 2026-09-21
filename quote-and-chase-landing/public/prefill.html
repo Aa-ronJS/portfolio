@@ -1,0 +1,110 @@
+<!doctype html>
+<html lang="en-AU">
+<head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Set-up link builder</title>
+<meta name="robots" content="noindex,nofollow">
+<style>
+:root{--ground:#F7F7F4;--ink:#16181D;--muted:#5B5F66;--line:#DCDED9;--tape:#2B7BD6;--paper:#fff}
+*{box-sizing:border-box}body{margin:0;background:var(--ground);color:var(--ink);font:15px/1.5 system-ui,sans-serif}
+main{max-width:860px;margin:0 auto;padding:32px 16px 80px;display:grid;gap:16px}
+h1{font-size:1.6rem;margin:0}h2{font-size:1.05rem;margin:14px 0 0}
+p{color:var(--muted);margin:0}
+label{display:grid;gap:4px;font-size:.9rem}label span{color:var(--muted)}
+input,select,textarea{font:1rem system-ui,sans-serif;padding:.55em .7em;border:1.5px solid var(--line);border-radius:6px;background:var(--paper);color:var(--ink);width:100%}
+textarea{min-height:120px;font-family:ui-monospace,Menlo,monospace;font-size:.85rem}
+.g2{display:grid;gap:10px;grid-template-columns:1fr 1fr}.g3{display:grid;gap:10px;grid-template-columns:repeat(3,1fr)}
+@media (max-width:640px){.g2,.g3{grid-template-columns:1fr}}
+.box{background:var(--paper);border:1px solid var(--line);border-radius:8px;padding:16px;display:grid;gap:10px}
+button{font:600 1rem system-ui,sans-serif;padding:.7em 1.1em;border-radius:6px;border:0;background:var(--tape);color:#fff;cursor:pointer}
+button.ghost{background:transparent;color:var(--ink);border:1.5px solid var(--ink)}
+.out{font-family:ui-monospace,Menlo,monospace;font-size:.8rem;word-break:break-all;background:var(--paper);border:1px solid var(--line);border-radius:6px;padding:10px}
+small{color:var(--muted)}
+</style>
+</head>
+<body><main>
+<h1>Set-up link builder (for Aaron, not linked from the site)</h1>
+<p>Fill in what you know about the painter. The link loads it into the app on his phone; nothing is stored anywhere but inside the link itself. The same code, without the link, pastes into the app's Set-up under "Paste the code from Aaron". Link one goes in the confirmation email (details, state rule, starter prices); link two after the fifteen-minute call (real prices, open jobs, nudges, sending token).</p>
+
+<div class="box">
+  <h2>Business</h2>
+  <div class="g2">
+    <label>Trading name<input id="trading_name"></label>
+    <label>Owner name<input id="owner_name"></label>
+    <label>ABN<input id="abn"></label>
+    <label>State<select id="state"><option value="">pick</option><option>NSW</option><option>VIC</option><option>QLD</option><option>SA</option><option>WA</option><option>TAS</option><option>ACT</option><option>NT</option></select></label>
+    <label>Phone<input id="phone"></label>
+    <label>Email<input id="email"></label>
+    <label>Address<input id="address"></label>
+    <label>Postcode<input id="postcode"></label>
+    <label>Licence number<input id="licence"></label>
+    <label>Insurance line<span>e.g. Public liability $20m</span><input id="insurance"></label>
+  </div>
+</div>
+
+<div class="box">
+  <h2>Prices <small>(leave blank to keep the app's defaults or the painter's own)</small></h2>
+  <p>One per line as <code>key = number</code>. Keys are the app's price keys (open the app, Set-up, Prices, and hover a field, or export a back-up and read the prices block). Common ones: p_walls, p_ceiling, p_skirting, p_door, p_window, p_prep_hour, p_setup, p_weatherboard, p_render, p_eaves, p_gutters.</p>
+  <textarea id="prices" placeholder="p_walls = 24&#10;p_ceiling = 26&#10;p_door = 140"></textarea>
+</div>
+
+<div class="box">
+  <h2>Open jobs <small>(up to twenty; one per line)</small></h2>
+  <p>Format: <code>name | phone | address | description | quoted total ex GST | status</code>. Status is <code>quoted</code> for an open quote or <code>invoiced</code> for an unpaid invoice (the app makes a final invoice for the total, due seven days ago, so the first reminder can go tonight). Leave the total blank for a job you will price on the call.</p>
+  <textarea id="jobs" placeholder="Margaret Hanley | 0411 222 333 | 8 Beaumont St Hamilton NSW 2303 | Lounge and hall repaint | 2450 | quoted"></textarea>
+</div>
+
+<div class="box">
+  <h2>Sending <small>(link two only)</small></h2>
+  <div class="g3">
+    <label>Relay address<input id="server" placeholder="https://your-site.vercel.app/api/msg"></label>
+    <label>Painter's token<span>from RELAY_TOKENS on Vercel</span><input id="token"></label>
+    <label>Hosted until<span>YYYY-MM-DD</span><input id="hosted_until" placeholder="2026-12-20"></label>
+  </div>
+  <div class="g3">
+    <label>Scoreboard start<span>the day of the call, YYYY-MM-DD</span><input id="scoreboard_start"></label>
+    <label>Note on the confirm screen<input id="note" placeholder="Set up by Aaron, 6 Oct"></label>
+    <label>App address<input id="app_url" value="https://aa-ronjs.github.io/portfolio/app/"></label>
+  </div>
+</div>
+
+<div class="g2">
+  <button id="build">Build the link</button>
+  <button class="ghost" id="copy" disabled>Copy the link</button>
+</div>
+<div class="out" id="out">The link appears here.</div>
+<div class="out" id="code" hidden></div>
+<small id="size"></small>
+<small>Nothing on this page is sent anywhere. The link holds the data; delete the painter's details from this page after you have sent it.</small>
+
+<script>
+(function(){
+  var $ = function(id){ return document.getElementById(id); };
+  function val(id){ return String($(id).value || '').trim(); }
+  function b64url(bytes){ var s = ''; for (var i = 0; i < bytes.length; i++) s += String.fromCharCode(bytes[i]); return btoa(s).replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, ''); }
+  function uid(){ return 'pf_' + Math.random().toString(36).slice(2, 10); }
+  function build(){
+    var p = { v: 1, settings: {}, jobs: [] };
+    var d = {}; ['trading_name','owner_name','abn','state','phone','email','address','postcode','licence','insurance'].forEach(function(k){ var v = val(k); if (v) d[k] = v; });
+    if (Object.keys(d).length) p.settings.details = d;
+    var prices = {}; val('prices').split('\n').forEach(function(line){ var m = line.match(/^\s*([a-z_0-9]+)\s*=\s*([0-9.]+)\s*$/i); if (m) prices[m[1]] = parseFloat(m[2]); });
+    if (Object.keys(prices).length) p.settings.prices = prices;
+    var today = new Date(), iso = function(dt){ return dt.toISOString().slice(0, 10); }, weekAgo = new Date(today.getTime() - 7 * 86400000), monthAgo = new Date(today.getTime() - 21 * 86400000);
+    val('jobs').split('\n').forEach(function(line){ if (!line.trim()) return; var c = line.split('|').map(function(x){ return x.trim(); }); var name = c[0] || ''; if (!name) return; var total = parseFloat(c[4]); var status = (c[5] || 'quoted').toLowerCase();
+      var job = { id: uid(), client: { name: name, phone: c[1] || '', address: c[2] || '' }, summary: c[3] || '', notes: 'Loaded from your book by Aaron before the call. Check the figure.', status: 'draft' };
+      if (total > 0) { job.quote = { number: '', total: Math.round(total * 110) / 100, subtotal: total, sent_date: iso(monthAgo) }; job.manual_total = total; job.status = status === 'invoiced' ? 'invoiced' : 'quoted'; job.sent_date = iso(monthAgo); job.sent_how = 'other'; job.sent_confirmed = true; }
+      if (status === 'invoiced' && total > 0) { job.invoices = [{ no: '', kind: 'final', total: Math.round(total * 110) / 100, subtotal: total, date: iso(monthAgo), due: iso(weekAgo), sent_date: iso(monthAgo), sent_how: 'other', sent_confirmed: true, lines: [{ desc: c[3] || 'Painting as quoted', qty: 1, unit: 'job', amount: total }], payments: [] }]; }
+      p.jobs.push(job); });
+    p.jobs = p.jobs.slice(0, 20);
+    var srv = val('server'), tok = val('token'); if (srv && tok) { p.settings.sending = { server: srv, token: tok, server_has_creds: true, hosted: true, hosted_until: val('hosted_until'), hosted_name: d.trading_name || '' }; }
+    if (val('scoreboard_start')) p.scoreboard_start = val('scoreboard_start');
+    if (val('note')) p.note = val('note');
+    var json = JSON.stringify(p), bytes = new TextEncoder().encode(json);
+    var done = function(prefix, arr){ var code = prefix + b64url(arr); var url = val('app_url').replace(/\/?$/, '/') + '#/setup?d=' + code; $('out').textContent = url; $('code').textContent = code; $('code').hidden = false; $('size').textContent = json.length + ' characters of set-up, ' + url.length + ' in the link' + (url.length > 30000 ? '. That is long for some messaging apps; email it or use fewer jobs.' : '.'); $('copy').disabled = false; $('copy').onclick = function(){ navigator.clipboard.writeText(url).then(function(){ $('copy').textContent = 'Copied'; setTimeout(function(){ $('copy').textContent = 'Copy the link'; }, 1500); }); }; };
+    if (window.CompressionStream) { var cs = new CompressionStream('deflate-raw'); var w = cs.writable.getWriter(); w.write(bytes); w.close(); new Response(cs.readable).arrayBuffer().then(function(buf){ done('z:', new Uint8Array(buf)); }); } else done('j:', bytes);
+  }
+  $('build').addEventListener('click', build);
+})();
+</script>
+</main></body>
+</html>
