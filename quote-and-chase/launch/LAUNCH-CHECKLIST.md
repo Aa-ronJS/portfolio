@@ -3,6 +3,10 @@
 Everything below the line is done and in the repo. Above the line is
 what only you can do, in order. Nothing else is waiting on me.
 
+> **Start here instead:**  is the
+> step-by-step version, with the two scripts that do most of it for you.
+> What follows is the reference for what each piece is and why.
+
 ## One product, messages included: what to switch on
 
 A painter gives an email inside the app, gets five messages, and quotes.

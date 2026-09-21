@@ -29,10 +29,10 @@ export function detailsFromSession(s) {
   const cd = (s && s.customer_details) || {}, addr = cd.address || {}, cf = {};
   (Array.isArray(s && s.custom_fields) ? s.custom_fields : []).forEach((x) => { if (!x || !x.key) return; const v = x.text ? x.text.value : x.dropdown ? x.dropdown.value : x.numeric ? x.numeric.value : ""; if (v != null && String(v).trim()) cf[String(x.key).toLowerCase()] = clean(v, 120); });
   const d = {};
-  const tn = cf.trading_name || cf.business || cf.business_name || ""; if (tn) d.trading_name = tn;
+  const tn = cf.trading_name || cf.tradingname || cf.business || cf.business_name || cf.businessname || ""; if (tn) d.trading_name = tn;
   if (cd.name) d.owner_name = clean(cd.name, 80);
   if (cf.abn) d.abn = cf.abn.replace(/[^\d ]/g, "").trim();
-  if (cf.licence || cf.license) d.licence = cf.licence || cf.license;
+  if (cf.licence || cf.license || cf.licenceno) d.licence = cf.licence || cf.license || cf.licenceno;
   if (cd.email) d.email = clean(cd.email, 120);
   if (cd.phone) d.phone = clean(cd.phone, 30).replace(/^\+61 ?/, "0");
   const st = stateCode(addr.state); if (st) d.state = st;
@@ -78,10 +78,9 @@ export function mintToken(o) {
 // Two phones on one account: both tokens point at the same Stripe customer, so they draw on the same messages and both send in
 // the same business name. Jobs stay on each phone, because nothing here holds a painter's work on a server.
 export const INCLUDED2 = Number(process.env.INCLUDED_MESSAGES_TWO || 250);
-export function planOf(session) {
-  const m = (session && session.metadata) || {}, cf = {};
-  (Array.isArray(session && session.custom_fields) ? session.custom_fields : []).forEach((x) => { if (x && x.key) cf[String(x.key).toLowerCase()] = 1; });
-  const two = String(m.qc_plan || "").toLowerCase() === "two";
+export function planOf(session, sub) {
+  const pick = (o) => String(((o && o.metadata) || {}).qc_plan || "").toLowerCase();
+  const two = [pick(session), pick(sub), pick(sub && sub.plan), pick((((sub || {}).items || {}).data || [])[0]), pick((((sub || {}).items || {}).data || [])[0] && (((sub || {}).items || {}).data || [])[0].price)].indexOf("two") >= 0;
   return two ? { seats: 2, inc: INCLUDED2 } : { seats: 1, inc: INCLUDED };
 }
 export const FREE_MESSAGES = Number(process.env.FREE_MESSAGES || 5);

@@ -1,0 +1,106 @@
+# Launch, start to finish
+
+Six steps. Two of them are scripts you run; the rest is filling in who you
+are and pasting what the scripts print. Nothing here is reversible-hard:
+run the whole thing in Stripe **test mode** first, pay yourself with
+`4242 4242 4242 4242`, and only then do it again with your live key.
+
+Check where you stand at any point:
+
+    node quote-and-chase-landing/tools/launch-check.mjs
+
+---
+
+## 1. Deploy the relay
+
+The relay is the Vercel project `quote-and-chase-landing`. It is what
+sends the texts and emails, counts the messages and talks to Stripe.
+Deploy it once before anything else, because every later step needs its
+address. You will come back and set its environment variables in step 3.
+
+## 2. Make everything in Stripe
+
+One command builds the product, the three prices, the three Payment Links
+and the webhook, all wired correctly:
+
+    node quote-and-chase-landing/tools/stripe-setup.mjs \
+      --key sk_test_YOURKEY \
+      --site https://aa-ronjs.github.io/portfolio \
+      --relay https://YOUR-PROJECT.vercel.app
+
+It prints three blocks to paste. It is safe to run again: it looks
+everything up first and never makes a second copy. Prices in Stripe cannot
+be edited, so if you change your mind on price, archive the old one in the
+dashboard and re-run.
+
+Keep the `RELAY_SIGNING_SECRET` it prints. Every painter's sending token is
+signed with it, so changing it later stops everyone's sending until they
+open the app again.
+
+## 3. Set the relay's environment variables
+
+Paste the block the script printed into Vercel, and add the four that only
+you can supply: your Twilio account SID, auth token and Messaging Service
+SID, and your Resend key with a verified `RESEND_FROM` address. Redeploy.
+
+The message numbers must match the page exactly. If the relay says 150 and
+the page says 200, the page is lying to a customer.
+
+| What | Relay (Vercel) | Page (`public/config.js`) |
+|---|---|---|
+| Free messages on sign-up | `FREE_MESSAGES` | `FREE_MESSAGES` |
+| Included, solo | `INCLUDED_MESSAGES` | `INCLUDED_MESSAGES` |
+| Included, two phones | `INCLUDED_MESSAGES_TWO` | `INCLUDED_MESSAGES_TWO` |
+| Messages in a pack | `TOPUP_MESSAGES` | `TOPUP_MESSAGES` |
+| Price of a pack | `TOPUP_PRICE` | `TOPUP_PRICE` |
+
+## 4. Fill in who you are
+
+In `quote-and-chase-landing/public/config.js`: `SUPPORT_EMAIL`, `ABN`,
+`BUSINESS_NAME`, `BUSINESS_ADDRESS`, `MAKER_NAME`, `MAKER_NOTE`,
+`MAKER_PHOTO`. The refund promise is a service warranty under Australian
+law, so the terms need a real name and address behind it. The maker block
+is not decoration either: nobody hands a card to an anonymous website.
+
+In `quote-and-chase-app/config.js`: `signup_url`, which the script printed.
+
+## 5. Point Twilio's inbound webhook at the relay
+
+On your Messaging Service, set "a message comes in" to
+`https://YOUR-PROJECT.vercel.app/api/sms-in`. Without it, a customer who
+replies to one of your texts is shouting into a void.
+
+## 6. Walk through it as a stranger
+
+Still in test mode:
+
+1. Open the app, give an email, and confirm five messages appear.
+2. Send them. Confirm the sixth is refused and the app offers to write it
+   for you instead.
+3. Subscribe on the solo link. Confirm the welcome page shows the "Set up
+   my app" button, that tapping it on a phone loads your details, and that
+   the app then says 150 messages.
+4. Tap Top up. Confirm $35 in Stripe and 100 more messages in the app.
+5. Subscribe on the two-phone link with a second email. Confirm the app
+   offers "Set up the second phone", and that the second phone draws on
+   the same messages.
+6. Cancel from inside the app. Confirm the app says cancelled and keeps
+   working.
+
+Then run the whole of step 2 again with your live key, paste the new
+values, and check again:
+
+    node quote-and-chase-landing/tools/launch-check.mjs --relay https://YOUR-PROJECT.vercel.app
+
+---
+
+## Two things to watch once money is coming in
+
+**One shared sender.** Every painter's texts leave through the same Twilio
+Messaging Service. If one of them ever texts a bought list, that number can
+be filtered for everybody. Split the sender pool before this gets big.
+
+**The counter is not locked.** Two messages sent in the same instant can
+both read the same balance, so very occasionally a painter gets one more
+than he paid for. That is cheaper to accept than to lock, but it is worth
+knowing before you see it.

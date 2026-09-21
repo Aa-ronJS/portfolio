@@ -65,7 +65,7 @@ export default async function handler(req, res) {
       const sub = typeof s.subscription === "string" ? await stripe("subscriptions/" + encodeURIComponent(s.subscription)) : s.subscription;
       const item = (sub.items && sub.items.data && sub.items.data[0]) || {};
       const until = untilFor(sub.current_period_end || item.current_period_end);
-      const plan = planOf(s);
+      const plan = planOf(s, sub);
       const token = mintToken({ sub: sub.id, cus: sub.customer || s.customer, name: details.trading_name || details.owner_name || "", reply_to: details.email || "", until: until, plan: "paid", inc: plan.inc, seats: plan.seats, seat: 1 });
       out.seats = plan.seats; out.included = plan.inc;
       // a painter who started on the free five keeps any top-up he had bought, and his old record is marked so the list stays clean
