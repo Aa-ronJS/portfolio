@@ -72,7 +72,17 @@ export function untilFor(periodEndSec) {
 export function mintToken(o) {
   return signToken({ v: 1, sub: o.sub || "", cus: o.cus || "", name: o.name || "", reply_to: o.reply_to || "", until: o.until || "",
     plan: o.plan === "paid" ? "paid" : "free", inc: Number(o.inc) > 0 ? Math.floor(Number(o.inc)) : (o.plan === "paid" ? INCLUDED : FREE_MESSAGES),
+    seats: Number(o.seats) > 1 ? Math.floor(Number(o.seats)) : 1, seat: Number(o.seat) > 1 ? Math.floor(Number(o.seat)) : 1,
     iat: Math.floor(Date.now() / 1000) }, process.env.RELAY_SIGNING_SECRET);
+}
+// Two phones on one account: both tokens point at the same Stripe customer, so they draw on the same messages and both send in
+// the same business name. Jobs stay on each phone, because nothing here holds a painter's work on a server.
+export const INCLUDED2 = Number(process.env.INCLUDED_MESSAGES_TWO || 250);
+export function planOf(session) {
+  const m = (session && session.metadata) || {}, cf = {};
+  (Array.isArray(session && session.custom_fields) ? session.custom_fields : []).forEach((x) => { if (x && x.key) cf[String(x.key).toLowerCase()] = 1; });
+  const two = String(m.qc_plan || "").toLowerCase() === "two";
+  return two ? { seats: 2, inc: INCLUDED2 } : { seats: 1, inc: INCLUDED };
 }
 export const FREE_MESSAGES = Number(process.env.FREE_MESSAGES || 5);
 export const INCLUDED = Number(process.env.INCLUDED_MESSAGES || 150);

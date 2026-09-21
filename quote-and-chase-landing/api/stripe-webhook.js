@@ -10,7 +10,7 @@
 // here for checkout.session.completed and checkout.session.async_payment_succeeded; its signing secret in STRIPE_WEBHOOK_SECRET.
 // Env: STRIPE_SECRET_KEY, RELAY_SIGNING_SECRET, RELAY_URL (<site>/api/msg), APP_URL, SUPPORT_EMAIL, optional OWNER_MOBILE and
 // OWNER_EMAIL (a heads-up text and a copy of the email; neither is needed for the painter to be up and running).
-import { rawBody, send, stripeSigned, detailsFromSession, linkOnePayload, setupLink, creds, sms, email, mintToken, untilFor, sendingSettings, stripe, INCLUDED, TOPUP_MESSAGES, readBalance } from "./_setup.js";
+import { rawBody, send, stripeSigned, detailsFromSession, linkOnePayload, setupLink, creds, sms, email, mintToken, untilFor, sendingSettings, stripe, INCLUDED, TOPUP_MESSAGES, readBalance, planOf } from "./_setup.js";
 
 export const config = { api: { bodyParser: false } };
 const done = new Map(); // event ids this warm instance has already handled; Stripe retries are harmless anyway
@@ -65,7 +65,9 @@ export default async function handler(req, res) {
       const sub = typeof s.subscription === "string" ? await stripe("subscriptions/" + encodeURIComponent(s.subscription)) : s.subscription;
       const item = (sub.items && sub.items.data && sub.items.data[0]) || {};
       const until = untilFor(sub.current_period_end || item.current_period_end);
-      const token = mintToken({ sub: sub.id, cus: sub.customer || s.customer, name: details.trading_name || details.owner_name || "", reply_to: details.email || "", until: until, plan: "paid", inc: INCLUDED });
+      const plan = planOf(s);
+      const token = mintToken({ sub: sub.id, cus: sub.customer || s.customer, name: details.trading_name || details.owner_name || "", reply_to: details.email || "", until: until, plan: "paid", inc: plan.inc, seats: plan.seats, seat: 1 });
+      out.seats = plan.seats; out.included = plan.inc;
       // a painter who started on the free five keeps any top-up he had bought, and his old record is marked so the list stays clean
       if (s.client_reference_id && s.client_reference_id !== (sub.customer || s.customer)) { try { await stripe("customers/" + encodeURIComponent(s.client_reference_id), { "metadata[qc_upgraded_to]": String(sub.customer || s.customer) }); } catch (e) {} }
       sending = sendingSettings(token, until, details.trading_name || details.owner_name || "");

@@ -74,7 +74,7 @@ function hostedEntry(token) {
   const p = readToken(token, process.env.RELAY_SIGNING_SECRET);
   if (!p) return null;
   if (revoked(p.sub)) return { name: p.name, reply_to: p.reply_to, until: p.until, disabled: true, signed: true };
-  return { name: p.name, reply_to: p.reply_to, until: p.until, signed: true, sub: p.sub, payload: p };
+  return { name: p.name, reply_to: p.reply_to, until: p.until, signed: true, sub: p.sub, seats: p.seats || 1, seat: p.seat || 1, payload: p };
 }
 // out of messages, and he asked us to keep it going: buy one pack on the card already on file, up to the cap, and carry on
 async function refill(payload, bal) {
@@ -192,7 +192,7 @@ export default async function handler(req, res) {
       const back = hosted && hosted.payload ? await spend(hosted.payload, -1).catch(() => null) : null;
       return send(res, 200, { ok: true, ...r, ...(back ? { left: back.left, used: back.used } : {}) }); }
     if (body.action === "ping") { const p = { ok: true, sms: !!(c.twilioSid && c.twilioToken && (c.twilioService || c.twilioFrom)), sms_schedule: !!(c.twilioSid && c.twilioToken && c.twilioService), email: !!(c.resendKey && c.resendFrom), client_creds: process.env.ALLOW_CLIENT_CREDS === "1", token_required: !!process.env.RELAY_TOKEN || !!process.env.RELAY_SIGNING_SECRET || Object.keys(tokenMap()).length > 0 };
-      if (hosted) { p.hosted = true; p.until = hosted.until || null; p.name = hosted.name || ""; p.client_creds = false; if (hosted.signed) { p.signed = true; p.renew = "/api/renew"; p.portal = "/api/portal"; p.plan = hosted.payload.plan; const bp = await readBalance(hosted.payload).catch(() => null); if (bp) { p.included = bp.included + bp.extra; p.used = bp.used; p.left = bp.left; p.period = bp.period; } } }
+      if (hosted) { p.hosted = true; p.until = hosted.until || null; p.name = hosted.name || ""; p.client_creds = false; if (hosted.signed) { p.signed = true; p.renew = "/api/renew"; p.portal = "/api/portal"; p.plan = hosted.payload.plan; p.seats = hosted.seats; p.seat = hosted.seat; const bp = await readBalance(hosted.payload).catch(() => null); if (bp) { p.included = bp.included + bp.extra; p.used = bp.used; p.left = bp.left; p.period = bp.period; } } }
       return send(res, 200, p); }
     return send(res, 400, { ok: false, error: "Unknown action" });
   } catch (e) { return send(res, 400, { ok: false, error: e.message || String(e) }); }

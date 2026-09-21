@@ -39,8 +39,8 @@
   // what the relay last told us about the allowance, kept on the phone so no screen has to ask before it can draw
   function balance(next) {
     try { var st = QCStore.load(); if (!st.sending || typeof st.sending !== 'object') st.sending = {};
-      if (next) { ['left', 'used', 'included', 'plan', 'period', 'at'].forEach(function (k) { if (next[k] != null) st.sending['bal_' + k] = next[k]; }); QCStore.save(); }
-      var c = st.sending; return { left: c.bal_left == null ? null : +c.bal_left, used: +c.bal_used || 0, included: c.bal_included == null ? null : +c.bal_included, plan: c.bal_plan || '', period: c.bal_period || '', at: +c.bal_at || 0 };
+      if (next) { ['left', 'used', 'included', 'plan', 'period', 'seats', 'seat', 'at'].forEach(function (k) { if (next[k] != null) st.sending['bal_' + k] = next[k]; }); QCStore.save(); }
+      var c = st.sending; return { left: c.bal_left == null ? null : +c.bal_left, used: +c.bal_used || 0, included: c.bal_included == null ? null : +c.bal_included, plan: c.bal_plan || '', period: c.bal_period || '', seats: +c.bal_seats || 1, seat: +c.bal_seat || 1, at: +c.bal_at || 0 };
     } catch (e) { return { left: null, used: 0, included: null, plan: '', period: '', at: 0 }; }
   }
   function outOfMessages() { var b = balance(); return b.left != null && b.left <= 0; }

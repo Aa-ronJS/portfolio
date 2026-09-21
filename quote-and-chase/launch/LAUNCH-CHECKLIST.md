@@ -19,7 +19,7 @@ no cap to police, because the messages are the cap.
    (a long random string; every token is signed with it, so changing it
    stops everyone's sending), `RELAY_URL` = `https://<site>/api/msg`,
    `APP_URL`, `SUPPORT_EMAIL`, `FREE_MESSAGES` (5), `INCLUDED_MESSAGES`
-   (150), `TOPUP_MESSAGES` (100), `TOPUP_PRICE` (35), `AUTO_TOPUP_CAP` (3), your `TWILIO_ACCOUNT_SID` /
+   (150), `TOPUP_MESSAGES` (100), `TOPUP_PRICE` (35), `AUTO_TOPUP_CAP` (3), `INCLUDED_MESSAGES_TWO` (250), your `TWILIO_ACCOUNT_SID` /
    `TWILIO_AUTH_TOKEN` / `TWILIO_MESSAGING_SERVICE_SID`, `RESEND_API_KEY`,
    `RESEND_FROM` (a verified address), and optionally `OWNER_MOBILE`,
    `OWNER_EMAIL` and `INBOUND_FORWARD_TO`. Keep the four message numbers

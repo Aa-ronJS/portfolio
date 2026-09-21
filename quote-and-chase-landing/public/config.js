@@ -13,6 +13,10 @@ window.QC = {
   TOPUP_MESSAGES: 100,              // messages in a top-up pack. Must match TOPUP_MESSAGES on the relay.
   TOPUP_PRICE: 35,                  // AUD for a pack. Must match TOPUP_PRICE on the relay. Packs are bought adversely (only heavy
                                     // senders buy one), so this has to sit near the real cost of sending them, not at a token price.
+  PLAN2_PRICE: 149,                 // AUD a month for two phones on one account. Must match its own Payment Link.
+  INCLUDED_MESSAGES_TWO: 250,       // messages a month on the two-phone plan. Must match INCLUDED_MESSAGES_TWO on the relay.
+  SUBSCRIBE2_URL: "",               // TODO owner: a second Payment Link at PLAN2_PRICE with metadata qc_plan=two. That one piece of
+                                    //   metadata is what tells the webhook to mint a two-seat token; without it you sell one phone at two-phone prices.
   SUBSCRIBE_URL: "",                // TODO owner: the Stripe Payment Link (subscription mode) at PLAN_PRICE. The app links to it from inside;
                                     //   collect name, email, phone and billing address, plus custom TEXT fields keyed trading_name, abn, licence.
                                     //   Success URL: <this site>/welcome?session={CHECKOUT_SESSION_ID}
