@@ -75,8 +75,51 @@ export function mintToken(o) {
     iat: Math.floor(Date.now() / 1000) }, process.env.RELAY_SIGNING_SECRET);
 }
 export const FREE_MESSAGES = Number(process.env.FREE_MESSAGES || 5);
-export const INCLUDED = Number(process.env.INCLUDED_MESSAGES || 100);
+export const INCLUDED = Number(process.env.INCLUDED_MESSAGES || 150);
 export const TOPUP_MESSAGES = Number(process.env.TOPUP_MESSAGES || 100);
+export const TOPUP_PRICE = Number(process.env.TOPUP_PRICE || 35);      // A$ for a pack, charged to the card already on file
+export const AUTO_TOPUP_CAP = Number(process.env.AUTO_TOPUP_CAP || 3); // most packs we will ever charge in one period without being asked again
+
+// Buy a pack against the card Stripe already holds, with no browser, no redirect and nothing for the painter to type.
+// Returns { ok, messages, extra } or { ok:false, needs_card:true } when the card needs the painter in front of it (SCA, expiry, no card).
+export async function chargeTopUp(p, opts) {
+  opts = opts || {};
+  if (!p || !p.cus) return { ok: false, error: "No account on that token" };
+  let pm = "";
+  try {
+    if (p.sub) { const sub = await stripe("subscriptions/" + encodeURIComponent(p.sub)); pm = sub.default_payment_method || ""; }
+    if (!pm) { const cus = await stripe("customers/" + encodeURIComponent(p.cus)); pm = (cus.invoice_settings && cus.invoice_settings.default_payment_method) || cus.default_source || ""; }
+  } catch (e) { return { ok: false, error: e.message }; }
+  if (!pm) return { ok: false, needs_card: true, error: "No card on file" };
+  let pi;
+  try {
+    pi = await stripe("payment_intents", {
+      amount: String(Math.round(TOPUP_PRICE * 100)), currency: "aud", customer: p.cus, payment_method: pm,
+      off_session: "true", confirm: "true", description: TOPUP_MESSAGES + " messages, Quote & Chase",
+      "metadata[qc]": "topup", "metadata[qc_messages]": String(TOPUP_MESSAGES), "metadata[qc_auto]": opts.auto ? "1" : "0",
+    });
+  } catch (e) { return { ok: false, needs_card: true, error: e.message }; }
+  if (pi.status !== "succeeded") return { ok: false, needs_card: true, error: "That card needs you: " + pi.status };
+  const credited = await creditMessages(p.cus, TOPUP_MESSAGES, opts.auto).catch(() => null);
+  return { ok: true, messages: TOPUP_MESSAGES, charged: TOPUP_PRICE, ...(credited || {}) };
+}
+// put messages on an account, in this period if it has started, otherwise waiting for the one it was bought for
+export async function creditMessages(cus, n, auto) {
+  const c = await stripe("customers/" + encodeURIComponent(cus)), m = c.metadata || {};
+  const period = new Date().toISOString().slice(0, 7), same = String(m.qc_period || "") === period;
+  const extra = Math.max(0, parseInt(same ? m.qc_extra : m.qc_extra_next, 10) || 0) + n;
+  const form = same ? { "metadata[qc_extra]": String(extra) } : { "metadata[qc_extra_next]": String(extra) };
+  if (auto) form["metadata[qc_auto_count]"] = String(Math.max(0, parseInt(m.qc_auto_count, 10) || 0) + 1);
+  await stripe("customers/" + encodeURIComponent(cus), form);
+  return { extra };
+}
+export async function autoTopUpOn(cus) {
+  try { const c = await stripe("customers/" + encodeURIComponent(cus)), m = c.metadata || {};
+    const period = new Date().toISOString().slice(0, 7), same = String(m.qc_period || "") === period;
+    const used = same ? Math.max(0, parseInt(m.qc_auto_count, 10) || 0) : 0;
+    return String(m.qc_auto || "") === "1" && used < AUTO_TOPUP_CAP;
+  } catch (e) { return false; }
+}
 
 // ---- the message counter, kept in the Stripe customer's metadata: qc_used, qc_period, qc_extra. Three keys, none of them grow.
 export function periodOf(p) { return p && p.plan === "paid" ? new Date().toISOString().slice(0, 7) : "once"; }

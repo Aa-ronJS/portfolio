@@ -19,7 +19,7 @@ no cap to police, because the messages are the cap.
    (a long random string; every token is signed with it, so changing it
    stops everyone's sending), `RELAY_URL` = `https://<site>/api/msg`,
    `APP_URL`, `SUPPORT_EMAIL`, `FREE_MESSAGES` (5), `INCLUDED_MESSAGES`
-   (100), `TOPUP_MESSAGES` (100), your `TWILIO_ACCOUNT_SID` /
+   (150), `TOPUP_MESSAGES` (100), `TOPUP_PRICE` (35), `AUTO_TOPUP_CAP` (3), your `TWILIO_ACCOUNT_SID` /
    `TWILIO_AUTH_TOKEN` / `TWILIO_MESSAGING_SERVICE_SID`, `RESEND_API_KEY`,
    `RESEND_FROM` (a verified address), and optionally `OWNER_MOBILE`,
    `OWNER_EMAIL` and `INBOUND_FORWARD_TO`. Keep the four message numbers
@@ -32,8 +32,10 @@ no cap to police, because the messages are the cap.
    PLAN_PRICE: collect name, email, phone and billing address, with custom
    text fields keyed `trading_name`, `abn`, `licence`, success URL
    `https://aa-ronjs.github.io/portfolio/welcome?session={CHECKOUT_SESSION_ID}`.
-   One in **payment** mode at TOPUP_PRICE with metadata `qc=topup` for a
-   pack of messages. A webhook at `https://<site>/api/stripe-webhook` for
+   Top-ups need no Payment Link: the app charges the card already on file
+   through `api/topup.js`, so leave TOPUP_URL empty unless you want a
+   fallback link for someone with no card saved. If you do make one, it is
+   a one-off Payment Link at TOPUP_PRICE with metadata `qc=topup`. A webhook at `https://<site>/api/stripe-webhook` for
    `checkout.session.completed` and `checkout.session.async_payment_succeeded`.
    Turn the **customer portal** on in Stripe settings or the app's Manage
    button has nothing to open. Then fill SUBSCRIBE_URL, TOPUP_URL and
@@ -43,7 +45,9 @@ no cap to police, because the messages are the cap.
 6. **Test it as a stranger**, Stripe in test mode: sign up with an email,
    watch five messages appear, send them, watch the sixth be refused and
    the app fall back to writing it for you, then subscribe and watch the
-   count become a hundred. `node scratchpad/smoke/send/credits.cjs` runs
+   count become 150. Then tap Top up and confirm $35 lands in Stripe and
+   100 messages land on the account, and switch on automatic top-ups and
+   confirm it stops at three packs in a month. `node scratchpad/smoke/send/credits.cjs` runs
    the same chain against a stubbed Stripe, Twilio and Resend.
 
 ### The counter, and where the money can leak

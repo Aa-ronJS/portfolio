@@ -24,7 +24,7 @@
 //   { action: "ping" }                                                                     -> what is set up; for a mapped token also { hosted: true, until, name }
 // Every action returns { ok: true, ... } or { ok: false, error }.
 
-import { readToken, readBalance, spend, OUT_OF_MESSAGES } from "./_setup.js";
+import { readToken, readBalance, spend, OUT_OF_MESSAGES, autoTopUpOn, chargeTopUp } from "./_setup.js";
 
 const ALLOWED = (process.env.ALLOWED_ORIGINS || "https://aa-ronjs.github.io,https://aaronsteele.vercel.app").split(",").map((s) => s.trim()).filter(Boolean);
 const PER_IP_LIMIT = Number(process.env.MSG_PER_IP_LIMIT || 60); // per 10 minutes per instance
@@ -75,6 +75,15 @@ function hostedEntry(token) {
   if (!p) return null;
   if (revoked(p.sub)) return { name: p.name, reply_to: p.reply_to, until: p.until, disabled: true, signed: true };
   return { name: p.name, reply_to: p.reply_to, until: p.until, signed: true, sub: p.sub, payload: p };
+}
+// out of messages, and he asked us to keep it going: buy one pack on the card already on file, up to the cap, and carry on
+async function refill(payload, bal) {
+  if (!payload || !payload.cus) return bal;
+  if (!(await autoTopUpOn(payload.cus))) return bal;
+  const r = await chargeTopUp(payload, { auto: true }).catch(() => null);
+  if (!r || !r.ok) return bal;
+  const next = await readBalance(payload).catch(() => null);
+  return next ? { ...next, topped_up: r.messages } : bal;
 }
 // the only reason to touch an env var: stopping one account at once, ahead of its expiry
 function revoked(sub) { return !!sub && (process.env.RELAY_REVOKED || "").split(/[,\s]+/).filter(Boolean).indexOf(sub) >= 0; }
@@ -162,8 +171,8 @@ export default async function handler(req, res) {
   try {
     if (body.action === "test") { const r = ch === "sms" ? await smsSend(c, body.to, "Quote and Chase test: SMS sending works.") : await emailSend(c, { to: body.to, subject: "Quote and Chase test", body: "Email sending works." }); return send(res, 200, { ok: true, ...r }); }
     if (body.action === "send") { if (!body.to || (ch === "sms" ? !body.body : (!body.body && !body.html))) throw new Error("to and body are required"); if (String(body.body || "").length > 1600) throw new Error("Message too long");
-      const bal = hosted && hosted.payload ? await readBalance(hosted.payload) : null;
-      if (bal && bal.counted && bal.left <= 0) return send(res, 402, { ok: false, error: OUT_OF_MESSAGES, out_of_messages: true, ...bal });
+      let bal = hosted && hosted.payload ? await readBalance(hosted.payload) : null;
+      if (bal && bal.counted && bal.left <= 0) { bal = await refill(hosted.payload, bal); if (bal.left <= 0) return send(res, 402, { ok: false, error: OUT_OF_MESSAGES, out_of_messages: true, ...bal }); }
       const r = ch === "sms" ? await smsSend(c, body.to, body.body) : await emailSend(c, body);
       const after = hosted && hosted.payload ? await spend(hosted.payload, 1).catch(() => null) : null;
       return send(res, 200, { ok: true, ...r, ...(after ? { left: after.left, used: after.used, included: after.included + after.extra } : {}) }); }
@@ -172,8 +181,8 @@ export default async function handler(req, res) {
       // created is returned instead of a second message. Best effort: the map lives in this warm instance only and keeps the last 200 keys.
       const key = body.key != null ? keyPrefix + String(body.key).slice(0, 120) : ""; if (key && seen.has(key)) return send(res, 200, { ok: true, ...seen.get(key), reused: true });
       // A scheduled reminder holds a message the moment it is booked, and gives it back if it is cancelled before it goes.
-      const balS = hosted && hosted.payload ? await readBalance(hosted.payload) : null;
-      if (balS && balS.counted && balS.left <= 0) return send(res, 402, { ok: false, error: OUT_OF_MESSAGES, out_of_messages: true, ...balS });
+      let balS = hosted && hosted.payload ? await readBalance(hosted.payload) : null;
+      if (balS && balS.counted && balS.left <= 0) { balS = await refill(hosted.payload, balS); if (balS.left <= 0) return send(res, 402, { ok: false, error: OUT_OF_MESSAGES, out_of_messages: true, ...balS }); }
       const r = ch === "sms" ? await smsSchedule(c, body.to, body.body, body.send_at) : await emailSchedule(c, body);
       const afterS = hosted && hosted.payload ? await spend(hosted.payload, 1).catch(() => null) : null;
       if (afterS) { r.left = afterS.left; r.used = afterS.used; r.included = afterS.included + afterS.extra; }

@@ -71,7 +71,7 @@
       '<form id="joinform" novalidate><label class="f">Your email<span>so your app is yours, and so the first messages can go out in your name</span><input type="email" id="join_email" autocomplete="email" inputmode="email" required></label>' +
       '<label class="f">Your business name<span>optional, it goes on your quotes</span><input type="text" id="join_name" autocomplete="organization"></label>' +
       '<div class="row" style="margin-top:8px"><button class="btn tape" type="submit" id="join_go">Start quoting</button><span class="hint" id="join_msg"></span></div></form>' +
-      '<p class="hint">Your first ' + FREE_SENDS + ' messages are on us. A message is one text or one email the app sends for you. After that it is $<span>' + PLAN_PRICE + '</span> a month for ' + PLAN_INCLUDED + ', or top up when you need to.</p>' +
+      '<p class="hint">Your first ' + FREE_SENDS + ' messages are on us. A message is one text or one email the app sends for you. After that it is $' + PLAN_PRICE + ' a month for ' + PLAN_INCLUDED + ' of them, and a pack of ' + TOPUP_MESSAGES + ' more is $' + TOPUP_PRICE + ' whenever you want it.</p>' +
       '<p class="hint">Your jobs, prices and clients stay on this phone. We keep your email so the app is yours and so we can tell you when something changes.' + (url ? '' : ' <span class="confirm">Sign-up is not switched on yet.</span>') + '</p>' +
       '<p class="hint">Already have a set-up link? Open it on this phone and it does all of this for you.</p></div>';
     var f = document.getElementById('joinform');
@@ -94,7 +94,7 @@
         .catch(function (e2) { btn.disabled = false; out.textContent = e2.message; });
     });
   }
-  var FREE_SENDS = 5, PLAN_INCLUDED = 100, PLAN_PRICE = 49;
+  var FREE_SENDS = 5, PLAN_INCLUDED = 150, PLAN_PRICE = 99, TOPUP_MESSAGES = 100, TOPUP_PRICE = 35;
   document.addEventListener('visibilitychange', function () { if (document.hidden) { hiddenAt = Date.now(); return; } if (unlocked && hiddenAt && Date.now() - hiddenAt > 5 * 60000 && S && S.security && S.security.pin) { unlocked = false; route(); } });
   function viewLock() {
     $app.innerHTML = '<div class="card" style="max-width:360px;margin:30px auto 0"><h1>Enter your PIN</h1><form id="pinform"><label class="f">PIN<input type="password" id="pin" inputmode="numeric" pattern="[0-9]*" autocomplete="off" maxlength="6" autofocus></label><div class="row" style="margin-top:8px"><button class="btn tape" type="submit">Unlock</button></div><p class="status bad" id="pinmsg"></p></form>' +
@@ -1116,7 +1116,7 @@
   // Rules: quote follow-ups only while the quote is waiting (status quoted) and the job allows them; nothing while on hold; never a time in the
   // past; weekends and public holidays roll forward to the next business day at remind_hour; deposit reminders wait 3 business days after due;
   // the final notice is never automatic (auto texts cap at the second tier); anything beyond the provider window waits in state.local_queue.
-  function outOfMessagesToast() { toast('Out of messages. The app still writes every one; you tap Send. Top up or go monthly in Set-up.', { action: 'Set-up', onAction: function () { go('/settings'); } }); }
+  function outOfMessagesToast() { var paid = QCMsg.balance().plan === 'paid'; toast('Out of messages. The app still writes every one; you tap Send.', { action: paid ? 'Top up $' + TOPUP_PRICE : 'Set-up', onAction: function () { if (!paid) return go('/settings'); toast('Charging your card…'); topUp({ buy: true }).then(function (j) { toast(j.messages + ' messages added, $' + j.charged + ' charged. Try that again.'); }).catch(function (e) { toast(e.needsCard ? 'Your card needs a look. Set-up, then Manage.' : e.message); }); } }); }
   function scheduleFollowUps(job, kind, opts) {
     opts = opts || {}; var say = opts.quiet ? function () {} : toast;
     if (QCMsg.outOfMessages()) return (function () { if (!opts.quiet) outOfMessagesToast(); return Promise.resolve({ scheduled: [], failed: [], waiting: [], skipped: [], reason: 'out of messages' }); })();
@@ -1177,6 +1177,19 @@
         if (!j.active || j.status === 'past_due') { var h = location.hash.replace(/^#\/?/, ''); if (!h) route(); }
         return j;
       }).catch(function () { return null; });
+  }
+  function topUp(opts) {
+    var url = hostedApi('topup'), tok = String((S.sending || {}).token || '');
+    if (!url || tok.slice(0, 4) !== 'qc1.') return Promise.reject(new Error('Top-ups need sending to be running through our system.'));
+    var f = window.__qcRelayFetch || window.fetch, body = { token: tok };
+    if (opts && opts.auto != null) body.auto = !!opts.auto; if (opts && opts.buy) body.buy = true;
+    return f(url, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body) })
+      .then(function (r) { return r.json(); })
+      .then(function (j) {
+        if (j && j.left != null) QCMsg.balance({ left: j.left, used: j.used, included: j.included, at: Date.now() });
+        if (!j || !j.ok) { var e = new Error((j && j.error) || 'Could not top up'); e.needsCard = !!(j && j.needs_card); throw e; }
+        return j;
+      });
   }
   function hostedPortal() {
     var url = hostedApi('portal'), tok = String((S.sending || {}).token || '');
@@ -1513,7 +1526,8 @@
     var relayOn = !!S.sending.server, dis = relayOn ? '' : ' disabled';
     var hosted = S.sending.hosted === true, hostedEnded = hosted && QCMsg.hostedEnded && QCMsg.hostedEnded(S.sending), hostedStopped = hosted && !hostedEnded && S.sending.hosted_cancelled === true, hostedTo = /^\d{4}-\d{2}-\d{2}$/.test(String(S.sending.hosted_until || '')) ? shortDate(S.sending.hosted_until) : '';
     html += '<div class="card"><h2>Automatic texting and emailing</h2><p class="hint">' + (hostedEnded ? '<span class="confirm">The chasing is off: your sending ran to ' + esc(hostedTo) + '. Turn it back on at <a href="' + esc(SITE + '#price') + '" target="_blank" rel="noopener">the website</a> and one tap in the email puts it back, or connect your own accounts below. Nothing on this phone is lost.</span>' : hostedStopped ? '<span class="confirm">Cancelled. The chasing keeps running to ' + esc(hostedTo) + ' and stops after that. Change your mind any time with Manage below.</span>' : hosted ? 'On, and paid' + (hostedTo ? ' to ' + esc(hostedTo) + ', when it renews itself' : '') + '. Texts and emails go out in your name and there is nothing to open. Every text it sends ends with a way to reach you' + (String(S.details.phone || '').trim() ? ' on ' + esc(String(S.details.phone).trim()) + ', because the number it comes from cannot take replies.' : (String(S.details.email || '').trim() ? ' by email, because the number it comes from cannot take replies. <span class="confirm">Add your mobile in Your business above and texts point them there instead.</span>' : ', because the number it comes from cannot take replies. <span class="confirm">Add your mobile in Your business above so there is one to give.</span>')) : 'Optional. Needs a computer and about an hour. Without it, the app writes every text and email and you press Send yourself; nothing goes out without you.' + (autoReady() ? ' Set up and working.' : ' Rather not? <a href="' + esc(SITE + '#price') + '" target="_blank" rel="noopener">Turn the chasing on</a>: one card, one tap, cancel from this page any time.')) + '</p>' +
-      (hosted && QCMsg.balance().left != null ? '<p class="hint" id="balcard"><b>' + esc(balanceLine()) + '</b>' + (QCMsg.balance().left <= 5 ? ' <a href="' + esc(topUpLink()) + '" target="_blank" rel="noopener">Top up or go monthly</a>' : '') + '</p>' : '') +
+      (hosted && QCMsg.balance().left != null ? '<p class="hint" id="balcard"><b>' + esc(balanceLine()) + '</b></p>' +
+        (QCMsg.balance().plan === 'paid' ? '<div class="row" id="toprow"><button class="btn ghost sm" id="topnow">Top up ' + TOPUP_MESSAGES + ' messages, $' + TOPUP_PRICE + '</button><label class="btn ghost sm"><input type="checkbox" id="topauto"' + (S.sending.auto_topup ? ' checked' : '') + '> Top up by itself when I run out</label><span class="hint" id="topres"></span></div>' : '<p class="hint"><a href="' + esc(topUpLink()) + '" target="_blank" rel="noopener">Go monthly: ' + PLAN_INCLUDED + ' messages for $' + PLAN_PRICE + ' a month</a></p>') : '') +
       (hosted || hostedStopped ? '<div class="row" id="hostedrow"><button class="btn ghost sm" id="hostedmanage">Manage or cancel</button><button class="btn ghost sm" id="hostedcheck">Check my subscription</button><span class="hint" id="hostedres"></span></div>' : '') +
       '<label class="f">Paste a set-up code<span>or the whole set-up link from your welcome email; it loads your details, prices and jobs without wiping anything</span><textarea id="setupcode" rows="2" autocomplete="off" spellcheck="false" autocapitalize="off" placeholder="j:… or z:…"></textarea></label><div class="row"><button class="btn sm" id="setupcodego">Load</button><span class="hint" id="setupcoderes"></span></div>' +
       '<details class="sec sub"><summary><h3>Show me the set-up steps</h3></summary>' + (hosted ? '<p class="hint">You do not need any of this while the chasing is on. It is here for the day you would rather run your own accounts.</p>' : '') + '<p class="hint">Texts go through Twilio and emails through Resend, via a relay (a small web service of your own, set up on a computer). Keys stay on this phone and are left out of back-ups unless you tick the box under Back-up.</p>' +
@@ -1539,6 +1553,8 @@
     var bc = document.getElementById('brandcol'); if (bc) bc.addEventListener('input', function () { S.details.brand_colour = /^#[0-9a-f]{6}$/i.test(bc.value) ? bc.value : ''; save(); });
     var br = document.getElementById('brandreset'); if (br) br.addEventListener('click', function () { S.details.brand_colour = ''; save(); viewSettings(); });
     ['testsms', 'testemail'].forEach(function (id) { document.getElementById(id).addEventListener('click', function () { var to = document.getElementById('testto').value.trim(), out = document.getElementById('testres'); if (!to) { out.textContent = 'Type a number or email first.'; return; } out.textContent = 'Sending…'; QCMsg.call({ action: 'test', channel: id === 'testsms' ? 'sms' : 'email', to: to }).then(function (r) { out.textContent = 'Sent (' + (r.id || 'ok') + ').'; }).catch(function (e) { out.textContent = 'Failed: ' + e.message; }); }); });
+    var tn = document.getElementById('topnow'); if (tn) tn.addEventListener('click', function () { var o = document.getElementById('topres'); o.textContent = 'Charging your card…'; tn.disabled = true; topUp({ buy: true }).then(function (j) { tn.disabled = false; o.textContent = ''; toast(j.messages + ' messages added, $' + j.charged + ' charged to your card.'); viewSettings(); }).catch(function (e) { tn.disabled = false; o.textContent = e.needsCard ? 'Your card needs a look. Tap Manage to fix it.' : e.message; }); });
+    var ta = document.getElementById('topauto'); if (ta) ta.addEventListener('click', function () { var on = ta.checked, o = document.getElementById('topres'); o.textContent = 'Saving…'; topUp({ auto: on }).then(function () { S = QCStore.load(); S.sending.auto_topup = on; save(); o.textContent = on ? 'On. Up to three packs a month, never more.' : 'Off.'; }).catch(function (e) { ta.checked = !on; o.textContent = e.message; }); });
     var hm = document.getElementById('hostedmanage'); if (hm) hm.addEventListener('click', function () { var o = document.getElementById('hostedres'); o.textContent = 'Opening…'; hm.disabled = true; hostedPortal().then(function (u) { o.textContent = ''; hm.disabled = false; window.open(u, '_blank', 'noopener'); }).catch(function (e) { hm.disabled = false; o.textContent = e.message; }); });
     var hc = document.getElementById('hostedcheck'); if (hc) hc.addEventListener('click', function () { var o = document.getElementById('hostedres'); o.textContent = 'Checking…'; hc.disabled = true; renewHosted(true).then(function (j) { hc.disabled = false; if (!j) { o.textContent = 'Could not reach the sending system. Try again later.'; return; } o.textContent = j.active ? (j.status === 'past_due' ? 'Your card needs fixing. Tap Manage.' : 'Paid up to ' + shortDate(j.until)) : 'Cancelled. Runs to ' + shortDate(j.until || S.sending.hosted_until) + '.'; setTimeout(function () { viewSettings(); }, 1200); }).catch(function () { hc.disabled = false; o.textContent = 'Could not reach the sending system.'; }); });
     var scg = document.getElementById('setupcodego'); if (scg) scg.addEventListener('click', function () { var v = document.getElementById('setupcode').value, out = document.getElementById('setupcoderes'), code = setupCode(v); if (!v.trim()) { out.textContent = 'Paste the code first.'; return; } if (!code) { out.textContent = 'That does not look like a set-up code. Copy the whole thing and try again.'; return; } out.textContent = ''; go('/setup?d=' + code); });
@@ -1802,6 +1818,6 @@
     return csvRows(['QuoteNumber', 'QuoteVersion', 'Status', 'ClientType', 'Client', 'ContactFirstName', 'Phone', 'Email', 'SiteAddress', 'BillTo', 'ClientABN', 'Description', 'Created', 'QuoteDate', 'SentDate', 'QuoteExGST', 'QuoteGST', 'QuoteTotal', 'AcceptedDate', 'AcceptedHow', 'BookedStart', 'BookedDays', 'Invoiced', 'Paid', 'Owing', 'AgreedVariations', 'Invoices'], rows);
   }
   window.__qcApp = window.__qcApp || {}; Object.assign(window.__qcApp, { exportInvoicesCsv: exportInvoicesCsv, exportPaymentsCsv: exportPaymentsCsv, exportJobsCsv: exportJobsCsv, priceLive: priceLive, depositFor: depositFor, freeze: freeze });
-  Object.assign(window.__qcApp, { applySetup: applySetup, encodeSetup: encodeSetup, decodeSetup: decodeSetup, setupCode: setupCode, setupContents: setupContents, scoreboardData: scoreboardData, queueLoadedFollowUps: queueLoadedFollowUps, bookJobs: bookJobs, renewHosted: renewHosted, hostedPortal: hostedPortal, hostedApi: hostedApi, draftDepositInvoice: draftDepositInvoice, draftedDeposit: draftedDeposit, whenText: whenText });
+  Object.assign(window.__qcApp, { applySetup: applySetup, encodeSetup: encodeSetup, decodeSetup: decodeSetup, setupCode: setupCode, setupContents: setupContents, scoreboardData: scoreboardData, queueLoadedFollowUps: queueLoadedFollowUps, bookJobs: bookJobs, renewHosted: renewHosted, hostedPortal: hostedPortal, hostedApi: hostedApi, topUp: topUp, draftDepositInvoice: draftDepositInvoice, draftedDeposit: draftedDeposit, whenText: whenText });
   Object.assign(window.__qcApp, { handOff: handOff, didItGo: didItGo, markQuoteSent: markQuoteSent, markInvoiceSent: markInvoiceSent, quoteSentDate: quoteSentDate, invOut: invOut, dispName: dispName }); // A2 exports
 })();

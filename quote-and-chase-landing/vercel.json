@@ -32,6 +32,10 @@
     "api/signup.js": {
       "maxDuration": 10,
       "memory": 256
+    },
+    "api/topup.js": {
+      "maxDuration": 15,
+      "memory": 256
     }
   },
   "headers": [
