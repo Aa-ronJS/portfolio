@@ -65,7 +65,40 @@ export function untilFor(periodEndSec) {
   const ms = (Number(periodEndSec) > 0 ? Number(periodEndSec) * 1000 : Date.now() + 30 * 86400000) + GRACE_DAYS * 86400000;
   return new Date(ms).toISOString().slice(0, 10);
 }
-export function mintToken(o) { return signToken({ v: 1, sub: o.sub || "", cus: o.cus || "", name: o.name || "", reply_to: o.reply_to || "", until: o.until || "", iat: Math.floor(Date.now() / 1000) }, process.env.RELAY_SIGNING_SECRET); }
+// The token carries the plan and what it includes. What has been USED lives on the Stripe customer, so there is still no
+// database: Stripe holds the money, the email and the counter, and the signature holds everything else.
+//   plan "free" = the five messages anyone gets for signing up, no period, no reset.
+//   plan "paid" = INCLUDED_MESSAGES a month, reset when the billing period rolls over, plus any top-up packs bought.
+export function mintToken(o) {
+  return signToken({ v: 1, sub: o.sub || "", cus: o.cus || "", name: o.name || "", reply_to: o.reply_to || "", until: o.until || "",
+    plan: o.plan === "paid" ? "paid" : "free", inc: Number(o.inc) > 0 ? Math.floor(Number(o.inc)) : (o.plan === "paid" ? INCLUDED : FREE_MESSAGES),
+    iat: Math.floor(Date.now() / 1000) }, process.env.RELAY_SIGNING_SECRET);
+}
+export const FREE_MESSAGES = Number(process.env.FREE_MESSAGES || 5);
+export const INCLUDED = Number(process.env.INCLUDED_MESSAGES || 100);
+export const TOPUP_MESSAGES = Number(process.env.TOPUP_MESSAGES || 100);
+
+// ---- the message counter, kept in the Stripe customer's metadata: qc_used, qc_period, qc_extra. Three keys, none of them grow.
+export function periodOf(p) { return p && p.plan === "paid" ? new Date().toISOString().slice(0, 7) : "once"; }
+export async function readBalance(p) {
+  const inc = Number(p.inc) > 0 ? Number(p.inc) : 0, period = periodOf(p);
+  if (!p.cus) return { included: inc, used: 0, extra: 0, left: inc, period, counted: false };
+  const cus = await stripe("customers/" + encodeURIComponent(p.cus));
+  const m = cus.metadata || {};
+  const same = String(m.qc_period || "") === period;
+  const used = same ? Math.max(0, parseInt(m.qc_used, 10) || 0) : 0;
+  const extra = same ? Math.max(0, parseInt(m.qc_extra, 10) || 0) : Math.max(0, parseInt(m.qc_extra_next, 10) || 0);
+  return { included: inc, used, extra, left: Math.max(0, inc + extra - used), period, counted: true, email: cus.email || "" };
+}
+// n is +1 to spend a message or -1 to give one back when a scheduled reminder is cancelled before it goes.
+export async function spend(p, n) {
+  if (!p.cus) return null;
+  const b = await readBalance(p);
+  const used = Math.max(0, b.used + n);
+  await stripe("customers/" + encodeURIComponent(p.cus), { "metadata[qc_used]": String(used), "metadata[qc_period]": b.period, "metadata[qc_extra]": String(b.extra), "metadata[qc_extra_next]": "" });
+  return { ...b, used, left: Math.max(0, b.included + b.extra - used) };
+}
+export const OUT_OF_MESSAGES = "You are out of messages";
 
 // ---- Stripe REST, form-encoded, no SDK
 export async function stripe(path, form, method) {

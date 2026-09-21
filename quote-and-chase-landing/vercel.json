@@ -28,6 +28,10 @@
     "api/portal.js": {
       "maxDuration": 10,
       "memory": 256
+    },
+    "api/signup.js": {
+      "maxDuration": 10,
+      "memory": 256
     }
   },
   "headers": [

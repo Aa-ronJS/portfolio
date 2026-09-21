@@ -24,7 +24,7 @@
 //   { action: "ping" }                                                                     -> what is set up; for a mapped token also { hosted: true, until, name }
 // Every action returns { ok: true, ... } or { ok: false, error }.
 
-import { readToken } from "./_setup.js";
+import { readToken, readBalance, spend, OUT_OF_MESSAGES } from "./_setup.js";
 
 const ALLOWED = (process.env.ALLOWED_ORIGINS || "https://aa-ronjs.github.io,https://aaronsteele.vercel.app").split(",").map((s) => s.trim()).filter(Boolean);
 const PER_IP_LIMIT = Number(process.env.MSG_PER_IP_LIMIT || 60); // per 10 minutes per instance
@@ -74,7 +74,7 @@ function hostedEntry(token) {
   const p = readToken(token, process.env.RELAY_SIGNING_SECRET);
   if (!p) return null;
   if (revoked(p.sub)) return { name: p.name, reply_to: p.reply_to, until: p.until, disabled: true, signed: true };
-  return { name: p.name, reply_to: p.reply_to, until: p.until, signed: true, sub: p.sub };
+  return { name: p.name, reply_to: p.reply_to, until: p.until, signed: true, sub: p.sub, payload: p };
 }
 // the only reason to touch an env var: stopping one account at once, ahead of its expiry
 function revoked(sub) { return !!sub && (process.env.RELAY_REVOKED || "").split(/[,\s]+/).filter(Boolean).indexOf(sub) >= 0; }
@@ -161,17 +161,29 @@ export default async function handler(req, res) {
   const keyPrefix = hosted ? body.token.slice(-8) + ":" : "";
   try {
     if (body.action === "test") { const r = ch === "sms" ? await smsSend(c, body.to, "Quote and Chase test: SMS sending works.") : await emailSend(c, { to: body.to, subject: "Quote and Chase test", body: "Email sending works." }); return send(res, 200, { ok: true, ...r }); }
-    if (body.action === "send") { if (!body.to || (ch === "sms" ? !body.body : (!body.body && !body.html))) throw new Error("to and body are required"); if (String(body.body || "").length > 1600) throw new Error("Message too long"); const r = ch === "sms" ? await smsSend(c, body.to, body.body) : await emailSend(c, body); return send(res, 200, { ok: true, ...r }); }
+    if (body.action === "send") { if (!body.to || (ch === "sms" ? !body.body : (!body.body && !body.html))) throw new Error("to and body are required"); if (String(body.body || "").length > 1600) throw new Error("Message too long");
+      const bal = hosted && hosted.payload ? await readBalance(hosted.payload) : null;
+      if (bal && bal.counted && bal.left <= 0) return send(res, 402, { ok: false, error: OUT_OF_MESSAGES, out_of_messages: true, ...bal });
+      const r = ch === "sms" ? await smsSend(c, body.to, body.body) : await emailSend(c, body);
+      const after = hosted && hosted.payload ? await spend(hosted.payload, 1).catch(() => null) : null;
+      return send(res, 200, { ok: true, ...r, ...(after ? { left: after.left, used: after.used, included: after.included + after.extra } : {}) }); }
     if (body.action === "schedule") { if (!body.to || !body.body || !body.send_at) throw new Error("to, body and send_at are required"); if (String(body.body).length > 1600) throw new Error("Message too long");
       // Idempotency: the app sends key = job id + ref + quote version. If the same key arrives again (a retry after a lost reply) the id already
       // created is returned instead of a second message. Best effort: the map lives in this warm instance only and keeps the last 200 keys.
       const key = body.key != null ? keyPrefix + String(body.key).slice(0, 120) : ""; if (key && seen.has(key)) return send(res, 200, { ok: true, ...seen.get(key), reused: true });
+      // A scheduled reminder holds a message the moment it is booked, and gives it back if it is cancelled before it goes.
+      const balS = hosted && hosted.payload ? await readBalance(hosted.payload) : null;
+      if (balS && balS.counted && balS.left <= 0) return send(res, 402, { ok: false, error: OUT_OF_MESSAGES, out_of_messages: true, ...balS });
       const r = ch === "sms" ? await smsSchedule(c, body.to, body.body, body.send_at) : await emailSchedule(c, body);
+      const afterS = hosted && hosted.payload ? await spend(hosted.payload, 1).catch(() => null) : null;
+      if (afterS) { r.left = afterS.left; r.used = afterS.used; r.included = afterS.included + afterS.extra; }
       if (key) { seen.set(key, r); while (seen.size > 200) seen.delete(seen.keys().next().value); }
       return send(res, 200, { ok: true, ...r }); }
-    if (body.action === "cancel") { if (!body.id) throw new Error("id is required"); const r = ch === "sms" ? await smsCancel(c, body.id) : await emailCancel(c, body.id); return send(res, 200, { ok: true, ...r }); }
+    if (body.action === "cancel") { if (!body.id) throw new Error("id is required"); const r = ch === "sms" ? await smsCancel(c, body.id) : await emailCancel(c, body.id);
+      const back = hosted && hosted.payload ? await spend(hosted.payload, -1).catch(() => null) : null;
+      return send(res, 200, { ok: true, ...r, ...(back ? { left: back.left, used: back.used } : {}) }); }
     if (body.action === "ping") { const p = { ok: true, sms: !!(c.twilioSid && c.twilioToken && (c.twilioService || c.twilioFrom)), sms_schedule: !!(c.twilioSid && c.twilioToken && c.twilioService), email: !!(c.resendKey && c.resendFrom), client_creds: process.env.ALLOW_CLIENT_CREDS === "1", token_required: !!process.env.RELAY_TOKEN || !!process.env.RELAY_SIGNING_SECRET || Object.keys(tokenMap()).length > 0 };
-      if (hosted) { p.hosted = true; p.until = hosted.until || null; p.name = hosted.name || ""; p.client_creds = false; if (hosted.signed) { p.signed = true; p.renew = "/api/renew"; p.portal = "/api/portal"; } }
+      if (hosted) { p.hosted = true; p.until = hosted.until || null; p.name = hosted.name || ""; p.client_creds = false; if (hosted.signed) { p.signed = true; p.renew = "/api/renew"; p.portal = "/api/portal"; p.plan = hosted.payload.plan; const bp = await readBalance(hosted.payload).catch(() => null); if (bp) { p.included = bp.included + bp.extra; p.used = bp.used; p.left = bp.left; p.period = bp.period; } } }
       return send(res, 200, p); }
     return send(res, 400, { ok: false, error: "Unknown action" });
   } catch (e) { return send(res, 400, { ok: false, error: e.message || String(e) }); }

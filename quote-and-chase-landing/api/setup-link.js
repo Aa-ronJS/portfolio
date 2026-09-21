@@ -2,7 +2,7 @@
 // for the set-up link so the "Set up my app" button is on the screen the painter paid from; the email is the backup. For a
 // subscription it mints the sending token too, so that one tap also switches the chasing on.
 // Needs STRIPE_SECRET_KEY (reading Checkout Sessions and Subscriptions), RELAY_SIGNING_SECRET, RELAY_URL and APP_URL.
-import { cors, send, detailsFromSession, linkOnePayload, setupLink, mintToken, untilFor, sendingSettings, stripe, f } from "./_setup.js";
+import { cors, send, detailsFromSession, linkOnePayload, setupLink, mintToken, untilFor, sendingSettings, stripe, INCLUDED, f } from "./_setup.js";
 
 const hits = new Map();
 export default async function handler(req, res) {
@@ -26,7 +26,7 @@ export default async function handler(req, res) {
       const sub = typeof s.subscription === "string" ? await stripe("subscriptions/" + encodeURIComponent(s.subscription)) : s.subscription;
       const item = (sub.items && sub.items.data && sub.items.data[0]) || {};
       until = untilFor(sub.current_period_end || item.current_period_end);
-      const sending = sendingSettings(mintToken({ sub: sub.id, cus: sub.customer || s.customer, name: details.trading_name || details.owner_name || "", reply_to: details.email || "", until: until }), until, details.trading_name || details.owner_name || "");
+      const sending = sendingSettings(mintToken({ sub: sub.id, cus: sub.customer || s.customer, name: details.trading_name || details.owner_name || "", reply_to: details.email || "", until: until, plan: "paid", inc: INCLUDED }), until, details.trading_name || details.owner_name || "");
       if (sending.server) { payload.settings.sending = sending; payload.note = "You're on. This loads your details and switches your follow-ups on."; hosted = true; }
     } catch (e) { /* the details still load; the emailed link carries sending when Stripe answers */ }
   }

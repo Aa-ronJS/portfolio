@@ -10,7 +10,7 @@
 // here for checkout.session.completed and checkout.session.async_payment_succeeded; its signing secret in STRIPE_WEBHOOK_SECRET.
 // Env: STRIPE_SECRET_KEY, RELAY_SIGNING_SECRET, RELAY_URL (<site>/api/msg), APP_URL, SUPPORT_EMAIL, optional OWNER_MOBILE and
 // OWNER_EMAIL (a heads-up text and a copy of the email; neither is needed for the painter to be up and running).
-import { rawBody, send, stripeSigned, detailsFromSession, linkOnePayload, setupLink, creds, sms, email, mintToken, untilFor, sendingSettings, stripe } from "./_setup.js";
+import { rawBody, send, stripeSigned, detailsFromSession, linkOnePayload, setupLink, creds, sms, email, mintToken, untilFor, sendingSettings, stripe, INCLUDED, TOPUP_MESSAGES, readBalance } from "./_setup.js";
 
 export const config = { api: { bodyParser: false } };
 const done = new Map(); // event ids this warm instance has already handled; Stripe retries are harmless anyway
@@ -46,6 +46,18 @@ export default async function handler(req, res) {
   if (ev.id) { done.set(ev.id, 1); while (done.size > 500) done.delete(done.keys().next().value); }
 
   const details = detailsFromSession(s), out = { ok: true, emailed: false, texted: false, hosted: false };
+  // a top-up pack: no new token, just more messages on the account the app is already using
+  if (!s.subscription && String((s.metadata || {}).qc || "") === "topup") {
+    const cid = s.client_reference_id || s.customer;
+    if (!cid) return send(res, 200, { ok: true, ignored: "top-up with no account to credit" });
+    try {
+      const cus = await stripe("customers/" + encodeURIComponent(cid)), m = cus.metadata || {};
+      const period = new Date().toISOString().slice(0, 7), same = String(m.qc_period || "") === period;
+      const extra = Math.max(0, parseInt(same ? m.qc_extra : m.qc_extra_next, 10) || 0) + TOPUP_MESSAGES;
+      await stripe("customers/" + encodeURIComponent(cid), same ? { "metadata[qc_extra]": String(extra) } : { "metadata[qc_extra_next]": String(extra) });
+      return send(res, 200, { ok: true, topped_up: TOPUP_MESSAGES, extra });
+    } catch (e) { return send(res, 200, { ok: false, error: e.message }); }
+  }
   // subscription: mint the sending token so the one link turns the chasing on as well as filling in his details
   let sending = null;
   if (s.subscription) {
@@ -53,7 +65,9 @@ export default async function handler(req, res) {
       const sub = typeof s.subscription === "string" ? await stripe("subscriptions/" + encodeURIComponent(s.subscription)) : s.subscription;
       const item = (sub.items && sub.items.data && sub.items.data[0]) || {};
       const until = untilFor(sub.current_period_end || item.current_period_end);
-      const token = mintToken({ sub: sub.id, cus: sub.customer || s.customer, name: details.trading_name || details.owner_name || "", reply_to: details.email || "", until: until });
+      const token = mintToken({ sub: sub.id, cus: sub.customer || s.customer, name: details.trading_name || details.owner_name || "", reply_to: details.email || "", until: until, plan: "paid", inc: INCLUDED });
+      // a painter who started on the free five keeps any top-up he had bought, and his old record is marked so the list stays clean
+      if (s.client_reference_id && s.client_reference_id !== (sub.customer || s.customer)) { try { await stripe("customers/" + encodeURIComponent(s.client_reference_id), { "metadata[qc_upgraded_to]": String(sub.customer || s.customer) }); } catch (e) {} }
       sending = sendingSettings(token, until, details.trading_name || details.owner_name || "");
       out.hosted = !!sending.server; out.until = until;
       if (!sending.server) out.warning = "RELAY_URL is not set, so the link cannot switch sending on";

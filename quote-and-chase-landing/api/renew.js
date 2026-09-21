@@ -4,7 +4,7 @@
 // opens near that date it calls this: we check the subscription with Stripe and hand back a fresh token with a new date, or
 // say the subscription has stopped. Nobody types anything, and a cancelled account stops itself when its token runs out.
 // Needs STRIPE_SECRET_KEY and RELAY_SIGNING_SECRET. Replies: { ok, active, token?, until?, name?, status, portal }.
-import { cors, send, readJson, readToken, mintToken, untilFor, stripe, LIVE_STATUS } from "./_setup.js";
+import { cors, send, readJson, readToken, mintToken, untilFor, stripe, LIVE_STATUS, readBalance, INCLUDED } from "./_setup.js";
 
 const hits = new Map();
 export default async function handler(req, res) {
@@ -18,11 +18,13 @@ export default async function handler(req, res) {
   let body; try { body = await readJson(req); } catch { return send(res, 400, { ok: false, error: "Bad JSON" }); }
   const p = readToken(body && body.token, process.env.RELAY_SIGNING_SECRET);
   if (!p) return send(res, 401, { ok: false, error: "That sending token is not one of ours" });
-  if (!p.sub) return send(res, 200, { ok: true, active: true, until: p.until || "", name: p.name || "", status: "fixed" }); // a token with no subscription behind it (a gift or a trial we set) just runs to its date
+  const bal = await readBalance(p).catch(() => null);
+  const withBal = (o) => (bal ? { ...o, included: bal.included + bal.extra, used: bal.used, left: bal.left, period: bal.period } : o);
+  if (!p.sub) return send(res, 200, withBal({ ok: true, active: true, until: p.until || "", name: p.name || "", status: p.plan === "paid" ? "fixed" : "free", plan: p.plan || "free" })); // the free five, or a token we set by hand, just runs as it is
   let sub; try { sub = await stripe("subscriptions/" + encodeURIComponent(p.sub)); } catch (e) { return send(res, 200, { ok: true, active: true, until: p.until || "", name: p.name || "", status: "unknown", error: e.message }); } // Stripe down is never a reason to stop someone's chasing early
   const active = LIVE_STATUS.indexOf(sub.status) >= 0;
-  if (!active) return send(res, 200, { ok: true, active: false, status: sub.status, until: p.until || "", name: p.name || "" });
+  if (!active) return send(res, 200, withBal({ ok: true, active: false, status: sub.status, until: p.until || "", name: p.name || "", plan: "paid" }));
   const item = (sub.items && sub.items.data && sub.items.data[0]) || {};
   const until = untilFor(sub.current_period_end || item.current_period_end);
-  return send(res, 200, { ok: true, active: true, status: sub.status, until: until, name: p.name || "", token: mintToken({ sub: p.sub, cus: p.cus || sub.customer, name: p.name, reply_to: p.reply_to, until: until }) });
+  return send(res, 200, withBal({ ok: true, active: true, status: sub.status, until: until, name: p.name || "", plan: "paid", token: mintToken({ sub: p.sub, cus: p.cus || sub.customer, name: p.name, reply_to: p.reply_to, until: until, plan: "paid", inc: Number(p.inc) > 0 ? p.inc : INCLUDED }) }));
 }
