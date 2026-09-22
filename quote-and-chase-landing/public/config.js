@@ -52,7 +52,8 @@ window.QC = {
   MAKER_NAME: "",                   // e.g. "Aaron, Melbourne"
   MAKER_PHOTO: "",                  // e.g. "maker.jpg" placed in public/; optional
   META_PIXEL_ID: "",                // e.g. "1234567890"; leave empty to disable
-  SUPPORT_EMAIL: "",                // TODO owner: a real inbox you read on business days. It is the only way anyone can reach you.
+  SUPPORT_EMAIL: "help@chasem.app", // forwarded to Aaron by ImprovMX; the MX and SPF records are on the domain. The only way
+                                    // anyone can reach us, so it is answered on business days.
   BUSINESS_NAME: "Factrie Pty Ltd", // the legal name that appears on privacy and terms
   ABN: "13 679 295 044"             // Factrie Pty Ltd, ACN 679 295 044. Empty = the ABN line is left out (never a placeholder).
 };
