@@ -52,5 +52,15 @@
         }
       ]
     }
+  ],
+  "rewrites": [
+    {
+      "source": "/measure",
+      "destination": "/measure/measure"
+    },
+    {
+      "source": "/measure/",
+      "destination": "/measure/measure"
+    }
   ]
 }
