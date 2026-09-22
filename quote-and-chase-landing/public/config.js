@@ -34,7 +34,8 @@ window.QC = {
   //   Stripe webhook -> <site>/api/stripe-webhook for checkout.session.completed and checkout.session.async_payment_succeeded.
   //   Twilio Messaging Service "a message comes in" -> <site>/api/sms-in. Stripe customer portal turned on in Stripe settings.
 
-  GST_REGISTERED: false,            // true adds "inc GST" and "tax invoice" wording. Only set true when you are registered.
+  GST_REGISTERED: true,             // Factrie Pty Ltd has been GST-registered since 22 Jul 2024, so every price here is shown
+                                    // GST-inclusive and the Stripe prices are tax_behavior=inclusive to match: $99 is what he pays.
   HELP_SAME_DAY: true,              // true: "a message that did not send: the same business day". false: "within one business day".
   BUSINESS_ADDRESS: "",             // TODO owner: a postal address (a PO box is fine) for the terms; the guarantee needs the giver's address.
   BUSINESS_PHONE: "",               // optional. There is no phone support; leave it empty unless you want it in the terms.
@@ -52,6 +53,6 @@ window.QC = {
   MAKER_PHOTO: "",                  // e.g. "maker.jpg" placed in public/; optional
   META_PIXEL_ID: "",                // e.g. "1234567890"; leave empty to disable
   SUPPORT_EMAIL: "",                // TODO owner: a real inbox you read on business days. It is the only way anyone can reach you.
-  BUSINESS_NAME: "Quote & Chase",   // TODO owner: the legal or trading name that appears on privacy and terms
-  ABN: ""                           // TODO owner: your real ABN. Empty = the ABN line is left out (never a placeholder). Needed before any money is taken.
+  BUSINESS_NAME: "Factrie Pty Ltd", // the legal name that appears on privacy and terms
+  ABN: "13 679 295 044"             // Factrie Pty Ltd, ACN 679 295 044. Empty = the ABN line is left out (never a placeholder).
 };

@@ -93,7 +93,10 @@ async function findHook(url) {
       log("    Either keep that price, or archive it in the dashboard and run this again.");
     }
     if (!p && !DRY) {
-      const form = { product: product.id, unit_amount: money(spec.amount), currency: CURRENCY, lookup_key: spec.lookup, nickname: spec.label, "metadata[qc_plan]": spec.plan || "" };
+      // Payment Links turn automatic tax on, and a price left "unspecified" is then treated as tax-EXCLUSIVE:
+      // Stripe adds 10% and charges $108.90 for a page that advertises $99. Australian prices are shown
+      // GST-inclusive, so the price itself has to say so.
+      const form = { product: product.id, unit_amount: money(spec.amount), currency: CURRENCY, tax_behavior: "inclusive", lookup_key: spec.lookup, nickname: spec.label, "metadata[qc_plan]": spec.plan || "" };
       if (spec.recurring) { form["recurring[interval]"] = "month"; }
       p = await stripe("prices", form);
     }
