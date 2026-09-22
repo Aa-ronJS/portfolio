@@ -81,3 +81,22 @@ export async function deleteJobPhotos(painter, job) {
   });
   return d.ok ? names.length : 0;
 }
+
+// Everything a painter has, for when the painter is deleted. The list call returns one entry per job folder
+// (a folder comes back with no id), so this is two levels: his folders, then the files in each.
+export async function deletePainterPhotos(painter) {
+  const b = base(); if (!b) return 0;
+  const p = clean(painter); if (!p) return 0;
+  const r = await f(`${b.u}/storage/v1/object/list/${BUCKET}`, {
+    method: "POST", headers: { ...b.h, "Content-Type": "application/json" },
+    body: JSON.stringify({ prefix: p, limit: 1000 }),
+  });
+  if (!r.ok) return 0;
+  const items = await r.json().catch(() => []);
+  let gone = 0;
+  for (const x of Array.isArray(items) ? items : []) {
+    if (!x || !x.name) continue;
+    gone += x.id ? (await deletePhoto(`${p}/${x.name}`) ? 1 : 0) : await deleteJobPhotos(p, x.name);
+  }
+  return gone;
+}

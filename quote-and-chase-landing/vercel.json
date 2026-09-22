@@ -52,6 +52,10 @@
     "api/photo.js": {
       "maxDuration": 30,
       "memory": 512
+    },
+    "api/admin.js": {
+      "maxDuration": 60,
+      "memory": 512
     }
   },
   "headers": [

@@ -7,14 +7,30 @@ import { readFileSync, readdirSync } from "node:fs";
 import { join, dirname } from "node:path";
 import { fileURLToPath } from "node:url";
 
-let pool = null, poolUrl = "";
+let pool = null, poolUrl = "", ca = null;
+
+// Supabase Root 2021 CA, sha256 80:70:25:AD:50:D4:ED:21:9D:2C:9C:7D:29:9C:00:4F:82:4E:B0:0C:F7:F6:5A:FE:F6:07:D0:7B:72:E6:CA:FA
+// Taken from the chain the pooler itself presents and checked against what Supabase documents. Expires 26 Apr 2031.
+function caBundle() {
+  if (ca !== null) return ca;
+  try { ca = readFileSync(join(dirname(fileURLToPath(import.meta.url)), "..", "db", "supabase-root-2021-ca.crt"), "utf8"); }
+  catch { ca = undefined; }
+  return ca;
+}
 
 async function pgPool() {
   const url = process.env.DATABASE_URL || "";
   if (!url) throw new Error("No database: set DATABASE_URL");
   if (pool && poolUrl === url) return pool;
   const { default: pg } = await import("pg");
-  pool = new pg.Pool({ connectionString: url, max: 1, idleTimeoutMillis: 10_000, connectionTimeoutMillis: 8_000 });
+  // Supabase's pooler presents a chain rooted in their own CA, which is not in any public trust store, so Node
+  // rejects it as self-signed. The answer is to pin that root, not to stop checking: without validation the
+  // database password and every painter's work would be readable by anything sitting in the path.
+  const local = /@(localhost|127\.0\.0\.1)[:\/]/.test(url);
+  pool = new pg.Pool({
+    connectionString: url, max: 1, idleTimeoutMillis: 10_000, connectionTimeoutMillis: 12_000,
+    ssl: local ? false : { rejectUnauthorized: true, ca: caBundle() },
+  });
   poolUrl = url;
   return pool;
 }

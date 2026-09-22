@@ -87,4 +87,16 @@ export async function markAccepted(painter, job) {
   return r.rows.length > 0;
 }
 
+// Deleting a painter. The schema cascades his documents, jobs, availability, bookings and sent messages off
+// the painter row. Replies do not cascade, because a reply from a number we have no record of belongs to
+// nobody and must survive as the idempotency key, so his are deleted by id here. Photos live in Storage and
+// are the caller's to clear. The privacy page promises the lot goes; this is the half that is in the database.
+export async function forgetPainter(id) {
+  const key = String(id || "");
+  if (!key) return { painter: 0, replies: 0 };
+  const p = await q("delete from painter where id=$1 returning id", [key]);
+  const i = await q("delete from inbound where painter_id=$1 returning id", [key]);
+  return { painter: p.rows.length, replies: i.rows.length };
+}
+
 export { q, tx };
