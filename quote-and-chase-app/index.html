@@ -24,7 +24,7 @@
 </header>
 <main id="app" class="wrap"></main>
 <div id="toast" class="toast" hidden></div>
-<script>window.QC_VERSION="qc-app-v39";
+<script>window.QC_VERSION="qc-app-v40";
 // Android offers "Install app" through this event; the app keeps it and shows an Install button on Home.
 window.addEventListener('beforeinstallprompt', function (e) { e.preventDefault(); window.__qcInstallPrompt = e; if (window.__qcApp && window.__qcApp.route && !location.hash.replace(/^#\/?/, '')) window.__qcApp.route(); });
 window.addEventListener('appinstalled', function () { window.__qcInstallPrompt = null; });</script>
@@ -39,6 +39,7 @@ window.addEventListener('appinstalled', function () { window.__qcInstallPrompt =
 <script src="cal.js"></script>
 <script src="stripe.js"></script>
 <script src="msg.js"></script>
+<script src="sync.js"></script>
 <script src="schedule.js"></script>
 <script src="store.js"></script>
 <script src="pricing.js"></script>

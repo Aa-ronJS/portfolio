@@ -258,7 +258,12 @@
     refreshPreview = function () {};
     if (locked()) return viewLock();
     if (!joined() && p[0] !== 'setup' && p[0] !== 'help') return viewJoin();
-    if (!route.booted) { route.booted = true; purgeTrash(); try { if (navigator.storage && navigator.storage.persist && (S.jobs.length || S.details.trading_name)) navigator.storage.persist().catch(function () {}); } catch (e) {} setTimeout(function () { retryPendingCancels().then(function () { return retryLocalQueue(); }).catch(function () {}); }, 800); setTimeout(function () { renewHosted().catch(function () {}); }, 1500); window.addEventListener('online', function () { retryPendingCancels().catch(function () {}); }); }
+    if (!route.booted) { route.booted = true; purgeTrash(); try { if (navigator.storage && navigator.storage.persist && (S.jobs.length || S.details.trading_name)) navigator.storage.persist().catch(function () {}); } catch (e) {} setTimeout(function () { retryPendingCancels().then(function () { return retryLocalQueue(); }).catch(function () {}); }, 800); setTimeout(function () { renewHosted().catch(function () {}); }, 1500);
+      // A customer may have accepted, or picked a start day, while the phone was in his pocket. Pull it in and
+      // show it without him asking. Best effort: no signal simply means next time.
+      setTimeout(function () { syncNow(); }, 2200);
+      window.addEventListener('online', function () { retryPendingCancels().catch(function () {}); syncNow(); });
+      document.addEventListener('visibilitychange', function () { if (!document.hidden && Date.now() - QCSync.lastAt() > 120000) syncNow(); }); }
     if (!p[0]) return viewHome();
     if (p[0] === 'settings') { if (p[1] === 'log') return viewSentLog(); viewSettings(); if (p[1]) openSection({ backup: 'Back-up', prices: 'Prices', bank: 'Bank details' }[p[1]] || ''); return; }
     if (p[0] === 'chase') return viewChase();
@@ -1208,6 +1213,18 @@
       return { scheduled: okRes, failed: bad, waiting: later, skipped: skipped, late: late };
     });
   }
+  // Pulls in what happened while he was away and tells him, in his words, what changed.
+  function syncNow(opts) {
+    if (!window.QCSync) return Promise.resolve(null);
+    return QCSync.now({ onChange: function (n, res) {
+      var b = (res.bookings || [])[0];
+      if (b) {
+        var j = QCStore.getJob(b.job_id), who = j && j.client && (j.client.first_name || j.client.name) ? (j.client.first_name || String(j.client.name).split(' ')[0]) : 'Your customer';
+        toast(who + ' booked ' + QCPdf.fmtDate(String(b.start_day).slice(0, 10)) + '.', { action: 'Open', onAction: function () { if (j) go('/job/' + j.id); } });
+      } else toast(n + ' update' + (n > 1 ? 's' : '') + ' from your customers.');
+      S = QCStore.load(); route();
+    } }).catch(function () { return null; });
+  }
   function chaseable(job) { return (job.status === 'quoted' && job.sent_date && job.sent_confirmed) || (job.invoices || []).some(function (i) { return invOpen(i) && invOut(i); }); }
   function bookJobs() { return S.jobs.filter(function (j) { return j.from_book && j.status !== 'cancelled' && chaseable(j); }); }
   function bookCounts(jobs) { var inv = 0, q = 0; jobs.forEach(function (j) { if (j.status === 'quoted' && j.sent_date && j.sent_confirmed) q++; inv += (j.invoices || []).filter(function (i) { return invOpen(i) && invOut(i); }).length; }); return { invoices: inv, quotes: q }; }
@@ -1871,7 +1888,7 @@
   route();
   window.__qcApp = { route: route, store: QCStore, pricing: QCPricing, openUrl: function (u) { openUrl(u); }, setOpen: function (f) { openUrl = f; } };
   // W4 helpers for other screens: soft delete with Undo, duplicate, client picker data, paint order text, photo card, message text and greeting
-  Object.assign(window.__qcApp, { retryLocalQueue: retryLocalQueue, showBlock: showBlock, autoSendReady: autoSendReady, autoSendLabel: autoSendLabel, dayDate: dayDate, statusPill: statusPill, deleteJob: deleteJob, restoreJob: restoreJob, duplicateJob: duplicateJob, clients: clients, materialsText: materialsText, photosCard: photosCard, wirePhotos: wirePhotos, chaseText: chaseText, greet: greet, signoff: signoff, jobDesc: jobDesc, scheduleFollowUps: scheduleFollowUps, cancelJobFollowUps: cancelJobFollowUps, cancelQuoteFollowUps: cancelQuoteFollowUps, cancelInvoiceFollowUps: cancelInvoiceFollowUps, pendingFollowUps: pendingFollowUps, waitingFollowUps: waitingFollowUps, lastContact: lastContact, isLandline: QCMsg.isLandline, nextSendTime: function (d, h, st) { return QCCal.nextSendTime(d, h == null ? fuHour() : h, st == null ? stateCode() : st); } });
+  Object.assign(window.__qcApp, { syncNow: syncNow, retryLocalQueue: retryLocalQueue, showBlock: showBlock, autoSendReady: autoSendReady, autoSendLabel: autoSendLabel, dayDate: dayDate, statusPill: statusPill, deleteJob: deleteJob, restoreJob: restoreJob, duplicateJob: duplicateJob, clients: clients, materialsText: materialsText, photosCard: photosCard, wirePhotos: wirePhotos, chaseText: chaseText, greet: greet, signoff: signoff, jobDesc: jobDesc, scheduleFollowUps: scheduleFollowUps, cancelJobFollowUps: cancelJobFollowUps, cancelQuoteFollowUps: cancelQuoteFollowUps, cancelInvoiceFollowUps: cancelInvoiceFollowUps, pendingFollowUps: pendingFollowUps, waitingFollowUps: waitingFollowUps, lastContact: lastContact, isLandline: QCMsg.isLandline, nextSendTime: function (d, h, st) { return QCCal.nextSendTime(d, h == null ? fuHour() : h, st == null ? stateCode() : st); } });
   // ---------- CSV for the bookkeeper (W3): Xero and MYOB sales-invoice style columns. W4 wires the buttons in Back-up.
   function csvCell(v) { var t = v == null ? '' : String(v); return /[",\n\r]/.test(t) ? '"' + t.replace(/"/g, '""') + '"' : t; }
   function csvRows(head, rows) { return [head].concat(rows).map(function (r) { return r.map(csvCell).join(','); }).join('\r\n') + '\r\n'; }
