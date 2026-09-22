@@ -37,7 +37,7 @@ window.QC = {
   GST_REGISTERED: true,             // Factrie Pty Ltd has been GST-registered since 22 Jul 2024, so every price here is shown
                                     // GST-inclusive and the Stripe prices are tax_behavior=inclusive to match: $99 is what he pays.
   HELP_SAME_DAY: true,              // true: "a message that did not send: the same business day". false: "within one business day".
-  BUSINESS_ADDRESS: "",             // TODO owner: a postal address (a PO box is fine) for the terms; the guarantee needs the giver's address.
+  BUSINESS_ADDRESS: "30 Orca Court, Seaford Meadows SA 5169",  // the postal address the guarantee is given from
   BUSINESS_PHONE: "",               // optional. There is no phone support; leave it empty unless you want it in the terms.
 
   // ---- the laptop pack, sold on laptop.html to the Claude Code crowd, not on the painter page
