@@ -7,7 +7,15 @@
   function icsStamp(d) { return d.getUTCFullYear() + pad(d.getUTCMonth() + 1) + pad(d.getUTCDate()) + 'T' + pad(d.getUTCHours()) + pad(d.getUTCMinutes()) + pad(d.getUTCSeconds()) + 'Z'; }
   function icsLocal(iso, hour, minute) { var p = String(iso).split('-'), d = new Date(+p[0], +p[1] - 1, +p[2], hour || 0, minute || 0); return d.getFullYear() + pad(d.getMonth() + 1) + pad(d.getDate()) + 'T' + pad(d.getHours()) + pad(d.getMinutes()) + '00'; }
   function escText(s) { return String(s == null ? '' : s).replace(/\r/g, '').replace(/\\/g, '\\\\').replace(/\n/g, '\\n').replace(/[,;]/g, function (c) { return '\\' + c; }); }
-  function bytes(s) { try { return new TextEncoder().encode(s).length; } catch (e) { return s.length; } }
+  // UTF-8 length. The fallback is not s.length: a string's length is UTF-16 units, so an emoji would count 2
+  // where it takes 4 octets, and the fold would run over the 75 the format allows.
+  function bytes(s) {
+    if (typeof TextEncoder === 'function') { try { return new TextEncoder().encode(s).length; } catch (e) {} }
+    var n = 0; for (var i = 0; i < s.length; i++) { var c = s.charCodeAt(i);
+      if (c < 0x80) n += 1; else if (c < 0x800) n += 2;
+      else if (c >= 0xD800 && c < 0xDC00 && i + 1 < s.length) { n += 4; i++; } else n += 3; }
+    return n;
+  }
   function fold(line) { // 75 octets per line, never splitting a surrogate pair
     var out = '', cur = ''; var chars = Array.from(line);
     for (var i = 0; i < chars.length; i++) { var ch = chars[i]; if (bytes(cur + ch) > (out ? 74 : 75)) { out += cur + '\r\n '; cur = ch; } else cur += ch; }
