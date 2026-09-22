@@ -96,7 +96,7 @@ is not decoration either: nobody hands a card to an anonymous website.
 
 In `quote-and-chase-app/config.js`: `signup_url`, which the script printed.
 
-## 4a. Twilio will not sell you a number until it knows who you are
+## 4a. Twilio needs to know who you are before it sells you a number
 
 Australia requires it, so this is a hard gate and it is worth starting early:
 until it clears, Twilio refuses both buying a number AND sending a message,
@@ -113,20 +113,20 @@ In the console: Trust Hub, then Regulatory Compliance, and make a bundle for
 Use the business route -- it wants exactly the same details as step 4, so you
 fill them in once. Approval is not instant.
 
-Only then:
+Only then can you buy an AU Mobile number. Whichever way you buy it, it has to
+be added as a sender on the "Quote and Chase" Messaging Service -- scheduled
+SMS goes through the service, not a bare number -- and its inbound webhook
+pointed at `https://chasem.app/api/sms-in` so a client's reply reaches the
+painter.
 
-    node -e "..."  # or simply buy an AU Mobile number in the console,
-                   # then add it as a sender on the "Quote and Chase"
-                   # Messaging Service (scheduled SMS needs the service,
-                   # not a bare number)
+**Done:** +61 485 037 493, on the service, webhook set.
 
-One thing to know while you wait: with the credentials set but no approved
-profile, the relay's ping still answers `sms: true`, because it is reporting
-that it has credentials and a Messaging Service, not that Twilio will accept a
-message. Every send fails with the 20003 above until the bundle is approved.
-That is safe rather than silent -- the app shows the failure and the painter
-taps Send himself, which is what the soft wall is for -- but do not read
-`sms: true` as "it can send".
+One thing to know if you ever see the 20003 again: with credentials set but no
+approved profile, the relay's ping still answers `sms: true`, because it is
+reporting that it HAS credentials and a Messaging Service, not that Twilio will
+accept a message. That is safe rather than silent -- the app shows the failure
+and the painter taps Send himself, which is what the soft wall is for -- but do
+not read `sms: true` as "it can send".
 
 ## 4b. Finish the support inbox (two minutes, free)
 
