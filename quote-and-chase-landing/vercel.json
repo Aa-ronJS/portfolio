@@ -55,12 +55,15 @@
   ],
   "rewrites": [
     {
-      "source": "/measure",
-      "destination": "/measure/measure"
-    },
-    {
       "source": "/measure/",
       "destination": "/measure/measure"
+    }
+  ],
+  "redirects": [
+    {
+      "source": "/measure",
+      "destination": "/measure/",
+      "permanent": true
     }
   ]
 }
