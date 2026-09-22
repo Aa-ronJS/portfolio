@@ -41,9 +41,25 @@
     (res.changes || []).forEach(function (c) {
       if (c.kind !== 'job' || !c.id) return;
       var j = (S.jobs || []).filter(function (x) { return x.id === c.id; })[0];
-      if (!j) return;                                   // a job from another phone: left alone until seats are wired
+      if (!j) {
+        // A job from his other phone, or from the server after he wiped this one. Both phones on an account
+        // are the same business, so the work belongs on both.
+        if (c.deleted || !c.body || !c.body.id) return;
+        S.jobs = (S.jobs || []).concat([c.body]); touched++; return;
+      }
+      if (c.deleted) { S.jobs = S.jobs.filter(function (x) { return x.id !== c.id; }); touched++; return; }
+      // His own edits win on his own phone; what the server may change is what a customer did.
       if (c.body && c.body.status && c.body.status !== j.status &&
           ['accepted', 'declined'].indexOf(c.body.status) >= 0) { j.status = c.body.status; touched++; }
+    });
+    var blank = !(S.details && S.details.trading_name) && !(S.jobs || []).length;
+    if (blank) (res.changes || []).forEach(function (c) {
+      if (c.kind !== 'settings' || !c.body || c.deleted) return;
+      ['details', 'prices', 'rules', 'wording', 'follow_up', 'booking'].forEach(function (k) {
+        if (c.body[k] && typeof c.body[k] === 'object') S[k] = Object.assign(S[k] || {}, c.body[k]);
+      });
+      if (Array.isArray(c.body.days_off)) S.days_off = c.body.days_off;
+      touched++;                                   // a fresh phone, filled from what the server had
     });
     (res.bookings || []).forEach(function (b) {
       var j = (S.jobs || []).filter(function (x) { return x.id === b.job_id; })[0];
@@ -72,6 +88,15 @@
     running = true;
 
     var m = mem(), sent = m.sent || {}, push = [], fresh = {};
+
+    // His settings travel too, so a new or wiped phone comes back with his prices and his wording rather than
+    // a blank app. Credentials never travel: his own Twilio, Resend and Stripe keys, the sending token and the
+    // hash of his PIN all stay on the handset he typed them into.
+    var settings = { details: S.details, prices: S.prices, rules: S.rules, wording: S.wording,
+                     follow_up: S.follow_up, booking: S.booking, days_off: S.days_off || [] };
+    var sBody = JSON.stringify(settings), sHash = hash(sBody);
+    fresh.__settings = sHash;
+    if (sent.__settings !== sHash) push.push({ kind: 'settings', id: 'settings', rev: (S.rev || 1), body: JSON.parse(sBody) });
     (S.jobs || []).forEach(function (j) {
       if (!j || !j.id) return;
       var body = JSON.stringify(j), h = hash(body);
@@ -79,7 +104,7 @@
       if (sent[j.id] !== h) push.push({ kind: 'job', id: j.id, rev: (S.rev || 1), body: JSON.parse(body) });
     });
     Object.keys(sent).forEach(function (id) {
-      if (fresh[id]) return;
+      if (fresh[id] || id === '__settings') return;
       push.push({ kind: 'job', id: id, rev: (S.rev || 1), deleted: true, body: {} });  // deleted here, so delete there
     });
 

@@ -73,7 +73,7 @@
       '<label class="f">Your business name<span>optional, it goes on your quotes</span><input type="text" id="join_name" autocomplete="organization"></label>' +
       '<div class="row" style="margin-top:8px"><button class="btn tape" type="submit" id="join_go">Start quoting</button><span class="hint" id="join_msg"></span></div></form>' +
       '<p class="hint">Your first three jobs are on us, quoted and chased to the end: ' + FREE_SENDS + ' messages. A message is one text or one email the app sends for you, and a job start to finish is usually four or five of them. After that it is $' + PLAN_PRICE + ' a month for ' + PLAN_INCLUDED + ', which is about 30 jobs, and a pack of ' + TOPUP_MESSAGES + ' more is $' + TOPUP_PRICE + ' whenever you want it.</p>' +
-      '<p class="hint">Your jobs, prices and clients stay on this phone. We keep your email so the app is yours and so we can tell you when something changes.' + (url ? '' : ' <span class="confirm">Sign-up is not switched on yet.</span>') + '</p>' +
+      '<p class="hint">Your jobs, prices and clients stay on this phone until you switch the chasing on; after that they are kept in your account too, so a customer can accept a quote and pick a day. Your keys and your PIN never leave this phone.' + (url ? '' : ' <span class="confirm">Sign-up is not switched on yet.</span>') + '</p>' +
       '<p class="hint">Already have a set-up link? Open it on this phone and it does all of this for you.</p></div>';
     var f = document.getElementById('joinform');
     f.addEventListener('submit', function (e) {
@@ -438,7 +438,7 @@
       w.push({ kind: 'contract', text: 'This job is over ' + money(th) + ', so in ' + st + ' you and the client should both sign the quote. It has a signature line on the last page: ask them to sign it and take a photo. That is the contract.' });
     }
     if (priced.deposit_capped && priced.deposit_cap) w.push({ kind: 'deposit', text: 'Deposit ' + heldAt(priced).charAt(0).toLowerCase() + heldAt(priced).slice(1) });
-    if (!det.bsb || !det.account_number) w.push({ kind: 'bank', text: 'Add your bank details in Set-up so the invoice says where to pay. They stay on this phone.' });
+    if (!det.bsb || !det.account_number) w.push({ kind: 'bank', text: 'Add your bank details in Set-up so the invoice says where to pay. They are only ever printed on your own invoices.' });
     return w;
   }
   function jobWarnings(job, priced) { return warnList(job, priced).filter(function (x) { return x.kind !== 'bank'; }).map(function (x) { return x.text; }); } // the quote page names missing bank details next to its Send button
