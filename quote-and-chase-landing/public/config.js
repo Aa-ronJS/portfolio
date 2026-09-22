@@ -3,8 +3,9 @@
 // never a "Coming soon" shopfront). Lines marked TODO must be filled in by the owner before launch; the page
 // never invents a value. Nothing here books a call or needs a human: the product is self-service end to end.
 window.QC = {
-  APP_URL: "app/",                  // where the free phone app lives. Relative "app/" serves the copy in this project;
-                                    // or the canonical https://aa-ronjs.github.io/portfolio/app/ (data is per address, pick one and keep it)
+  APP_URL: "app/",                  // where the phone app lives. Relative "app/" is the copy in this project, so on chasem.app it is
+                                    // https://chasem.app/app/ -- the canonical address. A painter's jobs live in his phone's storage
+                                    // for the address he opened, so pick one address and never move it.
 
   // ---- one product, one price, messages included. The painter starts inside the app with his email; the card comes later, from inside.
   PLAN_PRICE: 99,                   // AUD a month. Must match the Stripe Payment Link and the relay. Shown on the card, the FAQ and the terms.
@@ -18,13 +19,13 @@ window.QC = {
   SUBSCRIBE2_URL: "",               // TODO owner: a second Payment Link at PLAN2_PRICE with metadata qc_plan=two. That one piece of
                                     //   metadata is what tells the webhook to mint a two-seat token; without it you sell one phone at two-phone prices.
   SUBSCRIBE_URL: "",                // TODO owner: the Stripe Payment Link (subscription mode) at PLAN_PRICE. The app links to it from inside;
-                                    //   collect name, email, phone and billing address, plus custom TEXT fields keyed trading_name, abn, licence.
-                                    //   Success URL: <this site>/welcome?session={CHECKOUT_SESSION_ID}
+                                    //   collect name, email, phone and billing address and nothing else -- he types no business name, ABN or
+                                    //   licence at checkout. Success URL: https://chasem.app/welcome?session={CHECKOUT_SESSION_ID}
   TOPUP_URL: "",                    // optional fallback only. The app buys packs with one tap on the card Stripe already holds (api/topup.js),
                                     //   so nobody is sent to a checkout page. Set this only if you also want a link for someone with no card on file:
                                     //   a one-off Payment Link at TOPUP_PRICE with metadata qc=topup.
-  SETUP_LINK_API: "",               // TODO owner: "https://your-site.vercel.app/api/setup-link". Lets the welcome page show the
-                                    // "Set up my app" button the second they pay. Empty = the page tells them to use the emailed link.
+  SETUP_LINK_API: "/api/setup-link", // same origin as this page on chasem.app, so the welcome page can show the "Set up my app"
+                                    // button the second they pay. Empty = the page tells them to use the emailed link instead.
 
   // ---- the relay (Vercel project: quote-and-chase-landing). Nothing on this page needs it, but the subscription does.
   //   Env there: STRIPE_SECRET_KEY, STRIPE_WEBHOOK_SECRET, RELAY_SIGNING_SECRET (a long random string),

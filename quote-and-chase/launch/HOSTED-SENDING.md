@@ -40,7 +40,7 @@ Already required for hosted sending (the server's own accounts, used for every m
 - RESEND_API_KEY = re_xxxxxxxxx
 - RESEND_FROM = Quote & Chase <hello@yourverifieddomain.com.au>  (must be on a domain verified in Resend; the display name is replaced per painter, the address is kept)
 - RELAY_TOKEN = (long random string; keep the existing one so the owner's own app keeps working)
-- ALLOWED_ORIGINS = https://aa-ronjs.github.io,https://aaronsteele.vercel.app  (add the app's host if it moves)
+- ALLOWED_ORIGINS = https://chasem.app,https://www.chasem.app  (add a host if the app is ever served from another one)
 New:
 - RELAY_TOKENS = {"qc_7f3a9c2e1b8d4f60":{"name":"Dave's Painting","reply_to":"dave@example.com","until":"2026-12-20","disabled":false}}
   One line of JSON. One entry per painter; the token is what goes in the set-up link's settings.sending.token (with server: https://<landing-host>/api/msg, server_has_creds: true, hosted: true, hosted_until and hosted_name matching the entry). To end hosting early set "disabled": true; to extend, move "until". Vercel needs a redeploy (or the function's next cold start) after an env change.

@@ -3,7 +3,7 @@ import { createHmac, timingSafeEqual } from "node:crypto";
 
 export const f = (...a) => (globalThis.__relayFetch || fetch)(...a);
 export function send(res, status, obj) { res.statusCode = status; res.setHeader("Content-Type", "application/json"); res.end(JSON.stringify(obj)); }
-const ALLOWED = (process.env.ALLOWED_ORIGINS || "https://aa-ronjs.github.io,https://aaronsteele.vercel.app").split(",").map((s) => s.trim()).filter(Boolean);
+const ALLOWED = (process.env.ALLOWED_ORIGINS || "https://chasem.app,https://www.chasem.app,https://aa-ronjs.github.io").split(",").map((s) => s.trim()).filter(Boolean);
 export function cors(req, res, methods) {
   const origin = req.headers.origin || "";
   const ok = ALLOWED.includes("*") || ALLOWED.includes(origin) || /^https?:\/\/(localhost|127\.0\.0\.1)(:\d+)?$/.test(origin);
@@ -17,7 +17,7 @@ export async function rawBody(req, max) { const chunks = []; let n = 0; for awai
 // ---- the set-up code the app reads at #/setup?d=<code>: "j:" + base64url(JSON), the same shape encodeSetup() writes in the app
 export function b64url(buf) { return Buffer.from(buf).toString("base64").replace(/\+/g, "-").replace(/\//g, "_").replace(/=+$/, ""); }
 export function setupCode(payload) { return "j:" + b64url(Buffer.from(JSON.stringify(payload), "utf8")); }
-export function setupLink(appUrl, payload) { return String(appUrl || "https://aa-ronjs.github.io/portfolio/app/").replace(/\/?$/, "/") + "#/setup?d=" + setupCode(payload); }
+export function setupLink(appUrl, payload) { return String(appUrl || "https://chasem.app/app/").replace(/\/?$/, "/") + "#/setup?d=" + setupCode(payload); }
 
 const STATES = { nsw: "NSW", "new south wales": "NSW", vic: "VIC", victoria: "VIC", qld: "QLD", queensland: "QLD", sa: "SA", "south australia": "SA", wa: "WA", "western australia": "WA", tas: "TAS", tasmania: "TAS", act: "ACT", "australian capital territory": "ACT", nt: "NT", "northern territory": "NT" };
 export function stateCode(v) { return STATES[String(v || "").trim().toLowerCase()] || ""; }
@@ -169,7 +169,7 @@ export async function stripe(path, form, method) {
 export const LIVE_STATUS = ["active", "trialing", "past_due"];
 // what the app is given so one tap turns the chasing on, with nothing to open and nobody to ask
 export function sendingSettings(token, until, name, relayUrl) {
-  return { server: relayUrl || process.env.RELAY_URL || "", token: token, server_has_creds: true, hosted: true, hosted_until: until, hosted_name: name || "" };
+  return { server: relayUrl || process.env.RELAY_URL || "https://chasem.app/api/msg", token: token, server_has_creds: true, hosted: true, hosted_until: until, hosted_name: name || "" };
 }
 
 // ---- Stripe webhook signature: header "t=<unix>,v1=<hex>[,v1=<hex>]", signed payload "<t>.<raw body>", HMAC-SHA256 with the endpoint secret

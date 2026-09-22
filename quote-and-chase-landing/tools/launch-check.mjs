@@ -36,7 +36,7 @@ console.log("  the relay must be set to the same, or the page promises what the 
 if (args.relay) {
   const base = String(args.relay).replace(/\/+$/, "");
   console.log("\nWhat the relay says (" + base + ")\n");
-  const post = async (path, body) => { try { const r = await fetch(base + path, { method: "POST", headers: { "Content-Type": "application/json", Origin: "https://aa-ronjs.github.io" }, body: JSON.stringify(body) }); return { status: r.status, json: await r.json().catch(() => ({})) }; } catch (e) { return { status: 0, json: { error: e.message } }; } };
+  const post = async (path, body) => { try { const r = await fetch(base + path, { method: "POST", headers: { "Content-Type": "application/json", Origin: "https://chasem.app" }, body: JSON.stringify(body) }); return { status: r.status, json: await r.json().catch(() => ({})) }; } catch (e) { return { status: 0, json: { error: e.message } }; } };
   const ping = await post("/api/msg", { action: "ping", token: "qc1.not.real" });
   must(ping.status !== 0, "the relay answers at all", "is it deployed, and is the address right?");
   must(ping.status === 401, "a made-up token is refused", ping.status === 200 ? "IT ACCEPTED A FAKE TOKEN: RELAY_SIGNING_SECRET is probably not set. Do not launch." : "expected 401, got " + ping.status);

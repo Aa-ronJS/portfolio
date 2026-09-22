@@ -8,8 +8,9 @@ Claude API for the demo, and the sending relay the app uses.
 
 `public/app/` is a copy of `../quote-and-chase-app/`; keep them
 identical. The app keeps its data per address, so pick one canonical
-address (`APP_URL` in `config.js`; the relative `app/` or
-https://aa-ronjs.github.io/portfolio/app/) and use it everywhere.
+address and never move it. That address is https://chasem.app/app/, which
+the relative `APP_URL: "app/"` in `config.js` resolves to. The GitHub Pages
+copy is a mirror; a painter who starts there has his jobs there.
 
 ```
 public/index.html   the page (hero, what it does, demo, install, own-it, price, FAQ)
@@ -132,8 +133,9 @@ Two ways to run it:
    Vercel and set `TWILIO_ACCOUNT_SID`, `TWILIO_AUTH_TOKEN`,
    `TWILIO_MESSAGING_SERVICE_SID` (or `TWILIO_FROM`), `RESEND_API_KEY`,
    `RESEND_FROM` (an address on a domain verified in Resend) and
-   `ALLOWED_ORIGINS` (the app's origin, e.g. `https://aa-ronjs.github.io`).
-   In the app's Set-up, paste the URL `https://<your-site>/api/msg` and
+   `ALLOWED_ORIGINS` (the app's origins, e.g.
+   `https://chasem.app,https://www.chasem.app`).
+   In the app's Set-up, paste the URL `https://chasem.app/api/msg` and
    tick "the server already has my Twilio and Resend details".
 2. **Shared relay, credentials on the phone.** Set `ALLOW_CLIENT_CREDS=1`
    on the deployment. Painters paste their own Twilio and Resend details

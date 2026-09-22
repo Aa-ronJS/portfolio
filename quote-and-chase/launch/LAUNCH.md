@@ -25,8 +25,8 @@ and the webhook, all wired correctly:
 
     node quote-and-chase-landing/tools/stripe-setup.mjs \
       --key sk_test_YOURKEY \
-      --site https://aa-ronjs.github.io/portfolio \
-      --relay https://YOUR-PROJECT.vercel.app
+      --site https://chasem.app \
+      --relay https://chasem.app
 
 It prints three blocks to paste. It is safe to run again: it looks
 everything up first and never makes a second copy. Prices in Stripe cannot

@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 // Creates everything Quote & Chase needs inside YOUR Stripe account, in one go, and prints the config to paste.
 //
-//   node tools/stripe-setup.mjs --key sk_test_... --site https://aa-ronjs.github.io/portfolio --relay https://your-site.vercel.app
+//   node tools/stripe-setup.mjs --key sk_test_... --site https://chasem.app --relay https://chasem.app
 //
 // It makes: one product, three prices (solo monthly, two-phone monthly, a top-up pack), three Payment Links with the right
 // metadata and success URL, and a webhook endpoint pointed at your relay. It is safe to run twice: everything is
@@ -13,7 +13,7 @@
 
 const args = Object.fromEntries(process.argv.slice(2).join(" ").split(/\s+--/).filter(Boolean).map((s) => { const t = s.replace(/^--/, ""); const i = t.indexOf(" "); return i < 0 ? [t, true] : [t.slice(0, i), t.slice(i + 1).trim()]; }));
 const KEY = args.key || process.env.STRIPE_SECRET_KEY || "";
-const SITE = String(args.site || "https://aa-ronjs.github.io/portfolio").replace(/\/+$/, "");
+const SITE = String(args.site || "https://chasem.app").replace(/\/+$/, "");
 const RELAY = String(args.relay || "").replace(/\/+$/, "");
 const PLAN = Number(args.plan || 99), PLAN2 = Number(args.plan2 || 149), TOPUP = Number(args.topup || 35);
 const CURRENCY = String(args.currency || "aud").toLowerCase();

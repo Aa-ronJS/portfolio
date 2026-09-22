@@ -11,7 +11,7 @@ globalThis.__relayFetch = async (url, opts) => {
   else if (/api\.resend\.com\/emails/.test(url)) j = { id: 'em' + calls.length };
   return { ok: true, status: 200, json: async () => j };
 };
-function req(body, origin = 'https://aa-ronjs.github.io', method = 'POST') { const r = Readable.from([Buffer.from(JSON.stringify(body))]); r.method = method; r.headers = { origin, 'x-forwarded-for': '1.1.1.1' }; r.socket = { remoteAddress: '1.1.1.1' }; return r; }
+function req(body, origin = 'https://chasem.app', method = 'POST') { const r = Readable.from([Buffer.from(JSON.stringify(body))]); r.method = method; r.headers = { origin, 'x-forwarded-for': '1.1.1.1' }; r.socket = { remoteAddress: '1.1.1.1' }; return r; }
 function res() { const o = { statusCode: 0, headers: {}, body: '', setHeader(k, v) { this.headers[k] = v; }, end(b) { this.body = b || ''; } }; return o; }
 async function run(body, origin) { const r = res(); await handler(req(body, origin), r); return { status: r.statusCode, json: r.body ? JSON.parse(r.body) : null, headers: r.headers }; }
 const creds = { twilio_sid: 'ACxxx', twilio_token: 'tok', twilio_service: 'MGxxx', resend_key: 're_xxx', resend_from: 'Sam <sam@example.com>' };
@@ -21,7 +21,7 @@ ok(r.status === 400 && /Twilio/.test(r.json.error) && calls.length === 0, 'clien
 process.env.ALLOW_CLIENT_CREDS = '1';
 // 2. CORS
 r = await run({ action: 'ping', creds }, 'https://evil.example'); ok(r.status === 403, 'unknown origin refused');
-r = await run({ action: 'ping', creds }); ok(r.status === 200 && r.json.sms && r.json.email && r.headers['Access-Control-Allow-Origin'] === 'https://aa-ronjs.github.io', 'ping reports channels ready, CORS header set');
+r = await run({ action: 'ping', creds }); ok(r.status === 200 && r.json.sms && r.json.email && r.headers['Access-Control-Allow-Origin'] === 'https://chasem.app', 'ping reports channels ready, CORS header set');
 // 3. SMS send: E.164 conversion and messaging service
 calls.length = 0; r = await run({ action: 'send', channel: 'sms', to: '0411 222 333', body: 'Hi Jane', creds });
 ok(r.status === 200 && r.json.id && /To=%2B61411222333/.test(calls[0].opts.body) && /MessagingServiceSid=MGxxx/.test(calls[0].opts.body) && /Basic /.test(calls[0].opts.headers.Authorization), 'SMS sent via Twilio with +61 number and messaging service');

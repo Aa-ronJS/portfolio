@@ -15,7 +15,7 @@ export default async function handler(req, res) {
   let body; try { body = await readJson(req); } catch { return send(res, 400, { ok: false, error: "Bad JSON" }); }
   const p = readToken(body && body.token, process.env.RELAY_SIGNING_SECRET);
   if (!p || !p.cus) return send(res, 401, { ok: false, error: "That sending token is not one of ours" });
-  const ret = String((body && body.return_url) || process.env.SITE_URL || "https://aa-ronjs.github.io/portfolio/").slice(0, 300);
+  const ret = String((body && body.return_url) || process.env.SITE_URL || "https://chasem.app/").slice(0, 300);
   try { const s = await stripe("billing_portal/sessions", { customer: p.cus, return_url: ret }); return send(res, 200, { ok: true, url: s.url }); }
   catch (e) { return send(res, 502, { ok: false, error: e.message }); }
 }

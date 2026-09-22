@@ -38,9 +38,9 @@ no cap to police, because the messages are the cap.
    opens on an email, but every message is written for the painter to send
    himself.
 4. **Stripe.** Two Payment Links. One in **subscription** mode at
-   PLAN_PRICE: collect name, email, phone and billing address, with custom
-   text fields keyed `trading_name`, `abn`, `licence`, success URL
-   `https://aa-ronjs.github.io/portfolio/welcome?session={CHECKOUT_SESSION_ID}`.
+   PLAN_PRICE: collect name, email, phone and billing address and nothing
+   else -- he types no business name, ABN or licence to pay -- success URL
+   `https://chasem.app/welcome?session={CHECKOUT_SESSION_ID}`.
    Top-ups need no Payment Link: the app charges the card already on file
    through `api/topup.js`, so leave TOPUP_URL empty unless you want a
    fallback link for someone with no card saved. If you do make one, it is
@@ -79,8 +79,9 @@ than to lock.
    no Windows machine has executed them. If anything fails, send me the
    screen and stop the launch until it is fixed.
 2. **Stand up the sending relay.** Deploy `quote-and-chase-landing` to
-   Vercel (`npx vercel --prod`), set `ALLOWED_ORIGINS` to
-   `https://aa-ronjs.github.io` and either the Twilio/Resend env vars or
+   Vercel (`npx vercel --prod`) on the chasem.app domain, set
+   `ALLOWED_ORIGINS` to `https://chasem.app,https://www.chasem.app` and
+   either the Twilio/Resend env vars or
    `ALLOW_CLIENT_CREDS=1`. Create a Twilio Messaging Service (scheduled
    SMS needs one) and verify a sending domain in Resend. In the app,
    Set-up, Sending, paste `https://<site>/api/msg` and send yourself a
