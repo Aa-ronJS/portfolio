@@ -3,7 +3,7 @@ import { createHmac, timingSafeEqual } from "node:crypto";
 
 export const f = (...a) => (globalThis.__relayFetch || fetch)(...a);
 export function send(res, status, obj) { res.statusCode = status; res.setHeader("Content-Type", "application/json"); res.end(JSON.stringify(obj)); }
-const ALLOWED = (process.env.ALLOWED_ORIGINS || "https://chasem.app,https://www.chasem.app,https://aa-ronjs.github.io").split(",").map((s) => s.trim()).filter(Boolean);
+const ALLOWED = (process.env.ALLOWED_ORIGINS || "https://chasem.app,https://www.chasem.app").split(",").map((s) => s.trim()).filter(Boolean);
 export function cors(req, res, methods) {
   const origin = req.headers.origin || "";
   const ok = ALLOWED.includes("*") || ALLOWED.includes(origin) || /^https?:\/\/(localhost|127\.0\.0\.1)(:\d+)?$/.test(origin);

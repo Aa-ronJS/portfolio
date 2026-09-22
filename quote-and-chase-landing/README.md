@@ -9,8 +9,8 @@ Claude API for the demo, and the sending relay the app uses.
 `public/app/` is a copy of `../quote-and-chase-app/`; keep them
 identical. The app keeps its data per address, so pick one canonical
 address and never move it. That address is https://chasem.app/app/, which
-the relative `APP_URL: "app/"` in `config.js` resolves to. The GitHub Pages
-copy is a mirror; a painter who starts there has his jobs there.
+the relative `APP_URL: "app/"` in `config.js` resolves to. It is the only
+one: the old GitHub Pages copy is retired and only redirects now.
 
 ```
 public/index.html   the page (hero, what it does, demo, install, own-it, price, FAQ)

@@ -54,8 +54,9 @@ let us back with zero customers.
 
 It lives at **https://chasem.app**, with the app at **https://chasem.app/app/** and the relay at
 `https://chasem.app/api/*` — one origin for all three, so there is no cross-origin anything between the app and
-its own sender. The GitHub Pages copy stays up as a mirror. A painter's jobs live in his phone's storage for the
-address he opened, so the address he is sent to must never change.
+its own sender. There is no second address: the old GitHub Pages copy is retired and now only sends people here.
+A painter's jobs live in his phone's storage for the address he opened, so the address he is sent to must never
+change.
 
 Keep it, one screen. It exists to carry what an ad cannot: the looping A4 demo, a real sample PDF, the ~6 cm
 accuracy figure, the price, and the guarantee. Split-test sending phone traffic straight into the app. Decide it

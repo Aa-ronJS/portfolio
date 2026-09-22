@@ -26,7 +26,7 @@
 
 import { readToken, readBalance, spend, OUT_OF_MESSAGES, autoTopUpOn, chargeTopUp } from "./_setup.js";
 
-const ALLOWED = (process.env.ALLOWED_ORIGINS || "https://chasem.app,https://www.chasem.app,https://aa-ronjs.github.io").split(",").map((s) => s.trim()).filter(Boolean);
+const ALLOWED = (process.env.ALLOWED_ORIGINS || "https://chasem.app,https://www.chasem.app").split(",").map((s) => s.trim()).filter(Boolean);
 const PER_IP_LIMIT = Number(process.env.MSG_PER_IP_LIMIT || 60); // per 10 minutes per instance
 const buckets = new Map();
 const seen = new Map(); // idempotency keys -> the result returned for them (insertion order, oldest first)

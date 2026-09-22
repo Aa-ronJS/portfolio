@@ -41,10 +41,14 @@ Every later step assumes that address. The code already does: the app's
 and the CORS list all default to chasem.app, so there is nothing to paste
 for any of them. You will come back and set the secrets in step 3.
 
-The GitHub Pages copy at `aa-ronjs.github.io/portfolio/` stays up as a
-mirror and is still allowed by CORS. Do not advertise both: a painter's
-jobs live in his phone's storage for the address he opened, so whichever
-one he is sent to is the one he has to keep using.
+There is one address and no second one. The old GitHub Pages copy at
+`aa-ronjs.github.io/portfolio/` is retired: what is left there is a page
+that sends people here, and a service worker whose only job is to delete
+the old cached app and unregister itself, because a cache-first app that
+is merely deleted keeps running on any phone that installed it. If anyone
+has jobs saved at that address, that page hands them a back-up file to
+load in Set-up here -- jobs live in the phone's storage for the address
+they were made at and do not follow anyone across.
 
 ## 2. Make everything in Stripe
 
