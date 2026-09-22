@@ -96,6 +96,38 @@ is not decoration either: nobody hands a card to an anonymous website.
 
 In `quote-and-chase-app/config.js`: `signup_url`, which the script printed.
 
+## 4a. Twilio will not sell you a number until it knows who you are
+
+Australia requires it, so this is a hard gate and it is worth starting early:
+until it clears, Twilio refuses both buying a number AND sending a message,
+with `code 20003, Primary compliance profile is not approved`. Nothing about
+the relay is wrong when you see that.
+
+In the console: Trust Hub, then Regulatory Compliance, and make a bundle for
+**Australia / Mobile**. Twilio asks for either
+
+- **Business** (use this one): business name, a document proving it, proof of
+  the business address, and the ABN; or
+- **Individual**: your name, photo ID, and proof of your home address.
+
+Use the business route -- it wants exactly the same details as step 4, so you
+fill them in once. Approval is not instant.
+
+Only then:
+
+    node -e "..."  # or simply buy an AU Mobile number in the console,
+                   # then add it as a sender on the "Quote and Chase"
+                   # Messaging Service (scheduled SMS needs the service,
+                   # not a bare number)
+
+One thing to know while you wait: with the credentials set but no approved
+profile, the relay's ping still answers `sms: true`, because it is reporting
+that it has credentials and a Messaging Service, not that Twilio will accept a
+message. Every send fails with the 20003 above until the bundle is approved.
+That is safe rather than silent -- the app shows the failure and the painter
+taps Send himself, which is what the soft wall is for -- but do not read
+`sms: true` as "it can send".
+
 ## 5. Point Twilio's inbound webhook at the relay
 
 On your Messaging Service, set "a message comes in" to
