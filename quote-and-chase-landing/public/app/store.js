@@ -1,4 +1,4 @@
-/* Quote & Chase app: local store. Everything lives in this browser (localStorage), exportable as one JSON file. */
+/* Chasem app: local store. Everything lives in this browser (localStorage), exportable as one JSON file. */
 (function () {
   'use strict';
   var KEY = 'qc-app-v1';
@@ -259,7 +259,7 @@
     return JSON.stringify(out, null, 2);
   }
   function addLog(entry) { var s = load(); s.log = s.log && typeof s.log === 'object' ? s.log : {}; if (!Array.isArray(s.log.sent)) s.log.sent = []; s.log.sent.unshift(entry); if (s.log.sent.length > 500) s.log.sent.length = 500; return save(); }
-  function importAll(json) { var obj = JSON.parse(json); if (!obj || typeof obj !== 'object' || Array.isArray(obj) || !Array.isArray(obj.jobs)) throw new Error('Not a Quote & Chase backup'); var prev = state; state = obj; hydrate(); if (!save()) { state = prev; throw new Error('Could not save the restore: ' + lastError); } return state; }
+  function importAll(json) { var obj = JSON.parse(json); if (!obj || typeof obj !== 'object' || Array.isArray(obj) || !Array.isArray(obj.jobs)) throw new Error('Not a Chasem backup'); var prev = state; state = obj; hydrate(); if (!save()) { state = prev; throw new Error('Could not save the restore: ' + lastError); } return state; }
   function reset() { state = defaults(); hydrate(); save(); }
 
   window.QCStore = { PRICE_ITEMS: PRICE_ITEMS, load: load, save: save, lastError: function () { return lastError; }, normaliseJob: normaliseJob, uid: uid, today: today, addDays: addDays, daysBetween: daysBetween,

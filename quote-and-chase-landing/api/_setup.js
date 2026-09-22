@@ -106,7 +106,7 @@ export async function chargeTopUp(p, opts) {
   try {
     pi = await stripe("payment_intents", {
       amount: String(Math.round(TOPUP_PRICE * 100)), currency: "aud", customer: p.cus, payment_method: pm,
-      off_session: "true", confirm: "true", description: TOPUP_MESSAGES + " messages, Quote & Chase",
+      off_session: "true", confirm: "true", description: TOPUP_MESSAGES + " messages, Chasem",
       "metadata[qc]": "topup", "metadata[qc_messages]": String(TOPUP_MESSAGES), "metadata[qc_auto]": opts.auto ? "1" : "0",
     });
   } catch (e) { return { ok: false, needs_card: true, error: e.message }; }

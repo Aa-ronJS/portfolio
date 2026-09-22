@@ -1,4 +1,4 @@
-/* Quote & Chase: real sending through the relay (Twilio for SMS, Resend for email). Credentials stay on this phone
+/* Chasem: real sending through the relay (Twilio for SMS, Resend for email). Credentials stay on this phone
  * unless the relay has them as environment variables. Everything degrades to the share sheet and calendar reminders.
  * Every send, schedule, cancel and failure is written to the sent log (state.log.sent, newest first, 500 kept). */
 (function () {

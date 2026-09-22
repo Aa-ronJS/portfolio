@@ -1,4 +1,4 @@
-/* Quote & Chase: the phone talking to the server.
+/* Chasem: the phone talking to the server.
    The phone is still the thing he works on, and it still works with no signal. This is what lets a customer
    accept a quote and pick a start day while the phone is in his pocket, and lets him see it when he next opens it.
    Nothing here blocks the app: every call is best effort, and a failure just means we try again next time. */

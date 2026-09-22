@@ -1,4 +1,4 @@
-/* Quote & Chase: travel from the job's postcode to the business postcode, offline, using postcode centroids. */
+/* Chasem: travel from the job's postcode to the business postcode, offline, using postcode centroids. */
 (function () {
   'use strict';
   function postcodeOf(address) { var m = String(address || '').match(/\b([0-9]{4})\b(?!.*\b[0-9]{4}\b)/); return m ? m[1] : ''; }

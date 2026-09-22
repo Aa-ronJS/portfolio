@@ -1,6 +1,6 @@
 {
-  "name": "Quote & Chase",
-  "short_name": "Quote Chase",
+  "name": "Chasem",
+  "short_name": "Chasem",
   "description": "Measure a wall with a sheet of paper, price it at your rates, send the quote, invoice, chase.",
   "start_url": "./",
   "scope": "./",

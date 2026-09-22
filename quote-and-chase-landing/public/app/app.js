@@ -1,4 +1,4 @@
-/* Quote & Chase app: views and routing. Vanilla JS, no build step. */
+/* Chasem app: views and routing. Vanilla JS, no build step. */
 (function () {
   'use strict';
   var $app = document.getElementById('app'), S;
@@ -66,7 +66,7 @@
   function signupUrl() { var u = String((S.sending && S.sending.server) || window.QC_APP && window.QC_APP.signup_url || '').trim(); if (u) return u.replace(/\/[^\/]*$/, '/signup'); return (window.QC_APP && window.QC_APP.signup_url) || ''; }
   function viewJoin(msg) {
     var url = signupUrl();
-    $app.innerHTML = '<div class="card" style="max-width:420px;margin:24px auto 0"><h1>Quote &amp; Chase</h1>' +
+    $app.innerHTML = '<div class="card" style="max-width:420px;margin:24px auto 0"><h1>Chasem</h1>' +
       '<p class="hint">Measure a room with a sheet of paper, price it your way, and the quote is in their inbox before you are back in the ute. Then it chases the quote and the invoice for you.</p>' +
       (msg ? '<p class="confirm">' + esc(msg) + '</p>' : '') +
       '<form id="joinform" novalidate><label class="f">Your email<span>so your app is yours, and so the first messages can go out in your name</span><input type="email" id="join_email" autocomplete="email" inputmode="email" required></label>' +
@@ -702,7 +702,7 @@
       function dims(s) { var d = s.dimensions || [0, 0, 0]; if (!Array.isArray(d)) d = [d.x, d.y, d.z]; return d.map(Number); }
       function pos(s) { var t = s.transform; if (Array.isArray(t) && t.length === 16) return [t[12], t[13], t[14]]; return null; }
       walls.forEach(function (w) {
-        if (w.width_mm > 0 && w.height_mm > 0) { // already in Quote & Chase measurements.json form
+        if (w.width_mm > 0 && w.height_mm > 0) { // already in Chasem measurements.json form
           if (!(w.width_mm >= 300 && w.width_mm <= 30000 && w.height_mm >= 1000 && w.height_mm <= 8000)) return;
           w.openings = (w.openings || []).filter(function (o) { return o && o.width_mm > 0 && o.height_mm > 0 && o.width_mm <= w.width_mm && o.height_mm <= w.height_mm; }); w.paint_area_m2 = 0;
           var ga = w.gross_area_m2 || +(w.width_mm * w.height_mm / 1e6).toFixed(3), ops = (w.openings || []).map(function (o) { return { type: o.type === 'window' ? 'window' : 'door', width_mm: Math.round(o.width_mm), height_mm: Math.round(o.height_mm), area_m2: +(o.area_m2 || o.width_mm * o.height_mm / 1e6).toFixed(3) }; });
@@ -1310,18 +1310,18 @@
   function appUrl() { return location.href.split('#')[0] + '#/chase'; }
   function followUpIcs(job, kind) {
     var fu = S.follow_up, ev = [], name = job.client.name || job.quote_no, hr = fuHour(), st = stateCode(), today = QCStore.today();
-    if (kind === 'quote') { if (job.status !== 'quoted' && job.status !== 'draft') { toast('Follow-ups only apply while the quote is waiting on the client.'); return; } var base = job.sent_date || today; (fu.quote_days || [3, 7, 14]).forEach(function (d) { var w = QCCal.nextSendTime(QCStore.addDays(base, d), hr, st); if (w.day < today) return; ev.push({ uid: job.id + '-q' + d, summary: 'Follow up quote ' + job.quote_no + ': ' + name + ' (' + money(job.quote ? job.quote.total : 0) + ')', description: 'Open Quote and Chase, Follow-ups tab. The message is written. ' + (job.client.phone || ''), location: job.client.address || '', url: appUrl(), start: w.day, startHour: hr, endHour: hr + 1, alarmHour: hr }); }); }
-    else { (job.invoices || []).filter(function (i) { return invOpen(i) && invOut(i); }).forEach(function (inv) { var floor = inv.kind === 'deposit' ? addBusinessDays(inv.due, 3, st) : inv.due; (fu.invoice_days || [3, 10, 21]).forEach(function (d) { var day = QCStore.addDays(inv.due, d); if (day < floor) day = floor; var w = QCCal.nextSendTime(day, hr, st); if (w.day < today) return; ev.push({ uid: job.id + '-' + inv.no + '-' + d, summary: 'Chase invoice ' + inv.no + ': ' + name + ' (' + money(invBalance(inv).balance) + ')', description: 'Open Quote and Chase, Follow-ups tab. ' + (job.client.phone || ''), location: job.client.address || '', url: appUrl(), start: w.day, startHour: hr, endHour: hr + 1, alarmHour: hr }); }); }); }
+    if (kind === 'quote') { if (job.status !== 'quoted' && job.status !== 'draft') { toast('Follow-ups only apply while the quote is waiting on the client.'); return; } var base = job.sent_date || today; (fu.quote_days || [3, 7, 14]).forEach(function (d) { var w = QCCal.nextSendTime(QCStore.addDays(base, d), hr, st); if (w.day < today) return; ev.push({ uid: job.id + '-q' + d, summary: 'Follow up quote ' + job.quote_no + ': ' + name + ' (' + money(job.quote ? job.quote.total : 0) + ')', description: 'Open Chasem, Follow-ups tab. The message is written. ' + (job.client.phone || ''), location: job.client.address || '', url: appUrl(), start: w.day, startHour: hr, endHour: hr + 1, alarmHour: hr }); }); }
+    else { (job.invoices || []).filter(function (i) { return invOpen(i) && invOut(i); }).forEach(function (inv) { var floor = inv.kind === 'deposit' ? addBusinessDays(inv.due, 3, st) : inv.due; (fu.invoice_days || [3, 10, 21]).forEach(function (d) { var day = QCStore.addDays(inv.due, d); if (day < floor) day = floor; var w = QCCal.nextSendTime(day, hr, st); if (w.day < today) return; ev.push({ uid: job.id + '-' + inv.no + '-' + d, summary: 'Chase invoice ' + inv.no + ': ' + name + ' (' + money(invBalance(inv).balance) + ')', description: 'Open Chasem, Follow-ups tab. ' + (job.client.phone || ''), location: job.client.address || '', url: appUrl(), start: w.day, startHour: hr, endHour: hr + 1, alarmHour: hr }); }); }); }
     if (!ev.length) { toast('Nothing to remind about'); return; }
     if (kind === 'quote') { job.follow_ups = (job.follow_ups || []).filter(function (x) { return x.id; }).concat(ev.map(function (e) { return { uid: e.uid, day: e.start, what: e.summary }; })); save(); }
-    QCCal.deliver(QCCal.ics(ev, 'Quote and Chase follow-ups'), (kind === 'quote' ? 'follow-up-' : 'reminders-') + job.quote_no + '.ics').then(function () { toast(ev.length + ' reminders ready for your calendar'); });
+    QCCal.deliver(QCCal.ics(ev, 'Chasem follow-ups'), (kind === 'quote' ? 'follow-up-' : 'reminders-') + job.quote_no + '.ics').then(function () { toast(ev.length + ' reminders ready for your calendar'); });
   }
   function bookJob(job, start, days, hour) {
     var endIncl = QCStore.addDays(start, days - 1), endExcl = QCStore.addDays(start, days), endHour = Math.max(hour + 1, parseInt(S.booking.end_hour, 10) || 15);
     var e = { uid: job.id + '-book-' + start, summary: 'Painting: ' + (job.client.name || job.quote_no) + (job.summary ? ' - ' + job.summary : ''), description: 'Quote ' + job.quote_no + ', ' + money(job.quote ? job.quote.total : 0) + '. ' + (job.client.phone || '') + ' ' + (job.client.email || '') + '\n' + (job.notes || ''), location: job.client.address || '', start: start, end: endExcl };
     if (days === 1) { e.startHour = hour; e.endHour = endHour; e.end = start; }
     job.booking = { start: start, days: days, end: endExcl, end_inclusive: endIncl, hour: hour, gcal: QCCal.googleUrl(e) }; save();
-    QCCal.deliver(QCCal.ics([e], 'Quote and Chase bookings'), 'booking-' + job.quote_no + '.ics').then(function () { toast('Booked'); viewQuote(job); });
+    QCCal.deliver(QCCal.ics([e], 'Chasem bookings'), 'booking-' + job.quote_no + '.ics').then(function () { toast('Booked'); viewQuote(job); });
   }
 
 
@@ -1539,7 +1539,7 @@
     });
     var vp = document.getElementById('vpick'); if (vp) vp.addEventListener('click', function () { var d = document.getElementById('vdate').value, t = document.getElementById('vtime').value || '16:30', mins = parseInt((document.getElementById('vmin') || {}).value, 10) || 30; if (!d) { showBlock(vp, 'Pick a date first.'); return; } var p = t.split(':'); bookVisit(d, (+p[0]) * 60 + (+p[1] || 0), mins, 'picked by hand', 0); });
     var vmEl = document.getElementById('vmin'); if (vmEl) vmEl.addEventListener('change', function () { var v = parseInt(vmEl.value, 10); if (v >= 5 && v <= 480) { S.booking.visit_minutes = v; save(); toast('Visit length remembered'); } else toast('Visit length is in minutes, 5 to 480.'); });
-    var vi = document.getElementById('visitics'); if (vi) vi.addEventListener('click', function () { QCCal.deliver(QCCal.ics([visitEvent(job)], 'Quote and Chase visits'), 'visit-' + job.quote_no + '.ics').then(function () { toast('Added to calendar'); }); });
+    var vi = document.getElementById('visitics'); if (vi) vi.addEventListener('click', function () { QCCal.deliver(QCCal.ics([visitEvent(job)], 'Chasem visits'), 'visit-' + job.quote_no + '.ics').then(function () { toast('Added to calendar'); }); });
     var tv = document.getElementById('textvisit'); if (tv) tv.addEventListener('click', function () { var t = greet(job) + ' confirming the quote visit on ' + QCPdf.fmtDate(job.visit.date) + ' at ' + QCSched.nice(job.visit.start_min) + ', about ' + job.visit.minutes + ' minutes. ' + signoff(S); sendText(t, 'visit'); });
     var uv = document.getElementById('unvisit'); if (uv) uv.addEventListener('click', function () { job.visit = null; save(); viewEnquiry(job); });
   }

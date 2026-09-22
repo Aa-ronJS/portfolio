@@ -3,7 +3,7 @@
   "private": true,
   "version": "0.1.0",
   "type": "module",
-  "description": "Landing page and phone demo for the Quote and Chase pack for painters",
+  "description": "Landing page and phone demo for the Chasem pack for painters",
   "scripts": {
     "dev": "vercel dev",
     "deploy": "vercel --prod",

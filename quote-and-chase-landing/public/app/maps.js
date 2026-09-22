@@ -1,4 +1,4 @@
-/* Quote & Chase: address lookup, satellite photo and house size from Google (Places, Static Maps, Solar).
+/* Chasem: address lookup, satellite photo and house size from Google (Places, Static Maps, Solar).
    Needs a Google Maps key: the painter's own in Set-up, or the one in config.js for the hosted app.
    Everything here degrades to nothing: no key or no network means the address field is a plain text box. */
 (function () {

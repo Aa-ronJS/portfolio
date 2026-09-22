@@ -1,4 +1,4 @@
-/* Quote & Chase: AR tape for Android (WebXR immersive-ar with hit testing). Places the four wall corners and
+/* Chasem: AR tape for Android (WebXR immersive-ar with hit testing). Places the four wall corners and
  * door/window corners on the real wall and hands back the same wall record the photo flow produces.
  * iPhone Safari does not expose WebXR AR, so the button only appears where a session is possible. */
 (function(){

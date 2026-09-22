@@ -1,4 +1,4 @@
-/* Quote & Chase app: PDF documents with jsPDF (A4, mm). Quote, invoice, receipt, statement, variation and credit note.
+/* Chasem app: PDF documents with jsPDF (A4, mm). Quote, invoice, receipt, statement, variation and credit note.
    Every job/invoice/settings field read here may be missing on old data; each one falls back (no snapshot -> current settings, no number -> job.quote_no). */
 (function () {
   'use strict';

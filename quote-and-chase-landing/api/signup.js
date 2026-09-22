@@ -26,7 +26,7 @@ When the ${env.free} run out, ${env.subscribe ? "one tap in the app tops you up 
 
 ${env.support ? "Anything at all, reply to this email and a person answers." : ""}
 
-Quote & Chase`;
+Chasem`;
   return { subject: "Your app is ready: one tap to set it up", text };
 }
 

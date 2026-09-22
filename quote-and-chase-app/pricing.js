@@ -1,4 +1,4 @@
-/* Quote & Chase app: the pricing engine. Same rules as the pack's price list, deterministic, no guessing. Cents are kept; amounts round to 2 dp. */
+/* Chasem app: the pricing engine. Same rules as the pack's price list, deterministic, no guessing. Cents are kept; amounts round to 2 dp. */
 (function () {
   'use strict';
   // Doors and windows being painted are extra-over: their openings are not taken off the wall area. Robe openings are (nothing behind the doors is painted).

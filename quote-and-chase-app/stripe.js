@@ -1,4 +1,4 @@
-/* Quote & Chase: card payments through the painter's own Stripe account, straight from the phone.
+/* Chasem: card payments through the painter's own Stripe account, straight from the phone.
  * Uses a restricted key (Products, Prices, Payment Links: write; Checkout Sessions: read) that never leaves this device.
  * Stripe's API answers browser requests (CORS), so no server sits in the middle. */
 (function () {

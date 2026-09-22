@@ -1,4 +1,4 @@
-/* Quote & Chase: calendar files (.ics) for bookings and follow-up reminders, a Google Calendar link,
+/* Chasem: calendar files (.ics) for bookings and follow-up reminders, a Google Calendar link,
  * and the business-day rules for reminder send times (weekends and public holidays roll forward). */
 (function () {
   'use strict';
@@ -15,7 +15,7 @@
   function addDays(iso, n) { var p = String(iso).split('-'), d = new Date(+p[0], +p[1] - 1, +p[2]); d.setDate(d.getDate() + n); return d.getFullYear() + '-' + pad(d.getMonth() + 1) + '-' + pad(d.getDate()); }
   // events: [{ uid, summary, description, location, url, start (yyyy-mm-dd), end (exclusive yyyy-mm-dd) for all-day, or startHour/endHour for timed, alarmHour }]
   function ics(events, calName) {
-    var now = icsStamp(new Date()), L = ['BEGIN:VCALENDAR', 'VERSION:2.0', 'PRODID:-//Quote and Chase//EN', 'CALSCALE:GREGORIAN', 'METHOD:PUBLISH', 'X-WR-CALNAME:' + escText(calName || 'Quote and Chase')];
+    var now = icsStamp(new Date()), L = ['BEGIN:VCALENDAR', 'VERSION:2.0', 'PRODID:-//Chasem//EN', 'CALSCALE:GREGORIAN', 'METHOD:PUBLISH', 'X-WR-CALNAME:' + escText(calName || 'Chasem')];
     events.forEach(function (e) {
       L.push('BEGIN:VEVENT', 'UID:' + e.uid + '@quote-and-chase', 'DTSTAMP:' + now, 'SUMMARY:' + escText(e.summary));
       if (e.startMin != null) { L.push('DTSTART:' + icsLocal(e.start, Math.floor(e.startMin / 60), e.startMin % 60), 'DTEND:' + icsLocal(e.end || e.start, Math.floor((e.endMin || e.startMin + 30) / 60), (e.endMin || e.startMin + 30) % 60)); }

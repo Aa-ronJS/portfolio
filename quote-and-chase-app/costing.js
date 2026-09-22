@@ -1,4 +1,4 @@
-/* Quote & Chase: labour and paint behind each price. Set once; derives rates for the price list and shows a private cost/margin breakdown per quote. */
+/* Chasem: labour and paint behind each price. Set once; derives rates for the price list and shows a private cost/margin breakdown per quote. */
 (function () {
   'use strict';
   // key: [hours per unit, paint type, litres per unit (or coats when a coverage class is given), other $ per unit, coverage class, consumables class]

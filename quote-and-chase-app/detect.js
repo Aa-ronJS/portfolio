@@ -1,4 +1,4 @@
-/* Quote & Chase: automatic detection of a plain A4 page, the wall, and door/window openings in a photo.
+/* Chasem: automatic detection of a plain A4 page, the wall, and door/window openings in a photo.
  * Pure functions over a grayscale Float32Array; no dependencies. Everything returns image-pixel coordinates.
  */
 (function(){

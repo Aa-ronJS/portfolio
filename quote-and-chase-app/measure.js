@@ -1,4 +1,4 @@
-/* Quote & Chase measuring component. Mount with QCMeasure.mount(rootElement, { onSave: fn(wallRecord), count: fn, ceilingM: fn })
+/* Chasem measuring component. Mount with QCMeasure.mount(rootElement, { onSave: fn(wallRecord), count: fn, ceilingM: fn })
  *
  * How it measures without anything printed:
  *  1. Four taps on the wall's corners give the perspective of the wall plane (a homography from a unit square).

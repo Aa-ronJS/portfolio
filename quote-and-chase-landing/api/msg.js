@@ -1,4 +1,4 @@
-// POST /api/msg  —  the sending relay for the Quote and Chase phone app.
+// POST /api/msg  —  the sending relay for the Chasem phone app.
 //
 // Twilio holds scheduled SMS (ScheduleType=fixed, up to 35 days ahead, needs a Messaging Service SID) and
 // Resend holds scheduled email (scheduled_at, up to 30 days ahead), so this relay keeps no data at all.
@@ -192,7 +192,7 @@ export default async function handler(req, res) {
   // Idempotency keys are kept apart per hosted token so two painters' job ids cannot collide in the shared map.
   const keyPrefix = hosted ? body.token.slice(-8) + ":" : "";
   try {
-    if (body.action === "test") { const r = ch === "sms" ? await smsSend(c, body.to, "Quote and Chase test: SMS sending works.") : await emailSend(c, { to: body.to, subject: "Quote and Chase test", body: "Email sending works." }); return send(res, 200, { ok: true, ...r }); }
+    if (body.action === "test") { const r = ch === "sms" ? await smsSend(c, body.to, "Chasem test: SMS sending works.") : await emailSend(c, { to: body.to, subject: "Chasem test", body: "Email sending works." }); return send(res, 200, { ok: true, ...r }); }
     if (body.action === "send") { if (!body.to || (ch === "sms" ? !body.body : (!body.body && !body.html))) throw new Error("to and body are required"); if (String(body.body || "").length > 1600) throw new Error("Message too long");
       let bal = hosted && hosted.payload ? await readBalance(hosted.payload) : null;
       if (bal && bal.counted && bal.left <= 0) { bal = await refill(hosted.payload, bal); if (bal.left <= 0) return send(res, 402, { ok: false, error: OUT_OF_MESSAGES, out_of_messages: true, ...bal }); }

@@ -1,4 +1,4 @@
-/* Quote & Chase: ballpark from room presets, and slot suggestions that respect travel between the day's jobs and visits. */
+/* Chasem: ballpark from room presets, and slot suggestions that respect travel between the day's jobs and visits. */
 (function () {
   'use strict';
   // ---------- room presets for phone enquiries: [label, length m, width m, doors both sides, windows, one-side doors, wardrobe pairs, paintable wall fraction]
