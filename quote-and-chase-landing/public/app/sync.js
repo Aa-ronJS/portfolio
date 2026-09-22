@@ -48,6 +48,7 @@
         S.jobs = (S.jobs || []).concat([c.body]); touched++; return;
       }
       if (c.deleted) { S.jobs = S.jobs.filter(function (x) { return x.id !== c.id; }); touched++; return; }
+      // the server only ever has stubs for photos; never let one overwrite the pictures held here
       // His own edits win on his own phone; what the server may change is what a customer did.
       if (c.body && c.body.status && c.body.status !== j.status &&
           ['accepted', 'declined'].indexOf(c.body.status) >= 0) { j.status = c.body.status; touched++; }
@@ -97,9 +98,20 @@
     var sBody = JSON.stringify(settings), sHash = hash(sBody);
     fresh.__settings = sHash;
     if (sent.__settings !== sHash) push.push({ kind: 'settings', id: 'settings', rev: (S.rev || 1), body: JSON.parse(sBody) });
+    // Photos are held as base64 inside the job, and eight of them is well over a megabyte. Sending that through
+    // document sync would blow the request on two or three jobs and bloat every pull afterwards, so the picture
+    // data stays on the phone and only the fact of it travels. Proper photo sync needs object storage, not a
+    // jsonb column.
+    function forWire(j) {
+      if (!j.photos || !j.photos.length) return j;
+      var copy = {}, k;
+      for (k in j) if (Object.prototype.hasOwnProperty.call(j, k)) copy[k] = j[k];
+      copy.photos = j.photos.map(function (p) { return { id: p.id, caption: p.caption || '', room: p.room || '', on_phone: true }; });
+      return copy;
+    }
     (S.jobs || []).forEach(function (j) {
       if (!j || !j.id) return;
-      var body = JSON.stringify(j), h = hash(body);
+      var body = JSON.stringify(forWire(j)), h = hash(body);
       fresh[j.id] = h;
       if (sent[j.id] !== h) push.push({ kind: 'job', id: j.id, rev: (S.rev || 1), body: JSON.parse(body) });
     });
