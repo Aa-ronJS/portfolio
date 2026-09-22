@@ -106,7 +106,7 @@
       if (!j.photos || !j.photos.length) return j;
       var copy = {}, k;
       for (k in j) if (Object.prototype.hasOwnProperty.call(j, k)) copy[k] = j[k];
-      copy.photos = j.photos.map(function (p) { return { id: p.id, caption: p.caption || '', room: p.room || '', on_phone: true }; });
+      copy.photos = j.photos.map(function (p) { return { id: p.id, caption: p.caption || '', room: p.room || '', stored: !!p.stored }; });
       return copy;
     }
     (S.jobs || []).forEach(function (j) {
@@ -133,11 +133,54 @@
         var S2 = QCStore.load(), touched = applyChanges(S2, res);
         remember({ since: res.now, sent: fresh, at: Date.now() });
         if (touched) { QCStore.save(); if (opts.onChange) opts.onChange(touched, res); }
+        pushPhotos(3);                                   // after the words are through, a few pictures
         return res;
       })
       .catch(function (e) { running = false; return null; });
   }
 
+  // Photos go up on their own, a few at a time, after the documents are through. Each one is marked as stored
+  // so it is never sent twice, and the picture stays on this phone either way: this is a copy, not a move.
+  function pushPhotos(limit) {
+    var S = QCStore.load(), sd = S.sending || {}, url = api('photo');
+    if (!url || !sd.token) return Promise.resolve(0);
+    var todo = [];
+    (S.jobs || []).forEach(function (j) {
+      (j.photos || []).forEach(function (ph) {
+        if (ph && ph.data && !ph.stored && todo.length < (limit || 3)) todo.push({ job: j.id, ph: ph });
+      });
+    });
+    if (!todo.length) return Promise.resolve(0);
+    var f = window.__qcRelayFetch || window.fetch, done = 0;
+    return todo.reduce(function (chain, t) {
+      return chain.then(function () {
+        return f(url, { method: 'POST', headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ token: sd.token, action: 'put', job: t.job, id: t.ph.id, data: t.ph.data }) })
+          .then(function (r) { return r.json(); })
+          .then(function (res) {
+            if (!res || !res.ok) return;
+            var S2 = QCStore.load(), j2 = (S2.jobs || []).filter(function (x) { return x.id === t.job; })[0];
+            var p2 = j2 && (j2.photos || []).filter(function (x) { return x.id === t.ph.id; })[0];
+            if (p2) { p2.stored = true; QCStore.save(); done++; }
+          })
+          .catch(function () {});
+      });
+    }, Promise.resolve()).then(function () { return done; });
+  }
+
+  // A photo this phone has never held: fetch a URL good for an hour. Used when a second phone, or a new one,
+  // opens a job whose pictures were taken somewhere else.
+  function photoUrl(jobId, photoId) {
+    var S = QCStore.load(), sd = S.sending || {}, url = api('photo');
+    if (!url || !sd.token) return Promise.resolve('');
+    var f = window.__qcRelayFetch || window.fetch;
+    return f(url, { method: 'POST', headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ token: sd.token, action: 'url', job: jobId, id: photoId }) })
+      .then(function (r) { return r.json(); })
+      .then(function (res) { return (res && res.ok && res.url) || ''; })
+      .catch(function () { return ''; });
+  }
+
   function lastAt() { return mem().at || 0; }
-  window.QCSync = { now: now, busyDays: busyDays, rules: rules, applyChanges: applyChanges, lastAt: lastAt, hash: hash };
+  window.QCSync = { now: now, busyDays: busyDays, rules: rules, applyChanges: applyChanges, lastAt: lastAt, hash: hash, pushPhotos: pushPhotos, photoUrl: photoUrl };
 })();

@@ -46,6 +46,14 @@ if (args.relay) {
     const r = await post(path, body);
     must(r.status === 401, path + " is alive and refuses a bad token", "got " + r.status);
   }
+  // Supabase. Both endpoints answer 503 with off:true until they are configured, and 401 once they are --
+  // so the status tells us which, without needing the secrets here.
+  const sy = await post("/api/sync", { token: "qc1.x.y" });
+  should(sy.status === 401, "customers can accept and book",
+    sy.json && sy.json.off ? "DATABASE_URL is not set, so sync is off: a reply cannot be traced to a job and nothing can be booked" : "expected 401, got " + sy.status);
+  const po = await post("/api/photo", { token: "qc1.x.y", action: "url", job: "j", id: "p" });
+  should(po.status === 401, "photos survive a new phone",
+    po.json && po.json.off ? "SUPABASE_URL and SUPABASE_SERVICE_ROLE_KEY are not set, so photos stay on that handset only" : "expected 401, got " + po.status);
 }
 
 console.log("");

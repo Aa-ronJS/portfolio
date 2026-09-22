@@ -48,6 +48,10 @@
     "api/y.js": {
       "maxDuration": 15,
       "memory": 256
+    },
+    "api/photo.js": {
+      "maxDuration": 30,
+      "memory": 512
     }
   },
   "headers": [

@@ -69,6 +69,38 @@ Keep the `RELAY_SIGNING_SECRET` it prints. Every painter's sending token is
 signed with it, so changing it later stops everyone's sending until they
 open the app again.
 
+## 2a. Supabase: the database and the photos
+
+Everything a customer does &mdash; accepting a quote, picking a start day &mdash;
+has to land somewhere you and they both agree on, and a phone in a pocket
+cannot be that place. That is what this is for. It is also what puts your work
+back on a new phone instead of a blank app.
+
+At supabase.com, make a project (free tier is plenty to start; pick the Sydney
+region so it is close to the painters). Then three values go on Vercel:
+
+    DATABASE_URL                 Project Settings, Database, Connection string.
+                                 Take the TRANSACTION POOLER one (port 6543), not
+                                 the direct connection: this runs on serverless
+                                 functions and would otherwise exhaust Postgres
+                                 connections under any load at all.
+    SUPABASE_URL                 https://<your-ref>.supabase.co
+    SUPABASE_SERVICE_ROLE_KEY    Project Settings, API. The service role key, not
+                                 the anon key. It is a full-access key: it belongs
+                                 on the server and nowhere near a phone.
+
+The tables build themselves on the first request that needs them, from
+`quote-and-chase-landing/db/*.sql`, and a second run does nothing. The photo
+bucket (`job-photos`) is made private on the first upload.
+
+One thing to watch on the free tier: a Supabase project **pauses after a week
+with no activity** and needs restoring by hand from the dashboard. That is fine
+while nobody has signed up; it is not fine once someone has, so move to a paid
+plan before you run an ad.
+
+Until all three are set, the relay behaves exactly as it did before: it sends
+messages, it just cannot sync, route a reply to a job, or take a booking.
+
 ## 3. Set the relay's environment variables
 
 Paste the block the script printed into Vercel, and add the four that only
