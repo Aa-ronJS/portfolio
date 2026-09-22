@@ -2,53 +2,63 @@
 <html lang="en-AU">
 <head>
 <meta charset="utf-8">
-<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<meta name="theme-color" content="#2B7BD6">
-<meta name="apple-mobile-web-app-capable" content="yes">
-<meta name="apple-mobile-web-app-status-bar-style" content="default">
-<meta name="apple-mobile-web-app-title" content="Quote & Chase">
-<link rel="manifest" href="manifest.webmanifest">
-<link rel="apple-touch-icon" href="icons/icon-180.png">
-<link rel="icon" href="icons/icon-192.png">
-<title>Quote & Chase</title>
-<link rel="stylesheet" href="app.css">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex">
+<title>The app has moved to chasem.app</title>
+<link rel="canonical" href="https://chasem.app/app/">
+<style>
+  body{margin:0;min-height:100vh;display:grid;place-items:center;background:#F7F7F4;color:#16181D;
+       font:16px/1.5 "Instrument Sans",system-ui,-apple-system,Segoe UI,Roboto,sans-serif;padding:24px}
+  .box{max-width:32em}
+  h1{font-size:1.5rem;line-height:1.2;margin:0 0 .6em}
+  a.go{display:inline-block;margin-top:1.2em;background:#16181D;color:#F7F7F4;text-decoration:none;
+       padding:12px 22px;border-radius:8px;font-weight:600}
+  p{color:#5B5F66}
+  .keep{background:#fff;border:1px solid #E3E4DF;border-radius:8px;padding:14px 16px;margin-top:1.2em}
+  .keep b{color:#16181D}
+  #saved{display:none}
+</style>
 </head>
 <body>
-<header class="top">
-  <a class="brand" href="#/">Quote <span>&amp;</span> Chase</a>
-  <nav>
-    <a href="#/" data-nav="home">Jobs</a>
-    <a href="#/chase" data-nav="chase">Follow-ups</a>
-    <a href="#/settings" data-nav="settings">Set-up</a>
-  </nav>
-</header>
-<main id="app" class="wrap"></main>
-<div id="toast" class="toast" hidden></div>
-<script>window.QC_VERSION="qc-app-v37";
-// Android offers "Install app" through this event; the app keeps it and shows an Install button on Home.
-window.addEventListener('beforeinstallprompt', function (e) { e.preventDefault(); window.__qcInstallPrompt = e; if (window.__qcApp && window.__qcApp.route && !location.hash.replace(/^#\/?/, '')) window.__qcApp.route(); });
-window.addEventListener('appinstalled', function () { window.__qcInstallPrompt = null; });</script>
-<script src="lib/cv.js"></script>
-<script src="lib/aruco.js"></script>
-<script src="lib/jspdf.umd.min.js"></script>
-<script src="postcodes.js"></script>
-<script src="config.js"></script>
-<script src="maps.js"></script>
-<script src="geo.js"></script>
-<script src="costing.js"></script>
-<script src="cal.js"></script>
-<script src="stripe.js"></script>
-<script src="msg.js"></script>
-<script src="schedule.js"></script>
-<script src="store.js"></script>
-<script src="pricing.js"></script>
-<script src="detect.js"></script>
-<script src="ar.js"></script>
-<script src="measure.js"></script>
-<script src="pdf.js"></script>
-<script src="app.js"></script>
+  <div class="box">
+    <h1>The app lives at chasem.app now.</h1>
+    <p>This address is closed. Everything is at the new one, and it is the same app.</p>
+    <a class="go" href="https://chasem.app/app/">Open the app at chasem.app</a>
+    <div class="keep" id="saved">
+      <p><b>You have jobs saved at this old address.</b> Jobs live in the phone's storage for
+      whichever address you opened, so they do not follow you across. Save a back-up file here,
+      then open the new address and load it in Set-up.</p>
+      <button class="go" id="backup" style="border:0;font:inherit;font-weight:600;cursor:pointer">Save my jobs to a file</button>
+    </div>
+  </div>
 <script>
-if ('serviceWorker' in navigator) { window.addEventListener('load', function () { navigator.serviceWorker.register('sw.js').catch(function () {}); }); }
+// This address is retired. Tear down the installed app so it stops running from its own cache,
+// then get out of the way. Order matters: unregister first, so a reload cannot be served by it.
+(function () {
+  try {
+    if ('serviceWorker' in navigator) {
+      navigator.serviceWorker.getRegistrations().then(function (rs) { rs.forEach(function (r) { r.unregister(); }); });
+    }
+    if (window.caches && caches.keys) caches.keys().then(function (ks) { ks.forEach(function (k) { caches.delete(k); }); });
+  } catch (e) {}
+
+  var raw = null;
+  try { raw = localStorage.getItem('qc-app-v1'); } catch (e) {}
+  var has = false;
+  try { var s = raw ? JSON.parse(raw) : null; has = !!(s && ((s.jobs && s.jobs.length) || (s.details && s.details.trading_name))); } catch (e) {}
+
+  if (!has) { location.replace('https://chasem.app/app/'); return; }
+
+  document.getElementById('saved').style.display = 'block';
+  document.getElementById('backup').addEventListener('click', function () {
+    var blob = new Blob([raw], { type: 'application/json' });
+    var a = document.createElement('a');
+    a.href = URL.createObjectURL(blob);
+    a.download = 'quote-and-chase-backup.json';
+    document.body.appendChild(a); a.click(); a.remove();
+    setTimeout(function () { URL.revokeObjectURL(a.href); }, 4000);
+  });
+})();
 </script>
 </body>
 </html>
