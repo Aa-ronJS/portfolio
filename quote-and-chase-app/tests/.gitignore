@@ -1,0 +1,41 @@
+# Renders, not sources: tests/mtest/*.py and tests/smoke/measure/scene4.py + fixtures.py make these.
+# The truth files go with them: they are written by the same scripts, and a stale one is worse than none.
+mtest/truth.json
+mtest/truth2.json
+mtest/a4_*.json
+mtest/fb_*.json
+mtest/*.jpg
+mtest/*.raw
+mtest/*.dim
+mtest/crop*.png
+smoke/measure/*.jpg
+smoke/measure/big12mp.json
+smoke/measure/blank.json
+smoke/measure/cutedge.json
+smoke/measure/dark.json
+smoke/measure/doorpanel.json
+smoke/measure/grainy.json
+smoke/measure/huge.json
+smoke/measure/picture.json
+smoke/measure/portrait.json
+smoke/measure/rot90.json
+smoke/measure/tiny.json
+smoke/measure/vignette.json
+smoke/measure/measurements.json
+smoke/measure/one.png
+smoke/measure/text.jpg
+
+# What a run leaves behind
+out/
+apptest/*.png
+apptest/*.ics
+apptest/measurements.json
+smoke/**/*.png
+smoke/**/*.ics
+smoke/**/*.out
+smoke/shell/appcopy*/
+
+# the lidar suite writes its own fixtures, one of them 40 MB
+smoke/measure/lidar/
+
+apptest/*.pdf

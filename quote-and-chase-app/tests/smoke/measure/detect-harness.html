@@ -1,0 +1,15 @@
+<!doctype html><meta charset="utf-8"><script src="/detect.js"></script>
+<script>
+window.run = async function(url, f, maxDim){
+  let bmp = await createImageBitmap(await (await fetch(url)).blob()); let w = bmp.width, h = bmp.height; const sc = Math.min(1, (maxDim || 1e9) / Math.max(w, h)); w = Math.round(w * sc); h = Math.round(h * sc);
+  const c = document.createElement('canvas'); c.width = w; c.height = h; const ctx = c.getContext('2d'); ctx.drawImage(bmp, 0, 0, w, h);
+  const d = ctx.getImageData(0, 0, w, h).data, g = new Float32Array(w * h); for (let i = 0, j = 0; i < g.length; i++, j += 4) g[i] = 0.299 * d[j] + 0.587 * d[j + 1] + 0.114 * d[j + 2];
+  const m0 = performance.memory ? performance.memory.usedJSHeapSize : 0;
+  const t0 = performance.now(); const page = QCDetect.findPage(g, w, h, f * sc); const t1 = performance.now();
+  const wall = QCDetect.findWall(g, w, h, page && page.corners); const t2 = performance.now();
+  let openings = null;
+  if (wall) { const Hw = QCDetect.homography([{x:0,y:0},{x:1,y:0},{x:1,y:1},{x:0,y:1}], wall.corners); openings = QCDetect.findOpenings(g, w, h, Hw, window.__Wmm || 4000, window.__Hmm || 2400, null); }
+  const m1 = performance.memory ? performance.memory.usedJSHeapSize : 0;
+  return { w, h, sc, page, wall, openings, ms: [t1 - t0, t2 - t1, performance.now() - t2].map(Math.round), heapMB: [m0, m1].map(x => Math.round(x / 1048576)) };
+};
+</script>

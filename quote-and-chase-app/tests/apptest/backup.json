@@ -1,0 +1,980 @@
+{
+  "account": {
+    "email": "test@example.com",
+    "joined": "2026-01-01"
+  },
+  "maps": {
+    "key": ""
+  },
+  "details": {
+    "trading_name": "Test Painting Co",
+    "owner_name": "Sam Tester",
+    "abn": "12 345 678 901",
+    "phone": "0400 000 000",
+    "email": "sam@example.com",
+    "address": "",
+    "service_area": "",
+    "licence": "",
+    "insurance": "",
+    "state": "SA",
+    "account_name": "Test Painting Co",
+    "bsb": "063-000",
+    "account_number": "12345678",
+    "other_payments": "",
+    "deposit_pct": 10,
+    "balance_days": 7,
+    "quote_valid_days": 30,
+    "gst": true,
+    "voice": "friendly",
+    "sign_off": "Cheers",
+    "logo": "",
+    "postcode": "5000",
+    "quote_prefix": "Q-",
+    "invoice_prefix": "INV-",
+    "first_name_signoff": true,
+    "contact_phone_in_texts": true,
+    "brand_colour": "",
+    "show_rates": false,
+    "site": {
+      "lat": null,
+      "lng": null,
+      "place_id": ""
+    }
+  },
+  "prices": {
+    "p_walls": 20,
+    "p_ceilings": 22,
+    "p_cornice": 6,
+    "p_skirting": 11,
+    "p_door": 140,
+    "p_door_one": 80,
+    "p_door_panel": 80,
+    "p_window": 55,
+    "p_window_timber": 130,
+    "p_wardrobe": 150,
+    "p_feature": 35,
+    "p_colour_change": 8,
+    "p_wallpaper": 24,
+    "p_prep_mod": 85,
+    "p_prep_heavy": 100,
+    "p_sealer": 9,
+    "p_new_plaster": 9,
+    "p_high_access": 200,
+    "p_setup": 150,
+    "p_weatherboard": 48,
+    "p_render": 32,
+    "p_ext_coat": 12,
+    "p_eaves": 24,
+    "p_gutters": 16,
+    "p_ext_door": 220,
+    "p_ext_window": 180,
+    "p_ext_window_alu": 70,
+    "p_deck": 32,
+    "p_fence": 22,
+    "p_pressure": 4,
+    "p_tower": 220
+  },
+  "rules": {
+    "minimum_job": 600,
+    "travel_per_km": 1.2,
+    "travel_per_day": true,
+    "premium_paint_pct": 15,
+    "ceiling_height_m": 2.4,
+    "free_radius_km": 30,
+    "travel_return": true,
+    "road_factor": 1.2,
+    "deposit_pct": 10,
+    "balance_days": 7,
+    "deposit_due_days": 5,
+    "deposit_terms_business_days": 14,
+    "poor_seal_pct": 30,
+    "storey_uplift_pct": 20,
+    "business_deposit_pct": 0,
+    "business_days": 30,
+    "round_up_cm": 0
+  },
+  "wording": {
+    "nudges": {
+      "quote": "",
+      "deposit": "",
+      "invoice": ""
+    },
+    "included": [
+      "Drop sheets and plastic protection for floors, fittings and any furniture left in the room.",
+      "We move and cover light furniture to the middle of the room; you clear small items, pictures, curtains, blinds and wardrobe contents before we start.",
+      "Preparation: filling minor holes and cracks (up to about 10 fills per room), light sanding, dusting and spot priming.",
+      "Two coats of quality trade paint in the same or a similar colour; colour changes, dark colours and feature walls get a third coat where listed.",
+      "Products and sheen: low sheen acrylic on walls, flat white on ceilings, semi-gloss enamel on doors and trim, or as listed on the quote.",
+      "Up to 3 colours; extra colours are priced per room.",
+      "Ladder and plank access. Scaffold, towers or lifts are listed separately when needed.",
+      "Daily tidy-up, removal of our rubbish, and a final clean of the areas we painted.",
+      "All labour, materials and equipment for the work listed."
+    ],
+    "excluded": [
+      "Moving heavy furniture, pianos, appliances or built-in items.",
+      "Plaster, timber or render repairs beyond the preparation described, including cracks over 300 mm, water damage, peeling and mould.",
+      "Treatment of mould, rising damp, efflorescence, nicotine or water stains beyond the stain block listed.",
+      "Lead paint or asbestos testing or removal.",
+      "Mirror, melamine or glass wardrobe doors, window glass and aluminium window frames.",
+      "Colour consulting. Colours are to be confirmed in writing 5 working days before we start.",
+      "Anything not listed in this quote. Extra work is priced and agreed in writing (text or email is fine) before it starts and shown on the final invoice as a numbered variation."
+    ],
+    "included_ext": [
+      "Wash down or pressure clean where listed, then sanding, scraping of loose paint, spot priming of bare timber and gap filling at joints.",
+      "Two coats of exterior acrylic on walls and trim, or the product listed on the quote.",
+      "Ladder and plank access. Scaffold, towers or lifts are listed separately when needed.",
+      "Protection of paths, gardens, windows and fittings with drop sheets and masking.",
+      "Daily tidy-up and removal of our rubbish."
+    ],
+    "excluded_ext": [
+      "Replacement of rotten timber, rusted gutters, cracked render or failed sealant; we point these out and price them as a variation.",
+      "Removal of existing paint back to bare timber or render unless listed.",
+      "Lead paint or asbestos testing or removal.",
+      "Roof painting, pergola and shade-sail removal, and moving vehicles, boats or trailers.",
+      "Anything not listed in this quote. Extra work is priced and agreed in writing before it starts."
+    ],
+    "terms": [
+      "This quote is valid for 30 days from the date above; paint prices are held for that period and supplier increases after it are passed on at cost.",
+      "It is a fixed price for the areas and work described; quantities are for pricing and are not re-measured on completion. If the rooms measure more than 5% larger than the sizes given, we confirm any change with you in writing before starting.",
+      "Payment: the deposit shown confirms the booking and is due before we start; the balance is due by the date on the invoice. Larger jobs may be invoiced in stages as set out on the quote.",
+      "Variations are priced and agreed in writing before the work is done and are itemised on the final invoice.",
+      "Please give us clear access to the areas being painted on the booked days, with power and water available. We are not responsible for items left in rooms being painted.",
+      "Statutory warranties and your rights under the Australian Consumer Law apply and are not limited by anything in this quote."
+    ],
+    "terms_ext": [
+      "Exterior work depends on the weather. We do not paint above 35 °C, on surfaces in direct afternoon sun, below 10 °C or within 24 hours of forecast rain; days lost to weather extend the finish date and we tell you as soon as we know."
+    ],
+    "warranty_years": 5,
+    "warranty": "Our workmanship is guaranteed for {years} years against peeling and flaking caused by our application. This excludes substrate movement, moisture getting in, pre-existing paint failure and damage by others; decks, sills and other horizontal exterior surfaces carry 12 months.",
+    "accept": "To accept, reply \"Accepted\" with the quote number by text or email, tell us your preferred start week and pay the deposit. Your reply and this quote together form our written agreement for this work.",
+    "accept_no_deposit": "To accept, reply \"Accepted\" with the quote number by text or email and tell us your preferred start week. No deposit is required. Your reply and this quote together form our written agreement for this work.",
+    "products": {}
+  },
+  "costing": {
+    "labour_rate": 65,
+    "margin_pct": 40,
+    "coats": 2,
+    "coverage_m2_per_l": 14,
+    "coverage": {
+      "walls": 14,
+      "ceilings": 12,
+      "enamel": 12,
+      "exterior": 9,
+      "render": 6,
+      "sealer": 10,
+      "oil": 8,
+      "fence": 6
+    },
+    "paint_price": {
+      "walls": 28,
+      "ceilings": 16,
+      "enamel": 45,
+      "exterior": 32,
+      "sealer": 22,
+      "oil": 30
+    },
+    "hours_scale": 1,
+    "tin_sizes": {
+      "walls": "4, 10, 15",
+      "ceilings": "4, 10, 15",
+      "enamel": "1, 2, 4",
+      "exterior": "4, 10, 15",
+      "sealer": "4, 10",
+      "oil": "4, 10"
+    },
+    "tin_price_factor": {
+      "1": 1.8,
+      "2": 1.5,
+      "4": 1.35,
+      "10": 1.1,
+      "15": 1
+    },
+    "charge_tins": false,
+    "wastage_pct": 8,
+    "setup_hours": 1.5,
+    "daily_hours": 0.75,
+    "consumables_m2": 0.5,
+    "crew": 1,
+    "hours_per_day": 8
+  },
+  "follow_up": {
+    "quote_days": [
+      3,
+      7,
+      14
+    ],
+    "invoice_days": [
+      3,
+      10,
+      21
+    ],
+    "remind_hour": 9,
+    "business_days_only": true
+  },
+  "stripe": {
+    "key": "",
+    "enabled": false
+  },
+  "booking": {
+    "start_hour": 7,
+    "end_hour": 15,
+    "quote_from": 7,
+    "quote_to": 18,
+    "visit_minutes": 30,
+    "saturdays": true,
+    "sundays": false,
+    "visit_pref": "any",
+    "boss_on_tools": true
+  },
+  "sending": {
+    "server": "",
+    "token": "",
+    "server_has_creds": false,
+    "hosted": false,
+    "hosted_until": "",
+    "hosted_name": "",
+    "hosted_cancelled": false,
+    "hosted_past_due": false,
+    "renew_checked": "",
+    "auto_topup": false,
+    "twilio_sid": "",
+    "twilio_token": "",
+    "twilio_service": "",
+    "twilio_from": "",
+    "resend_key": "",
+    "resend_from": "",
+    "auto_sms": true,
+    "auto_email": true,
+    "email_quotes": true
+  },
+  "security": {
+    "pin": "",
+    "backup_include_keys": false,
+    "last_backup": ""
+  },
+  "log": {
+    "sent": [
+      {
+        "t": "2026-09-22T08:36:52.746Z",
+        "kind": "send",
+        "channel": "sms",
+        "job": "hj602c77vl",
+        "ref": "invoice-INV-2002",
+        "to": "0411 222 333",
+        "text": "Final INV-2002 sent to Jane Client",
+        "ok": true,
+        "by": "you"
+      },
+      {
+        "t": "2026-09-22T08:36:52.505Z",
+        "kind": "handed",
+        "channel": "file",
+        "job": "hj602c77vl",
+        "ref": "invoice-INV-2002",
+        "to": "Jane Client",
+        "text": "Invoice INV-2002 saved on the phone as a file",
+        "ok": true
+      },
+      {
+        "t": "2026-09-22T08:36:50.646Z",
+        "kind": "send",
+        "channel": "sms",
+        "job": "hj602c77vl",
+        "ref": "invoice-INV-2001",
+        "to": "0411 222 333",
+        "text": "Deposit INV-2001 sent to Jane Client",
+        "ok": true,
+        "by": "you"
+      },
+      {
+        "t": "2026-09-22T08:36:49.752Z",
+        "kind": "handed",
+        "channel": "file",
+        "job": "hj602c77vl",
+        "ref": "invoice-INV-2001",
+        "to": "Jane Client",
+        "text": "Invoice INV-2001 saved on the phone as a file",
+        "ok": true
+      },
+      {
+        "t": "2026-09-22T08:36:49.097Z",
+        "kind": "send",
+        "channel": "sms",
+        "job": "hj602c77vl",
+        "ref": "quote-Q-1001",
+        "to": "0411 222 333",
+        "text": "Quote Q-1001 sent to Jane Client",
+        "ok": true,
+        "by": "you"
+      },
+      {
+        "t": "2026-09-22T08:36:48.958Z",
+        "kind": "handed",
+        "channel": "file",
+        "job": "hj602c77vl",
+        "ref": "quote-Q-1001",
+        "to": "Jane Client",
+        "text": "Quote Q-1001 saved on the phone as a file",
+        "ok": true
+      }
+    ]
+  },
+  "pending_cancels": [],
+  "local_queue": [],
+  "jobs": [
+    {
+      "id": "k3bez07dwm",
+      "quote_no": "Q-1002",
+      "created": "2026-09-22",
+      "status": "quoted",
+      "client": {
+        "name": "Bob Waiting",
+        "phone": "0422 333 444",
+        "email": "bob@example.com",
+        "address": ""
+      },
+      "summary": "",
+      "notes_client": "",
+      "rooms": [],
+      "extras": [],
+      "travel_km": 0,
+      "premium_paint": false,
+      "client_paint": false,
+      "deposit_pct": null,
+      "balance_days": null,
+      "auto_follow_ups": true,
+      "hold": {
+        "on": false,
+        "note": ""
+      },
+      "colours": [],
+      "photos": [],
+      "variations": [],
+      "acceptance": null,
+      "quote": {
+        "date": "2026-09-12",
+        "total": 2500,
+        "lines": []
+      },
+      "invoices": [],
+      "notes": "",
+      "last_chased": "",
+      "sent_date": "2026-09-12",
+      "sent_how": "",
+      "sent_confirmed": false,
+      "booking": null,
+      "follow_ups": []
+    },
+    {
+      "id": "hj602c77vl",
+      "quote_no": "Q-1001",
+      "created": "2026-09-22",
+      "status": "invoiced",
+      "client": {
+        "name": "Jane Client",
+        "phone": "0411 222 333",
+        "email": "jane@example.com",
+        "address": "12 Wattle St Ringwood",
+        "first_name": "",
+        "type": "homeowner",
+        "abn": "",
+        "bill_to": "",
+        "accounts_email": ""
+      },
+      "summary": "Repaint lounge and hall",
+      "notes_client": "",
+      "rooms": [
+        {
+          "id": "qg8rm277ye",
+          "name": "Lounge",
+          "type": "interior",
+          "method": "typed",
+          "L": 5,
+          "W": 4,
+          "H": 2.4,
+          "walls": [],
+          "ceiling_m2": "",
+          "perimeter_m": "",
+          "exclude_m2": "",
+          "condition": "fair",
+          "surfaces": {
+            "walls": true,
+            "ceiling": true,
+            "skirting": true
+          },
+          "doors": 1,
+          "doors_one_side": 0,
+          "windows": 2,
+          "wardrobe_pairs": 0,
+          "panelled_doors": 0,
+          "window_kind": "alu",
+          "colour_change": false,
+          "cornice": false,
+          "high_access": false,
+          "feature_m2": 0,
+          "wallpaper_m2": 0,
+          "measured_by": "us",
+          "price_override": null,
+          "ext": {}
+        },
+        {
+          "id": "kaguk2783h",
+          "name": "Hall",
+          "type": "interior",
+          "method": "measured",
+          "L": "",
+          "W": "",
+          "H": "",
+          "walls": [
+            {
+              "wall": "Window wall",
+              "width_mm": 4002,
+              "height_mm": 2400,
+              "gross_area_m2": 9.608,
+              "openings": [
+                {
+                  "type": "door",
+                  "width_mm": 821,
+                  "height_mm": 2040,
+                  "area_m2": 1.674
+                },
+                {
+                  "type": "window",
+                  "width_mm": 1201,
+                  "height_mm": 1000,
+                  "area_m2": 1.201
+                }
+              ],
+              "paint_area_m2": 6.733,
+              "method": "photo-corners",
+              "scale": "sheet",
+              "scale_assumed": false,
+              "rounded": false,
+              "measured_width_mm": 4002,
+              "measured_height_mm": 2400,
+              "focal": "default 26 mm (wall too square-on to work it out)",
+              "expected_error_pct": 2.5,
+              "photo": "photo.jpg",
+              "measured_at": "2026-09-22T08:36:47.729Z"
+            },
+            {
+              "wall": "Scanned wall 2",
+              "width_mm": 5020,
+              "height_mm": 2410,
+              "gross_area_m2": 12.098,
+              "openings": [
+                {
+                  "type": "door",
+                  "width_mm": 820,
+                  "height_mm": 2040,
+                  "area_m2": 1.673
+                }
+              ],
+              "paint_area_m2": 10.425,
+              "method": "roomplan-lidar",
+              "expected_error_pct": 2,
+              "measured_at": "2026-09-22T08:36:47.899Z"
+            },
+            {
+              "wall": "Scanned wall 3",
+              "width_mm": 3980,
+              "height_mm": 2410,
+              "gross_area_m2": 9.592,
+              "openings": [
+                {
+                  "type": "window",
+                  "width_mm": 1200,
+                  "height_mm": 1000,
+                  "area_m2": 1.2
+                }
+              ],
+              "paint_area_m2": 8.392,
+              "method": "roomplan-lidar",
+              "expected_error_pct": 2,
+              "measured_at": "2026-09-22T08:36:47.899Z"
+            }
+          ],
+          "ceiling_m2": 19.98,
+          "perimeter_m": "",
+          "exclude_m2": "",
+          "condition": "good",
+          "surfaces": {
+            "walls": true,
+            "ceiling": true,
+            "skirting": true
+          },
+          "doors": 0,
+          "doors_one_side": 0,
+          "windows": 0,
+          "wardrobe_pairs": 0,
+          "panelled_doors": 0,
+          "window_kind": "alu",
+          "colour_change": false,
+          "cornice": false,
+          "high_access": false,
+          "feature_m2": 0,
+          "wallpaper_m2": 0,
+          "measured_by": "us",
+          "price_override": null,
+          "ext": {}
+        }
+      ],
+      "extras": [],
+      "travel_km": 0,
+      "premium_paint": false,
+      "client_paint": false,
+      "deposit_pct": null,
+      "balance_days": null,
+      "auto_follow_ups": true,
+      "hold": {
+        "on": false,
+        "note": ""
+      },
+      "colours": [],
+      "photos": [],
+      "variations": [
+        {
+          "id": "ntb27g7ci8",
+          "n": 1,
+          "date": "2026-09-22",
+          "desc": "Extra door",
+          "amount": 100,
+          "how_agreed": "text",
+          "agreed_date": "2026-09-22",
+          "status": "agreed",
+          "invoiced": true,
+          "invoice_no": "INV-2002"
+        }
+      ],
+      "acceptance": {
+        "date": "2026-09-22",
+        "how": "text",
+        "note": "",
+        "by": "Jane Client"
+      },
+      "quote": {
+        "date": "2026-09-22",
+        "version": 1,
+        "number": "Q-1001",
+        "history": [],
+        "sent_date": "2026-09-22",
+        "lines": [
+          {
+            "key": "p_walls",
+            "room": "Lounge",
+            "group": "Lounge",
+            "desc": "Walls, 2 coats",
+            "client_desc": "Walls, 2 coats",
+            "qty": 43.2,
+            "unit": "m²",
+            "rate": 20,
+            "base_rate": 20,
+            "loading": 0,
+            "loading_desc": "",
+            "amount": 864,
+            "source": "from your numbers",
+            "provenance": "from your numbers",
+            "confirm": false
+          },
+          {
+            "key": "p_ceilings",
+            "room": "Lounge",
+            "group": "Lounge",
+            "desc": "Ceilings, 2 coats",
+            "client_desc": "Ceilings, 2 coats",
+            "qty": 20,
+            "unit": "m²",
+            "rate": 22,
+            "base_rate": 22,
+            "loading": 0,
+            "loading_desc": "",
+            "amount": 440,
+            "source": "from your numbers",
+            "provenance": "from your numbers",
+            "confirm": false
+          },
+          {
+            "key": "p_skirting",
+            "room": "Lounge",
+            "group": "Lounge",
+            "desc": "Skirting boards and architraves",
+            "client_desc": "Skirting boards and architraves",
+            "qty": 17.1,
+            "unit": "lm",
+            "rate": 11,
+            "base_rate": 11,
+            "loading": 0,
+            "loading_desc": "",
+            "amount": 188.1,
+            "source": "from your numbers",
+            "provenance": "from your numbers",
+            "confirm": false
+          },
+          {
+            "key": "p_door",
+            "room": "Lounge",
+            "group": "Lounge",
+            "desc": "Door, both sides incl. frame",
+            "client_desc": "Door, both sides incl. frame",
+            "qty": 1,
+            "unit": "each",
+            "rate": 140,
+            "base_rate": 140,
+            "loading": 0,
+            "loading_desc": "",
+            "amount": 140,
+            "source": "count",
+            "provenance": "count",
+            "confirm": false
+          },
+          {
+            "key": "p_window",
+            "room": "Lounge",
+            "group": "Lounge",
+            "desc": "Window reveal and architrave",
+            "client_desc": "Window reveal and architrave",
+            "qty": 2,
+            "unit": "each",
+            "rate": 55,
+            "base_rate": 55,
+            "loading": 0,
+            "loading_desc": "",
+            "amount": 110,
+            "source": "count",
+            "provenance": "count",
+            "confirm": false
+          },
+          {
+            "key": "p_prep_mod",
+            "room": "Lounge",
+            "group": "Lounge",
+            "desc": "Moderate prep",
+            "client_desc": "Preparation, filling and sanding",
+            "qty": 1.7,
+            "unit": "hour",
+            "rate": 85,
+            "base_rate": 85,
+            "loading": 0,
+            "loading_desc": "",
+            "amount": 144.5,
+            "source": "rule: fair = 1 hr per 25 m² of wall",
+            "provenance": "rule: fair = 1 hr per 25 m² of wall",
+            "confirm": false
+          },
+          {
+            "key": "p_walls",
+            "room": "Hall",
+            "group": "Hall",
+            "desc": "Walls, 2 coats",
+            "client_desc": "Walls, 2 coats",
+            "qty": 25.6,
+            "unit": "m²",
+            "rate": 20,
+            "base_rate": 20,
+            "loading": 0,
+            "loading_desc": "",
+            "amount": 512,
+            "source": "measured (photo ±2.5%)",
+            "provenance": "measured (photo ±2.5%)",
+            "confirm": false
+          },
+          {
+            "key": "p_ceilings",
+            "room": "Hall",
+            "group": "Hall",
+            "desc": "Ceilings, 2 coats",
+            "client_desc": "Ceilings, 2 coats",
+            "qty": 20,
+            "unit": "m²",
+            "rate": 22,
+            "base_rate": 22,
+            "loading": 0,
+            "loading_desc": "",
+            "amount": 440,
+            "source": "measured (photo ±2.5%)",
+            "provenance": "measured (photo ±2.5%)",
+            "confirm": false
+          },
+          {
+            "key": "p_skirting",
+            "room": "Hall",
+            "group": "Hall",
+            "desc": "Skirting boards and architraves",
+            "client_desc": "Skirting boards and architraves",
+            "qty": 11.4,
+            "unit": "lm",
+            "rate": 11,
+            "base_rate": 11,
+            "loading": 0,
+            "loading_desc": "",
+            "amount": 125.4,
+            "source": "measured (photo ±2.5%)",
+            "provenance": "measured (photo ±2.5%)",
+            "confirm": false
+          },
+          {
+            "key": "p_setup",
+            "room": "Job",
+            "group": "Job",
+            "desc": "Set-up, protection and clean-up",
+            "client_desc": "Set-up, protection and clean-up",
+            "qty": 1,
+            "unit": "job",
+            "rate": 150,
+            "base_rate": 150,
+            "loading": 0,
+            "loading_desc": "",
+            "amount": 150,
+            "source": "once per job",
+            "provenance": "once per job: drop sheets, masking, moving light furniture, clean-up",
+            "confirm": false
+          }
+        ],
+        "options": [],
+        "subtotal": 3114,
+        "gst": 311.4,
+        "total": 3425.4,
+        "deposit": 342.54,
+        "deposit_pct": 10,
+        "assumptions": [
+          "Sizes measured on site.",
+          "Lounge: walls in fair condition (scuffs, marks, small dents), preparation included.",
+          "Hall: 3 of the walls measured; the rest are not in this quote."
+        ],
+        "measured_rooms": 1,
+        "total_rooms": 2,
+        "snapshot": {
+          "wording": {
+            "nudges": {
+              "quote": "",
+              "deposit": "",
+              "invoice": ""
+            },
+            "included": [
+              "Drop sheets and plastic protection for floors, fittings and any furniture left in the room.",
+              "We move and cover light furniture to the middle of the room; you clear small items, pictures, curtains, blinds and wardrobe contents before we start.",
+              "Preparation: filling minor holes and cracks (up to about 10 fills per room), light sanding, dusting and spot priming.",
+              "Two coats of quality trade paint in the same or a similar colour; colour changes, dark colours and feature walls get a third coat where listed.",
+              "Products and sheen: low sheen acrylic on walls, flat white on ceilings, semi-gloss enamel on doors and trim, or as listed on the quote.",
+              "Up to 3 colours; extra colours are priced per room.",
+              "Ladder and plank access. Scaffold, towers or lifts are listed separately when needed.",
+              "Daily tidy-up, removal of our rubbish, and a final clean of the areas we painted.",
+              "All labour, materials and equipment for the work listed."
+            ],
+            "excluded": [
+              "Moving heavy furniture, pianos, appliances or built-in items.",
+              "Plaster, timber or render repairs beyond the preparation described, including cracks over 300 mm, water damage, peeling and mould.",
+              "Treatment of mould, rising damp, efflorescence, nicotine or water stains beyond the stain block listed.",
+              "Lead paint or asbestos testing or removal.",
+              "Mirror, melamine or glass wardrobe doors, window glass and aluminium window frames.",
+              "Colour consulting. Colours are to be confirmed in writing 5 working days before we start.",
+              "Anything not listed in this quote. Extra work is priced and agreed in writing (text or email is fine) before it starts and shown on the final invoice as a numbered variation."
+            ],
+            "included_ext": [
+              "Wash down or pressure clean where listed, then sanding, scraping of loose paint, spot priming of bare timber and gap filling at joints.",
+              "Two coats of exterior acrylic on walls and trim, or the product listed on the quote.",
+              "Ladder and plank access. Scaffold, towers or lifts are listed separately when needed.",
+              "Protection of paths, gardens, windows and fittings with drop sheets and masking.",
+              "Daily tidy-up and removal of our rubbish."
+            ],
+            "excluded_ext": [
+              "Replacement of rotten timber, rusted gutters, cracked render or failed sealant; we point these out and price them as a variation.",
+              "Removal of existing paint back to bare timber or render unless listed.",
+              "Lead paint or asbestos testing or removal.",
+              "Roof painting, pergola and shade-sail removal, and moving vehicles, boats or trailers.",
+              "Anything not listed in this quote. Extra work is priced and agreed in writing before it starts."
+            ],
+            "terms": [
+              "This quote is valid for 30 days from the date above; paint prices are held for that period and supplier increases after it are passed on at cost.",
+              "It is a fixed price for the areas and work described; quantities are for pricing and are not re-measured on completion. If the rooms measure more than 5% larger than the sizes given, we confirm any change with you in writing before starting.",
+              "Payment: the deposit shown confirms the booking and is due before we start; the balance is due by the date on the invoice. Larger jobs may be invoiced in stages as set out on the quote.",
+              "Variations are priced and agreed in writing before the work is done and are itemised on the final invoice.",
+              "Please give us clear access to the areas being painted on the booked days, with power and water available. We are not responsible for items left in rooms being painted.",
+              "Statutory warranties and your rights under the Australian Consumer Law apply and are not limited by anything in this quote."
+            ],
+            "terms_ext": [
+              "Exterior work depends on the weather. We do not paint above 35 °C, on surfaces in direct afternoon sun, below 10 °C or within 24 hours of forecast rain; days lost to weather extend the finish date and we tell you as soon as we know."
+            ],
+            "warranty_years": 5,
+            "warranty": "Our workmanship is guaranteed for {years} years against peeling and flaking caused by our application. This excludes substrate movement, moisture getting in, pre-existing paint failure and damage by others; decks, sills and other horizontal exterior surfaces carry 12 months.",
+            "accept": "To accept, reply \"Accepted\" with the quote number by text or email, tell us your preferred start week and pay the deposit. Your reply and this quote together form our written agreement for this work.",
+            "accept_no_deposit": "To accept, reply \"Accepted\" with the quote number by text or email and tell us your preferred start week. No deposit is required. Your reply and this quote together form our written agreement for this work.",
+            "products": {}
+          },
+          "details": {
+            "trading_name": "Test Painting Co",
+            "owner_name": "Sam Tester",
+            "abn": "12 345 678 901",
+            "licence": "",
+            "insurance": "",
+            "phone": "0400 000 000",
+            "email": "sam@example.com",
+            "address": "",
+            "bsb": "063-000",
+            "account_number": "12345678",
+            "account_name": "Test Painting Co",
+            "other_payments": "",
+            "gst": true,
+            "deposit_pct": 10,
+            "balance_days": 7,
+            "quote_valid_days": 30,
+            "state": "SA",
+            "brand_colour": "",
+            "show_rates": false,
+            "deposit": 342.54
+          },
+          "generated_at": "2026-09-22T08:36:48.829Z"
+        }
+      },
+      "invoices": [
+        {
+          "kind": "deposit",
+          "pct": 10,
+          "lines": [
+            {
+              "desc": "Deposit, 10% of quote Q-1001 ($3,425.40)",
+              "amount": 311.4
+            }
+          ],
+          "subtotal": 311.4,
+          "gst": 31.14,
+          "total": 342.54,
+          "kind_line": "Deposit to confirm your booking. Payable before we start.",
+          "var_ids": [],
+          "no": "INV-2001",
+          "date": "2026-09-22",
+          "due": "2026-09-27",
+          "paid_date": "2026-09-22",
+          "payments": [
+            {
+              "date": "2026-09-22",
+              "amount": 342.54,
+              "method": "transfer",
+              "ref": "",
+              "id": "gnxxsa7chv"
+            }
+          ],
+          "credit_notes": [],
+          "void": null,
+          "follow_ups": [],
+          "sent_date": "2026-09-22",
+          "sent_how": "text",
+          "sent_confirmed": true,
+          "handed_at": "",
+          "drafted": "accepted",
+          "client_snapshot": {
+            "name": "Jane Client",
+            "address": "12 Wattle St Ringwood",
+            "email": "jane@example.com",
+            "phone": "0411 222 333",
+            "abn": "",
+            "bill_to": "",
+            "type": "homeowner",
+            "accounts_email": ""
+          },
+          "handed_how": ""
+        },
+        {
+          "kind": "final",
+          "deposit_invoice_no": "INV-2001",
+          "lines": [
+            {
+              "desc": "Lounge: Walls, 2 coats",
+              "amount": 864
+            },
+            {
+              "desc": "Lounge: Ceilings, 2 coats",
+              "amount": 440
+            },
+            {
+              "desc": "Lounge: Skirting boards and architraves",
+              "amount": 188.1
+            },
+            {
+              "desc": "Lounge: Door, both sides incl. frame",
+              "amount": 140
+            },
+            {
+              "desc": "Lounge: Window reveal and architrave",
+              "amount": 110
+            },
+            {
+              "desc": "Lounge: Preparation, filling and sanding",
+              "amount": 144.5
+            },
+            {
+              "desc": "Hall: Walls, 2 coats",
+              "amount": 512
+            },
+            {
+              "desc": "Hall: Ceilings, 2 coats",
+              "amount": 440
+            },
+            {
+              "desc": "Hall: Skirting boards and architraves",
+              "amount": 125.4
+            },
+            {
+              "desc": "Job: Set-up, protection and clean-up",
+              "amount": 150
+            },
+            {
+              "desc": "Variation 1: Extra door, agreed by text 22 September 2026",
+              "amount": 100
+            },
+            {
+              "desc": "Less deposit paid, INV-2001 dated 22 September 2026 ($342.54 inc GST, $311.40 before GST)",
+              "amount": -311.4
+            }
+          ],
+          "subtotal": 2902.6,
+          "gst": 290.26,
+          "total": 3192.86,
+          "kind_line": "Final invoice on completion, including agreed variations.",
+          "var_ids": [
+            "ntb27g7ci8"
+          ],
+          "no": "INV-2002",
+          "date": "2026-09-22",
+          "due": "2026-09-10",
+          "paid_date": "",
+          "payments": [],
+          "credit_notes": [],
+          "void": null,
+          "follow_ups": [],
+          "sent_date": "2026-09-22",
+          "sent_how": "text",
+          "sent_confirmed": true,
+          "handed_at": "",
+          "client_snapshot": {
+            "name": "Jane Client",
+            "address": "12 Wattle St Ringwood",
+            "email": "jane@example.com",
+            "phone": "0411 222 333",
+            "abn": "",
+            "bill_to": "",
+            "type": "homeowner",
+            "accounts_email": ""
+          },
+          "handed_how": ""
+        }
+      ],
+      "notes": "",
+      "last_chased": "2026-09-22",
+      "sent_date": "2026-09-22",
+      "sent_how": "text",
+      "sent_confirmed": true,
+      "booking": null,
+      "follow_ups": [],
+      "handed_at": "",
+      "handed_how": ""
+    }
+  ],
+  "next_quote": 1003,
+  "next_invoice": 2003,
+  "next_credit": 1,
+  "ui": {},
+  "rev": 57,
+  "saved_at": 1790066213463,
+  "keys_removed": true
+}

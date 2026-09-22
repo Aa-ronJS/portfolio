@@ -1,0 +1,53 @@
+{
+  "version": 1,
+  "unit": "mm",
+  "made_with": "Apple RoomPlan export via roomplan_to_measurements.py",
+  "exported_at": "2026-09-20T01:57:33",
+  "rooms": [
+    {
+      "name": "Lounge",
+      "walls": [
+        {
+          "room": "Lounge",
+          "wall": "Wall 1",
+          "width_mm": 5020,
+          "height_mm": 2410,
+          "gross_area_m2": 12.098,
+          "openings": [
+            {
+              "type": "door",
+              "width_mm": 820,
+              "height_mm": 2040,
+              "area_m2": 1.673
+            }
+          ],
+          "paint_area_m2": 10.425,
+          "method": "roomplan-lidar",
+          "expected_error_pct": 2,
+          "source_id": "W1"
+        },
+        {
+          "room": "Lounge",
+          "wall": "Wall 2",
+          "width_mm": 3980,
+          "height_mm": 2410,
+          "gross_area_m2": 9.592,
+          "openings": [
+            {
+              "type": "window",
+              "width_mm": 1200,
+              "height_mm": 1000,
+              "area_m2": 1.2
+            }
+          ],
+          "paint_area_m2": 8.392,
+          "method": "roomplan-lidar",
+          "expected_error_pct": 2,
+          "source_id": "W2"
+        }
+      ],
+      "ceiling_area_m2_estimate": 19.98,
+      "ceiling_note": "from the LiDAR floor surface"
+    }
+  ]
+}
