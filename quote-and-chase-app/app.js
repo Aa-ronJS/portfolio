@@ -60,7 +60,8 @@
   function sha256(s) { try { if (window.crypto && crypto.subtle && crypto.subtle.digest) return crypto.subtle.digest('SHA-256', new TextEncoder().encode(String(s))).then(function (buf) { return Array.prototype.map.call(new Uint8Array(buf), function (x) { return (x < 16 ? '0' : '') + x.toString(16); }).join(''); }); } catch (e) {} var h = 2166136261; for (var i = 0; i < s.length; i++) { h ^= s.charCodeAt(i); h = Math.imul(h, 16777619) >>> 0; } return Promise.resolve('fnv:' + h.toString(16)); }
   function locked() { return !!(S.security && S.security.pin) && !unlocked; }
   // The app opens once it knows who it belongs to: an email, which brings back a set-up link carrying the sending token and
-  // the five messages everyone starts with. A set-up link from an email or a receipt joins the same way, without typing anything.
+  // the twelve messages everyone starts with: three whole jobs, because a job is four (the quote, then three chases, and the
+  // ones that never have to go are given back). A set-up link from an email or a receipt joins the same way, without typing anything.
   function joined() { return !!(S.account && S.account.email) || !!(S.sending && S.sending.token); }
   function signupUrl() { var u = String((S.sending && S.sending.server) || window.QC_APP && window.QC_APP.signup_url || '').trim(); if (u) return u.replace(/\/[^\/]*$/, '/signup'); return (window.QC_APP && window.QC_APP.signup_url) || ''; }
   function viewJoin(msg) {
@@ -71,7 +72,7 @@
       '<form id="joinform" novalidate><label class="f">Your email<span>so your app is yours, and so the first messages can go out in your name</span><input type="email" id="join_email" autocomplete="email" inputmode="email" required></label>' +
       '<label class="f">Your business name<span>optional, it goes on your quotes</span><input type="text" id="join_name" autocomplete="organization"></label>' +
       '<div class="row" style="margin-top:8px"><button class="btn tape" type="submit" id="join_go">Start quoting</button><span class="hint" id="join_msg"></span></div></form>' +
-      '<p class="hint">Your first ' + FREE_SENDS + ' messages are on us. A message is one text or one email the app sends for you; a job start to finish is usually four or five of them, the quote plus a chase-up or two and the same again on the invoice. After that it is $' + PLAN_PRICE + ' a month for ' + PLAN_INCLUDED + ', which is about 30 jobs, and a pack of ' + TOPUP_MESSAGES + ' more is $' + TOPUP_PRICE + ' whenever you want it.</p>' +
+      '<p class="hint">Your first three jobs are on us, quoted and chased to the end: ' + FREE_SENDS + ' messages. A message is one text or one email the app sends for you, and a job start to finish is usually four or five of them. After that it is $' + PLAN_PRICE + ' a month for ' + PLAN_INCLUDED + ', which is about 30 jobs, and a pack of ' + TOPUP_MESSAGES + ' more is $' + TOPUP_PRICE + ' whenever you want it.</p>' +
       '<p class="hint">Your jobs, prices and clients stay on this phone. We keep your email so the app is yours and so we can tell you when something changes.' + (url ? '' : ' <span class="confirm">Sign-up is not switched on yet.</span>') + '</p>' +
       '<p class="hint">Already have a set-up link? Open it on this phone and it does all of this for you.</p></div>';
     var f = document.getElementById('joinform');
@@ -94,7 +95,7 @@
         .catch(function (e2) { btn.disabled = false; out.textContent = e2.message; });
     });
   }
-  var FREE_SENDS = 5, PLAN_INCLUDED = 150, PLAN_PRICE = 99, TOPUP_MESSAGES = 100, TOPUP_PRICE = 35, PLAN2_INCLUDED = 250, PLAN2_PRICE = 149;
+  var FREE_SENDS = 12, PLAN_INCLUDED = 150, PLAN_PRICE = 99, TOPUP_MESSAGES = 100, TOPUP_PRICE = 35, PLAN2_INCLUDED = 250, PLAN2_PRICE = 149;
   document.addEventListener('visibilitychange', function () { if (document.hidden) { hiddenAt = Date.now(); return; } if (unlocked && hiddenAt && Date.now() - hiddenAt > 5 * 60000 && S && S.security && S.security.pin) { unlocked = false; route(); } });
   function viewLock() {
     $app.innerHTML = '<div class="card" style="max-width:360px;margin:30px auto 0"><h1>Enter your PIN</h1><form id="pinform"><label class="f">PIN<input type="password" id="pin" inputmode="numeric" pattern="[0-9]*" autocomplete="off" maxlength="6" autofocus></label><div class="row" style="margin-top:8px"><button class="btn tape" type="submit">Unlock</button></div><p class="status bad" id="pinmsg"></p></form>' +
@@ -189,7 +190,15 @@
     var list = invNo ? ((((job && job.invoices) || []).filter(function (i) { return i.no === invNo; })[0] || {}).follow_ups || []) : ((job && job.follow_ups) || []);
     return list.some(function (x) { return x && x.id && !x.cancelled && new Date(x.send_at || (x.day + 'T12:00:00')).getTime() > Date.now(); });
   }
-  function bySendAt(a, b) { var x = String(a.send_at || a.day), y = String(b.send_at || b.day); return x < y ? -1 : x > y ? 1 : 0; }
+  function bySendAt(a, b) {
+    var x = String(a.send_at || a.day), y = String(b.send_at || b.day);
+    if (x !== y) return x < y ? -1 : 1;
+    // Same minute: the catch-up for dates already missed goes first. It stands for money already owed, and it
+    // has one date only -- lose the tie and it waits in the queue until its time passes and it is dropped,
+    // which is the one message that must not go missing. A scheduled nudge comes round again by itself.
+    var la = /\+late$/.test(String(a.ref || '')), lb = /\+late$/.test(String(b.ref || ''));
+    return la === lb ? 0 : la ? -1 : 1;
+  }
   // Split would-be reminders into the ones to book now (at most the next one in each chase, and only inside the
   // provider's window) and the ones to hold in the local queue.
   function nextInChase(items, needReady) {

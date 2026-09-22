@@ -106,7 +106,7 @@ replies to one of your texts is shouting into a void.
 
 Still in test mode:
 
-1. Open the app, give an email, and confirm five messages appear.
+1. Open the app, give an email, and confirm twelve messages appear.
 2. Send them. Confirm the sixth is refused and the app offers to write it
    for you instead.
 3. Subscribe on the solo link. Confirm the welcome page shows the "Set up

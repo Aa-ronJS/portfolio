@@ -14,7 +14,8 @@ what only you can do, in order. Nothing else is waiting on me.
 
 ## One product, messages included: what to switch on
 
-A painter gives an email inside the app, gets five messages, and quotes.
+A painter gives an email inside the app, gets twelve messages -- three
+whole jobs, because a job costs four -- and quotes.
 When they run out he pays from inside the app and has a hundred a month.
 Nothing needs you: no call, no set-up link to build, no token to paste, and
 no cap to police, because the messages are the cap.
@@ -52,7 +53,7 @@ no cap to police, because the messages are the cap.
 5. **Twilio inbound.** On the Messaging Service, set "a message comes in"
    to `https://<site>/api/sms-in`, so a customer who replies is answered.
 6. **Test it as a stranger**, Stripe in test mode: sign up with an email,
-   watch five messages appear, send them, watch the sixth be refused and
+   watch twelve messages appear, spend them, watch the next be refused and
    the app fall back to writing it for you, then subscribe and watch the
    count become 150. Then tap Top up and confirm $35 lands in Stripe and
    100 messages land on the account, and switch on automatic top-ups and

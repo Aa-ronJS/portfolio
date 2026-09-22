@@ -150,7 +150,7 @@ async function findHook(url) {
   log("  RELAY_SIGNING_SECRET=" + randomSecret());
   log("  RELAY_URL=" + RELAY + "/api/msg");
   log("  APP_URL=" + SITE + "/app/");
-  log("  FREE_MESSAGES=5  INCLUDED_MESSAGES=150  INCLUDED_MESSAGES_TWO=250  TOPUP_MESSAGES=100  TOPUP_PRICE=" + TOPUP + "  AUTO_TOPUP_CAP=3");
+  log("  FREE_MESSAGES=12  INCLUDED_MESSAGES=150  INCLUDED_MESSAGES_TWO=250  TOPUP_MESSAGES=100  TOPUP_PRICE=" + TOPUP + "  AUTO_TOPUP_CAP=3");
   log("  SUPPORT_EMAIL=…  RESEND_API_KEY=…  RESEND_FROM=…  TWILIO_ACCOUNT_SID=…  TWILIO_AUTH_TOKEN=…  TWILIO_MESSAGING_SERVICE_SID=…");
   log("\nRELAY_SIGNING_SECRET is freshly made above and is not stored anywhere. Every painter's sending token is signed with it,");
   log("so if you change it later everyone's sending stops until they open the app again. Save it somewhere safe now.\n");

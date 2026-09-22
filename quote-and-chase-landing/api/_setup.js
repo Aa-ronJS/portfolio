@@ -85,7 +85,7 @@ export function planOf(session, sub) {
   const two = [pick(session), pick(sub), pick(sub && sub.plan), pick((((sub || {}).items || {}).data || [])[0]), pick((((sub || {}).items || {}).data || [])[0] && (((sub || {}).items || {}).data || [])[0].price)].indexOf("two") >= 0;
   return two ? { seats: 2, inc: INCLUDED2 } : { seats: 1, inc: INCLUDED };
 }
-export const FREE_MESSAGES = Number(process.env.FREE_MESSAGES || 5);
+export const FREE_MESSAGES = Number(process.env.FREE_MESSAGES || 12);  // three whole jobs: a job is four messages
 export const INCLUDED = Number(process.env.INCLUDED_MESSAGES || 150);
 export const TOPUP_MESSAGES = Number(process.env.TOPUP_MESSAGES || 100);
 export const TOPUP_PRICE = Number(process.env.TOPUP_PRICE || 35);      // A$ for a pack, charged to the card already on file

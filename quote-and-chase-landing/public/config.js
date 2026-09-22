@@ -10,7 +10,8 @@ window.QC = {
   // ---- one product, one price, messages included. The painter starts inside the app with his email; the card comes later, from inside.
   PLAN_PRICE: 99,                   // AUD a month. Must match the Stripe Payment Link and the relay. Shown on the card, the FAQ and the terms.
   INCLUDED_MESSAGES: 150,           // messages a month in the plan. Must match INCLUDED_MESSAGES on the relay.
-  FREE_MESSAGES: 5,                 // what an email alone gets him, so he can send a quote and chase it twice. Must match FREE_MESSAGES on the relay.
+  FREE_MESSAGES: 12,                // what an email alone gets him: three whole jobs, quoted and chased to the end, because a
+                                    // job costs four messages. Must match FREE_MESSAGES on the relay.
   TOPUP_MESSAGES: 100,              // messages in a top-up pack. Must match TOPUP_MESSAGES on the relay.
   TOPUP_PRICE: 35,                  // AUD for a pack. Must match TOPUP_PRICE on the relay. Packs are bought adversely (only heavy
                                     // senders buy one), so this has to sit near the real cost of sending them, not at a token price.
