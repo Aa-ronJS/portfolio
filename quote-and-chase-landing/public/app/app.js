@@ -1153,11 +1153,20 @@
     var desc = typeof jobDesc === 'function' ? jobDesc(job) : (job.summary || 'the painting'), accept = (q.snapshot && q.snapshot.wording && q.snapshot.wording.accept) || S.wording.accept || '';
     return greetLine(job) + '\n\nQuote ' + qno + ' for ' + desc + ' is attached: ' + money(v.total) + (v.gst ? ' inc GST' : '') + ', valid until ' + QCPdf.fmtDate(valid) + '.' + (q.version > 1 ? ' It replaces the earlier ' + job.quote_no + '.' : '') + ' The quote lists what is and is not included; please read it before accepting.\n\n' + accept + '\n\n' + signLine() + (det.trading_name ? '\n' + det.trading_name : '') + (det.phone ? ' · ' + det.phone : '');
   }
+  // What a whole send costs: the document, plus the first chase that books straight after it (the rest
+  // wait in local_queue). The relay is told the total so it refuses the lot rather than sending the
+  // quote and failing its follow-up. Deliberately generous -- asking for two where one is used only
+  // refuses a touch early, which beats a half-sent job.
+  function sendNeed(job) {
+    var books = job.auto_follow_ups !== false && !(job.hold && job.hold.on) &&
+      (QCMsg.ready('sms') || QCMsg.ready('email')) && !pendingFollowUps(job).length;
+    return books ? 2 : 1;
+  }
   function emailQuoteNow(job, priced) {
     if (!job.client.email) { toast('No client email on the job'); return Promise.resolve(false); }
     var qno = (job.quote && job.quote.number) || job.quote_no, doc;
     try { doc = QCPdf.quotePDF(job, S, priced || job.quote); } catch (e) { toast('Could not make the quote: ' + e.message); return Promise.resolve(false); }
-    return QCMsg.call({ action: 'send', channel: 'email', to: job.client.email, subject: 'Quote ' + qno + (S.details.trading_name ? ' from ' + S.details.trading_name : ''), body: quoteEmailText(job, priced), reply_to: S.details.email || undefined, attachments: [{ filename: qno + '.pdf', content: QCMsg.pdfBase64(doc) }], meta: { job: job.id, ref: 'quote-' + qno, kind: 'quote' } })
+    return QCMsg.call({ action: 'send', need: sendNeed(job), channel: 'email', to: job.client.email, subject: 'Quote ' + qno + (S.details.trading_name ? ' from ' + S.details.trading_name : ''), body: quoteEmailText(job, priced), reply_to: S.details.email || undefined, attachments: [{ filename: qno + '.pdf', content: QCMsg.pdfBase64(doc) }], meta: { job: job.id, ref: 'quote-' + qno, kind: 'quote' } })
       .then(function () { job.emailed_date = QCStore.today(); markQuoteSent(job, 'email', true); toast('Emailed to ' + job.client.email); return true; }).catch(function (e) { toast('Email failed: ' + e.message); return false; });
   }
   function emailInvoiceNow(job, inv) {
@@ -1167,7 +1176,7 @@
     var bank = [det.account_name ? 'Account name ' + det.account_name : '', det.bsb ? 'BSB ' + det.bsb : '', det.account_number ? 'Account ' + det.account_number : ''].filter(Boolean).join(', ');
     var body = greetLine(job) + '\n\n' + (det.gst && det.abn ? 'Tax invoice ' : 'Invoice ') + inv.no + ' for ' + what.replace(/\s+$/, '') + ' is attached: ' + amt(inv.total) + (inv.gst ? ' inc GST' : '') + (bal < inv.total - 0.004 ? ', ' + amt(bal) + ' to pay after credit' : '') + ', due ' + QCPdf.fmtDate(inv.due) + '.' + (inv.kind === 'deposit' ? ' Your start date is held once it lands.' : '') + (inv.deposit_invoice_no ? ' The deposit on ' + inv.deposit_invoice_no + ' is already taken off.' : '') +
       '\n\n' + (inv.pay_url ? 'Pay by card (no surcharge): ' + inv.pay_url + '\n' + (bank ? 'Or by bank transfer: ' : '') : (bank ? 'Pay by bank transfer: ' : '')) + (bank ? bank + '. Reference ' + inv.no + '.' : 'Pay by cash, or phone us for bank details on ' + (det.phone || 'the number above') + '. Reference ' + inv.no + '.') + '\n\nWe will never change these bank details by text or email. If you get a message saying we have, phone ' + (det.phone || 'us') + ' before paying.\n\n' + signLine() + (det.trading_name ? '\n' + det.trading_name : '');
-    return QCMsg.call({ action: 'send', channel: 'email', to: job.client.email, subject: 'Invoice ' + inv.no + (det.trading_name ? ' from ' + det.trading_name : ''), body: body, reply_to: det.email || undefined, attachments: [{ filename: inv.no + '.pdf', content: QCMsg.pdfBase64(doc) }], meta: { job: job.id, ref: 'invoice-' + inv.no, kind: 'invoice' } })
+    return QCMsg.call({ action: 'send', need: sendNeed(job), channel: 'email', to: job.client.email, subject: 'Invoice ' + inv.no + (det.trading_name ? ' from ' + det.trading_name : ''), body: body, reply_to: det.email || undefined, attachments: [{ filename: inv.no + '.pdf', content: QCMsg.pdfBase64(doc) }], meta: { job: job.id, ref: 'invoice-' + inv.no, kind: 'invoice' } })
       .then(function () { inv.emailed_date = QCStore.today(); markInvoiceSent(job, inv, 'email', true); toast('Invoice emailed'); return true; }).catch(function (e) { toast('Email failed: ' + e.message); return false; });
   }
   // Build the follow-up messages for a job (quote or unpaid invoices) at the configured days, then hand them to Twilio/Resend to hold.

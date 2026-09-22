@@ -51,7 +51,7 @@ export default async function handler(req, res) {
   try {
     const found = await stripe("customers?limit=1&email=" + encodeURIComponent(addr));
     cus = found && found.data && found.data[0];
-    if (!cus) cus = await stripe("customers", { email: addr, ...(details.trading_name ? { name: details.trading_name } : details.owner_name ? { name: details.owner_name } : {}), "metadata[qc_source]": "signup", "metadata[qc_joined]": new Date().toISOString().slice(0, 10) });
+    if (!cus) cus = await stripe("customers", { email: addr, ...(details.trading_name ? { name: details.trading_name } : details.owner_name ? { name: details.owner_name } : {}), "metadata[qc_source]": "signup", "metadata[qc_joined]": new Date().toISOString() });
   } catch (e) { return send(res, 502, { ok: false, error: "Could not start your account: " + e.message }); }
 
   // an address that has signed up before gets its own allowance back, not another free five

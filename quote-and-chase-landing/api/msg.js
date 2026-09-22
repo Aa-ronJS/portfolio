@@ -24,7 +24,7 @@
 //   { action: "ping" }                                                                     -> what is set up; for a mapped token also { hosted: true, until, name }
 // Every action returns { ok: true, ... } or { ok: false, error }.
 
-import { readToken, readBalance, spend, OUT_OF_MESSAGES, autoTopUpOn, chargeTopUp } from "./_setup.js";
+import { readToken, readBalance, spend, OUT_OF_MESSAGES, SHORT_FOR_JOB, needFrom, enoughFor, autoTopUpOn, chargeTopUp } from "./_setup.js";
 import { ensurePainter, recordOutbound, dbConfigured } from "./_store.js";
 
 // Writing down who a message went to is what lets a reply find its way home. It must never be able to stop a
@@ -194,8 +194,13 @@ export default async function handler(req, res) {
   try {
     if (body.action === "test") { const r = ch === "sms" ? await smsSend(c, body.to, "Chasem test: SMS sending works.") : await emailSend(c, { to: body.to, subject: "Chasem test", body: "Email sending works." }); return send(res, 200, { ok: true, ...r }); }
     if (body.action === "send") { if (!body.to || (ch === "sms" ? !body.body : (!body.body && !body.html))) throw new Error("to and body are required"); if (String(body.body || "").length > 1600) throw new Error("Message too long");
+      // A job is more than one message: the quote or invoice, then the first chase that books straight
+      // after it. The app says how many the whole step will take, and nothing goes out unless they are
+      // all there -- otherwise the document sends and its chase comes back 402, leaving a half-sent job.
+      // This is a check, not a reservation: one painter on one phone cannot race himself.
+      const need = needFrom(body.need);
       let bal = hosted && hosted.payload ? await readBalance(hosted.payload) : null;
-      if (bal && bal.counted && bal.left <= 0) { bal = await refill(hosted.payload, bal); if (bal.left <= 0) return send(res, 402, { ok: false, error: OUT_OF_MESSAGES, out_of_messages: true, ...bal }); }
+      if (!enoughFor(bal, need)) { bal = await refill(hosted.payload, bal); if (!enoughFor(bal, need)) return send(res, 402, { ok: false, error: need > 1 ? SHORT_FOR_JOB(need, bal.left) : OUT_OF_MESSAGES, out_of_messages: true, need, ...bal }); }
       const r = ch === "sms" ? await smsSend(c, body.to, body.body) : await emailSend(c, body);
       await noted(hosted, body, ch, body.to, r);
       const after = hosted && hosted.payload ? await spend(hosted.payload, 1).catch(() => null) : null;
@@ -206,7 +211,7 @@ export default async function handler(req, res) {
       const key = body.key != null ? keyPrefix + String(body.key).slice(0, 120) : ""; if (key && seen.has(key)) return send(res, 200, { ok: true, ...seen.get(key), reused: true });
       // A scheduled reminder holds a message the moment it is booked, and gives it back if it is cancelled before it goes.
       let balS = hosted && hosted.payload ? await readBalance(hosted.payload) : null;
-      if (balS && balS.counted && balS.left <= 0) { balS = await refill(hosted.payload, balS); if (balS.left <= 0) return send(res, 402, { ok: false, error: OUT_OF_MESSAGES, out_of_messages: true, ...balS }); }
+      if (!enoughFor(balS, 1)) { balS = await refill(hosted.payload, balS); if (!enoughFor(balS, 1)) return send(res, 402, { ok: false, error: OUT_OF_MESSAGES, out_of_messages: true, ...balS }); }
       const r = ch === "sms" ? await smsSchedule(c, body.to, body.body, body.send_at) : await emailSchedule(c, body);
       await noted(hosted, body, ch, body.to, r);
       const afterS = hosted && hosted.payload ? await spend(hosted.payload, 1).catch(() => null) : null;

@@ -142,17 +142,29 @@ export async function readBalance(p) {
   const same = String(m.qc_period || "") === period;
   const used = same ? Math.max(0, parseInt(m.qc_used, 10) || 0) : 0;
   const extra = same ? Math.max(0, parseInt(m.qc_extra, 10) || 0) : Math.max(0, parseInt(m.qc_extra_next, 10) || 0);
-  return { included: inc, used, extra, left: Math.max(0, inc + extra - used), period, counted: true, email: cus.email || "" };
+  return { included: inc, used, extra, left: Math.max(0, inc + extra - used), period, counted: true, email: cus.email || "", first_send: String(m.qc_first_send || "") };
 }
 // n is +1 to spend a message or -1 to give one back when a scheduled reminder is cancelled before it goes.
+// The first spend also stamps qc_first_send, once and never again: with qc_joined that is the activation
+// clock, and without it nothing finer than a day can be read, so cost per activation cannot be judged.
 export async function spend(p, n) {
   if (!p.cus) return null;
   const b = await readBalance(p);
   const used = Math.max(0, b.used + n);
-  await stripe("customers/" + encodeURIComponent(p.cus), { "metadata[qc_used]": String(used), "metadata[qc_period]": b.period, "metadata[qc_extra]": String(b.extra), "metadata[qc_extra_next]": "" });
+  const form = { "metadata[qc_used]": String(used), "metadata[qc_period]": b.period, "metadata[qc_extra]": String(b.extra), "metadata[qc_extra_next]": "" };
+  if (n > 0 && !b.first_send) form["metadata[qc_first_send]"] = new Date().toISOString();
+  await stripe("customers/" + encodeURIComponent(p.cus), form);
   return { ...b, used, left: Math.max(0, b.included + b.extra - used) };
 }
 export const OUT_OF_MESSAGES = "You are out of messages";
+// Refusing a whole job says so plainly, because "out of messages" after nothing was sent reads like a bug.
+export const SHORT_FOR_JOB = (need, left) =>
+  `This job needs ${need} messages and you have ${left}. Nothing was sent. Top up and send it again.`;
+// How many messages a step declares it will take. Anything absent, junk or negative is one.
+export function needFrom(raw) { return Math.min(10, Math.max(1, parseInt(raw, 10) || 1)); }
+// Can a step needing this many start? A painter on his own Twilio and Resend is not metered here,
+// so an uncounted balance always passes; a hosted one must have the whole job in hand before any of it goes.
+export function enoughFor(bal, need) { return !bal || !bal.counted || bal.left >= needFrom(need); }
 
 // ---- Stripe REST, form-encoded, no SDK
 export async function stripe(path, form, method) {
