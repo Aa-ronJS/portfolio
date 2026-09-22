@@ -214,6 +214,9 @@ details .g2{margin-top:14px}
 footer{padding-block:36px;color:var(--muted);font-size:.9rem;border-top:1px solid var(--line)}
 footer .wrap{display:grid;gap:8px}
 </style>
+<style>
+.matebar{color:#1baf7a;font-weight:700;letter-spacing:.04em}
+</style>
 </head>
 <body>
 
@@ -228,6 +231,7 @@ footer .wrap{display:grid;gap:8px}
   <div class="grid">
     <div class="stack">
       <p class="eyebrow">For Australian painters</p>
+      <p class="eyebrow matebar" id="matebar" hidden>A mate sent you &mdash; your first six jobs are on us, double the usual</p>
       <h1>Quote it before you leave the driveway.</h1>
       <p class="lede">Stick an A4 sheet on the wall, take one photo, and the quote PDF is in their inbox at your prices while you're still standing there. Then it chases the quote and the invoice for you, on the days you set. Your first three jobs are free, chased to the end; nothing to open, nobody to ring.</p>
       <div class="actions">
@@ -679,6 +683,10 @@ footer .wrap{display:grid;gap:8px}
     var code = m ? m[1].toUpperCase() : (sessionStorage.getItem("qc_ref") || "");
     if (!code) return;
     if (m) { try { sessionStorage.setItem("qc_ref", code); } catch (e) {} }
+    var bar = document.getElementById("matebar");
+    if (bar) bar.hidden = false;
+    var cta = document.querySelector('a[data-app]');
+    if (cta) cta.textContent = "Start free, your first six jobs";
     var links = document.querySelectorAll('a[href^="app/"], a[href^="/app/"], a[href*="chasem.app/app"]');
     for (var i = 0; i < links.length; i++) {
       var h = links[i].getAttribute("href");
