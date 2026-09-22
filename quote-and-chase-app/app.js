@@ -265,7 +265,7 @@
       window.addEventListener('online', function () { retryPendingCancels().catch(function () {}); syncNow(); });
       document.addEventListener('visibilitychange', function () { if (!document.hidden && Date.now() - QCSync.lastAt() > 120000) syncNow(); }); }
     if (!p[0]) return viewHome();
-    if (p[0] === 'settings') { if (p[1] === 'log') return viewSentLog(); viewSettings(); if (p[1]) openSection({ backup: 'Back-up', prices: 'Prices', bank: 'Bank details' }[p[1]] || ''); return; }
+    if (p[0] === 'settings') { if (p[1] === 'log') return viewSentLog(); if (qs) calendarReturn(qs); viewSettings(); if (p[1]) openSection({ backup: 'Back-up', prices: 'Prices', bank: 'Bank details' }[p[1]] || ''); return; }
     if (p[0] === 'chase') return viewChase();
     if (p[0] === 'help') return viewHelp();
     if (p[0] === 'setup') return viewSetupLink(qs);
@@ -1573,6 +1573,71 @@
 
   // ---------- Settings
   var FIVE = { p_walls: '2 coats, per square metre of wall', p_ceilings: '2 coats, per square metre', p_door: 'each door, both sides and the frame', p_prep_mod: 'per hour, walls in fair condition', p_setup: 'once per job: drop sheets, masking, clean-up' };
+  // ---- a connected calendar. Nothing is written to it: the app asks the relay which days already have
+  // something on them, and those days stop being offered to a customer picking a start day.
+  function calendarState() { return (window.QCSync && QCSync.calendar && QCSync.calendar()) || null; }
+  function calendarCard() {
+    var hosted = S.sending && S.sending.hosted === true && String(S.sending.token || '').slice(0, 4) === 'qc1.';
+    if (!hosted) return '';
+    var c = calendarState(); if (c && c.off) return '';   // the relay has no Google credentials; nothing to offer
+    var on = !!(c && c.connected);
+    var line = !c ? 'Checking\u2026'
+      : on ? (c.account ? esc(c.account) : 'Connected') + (c.days ? ' \u00b7 ' + c.days + ' day' + (c.days > 1 ? 's' : '') + ' blocked out' : ' \u00b7 nothing booked in the next three months')
+      : 'Not connected.';
+    return '<div class="card" id="calcard"><h2>Your calendar</h2>' +
+      '<p class="hint">Optional. Connect Google Calendar and a day you already have something on is never offered to a customer picking a start day. The app reads free or busy only: not what the appointment is, not who it is with. It never writes to your calendar.</p>' +
+      '<p class="hint" id="calline"><b>' + line + '</b></p>' +
+      (on && c.error ? '<p class="confirm">' + esc(c.error) + ' Connect it again.</p>' : '') +
+      '<div class="row">' + (on
+        ? '<button class="btn ghost sm" id="calsync">Check it now</button><button class="btn danger sm" id="caloff">Disconnect</button>'
+        : '<button class="btn sm" id="calon">Connect Google Calendar</button>') + '</div></div>';
+  }
+  // Google sends him back to #/settings?calendar=... Say what happened in his words, then drop the query so a
+  // reload does not say it twice.
+  function calendarReturn(qs) {
+    var m = String(qs || '').match(/(?:^|&)calendar=([^&]*)/); if (!m) return;
+    var what = decodeURIComponent(m[1] || ''), why = (String(qs).match(/(?:^|&)why=([^&]*)/) || [])[1];
+    why = why ? decodeURIComponent(why) : '';
+    var say = { on: 'Calendar connected. Days you are already busy will not be offered.',
+                no: 'Calendar not connected. ' + (why || 'You can try again any time.'),
+                expired: 'That took too long. Tap Connect again.',
+                off: 'Calendars are not switched on for your account yet.',
+                failed: 'That did not work. ' + (why || 'Try again.') }[what];
+    if (say) toast(say);
+    if (what === 'on' && window.QCSync && QCSync.gcal) QCSync.gcal('status').then(function (r) { if (r && r.ok) viewSettings(); });
+    try { history.replaceState(null, '', location.pathname + location.search + '#/settings'); } catch (e) {}
+  }
+
+  function wireCalendar() {
+    var line = document.getElementById('calline');
+    var say = function (t) { if (line) line.innerHTML = '<b>' + esc(t) + '</b>'; };
+    var on = document.getElementById('calon');
+    if (on) on.addEventListener('click', function () {
+      on.disabled = true; say('Opening Google\u2026');
+      QCSync.gcal('start').then(function (r) {
+        if (!r || !r.ok || !r.url) { on.disabled = false; say((r && r.error) || 'That did not work.'); return; }
+        location.href = r.url;   // he comes back to #/settings?calendar=on
+      });
+    });
+    var sync = document.getElementById('calsync');
+    if (sync) sync.addEventListener('click', function () {
+      sync.disabled = true; say('Reading your calendar\u2026');
+      QCSync.gcal('sync').then(function (r) {
+        sync.disabled = false;
+        if (!r || !r.ok) { say((r && r.error) || 'Could not read it. Connect it again.'); return; }
+        viewSettings();
+      });
+    });
+    var off = document.getElementById('caloff');
+    if (off) off.addEventListener('click', function () {
+      if (!confirm('Disconnect your calendar? The days it was blocking out become available again.')) return;
+      off.disabled = true;
+      QCSync.gcal('disconnect').then(function () { toast('Calendar disconnected.'); viewSettings(); });
+    });
+    // fresh from Google, or opening Set-up cold: ask the relay where things stand
+    if (!calendarState() && window.QCSync && QCSync.gcal) QCSync.gcal('status').then(function (r) { if (r && (r.ok || r.off)) viewSettings(); });
+  }
+
   function viewSettings() {
     var d = S.details, html = '<h1>Set-up</h1><p class="hint">Three minutes: your name, your bank details, a look at five prices. Everything saves as you type; tap Done when you are finished.</p>', dirty = false;
     if (S.booking.boss_on_tools == null) { S.booking.boss_on_tools = true; dirty = true; } if (!S.booking.visit_pref) { S.booking.visit_pref = 'any'; dirty = true; } if (!d.state && d.postcode && stateFromPostcode(d.postcode)) { d.state = stateFromPostcode(d.postcode); dirty = true; } if (dirty) save();
@@ -1596,6 +1661,7 @@
     html += '<p class="hint">Everything below is optional. Nothing in it is needed to send a quote.</p>';
     html += '<div class="card"><h2>Follow-ups</h2><p class="hint">Days after a quote goes out, and days after an invoice is due. Reminders land on working days only: weekends and public holidays' + (stateCode() ? ' (' + esc(stateCode()) + ')' : '') + ' roll to the next working day. Deposit reminders wait 3 working days. The final invoice notice never goes without you.</p><div class="g3"><label class="f">Quote follow-ups, days<input type="text" id="fu_q" value="' + esc((S.follow_up.quote_days || []).join(', ')) + '"></label><label class="f">Invoice reminders, days after due<input type="text" id="fu_i" value="' + esc((S.follow_up.invoice_days || []).join(', ')) + '"></label><label class="f">Reminder time<span>8am to 6pm</span><input type="number" data-bind="follow_up.remind_hour" min="8" max="18"></label></div>' + (stateCode() ? '' : '<p class="hint">Set your state under Business so the right public holidays apply.</p>') + '</div>';
     html += '<div class="card"><h2>Hours</h2><div class="g3"><label class="f">Job start<span>hour, 24h</span><input type="number" data-bind="booking.start_hour" min="5" max="12"></label><label class="f">Job finish<input type="number" data-bind="booking.end_hour" min="10" max="20"></label><label class="f">Quote visit, min<input type="number" data-bind="booking.visit_minutes" min="10" step="5"></label><label class="f">Earliest visit<span>hour</span><input type="number" data-bind="booking.quote_from" min="5" max="12"></label><label class="f">Latest visit start<span>hour</span><input type="number" data-bind="booking.quote_to" min="12" max="21"></label><label class="f">Quote visits, best time<span>offered first</span><select data-bind="booking.visit_pref"><option value="any">Any time</option><option value="after_work">After work</option><option value="mornings">Mornings</option></select></label></div><div class="row"><label class="btn ghost sm"><input type="checkbox" data-bind="booking.saturdays"> Saturdays</label><label class="btn ghost sm"><input type="checkbox" data-bind="booking.sundays"> Sundays</label><label class="btn ghost sm"><input type="checkbox" data-bind="booking.boss_on_tools"> I paint on booked days (no quote visits those days)</label></div><p class="hint">Visit times are picked with the least driving between what is already booked. Untick the last box if someone else can quote while you paint.</p></div>';
+    html += calendarCard();
     html += '<div class="card"><h2>Quote terms</h2><p class="hint">Printed on every quote and frozen with it when sent. One per line.</p><label class="f">Included, inside work<textarea id="w_inc" rows="5">' + esc(S.wording.included.join('\n')) + '</textarea></label><label class="f">Not included, inside work<textarea id="w_exc" rows="5">' + esc(S.wording.excluded.join('\n')) + '</textarea></label><label class="f">Included, outside work<textarea id="w_inc_ext" rows="4">' + esc((S.wording.included_ext || []).join('\n')) + '</textarea></label><label class="f">Not included, outside work<textarea id="w_exc_ext" rows="4">' + esc((S.wording.excluded_ext || []).join('\n')) + '</textarea></label><label class="f">Terms<span>after the validity and deposit lines</span><textarea id="w_terms" rows="4">' + esc((S.wording.terms || []).join('\n')) + '</textarea></label><div class="g2"><label class="f">Guarantee, years<input type="number" data-bind="wording.warranty_years" min="0"></label></div><label class="f">How to accept<textarea data-bind="wording.accept" rows="3"></textarea></label>' +
       '<h3>Your nudges</h3><p class="hint">The follow-ups the app sends, in your words. Leave one blank to use the app\'s own. Each starts after "Hi Margaret," and ends before your sign-off. You can use {name} {job} {quote} {total} {week} {valid} {invoice} {amount} {due} {card} {phone}; the app fills them in.</p><label class="f">Quote nudge<span>after a quote has gone quiet</span><textarea data-bind="wording.nudges.quote" rows="3" placeholder="just checking quote {quote} ({total}) for {job} came through OK. If there is anything you would like me to explain, just ask."></textarea></label><label class="f">Deposit nudge<span>a deposit not yet paid</span><textarea data-bind="wording.nudges.deposit" rows="3" placeholder="a friendly reminder that the deposit for your job (invoice {invoice}, {amount}) was due on {due}. If it is already on its way, thank you and please ignore this. {card}"></textarea></label><label class="f">Overdue nudge<span>an invoice past its due date</span><textarea data-bind="wording.nudges.invoice" rows="3" placeholder="a friendly reminder that invoice {invoice} ({amount}) was due on {due}. If it is already on its way, thank you and please ignore this. {card}"></textarea></label>' +
       '<h3>Products</h3><p class="hint">What goes on each surface, printed with the coats.</p><div class="g2">' + Object.keys(QCCosting.PAINT).map(function (k) { return '<label class="f">' + esc(QCCosting.PAINT[k]) + '<input type="text" data-bind="wording.products.' + k + '" placeholder="Brand and product"></label>'; }).join('') + '</div></div>';
@@ -1646,6 +1712,7 @@
     var hc = document.getElementById('hostedcheck'); if (hc) hc.addEventListener('click', function () { var o = document.getElementById('hostedres'); o.textContent = 'Checking…'; hc.disabled = true; renewHosted(true).then(function (j) { hc.disabled = false; if (!j) { o.textContent = 'Could not reach the sending system. Try again later.'; return; } o.textContent = j.active ? (j.status === 'past_due' ? 'Your card needs fixing. Tap Manage.' : 'Paid up to ' + shortDate(j.until)) : 'Cancelled. Runs to ' + shortDate(j.until || S.sending.hosted_until) + '.'; setTimeout(function () { viewSettings(); }, 1200); }).catch(function () { hc.disabled = false; o.textContent = 'Could not reach the sending system.'; }); });
     var scg = document.getElementById('setupcodego'); if (scg) scg.addEventListener('click', function () { var v = document.getElementById('setupcode').value, out = document.getElementById('setupcoderes'), code = setupCode(v); if (!v.trim()) { out.textContent = 'Paste the code first.'; return; } if (!code) { out.textContent = 'That does not look like a set-up code. Copy the whole thing and try again.'; return; } out.textContent = ''; go('/setup?d=' + code); });
     var sk = $app.querySelector('[data-bind="stripe.key"]'); sk.addEventListener('input', function () { S.stripe.key = sk.value.trim(); save(); document.getElementById('skwarn').hidden = !(S.stripe.key && !QCStripe.keyLooksRight(S.stripe.key)); });
+    wireCalendar();
     document.getElementById('derive').addEventListener('click', function () {
       // before/after per rate, in a confirm, before the price list is changed
       var rates = null, rows = null, res = null; try { res = QCCosting.deriveDiff ? QCCosting.deriveDiff(S.costing, S.prices) : null; } catch (e) { res = null; }

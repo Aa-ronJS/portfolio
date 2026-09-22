@@ -118,6 +118,40 @@ the page says 200, the page is lying to a customer.
 | Messages in a pack | `TOPUP_MESSAGES` | `TOPUP_MESSAGES` |
 | Price of a pack | `TOPUP_PRICE` | `TOPUP_PRICE` |
 
+## 3a. Google Calendar, so a booked day is never offered (optional)
+
+Skip this and everything still works: the app already keeps its own days
+free from his jobs, his days off and his state's public holidays. What this
+adds is his *other* diary -- the school pickup, the other trade, the week
+away -- so a customer picking a start day never lands on one.
+
+The permission asked for is `calendar.freebusy`. It answers one question,
+"is this day busy", and cannot read what an appointment is, who is in it or
+where. Nothing is ever written back. That matters twice over: it is the
+honest thing to ask for, and it is a **non-sensitive** scope, so Google does
+not put your app through the verification that `calendar.readonly` needs.
+
+1. console.cloud.google.com, make a project (call it Chasem).
+2. APIs and services, Library, enable **Google Calendar API**.
+3. OAuth consent screen: External, app name Chasem, support email
+   `help@chasem.app`, your logo if you have one. Add the scope
+   `.../auth/calendar.freebusy` -- and nothing else. Authorised domain
+   `chasem.app`. Privacy policy `https://chasem.app/privacy.html`, terms
+   `https://chasem.app/terms.html`.
+4. Publish the app. With only a non-sensitive scope this takes effect
+   straight away; leaving it in Testing caps you at 100 named accounts, and
+   their permission expires after a week.
+5. Credentials, Create credentials, OAuth client ID, Web application.
+   Authorised redirect URI, exactly:
+   `https://chasem.app/api/gcal?action=callback`
+6. Put the client ID and secret in Vercel as `GOOGLE_CLIENT_ID` and
+   `GOOGLE_CLIENT_SECRET`, then redeploy.
+
+Without those two variables the card simply does not appear in the app.
+With them, Set-up grows "Your calendar", and a connection is his to make or
+break whenever he likes. His days and the calendar's are kept apart in the
+database, so disconnecting gives the days back and never touches his own.
+
 ## 4. Fill in who you are
 
 In `quote-and-chase-landing/public/config.js`: `SUPPORT_EMAIL`, `ABN`,

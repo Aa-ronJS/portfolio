@@ -8,6 +8,7 @@
 // Authenticated by the signed token the app already holds. No passwords, nothing new to set up.
 import { cors, send, readJson, readToken } from "./_setup.js";
 import { q, tx, ensurePainter, dbConfigured, e164 } from "./_store.js";
+import { gcalConfigured, syncCalendar } from "./gcal.js";
 
 const KINDS = new Set(["job", "client", "settings", "invoice"]);
 const cents = (v) => Math.round(Number(v || 0) * 100);
@@ -88,6 +89,21 @@ export default async function handler(req, res) {
     }
   });
 
+  // A connected calendar is refreshed here rather than on a timer: he syncs when he opens the app, which is
+  // exactly when the days need to be right. Stale by more than six hours is enough; a failure is his to see in
+  // Set-up, not a reason to fail his sync.
+  let calendar = null;
+  if (gcalConfigured()) {
+    const cal = (await q("select account, synced_at, error from calendar where painter_id=$1", [p.cus])).rows[0];
+    if (cal) {
+      const age = cal.synced_at ? Date.now() - new Date(cal.synced_at).getTime() : Infinity;
+      if (age > 6 * 3600 * 1000) { try { await syncCalendar(p.cus, 90); } catch (e) {} }
+      const fresh = (await q("select account, synced_at, error from calendar where painter_id=$1", [p.cus])).rows[0] || cal;
+      const n = (await q("select count(*)::int n from busy where painter_id=$1 and source='gcal'", [p.cus])).rows[0].n;
+      calendar = { connected: true, account: fresh.account, synced_at: fresh.synced_at, error: fresh.error, days: n };
+    } else calendar = { connected: false };
+  }
+
   // Hand back everything newer than he has seen. `since` is our own timestamp, echoed from the last reply.
   const since = iso(body.since) || "1970-01-01T00:00:00.000Z";
   const changed = await q(
@@ -104,6 +120,6 @@ export default async function handler(req, res) {
   return send(res, 200, {
     ok: true, now, took: taken,
     changes: changed.rows.map((r) => ({ kind: r.kind, id: r.id, rev: Number(r.rev), deleted: r.deleted, body: r.body })),
-    bookings: bookings.rows, replies: replies.rows,
+    bookings: bookings.rows, replies: replies.rows, calendar,
   });
 }

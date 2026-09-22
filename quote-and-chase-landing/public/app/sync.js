@@ -9,7 +9,12 @@
   function hash(s) { var h = 5381, i = s.length; while (i) h = (h * 33 ^ s.charCodeAt(--i)) >>> 0; return h.toString(36); }
   function api(which) { var u = String(((QCStore.load().sending) || {}).server || '').trim(); return u ? u.replace(/\/[^\/]*$/, '/' + which) : ''; }
   function mem() { try { return JSON.parse(localStorage.getItem(KEY_STATE) || '{}') || {}; } catch (e) { return {}; } }
-  function remember(v) { try { localStorage.setItem(KEY_STATE, JSON.stringify(v)); } catch (e) {} }
+  // Merges. Writing one field must not lose `since`: a sync that forgets where it was up to pulls the whole
+  // history back and pushes everything again.
+  function remember(v) {
+    try { var cur = mem(), k; for (k in v) if (Object.prototype.hasOwnProperty.call(v, k)) cur[k] = v[k];
+      localStorage.setItem(KEY_STATE, JSON.stringify(cur)); } catch (e) {}
+  }
 
   // The days a customer must not be offered: days he is already on a job, and his state's public holidays.
   // Working this out here rather than on the server keeps one holiday calendar in the product instead of two.
@@ -131,7 +136,7 @@
         running = false;
         if (!res || !res.ok) { if (res && res.off) remember({ off: true }); return res || null; }
         var S2 = QCStore.load(), touched = applyChanges(S2, res);
-        remember({ since: res.now, sent: fresh, at: Date.now() });
+        remember({ since: res.now, sent: fresh, at: Date.now(), calendar: res.calendar || null });
         if (touched) { QCStore.save(); if (opts.onChange) opts.onChange(touched, res); }
         pushPhotos(3);                                   // after the words are through, a few pictures
         return res;
@@ -182,5 +187,29 @@
   }
 
   function lastAt() { return mem().at || 0; }
-  window.QCSync = { now: now, busyDays: busyDays, rules: rules, applyChanges: applyChanges, lastAt: lastAt, hash: hash, pushPhotos: pushPhotos, photoUrl: photoUrl };
+  function calendar() { return mem().calendar || null; }
+
+  // Connecting, checking and disconnecting a calendar. The relay does the talking to Google; this only ever
+  // sends the token it already has and gets back a link to open or a plain yes/no.
+  function gcal(action, extra) {
+    var S = QCStore.load(), sd = S.sending || {}, url = api('gcal');
+    if (!url || !sd.token) return Promise.resolve({ ok: false, error: 'Sending is not set up on this phone.' });
+    var f = window.__qcRelayFetch || window.fetch, body = { token: sd.token, action: action };
+    if (action === 'start') body.me = { trading_name: S.details.trading_name || '', reply_to: S.details.email || '', phone: S.details.phone || '', state: S.details.state || '' };
+    if (extra) for (var k in extra) if (Object.prototype.hasOwnProperty.call(extra, k)) body[k] = extra[k];
+    return f(url, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body) })
+      .then(function (r) { return r.json(); })
+      .then(function (res) {
+        // "off" means calendars are not switched on for this relay at all: worth remembering, so the app can
+        // leave the whole card out rather than showing one that cannot do anything.
+        if (res && res.off) remember({ calendar: { off: true, connected: false } });
+        else if (res && res.ok && (action === 'status' || action === 'sync' || action === 'disconnect')) {
+          remember({ calendar: { connected: !!res.connected, account: res.account || '', synced_at: res.synced_at || null, error: res.error || '', days: res.days || 0 } });
+        }
+        return res || { ok: false, error: 'No answer from the sending server.' };
+      })
+      .catch(function () { return { ok: false, error: 'Could not reach the sending server.' }; });
+  }
+
+  window.QCSync = { now: now, busyDays: busyDays, rules: rules, applyChanges: applyChanges, lastAt: lastAt, hash: hash, pushPhotos: pushPhotos, photoUrl: photoUrl, calendar: calendar, gcal: gcal };
 })();
