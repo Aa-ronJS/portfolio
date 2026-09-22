@@ -25,6 +25,17 @@
 // Every action returns { ok: true, ... } or { ok: false, error }.
 
 import { readToken, readBalance, spend, OUT_OF_MESSAGES, autoTopUpOn, chargeTopUp } from "./_setup.js";
+import { ensurePainter, recordOutbound, dbConfigured } from "./_store.js";
+
+// Writing down who a message went to is what lets a reply find its way home. It must never be able to stop a
+// message going out, so every call is best effort and the send has already happened by the time we get here.
+async function noted(hosted, body, channel, to, r) {
+  if (!dbConfigured() || !hosted || !hosted.payload || !r || !r.id) return;
+  try {
+    await ensurePainter(hosted.payload);
+    await recordOutbound({ id: r.id, painter: hosted.payload.cus, job: body.job, channel, to, ref: body.ref });
+  } catch (e) { /* routing a future reply is worth less than this message */ }
+}
 
 const ALLOWED = (process.env.ALLOWED_ORIGINS || "https://chasem.app,https://www.chasem.app").split(",").map((s) => s.trim()).filter(Boolean);
 const PER_IP_LIMIT = Number(process.env.MSG_PER_IP_LIMIT || 60); // per 10 minutes per instance
@@ -186,6 +197,7 @@ export default async function handler(req, res) {
       let bal = hosted && hosted.payload ? await readBalance(hosted.payload) : null;
       if (bal && bal.counted && bal.left <= 0) { bal = await refill(hosted.payload, bal); if (bal.left <= 0) return send(res, 402, { ok: false, error: OUT_OF_MESSAGES, out_of_messages: true, ...bal }); }
       const r = ch === "sms" ? await smsSend(c, body.to, body.body) : await emailSend(c, body);
+      await noted(hosted, body, ch, body.to, r);
       const after = hosted && hosted.payload ? await spend(hosted.payload, 1).catch(() => null) : null;
       return send(res, 200, { ok: true, ...r, ...(after ? { left: after.left, used: after.used, included: after.included + after.extra } : {}) }); }
     if (body.action === "schedule") { if (!body.to || !body.body || !body.send_at) throw new Error("to, body and send_at are required"); if (String(body.body).length > 1600) throw new Error("Message too long");
@@ -196,6 +208,7 @@ export default async function handler(req, res) {
       let balS = hosted && hosted.payload ? await readBalance(hosted.payload) : null;
       if (balS && balS.counted && balS.left <= 0) { balS = await refill(hosted.payload, balS); if (balS.left <= 0) return send(res, 402, { ok: false, error: OUT_OF_MESSAGES, out_of_messages: true, ...balS }); }
       const r = ch === "sms" ? await smsSchedule(c, body.to, body.body, body.send_at) : await emailSchedule(c, body);
+      await noted(hosted, body, ch, body.to, r);
       const afterS = hosted && hosted.payload ? await spend(hosted.payload, 1).catch(() => null) : null;
       if (afterS) { r.left = afterS.left; r.used = afterS.used; r.included = afterS.included + afterS.extra; }
       if (key) { seen.set(key, r); while (seen.size > 200) seen.delete(seen.keys().next().value); }

@@ -25,6 +25,8 @@
     var base = { job: meta.job || '', ref: payload.ref || meta.ref || '', channel: payload.channel || '', to: payload.to || '', kind: payload.action === 'cancel' ? 'cancel' : payload.action === 'schedule' ? 'schedule' : 'send', text: payload.body || payload.subject || (payload.action === 'cancel' ? 'cancel ' + payload.id : payload.action), send_at: payload.send_at || '' };
     if (!c.server) { if (logged) addLog(Object.assign({}, base, { kind: 'fail', ok: false, error: 'No sending server set up' })); return Promise.reject(new Error('No sending server set up')); }
     if (c.token) payload.token = c.token;
+    // the relay writes down which job a message went out against, so a customer's reply finds its way home
+    if (meta.job && !payload.job) payload.job = meta.job;
     if (!c.server_has_creds) payload.creds = { twilio_sid: c.twilio_sid, twilio_token: c.twilio_token, twilio_api_key: c.twilio_api_key, twilio_service: c.twilio_service, twilio_from: c.twilio_from, resend_key: c.resend_key, resend_from: c.resend_from };
     var f = window.__qcRelayFetch || window.fetch;
     return f(c.server, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload) })
