@@ -40,6 +40,14 @@
     "api/seat.js": {
       "maxDuration": 10,
       "memory": 256
+    },
+    "api/sync.js": {
+      "maxDuration": 30,
+      "memory": 512
+    },
+    "api/y.js": {
+      "maxDuration": 15,
+      "memory": 256
     }
   },
   "headers": [
@@ -55,8 +63,16 @@
   ],
   "rewrites": [
     {
+      "source": "/measure",
+      "destination": "/measure/measure"
+    },
+    {
       "source": "/measure/",
       "destination": "/measure/measure"
+    },
+    {
+      "source": "/y/:t",
+      "destination": "/api/y?t=:t"
     }
   ],
   "redirects": [
