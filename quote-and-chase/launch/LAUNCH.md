@@ -11,12 +11,40 @@ Check where you stand at any point:
 
 ---
 
-## 1. Deploy the relay
+## 1. Deploy the relay onto chasem.app
 
-The relay is the Vercel project `quote-and-chase-landing`. It is what
-sends the texts and emails, counts the messages and talks to Stripe.
-Deploy it once before anything else, because every later step needs its
-address. You will come back and set its environment variables in step 3.
+The Vercel project `quote-and-chase-landing` is the whole thing: the
+landing page at the root, the app under `/app/`, and the relay that sends
+the texts, counts the messages and talks to Stripe under `/api/`. One
+project, one domain, so the app and its own sender are same-origin and
+nothing between them is a cross-origin request.
+
+    cd quote-and-chase-landing
+    npx vercel deploy --prod
+
+Then, in the Vercel dashboard for that project, Settings -> Domains:
+
+- add `chasem.app` and make it the primary domain
+- add `www.chasem.app` and set it to redirect to `chasem.app`
+
+DNS already points at Vercel. The certificate is issued a minute or two
+after the domain is attached; until then `https://chasem.app` will not
+answer at all and plain http returns a Vercel 404, which is what "the
+domain is registered but not yet attached to a project" looks like.
+
+Check it worked before going on: `https://chasem.app/` shows the page,
+`https://chasem.app/app/` opens the app, and `https://chasem.app/og.png`
+returns the link-preview image.
+
+Every later step assumes that address. The code already does: the app's
+`signup_url`, the set-up links the relay emails, the billing portal return
+and the CORS list all default to chasem.app, so there is nothing to paste
+for any of them. You will come back and set the secrets in step 3.
+
+The GitHub Pages copy at `aa-ronjs.github.io/portfolio/` stays up as a
+mirror and is still allowed by CORS. Do not advertise both: a painter's
+jobs live in his phone's storage for the address he opened, so whichever
+one he is sent to is the one he has to keep using.
 
 ## 2. Make everything in Stripe
 
