@@ -82,7 +82,7 @@ const joined = () => { try { const k = 'qc-app-v1', s = JSON.parse(localStorage.
   // turning the net off is possible, deliberate, and warned about
   await p.goto(base + '#/test', { waitUntil: 'load' }); await p.waitForTimeout(400);
   await p.click('#tddivert'); await p.waitForTimeout(400);
-  ok(/going to the real numbers/.test(await text()), 'turning the net off says plainly what that means');
+  ok(/real numbers/.test(await text()), 'turning the net off says so on the card');
   const raw = await p.evaluate(() => QCMsg.divert({ action: 'send', channel: 'sms', to: '0400 333 444', body: 'x' }));
   ok(raw.to === '0400 333 444', 'and then a message really does go to the customer');
   await p.click('#tddivert'); await p.waitForTimeout(400);
@@ -96,8 +96,12 @@ const joined = () => { try { const k = 'qc-app-v1', s = JSON.parse(localStorage.
 
   // ---- the walkthrough
   await p.goto(base + '#/test', { waitUntil: 'load' }); await p.waitForTimeout(400);
+  // the note box is not there until he says something is broken
+  ok(await p.$eval('[data-note="measure"]', e => e.hidden), 'no note box sitting empty on all fourteen steps');
   await p.click('[data-td="broken"][data-for="measure"]'); await p.waitForTimeout(300);
-  ok(/Say what went wrong first/.test(await text()), 'marking something broken with nothing written down is refused');
+  ok(!(await p.$eval('[data-note="measure"]', e => e.hidden)), 'Broken opens one');
+  await p.click('[data-td="broken"][data-for="measure"]'); await p.waitForTimeout(300);
+  ok(/Say what went wrong/.test(await text()), 'and saving it empty is refused');
   await p.fill('[data-note="measure"]', 'The wall came back 300mm short on a dark photo.');
   await p.click('[data-td="broken"][data-for="measure"]'); await p.waitForTimeout(400);
   await p.click('[data-td="works"][data-for="setup"]'); await p.waitForTimeout(400);
@@ -106,7 +110,7 @@ const joined = () => { try { const k = 'qc-app-v1', s = JSON.parse(localStorage.
   ok(found.length === 2 && found.some(f => f.verdict === 'broken' && /300mm/.test(f.note)), 'what he wrote is kept on the phone, with the step it belongs to (' + found.length + ')');
   ok(found.every(f => f.screen && f.app), 'and which screen and which version it was found on');
   t = await text();
-  ok(/2 of 14 looked at/.test(t) && /1 broken/.test(t), 'the screen counts what is done and what is broken');
+  ok(/2 of 14/.test(t) && /1 broken/.test(t), 'the screen counts what is done and what is broken');
 
   // changing his mind replaces the verdict rather than stacking another. A step he has ruled on folds away,
   // so open it again first, the way he would.

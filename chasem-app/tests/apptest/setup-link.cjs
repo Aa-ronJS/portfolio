@@ -84,7 +84,7 @@ const isoDays = n => { const d = new Date(); d.setDate(d.getDate() + n); return 
   // ---- hosted wording and readiness
   t = await text();
   ok(new RegExp("On, and paid to [^,]+, when it renews itself\\. Texts and emails go out in your name and there is nothing to open\\.").test(t), 'hosted first line: paid, renews itself');
-  ok(/You do not need any of this while the chasing is on\. It is here for the day you would rather run your own accounts\./.test(t), 'own-accounts line inside the fold');
+  ok(/Only for running your own accounts instead\./.test(t), 'own-accounts line inside the fold');
   ok(await p.evaluate(() => QCMsg.ready('sms') && QCMsg.ready('email')), 'QCMsg.ready true for sms and email with server + token + server_has_creds');
   // scheduled emails carry reply_to = details.email, bodies carry the sign-off
   const sched = await p.evaluate(async () => { const calls = []; window.__qcRelayFetch = (u, o) => { calls.push(JSON.parse(o.body)); return Promise.resolve({ json: () => Promise.resolve({ ok: true, id: 'SM' + calls.length }) }); }; const day = window.__qcApp.store.addDays(window.__qcApp.store.today(), 3); await QCMsg.scheduleAll([{ day, channel: 'email', to: 'c@example.com', subject: 's', body: 'b', ref: 'quote+3', key: 'k1', job: 'pf_b', reply_to: 'dave@example.com' }, { day, channel: 'sms', to: '0411222333', body: 'b', ref: 'quote+3', key: 'k2', job: 'pf_b', reply_to: 'dave@example.com' }], 9); window.__qcRelayFetch = null; return calls; });

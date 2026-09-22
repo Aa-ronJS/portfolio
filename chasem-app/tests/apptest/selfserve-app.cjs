@@ -29,7 +29,7 @@ const MOCK = () => { let saved = null; try { saved = JSON.parse(sessionStorage.g
   // ---- the set-up card names the four self-service steps and links them
   await p.evaluate(() => { const st = window.__qcApp.store, S = st.load(); S.details.trading_name = 'Daves Painting'; st.save(); });
   await p.goto(base + '#/', { waitUntil: 'load' }); await p.reload({ waitUntil: 'load' }); await p.waitForSelector('#setupcard'); let t = await text();
-  ok(/1 of 4 done/.test(t) && /Make the prices yours/.test(t) && /Let it chase for you/.test(t) && /Ten minutes, on your own, whenever suits/.test(t), 'set-up card: four steps, done alone: ' + t.slice(t.indexOf('Set up'), t.indexOf('Set up') + 120).replace(/\n/g, ' '));
+  ok(/1 of 4 done/.test(t) && /Make the prices yours/.test(t) && /Let it chase for you/.test(t) && /Ten minutes, whenever suits/.test(t), 'set-up card: four steps, done alone: ' + t.slice(t.indexOf('Set up'), t.indexOf('Set up') + 120).replace(/\n/g, ' '));
   ok(await p.$('#setupcard a[href="#/myprices"]'), 'the prices step is a link to the wizard');
 
   // ---- 1. prices from a day rate

@@ -47,7 +47,7 @@ const a11yJs = () => {
   console.log('  invoiceInvoiced: ' + texts.invoiceInvoiced.replace(/\s+/g, ' ').slice(0, 500));
   ok(/INV-2001[\s\S]{0,80}paid/.test(texts.invoiceInvoiced) && /INV-2002[\s\S]{0,160}card link[\s\S]{0,60}1 reminder pending[\s\S]{0,80}Record payment/.test(texts.invoiceInvoiced), 'invoice page: deposit paid, final has card link + 1 pending reminder + Mark paid');
   ok(/[Cc]ard/.test(texts.invoicePaid) && /[Pp]aid/.test(texts.invoicePaid), 'paid job invoice page shows the card payment');
-  ok(/Fixed price from the sizes you typed/.test(texts.quoteDraft), 'draft quote says fixed price from typed sizes'); ok(!/Estimate from typed/.test(texts.quoteNoRooms) && /Total/.test(texts.quoteNoRooms), 'no-rooms quote renders total');
+  ok(/Fixed price/.test(texts.quoteDraft), 'draft quote says fixed price from typed sizes'); ok(!/Estimate from typed/.test(texts.quoteNoRooms) && /Total/.test(texts.quoteNoRooms), 'no-rooms quote renders total');
   const dr = texts.jobDraft; if (!/typed sizes/.test(dr) || !/5 × 4 m/.test(dr)) console.log('  jobDraft text: ' + dr.replace(/\s+/g, ' ').slice(0, 600)); ok(/typed sizes/.test(dr) && /5 × 4 m/.test(dr), 'draft job room row shows typed sizes pill');
   // enquiry page for seeded enquiry
   ok(/Lounge \/ living[\s\S]*Bedroom[\s\S]*× 2/.test(texts.enquiry) && /at 9:00am|9am/i.test(texts.enquiry), 'enquiry page shows picks and visit time: ' + (texts.enquiry.match(/for 30 min[^\n]*/) || [''])[0]);

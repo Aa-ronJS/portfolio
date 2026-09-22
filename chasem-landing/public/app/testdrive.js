@@ -26,34 +26,20 @@
   // ---------- the fourteen steps
   // Each is a thing a painter actually does, in the order he does it, with the screen it starts on.
   var STEPS = [
-    { id: 'setup', go: '#/settings', t: 'Set yourself up',
-      d: 'Your trading name, ABN, mobile, email, state and bank details. The mobile and email matter most here: while test drive is on, every message the app would send a customer comes to those two instead.' },
-    { id: 'prices', go: '#/settings/prices', t: 'Your prices',
-      d: 'Look at the five rates. Then open Work out my rates, put in what you pay yourself and what paint costs you, and tap Calculate prices. Does the answer look like your real pricing? If it does not, that is the most important thing you can tell me.' },
-    { id: 'enquiry', go: '#/enquiry', t: 'A phone enquiry',
-      d: 'Someone rings. Tap the rooms, pick sizes, read them the ballpark. Then find a slot and book the quote visit. Try an address 40 minutes away and see whether the slot it offers makes sense with your other work.' },
-    { id: 'measure', go: '#/', t: 'Measure a room with a sheet of paper',
-      d: 'New job, add a room, Measure. Stick an A4 sheet on the wall, take the photo, check the size it comes back with against your tape. Try it badly on purpose: crooked, dark, sheet half out of frame.' },
-    { id: 'quick', go: '#/', t: 'Quick quote from a photo',
-      d: 'Quick quote on Home. Photo, rooms, price, sent. Time yourself. If it takes more than about three minutes it is not doing its job.' },
-    { id: 'quote', go: '#/', t: 'Build the quote and read the PDF',
-      d: 'Open a job, look at the running total, tap Show my costs to see the margin, then open the quote. Read the PDF as if you were the customer: is anything in it you would not want them to see, or missing that you would want them to?' },
-    { id: 'send', go: '#/', t: 'Send the quote',
-      d: 'Send it by text and by email. Both should land on your own phone with a TEST DRIVE line at the top. Check the wording, the attachment and the name it comes from.' },
-    { id: 'yes', go: '#/chase', t: 'The customer says YES',
-      d: 'Reply YES to the text you just got. Within a few seconds you should get a text back saying they accepted, and they should get a link to pick a start day. Try replying something that is not yes, and try STOP.' },
-    { id: 'book', go: '#/', t: 'They pick a start day',
-      d: 'Open the booking link. Only days you are free should be offered. Pick one, then open the same link again on another phone or another browser and try to take the same day. It should not let you.' },
-    { id: 'follow', go: '#/chase', t: 'Follow-ups',
-      d: 'The Follow-ups tab. One chase-up should be booked and the rest waiting their turn. Read the wording. Put a job on hold, take it off hold, and mark one chased by hand.' },
-    { id: 'invoice', go: '#/', t: 'Deposit and invoice',
-      d: 'Mark a quote accepted, raise the deposit invoice, then the final one. Check the numbers add up, the GST is right, and the bank details are yours. Add a card payment link if you have Stripe set up.' },
-    { id: 'overdue', go: '#/chase', t: 'Chase money you are owed',
-      d: 'The seeded book has an invoice 21 days overdue. Read the first, second and third reminders, then open the final notice. Would you send that to a real customer? Change any of it in Set-up if not.' },
-    { id: 'offline', go: '#/', t: 'Work with no signal',
-      d: 'Turn on flight mode. Add a job, measure a room, build a quote. Nothing should stop. Turn signal back on and watch it catch up.' },
-    { id: 'second', go: '#/settings', t: 'A second phone',
-      d: 'Set-up, Another phone, make the link, open it on a second phone or another browser. Both should end up with the same book.' }
+    { id: 'setup',    go: '#/settings',        t: 'Set yourself up', d: 'Name, ABN, bank. Your mobile and email are where the test messages land.' },
+    { id: 'prices',   go: '#/settings/prices', t: 'Your prices',     d: 'Change a rate. Then Work out my rates.' },
+    { id: 'enquiry',  go: '#/enquiry',         t: 'Phone enquiry',   d: 'Tap rooms, read the range, book a visit.' },
+    { id: 'measure',  go: '#/',                t: 'Measure a room',  d: 'A4 on the wall. Check it against your tape. Then try it crooked and dark.' },
+    { id: 'quick',    go: '#/',                t: 'Quick quote',     d: 'Photo to sent. Time yourself.' },
+    { id: 'quote',    go: '#/',                t: 'The quote',       d: 'Read the PDF as the customer would.' },
+    { id: 'send',     go: '#/',                t: 'Send it',         d: 'Text and email. Both land on your phone.' },
+    { id: 'yes',      go: '#/chase',           t: 'They say YES',    d: 'Reply to the text. Try a no, and STOP.' },
+    { id: 'book',     go: '#/',                t: 'They pick a day', d: 'Open the link. Then try to take the same day twice.' },
+    { id: 'follow',   go: '#/chase',           t: 'Follow-ups',      d: 'Read the wording. Hold one, chase one by hand.' },
+    { id: 'invoice',  go: '#/',                t: 'Invoice',         d: 'Deposit, then final. Check the GST and the bank details.' },
+    { id: 'overdue',  go: '#/chase',           t: 'Chase the money', d: 'Three reminders, then the final notice. Would you send it?' },
+    { id: 'offline',  go: '#/',                t: 'No signal',       d: 'Flight mode. Keep working.' },
+    { id: 'second',   go: '#/settings',        t: 'Second phone',    d: 'Make the link. Open it somewhere else.' }
   ];
   function stepById(id) { for (var i = 0; i < STEPS.length; i++) if (STEPS[i].id === id) return STEPS[i]; return null; }
 

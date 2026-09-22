@@ -137,12 +137,12 @@ export default async function handler(req, res) {
 function head(job) {
   return `<h1>${job.client_name ? esc(first(job.client_name)) + ", pick" : "Pick"} a start day</h1>
     <div class="card"><div class="q"><b>${esc(job.trading_name || "Your painter")}</b><span>${esc(job.quote_no || "")} ${job.total_cents ? esc(money(job.total_cents)) : ""}</span></div>
-    <p class="fine">These are the days ${esc(job.trading_name || "your painter")} is free. Pick one and it is yours.</p></div>`;
+    <p class="fine">Days ${esc(job.trading_name || "your painter")} is free.</p></div>`;
 }
 function pick(d, open, tz) {
-  if (!open.length) return `<p>There is nothing free in the next few weeks. Your painter will be in touch to sort out a day.</p>`;
+  if (!open.length) return `<p>Nothing free in the next few weeks. Your painter will be in touch.</p>`;
   const est = d.job.est_days || 1;
   return `<form method="post">` + open.map((day) =>
     `<button class="day" name="day" value="${esc(day)}">${esc(prettyDay(day, tz))}${est > 1 ? `<small>about ${est} days on site</small>` : ""}</button>`
-  ).join("") + `</form><p class="fine">Picking a day books it straight away and tells your painter.</p>`;
+  ).join("") + `</form>`;
 }

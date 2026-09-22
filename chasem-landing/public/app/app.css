@@ -122,3 +122,6 @@ details.sec.sub{border-top:1px solid var(--line);padding-top:6px;display:grid;ga
 .step summary::-webkit-details-marker{display:none}
 .step summary h3{margin:0}
 .step[open] summary{margin-bottom:6px}
+a.sec.link{background:var(--paper);border:1px solid var(--line);border-radius:12px;padding:14px;display:flex;align-items:center;justify-content:space-between;gap:10px;min-height:44px;text-decoration:none;color:inherit}
+a.sec.link h3{margin:0}
+a.sec.link::after{content:'\203A';color:var(--muted);font-size:1.4rem;line-height:1}

@@ -28,10 +28,10 @@ const MOCK = () => { window.__qcCalls = []; let saved = null; try { saved = JSON
   // ---- the door: nothing works until the app knows whose it is
   cfg = "window.QC_APP = { maps_key: '', signup_url: 'https://relay.example.test/api/signup' };";
   await p.goto(base, { waitUntil: 'load' }); await p.waitForSelector('#joinform'); let t = await text();
-  ok(/Chasem/.test(t) && /Your first three jobs are on us, quoted and chased to the end: 12 messages/.test(t) && /\$99 a month for 150/.test(t) && /a pack of 100 more is \$35/.test(t), 'the door states the free jobs, the plan and the pack: ' + t.replace(/\s+/g, ' ').slice(0, 90));
+  ok(/Chasem/.test(t) && /three jobs free, chased to the end: 12 messages/.test(t) && /\$99 a month for 150/.test(t) && /a pack of 100 more is \$35/.test(t), 'the door states the free jobs, the plan and the pack: ' + t.replace(/\s+/g, ' ').slice(0, 90));
   ok(/a job start to finish is usually four or five/.test(t) && /about 30 jobs/.test(t), 'the door says what a job actually costs in messages, before he has typed anything');
   ok(/A message is one text or one email the app sends for you/.test(t), 'it says what a message is before asking for anything');
-  ok(/Your jobs, prices and clients stay on this phone/.test(t), 'it says what is kept and what is not');
+  ok(/On this phone/.test(t) && /in your account too/.test(t) && /Keys and PIN stay here/.test(t), 'it says what is kept and what is not');
   ok(!(await p.$('[data-nav]:not([hidden])')) || !/New job/.test(t), 'no jobs screen behind the door');
   await p.fill('#join_email', 'not-an-email'); await p.click('#join_go');
   ok(/does not look like an email/.test(await p.$eval('#join_msg', e => e.textContent)), 'a bad address is refused on the phone, before any request');
@@ -106,12 +106,12 @@ const MOCK = () => { window.__qcCalls = []; let saved = null; try { saved = JSON
   ok(/Two of you\? The two-phone plan is \$149 a month with 250 messages\./.test(t) && !(await p.$('#seatgo')), 'a one-phone plan is offered the two-phone plan, not a broken button');
   await p.evaluate(() => { const st = window.__qcApp.store, S = st.load(); S.sending.bal_seats = 2; st.save(); });
   await p.reload({ waitUntil: 'load' }); await p.waitForSelector('#seatgo'); t = await text();
-  ok(/Same business name on the quotes, same pile of messages, and each phone keeps its own jobs/.test(t), 'the card says exactly what the second phone shares and what it does not');
+  ok(/Same business name, same messages, its own jobs/.test(t), 'the card says exactly what the second phone shares and what it does not');
   await p.click('#seatgo'); await p.waitForSelector('#seatlink', { timeout: 5000 });
   const link2 = await p.$eval('#seatlink', e => e.value);
   const scall = await p.evaluate(() => window.__qcCalls.filter(c => /seat/.test(c.url)).pop());
   ok(link2 === 'https://x/app/#/setup?d=j:eyJ2IjoxfQ' && scall.url === 'https://relay.example.test/api/seat' && scall.body.token === 'qc1.FREE.SIG', 'it asks the relay and shows the link to open on the other phone');
-  ok(/Open this on the other phone and tap Load/.test(await text()), 'with instructions a painter can follow');
+  ok(/on the other phone and tap Load/.test(await text()), 'with instructions a painter can follow');
   // the second phone says what it is, and is not offered a third
   await p.evaluate(() => { const st = window.__qcApp.store, S = st.load(); S.sending.bal_seat = 2; st.save(); });
   await p.reload({ waitUntil: 'load' }); await p.waitForSelector('#setupcode'); t = await text();
