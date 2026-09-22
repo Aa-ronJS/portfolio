@@ -73,7 +73,11 @@ async function findHook(url) {
   let product = null;
   const existing = await stripe("products?limit=100");
   product = (existing.data || []).find((p) => String((p.metadata || {}).qc_product || "") === "main") || null;
-  if (!product && !DRY) product = await stripe("products", { name: "Quote & Chase", description: "Quoting, invoicing and follow-ups for Australian painters.", "metadata[qc_product]": "main" });
+  // Managed Payments is on by default on new accounts and refuses a Payment Link whose product has no tax code.
+  // This is cloud software sold to painting businesses, so: SaaS, business use.
+  const TAX_CODE = "txcd_10103001";
+  if (!product && !DRY) product = await stripe("products", { name: "Quote & Chase", description: "Quoting, invoicing and follow-ups for Australian painters.", tax_code: TAX_CODE, "metadata[qc_product]": "main" });
+  else if (product && !DRY && product.tax_code !== TAX_CODE) { product = await stripe("products/" + product.id, { tax_code: TAX_CODE }); log("  tax code set to " + TAX_CODE + " (Managed Payments needs one)"); }
   log("\nproduct: " + (product ? product.id + (product.created > Date.now() / 1000 - 10 ? " (new)" : " (already there)") : "would create"));
 
   const priceSpecs = [
@@ -127,7 +131,7 @@ async function findHook(url) {
   let hook = await findHook(hookUrl), secret = "";
   if (!hook) {
     hook = await stripe("webhook_endpoints", {
-      url: hookUrl, "enabled_events[]": "checkout.session.completed",
+      url: hookUrl, "enabled_events[0]": "checkout.session.completed",
       "enabled_events[1]": "checkout.session.async_payment_succeeded",
       description: "Quote & Chase: sign-ups and top-ups",
     });

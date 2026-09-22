@@ -17,12 +17,12 @@ window.QC = {
                                     // senders buy one), so this has to sit near the real cost of sending them, not at a token price.
   PLAN2_PRICE: 149,                 // AUD a month for two phones on one account. Must match its own Payment Link.
   INCLUDED_MESSAGES_TWO: 250,       // messages a month on the two-phone plan. Must match INCLUDED_MESSAGES_TWO on the relay.
-  SUBSCRIBE2_URL: "",               // TODO owner: a second Payment Link at PLAN2_PRICE with metadata qc_plan=two. That one piece of
+  SUBSCRIBE2_URL: "https://buy.stripe.com/9B64gtbQD3HYejH5R7ffy01",               // a second Payment Link at PLAN2_PRICE with metadata qc_plan=two. That one piece of
                                     //   metadata is what tells the webhook to mint a two-seat token; without it you sell one phone at two-phone prices.
-  SUBSCRIBE_URL: "",                // TODO owner: the Stripe Payment Link (subscription mode) at PLAN_PRICE. The app links to it from inside;
+  SUBSCRIBE_URL: "https://buy.stripe.com/cNibIVaMz3HYb7vfrHffy00",                // the Stripe Payment Link (subscription mode) at PLAN_PRICE. The app links to it from inside;
                                     //   collect name, email, phone and billing address and nothing else -- he types no business name, ABN or
                                     //   licence at checkout. Success URL: https://chasem.app/welcome?session={CHECKOUT_SESSION_ID}
-  TOPUP_URL: "",                    // optional fallback only. The app buys packs with one tap on the card Stripe already holds (api/topup.js),
+  TOPUP_URL: "https://buy.stripe.com/cNi14hdYLceugrPgvLffy02",                    // optional fallback only. The app buys packs with one tap on the card Stripe already holds (api/topup.js),
                                     //   so nobody is sent to a checkout page. Set this only if you also want a link for someone with no card on file:
                                     //   a one-off Payment Link at TOPUP_PRICE with metadata qc=topup.
   SETUP_LINK_API: "/api/setup-link", // same origin as this page on chasem.app, so the welcome page can show the "Set up my app"
