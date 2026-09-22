@@ -1,0 +1,44 @@
+// End to end: the maker's link builder produces a link; the app loads it; the settings, prices and jobs land; the scoreboard appears.
+const { chromium, devices } = require('playwright-core');
+const http = require('http'), fs = require('fs'), path = require('path');
+const APP = require('path').join(__dirname, '../..'), LAND = require('path').join(__dirname, '../../..', 'chasem-landing') + '/public';
+const MIME = { '.html': 'text/html', '.js': 'application/javascript', '.css': 'text/css', '.json': 'application/json', '.png': 'image/png', '.webmanifest': 'application/manifest+json' };
+const serve = (root) => http.createServer((req, res) => { let p = decodeURIComponent(req.url.split('?')[0]); if (p.endsWith('/')) p += 'index.html'; if (!path.extname(p) && fs.existsSync(path.join(root, p + '.html'))) p += '.html'; fs.readFile(path.join(root, p), (e, d) => { if (e) { res.writeHead(404); return res.end(); } res.writeHead(200, { 'Content-Type': MIME[path.extname(p)] || 'application/octet-stream' }); res.end(d); }); });
+let fails = 0; const ok = (c, m) => { console.log((c ? 'PASS ' : 'FAIL ') + m); if (!c) fails++; };
+(async () => {
+  const a = serve(APP), l = serve(LAND); await new Promise(r => a.listen(0, r)); await new Promise(r => l.listen(0, r));
+  const appBase = 'http://127.0.0.1:' + a.address().port + '/', landBase = 'http://127.0.0.1:' + l.address().port + '/';
+  const b = await chromium.launch({ executablePath: (process.env.QC_CHROME || '/opt/pw-browsers/chromium-1194/chrome-linux/chrome'), args: ['--no-sandbox'] });
+  const ctx = await b.newContext({ ...devices['iPhone 13'], serviceWorkers: 'block' }); const p = await ctx.newPage(); const errors = []; p.on('pageerror', e => errors.push(e.message));
+  await p.goto(landBase + 'prefill', { waitUntil: 'load' });
+  await p.fill('#trading_name', 'Dave Painting'); await p.fill('#owner_name', 'Dave Steele'); await p.fill('#abn', '51 824 753 556'); await p.selectOption('#state', 'VIC'); await p.fill('#phone', '0412 345 678'); await p.fill('#email', 'dave@example.com'); await p.fill('#postcode', '3350');
+  await p.fill('#prices', 'p_walls = 24\np_ceiling = 26'); await p.fill('#jobs', 'Margaret Hanley | 0411 222 333 | 8 Beaumont St Ballarat VIC 3350 | Lounge and hall repaint | 2450 | quoted\nRay White Ballarat | 0400 111 222 | 3/22 Sturt St Ballarat | Unit 3 repaint | 1800 | invoiced');
+  await p.fill('#server', 'https://relay.example/api/msg'); await p.fill('#token', 'qc_testtoken1234'); await p.fill('#hosted_until', '2026-12-20'); await p.fill('#scoreboard_start', '2026-09-21'); await p.fill('#note', 'Set up by Aaron, 21 Sep'); await p.fill('#app_url', appBase);
+  await p.click('#build'); await p.waitForFunction(() => /#\/setup\?d=/.test(document.getElementById('out').textContent)); const link = await p.$eval('#out', e => e.textContent);
+  ok(/^http:\/\/127\.0\.0\.1:\d+\/#\/setup\?d=z:/.test(link), 'builder produced a compressed link (' + link.length + ' chars)');
+  await p.goto(appBase, { waitUntil: 'load' }); await p.evaluate(() => { window.__qcApp.store.reset(); const S = window.__qcApp.store.load(); S.details.trading_name = 'Old Name'; S.details.email = 'old@example.com'; window.__qcApp.store.save(); });
+  await p.goto(link, { waitUntil: 'load' }); await p.evaluate(() => window.__qcApp.route()); await p.waitForSelector('#setupload', { timeout: 8000 });
+  const confirm = await p.$eval('#app', e => e.innerText);
+  ok(/Set up your app/.test(confirm) && /Set up by Aaron, 21 Sep/.test(confirm) && /Jobs\s*2|2 jobs/i.test(confirm) && /20 December 2026|2026-12-20|until/.test(confirm), 'confirm screen lists what the link holds: ' + confirm.replace(/\s+/g, ' ').slice(0, 200));
+  await p.click('#setupload'); await p.waitForTimeout(600);
+  const S = await p.evaluate(() => window.__qcApp.store.load());
+  ok(S.details.trading_name === 'Dave Painting' && S.details.state === 'VIC' && S.details.abn === '51 824 753 556' && S.details.email === 'dave@example.com', 'details loaded and filled values replaced (trading name, state, ABN, email)');
+  ok(S.prices.p_walls === 24 && S.prices.p_ceiling === 26, 'prices loaded');
+  ok(S.sending.server === 'https://relay.example/api/msg' && S.sending.token === 'qc_testtoken1234' && S.sending.server_has_creds === true && S.sending.hosted === true && S.sending.hosted_until === '2026-12-20', 'hosted sending set from the link');
+  const jobs = S.jobs.filter(j => /Hanley|Ray White/.test(j.client.name));
+  ok(jobs.length === 2 && jobs.every(j => /^Q-\d+/.test(j.quote_no)), 'two jobs appended with quote numbers: ' + jobs.map(j => j.quote_no + ' ' + j.status).join(', '));
+  const inv = jobs.find(j => /Ray White/.test(j.client.name)); ok(inv && inv.invoices.length === 1 && /^INV-\d+/.test(inv.invoices[0].no) && inv.invoices[0].total === 1980 && inv.status === 'invoiced', 'unpaid invoice loaded with a number, due a week ago: ' + (inv && inv.invoices[0].no + ' due ' + inv.invoices[0].due));
+  ok(S.ui.scoreboard_start === '2026-09-21', 'scoreboard start set');
+  const ready = await p.evaluate(() => ({ sms: QCMsg.ready('sms'), email: QCMsg.ready('email') })); ok(ready.sms && ready.email, 'sending reads as ready through the hosted relay: ' + JSON.stringify(ready));
+  await p.goto(appBase + '#/chase', { waitUntil: 'load' }); await p.evaluate(() => window.__qcApp.route()); await p.waitForTimeout(400); const chase = await p.$eval('#app', e => e.innerText);
+  ok(/Ray White/.test(chase) && /INV-/.test(chase) && /overdue|owing/i.test(chase), 'the loaded unpaid invoice shows on the follow-ups screen ready to chase');
+  await p.goto(appBase + '#/settings', { waitUntil: 'load' }); await p.evaluate(() => window.__qcApp.route()); await p.waitForTimeout(300); const st = await p.evaluate(() => document.body.textContent);
+  ok(/On, and paid to /.test(st) && /Paste a set-up code/.test(st), 'Set-up says the subscription is paid and offers the paste field');
+  await p.goto(appBase + '#/scoreboard', { waitUntil: 'load' }); await p.evaluate(() => window.__qcApp.route()); await p.waitForTimeout(300); const sb = await p.$eval('#app', e => e.innerText);
+  ok(/Since/.test(sb) && /quote/i.test(sb), 'scoreboard renders: ' + sb.replace(/\s+/g, ' ').slice(0, 160));
+  // loading the same link again adds nothing
+  await p.goto(link, { waitUntil: 'load' }); await p.evaluate(() => window.__qcApp.route()); await p.waitForSelector('#setupload'); await p.click('#setupload'); await p.waitForTimeout(400);
+  const n2 = await p.evaluate(() => window.__qcApp.store.load().jobs.filter(j => /Hanley|Ray White/.test(j.client.name)).length); ok(n2 === 2, 'loading the link twice does not duplicate jobs');
+  ok(errors.length === 0, 'no page errors ' + errors.join(' | '));
+  await b.close(); a.close(); l.close(); console.log(fails ? 'FAILURES: ' + fails : 'ALL PASSED'); process.exit(fails ? 1 : 0);
+})().catch(e => { console.error('CRASH', e); process.exit(2); });
