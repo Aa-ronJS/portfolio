@@ -24,6 +24,22 @@ Three independent things live here:
   `chasem-landing/public/app/` is a byte-for-byte copy of `chasem-app/`;
   keep them identical and bump `sw.js`'s VERSION when you change one.
 
+  **Two rules that outrank everything else in Chasem:**
+
+  1. **A painter who is not good with phones must succeed alone.** No
+     jargon, no manual, no paragraph explaining a button. The screen
+     shows; it does not tell. If a step can be wrong, make the wrong
+     version impossible rather than warning about it. Every dead end
+     needs a way out that a person can find without being told.
+  2. **It must not break.** He is on a ladder, on 1 bar of signal, with a
+     cracked screen and a full phone. Every write survives a lost tab,
+     every send survives a lost connection, every screen survives bad or
+     missing data, and nothing is ever lost because something failed.
+     Prefer an ugly recovery to a clean failure.
+
+  Both are load-bearing: a change that makes either worse is a
+  regression even if it ships a feature.
+
 The portfolio site and the pipeline share nothing except
 `public/fonts/satoshi-var.woff2`, which the pipeline ships converted to
 TTF for captions.

@@ -256,6 +256,7 @@
     var navKey = { '': 'home', job: 'home', enquiry: 'home', help: '', chase: 'chase', settings: 'settings', setup: 'settings', scoreboard: 'home', myprices: 'settings', test: '' }[p[0] || '']; if (navKey == null) navKey = 'home';
     document.querySelectorAll('[data-nav]').forEach(function (a) { a.classList.toggle('on', a.dataset.nav === navKey); });
     try { testBar(); } catch (e) {}
+    try { saveTrouble(troubleKind); } catch (e) {}
     refreshPreview = function () {};
     if (locked()) return viewLock();
     if (!joined() && p[0] !== 'setup' && p[0] !== 'help') return viewJoin();
@@ -1641,6 +1642,35 @@
   }
 
   // ---------- test drive: the whole job, walked through on purpose, with somewhere to put what breaks
+  // ---------- when the phone will not keep his work
+  // The one thing that must never happen quietly. This bar stays until a save works, and the way out is to get
+  // the data off the phone, which needs no storage at all.
+  var troubleKind = '';
+  function exportBackup() {
+    var blob = new Blob([QCStore.exportAll()], { type: 'application/json' });
+    var name = 'chasem-backup-' + QCStore.today() + '.json';
+    try {
+      var f = new File([blob], name, { type: 'application/json' });
+      if (navigator.canShare && navigator.canShare({ files: [f] })) return navigator.share({ files: [f], title: name });
+    } catch (e) {}
+    var u = URL.createObjectURL(blob), a = document.createElement('a');
+    a.href = u; a.download = name; document.body.appendChild(a); a.click();
+    setTimeout(function () { try { document.body.removeChild(a); URL.revokeObjectURL(u); } catch (e) {} }, 4000);
+    return null;
+  }
+  function saveTrouble(kind) {
+    troubleKind = kind || '';
+    var el = document.getElementById('savebar'); if (!el) return;
+    if (!troubleKind) { el.hidden = true; el.innerHTML = ''; return; }
+    var says = troubleKind === 'full' ? '<b>This phone is full.</b> Your last change was not saved.'
+      : troubleKind === 'blocked' ? '<b>Not saving.</b> This is a private window, so nothing can be kept.'
+      : '<b>Not saving.</b> Your last change was not kept.';
+    el.hidden = false;
+    el.innerHTML = '<span>' + says + '</span><span><button class="btn sm" id="savebarout">Save a copy</button></span>';
+    var out = document.getElementById('savebarout');
+    if (out) out.addEventListener('click', function () { try { exportBackup(); } catch (e) { toast('Could not make the file.'); } });
+  }
+
   function testBar() {
     var el = document.getElementById('testbar'); if (!el) return;
     var t = window.QCTest && QCTest.state();
@@ -2065,7 +2095,8 @@
       '<li><span><b>Get paid.</b> Reminders on working days. The final notice never goes without you.</span></li>' +
       '<li><span><b>Back up.</b> One file, after every invoice.</span></li></ol></div>' +
       '<div class="card"><h3>New phone</h3><p class="muted">Set-up, Back-up, Restore from file. Everything comes back.</p></div>' +
-      '<div class="card"><h3>Lost phone</h3><p class="muted">A PIN keeps them out. Your sending keys are not in the back-up: make new ones in Twilio, Resend and Stripe, and change the relay token.</p></div>';
+      '<div class="card"><h3>Lost phone</h3><p class="muted">The app lock keeps them out. Your last saved copy puts everything on the new one.</p></div>' +
+      '<div class="row"><a class="btn tape" href="#/">Back to jobs</a><a class="btn ghost" href="#/settings">Set-up</a></div>';
   }
   function viewSentLog() {
     var log = (S.log && S.log.sent) || [], kindLabel = function (e) { if (e.kind === 'handed') return 'Handed to your phone to send'; return (e.channel === 'sms' ? 'text' : e.channel === 'email' ? 'email' : e.channel || '') + (e.kind === 'schedule' ? ' scheduled' : e.kind === 'cancel' ? ' cancel' : ''); }, stamp = function (t) { var d = new Date(t); return isNaN(d.getTime()) ? '' : d.toLocaleDateString('en-AU', { day: 'numeric', month: 'short' }) + ' ' + fmtTime(t); };
@@ -2076,6 +2107,11 @@
     $app.innerHTML = html;
     var lc = document.getElementById('logcsv'); if (lc) lc.addEventListener('click', function () { var q = function (v) { return '"' + String(v == null ? '' : v).replace(/"/g, '""') + '"'; }; var csv = ['When,Job,Ref,Kind,Channel,To,Status,Error,Message'].concat(log.map(function (e) { var j = QCStore.getJob(e.job); return [e.t, j ? (j.client.name || j.quote_no) : '', e.ref, e.kind, e.channel, e.to, e.kind === 'handed' ? 'handed' : e.ok ? 'ok' : 'failed', e.error, e.text || e.filename].map(q).join(','); })).join('\r\n'); var blob = new Blob([csv], { type: 'text/csv' }); var a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = 'sent-log-' + QCStore.today() + '.csv'; document.body.appendChild(a); a.click(); setTimeout(function () { URL.revokeObjectURL(a.href); a.remove(); }, 800); toast('Saved'); });
   }
+
+  // A save that fails raises the bar straight away, not on the next screen.
+  if (QCStore.onTrouble) QCStore.onTrouble(function (kind) { saveTrouble(kind); });
+  // A private window cannot keep anything, and he should know before he types a job into it, not after.
+  try { if (QCStore.storageOk && !QCStore.storageOk()) saveTrouble('blocked'); } catch (e) {}
 
   route();
   window.__qcApp = { route: route, store: QCStore, pricing: QCPricing, openUrl: function (u) { openUrl(u); }, setOpen: function (f) { openUrl = f; } };

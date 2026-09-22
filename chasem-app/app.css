@@ -21,9 +21,9 @@ textarea{min-height:80px;resize:vertical}
 input[type=file]{position:absolute;width:1px;height:1px;opacity:0}
 .g2{display:grid;gap:10px;grid-template-columns:1fr 1fr}.g3{display:grid;gap:10px;grid-template-columns:1fr 1fr 1fr}
 @media (max-width:420px){.g3{grid-template-columns:1fr 1fr}}
-table{width:100%;border-collapse:collapse;font-size:.95rem}td{overflow-wrap:anywhere}th{text-align:left;font-size:.72rem;letter-spacing:.06em;text-transform:uppercase;color:var(--muted);border-bottom:1px solid var(--line);padding:6px 4px}
+table{width:100%;border-collapse:collapse;font-size:.95rem}td{overflow-wrap:anywhere}th{text-align:left;font-size:.82rem;letter-spacing:.06em;text-transform:uppercase;color:var(--muted);border-bottom:1px solid var(--line);padding:6px 4px}
 td{padding:8px 4px;border-bottom:1px solid var(--line);vertical-align:top}td.n,th.n{text-align:right;font-variant-numeric:tabular-nums;white-space:nowrap}tr.total td{border:0;font-weight:700;font-size:1.05rem;padding-top:10px}tr.sub td{border:0;color:var(--muted);padding:3px 4px}
-.pill{display:inline-block;font-size:.75rem;padding:.2em .6em;border-radius:999px;background:var(--soft);color:var(--ink);font-weight:600}.pill.ok{background:var(--tape-soft);color:var(--tape-deep)}.pill.warn{color:var(--warn)}.pill.bad{color:var(--bad)}
+.pill{display:inline-block;font-size:.8rem;padding:.2em .6em;border-radius:999px;background:var(--soft);color:var(--ink);font-weight:600}.pill.ok{background:var(--tape-soft);color:var(--tape-deep)}.pill.warn{color:var(--warn)}.pill.bad{color:var(--bad)}
 .joblist{display:grid;gap:8px}.job{display:grid;grid-template-columns:1fr auto;gap:6px;padding:12px 14px;background:var(--paper);border:1px solid var(--line);border-radius:12px;text-decoration:none;color:inherit}.job b{display:block}.job .sub{color:var(--muted);font-size:.9rem}
 .confirm{color:var(--warn);font-weight:600}
 .status{font-size:.95rem;min-height:1.4em}.status.ok{color:var(--ok)}.status.warn{color:var(--warn)}.status.bad{color:var(--bad)}
@@ -43,7 +43,7 @@ details.adv summary{cursor:pointer;font-weight:600}
 .ar-top,.ar-bottom{pointer-events:auto;padding:calc(12px + env(safe-area-inset-top,0px)) 16px 12px}.ar-bottom{padding-bottom:calc(16px + env(safe-area-inset-bottom,0px));display:grid;gap:8px}
 .ar-status{display:inline-block;background:rgba(0,0,0,.55);border-radius:10px;padding:8px 12px;font-weight:600}.ar-row{display:flex;gap:8px;flex-wrap:wrap}
 .ar-canvas{position:fixed;inset:0;width:100%;height:100%}
-.insets{display:flex;gap:8px;flex-wrap:wrap;align-items:flex-end}.inset{display:grid;gap:2px;justify-items:center;cursor:pointer}.inset canvas{width:72px;height:72px;border-radius:8px;border:2px solid var(--line)}.inset .hint{font-size:.72rem}
+.insets{display:flex;gap:8px;flex-wrap:wrap;align-items:flex-end}.inset{display:grid;gap:2px;justify-items:center;cursor:pointer}.inset canvas{width:72px;height:72px;border-radius:8px;border:2px solid var(--line)}.inset .hint{font-size:.82rem}
 
 details.sec>summary{cursor:pointer;list-style:none;display:flex;align-items:center;justify-content:space-between;min-height:44px;margin:-4px 0}details.sec>summary::-webkit-details-marker{display:none}details.sec>summary::after{content:'+';font-size:1.4rem;color:var(--muted);font-weight:400;line-height:1}details.sec[open]>summary::after{content:'\2212'}details.sec[open]>summary{margin-bottom:0}
 details.sec:not([open]){display:block;padding:4px 14px}
@@ -125,3 +125,12 @@ details.sec.sub{border-top:1px solid var(--line);padding-top:6px;display:grid;ga
 a.sec.link{background:var(--paper);border:1px solid var(--line);border-radius:12px;padding:14px;display:flex;align-items:center;justify-content:space-between;gap:10px;min-height:44px;text-decoration:none;color:inherit}
 a.sec.link h3{margin:0}
 a.sec.link::after{content:'\203A';color:var(--muted);font-size:1.4rem;line-height:1}
+.savebar{position:sticky;top:0;z-index:7;background:var(--bad);color:#fff;font-size:.86rem;line-height:1.35;padding:8px 14px;display:flex;gap:10px;align-items:center;justify-content:space-between;flex-wrap:wrap}
+.savebar .btn{background:#fff;color:var(--bad);border-color:#fff}
+
+/* A thumb on a ladder: nothing to tap is smaller than a thumb, and nothing to read is smaller than 13px. */
+#app a[href^="#/"]{min-height:44px;display:inline-flex;align-items:center}
+#app a.hint[href^="#/"]{padding:6px 0}
+.steps li a{min-height:44px;display:inline-flex;align-items:center;font-weight:600}
+.hint,.muted,.fine,.cap,.tag,.pill,label.f>span{font-size:.82rem}
+@media (max-width:420px){.hint,.muted,.fine,.cap{font-size:.86rem}}

@@ -164,9 +164,23 @@
     try { var raw = localStorage.getItem(KEY); state = raw ? JSON.parse(raw) : defaults(); } catch (e) { state = defaults(); }
     return hydrate();
   }
-  var lastError = '';
+  var lastError = '', onTrouble = null;
+  // Anything that cannot be written down has to be visible. The app hangs a bar off this: silence is the one
+  // outcome that is not allowed, because he will keep working and lose the lot.
+  function trouble(kind, msg) { lastError = msg || ''; if (onTrouble) { try { onTrouble(kind, msg || ''); } catch (e) {} } }
+  // Can this browser store anything at all? Private windows and blocked site data both fail here.
+  function storageOk() {
+    try { var k = KEY + ':probe'; localStorage.setItem(k, '1'); localStorage.removeItem(k); return true; }
+    catch (e) { return false; }
+  }
   function save() { try { if (state && Array.isArray(state.jobs)) state.jobs.forEach(function (j) { if (j && typeof j === 'object') { j.id = String(j.id || '').replace(/[^A-Za-z0-9_-]/g, '') || uid(); (Array.isArray(j.rooms) ? j.rooms : []).forEach(function (r) { if (r && typeof r === 'object') r.id = String(r.id || '').replace(/[^A-Za-z0-9_-]/g, '') || uid(); }); } });
-    state.rev = (state.rev || 0) + 1; state.saved_at = Date.now(); localStorage.setItem(KEY, JSON.stringify(state)); lastError = ''; return true; } catch (e) { lastError = (e && e.message) || 'save failed'; return false; } }
+    state.rev = (state.rev || 0) + 1; state.saved_at = Date.now(); localStorage.setItem(KEY, JSON.stringify(state)); if (lastError) trouble('', ''); lastError = ''; return true; }
+    catch (e) {
+      var name = (e && e.name) || '', msg = (e && e.message) || 'save failed';
+      var full = /quota|exceeded/i.test(name + ' ' + msg);
+      trouble(full ? 'full' : storageOk() ? 'save' : 'blocked', msg);
+      return false;
+    } }
   // Fill anything a job record may be missing (old backups, hand-edited files) so no screen can trip on it
   function normaliseJob(j) {
     j.id = String(j.id || '').replace(/[^A-Za-z0-9_-]/g, '') || uid(); j.quote_no = String(j.quote_no || 'Q-?'); j.status = j.status || 'draft'; j.created = j.created || today();
@@ -262,6 +276,7 @@
   function importAll(json) { var obj = JSON.parse(json); if (!obj || typeof obj !== 'object' || Array.isArray(obj) || !Array.isArray(obj.jobs)) throw new Error('Not a Chasem backup'); var prev = state; state = obj; hydrate(); if (!save()) { state = prev; throw new Error('Could not save the restore: ' + lastError); } return state; }
   function reset() { state = defaults(); hydrate(); save(); }
 
-  window.QCStore = { PRICE_ITEMS: PRICE_ITEMS, load: load, save: save, lastError: function () { return lastError; }, normaliseJob: normaliseJob, uid: uid, today: today, addDays: addDays, daysBetween: daysBetween,
+  window.QCStore = { PRICE_ITEMS: PRICE_ITEMS, load: load, save: save, lastError: function () { return lastError; },
+    storageOk: storageOk, onTrouble: function (fn) { onTrouble = fn; }, normaliseJob: normaliseJob, uid: uid, today: today, addDays: addDays, daysBetween: daysBetween,
     newJob: newJob, newRoom: newRoom, getJob: getJob, deleteJob: deleteJob, nextQuoteNo: nextQuoteNo, nextInvoiceNo: nextInvoiceNo, nextCreditNo: nextCreditNo, exportAll: exportAll, importAll: importAll, reset: reset, defaults: defaults, addLog: addLog, purgeEmpty: purgeEmpty, jobEmpty: jobEmpty };
 })();
