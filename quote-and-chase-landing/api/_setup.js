@@ -166,6 +166,75 @@ export function needFrom(raw) { return Math.min(10, Math.max(1, parseInt(raw, 10
 // so an uncounted balance always passes; a hosted one must have the whole job in hand before any of it goes.
 export function enoughFor(bal, need) { return !bal || !bal.counted || bal.left >= needFrom(need); }
 
+// ---- bringing a mate
+// The referrer gets a free month, the mate gets twice the free allowance, and the month is only paid when
+// the mate's first subscription payment clears. To farm free months you would have to pay us PLAN_PRICE a
+// head first, which is the same trick D4 used on the free allowance: make the fraud cost more than the prize.
+export const PLAN_PRICE = Number(process.env.PLAN_PRICE || 99);
+export const REF_CAP = Number(process.env.REF_CAP || 6);       // most free months one painter can bank
+export const REF_CURRENCY = process.env.REF_CURRENCY || "aud";
+// No 0/O/1/I/L: this gets read off a phone screen and said down the phone.
+const REF_ALPHABET = "23456789ABCDEFGHJKMNPQRSTUVWXYZ";
+// Derived from the customer id, so the same painter always has the same code and nothing has to be stored
+// to generate it -- but it IS stored, because a lookup by code is how a mate's sign-up finds its referrer.
+export function refCodeFor(cus) {
+  if (!cus) return "";
+  const h = createHmac("sha256", process.env.RELAY_SIGNING_SECRET || "chasem").update("ref:" + cus).digest();
+  let out = "";
+  for (let i = 0; i < 7; i++) out += REF_ALPHABET[h[i] % REF_ALPHABET.length];
+  return out;
+}
+// Spaces, dashes and lower case are forgiven. The ambiguous characters are not: 0, O, 1, I and L are
+// none of them ever issued, so one turning up means a misread, and quietly "fixing" it could hand the
+// month to a different painter. Better to reject and let him look again.
+// Built from the alphabet itself, so the check can never end up laxer than what we issue.
+const REF_OK = new RegExp("^[" + REF_ALPHABET + "]{7}$");
+export function cleanRefCode(raw) {
+  const s = String(raw == null ? "" : raw).toUpperCase().replace(/[^0-9A-Z]/g, "");
+  return REF_OK.test(s) ? s : "";
+}
+// Written once per customer so the code can be looked up. Safe to call on every signup.
+export async function ensureRefCode(cus) {
+  const code = refCodeFor(cus);
+  if (!code) return "";
+  try { await stripe("customers/" + encodeURIComponent(cus), { "metadata[qc_ref_code]": code }); } catch (e) { /* the code still works for sharing */ }
+  return code;
+}
+// Stripe's search index is eventually consistent (about a minute), which is fine: a code is minted when a
+// painter signs up and used by his mate days later.
+export async function findByRefCode(code) {
+  const c = cleanRefCode(code);
+  if (!c) return null;
+  try {
+    const r = await stripe("customers/search?limit=1&query=" + encodeURIComponent(`metadata['qc_ref_code']:'${c}'`));
+    return (r && r.data && r.data[0]) || null;
+  } catch (e) { return null; }
+}
+// A free month as a credit on the account: Stripe applies a negative balance to the next invoice by itself,
+// so there is no coupon to keep in step and no subscription to rewrite. Capped, because a painter who never
+// pays again still costs us to serve and stops believing the price.
+export async function creditFreeMonth(referrer, about) {
+  if (!referrer) return { ok: false, reason: "no referrer" };
+  let m = {}, who = {};
+  try { who = await stripe("customers/" + encodeURIComponent(referrer)); m = who.metadata || {}; } catch (e) { return { ok: false, reason: e.message }; }
+  const count = Math.max(0, parseInt(m.qc_ref_count, 10) || 0) + 1;
+  const months = Math.max(0, parseInt(m.qc_ref_months, 10) || 0);
+  const form = { "metadata[qc_ref_count]": String(count) };
+  if (months >= REF_CAP) {
+    try { await stripe("customers/" + encodeURIComponent(referrer), form); } catch (e) {}
+    return { ok: true, capped: true, count, months, email: who.email || "", phone: who.phone || "" };
+  }
+  try {
+    await stripe("customers/" + encodeURIComponent(referrer) + "/balance_transactions", {
+      amount: String(-Math.round(PLAN_PRICE * 100)), currency: REF_CURRENCY,
+      description: "Chasem: a free month for bringing " + String(about || "a mate").slice(0, 60),
+    });
+  } catch (e) { return { ok: false, reason: e.message }; }
+  form["metadata[qc_ref_months]"] = String(months + 1);
+  try { await stripe("customers/" + encodeURIComponent(referrer), form); } catch (e) {}
+  return { ok: true, capped: false, count, months: months + 1, credited: PLAN_PRICE, email: who.email || "", phone: who.phone || "" };
+}
+
 // ---- Stripe REST, form-encoded, no SDK
 export async function stripe(path, form, method) {
   const key = process.env.STRIPE_SECRET_KEY; if (!key) throw new Error("Not set up: STRIPE_SECRET_KEY");

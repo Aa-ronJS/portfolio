@@ -670,5 +670,23 @@ footer .wrap{display:grid;gap:8px}
   if (document.readyState === 'complete') drawQR(); else window.addEventListener('load', drawQR);
 })();
 </script>
+<script>
+// A mate's link is chasem.app/?r=CODE. Carry the code onto every link into the app so his sign-up is
+// attributable, and remember it here too in case he wanders the page first and comes back.
+(function () {
+  try {
+    var m = /[?&]r=([0-9A-Za-z]{4,12})/.exec(location.search || "");
+    var code = m ? m[1].toUpperCase() : (sessionStorage.getItem("qc_ref") || "");
+    if (!code) return;
+    if (m) { try { sessionStorage.setItem("qc_ref", code); } catch (e) {} }
+    var links = document.querySelectorAll('a[href^="app/"], a[href^="/app/"], a[href*="chasem.app/app"]');
+    for (var i = 0; i < links.length; i++) {
+      var h = links[i].getAttribute("href");
+      if (h.indexOf("r=") >= 0) continue;
+      links[i].setAttribute("href", h + (h.indexOf("?") >= 0 ? "&" : "?") + "r=" + encodeURIComponent(code));
+    }
+  } catch (e) {}
+})();
+</script>
 </body>
 </html>

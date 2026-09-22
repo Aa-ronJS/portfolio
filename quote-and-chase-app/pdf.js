@@ -86,6 +86,11 @@
   function Doc(s) {
     var jsPDF = window.jspdf.jsPDF; this.d = new jsPDF({ unit: 'mm', format: 'a4' }); this.y = 16; this.L = 16; this.R = 194; this.W = 178; this.B = 281;
     this.accent = accent(s); this.cents = false; this.d.setFont('helvetica', 'normal');
+    // One faint line home, bottom left of the last page. A homeowner gets three quotes and shows them
+    // around, and other tradies read each other's paperwork, so this is the widest surface Chasem has.
+    // The painter's own code rides along so a mate who signs up is his. Never on the client's own name.
+    var acct = (s && s.account) || {}, code = String(acct.ref_code || '').replace(/[^0-9A-Z]/gi, '').toUpperCase();
+    this.mark = 'Made with Chasem  ·  chasem.app' + (code ? '/?r=' + code : '');
   }
   Doc.prototype.m = function (n) { return money(n, this.cents); };
   Doc.prototype.need = function (h) { if (this.y + h > this.B) { this.d.addPage(); this.y = 16; } };
@@ -193,6 +198,7 @@
   Doc.prototype.finish = function (ref, watermark) {
     var d = this.d, n = d.getNumberOfPages(), i;
     for (i = 1; i <= n; i++) { d.setPage(i); if (n > 1) { d.setFontSize(7.5); d.setFont('helvetica', 'normal'); d.setTextColor.apply(d, FAINT); d.text(clean(ref) + '  ·  Page ' + i + ' of ' + n, this.R, 290, { align: 'right' }); } if (watermark) this.stamp(watermark.word, watermark.color); }
+    d.setPage(n); if (this.mark) { d.setFontSize(6.8); d.setFont('helvetica', 'normal'); d.setTextColor.apply(d, FAINT); d.text(this.mark, this.L, 290); }
     d.setPage(1); return d;
   };
 

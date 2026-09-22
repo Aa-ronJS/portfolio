@@ -63,6 +63,17 @@
   // the twelve messages everyone starts with: three whole jobs, because a job is four (the quote, then three chases, and the
   // ones that never have to go are given back). A set-up link from an email or a receipt joins the same way, without typing anything.
   function joined() { return !!(S.account && S.account.email) || !!(S.sending && S.sending.token); }
+  // A mate's code arrives as ?r=CODE on the very first open and has to survive until he types his email,
+  // which may be days later on his first real quote (D4). Kept on the account record, cleared once used.
+  function grabRef() {
+    try {
+      var m = /[?&]r=([0-9A-Za-z]{4,12})/.exec(location.search || ''); if (!m) return;
+      var code = m[1].toUpperCase();
+      if (!S.account || typeof S.account !== 'object') S.account = { email: '', joined: '', offline: false };
+      if (!S.account.email && S.account.ref_from !== code) { S.account.ref_from = code; save(); }
+      if (history.replaceState) history.replaceState(null, '', location.pathname + location.hash);
+    } catch (e) {}
+  }
   function signupUrl() { var u = String((S.sending && S.sending.server) || window.QC_APP && window.QC_APP.signup_url || '').trim(); if (u) return u.replace(/\/[^\/]*$/, '/signup'); return (window.QC_APP && window.QC_APP.signup_url) || ''; }
   function viewJoin(msg) {
     var url = signupUrl();
@@ -83,11 +94,12 @@
       if (!url) { S.account = { email: em, joined: QCStore.today(), offline: true }; if (nm) S.details.trading_name = nm; save(); toast('Ready. Sending is not switched on, so the app writes each message and you send it.'); go('/'); return; }
       btn.disabled = true; out.textContent = 'One moment…';
       var fetcher = window.__qcRelayFetch || window.fetch;
-      fetcher(url, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ email: em, trading_name: nm }) })
+      fetcher(url, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ email: em, trading_name: nm, ref: (S.account && S.account.ref_from) || undefined }) })
         .then(function (r) { return r.json(); })
         .then(function (j) {
           if (!j || !j.ok || !j.link) throw new Error((j && j.error) || 'Could not start your account');
-          S.account = { email: em, joined: QCStore.today() }; if (nm && !String(S.details.trading_name || '').trim()) S.details.trading_name = nm; save();
+          S.account = { email: em, joined: QCStore.today(), ref_code: (j && j.ref_code) || '', referred: !!(j && j.referred) }; if (nm && !String(S.details.trading_name || '').trim()) S.details.trading_name = nm; save();
+          if (j && j.referred && j.free) toast('You are in, with ' + j.free + ' messages -- twice the usual, because a mate sent you.', { ms: 7000 });
           var m = /#\/setup\?d=([^&]+)/.exec(j.link);
           if (m) { location.hash = '#/setup?d=' + m[1]; route(); return; }
           go('/');
@@ -966,7 +978,7 @@
       var t = 'Quote ' + ((job.quote && job.quote.number) || job.quote_no) + (job.summary ? ' for ' + job.summary : '') + '\nTotal ' + money(v2.total) + (v2.gst ? ' inc GST' : '') + '.' + (v2.deposit > 0 ? ' Deposit ' + amtS(v2.deposit) + ' to book.' : ' No deposit.') + '\nValid until ' + QCPdf.fmtDate(valid) + '.\n' + signLine();
       handOff({ kind: 'summary', text: t, whoName: whoShort, whoPhone: job.client.phone, whoEmail: job.client.email, job: job, ref: 'summary-' + job.quote_no, look: false, ask: false });
     });
-    var acc = document.getElementById('accepted'); if (acc) acc.addEventListener('click', function () { job.status = 'accepted'; job.acceptance = { date: QCStore.today(), how: job.sent_how === 'email' ? 'email' : 'text', note: '', by: job.client.first_name || job.client.name || '' }; save(); var dinv = draftDepositInvoice(job); cancelQuoteFollowUps(job).then(function () { viewQuote(job, true); toast(dinv ? 'Accepted. Deposit invoice ' + dinv.no + ' for ' + amtS(dinv.total) + ' is written.' : (S.details.gst && !S.details.abn && depositFor(job, (job.quote || {}).total || 0).amount > 0 ? 'Accepted. Add your ABN in Set-up and the deposit invoice can be written.' : 'Accepted. Note how they said yes.')); }); });
+    var acc = document.getElementById('accepted'); if (acc) acc.addEventListener('click', function () { job.status = 'accepted'; job.acceptance = { date: QCStore.today(), how: job.sent_how === 'email' ? 'email' : 'text', note: '', by: job.client.first_name || job.client.name || '' }; save(); var dinv = draftDepositInvoice(job); maybeAskMate(job); cancelQuoteFollowUps(job).then(function () { viewQuote(job, true); toast(dinv ? 'Accepted. Deposit invoice ' + dinv.no + ' for ' + amtS(dinv.total) + ' is written.' : (S.details.gst && !S.details.abn && depositFor(job, (job.quote || {}).total || 0).amount > 0 ? 'Accepted. Add your ABN in Set-up and the deposit invoice can be written.' : 'Accepted. Note how they said yes.')); }); });
     var hof = document.getElementById('handoff'); if (hof) hof.addEventListener('click', function () { go('/handoff/' + job.id); });
     var dny = document.getElementById('depnotyet'); if (dny && ddep) dny.addEventListener('click', function () { ddep.draft_dismissed = true; save(); toast('It is on the Invoice page when you want it.'); viewQuote(job, true); });
     var dec = document.getElementById('declined'); if (dec) dec.addEventListener('click', function () { job.status = 'declined'; save(); cancelQuoteFollowUps(job).then(function () { viewQuote(job, true); }); });
@@ -1616,6 +1628,68 @@
     html += '<div class="card"><h2>Card payments</h2><p class="hint">Optional. Lets customers pay by card from a link on the invoice. Needs a Stripe account, set up on a computer. No surcharge is added.' + (S.stripe.key && S.stripe.enabled ? ' Card links are on.' : '') + '</p><details class="sec sub"><summary><h3>Show me the set-up steps</h3></summary><p class="hint">In Stripe make a restricted key that can write Products, Prices and Payment Links and read Checkout Sessions, then paste it here. It stays on this phone.</p><label class="f">Stripe restricted key<span>starts with rk_live_</span><input type="text" data-bind="stripe.key" autocomplete="off" spellcheck="false"></label><p class="confirm" id="skwarn" ' + (S.stripe.key && !QCStripe.keyLooksRight(S.stripe.key) ? '' : 'hidden') + '>Not a restricted key (rk_live_ or rk_test_). Card links are off until it is.</p><label class="btn ghost sm"><input type="checkbox" data-bind="stripe.enabled"> Put a card payment link on invoices</label></details></div>';
     var relayOn = !!S.sending.server, dis = relayOn ? '' : ' disabled';
     var hosted = S.sending.hosted === true, hostedEnded = hosted && QCMsg.hostedEnded && QCMsg.hostedEnded(S.sending), hostedStopped = hosted && !hostedEnded && S.sending.hosted_cancelled === true, hostedTo = /^\d{4}-\d{2}-\d{2}$/.test(String(S.sending.hosted_until || '')) ? shortDate(S.sending.hosted_until) : '';
+  // ---------- bringing a mate
+  // The reward is a free month, never a discount: $99 was argued over and settled, and a discount teaches
+  // him the price is "$99 minus whatever I can wangle" the same way a surprise bill teaches him it is
+  // "$99 plus whatever they feel like". It is paid only when the mate's first payment clears.
+  function refState() { var a = (S.account || {}); return { code: String(a.ref_code || '').trim(), count: +a.ref_count || 0, months: +a.ref_months || 0, cap: +a.ref_cap || 6 }; }
+  function refLink() { var r = refState(); return r.code ? 'https://chasem.app/?r=' + r.code : ''; }
+  function refreshRef() {
+    var url = signupUrl(), tok = S.sending && S.sending.token;
+    if (!url || !tok) return Promise.resolve();
+    var f = window.__qcRelayFetch || window.fetch;
+    return f(url.replace(/\/[^\/]*$/, '/ref'), { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ token: tok }) })
+      .then(function (r) { return r.json(); })
+      .then(function (j) {
+        if (!j || !j.ok) return;
+        S.account = S.account || {};
+        S.account.ref_code = j.code || S.account.ref_code || '';
+        S.account.ref_count = j.count || 0; S.account.ref_months = j.months || 0; S.account.ref_cap = j.cap || 6;
+        save();
+      }).catch(function () {});
+  }
+  function shareMate() {
+    var link = refLink(); if (!link) { toast('Your code is on its way. Open Set-up again in a moment.'); return; }
+    var t = 'I use this for quoting and chasing money. It measures a wall off a photo and nags people for you so you do not have to. ' +
+      'Use my link and you get double the free messages to try it: ' + link;
+    if (navigator.share) { navigator.share({ text: t }).catch(function () {}); return; }
+    try { navigator.clipboard.writeText(t); toast('Copied. Paste it to whoever you had in mind.'); }
+    catch (e) { openUrl('sms:?&body=' + encodeURIComponent(t)); }
+  }
+  // Asked after a win, at most twice ever, and dismissible both times. D7 set this shape for the paid
+  // offer: nobody is talked into anything while they are still nervous about what the app is doing.
+  function maybeAskMate(job) {
+    try {
+      var r = refState(); if (!r.code || r.months >= r.cap) return;
+      var ui = S.ui || (S.ui = {}); var asked = +ui.mate_asked || 0;
+      if (asked >= 2 || ui.mate_never) return;
+      var won = (S.jobs || []).filter(function (j) { return j.status === 'accepted' || j.status === 'invoiced' || j.status === 'paid'; }).length;
+      if (won < 1) return;
+      ui.mate_asked = asked + 1; save();
+      var who = (job && job.client && (job.client.first_name || job.client.name)) || 'that one';
+      setTimeout(function () {
+        toast(who + ' said yes. Know a mate still chasing on paper? He gets double the free messages, you get a free month when he pays.',
+          { ms: 11000, action: 'Send it', onAction: shareMate });
+      }, 1400);
+    } catch (e) {}
+  }
+
+  function mateCard() {
+    var r = refState();
+    if (!r.code) return '';
+    var banked = r.months >= r.cap
+      ? 'You are at the ' + r.cap + '-month cap, so your price is locked at $' + PLAN_PRICE + ' instead for as long as you stay.'
+      : (r.months > 0 ? r.months + ' free month' + (r.months > 1 ? 's' : '') + ' banked, off your next bills.' : 'Nothing banked yet.');
+    return '<div class="card"><h2>Bring a mate</h2>' +
+      '<p class="hint">Anyone who signs up on your code gets double the free messages, and the month his first payment clears you get a free one. ' +
+      'Up to ' + r.cap + '. Nothing happens until he actually pays, so there is no catch on either side.</p>' +
+      '<p class="hint"><b>Your code: <span class="num">' + esc(r.code) + '</span></b> &nbsp; ' + esc(banked) +
+      (r.count > r.months && r.months >= r.cap ? ' ' + r.count + ' mates in all.' : '') + '</p>' +
+      '<div class="row"><button class="btn tape sm" id="matesend" type="button">Send it to a mate</button>' +
+      '<button class="btn ghost sm" id="matecopy" type="button">Copy the link</button></div>' +
+      '<p class="hint">It is on the bottom of your quotes too, small, under your own details.</p></div>';
+  }
+
     html += '<div class="card"><h2>Automatic texting and emailing</h2><p class="hint">' + (hostedEnded ? '<span class="confirm">The chasing is off: your sending ran to ' + esc(hostedTo) + '. Turn it back on at <a href="' + esc(SITE + '#price') + '" target="_blank" rel="noopener">the website</a> and one tap in the email puts it back, or connect your own accounts below. Nothing on this phone is lost.</span>' : hostedStopped ? '<span class="confirm">Cancelled. The chasing keeps running to ' + esc(hostedTo) + ' and stops after that. Change your mind any time with Manage below.</span>' : hosted ? 'On, and paid' + (hostedTo ? ' to ' + esc(hostedTo) + ', when it renews itself' : '') + '. Texts and emails go out in your name and there is nothing to open. Every text it sends ends with a way to reach you' + (String(S.details.phone || '').trim() ? ' on ' + esc(String(S.details.phone).trim()) + ', because the number it comes from cannot take replies.' : (String(S.details.email || '').trim() ? ' by email, because the number it comes from cannot take replies. <span class="confirm">Add your mobile in Your business above and texts point them there instead.</span>' : ', because the number it comes from cannot take replies. <span class="confirm">Add your mobile in Your business above so there is one to give.</span>')) : 'Your own texting and emailing accounts, instead of ours. Almost nobody needs this: it takes a computer and about an hour, and your plan already does the sending. Without either, the app writes every text and email and you press Send yourself; nothing goes out without you.' + (autoReady() ? ' Set up and working.' : ' Rather not? <a href="' + esc(SITE + '#price') + '" target="_blank" rel="noopener">Turn the chasing on</a>: one card, one tap, cancel from this page any time.')) + '</p>' +
       (hosted && QCMsg.balance().left != null ? '<p class="hint" id="balcard"><b>' + esc(balanceLine()) + '</b></p>' +
         (QCMsg.balance().plan === 'paid' ? '<div class="row" id="toprow"><button class="btn ghost sm" id="topnow">Top up ' + TOPUP_MESSAGES + ' messages, $' + TOPUP_PRICE + '</button><label class="btn ghost sm"><input type="checkbox" id="topauto"' + (S.sending.auto_topup ? ' checked' : '') + '> Top up by itself when I run out</label><span class="hint" id="topres"></span></div>' : '<p class="hint"><a href="' + esc(topUpLink()) + '" target="_blank" rel="noopener">Go monthly: ' + PLAN_INCLUDED + ' messages for $' + PLAN_PRICE + ' a month</a>, which is about 30 jobs, quote to paid.</p>') : '') +
@@ -1632,6 +1706,7 @@
       '<div class="row"><input type="text" id="testto" aria-label="Test recipient" placeholder="Mobile or email" style="flex:1 1 10em"><button class="btn sm" id="testsms">Send test text</button><button class="btn sm" id="testemail">Send test email</button><span class="hint" id="testres"></span></div></details>' +
       '<div class="row"><a class="btn ghost sm" href="#/settings/log">Sent log</a><span class="hint">' + ((S.log && S.log.sent) || []).length + ' entries: every quote, invoice and reminder sent or handed to your phone.</span></div></div>';
     var hasKeys = !!(S.sending.token || S.sending.twilio_token || S.sending.twilio_sid || S.sending.resend_key || S.stripe.key);
+    html += '<div id="matewrap">' + mateCard() + '</div>';
     html += '<div class="card"><h2>Back-up</h2><p class="hint">Save a copy of your jobs, invoices and settings (one file) in case the phone is lost. Do it after each invoice, and send the file to yourself by email: that email is your back-up. Last saved: ' + (S.security.last_backup ? QCPdf.fmtDate(S.security.last_backup) : 'never') + '.</p><div class="row"><button class="btn sm" id="export">Save a copy</button><label class="btn ghost sm">Restore from a saved copy<input type="file" id="import" accept=".json,application/json"></label></div>' + (hasKeys ? '<label class="btn ghost sm"><input type="checkbox" data-bind="security.backup_include_keys"> Also put my texting and emailing passwords in the file (only when moving to a new phone)</label>' : '') +
       '<div class="row"><button class="btn ghost sm" id="csvinv">Invoices spreadsheet</button><button class="btn ghost sm" id="csvpay">Payments spreadsheet</button><button class="btn ghost sm" id="csvjobs">Jobs spreadsheet</button><span class="hint">for your bookkeeper</span></div><div class="row"><button class="btn danger sm" id="reset">Delete all data</button></div></div>';
     html += '<div class="card"><h2>App lock</h2><p class="hint">' + (S.security.pin ? 'A PIN is set. Asked when the app opens and after five minutes away.' : 'No PIN. Anyone holding your phone can open the app and send as you.') + '</p><div class="row"><input type="password" id="pin1" inputmode="numeric" pattern="[0-9]*" maxlength="6" placeholder="4 to 6 digits" aria-label="New PIN" autocomplete="off" style="flex:1 1 8em"><button class="btn sm" id="pinset">' + (S.security.pin ? 'Change PIN' : 'Set PIN') + '</button>' + (S.security.pin ? '<button class="btn ghost sm" id="pinoff">Remove PIN</button>' : '') + '</div><p class="hint">If you forget it, you can get everything back from a saved copy (Back-up above). Save one first.</p></div>';
@@ -1680,6 +1755,9 @@
     var nl = document.getElementById('nologo'); if (nl) nl.addEventListener('click', function () { S.details.logo = ''; save(); viewSettings(); });
     // Save a copy: through A2's Did-it-go step when it exists, else the phone's menu, else a plain file
     document.getElementById('export').addEventListener('click', function () { var blob = new Blob([QCStore.exportAll()], { type: 'application/json' }); var f = new File([blob], 'quote-and-chase-backup-' + QCStore.today() + '.json', { type: 'application/json' }); S.security.last_backup = QCStore.today(); save(); var keysNote = S.security.backup_include_keys ? ' Your passwords are in it: delete the file once it is on the new phone.' : ''; var a = window.__qcApp; if (a && typeof a.handOff === 'function') { try { a.handOff({ kind: 'backup', file: f, filename: f.name, whoName: 'yourself', onResult: function () {} }); return; } catch (e) {} } if (navigator.canShare && navigator.canShare({ files: [f] })) { navigator.share({ files: [f] }).catch(function () {}); toast('Your phone\'s menu is open. Pick Mail and send the file to yourself: that email is your back-up.' + keysNote); } else { var el = document.createElement('a'); el.href = URL.createObjectURL(blob); el.download = f.name; document.body.appendChild(el); el.click(); setTimeout(function () { el.remove(); }, 500); toast('Copy saved on this phone. Send it to yourself by email so you have it.' + keysNote); } });
+    var ms = document.getElementById('matesend'); if (ms) ms.addEventListener('click', shareMate);
+    var mc = document.getElementById('matecopy'); if (mc) mc.addEventListener('click', function () { var l = refLink(); if (!l) return; try { navigator.clipboard.writeText(l); toast('Link copied'); } catch (e) { toast(l); } });
+    refreshRef().then(function () { var c = document.getElementById('matewrap'); if (c && !c.innerHTML) { c.innerHTML = mateCard(); var b = document.getElementById('matesend'); if (b) b.addEventListener('click', shareMate); } });
     document.getElementById('import').addEventListener('change', function () { var f = this.files[0]; if (!f) return; var fr = new FileReader(); fr.onload = function () { try { var st = QCStore.importAll(fr.result); unlocked = true; toast(st && st.keys_removed ? 'Restored. Your texting and emailing passwords were not in the file; enter them under Automatic texting and emailing.' : 'Restored'); route(); } catch (e) { toast(e.message); } }; fr.readAsText(f); });
     document.getElementById('reset').addEventListener('click', function () { if (confirm('Wipe all jobs and settings on this phone? Save a copy first.')) { QCStore.reset(); route(); } });
     var ps = document.getElementById('pinset'); if (ps) ps.addEventListener('click', function () { var v = document.getElementById('pin1').value.trim(); if (!/^\d{4,6}$/.test(v)) { toast('PIN must be 4 to 6 digits.'); return; } sha256(v).then(function (h) { S.security.pin = h; unlocked = true; save(); toast('PIN set'); viewSettings(); }); });
@@ -1894,6 +1972,7 @@
     var lc = document.getElementById('logcsv'); if (lc) lc.addEventListener('click', function () { var q = function (v) { return '"' + String(v == null ? '' : v).replace(/"/g, '""') + '"'; }; var csv = ['When,Job,Ref,Kind,Channel,To,Status,Error,Message'].concat(log.map(function (e) { var j = QCStore.getJob(e.job); return [e.t, j ? (j.client.name || j.quote_no) : '', e.ref, e.kind, e.channel, e.to, e.kind === 'handed' ? 'handed' : e.ok ? 'ok' : 'failed', e.error, e.text || e.filename].map(q).join(','); })).join('\r\n'); var blob = new Blob([csv], { type: 'text/csv' }); var a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = 'sent-log-' + QCStore.today() + '.csv'; document.body.appendChild(a); a.click(); setTimeout(function () { URL.revokeObjectURL(a.href); a.remove(); }, 800); toast('Saved'); });
   }
 
+  S = QCStore.load(); grabRef();   // a mate's code is in the address bar only on the very first open
   route();
   window.__qcApp = { route: route, store: QCStore, pricing: QCPricing, openUrl: function (u) { openUrl(u); }, setOpen: function (f) { openUrl = f; } };
   // W4 helpers for other screens: soft delete with Undo, duplicate, client picker data, paint order text, photo card, message text and greeting

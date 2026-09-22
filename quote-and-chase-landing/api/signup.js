@@ -4,7 +4,7 @@
 // the address and the message counter too, and there is still no database. Signing up twice with the same address returns the
 // same allowance rather than a fresh five. The reply carries the set-up link; the same link is emailed so the phone can be
 // swapped later. Env: STRIPE_SECRET_KEY, RELAY_SIGNING_SECRET, RELAY_URL, APP_URL, RESEND_*, optional SUBSCRIBE_URL, SUPPORT_EMAIL.
-import { cors, send, readJson, stripe, mintToken, sendingSettings, setupLink, linkOnePayload, creds, email as sendEmail, FREE_MESSAGES } from "./_setup.js";
+import { cors, send, readJson, stripe, mintToken, sendingSettings, setupLink, linkOnePayload, creds, email as sendEmail, FREE_MESSAGES, cleanRefCode, findByRefCode, ensureRefCode } from "./_setup.js";
 
 const hits = new Map();
 const EMAIL = /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/;
@@ -18,7 +18,7 @@ Your app is ready. Open this on the phone you quote from and tap Load:
 
 ${link}
 
-It puts your business name on every quote and switches your sending on, with ${env.free} messages to start. A message is one text or one email the app sends for you: a quote going out, a nudge to someone who has gone quiet, a reminder on an invoice past its date.
+It puts your business name on every quote and switches your sending on, with ${env.free} messages to start.${env.referred ? " That is twice what we normally give, because a mate put you on to us." : ""} A message is one text or one email the app sends for you: a quote going out, a nudge to someone who has gone quiet, a reminder on an invoice past its date.
 
 Three things worth five minutes, all inside the app: your prices (it asks what you charge for a day on the tools and works the rest out), your bank details so invoices can be paid, and a look at the wording of the nudges so they sound like you.
 
@@ -47,6 +47,12 @@ export default async function handler(req, res) {
   if (body && body.name) details.owner_name = clean(body.name, 80);
   details.email = addr;
 
+  // A mate's code doubles the free allowance: 12 messages is three whole jobs, 24 is six, and a man who
+  // came on a recommendation should get further in before he is asked for anything. Resolved before the
+  // customer is made, because the allowance is baked into the signed token and cannot be raised later.
+  const refCode = cleanRefCode(body && body.ref);
+  let referrer = refCode ? await findByRefCode(refCode) : null;
+
   let cus;
   try {
     const found = await stripe("customers?limit=1&email=" + encodeURIComponent(addr));
@@ -54,14 +60,22 @@ export default async function handler(req, res) {
     if (!cus) cus = await stripe("customers", { email: addr, ...(details.trading_name ? { name: details.trading_name } : details.owner_name ? { name: details.owner_name } : {}), "metadata[qc_source]": "signup", "metadata[qc_joined]": new Date().toISOString() });
   } catch (e) { return send(res, 502, { ok: false, error: "Could not start your account: " + e.message }); }
 
+  // a referral only counts for a genuinely new account, and never for referring yourself
+  const returning = String((cus.metadata || {}).qc_used || "") !== "" || !!(cus.metadata || {}).qc_referred_by;
+  if (referrer && (returning || referrer.id === cus.id)) referrer = null;
+  const free = referrer ? FREE_MESSAGES * 2 : FREE_MESSAGES;
+  if (referrer) { try { await stripe("customers/" + encodeURIComponent(cus.id), { "metadata[qc_referred_by]": String(referrer.id), "metadata[qc_ref_used]": refCode }); } catch (e) { /* he still gets the messages */ } }
+  // his own code, so the app can show it the moment he lands
+  const myCode = await ensureRefCode(cus.id);
+
   // an address that has signed up before gets its own allowance back, not another free five
-  const token = mintToken({ cus: cus.id, name: details.trading_name || details.owner_name || "", reply_to: addr, until: "", plan: "free", inc: FREE_MESSAGES });
+  const token = mintToken({ cus: cus.id, name: details.trading_name || details.owner_name || "", reply_to: addr, until: "", plan: "free", inc: free });
   const payload = linkOnePayload(details, "Your app, ready to go. Nothing you have already typed is replaced.");
   const sending = sendingSettings(token, "", details.trading_name || details.owner_name || "");
   if (sending.server) payload.settings.sending = sending;
   const link = setupLink(process.env.APP_URL, payload);
-  const out = { ok: true, link, free: FREE_MESSAGES, emailed: false, returning: String((cus.metadata || {}).qc_used || "") !== "" };
-  try { const m = welcome(details, link, { free: FREE_MESSAGES, included: Number(process.env.INCLUDED_MESSAGES || 100), subscribe: !!process.env.SUBSCRIBE_URL, support: process.env.SUPPORT_EMAIL || "" });
+  const out = { ok: true, link, free, emailed: false, returning, ref_code: myCode, referred: !!referrer };
+  try { const m = welcome(details, link, { free, referred: !!referrer, included: Number(process.env.INCLUDED_MESSAGES || 100), subscribe: !!process.env.SUBSCRIBE_URL, support: process.env.SUPPORT_EMAIL || "" });
     await sendEmail(creds(), { to: [addr], reply_to: process.env.SUPPORT_EMAIL || undefined, subject: m.subject, text: m.text }); out.emailed = true;
   } catch (e) { out.email_error = e.message; }
   return send(res, 200, out);

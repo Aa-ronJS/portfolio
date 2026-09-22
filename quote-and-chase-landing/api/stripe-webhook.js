@@ -10,7 +10,7 @@
 // here for checkout.session.completed and checkout.session.async_payment_succeeded; its signing secret in STRIPE_WEBHOOK_SECRET.
 // Env: STRIPE_SECRET_KEY, RELAY_SIGNING_SECRET, RELAY_URL (<site>/api/msg), APP_URL, SUPPORT_EMAIL, optional OWNER_MOBILE and
 // OWNER_EMAIL (a heads-up text and a copy of the email; neither is needed for the painter to be up and running).
-import { rawBody, send, stripeSigned, detailsFromSession, linkOnePayload, setupLink, creds, sms, email, mintToken, untilFor, sendingSettings, stripe, INCLUDED, TOPUP_MESSAGES, readBalance, planOf } from "./_setup.js";
+import { rawBody, send, stripeSigned, detailsFromSession, linkOnePayload, setupLink, creds, sms, email, mintToken, untilFor, sendingSettings, stripe, INCLUDED, TOPUP_MESSAGES, readBalance, planOf, creditFreeMonth, ensureRefCode, REF_CAP } from "./_setup.js";
 
 export const config = { api: { bodyParser: false } };
 const done = new Map(); // event ids this warm instance has already handled; Stripe retries are harmless anyway
@@ -75,6 +75,34 @@ export default async function handler(req, res) {
       if (!sending.server) out.warning = "RELAY_URL is not set, so the link cannot switch sending on";
     } catch (e) { out.token_error = e.message; }
   }
+  // ---- bringing a mate pays out here and nowhere else.
+  // Only when his first subscription payment has actually cleared, so farming free months costs a real $99
+  // a head first. Written once per mate (qc_ref_paid), so a Stripe retry or a second checkout cannot pay twice.
+  if (s.subscription) {
+    const mateId = s.client_reference_id || s.customer;
+    try {
+      if (mateId) {
+        const mate = await stripe("customers/" + encodeURIComponent(mateId)), mm = mate.metadata || {};
+        if (mm.qc_referred_by && !mm.qc_ref_paid && mm.qc_referred_by !== mateId) {
+          const who = details.trading_name || details.owner_name || "a mate";
+          const r = await creditFreeMonth(mm.qc_referred_by, who);
+          if (r.ok) {
+            try { await stripe("customers/" + encodeURIComponent(mateId), { "metadata[qc_ref_paid]": new Date().toISOString() }); } catch (e) {}
+            out.referral = { paid: !r.capped, capped: !!r.capped, months: r.months };
+            const line = r.capped
+              ? `Chasem: ${who} is on, and that is ${r.count} mates you have sent us. You are at the ${REF_CAP}-month cap, so this one does not add another free month -- but your $99 is locked at $99 for as long as you stay.`
+              : `Chasem: ${who} is on. That is a free month off your next bill, and ${r.months} banked so far. Thanks.`;
+            const cc = creds();
+            if (r.phone) { try { await sms(cc, r.phone, line); } catch (e) {} }
+            if (r.email) { try { await email(cc, { to: [r.email], reply_to: process.env.SUPPORT_EMAIL || undefined, subject: r.capped ? "Another mate is on" : "A free month, for bringing a mate", text: line + "\n\nChasem" }); } catch (e) {} }
+          } else { out.referral = { paid: false, error: r.reason }; }
+        }
+      }
+      // every paying painter has a code of his own to hand on
+      await ensureRefCode(s.customer || mateId);
+    } catch (e) { out.referral_error = e.message; }
+  }
+
   const payload = linkOnePayload(details, sending ? "You're on. This loads your details and switches your follow-ups on. Nothing here replaces anything you have already typed." : "");
   if (sending && sending.server) payload.settings.sending = sending;
   const link = setupLink(process.env.APP_URL, payload);
