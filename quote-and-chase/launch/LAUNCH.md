@@ -128,23 +128,28 @@ accept a message. That is safe rather than silent -- the app shows the failure
 and the painter taps Send himself, which is what the soft wall is for -- but do
 not read `sms: true` as "it can send".
 
-## 4b. Finish the support inbox (two minutes, free)
+## 4b. The two halves of help@chasem.app
 
-`help@chasem.app` is on the terms, in the welcome email and in the refund
-promise, and the DNS for it is already on the domain:
+Sending and receiving are separate, and they sit on different names, which is
+why they do not collide:
 
-    MX   @  mx1.improvmx.com  (10)
-    MX   @  mx2.improvmx.com  (20)
-    TXT  @  v=spf1 include:spf.improvmx.com ~all
+    resend._domainkey  TXT   DKIM                    Resend, outbound
+    send               TXT   v=spf1 include:amazonses.com ~all
+    send               MX    feedback-smtp...amazonses.com   (10)
+    @                  TXT   v=spf1 include:spf.improvmx.com ~all   inbound
+    @                  MX    mx1.improvmx.com (10), mx2.improvmx.com (20)
 
-What is left is the account that tells the forwarder where to send it. At
-improvmx.com: sign up, add `chasem.app`, and forward `help@` to the inbox you
-actually read. Nothing to paste back -- the records are in place, so it starts
-working the moment the domain is added there.
+**Outbound is done.** chasem.app is verified in Resend and RESEND_FROM is
+`Quote and Chase <help@chasem.app>`, so the welcome email and every chase email
+leave from the domain.
 
-Until that is done, mail to help@chasem.app bounces. Send yourself one and
-check it arrives before any ad runs, because it is the only way a painter can
-reach you.
+**Inbound still needs the free ImprovMX account**: add `chasem.app` there and
+forward `help@` to the inbox you read. The records above are already on the
+domain, so there is nothing to paste -- it starts working the moment the domain
+is added. Until then a painter's reply bounces.
+
+If Resend ever asks for SPF on the apex rather than on `send`, do not replace
+the ImprovMX line: merge the includes into one record, or inbound mail stops.
 
 ## 5. Point Twilio's inbound webhook at the relay
 

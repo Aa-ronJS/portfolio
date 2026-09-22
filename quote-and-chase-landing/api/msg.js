@@ -124,7 +124,19 @@ async function smsSchedule(c, to, body, sendAt) {
   const j = await twilio(c, "Messages.json", { To: e164(to), Body: body, MessagingServiceSid: c.twilioService, ScheduleType: "fixed", SendAt: when.toISOString() });
   return { id: j.sid, status: j.status, send_at: when.toISOString() };
 }
-async function smsCancel(c, id) { await twilio(c, `Messages/${encodeURIComponent(id)}.json`, { Status: "canceled" }); return { cancelled: true }; }
+// Twilio does not expose a scheduled message the instant it is booked, so a cancel that follows straight after
+// the send -- a quote accepted moments after it went out -- comes back "not found" for a second or two. Give it
+// one short retry. Anything still failing is reported, and the app queues it and tries again when it next opens.
+async function smsCancel(c, id) {
+  const path = `Messages/${encodeURIComponent(id)}.json`;
+  try { await twilio(c, path, { Status: "canceled" }); }
+  catch (e) {
+    if (!/not found|20404/i.test(String(e && e.message))) throw e;
+    await new Promise((r) => setTimeout(r, 1500));
+    await twilio(c, path, { Status: "canceled" });
+  }
+  return { cancelled: true };
+}
 
 // ---------- Resend
 async function resend(c, method, path, payload) {
