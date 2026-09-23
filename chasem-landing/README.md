@@ -7,10 +7,22 @@ QR code. Static page, one Vercel serverless function that calls the
 Claude API for the demo, and the sending relay the app uses.
 
 `public/app/` is a copy of `../chasem-app/`; keep them
-identical. The app keeps its data per address, so pick one canonical
-address and never move it. That address is https://chasem.app/app/, which
-the relative `APP_URL: "app/"` in `config.js` resolves to. It is the only
-one: the old GitHub Pages copy is retired and only redirects now.
+identical. The app keeps its data per address, so there is one canonical
+address and it does not move again: **https://go.chasem.app/**. The site
+stays on https://chasem.app. Both are this one Vercel project:
+`middleware.js` serves `public/app/` at the root of go.chasem.app (every
+path except `/api/` and `/y/`, which answer on both hosts), so the app
+still calls its relay on its own address and there is only one deploy.
+
+The app used to live at https://chasem.app/app/, and that address still
+works. `move.js` in the app hands a painter's data across through a hidden
+`move.html` frame before anything redirects: the old address forwards only
+once go.chasem.app has answered and has the work (or there was nothing to
+carry); an empty go.chasem.app asks the old address for its work; neither
+side ever writes over work the other already has, and the old copy is never
+deleted. If go.chasem.app is not up, nothing changes. `tests/apptest/move.cjs`
+in the app covers all of it. Do not remove `/app/` from the site: home-screen
+icons, sent set-up links and Stripe return links still point there.
 
 ```
 public/index.html   the page (hero, what it does, demo, install, own-it, price, FAQ)
@@ -166,8 +178,8 @@ Two ways to run it:
    Vercel and set `TWILIO_ACCOUNT_SID`, `TWILIO_AUTH_TOKEN`,
    `TWILIO_MESSAGING_SERVICE_SID` (or `TWILIO_FROM`), `RESEND_API_KEY`,
    `RESEND_FROM` (an address on a domain verified in Resend) and
-   `ALLOWED_ORIGINS` (the app's origins, e.g.
-   `https://chasem.app,https://www.chasem.app`).
+   `ALLOWED_ORIGINS` (any origins beyond go.chasem.app, chasem.app and
+   www.chasem.app, which are always allowed).
    In the app's Set-up, paste the URL `https://chasem.app/api/msg` and
    tick "the server already has my Twilio and Resend details".
 2. **Shared relay, credentials on the phone.** Set `ALLOW_CLIENT_CREDS=1`

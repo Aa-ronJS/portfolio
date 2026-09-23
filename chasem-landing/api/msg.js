@@ -37,7 +37,7 @@ async function noted(hosted, body, channel, to, r) {
   } catch (e) { /* routing a future reply is worth less than this message */ }
 }
 
-const ALLOWED = (process.env.ALLOWED_ORIGINS || "https://chasem.app,https://www.chasem.app").split(",").map((s) => s.trim()).filter(Boolean);
+const ALLOWED = ["https://go.chasem.app", "https://chasem.app", "https://www.chasem.app"].concat((process.env.ALLOWED_ORIGINS || "").split(",").map((s) => s.trim()).filter(Boolean)); // the app's own addresses always, as in _setup.js
 const PER_IP_LIMIT = Number(process.env.MSG_PER_IP_LIMIT || 60); // per 10 minutes per instance
 const buckets = new Map();
 const seen = new Map(); // idempotency keys -> the result returned for them (insertion order, oldest first)

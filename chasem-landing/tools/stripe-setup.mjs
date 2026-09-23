@@ -14,6 +14,7 @@
 const args = Object.fromEntries(process.argv.slice(2).join(" ").split(/\s+--/).filter(Boolean).map((s) => { const t = s.replace(/^--/, ""); const i = t.indexOf(" "); return i < 0 ? [t, true] : [t.slice(0, i), t.slice(i + 1).trim()]; }));
 const KEY = args.key || process.env.STRIPE_SECRET_KEY || "";
 const SITE = String(args.site || "https://chasem.app").replace(/\/+$/, "");
+const APP = String(args.app || "https://go.chasem.app/").replace(/\/?$/, "/"); // the app has its own address; the site and the relay stay on SITE
 const RELAY = String(args.relay || "").replace(/\/+$/, "");
 const PLAN = Number(args.plan || 99), PLAN2 = Number(args.plan2 || 149), TOPUP = Number(args.topup || 35);
 const CURRENCY = String(args.currency || "aud").toLowerCase();
@@ -110,7 +111,7 @@ async function findHook(url) {
   const linkSpecs = [
     { tag: "solo", price: "qc_solo_monthly", plan: "solo", redirect: welcome, key: "SUBSCRIBE_URL" },
     { tag: "two", price: "qc_two_monthly", plan: "two", redirect: welcome, key: "SUBSCRIBE2_URL" },
-    { tag: "topup", price: "qc_topup_pack", plan: "", redirect: SITE + "/app/", key: "TOPUP_URL" },
+    { tag: "topup", price: "qc_topup_pack", plan: "", redirect: APP, key: "TOPUP_URL" },
   ];
   for (const spec of linkSpecs) {
     let l = await findLink(spec.tag);
@@ -156,7 +157,7 @@ async function findHook(url) {
   log("  STRIPE_WEBHOOK_SECRET=" + (secret || "whsec_…  (from the webhook you already had)"));
   log("  RELAY_SIGNING_SECRET=" + randomSecret());
   log("  RELAY_URL=" + RELAY + "/api/msg");
-  log("  APP_URL=" + SITE + "/app/");
+  log("  APP_URL=" + APP);
   log("  FREE_MESSAGES=12  INCLUDED_MESSAGES=150  INCLUDED_MESSAGES_TWO=250  TOPUP_MESSAGES=100  TOPUP_PRICE=" + TOPUP + "  AUTO_TOPUP_CAP=3");
   log("  SUPPORT_EMAIL=…  RESEND_API_KEY=…  RESEND_FROM=…  TWILIO_ACCOUNT_SID=…  TWILIO_AUTH_TOKEN=…  TWILIO_MESSAGING_SERVICE_SID=…");
   log("\nRELAY_SIGNING_SECRET is freshly made above and is not stored anywhere. Every painter's sending token is signed with it,");

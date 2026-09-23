@@ -3,7 +3,11 @@ import { createHmac, timingSafeEqual } from "node:crypto";
 
 export const f = (...a) => (globalThis.__relayFetch || fetch)(...a);
 export function send(res, status, obj) { res.statusCode = status; res.setHeader("Content-Type", "application/json"); res.end(JSON.stringify(obj)); }
-const ALLOWED = (process.env.ALLOWED_ORIGINS || "https://chasem.app,https://www.chasem.app").split(",").map((s) => s.trim()).filter(Boolean);
+// The app lives at go.chasem.app; chasem.app/app/ is where it used to be and still hands painters across. Those three
+// are always allowed, whatever ALLOWED_ORIGINS says, so setting that variable can never lock the app out of its own relay.
+export const APP_URL = String(process.env.APP_URL || "https://go.chasem.app/").replace(/\/?$/, "/");
+export const PRODUCT_ORIGINS = ["https://go.chasem.app", "https://chasem.app", "https://www.chasem.app"];
+const ALLOWED = PRODUCT_ORIGINS.concat((process.env.ALLOWED_ORIGINS || "").split(",").map((s) => s.trim()).filter(Boolean));
 export function cors(req, res, methods) {
   const origin = req.headers.origin || "";
   const ok = ALLOWED.includes("*") || ALLOWED.includes(origin) || /^https?:\/\/(localhost|127\.0\.0\.1)(:\d+)?$/.test(origin);
@@ -17,7 +21,7 @@ export async function rawBody(req, max) { const chunks = []; let n = 0; for awai
 // ---- the set-up code the app reads at #/setup?d=<code>: "j:" + base64url(JSON), the same shape encodeSetup() writes in the app
 export function b64url(buf) { return Buffer.from(buf).toString("base64").replace(/\+/g, "-").replace(/\//g, "_").replace(/=+$/, ""); }
 export function setupCode(payload) { return "j:" + b64url(Buffer.from(JSON.stringify(payload), "utf8")); }
-export function setupLink(appUrl, payload) { return String(appUrl || "https://chasem.app/app/").replace(/\/?$/, "/") + "#/setup?d=" + setupCode(payload); }
+export function setupLink(appUrl, payload) { return String(appUrl || APP_URL).replace(/\/?$/, "/") + "#/setup?d=" + setupCode(payload); }
 
 const STATES = { nsw: "NSW", "new south wales": "NSW", vic: "VIC", victoria: "VIC", qld: "QLD", queensland: "QLD", sa: "SA", "south australia": "SA", wa: "WA", "western australia": "WA", tas: "TAS", tasmania: "TAS", act: "ACT", "australian capital territory": "ACT", nt: "NT", "northern territory": "NT" };
 export function stateCode(v) { return STATES[String(v || "").trim().toLowerCase()] || ""; }
