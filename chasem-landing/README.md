@@ -148,17 +148,26 @@ keep them in step if you change the defaults.
 
 ## Copy notes
 
-The story on every page is: the phone app is free and is the product;
-it stores data on the phone, exports a back-up, sends SMS and email
-through the relay when the painter sets it up (otherwise they tap Text
-or Email), takes cards through Stripe payment links, books into the
-phone calendar; the laptop pack is optional extras and needs a Claude
-subscription. Do not reintroduce "it never sends", "no subscription,
-ever", "not included: bookings, payments" or "makes a spreadsheet".
-No testimonials or usage numbers until there are real ones. The
-guarantee ("one real quote out in 14 days or your money back") applies
-to the pack and is a promise you must honour; if you change it, change
-the terms too. The footer's trademark line stays.
+The story on every page is: Chasem is a quoting and chasing app for
+Australian painters, sold as one monthly plan with the messages included
+($99, or $149 for two phones), with the first three jobs free on nothing
+but an email and no card until the monthly. It keeps a full copy on the
+phone and the work in the painter's account; it measures with an A4
+sheet, sends quotes and invoices, chases on its own, takes cards through
+the painter's own Stripe, and books into the phone calendar. The laptop
+pack is an optional extra for Claude Code users and stays out of the
+sales copy (footer and FAQ only). Do not reintroduce "a free app",
+"charges nothing", "your jobs never leave your phone" or a card at
+sign-up. No testimonials, logos or usage numbers until there are real
+ones. The guarantee ("thirty days, money back, no reason needed") is a
+promise you must honour; if you change it, change the terms too. The
+footer's trademark line stays.
+
+The page is laid out as nav, hero (sample quote plus a real app
+screenshot), how it works, features, the live demo, pricing, sign-up,
+"straight about what is where", FAQ, a closing call to action and the
+footer. `img/app-*.webp` are real screenshots of the app on its test
+drive data; retake them when the screens change.
 
 ## The sending relay (`api/msg.js`)
 

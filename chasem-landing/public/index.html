@@ -158,7 +158,7 @@ textarea{width:100%;font:1rem var(--body);padding:.8em .9em;border:1.5px solid v
 
 /* price */
 .tiers{display:grid;gap:20px}
-@media (min-width:860px){.tiers{grid-template-columns:1fr 1.15fr;align-items:stretch}}
+@media (min-width:860px){.tiers{grid-template-columns:1.3fr 1fr;align-items:start}}
 .tier{background:var(--paper);color:var(--doc-ink);border-radius:10px;padding:clamp(22px,3.5vw,34px);box-shadow:var(--shadow);display:grid;gap:16px;align-content:start}
 .tier.featured{outline:2px solid var(--tape);outline-offset:-2px}
 .tier .eyebrow{color:var(--tape-deep)}
@@ -213,6 +213,63 @@ details .g2{margin-top:14px}
 
 footer{padding-block:36px;color:var(--muted);font-size:.9rem;border-top:1px solid var(--line)}
 footer .wrap{display:grid;gap:8px}
+
+/* ---- SaaS layout layer: nav links, hero visual, how it works, features, closing band, footer ---- */
+.navlinks{display:none;gap:26px;align-items:center}
+.navlinks a{text-decoration:none;color:var(--muted);font-weight:500;font-size:.95rem}
+.navlinks a:hover{color:var(--ink)}
+.navright{display:flex;align-items:center;gap:10px}
+.signin{text-decoration:none;font-weight:600;font-size:.92rem;padding:.5em .4em}
+@media (min-width:900px){.navlinks{display:flex}}
+@media (max-width:430px){.signin{display:none}}
+.chips{display:flex;flex-wrap:wrap;gap:8px 18px;margin:0;padding:0;list-style:none;color:var(--muted);font-size:.93rem}
+.chips li{display:flex;align-items:center;gap:7px}
+.tick{width:17px;height:17px;color:var(--ok);flex-shrink:0}
+.visual{position:relative;max-width:520px;margin-inline:auto;width:100%}
+@media (min-width:960px){.visual{margin-inline:0 auto}}
+.visual .proof{max-width:420px;margin:0;gap:34px}
+.sheetbox{position:relative}
+.phone{position:absolute;right:-10px;bottom:-22px;width:40%;max-width:210px;aspect-ratio:1/2;border-radius:26px;background:#101216;padding:7px;box-shadow:0 30px 60px -20px rgba(22,24,29,.55)}
+.phone img{width:100%;height:100%;object-fit:cover;object-position:top;border-radius:20px;display:block;background:#fff}
+@media (max-width:520px){.phone{width:38%;bottom:-16px;right:-4px;border-radius:20px;padding:5px}.phone img{border-radius:16px}}
+.sectionhead{display:grid;gap:14px;max-width:760px}
+.sectionhead .lede{max-width:40em}
+.center{text-align:center;justify-items:center;margin-inline:auto}
+.flow{display:grid;gap:22px;grid-auto-flow:column;grid-auto-columns:78%;overflow-x:auto;scroll-snap-type:x mandatory;padding:6px 2px 14px;margin-inline:-2px;-webkit-overflow-scrolling:touch}
+.flow>li{scroll-snap-align:start}
+@media (min-width:760px){.flow{grid-auto-flow:row;grid-template-columns:repeat(3,1fr);grid-auto-columns:auto;overflow:visible}}
+.flow{list-style:none;margin:0}
+.flow li{display:grid;gap:12px;align-content:start}
+.flow .shot{background:var(--soft);border-radius:14px;padding:18px 18px 0;overflow:hidden;height:300px;display:flex;justify-content:center}
+.flow .shot img{width:78%;max-width:230px;height:auto;align-self:flex-start;border-radius:14px 14px 0 0;box-shadow:0 12px 36px -16px rgba(22,24,29,.45);border:1px solid var(--line)}
+.flow .n{font:600 .78rem var(--mono);color:var(--tape-deep);letter-spacing:.06em}
+.flow p{color:var(--muted)}
+.features{display:grid;gap:16px;grid-template-columns:minmax(0,1fr)}
+@media (min-width:700px){.features{grid-template-columns:repeat(2,1fr)}}
+@media (min-width:1000px){.features{grid-template-columns:repeat(3,1fr)}}
+.feature{border:1px solid var(--line);background:var(--paper);color:var(--doc-ink);border-radius:12px;padding:22px;display:grid;gap:10px;align-content:start}
+.feature p{color:var(--doc-muted);font-size:.97rem}
+.feature p b{color:var(--doc-ink);font-weight:600}
+.ic{width:38px;height:38px;padding:8px;border-radius:9px;background:var(--tape-soft);color:var(--tape-deep)}
+.feature h3{font-size:1.08rem}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]) .feature{background:var(--soft);color:var(--ink)}:root:not([data-theme="light"]) .feature p{color:var(--muted)}:root:not([data-theme="light"]) .feature p b{color:var(--ink)}}
+:root[data-theme="dark"] .feature{background:var(--soft);color:var(--ink)}:root[data-theme="dark"] .feature p{color:var(--muted)}:root[data-theme="dark"] .feature p b{color:var(--ink)}
+.try>.wrap.grid>.grid{grid-template-columns:minmax(0,1fr)!important}
+.closing{background:var(--ink);color:var(--ground);border-top:0!important}
+.closing .wrap{display:grid;gap:18px;justify-items:center;text-align:center}
+.closing h2{max-width:18em}
+.closing p{color:color-mix(in srgb,var(--ground) 72%,transparent);max-width:34em}
+.closing .btn.tape{font-size:1.05rem;padding:1em 1.5em}
+.closing .chips{justify-content:center;color:color-mix(in srgb,var(--ground) 72%,transparent)}
+.closing .tick{color:var(--tape)}
+footer .cols{display:grid;gap:26px;grid-template-columns:repeat(2,minmax(0,1fr));padding-bottom:22px;border-bottom:1px solid var(--line);margin-bottom:10px}
+@media (min-width:800px){footer .cols{grid-template-columns:2fr 1fr 1fr 1fr}}
+footer .cols .about{grid-column:1/-1}
+@media (min-width:800px){footer .cols .about{grid-column:auto}}
+footer h4{font:600 .78rem var(--mono);letter-spacing:.08em;text-transform:uppercase;color:var(--ink);margin:0 0 10px}
+footer ul{list-style:none;margin:0;padding:0;display:grid;gap:8px}
+footer ul a{text-decoration:none}
+footer ul a:hover{text-decoration:underline}
 </style>
 </head>
 <body>
@@ -220,26 +277,34 @@ footer .wrap{display:grid;gap:8px}
 <nav>
   <div class="wrap">
     <a class="mark" href="#top"><b>Chasem</b><span>for painters</span></a>
-    <a class="btn tape" href="app/" data-app>Open the app</a>
+    <div class="navlinks"><a href="#how">How it works</a><a href="#features">Features</a><a href="#price">Pricing</a><a href="#faq">Questions</a></div>
+    <div class="navright"><a class="signin" href="app/" data-app>Sign in</a><a class="btn tape" href="app/" data-app>Start free</a></div>
   </div>
 </nav>
 
 <header class="hero wrap" id="top">
   <div class="grid">
     <div class="stack">
-      <p class="eyebrow">For Australian painters</p>
+      <p class="eyebrow">Quoting and chasing app for Australian painters</p>
       <h1>Quote it before you leave the driveway.</h1>
-      <p class="lede">Stick an A4 sheet on the wall, take one photo, and the quote PDF is in their inbox at your prices while you're still standing there. Then it chases the quote and the invoice for you, on the days you set. Your first three jobs are free, chased to the end; nothing to open, nobody to ring.</p>
+      <p class="lede">Stick an A4 sheet on the wall, take one photo, and the quote is in their inbox at your prices while you're still standing there. Then Chasem chases the quote and the invoice for you, in your words, on the days you set.</p>
       <div class="actions">
         <a class="btn tape" href="app/" data-app>Start free, your first three jobs</a>
         <a class="btn ghost" href="sample-quote.pdf" target="_blank" rel="noopener">See a real quote it makes</a>
       </div>
-      <p class="fine">First real quote in ten minutes: your name, your bank details, five prices. Nothing to download from a store; it works offline once it has loaded.</p>
+      <ul class="chips">
+        <li><svg class="tick" viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="m5 12 5 5 9-10"/></svg>No card to start</li>
+        <li><svg class="tick" viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="m5 12 5 5 9-10"/></svg>Nothing to download</li>
+        <li><svg class="tick" viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="m5 12 5 5 9-10"/></svg>Works with no signal</li>
+        <li><svg class="tick" viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="m5 12 5 5 9-10"/></svg>Cancel in two taps</li>
+      </ul>
     </div>
 
-    <div class="proof">
-      <a class="sheet" href="sample-quote.pdf" target="_blank" rel="noopener" aria-label="Open the sample quote PDF, three pages"><img src="sample-quote-p1.png" width="892" height="1262" alt="Page one of a quote the app made: business details and licence at the top, the client, a description, priced lines grouped by room, and the total inc GST" fetchpriority="high"></a>
-      <p class="cap"><b>A real one it made.</b> Example business, real layout. Your name, licence and insurance at the top; nothing on it says Chasem. Three pages, tap to read them.</p>
+    <div class="visual">
+      <div class="proof">
+        <div class="sheetbox"><a class="sheet" href="sample-quote.pdf" target="_blank" rel="noopener" aria-label="Open the sample quote PDF, three pages"><img src="sample-quote-p1.png" width="892" height="1262" alt="Page one of a quote the app made: business details and licence at the top, the client, a description, priced lines grouped by room, and the total inc GST" fetchpriority="high"></a><div class="phone" aria-hidden="true"><img src="img/app-home.webp" width="600" height="1200" alt="" loading="eager"></div></div>
+        <p class="cap"><b>A real one it made.</b> Your name, licence and insurance at the top; nothing on it says Chasem. Tap to read all three pages.</p>
+      </div>
     </div>
   </div>
 </header>
@@ -254,14 +319,33 @@ footer .wrap{display:grid;gap:8px}
 </div>
 
 <section id="how">
-  <div class="wrap grid" style="gap:28px">
-    <h2>You didn't start a painting business to type quotes at 9pm.</h2>
-    <p class="lede" style="margin-top:-10px">The subscription quoting apps charge between about $30 and $150 a month, and you still type the quote at the kitchen table. This one charges nothing and does the quote on site, from the phone in your pocket. Here is what changes.</p>
-    <div class="steps">
-      <div class="step"><h3>Win the job while you're still there.</h3><p>Stick any A4 sheet on the wall, printed or blank, and photograph the wall corner to corner. The app outlines the sheet and the wall, you confirm each, and the doors and windows it can see are listed. Or type the sizes. Rooms and a few notes in, a priced PDF out at your rates, with your licence, insurance and terms on it. <b>A private cost card shows your hours, paint and margin; the client never sees it.</b> For outside work, type the address and it brings up the satellite photo and works out the size of the house.</p></div>
-      <div class="step"><h3>Get paid without being the bad guy.</h3><p>Deposit, progress and final invoices with your bank details, and a pay-by-card link when you connect Stripe. <b>On the day you set, the app writes the reminder in your words and shows you who to text. One tap.</b> Want it to send by itself and stop the moment they pay? That is what your messages are for; it is already on.</p></div>
-      <div class="step"><h3>Keep your evenings and your Saturdays.</h3><p>Client says yes, mark it accepted and the days go into your phone's calendar. A phone enquiry gets a ballpark while they are still on the line, and the app picks visit slots with the least driving. Receipts, statements and a paint order list are a tap each.</p></div>
-      <div class="step"><h3>Own it.</h3><p>The app runs on your phone and stores everything on your phone. One tap saves a back-up file you keep in your own Drive or iCloud; restore it on a new phone. An optional PIN locks it. <b>If this website disappeared, the copy on your phone keeps working.</b></p></div>
+  <div class="wrap grid" style="gap:34px">
+    <div class="sectionhead">
+      <p class="eyebrow">How it works</p>
+      <h2>Photo, quote, paid. From the phone in your pocket.</h2>
+    </div>
+    <ol class="flow">
+      <li><div class="shot"><img src="img/app-room.webp" width="600" height="1200" alt="A room in the app: its name, a Measure from photo button, and the length, width and height" loading="lazy"></div><span class="n">01</span><h3>Photograph the wall</h3><p>Stick any A4 sheet on it and take one photo. The sheet is the ruler, so the sizes are measured, not guessed. Or type them.</p></li>
+      <li><div class="shot"><img src="img/app-quote.webp" width="600" height="1200" alt="A quote in the app: bedroom walls, ceilings, skirting and doors, each priced from your own rates" loading="lazy"></div><span class="n">02</span><h3>Send the quote on site</h3><p>Every line is priced from your own rates and it goes out as a PDF with your name on it, before you're back in the ute.</p></li>
+      <li><div class="shot"><img src="img/app-chase.webp" width="600" height="1200" alt="The Follow-ups tab: an invoice 21 days overdue with a friendly reminder already written in the painter's words" loading="lazy"></div><span class="n">03</span><h3>It does the chasing</h3><p>Quotes gone quiet and invoices past their date get a friendly nudge on your days. It stops the moment they say yes or pay.</p></li>
+    </ol>
+  </div>
+</section>
+
+<section id="features">
+  <div class="wrap grid" style="gap:30px">
+    <div class="sectionhead">
+      <p class="eyebrow">Everything from quote to paid</p>
+      <h2>You didn't start a painting business to type quotes at 9pm.</h2>
+      <p class="lede">The desk-bound quoting apps still leave you typing at the kitchen table. Chasem does the quote on site and the follow-ups after, so the evenings are yours again.</p>
+    </div>
+    <div class="features">
+      <div class="feature"><svg class="ic" viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3 17 17 3l4 4L7 21z"/><path d="m7 13 2 2M10 10l2 2M13 7l2 2"/></svg><h3>Measure from one photo</h3><p>The app outlines the sheet and the wall, you confirm each, and the doors and windows it can see are listed. <b>About 6 cm on a 4 m wall.</b> Outside work: type the address and it sizes the house from the satellite photo.</p></div>
+      <div class="feature"><svg class="ic" viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M6 3h8l4 4v14H6z"/><path d="M14 3v4h4M9 12h6M9 16h6"/></svg><h3>Quotes in your name</h3><p>A three-page PDF at your rates with your licence, insurance and terms. <b>A private cost card shows your hours, paint and margin; the client never sees it.</b></p></div>
+      <div class="feature"><svg class="ic" viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 5h16v11H8l-4 4z"/><path d="M9 10h6"/></svg><h3>Follow-ups that send themselves</h3><p>Three nudges for a quote gone quiet, three for an invoice past its date, from your business name, on weekdays only. <b>Nothing goes until you tap Start on a job.</b></p></div>
+      <div class="feature"><svg class="ic" viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="6" width="18" height="12" rx="2"/><path d="M3 10h18M7 15h3"/></svg><h3>Invoices and card payments</h3><p>Deposit, progress and final invoices with your bank details and your state's deposit rule. Add a pay-by-card button and a paid invoice ticks itself off.</p></div>
+      <div class="feature"><svg class="ic" viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="5" width="18" height="16" rx="2"/><path d="M3 10h18M8 3v4M16 3v4"/></svg><h3>Bookings without the phone tag</h3><p>Your customer accepts and picks a start day from the link, and it lands in your phone's calendar. A phone enquiry gets a ballpark while they're still on the line.</p></div>
+      <div class="feature"><svg class="ic" viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="7" y="2" width="10" height="20" rx="2"/><path d="M11 18h2"/></svg><h3>Works on a ladder with one bar</h3><p>Everything is on your phone, so it quotes in a hallway with no signal. <b>Your work is in your account too, so a new phone is not a blank app.</b> Back it up to your own Drive or iCloud in two taps.</p></div>
     </div>
     <p class="fine">Nobody measures a room from a bare photo to better than about twenty percent, so this app doesn't try. It uses the sheet of paper as the ruler. <a href="measure/measure.html">Try the measuring page</a> with any wall.</p>
   </div>
@@ -273,7 +357,7 @@ footer .wrap{display:grid;gap:8px}
       <p class="eyebrow">Rough ballpark demo</p>
       <h2>Point your phone at any wall.</h2>
       <p class="lede">A rough sample quote back in about twenty seconds, guessed from the photo alone. This is not the measuring: the app measures with the A4 sheet, on your phone, and uploads nothing. Sample prices, not yours.</p>
-      <p class="fine">Want the real thing? <a class="btn tape" href="app/" data-app style="margin-top:6px">Start on your phone, first three jobs free</a><br>Measure with the sheet, price at your rates, send the quote PDF, invoice, chase. Free, nothing to download, works offline.</p>
+      <p class="fine">Want the real thing? <a class="btn tape" href="app/" data-app style="margin-top:6px">Start on your phone, first three jobs free</a><br>Measure with the sheet, price at your rates, send the quote PDF, invoice, chase. Nothing to download, works offline.</p>
       <div class="qrbox only-desk">
         <div id="qr" aria-label="QR code linking to this demo"><img src="qr.svg" alt="QR code linking to this demo" width="220" height="220"></div>
         <b style="font-family:var(--display)">Scan with your phone</b>
@@ -311,7 +395,8 @@ footer .wrap{display:grid;gap:8px}
 
 <section id="price">
   <div class="wrap grid" style="gap:24px">
-    <h2>Price</h2>
+    <p class="eyebrow">Pricing</p>
+    <h2 style="margin-top:-14px">One plan. Your first three jobs free.</h2>
     <p class="lede" style="margin-top:-8px">One app, one price, and the texting and emailing already built in. You never open an account with a texting company, an email company or a domain: the messages come out of your allowance, like credit on a phone.</p>
     <div class="tiers">
       <div class="tier featured" id="plan">
@@ -342,7 +427,7 @@ footer .wrap{display:grid;gap:8px}
           <li><b>Run out and nothing breaks.</b> One tap buys another <span data-topup>100</span> on the card you are already paying with, or you can have it do that by itself, at most three times in a month. Leave it and the app just writes every message for you to send, the way you do now.</li>
         </ul></details>
         <details class="fold group"><summary><span>The first ten minutes, on the phone in your hand.</span></summary><ul>
-          <li><b>Your email, and you are in.</b> No card, no call, no account to verify. The app opens with <span data-free>12</span> messages on it, which is three jobs.</li>
+          <li><b>Your email and the code it sends, and you are in.</b> No card, no call. The app opens with <span data-free>12</span> messages on it, which is three jobs.</li>
           <li><b>Your prices, in five minutes.</b> It asks what you charge for a day on the tools and works the whole list out. Or give it a room you have already quoted and it moves every price to match. Or type them in. You can quote before you do any of this.</li>
           <li><b>Your bank details, once.</b> They print on your invoices so people can pay you. You type them; they never leave the phone.</li>
           <li><b>Your first quote.</b> Stick an A4 sheet on the wall, one photo, and the PDF is done at your prices with your name on it.</li>
@@ -354,7 +439,7 @@ footer .wrap{display:grid;gap:8px}
         </ul></details>
         <details class="fold"><summary><span>Before you say no</span></summary>
           <p><b>"I'm on gmail."</b> Fine. Emails go out with your business name on them and replies land in your gmail. No domain, no new address.</p>
-          <p><b>"I don't want a subscription."</b> Then use the five and stay there. The app keeps writing every message for nothing; the month is only for having them go without you. Cancel in two taps, no notice.</p>
+          <p><b>"I don't want a subscription."</b> Then use the free three jobs and stay there. The app keeps writing every message for nothing; the month is only for having them go without you. Cancel in two taps, no notice.</p>
           <p><b>"What if it texts the wrong person?"</b> Nothing sends until you tap Start on a job, every message is on the Follow-ups tab before it goes, and pausing a job stops it at once.</p>
           <p><b>"My customers will know it is an app."</b> They will not. The quote is a three-page PDF in your name, the texts carry your business name and your mobile, and nothing anywhere says Chasem.</p>
           <p><b>"There's two of us."</b> One phone quotes and invoices; the diary goes into your phone calendar and can be shared to the other phone. Two people quoting from two phones is not this yet.</p>
@@ -375,7 +460,7 @@ footer .wrap{display:grid;gap:8px}
           <a class="btn ghost" href="#" data-sub2><span>Start free, then two phones</span></a>
           <small>Start the same way, with your email and your first three jobs free. Switch to two phones from inside the app whenever the second one is needed.</small>
         </div>
-        <p class="fine">Not a full crew system: two phones do not keep themselves in step, because nobody's jobs are stored on our server. If you need five people looking at the same diary, this is not it yet.</p>
+        <p class="fine">Not a full crew system: each phone keeps its own jobs, and there is no shared diary. If you need five people looking at the same calendar, this is not it yet.</p>
       </div>
     </div>
     <p class="fine">No sign-up call, no demo, no salesperson: there is nobody to talk to unless you email, and then it is me.</p>
@@ -389,27 +474,19 @@ footer .wrap{display:grid;gap:8px}
       <small class="formstatus" aria-live="polite"></small>
     </form>
 
-      <input type="hidden" name="list" value="sample-quote">
-      <label for="email" style="font-weight:600;font-size:.95rem">Not ready? Get the sample quote and the app link by email.</label>
-      <div class="row">
-        <input type="email" id="email" name="email" placeholder="you@yourpainting.com.au" required autocomplete="email">
-        <button class="btn ghost" type="submit">Send it</button>
-      </div>
-      <small class="formstatus" aria-live="polite"></small>
-    </form>
   </div>
 </section>
 
 <section id="afterpay">
   <div class="wrap grid" style="gap:20px">
     <h2>What happens when you sign up</h2>
-    <p class="lede" style="margin-top:-8px">Four minutes on the phone in your hand, and nothing waits on anybody. No call to book, no reply to wait for, no account to verify. If you sign up at 9pm on a Sunday you are chasing money by 9:05.</p>
+    <p class="lede" style="margin-top:-8px">Five minutes on the phone in your hand, and nothing waits on anybody. No call to book, no reply to wait for, no card to start. If you sign up at 9pm on a Sunday you are chasing money by 9:05.</p>
     <details class="fold"><summary><span>Minute by minute</span></summary>
     <div class="steps" style="margin-top:14px">
-      <div class="step"><h3>Minute one</h3><p>Your card, your business name, your ABN and licence if you have them. Stripe takes the payment; the card never touches us. A receipt lands in your email.</p></div>
-      <div class="step"><h3>Minute two</h3><p>The next screen has one button. Tap it on the phone you quote from and the app opens with your name, ABN, licence and your state's deposit rule already in it, and the sending switched on. The same link is in your email if you would rather do it on the ute later.</p></div>
-      <div class="step"><h3>Minutes three to eight</h3><p>The app asks what you charge for a day on the tools and works your whole price list out from it, or matches it to a room you have already quoted. Put your bank details in so invoices can be paid. Both are on the set-up list it shows you.</p></div>
-      <div class="step"><h3>Whenever you like</h3><p>Type in anyone who already owes you, read the three nudges on the Follow-ups tab, change the wording if it does not sound like you, and tap Start the chasing. From then on it happens without you: quotes chased on your days, invoices chased past their date, and the deposit invoice written the moment someone says yes.</p></div>
+      <div class="step"><h3>Minute one</h3><p>Your email, and the six-digit code it sends you. That is the whole sign-up: no password, no card.</p></div>
+      <div class="step"><h3>Minute two</h3><p>Five quick questions, one per screen: business name, ABN, state, what you charge for a day, and how you get paid. Your whole price list is worked out from the day rate.</p></div>
+      <div class="step"><h3>Minutes three to eight</h3><p>Your first quote. Stick an A4 sheet on the wall, one photo, and the PDF is done at your prices with your name on it.</p></div>
+      <div class="step"><h3>Whenever you like</h3><p>Type in anyone who already owes you, read the nudges on the Follow-ups tab, change the wording if it does not sound like you, and tap Start. When the three free jobs are used, the monthly turns the sending back on; until then there is no card.</p></div>
     </div>
     </details>
   </div>
@@ -431,10 +508,9 @@ footer .wrap{display:grid;gap:8px}
       <details>
         <summary><span>What it does not do (yet)</span></summary>
         <ul class="howto">
-          <li>No cloud sync between phones. One phone holds the data; move it with the back-up file.</li>
+          <li>No shared crew diary. Two phones each keep their own jobs; hand a job across in two taps.</li>
           <li>No bookkeeper login. Export the CSV and the PDFs and send those.</li>
-          <li>No online accept button for clients. They reply by text or email, or sign the acceptance block on the quote, and you mark it accepted.</li>
-          <li>No Square. Card payments are Stripe payment links only.</li>
+          <li>No Square. Card payments are through Stripe only.</li>
           <li>Not plugged into Xero, MYOB or ServiceM8.</li>
         </ul>
       </details>
@@ -456,12 +532,12 @@ footer .wrap{display:grid;gap:8px}
       <details><summary><span>Does it chase people by itself?</span></summary><p>With the subscription on, yes: three nudges for a quote gone quiet and three for an invoice past its date, in your words, on weekdays between 8am and 6pm, never on your state's public holidays. It stops the moment a quote is accepted or you mark an invoice paid. Free, it writes the same messages and you tap Send. Either way nothing goes to a customer until you have tapped Start on that job.</p></details>
       <details><summary><span>Why is there a monthly price at all?</span></summary><p>Because the texts and emails cost real money to send and somebody has to run the thing that sends them. That is what the messages in your plan are. The alternative, which plenty of software does, is to make you open a Twilio account and a Resend account and wire them up yourself; you would pay them instead of me, and you would spend an evening on it. This way it is already built in and you never see it.</p></details>
       <details><summary><span>Do I have to open accounts with anyone?</span></summary><p>No. The texting and emailing are part of the app and come out of your messages. The only optional one is card payments on your invoices, which use a Stripe account in your name because that is your money going into your bank.</p></details>
-      <details><summary><span>What does your sending system see?</span></summary><p>The messages you send and the number or email they go to, which pass through my relay and sit in the text and email providers' logs for up to 90 days, as any sending service logs them. I do not see your quotes, prices or jobs; those never leave your phone. I read a message only to fix one that failed, and your log is deleted when you switch over or leave. <a href="privacy">The privacy page</a> has the list.</p></details>
+      <details><summary><span>What does your sending system see?</span></summary><p>The messages you send and the number or email they go to, which pass through my relay and sit in the text and email providers' logs for up to 90 days, as any sending service logs them. Your jobs are kept in your account as well, and I look at one only to sort out a problem you have told me about. I read a message only to fix one that failed, and your log is deleted when you switch over or leave. <a href="privacy">The privacy page</a> has the list.</p></details>
             
       <details><summary><span>What if I want my money back?</span></summary><p>Email me inside 30 days of your first payment and I refund that month, no reason needed, whether or not you have cancelled. After that, cancel from inside the app and you are not charged again; I do not refund a month you have already used unless the sending did not work, in which case I do. <a href="terms#guarantee">The wording is here</a>.</p></details>
             <details><summary><span>Is there anyone to talk to?</span></summary><p>By email, and it is me, not a helpdesk: same business day if a message of yours did not send, within two business days for anything else. There is no number to ring and nothing to book, because the whole point is that none of this needs it. If you would rather be talked through something, say so in an email and I will phone you.</p></details>
-      <details><summary><span>Do I need to be good with computers?</span></summary><p>For the app, no. Set-up is your name, your bank details and a look at five prices. If you can send a text, you can quote with it. Turning the chasing on takes the technical bits off you entirely: the app arrives already yours from one link you tap, the sending runs through my system, and you type your bank details and nothing else. A phone is enough; there is nothing to install and no password to keep.</p></details>
-      <details><summary><span>Will my customers know it's a free app?</span></summary><p>No. The quote is a three-page PDF with your name, licence, insurance, colour schedule and terms. Nothing on it says Chasem. While your sending runs through my system, emails go out from my address with your business name as the sender and replies to your inbox, and texts come from my number signed with your name and mobile; neither says Chasem. <a href="sample-quote.pdf" target="_blank" rel="noopener">Open the sample</a> and check.</p></details>
+      <details><summary><span>Do I need to be good with computers?</span></summary><p>For the app, no. Set-up is five questions, one per screen: your business name, ABN, state, day rate and how you get paid. If you can send a text, you can quote with it. Turning the chasing on takes the technical bits off you entirely: the app arrives already yours from one link you tap, the sending runs through my system, and you type your bank details and nothing else. A phone is enough; there is nothing to install and no password to keep.</p></details>
+      <details><summary><span>Will my customers know it's an app?</span></summary><p>No. The quote is a three-page PDF with your name, licence, insurance, colour schedule and terms. Nothing on it says Chasem. While your sending runs through my system, emails go out from my address with your business name as the sender and replies to your inbox, and texts come from my number signed with your name and mobile; neither says Chasem. <a href="sample-quote.pdf" target="_blank" rel="noopener">Open the sample</a> and check.</p></details>
       <details><summary><span>What if a customer replies to a text?</span></summary><p>Texts sent through my system come from a number that is not yours. Every one says replies to that number are not read and gives them a way back to you: your mobile, or your email if you have not put a mobile in the app. Anyone who replies to it anyway gets an automatic text sending them back to the number in the message. Emails reply straight to your inbox. Texts you send yourself from the app's share button come from your own phone as always.</p></details>
       <details><summary><span>Where is my data, and what if I lose my phone or you disappear?</span></summary><p>In two places: a full copy on your phone, and your account here. Lose the phone and a new one fills itself back in &mdash; except your keys and your PIN, which never leave the handset, so keep saving the back-up for those. If this website vanished, the copy on your phone keeps quoting, pricing and writing messages; what would stop is the sending, and customers accepting online. Ask and I delete the account and everything in it. <a href="privacy">The privacy page</a> lists exactly what is held, and what Twilio, Resend, Stripe and Google see.</p></details>
       <details><summary><span>Does it work with Xero, MYOB or ServiceM8?</span></summary><p>Not directly. It exports invoices and payments as CSV, and every document is a PDF, so your bookkeeper gets what they need.</p></details>
@@ -477,11 +553,26 @@ footer .wrap{display:grid;gap:8px}
   </div>
 </section>
 
+<section class="closing" id="start">
+  <div class="wrap">
+    <h2>Your next quote could be in their inbox before you're back in the ute.</h2>
+    <p>Three whole jobs free, quoted and chased to the end. Then $<span data-price>99</span> a month, or nothing: the app keeps working either way.</p>
+    <a class="btn tape" href="app/" data-app>Start free, your first three jobs</a>
+    <ul class="chips"><li><svg class="tick" viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="m5 12 5 5 9-10"/></svg>No card to start</li><li><svg class="tick" viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="m5 12 5 5 9-10"/></svg>Thirty days, money back</li><li><svg class="tick" viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="m5 12 5 5 9-10"/></svg>Cancel in two taps</li></ul>
+  </div>
+</section>
+
 <footer>
   <div class="wrap">
-    <p><b>Chasem</b>, a free quoting app for Australian painters, with an optional monthly subscription that does the chasing. Not affiliated with Anthropic, Twilio, Resend, Stripe or Google; their names are their trademarks. Use Claude Code on a laptop? <a href="laptop">There is a laptop pack</a>.</p>
+    <div class="cols">
+      <div class="about"><p><b style="color:var(--ink);font-family:var(--display)">Chasem</b></p><p style="margin-top:8px;max-width:30em">The quoting and chasing app for Australian painters. Measure from a photo, quote on site, invoice, and let it chase.</p></div>
+      <div><h4>Product</h4><ul><li><a href="#how">How it works</a></li><li><a href="#features">Features</a></li><li><a href="#price">Pricing</a></li><li><a href="sample-quote.pdf" target="_blank" rel="noopener">Sample quote</a></li><li><a href="app/" data-app>Open the app</a></li></ul></div>
+      <div><h4>Help</h4><ul><li><a href="#faq">Questions</a></li><li><a href="#install">Home screen</a></li><li><a href="measure/measure.html">Measuring page</a></li><li><a href="laptop">Laptop pack</a></li></ul></div>
+      <div><h4>Legal</h4><ul><li><a href="privacy">Privacy</a></li><li><a href="terms">Terms</a></li><li><a href="terms#guarantee">Guarantee</a></li></ul></div>
+    </div>
+    <p>Not affiliated with Anthropic, Twilio, Resend, Stripe or Google; their names are their trademarks.</p>
     <!-- Owner: fill BUSINESS_NAME, ABN and SUPPORT_EMAIL in config.js. Until then the footer shows the business name only; no placeholder ABN or email is ever printed. -->
-    <p><span data-name>Chasem</span><span data-abn-line hidden> · ABN <span data-abn></span></span><span data-contact-line hidden> · <span data-contact></span></span> · <a href="privacy">Privacy</a> · <a href="terms">Terms</a></p>
+    <p><span data-name>Chasem</span><span data-abn-line hidden> · ABN <span data-abn></span></span><span data-contact-line hidden> · <span data-contact></span></span></p>
   </div>
 </footer>
 
