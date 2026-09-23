@@ -1674,6 +1674,15 @@
     } catch (e) {}
   }
 
+  // Wires both buttons. The card renders twice -- empty on first paint, then again once /api/ref has
+  // answered with his code -- and wiring them in one place is what stops the second render losing one.
+  function wireMate() {
+    var ms = document.getElementById('matesend'); if (ms) ms.addEventListener('click', shareMate);
+    var mc = document.getElementById('matecopy'); if (mc) mc.addEventListener('click', function () {
+      var l = refLink(); if (!l) return;
+      try { navigator.clipboard.writeText(l); toast('Link copied'); } catch (e) { toast(l); }
+    });
+  }
   function mateCard() {
     var r = refState();
     if (!r.code) return '';
@@ -1755,9 +1764,8 @@
     var nl = document.getElementById('nologo'); if (nl) nl.addEventListener('click', function () { S.details.logo = ''; save(); viewSettings(); });
     // Save a copy: through A2's Did-it-go step when it exists, else the phone's menu, else a plain file
     document.getElementById('export').addEventListener('click', function () { var blob = new Blob([QCStore.exportAll()], { type: 'application/json' }); var f = new File([blob], 'quote-and-chase-backup-' + QCStore.today() + '.json', { type: 'application/json' }); S.security.last_backup = QCStore.today(); save(); var keysNote = S.security.backup_include_keys ? ' Your passwords are in it: delete the file once it is on the new phone.' : ''; var a = window.__qcApp; if (a && typeof a.handOff === 'function') { try { a.handOff({ kind: 'backup', file: f, filename: f.name, whoName: 'yourself', onResult: function () {} }); return; } catch (e) {} } if (navigator.canShare && navigator.canShare({ files: [f] })) { navigator.share({ files: [f] }).catch(function () {}); toast('Your phone\'s menu is open. Pick Mail and send the file to yourself: that email is your back-up.' + keysNote); } else { var el = document.createElement('a'); el.href = URL.createObjectURL(blob); el.download = f.name; document.body.appendChild(el); el.click(); setTimeout(function () { el.remove(); }, 500); toast('Copy saved on this phone. Send it to yourself by email so you have it.' + keysNote); } });
-    var ms = document.getElementById('matesend'); if (ms) ms.addEventListener('click', shareMate);
-    var mc = document.getElementById('matecopy'); if (mc) mc.addEventListener('click', function () { var l = refLink(); if (!l) return; try { navigator.clipboard.writeText(l); toast('Link copied'); } catch (e) { toast(l); } });
-    refreshRef().then(function () { var c = document.getElementById('matewrap'); if (c && !c.innerHTML) { c.innerHTML = mateCard(); var b = document.getElementById('matesend'); if (b) b.addEventListener('click', shareMate); } });
+    wireMate();
+    refreshRef().then(function () { var c = document.getElementById('matewrap'); if (c && !c.innerHTML) { c.innerHTML = mateCard(); wireMate(); } });
     document.getElementById('import').addEventListener('change', function () { var f = this.files[0]; if (!f) return; var fr = new FileReader(); fr.onload = function () { try { var st = QCStore.importAll(fr.result); unlocked = true; toast(st && st.keys_removed ? 'Restored. Your texting and emailing passwords were not in the file; enter them under Automatic texting and emailing.' : 'Restored'); route(); } catch (e) { toast(e.message); } }; fr.readAsText(f); });
     document.getElementById('reset').addEventListener('click', function () { if (confirm('Wipe all jobs and settings on this phone? Save a copy first.')) { QCStore.reset(); route(); } });
     var ps = document.getElementById('pinset'); if (ps) ps.addEventListener('click', function () { var v = document.getElementById('pin1').value.trim(); if (!/^\d{4,6}$/.test(v)) { toast('PIN must be 4 to 6 digits.'); return; } sha256(v).then(function (h) { S.security.pin = h; unlocked = true; save(); toast('PIN set'); viewSettings(); }); });
