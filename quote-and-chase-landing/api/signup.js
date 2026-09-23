@@ -70,7 +70,9 @@ export default async function handler(req, res) {
   // from a second email address is a different Stripe customer and passes. It is left alone deliberately --
   // it wins him 12 extra messages, about $2.16 of Twilio, while the month that actually costs us is gated on
   // a cleared $99. Machinery to catch it would cost more than the fraud.
-  if (referrer && (alreadyReferred || referrer.id === cus.id)) referrer = null;
+  // A referral is for someone new. Without the `returning` test a painter who has been using the app for
+  // months can re-sign-up on a mate's code and win him a real $99 for a customer we already had.
+  if (referrer && (alreadyReferred || returning || referrer.id === cus.id)) referrer = null;
   // The doubled allowance is a property of the account from here on, not of this one request.
   const free = (referrer || alreadyReferred) ? FREE_MESSAGES * 2 : FREE_MESSAGES;
   if (referrer) { try { await stripe("customers/" + encodeURIComponent(cus.id), { "metadata[qc_referred_by]": String(referrer.id), "metadata[qc_ref_used]": refCode }); } catch (e) { /* he still gets the messages */ } }

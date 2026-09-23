@@ -201,9 +201,10 @@ export default async function handler(req, res) {
       const need = needFrom(body.need);
       let bal = hosted && hosted.payload ? await readBalance(hosted.payload) : null;
       if (!enoughFor(bal, need)) {
-        // Only buy a pack when he is actually out. "Top up by itself when I run out" is what the switch
-        // says, and charging $35 while he still has messages in hand is not that.
-        if (bal && bal.counted && bal.left <= 0) bal = await refill(hosted.payload, bal);
+        // Top up when the job in front of him cannot go, not only at exactly zero: one message left and a
+        // two-message job is a painter who is stuck for ever, because nothing ever drains that last one.
+        // The switch says "when there are not enough left", which is this.
+        bal = await refill(hosted.payload, bal);
         if (!enoughFor(bal, need)) return send(res, 402, { ok: false, error: need > 1 && bal.left > 0 ? SHORT_FOR_JOB(need, bal.left) : OUT_OF_MESSAGES, out_of_messages: true, need, ...bal });
       }
       const r = ch === "sms" ? await smsSend(c, body.to, body.body) : await emailSend(c, body);

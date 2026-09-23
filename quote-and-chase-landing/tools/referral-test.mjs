@@ -79,7 +79,10 @@ console.log("\nthe page and the relay agree on what a code looks like");
 console.log("\nthe shape of the deal");
 is(REF_CAP > 0, true, "there is a cap, so nobody rides free for ever");
 is(PLAN_PRICE, 99, "a free month is worth the plan price");
-is(REF_CAP * PLAN_PRICE, 594, `the most one painter can ever be given: $${REF_CAP * PLAN_PRICE}`);
+// A month is worth what HIS plan costs, so the ceiling is six months of it -- $594 on the solo plan and
+// $894 on the two-phone one. There is no single dollar figure, which is why nothing quotes one.
+is(REF_CAP * PLAN_PRICE, 594, `six months of the solo plan: $${REF_CAP * PLAN_PRICE}`);
+is(REF_CAP * 149, 894, "six months of the two-phone plan, which is the real worst case");
 
 // Sanity on the economics the reward was chosen against: a free month has to beat buying the same
 // tradie on Meta, or the whole programme is just a discount with extra steps.

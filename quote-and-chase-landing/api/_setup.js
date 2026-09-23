@@ -85,7 +85,7 @@ export function planOf(session, sub) {
   const two = [pick(session), pick(sub), pick(sub && sub.plan), pick((((sub || {}).items || {}).data || [])[0]), pick((((sub || {}).items || {}).data || [])[0] && (((sub || {}).items || {}).data || [])[0].price)].indexOf("two") >= 0;
   return two ? { seats: 2, inc: INCLUDED2 } : { seats: 1, inc: INCLUDED };
 }
-export const FREE_MESSAGES = Number(process.env.FREE_MESSAGES || 12);  // three whole jobs: a job is four messages
+export const FREE_MESSAGES = Number(process.env.FREE_MESSAGES || 12);  // three whole jobs, with a bit spare: a job averages about three messages now that only the head of a chase books at a time
 export const INCLUDED = Number(process.env.INCLUDED_MESSAGES || 150);
 export const TOPUP_MESSAGES = Number(process.env.TOPUP_MESSAGES || 100);
 export const TOPUP_PRICE = Number(process.env.TOPUP_PRICE || 35);      // A$ for a pack, charged to the card already on file
@@ -229,6 +229,21 @@ export async function billedCustomer(cus) {
   }
   try { return await stripe("customers/" + encodeURIComponent(cur)); } catch (e) { return null; }
 }
+// Called when a free account becomes a paying one. Everything the referral counters know lives on the old
+// record, and creditFreeMonth reads the new one, so without this a painter who banked all six months while
+// free starts again from nothing the day he pays us.
+export async function carryReferralCounters(fromCus, toCus) {
+  if (!fromCus || !toCus || fromCus === toCus) return false;
+  try {
+    const a = (await stripe("customers/" + encodeURIComponent(fromCus))).metadata || {};
+    const b = (await stripe("customers/" + encodeURIComponent(toCus))).metadata || {};
+    const pick = (k) => Math.max(Math.max(0, parseInt(a[k], 10) || 0), Math.max(0, parseInt(b[k], 10) || 0));
+    const months = pick("qc_ref_months"), count = pick("qc_ref_count");
+    if (!months && !count) return false;
+    await stripe("customers/" + encodeURIComponent(toCus), { "metadata[qc_ref_months]": String(months), "metadata[qc_ref_count]": String(count) });
+    return true;
+  } catch (e) { return false; }
+}
 export async function creditFreeMonth(referrer, about) {
   if (!referrer) return { ok: false, reason: "no referrer" };
   const who = await billedCustomer(referrer);
@@ -265,7 +280,7 @@ export async function creditFreeMonth(referrer, about) {
       description: "Chasem: a free month for bringing " + String(about || "a mate").slice(0, 60),
     });
   } catch (e) {
-    try { await at("", { "metadata[qc_ref_months]": String(months) }); } catch (e2) {}   // give the month back
+    try { await at("", { "metadata[qc_ref_months]": String(months), "metadata[qc_ref_count]": String(count - 1) }); } catch (e2) {}   // give back both, or a retry inflates "that is N mates"
     return { ok: false, reason: e.message };
   }
   return { ok: true, capped: false, count, months: months + 1, credited: worth, ...contact };

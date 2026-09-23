@@ -3,7 +3,7 @@
 // Read-only. The code itself is derived from his Stripe customer id, so it never changes and nothing has to
 // be stored to work it out -- it is written to the customer only so a mate's sign-up can look it up by code.
 // Env: STRIPE_SECRET_KEY, RELAY_SIGNING_SECRET, optional SITE_URL.
-import { cors, send, readJson, readToken, stripe, refCodeFor, ensureRefCode, REF_CAP, PLAN_PRICE } from "./_setup.js";
+import { cors, send, readJson, readToken, stripe, refCodeFor, ensureRefCode, REF_CAP } from "./_setup.js";
 
 export default async function handler(req, res) {
   const okOrigin = cors(req, res, "POST, OPTIONS");
@@ -17,7 +17,8 @@ export default async function handler(req, res) {
 
   const code = refCodeFor(p.cus);
   const site = String(process.env.SITE_URL || "https://chasem.app").replace(/\/+$/, "");
-  const out = { ok: true, code, link: `${site}/?r=${code}`, cap: REF_CAP, month_value: PLAN_PRICE, count: 0, months: 0, left: REF_CAP };
+  // No dollar figure: a free month is worth whatever his own plan costs, which only Stripe knows.
+  const out = { ok: true, code, link: `${site}/?r=${code}`, cap: REF_CAP, count: 0, months: 0, left: REF_CAP };
 
   try {
     const cus = await stripe("customers/" + encodeURIComponent(p.cus)), m = cus.metadata || {};
