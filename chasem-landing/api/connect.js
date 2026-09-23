@@ -81,6 +81,39 @@ export default async function handler(req, res) {
       return send(res, 200, { ok: true, started: true, ready: st.ready, payouts: st.payouts, note: st.note, due: st.due });
     }
 
+    // The pay-by-card link on one invoice, made on HIS account, so the money goes to him and Stripe tells us
+    // here when it lands. He never sees a key, a dashboard or a BSB.
+    if (body.action === "link") {
+      if (!r || !r.stripe_account) return send(res, 400, { ok: false, error: "Card payments are not on yet" });
+      if (!r.pay_ready) return send(res, 400, { ok: false, error: "Stripe has not finished checking your details" });
+      const cents = Math.round(Number(body.amount) * 100);
+      if (!(cents >= 50)) return send(res, 400, { ok: false, error: "A card payment has to be at least 50 cents" });
+      if (cents > 99999900) return send(res, 400, { ok: false, error: "That is too big for a card payment" });
+      const acct = r.stripe_account;
+      const invoice = String(body.invoice || "").slice(0, 40), job = String(body.job || "").slice(0, 60);
+      const price = await stripe("prices", {
+        currency: "aud", unit_amount: String(cents),
+        "product_data[name]": (String(body.name || "").trim() || ("Invoice " + invoice)).slice(0, 120),
+      }, "POST", acct);
+      const link = await stripe("payment_links", {
+        "line_items[0][price]": price.id, "line_items[0][quantity]": "1",
+        "metadata[invoice]": invoice, "metadata[job]": job, "metadata[painter]": p.cus,
+        "payment_intent_data[metadata][invoice]": invoice,
+        "payment_intent_data[metadata][job]": job,
+        "payment_intent_data[metadata][painter]": p.cus,
+      }, "POST", acct);
+      return send(res, 200, { ok: true, id: link.id, url: link.url });
+    }
+
+    // A cancelled or reissued invoice must stop taking money.
+    if (body.action === "void") {
+      if (!r || !r.stripe_account) return send(res, 200, { ok: true, off: true });
+      const id = String(body.link || "");
+      if (!/^plink_[A-Za-z0-9]+$/.test(id)) return send(res, 400, { ok: false, error: "Not a payment link" });
+      await stripe("payment_links/" + encodeURIComponent(id), { active: "false" }, "POST", r.stripe_account);
+      return send(res, 200, { ok: true, closed: true });
+    }
+
     if (body.action === "manage") {
       if (!r || !r.stripe_account) return send(res, 400, { ok: false, error: "Nothing to manage yet" });
       const l = await stripe("accounts/" + encodeURIComponent(r.stripe_account) + "/login_links", {});

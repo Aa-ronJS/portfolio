@@ -76,6 +76,19 @@
       if (j.status === 'quoted') j.status = 'accepted';
       touched++;
     });
+    // A card paid on one of his invoices. Stripe's own id is the key, so a retried webhook, a second pull or
+    // both cannot pay an invoice twice. The app settles the invoice and the job the moment it sees this.
+    (res.payments || []).forEach(function (pay) {
+      var j = (S.jobs || []).filter(function (x) { return x.id === pay.job_id; })[0];
+      if (!j || !Array.isArray(j.invoices)) return;
+      var inv = j.invoices.filter(function (i) { return i.no === pay.invoice_no && !i.void; })[0];
+      if (!inv) return;
+      inv.payments = inv.payments || [];
+      if (inv.payments.some(function (x) { return x.id === pay.id; })) return;
+      inv.payments.push({ id: pay.id, date: String(pay.paid_at || '').slice(0, 10) || QCStore.today(),
+                          amount: Math.round(Number(pay.amount_cents) || 0) / 100, method: 'card', ref: 'Card' });
+      touched++;
+    });
     if ((res.replies || []).length) {
       S.replies = (S.replies || []).concat(res.replies.map(function (r) {
         return { id: r.id, job: r.job_id, from: r.from_addr, text: r.body, action: r.action, at: r.received_at };

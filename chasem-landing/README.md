@@ -76,6 +76,35 @@ version; regenerate it for the final domain before printing cards.
 
 The full go-live list is in `../chasem/launch/LAUNCH-CHECKLIST.md`.
 
+## Card payments (Stripe Connect)
+
+A painter taps one button in Set-up, Stripe's own pages take his bank
+account and his ID, and every invoice he sends afterwards carries a Pay
+by card button drawn on **his** account. The money never passes through
+this platform. When a customer pays, Stripe posts to `/api/paid`, the
+relay writes the payment down, and the next sync ticks the invoice off on
+his phone and moves the job to paid, without him doing anything.
+
+The code is `api/connect.js` (`start`, `status`, `link`, `void`),
+`api/paid.js` (the Connect webhook) and `db/007-payments.sql`. Three
+things have to be done once, by hand, before any of it works:
+
+1. **Sign up for Connect** at `dashboard.stripe.com/connect`. Until this
+   is done every call answers `{ ok: true, off: true }`, and the app
+   quietly offers bank transfer instead of showing an error.
+2. **Add a Connect webhook**: a second endpoint at
+   `https://chasem.app/api/paid`, set to *Listen to events on Connected
+   accounts*, for `checkout.session.completed` and
+   `checkout.session.async_payment_succeeded`. Put its signing secret in
+   `STRIPE_CONNECT_WEBHOOK_SECRET`. Without the secret the endpoint
+   answers 200 and records nothing, so Stripe does not retry for days.
+3. **Run the migration** (`{ secret, action: "migrate" }` on
+   `/api/admin`) to create the `payment` table. Until it exists, sync
+   returns no payments rather than failing.
+
+`tests/paid.mjs` covers the lot against pglite and a stubbed Stripe, and
+`chasem-app/tests/apptest/cardpay.cjs` covers what the painter sees.
+
 ## The demo function
 
 - Model: `claude-opus-5` with structured output (zod 4 schema), medium effort. Roughly

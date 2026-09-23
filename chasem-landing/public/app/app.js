@@ -504,6 +504,40 @@
       .catch(function () { return { ok: false, error: 'Could not reach the sending server.' }; });
   }
 
+  // ---- a pay-by-card link on an invoice.
+  // Connect first: his own Stripe account, opened from this phone, money straight to him, and Stripe tells the
+  // relay when it is paid so the invoice ticks itself off. The restricted key stays for anyone already on one.
+  function cardOn() { return (S.payment || {}).card_ready === true; }
+  function keyOn() { return !!(S.stripe && S.stripe.enabled && QCStripe.keyLooksRight(S.stripe.key)); }
+  function cardAnyOn() { return cardOn() || keyOn(); }
+  function payLinkFor(job, inv) {
+    var amount = invBal(inv), name = (S.details.trading_name || 'Invoice') + ' ' + inv.no;
+    if (cardOn()) return payConnect('link', { amount: amount, invoice: inv.no, job: job.id, name: name })
+      .then(function (r) { if (!r || !r.ok || !r.url) throw new Error((r && r.error) || 'Card link failed'); return { url: r.url, id: r.id }; });
+    if (keyOn()) return QCStripe.createPaymentLink(S.stripe.key, { amount: amount, name: name, invoiceNo: inv.no, jobId: job.id });
+    return Promise.resolve(null);
+  }
+  // What Stripe says about his account, kept on the phone so every screen can ask without a request.
+  function paySnap() { var pay = S.payment || {}; return [pay.card_ready === true, String(pay.card_note || ''), pay.card_off === true].join('|'); }
+  function payStatus(then) {
+    var was = paySnap();
+    return payConnect('status').then(function (r) {
+      if (!r) return null;
+      var pay = Object.assign({}, S.payment);
+      if (r.off) pay.card_off = true;
+      else {
+        pay.card_off = false;
+        pay.stripe_started = !!r.started || !!pay.stripe_started;
+        pay.card_ready = r.ready === true;
+        pay.card_note = String(r.note || '');
+      }
+      S.payment = pay; save();
+      r.changed = paySnap() !== was;
+      if (then) then(r);
+      return r;
+    });
+  }
+
   // The wall already made him do his name, ABN, state, prices and how he gets paid. The only thing left that
   // he can put off is letting it chase for him, so that is all Home nudges about.
   function setupSteps() {
@@ -1240,7 +1274,7 @@
     else html += (formOpen ? '' : '<div class="row" id="nextrow"><button class="btn sm" id="nextinv">Next invoice</button></div>') + '<div class="card" id="newinv"' + (formOpen ? '' : ' hidden') + '><h3>New invoice</h3><label class="f">What to invoice<select id="kind">' + kinds.map(function (k) { return '<option value="' + k[0] + '"' + (k[0] === defKind ? ' selected' : '') + '>' + esc(k[1]) + '</option>'; }).join('') + '</select></label>' +
       '<div id="progbox" hidden><div class="g2"><label class="f">Percent of the quote<input type="number" id="prog_pct" min="1" max="100" step="1" value="' + (progs.length ? 30 : 40) + '"></label><label class="f">or amount inc GST<input type="number" id="prog_amt" step="0.01" min="0" placeholder="overrides the percent"></label></div></div>' +
       (credit > 0 ? '<label class="btn ghost sm"><input type="checkbox" id="applycredit" checked> Apply credit ' + amt(credit) + '</label>' : '') +
-      '<div id="invprev"></div><p id="billline"></p><div class="row" id="mkrow"><button class="btn tape" id="mkinv">Send invoice</button>' + (S.stripe && S.stripe.enabled ? (QCStripe.keyLooksRight(S.stripe.key) ? '<span class="hint">A card payment link goes on it.</span>' : '<span class="confirm">Card payments key not valid. Fix in Set-up.</span>') : '') + '</div><p class="hint">Read it, then Send: Messages or Mail. You press send there.</p></div>';
+      '<div id="invprev"></div><p id="billline"></p><div class="row" id="mkrow"><button class="btn tape" id="mkinv">Send invoice</button>' + (cardAnyOn() ? '<span class="hint">With a Pay by card button.</span>' : (S.stripe && S.stripe.enabled ? '<span class="confirm">Card payments key not valid. Fix in Set-up.</span>' : '')) + '</div><p class="hint">You press send in Messages or Mail.</p></div>';
     var multi = clientJobs.length > 1;
     html += '<div class="row">' + (job.invoices.length ? '<button class="btn ghost sm" id="stmt">' + (multi ? 'Statement for ' + esc(job.client.name || who) + ' (' + clientJobs.length + ' jobs)' : 'Statement') + '</button>' + (multi ? '<button class="btn ghost sm" id="stmtjob">This job only</button>' : '') : '') + (job.invoices.length && S.stripe && S.stripe.enabled ? '<button class="btn sm" id="checkpay">Check payments</button>' : '') + (live.some(function (i) { return invBal(i) > 0.004; }) ? '<button class="btn ghost sm" id="invremind">Calendar reminders</button>' : '') + '</div>';
     $app.innerHTML = html;
@@ -1284,7 +1318,7 @@
       handOff({ kind: 'invoice', doc: d, title: inv.no, filename: inv.no + ' ' + (job.client.name || 'invoice').replace(/[^\w ]+/g, '') + '.pdf', whoName: whoShort, whoPhone: job.client.phone, whoEmail: job.client.email, job: job, ref: 'invoice-' + inv.no, anchor: 'sendinv_' + k,
         onHanded: function (r) { inv.handed_at = new Date().toISOString(); inv.handed_how = r.how; save(); }, onResult: invResult(inv) });
     }
-    function withLink(inv) { if (!(invBal(inv) > 0.004) || inv.pay_url || !(S.stripe && S.stripe.enabled && QCStripe.keyLooksRight(S.stripe.key))) return Promise.resolve(); toast('Creating card payment link'); return QCStripe.createPaymentLink(S.stripe.key, { amount: invBal(inv), name: (S.details.trading_name || 'Invoice') + ' ' + inv.no, invoiceNo: inv.no, jobId: job.id }).then(function (l) { inv.pay_url = l.url; inv.pay_link_id = l.id; save(); }).catch(function (e) { toast('Card link failed: ' + e.message + '. Invoice goes without it.'); }); }
+    function withLink(inv) { if (!(invBal(inv) > 0.004) || inv.pay_url || !cardAnyOn()) return Promise.resolve(); toast('Adding the card button'); return payLinkFor(job, inv).then(function (l) { if (!l) return; inv.pay_url = l.url; inv.pay_link_id = l.id; save(); }).catch(function (e) { toast('No card button: ' + e.message + '. The invoice goes without it.'); }); }
     function sendNow(inv) { return withLink(inv).then(function () { return sendNow0(inv); }); }
     function sendNow0(inv) { var p1 = (QCMsg.ready('email') && job.client.email && S.sending.email_quotes !== false) ? emailInvoiceNow(job, inv) : Promise.resolve(false); return p1.then(function (ok) { if (ok) return afterInvoiceSent(inv).then(function () { viewInvoice(job, true); }); handInvoice(inv); }); }
     var sendQ = /(?:^|&)send=([^&]*)/.exec(qs || ''); if (sendQ) { try { history.replaceState(null, '', '#/job/' + job.id + '/invoice'); } catch (e) {} var target = job.invoices.filter(function (i) { return i.no === decodeURIComponent(sendQ[1]) && !i.void; })[0]; if (target) setTimeout(function () { sendNow(target); }, 50); }
@@ -1303,7 +1337,7 @@
       settle(job); save(); // status stays accepted until the invoice is confirmed sent or paid
       var hand = function () { viewInvoice(job, true); handInvoice(inv); };
       var after = function () { var p1 = (QCMsg.ready('email') && job.client.email && S.sending.email_quotes !== false) ? emailInvoiceNow(job, inv) : Promise.resolve(false); return p1.then(function (ok) { if (ok) return afterInvoiceSent(inv).then(function () { viewInvoice(job, true); }); hand(); }); };
-      if (invBal(inv) > 0.004 && S.stripe && S.stripe.enabled && QCStripe.keyLooksRight(S.stripe.key)) { toast('Creating card payment link'); QCStripe.createPaymentLink(S.stripe.key, { amount: invBal(inv), name: (S.details.trading_name || 'Invoice') + ' ' + inv.no, invoiceNo: inv.no, jobId: job.id }).then(function (l) { inv.pay_url = l.url; inv.pay_link_id = l.id; save(); after(); }).catch(function (e) { toast('Card link failed: ' + e.message + '. Invoice goes without it.'); after(); }); } else after();
+      if (invBal(inv) > 0.004 && cardAnyOn()) { toast('Adding the card button'); payLinkFor(job, inv).then(function (l) { if (l) { inv.pay_url = l.url; inv.pay_link_id = l.id; save(); } after(); }).catch(function (e) { toast('No card button: ' + e.message + '. The invoice goes without it.'); after(); }); } else after();
     });
     function addPayment(i, p) { i.payments = i.payments || []; p.id = p.id || QCStore.uid(); i.payments.push(p); settle(job); save(); var b = invBal(i); if (b <= 0.004) return cancelInvoiceFollowUps(i).then(function () { return b; }); return Promise.resolve(b); }
     function stillOwing() { return r2(jobOwing(job) + (hasFinal ? 0 : Math.max(0, r2(jobTotal - r2(liveInvoices(job).reduce(function (s2, i) { return s2 + i.total; }, 0)))))); }
@@ -1353,7 +1387,7 @@
     var chk = document.getElementById('checkpay'); if (chk) chk.addEventListener('click', function () { var pend = job.invoices.filter(function (i) { return !i.void && invBal(i) > 0.004 && i.pay_link_id; }); if (!pend.length) { toast('No card links to check'); return; } toast('Checking'); Promise.all(pend.map(function (i) { return QCStripe.checkPaid(S.stripe.key, i.pay_link_id).then(function (r) { if (r.paid && !(i.payments || []).some(function (p) { return p.ref === 'Stripe ' + i.pay_link_id; })) { i.paid_by = 'card'; return addPayment(i, { date: r.when || today, amount: r.amount > 0 ? r2(r.amount) : invBal(i), method: 'card', ref: 'Stripe ' + i.pay_link_id }).then(function () { return true; }); } return false; }); })).then(function (rs) { var np = rs.filter(Boolean).length; settle(job); save(); toast(np ? np + ' paid by card' : 'Nothing paid yet'); viewInvoice(job, true); }).catch(function (e) { toast('Card payments: ' + e.message); }); });
     var irem = document.getElementById('invremind'); if (irem) irem.addEventListener('click', function () { followUpIcs(job, 'invoice'); });
     $app.querySelectorAll('[data-repdf]').forEach(function (b) { b.addEventListener('click', function () { var i = job.invoices[+b.dataset.repdf]; try { handOff({ kind: 'invoice', doc: QCPdf.invoicePDF(job, i, S), title: i.no, filename: i.no + '.pdf', whoName: whoShort, whoPhone: job.client.phone, whoEmail: job.client.email, job: job, ref: 'invoice-' + i.no, anchor: 'sendinv_' + b.dataset.repdf, canSend: !i.void && !cancelled, onHanded: function (r) { i.handed_at = new Date().toISOString(); i.handed_how = r.how; save(); }, onResult: invResult(i) }); } catch (e) { toast('Could not make the invoice: ' + e.message); } }); });
-    $app.querySelectorAll('[data-sendinv]').forEach(function (b) { b.addEventListener('click', function () { var iv = job.invoices[+b.dataset.sendinv]; if (isDraft(iv)) withLink(iv).then(function () { handInvoice(iv); }); else handInvoice(iv); }); });
+    $app.querySelectorAll('[data-sendinv]').forEach(function (b) { b.addEventListener('click', function () { var iv = job.invoices[+b.dataset.sendinv]; withLink(iv).then(function () { handInvoice(iv); }); }); });
     // handed to the phone but never answered: ask again
     job.invoices.forEach(function (i, k) { if (i.handed_at && !i.void && document.getElementById('sendinv_' + k)) didItGo({ whoName: whoShort, word: 'invoice', handed: i.handed_how || 'shared', anchor: 'sendinv_' + k, onResult: invResult(i) }); });
     if (!keep) window.scrollTo(0, 0);
@@ -1429,6 +1463,18 @@
   function syncNow(opts) {
     if (!window.QCSync) return Promise.resolve(null);
     return QCSync.now({ onChange: function (n, res) {
+      // A card that was paid while he was on a ladder: settle the invoice and the job, stop its reminders,
+      // and say so in money, not in jargon.
+      var paid = (res.payments || []), said = '';
+      paid.forEach(function (pay) {
+        var j = QCStore.getJob(pay.job_id); if (!j) return;
+        var inv = (j.invoices || []).filter(function (i) { return i.no === pay.invoice_no && !i.void; })[0];
+        if (!inv) return;
+        settle(j); save();
+        if (invBal(inv) <= 0.004) cancelInvoiceFollowUps(inv, j);
+        said = whoName(j) + ' paid ' + inv.no + ', ' + money(Math.round(Number(pay.amount_cents) || 0) / 100) + '.';
+      });
+      if (said) { toast(said); S = QCStore.load(); route(); return; }
       var b = (res.bookings || [])[0];
       if (b) {
         var j = QCStore.getJob(b.job_id), who = j && j.client && (j.client.first_name || j.client.name) ? (j.client.first_name || String(j.client.name).split(' ')[0]) : 'Your customer';
@@ -2038,7 +2084,14 @@
       '<label class="btn ghost sm"><input type="checkbox" data-bind="costing.charge_tins"> Add a line for whole tins on quotes (off: spare paint is in the rates)</label>' +
       '<div class="row"><button class="btn sm" id="derive">Calculate prices</button><span class="hint">Shows each change first.</span></div></div>';
     html += '<div class="card"><h2>Maps and house size</h2><p class="hint">Addresses fill in as you type.' + (mapsOn() ? ' On.' : (QCMaps.key(S) ? ' Key saved; works when you are online.' : '')) + '</p><details class="sec sub"><summary><h3>Show me the set-up steps</h3></summary><p class="hint">On a computer, go to console.cloud.google.com, make a project, turn on Places API (New), Maps Static API and Solar API, then make an API key and restrict it to this app\'s web address. Google gives a free monthly amount that covers a painter\'s use; the Solar API (house size) is charged per look-up beyond it, so check the pricing page.</p><label class="f">Google Maps key<input type="text" data-bind="maps.key" autocomplete="off" spellcheck="false" placeholder="AIza…"></label></details></div>';
-    html += '<div class="card"><h2>Card payments</h2><p class="hint">A pay-by-card link on the invoice. No surcharge.' + (S.stripe.key && S.stripe.enabled ? ' Card links are on.' : '') + '</p><details class="sec sub"><summary><h3>Show me the set-up steps</h3></summary><p class="hint">Stripe: a restricted key that can write Products, Prices, Payment Links and read Checkout Sessions.</p><label class="f">Stripe restricted key<span>starts with rk_live_</span><input type="text" data-bind="stripe.key" autocomplete="off" spellcheck="false"></label><p class="confirm" id="skwarn" ' + (S.stripe.key && !QCStripe.keyLooksRight(S.stripe.key) ? '' : 'hidden') + '>Not a restricted key (rk_live_ or rk_test_). Card links are off until it is.</p><label class="btn ghost sm"><input type="checkbox" data-bind="stripe.enabled"> Put a card payment link on invoices</label></details></div>';
+    var pay = S.payment || {}, cardLine, cardBtns;
+    if (pay.card_off === true) { cardLine = 'Not switched on yet.'; cardBtns = ''; }
+    else if (pay.card_ready === true) { cardLine = 'On. Paying the invoice ticks it off here.'; cardBtns = '<button class="btn ghost sm" id="card_manage">Change my bank account</button>'; }
+    else if (pay.stripe_started) { cardLine = String(pay.card_note || 'Stripe is checking your details.'); cardBtns = '<button class="btn sm" id="card_go">Finish with Stripe</button><button class="btn ghost sm" id="card_check">Check again</button>'; }
+    else { cardLine = 'Stripe asks for your bank account. The money goes straight to you.'; cardBtns = '<button class="btn tape sm" id="card_go">Turn on card payments</button>'; }
+    html += '<div class="card" id="cardcard"><h2>Card payments</h2><p class="hint" id="cardline">' + esc(cardLine) + '</p>' +
+      (cardBtns ? '<div class="row">' + cardBtns + '<span class="hint" id="cardres"></span></div>' : '') +
+      '<details class="sec sub"><summary><h3>Use my own Stripe key instead</h3></summary><p class="hint">A restricted key that can write Products, Prices, Payment Links and read Checkout Sessions.</p><label class="f">Stripe restricted key<span>starts with rk_live_</span><input type="text" data-bind="stripe.key" autocomplete="off" spellcheck="false"></label><p class="confirm" id="skwarn" ' + (S.stripe.key && !QCStripe.keyLooksRight(S.stripe.key) ? '' : 'hidden') + '>Not a restricted key (rk_live_ or rk_test_). Card links are off until it is.</p><label class="btn ghost sm"><input type="checkbox" data-bind="stripe.enabled"> Put a card payment link on invoices</label></details></div>';
     var relayOn = !!S.sending.server, dis = relayOn ? '' : ' disabled';
     var hosted = S.sending.hosted === true, hostedEnded = hosted && QCMsg.hostedEnded && QCMsg.hostedEnded(S.sending), hostedStopped = hosted && !hostedEnded && S.sending.hosted_cancelled === true, hostedTo = /^\d{4}-\d{2}-\d{2}$/.test(String(S.sending.hosted_until || '')) ? shortDate(S.sending.hosted_until) : '';
     html += '<div class="card"><h2>Automatic texting and emailing</h2><p class="hint">' + (hostedEnded ? '<span class="confirm">Off since ' + esc(hostedTo) + '. <a href="' + esc(SITE + '#price') + '" target="_blank" rel="noopener">Turn it back on</a>. Nothing here is lost.</span>' : hostedStopped ? '<span class="confirm">Cancelled. Runs to ' + esc(hostedTo) + '. Manage below to change your mind.</span>' : hosted ? 'On, paid' + (hostedTo ? ' to ' + esc(hostedTo) : '') + '. ' + (String(S.details.phone || '').trim() ? 'Texts end with your number, ' + esc(String(S.details.phone).trim()) + '.' : 'Texts come from a number that cannot take replies. <span class="confirm">Add your mobile in Business above.</span>') : 'Your own accounts instead of ours: a computer and an hour.' + (autoReady() ? ' Set up and working.' : ' Or <a href="' + esc(SITE + '#price') + '" target="_blank" rel="noopener">turn the chasing on</a> instead.')) + '</p>' +
@@ -2079,6 +2132,40 @@
     var hm = document.getElementById('hostedmanage'); if (hm) hm.addEventListener('click', function () { var o = document.getElementById('hostedres'); o.textContent = 'Opening…'; hm.disabled = true; hostedPortal().then(function (u) { o.textContent = ''; hm.disabled = false; window.open(u, '_blank', 'noopener'); }).catch(function (e) { hm.disabled = false; o.textContent = e.message; }); });
     var hc = document.getElementById('hostedcheck'); if (hc) hc.addEventListener('click', function () { var o = document.getElementById('hostedres'); o.textContent = 'Checking…'; hc.disabled = true; renewHosted(true).then(function (j) { hc.disabled = false; if (!j) { o.textContent = 'Could not reach the sending system. Try again later.'; return; } o.textContent = j.active ? (j.status === 'past_due' ? 'Your card needs fixing. Tap Manage.' : 'Paid up to ' + shortDate(j.until)) : 'Cancelled. Runs to ' + shortDate(j.until || S.sending.hosted_until) + '.'; setTimeout(function () { viewSettings(); }, 1200); }).catch(function () { hc.disabled = false; o.textContent = 'Could not reach the sending system.'; }); });
     var scg = document.getElementById('setupcodego'); if (scg) scg.addEventListener('click', function () { var v = document.getElementById('setupcode').value, out = document.getElementById('setupcoderes'), code = setupCode(v); if (!v.trim()) { out.textContent = 'Paste the code first.'; return; } if (!code) { out.textContent = 'That does not look like a set-up code. Copy the whole thing and try again.'; return; } out.textContent = ''; go('/setup?d=' + code); });
+    // Card payments: one tap out to Stripe, one tap back. Nothing to paste, nothing to read.
+    var cres = function () { return document.getElementById('cardres'); };
+    var cgo = document.getElementById('card_go');
+    if (cgo) cgo.addEventListener('click', function () {
+      cgo.disabled = true; if (cres()) cres().textContent = 'Opening Stripe\u2026';
+      payConnect('start').then(function (r) {
+        cgo.disabled = false;
+        if (r && r.off) { S.payment = Object.assign({}, S.payment, { card_off: true }); save(); return viewSettings(); }
+        if (!r || !r.ok || !r.url) { if (cres()) cres().textContent = (r && r.error) || 'That did not work.'; return; }
+        S.payment = Object.assign({}, S.payment, { stripe_started: true, card_off: false }); save();
+        location.href = r.url;
+      });
+    });
+    var cchk = document.getElementById('card_check');
+    if (cchk) cchk.addEventListener('click', function () {
+      cchk.disabled = true; if (cres()) cres().textContent = 'Asking Stripe\u2026';
+      payStatus().then(function (r) { cchk.disabled = false; if (!r) { if (cres()) cres().textContent = 'Could not reach Stripe.'; return; } viewSettings(); });
+    });
+    var cman = document.getElementById('card_manage');
+    if (cman) cman.addEventListener('click', function () {
+      cman.disabled = true; if (cres()) cres().textContent = 'Opening Stripe\u2026';
+      payConnect('manage').then(function (r) {
+        cman.disabled = false;
+        if (!r || !r.ok || !r.url) { if (cres()) cres().textContent = (r && r.error) || 'That did not work.'; return; }
+        openUrl(r.url);
+      });
+    });
+    // Back from Stripe with it half done: ask again, quietly, and no more than once a minute.
+    var pnow = Date.now();
+    if (S.payment && S.payment.stripe_started && S.payment.card_ready !== true && S.payment.card_off !== true &&
+        pnow - (payStatus.at || 0) > 60000) {
+      payStatus.at = pnow;
+      payStatus().then(function (r) { if (r && r.changed) viewSettings(); });
+    }
     var sk = $app.querySelector('[data-bind="stripe.key"]'); sk.addEventListener('input', function () { S.stripe.key = sk.value.trim(); save(); document.getElementById('skwarn').hidden = !(S.stripe.key && !QCStripe.keyLooksRight(S.stripe.key)); });
     wireCalendar();
     document.getElementById('derive').addEventListener('click', function () {
@@ -2322,7 +2409,7 @@
   try { if (QCStore.storageOk && !QCStore.storageOk()) saveTrouble('blocked'); } catch (e) {}
 
   route();
-  window.__qcApp = { route: route, store: QCStore, pricing: QCPricing, openUrl: function (u) { openUrl(u); }, setOpen: function (f) { openUrl = f; } };
+  window.__qcApp = { route: route, store: QCStore, pricing: QCPricing, sync: syncNow, openUrl: function (u) { openUrl(u); }, setOpen: function (f) { openUrl = f; } };
   // W4 helpers for other screens: soft delete with Undo, duplicate, client picker data, paint order text, photo card, message text and greeting
   Object.assign(window.__qcApp, { syncNow: syncNow, retryLocalQueue: retryLocalQueue, showBlock: showBlock, autoSendReady: autoSendReady, autoSendLabel: autoSendLabel, dayDate: dayDate, statusPill: statusPill, deleteJob: deleteJob, restoreJob: restoreJob, duplicateJob: duplicateJob, clients: clients, materialsText: materialsText, photosCard: photosCard, wirePhotos: wirePhotos, chaseText: chaseText, greet: greet, signoff: signoff, jobDesc: jobDesc, scheduleFollowUps: scheduleFollowUps, cancelJobFollowUps: cancelJobFollowUps, cancelQuoteFollowUps: cancelQuoteFollowUps, cancelInvoiceFollowUps: cancelInvoiceFollowUps, pendingFollowUps: pendingFollowUps, waitingFollowUps: waitingFollowUps, lastContact: lastContact, isLandline: QCMsg.isLandline, nextSendTime: function (d, h, st) { return QCCal.nextSendTime(d, h == null ? fuHour() : h, st == null ? stateCode() : st); } });
   // ---------- CSV for the bookkeeper (W3): Xero and MYOB sales-invoice style columns. W4 wires the buttons in Back-up.

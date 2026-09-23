@@ -155,11 +155,13 @@ export async function spend(p, n) {
 export const OUT_OF_MESSAGES = "You are out of messages";
 
 // ---- Stripe REST, form-encoded, no SDK
-export async function stripe(path, form, method) {
+// `account` acts on a connected account (Stripe-Account), which is how a painter's own prices, payment links
+// and payouts are made: his money never passes through ours.
+export async function stripe(path, form, method, account) {
   const key = process.env.STRIPE_SECRET_KEY; if (!key) throw new Error("Not set up: STRIPE_SECRET_KEY");
   const r = await f("https://api.stripe.com/v1/" + path, {
     method: method || (form ? "POST" : "GET"),
-    headers: Object.assign({ Authorization: "Bearer " + key }, form ? { "Content-Type": "application/x-www-form-urlencoded" } : {}),
+    headers: Object.assign({ Authorization: "Bearer " + key }, account ? { "Stripe-Account": String(account) } : {}, form ? { "Content-Type": "application/x-www-form-urlencoded" } : {}),
     body: form ? new URLSearchParams(form).toString() : undefined,
   });
   const j = await r.json().catch(() => ({}));

@@ -116,10 +116,15 @@ export default async function handler(req, res) {
   const replies = await q(
     `select id, job_id, from_addr, body, action, received_at from inbound
       where painter_id=$1 and received_at > $2 order by received_at limit 200`, [p.cus, since]);
+  // Cards paid on his own invoices, so the phone can tick them off without him watching a bank feed. The
+  // table arrives with a migration, so until that has run this is simply empty rather than a broken sync.
+  const payments = await q(
+    `select id, job_id, invoice_no, amount_cents, currency, paid_at from payment
+      where painter_id=$1 and received_at > $2 order by received_at limit 200`, [p.cus, since]).catch(() => ({ rows: [] }));
 
   return send(res, 200, {
     ok: true, now, took: taken,
     changes: changed.rows.map((r) => ({ kind: r.kind, id: r.id, rev: Number(r.rev), deleted: r.deleted, body: r.body })),
-    bookings: bookings.rows, replies: replies.rows, calendar,
+    bookings: bookings.rows, replies: replies.rows, payments: payments.rows, calendar,
   });
 }
