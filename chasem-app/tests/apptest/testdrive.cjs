@@ -18,7 +18,7 @@ const MOCK = () => {
     return Promise.resolve({ json: () => Promise.resolve({ ok: true, id: 'SM1', left: 10, included: 12 }) });
   };
 };
-const joined = () => { try { const k = 'qc-app-v1', s = JSON.parse(localStorage.getItem(k) || '{}'); s.account = { email: 'dave@example.com', joined: '2026-01-01' }; localStorage.setItem(k, JSON.stringify(s)); } catch (e) {} };
+const joined = () => { try { const k = 'qc-app-v1', s = JSON.parse(localStorage.getItem(k) || '{}'); s.account = { email: 'dave@example.com', joined: '2026-01-01' }; s.details = s.details || {}; if (!s.details.trading_name) s.details.trading_name = 'Test Painting Co'; if (!s.details.abn) s.details.abn = '12 345 678 901'; if (!s.details.state) s.details.state = 'SA'; s.security = Object.assign({}, s.security, { setup_done: true }); s.payment = s.payment || { account_name: 'Test Painting Co', bsb: '063-000', account_number: '12345678' }; localStorage.setItem(k, JSON.stringify(s)); } catch (e) {} };
 
 (async () => {
   await new Promise(r => srv.listen(0, r)); const base = 'http://127.0.0.1:' + srv.address().port + '/';

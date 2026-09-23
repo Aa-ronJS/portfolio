@@ -6,8 +6,8 @@ const { boot } = require('./h.cjs');
   const xss = () => p.evaluate(() => window.__xss);
   async function seed(payload) {
     return p.evaluate(pl => {
-      const store = window.__qcApp.store; store.reset(); const S = store.load();
-      S.account = { email: 'test@example.com', joined: store.today(), offline: true }; // reset wipes the account; the app shows the join screen without one
+      const store = window.__qcApp.store; store.reset(); const S = store.load(); S.details.trading_name = S.details.trading_name || 'Test Painting Co'; S.details.abn = S.details.abn || '12 345 678 901'; S.details.state = S.details.state || 'SA'; S.security.setup_done = true; S.payment = S.payment || { account_name: 'Test Painting Co', bsb: '063-000', account_number: '12345678' }; 
+      S.account = { email: 'test@example.com', joined: store.today(), offline: true }; S.details.trading_name = S.details.trading_name || 'Test Painting Co'; S.details.abn = S.details.abn || '12 345 678 901'; S.details.state = S.details.state || 'SA'; S.security.setup_done = true; S.payment = S.payment || { account_name: 'Test Painting Co', bsb: '063-000', account_number: '12345678' };  // reset wipes the account; the app shows the join screen without one
       Object.assign(S.details, { trading_name: pl, owner_name: pl, bsb: '063-000', account_number: '1', account_name: pl, sign_off: pl, other_payments: pl, postcode: '5000', address: pl, abn: pl, email: pl, phone: pl });
       S.wording.included = [pl]; S.wording.excluded = [pl]; S.wording.accept = pl; S.follow_up.quote_days = [1];
       const j = store.newJob(); j.client = { name: pl, phone: pl, email: pl, address: pl + ' 5118' }; j.summary = pl; j.notes = pl;
@@ -21,7 +21,7 @@ const { boot } = require('./h.cjs');
       j.booking = { start: store.today(), days: 2, end: store.addDays(store.today(), 2), end_inclusive: store.addDays(store.today(), 1), hour: 7, gcal: 'https://calendar.google.com/?text=' + pl };
       j.visit = { date: store.addDays(store.today(), 1), start_min: 540, minutes: 30, why: pl, gcal: 'javascript:window.__xss=1' };
       j.ballpark = { low: 100, high: 200 }; j.picks = [{ type: 'bedroom', size: 'M', n: 1 }];
-      store.save(); return { id: j.id, rid: r.id, rid2: r2.id };
+      S.details.abn = '12 345 678 901'; S.details.state = 'SA'; S.security.setup_done = true; S.payment = { account_name: 'Test', bsb: '063-000', account_number: '12345678' }; store.save(); return { id: j.id, rid: r.id, rid2: r2.id };
     }, payload);
   }
   for (const [pl, label] of [[P1, 'img onerror'], [P2, 'svg onload breakout']]) {

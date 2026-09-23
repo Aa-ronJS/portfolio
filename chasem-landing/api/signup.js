@@ -20,7 +20,7 @@ ${link}
 
 It puts your business name on every quote and switches your sending on, with ${env.free} messages to start. A message is one text or one email the app sends for you: a quote going out, a nudge to someone who has gone quiet, a reminder on an invoice past its date.
 
-Three things worth five minutes, all inside the app: your prices (it asks what you charge for a day on the tools and works the rest out), your bank details so invoices can be paid, and a look at the wording of the nudges so they sound like you.
+Open it and it walks you through the five things it needs. Nothing else to read.
 
 When the ${env.free} run out, ${env.subscribe ? "one tap in the app tops you up to " + env.included + " a month." : "you can top up from inside the app."} Nothing sends to a customer until you tap Start on that job.
 
@@ -60,7 +60,9 @@ export default async function handler(req, res) {
   const sending = sendingSettings(token, "", details.trading_name || details.owner_name || "");
   if (sending.server) payload.settings.sending = sending;
   const link = setupLink(process.env.APP_URL, payload);
-  const out = { ok: true, link, free: FREE_MESSAGES, emailed: false, returning: String((cus.metadata || {}).qc_used || "") !== "" };
+  // The link carries a working account, so it goes to the inbox and nowhere else. Handing it back to whoever
+  // typed the address would be an account takeover by guessing an email.
+  const out = { ok: true, free: FREE_MESSAGES, emailed: false, returning: String((cus.metadata || {}).qc_used || "") !== "" };
   try { const m = welcome(details, link, { free: FREE_MESSAGES, included: Number(process.env.INCLUDED_MESSAGES || 100), subscribe: !!process.env.SUBSCRIBE_URL, support: process.env.SUPPORT_EMAIL || "" });
     await sendEmail(creds(), { to: [addr], reply_to: process.env.SUPPORT_EMAIL || undefined, subject: m.subject, text: m.text }); out.emailed = true;
   } catch (e) { out.email_error = e.message; }

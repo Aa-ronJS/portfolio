@@ -1,3 +1,4 @@
+const __WALLDONE = () => { const st = window.__qcApp.store, S = st.load(); S.details.trading_name = S.details.trading_name || 'Test Painting Co'; if (!/\d{11}/.test(String(S.details.abn || '').replace(/\D/g, ''))) S.details.abn = '12 345 678 901'; S.details.state = S.details.state || 'SA'; S.security.setup_done = true; S.payment = S.payment || { account_name: 'Test', bsb: '063-000', account_number: '12345678' }; st.save(); };
 // End to end: the maker's link builder produces a link; the app loads it; the settings, prices and jobs land; the scoreboard appears.
 const { chromium, devices } = require('playwright-core');
 const http = require('http'), fs = require('fs'), path = require('path');
@@ -11,13 +12,16 @@ let fails = 0; const ok = (c, m) => { console.log((c ? 'PASS ' : 'FAIL ') + m); 
   const b = await chromium.launch({ executablePath: (process.env.QC_CHROME || '/opt/pw-browsers/chromium-1194/chrome-linux/chrome'), args: ['--no-sandbox'] });
   const ctx = await b.newContext({ ...devices['iPhone 13'], serviceWorkers: 'block' }); const p = await ctx.newPage(); const errors = []; p.on('pageerror', e => errors.push(e.message));
   await p.goto(landBase + 'prefill', { waitUntil: 'load' });
+  await p.evaluate(__WALLDONE).catch(() => {});
   await p.fill('#trading_name', 'Dave Painting'); await p.fill('#owner_name', 'Dave Steele'); await p.fill('#abn', '51 824 753 556'); await p.selectOption('#state', 'VIC'); await p.fill('#phone', '0412 345 678'); await p.fill('#email', 'dave@example.com'); await p.fill('#postcode', '3350');
   await p.fill('#prices', 'p_walls = 24\np_ceiling = 26'); await p.fill('#jobs', 'Margaret Hanley | 0411 222 333 | 8 Beaumont St Ballarat VIC 3350 | Lounge and hall repaint | 2450 | quoted\nRay White Ballarat | 0400 111 222 | 3/22 Sturt St Ballarat | Unit 3 repaint | 1800 | invoiced');
   await p.fill('#server', 'https://relay.example/api/msg'); await p.fill('#token', 'qc_testtoken1234'); await p.fill('#hosted_until', '2026-12-20'); await p.fill('#scoreboard_start', '2026-09-21'); await p.fill('#note', 'Set up by Aaron, 21 Sep'); await p.fill('#app_url', appBase);
   await p.click('#build'); await p.waitForFunction(() => /#\/setup\?d=/.test(document.getElementById('out').textContent)); const link = await p.$eval('#out', e => e.textContent);
   ok(/^http:\/\/127\.0\.0\.1:\d+\/#\/setup\?d=z:/.test(link), 'builder produced a compressed link (' + link.length + ' chars)');
   await p.goto(appBase, { waitUntil: 'load' }); await p.evaluate(() => { window.__qcApp.store.reset(); const S = window.__qcApp.store.load(); S.details.trading_name = 'Old Name'; S.details.email = 'old@example.com'; window.__qcApp.store.save(); });
+  await p.evaluate(__WALLDONE).catch(() => {});
   await p.goto(link, { waitUntil: 'load' }); await p.evaluate(() => window.__qcApp.route()); await p.waitForSelector('#setupload', { timeout: 8000 });
+  await p.evaluate(__WALLDONE).catch(() => {});
   const confirm = await p.$eval('#app', e => e.innerText);
   ok(/Set up your app/.test(confirm) && /Set up by Aaron, 21 Sep/.test(confirm) && /Jobs\s*2|2 jobs/i.test(confirm) && /20 December 2026|2026-12-20|until/.test(confirm), 'confirm screen lists what the link holds: ' + confirm.replace(/\s+/g, ' ').slice(0, 200));
   await p.click('#setupload'); await p.waitForTimeout(600);

@@ -28,7 +28,7 @@ const seedJs = () => {
   const p = mk('Paid Person', 'paid'); freeze(p, 50); p.invoices = [inv(p, 'full', 'INV-2003', 40, 33, true, { paid_by: 'card' })];
   const dc = mk('Declined Person', 'declined'); freeze(dc, 20);
   const nr = mk('Noroom Person', 'draft'); nr.rooms = []; nr.client.name = 'Noroom Person';
-  S.account = { email: 'sam@example.com', joined: today, offline: true }; S.setup_done = true;
+  S.account = { email: 'sam@example.com', joined: today, offline: true }; S.details.trading_name = S.details.trading_name || 'Test Painting Co'; S.details.abn = S.details.abn || '12 345 678 901'; S.details.state = S.details.state || 'SA'; S.security.setup_done = true; S.payment = S.payment || { account_name: 'Test Painting Co', bsb: '063-000', account_number: '12345678' };  S.setup_done = true;
   S.next_invoice = 2004; st.save();
   return { enquiry: e.id, draft: d.id, quoted: q.id, accepted: a.id, invoiced: i.id, paid: p.id, declined: dc.id, noroom: nr.id, room: d.rooms[0].id };
 };
@@ -37,7 +37,7 @@ const seedJs = () => {
 const ACCOUNT = { email: 'test@example.com', joined: '2026-01-01', offline: true };
 const joinScript = () => {
   const ACC = { email: 'test@example.com', joined: '2026-01-01', offline: true };
-  const seed = () => { try { const raw = localStorage.getItem('qc-app-v1'); const s = raw ? JSON.parse(raw) : {}; if (!s.account || !s.account.email) { s.account = ACC; localStorage.setItem('qc-app-v1', JSON.stringify(s)); } } catch (e) {} };
+  const seed = () => { try { const raw = localStorage.getItem('qc-app-v1'); const s = raw ? JSON.parse(raw) : {}; if (!s.account || !s.account.email) { s.account = ACC; s.details = s.details || {}; if (!s.details.trading_name) s.details.trading_name = 'Test Painting Co'; if (!s.details.abn) s.details.abn = '12 345 678 901'; if (!s.details.state) s.details.state = 'SA'; s.security = Object.assign({}, s.security, { setup_done: true }); s.payment = s.payment || { account_name: 'Test Painting Co', bsb: '063-000', account_number: '12345678' };  localStorage.setItem('qc-app-v1', JSON.stringify(s)); } } catch (e) {} };
   seed();
   // localStorage.clear() in a test wipes the account too, so put it straight back
   const realClear = localStorage.clear.bind(localStorage);

@@ -134,3 +134,17 @@ a.sec.link::after{content:'\203A';color:var(--muted);font-size:1.4rem;line-heigh
 .steps li a{min-height:44px;display:inline-flex;align-items:center;font-weight:600}
 .hint,.muted,.fine,.cap,.tag,.pill,label.f>span{font-size:.82rem}
 @media (max-width:420px){.hint,.muted,.fine,.cap{font-size:.86rem}}
+
+/* The wall: one question, nothing else on the screen. */
+.wall{max-width:440px;margin:18px auto 0;display:grid;gap:14px}
+.wall h1{margin:0;font-size:1.5rem;line-height:1.2}
+.wall .f input{font-size:1.15rem;padding:14px 12px}
+.btn.lg{font-size:1.05rem;padding:14px 20px;min-height:52px}
+.row.wrap{flex-wrap:wrap}
+.wallsteps{list-style:none;margin:8px 0 0;padding:0;display:grid;gap:6px}
+.wallsteps li{color:var(--muted);font-size:.86rem;padding-left:24px;position:relative}
+.wallsteps li::before{content:'';position:absolute;left:0;top:.35em;width:13px;height:13px;border-radius:50%;border:2px solid var(--line)}
+.wallsteps li.done{color:var(--ink)}
+.wallsteps li.done::before{background:var(--ok);border-color:var(--ok)}
+.wallsteps li.now{color:var(--ink);font-weight:700}
+.wallsteps li.now::before{border-color:var(--tape)}

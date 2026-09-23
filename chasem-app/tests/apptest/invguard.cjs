@@ -1,6 +1,7 @@
+const __WALLDONE = () => { const st = window.__qcApp.store, S = st.load(); S.details.trading_name = S.details.trading_name || 'Test Painting Co'; if (!/\d{11}/.test(String(S.details.abn || '').replace(/\D/g, ''))) S.details.abn = '12 345 678 901'; S.details.state = S.details.state || 'SA'; S.security.setup_done = true; S.payment = S.payment || { account_name: 'Test', bsb: '063-000', account_number: '12345678' }; st.save(); };
 const __OPEN_SEC = () => { const f = () => document.querySelectorAll('details.sec:not([open])').forEach(d => { d.open = true; }); new MutationObserver(f).observe(document, { childList: true, subtree: true }); }; // tests see every settings section open
 // Invoice guards and money flow: kinds offered per state, 3x rule, ABN block, deposit + progress + final = quote, payments and balance, void, credit note, refund, reopen, quote revisions and lock.
-const __JOINED = () => { try { const k = 'qc-app-v1', raw = localStorage.getItem(k); const s = raw ? JSON.parse(raw) : {}; s.account = Object.assign({ email: 'test@example.com', joined: '2026-01-01' }, s.account || {}); localStorage.setItem(k, JSON.stringify(s)); } catch (e) {} }; // the app asks for an email before it opens; these suites are about what comes after
+const __JOINED = () => { try { const k = 'qc-app-v1', raw = localStorage.getItem(k); const s = raw ? JSON.parse(raw) : {}; s.account = Object.assign({ email: 'test@example.com', joined: '2026-01-01' }, s.account || {}); s.details = s.details || {}; if (!s.details.trading_name) s.details.trading_name = 'Test Painting Co'; if (!s.details.abn) s.details.abn = '12 345 678 901'; if (!s.details.state) s.details.state = 'SA'; s.security = Object.assign({}, s.security, { setup_done: true }); s.payment = s.payment || { account_name: 'Test Painting Co', bsb: '063-000', account_number: '12345678' }; localStorage.setItem(k, JSON.stringify(s)); } catch (e) {} }; // the app asks for an email before it opens; these suites are about what comes after
 const { chromium, devices } = require('playwright-core');
 const http = require('http'), fs = require('fs'), path = require('path');
 const ROOT = require('path').join(__dirname, '../..');
@@ -14,9 +15,11 @@ const near = (a, b) => Math.abs(a - b) < 0.006;
   const ctx = await b.newContext({ ...devices['iPhone 13'], acceptDownloads: true }); const p = await ctx.newPage(); await p.addInitScript(__JOINED); await p.addInitScript(__OPEN_SEC);
   const errors = []; p.on('pageerror', e => { errors.push(e.message); console.log('PAGE ERROR', e.message); }); p.on('dialog', d => d.accept());
   await p.goto(base, { waitUntil: 'load' });
+  await p.evaluate(__WALLDONE).catch(() => {});
   await p.evaluate(() => { window.__toasts = []; const t = document.getElementById('toast'); new MutationObserver(() => { if (!t.hidden && t.textContent) window.__toasts.push(t.textContent); }).observe(t, { childList: true, attributes: true, characterData: true, subtree: true }); });
   // seed: three frozen quotes (accepted, declined, quoted), 10% deposit in NSW (cap 10%, so nothing is trimmed), GST on
   const ids = await p.evaluate(() => { const st = window.__qcApp.store, S = st.load(); Object.assign(S.details, { trading_name: 'T', abn: '12 345 678 901', deposit_pct: 10, gst: true, state: 'NSW' }); const mk = (status) => { const j = st.newJob(); j.client = { name: 'Guard Person', phone: '0411 000 000', email: '', address: '1 St Adelaide 5000', type: 'homeowner', first_name: '', abn: '', bill_to: '' }; const r = st.newRoom('interior'); r.L = 4; r.W = 3; j.rooms = [r]; const pr = window.__qcApp.priceLive(j); j.quote = { date: st.today(), version: 1, number: j.quote_no, history: [], lines: pr.lines, options: [], subtotal: pr.subtotal, gst: pr.gst, total: pr.total, deposit: pr.deposit, deposit_pct: pr.deposit_pct, assumptions: pr.assumptions }; j.sent_date = st.today(); j.status = status; return j; }; const a = mk('accepted'), d = mk('declined'), q = mk('quoted'); st.save(); return { a: a.id, d: d.id, q: q.id, total: a.quote.total, qno: a.quote_no }; });
+  await p.evaluate(__WALLDONE).catch(() => {});
   const text = () => p.$eval('#app', e => e.innerText); const kinds = () => p.$$eval('#kind option', os => os.map(o => o.value)).catch(() => []);
   const lastToast = () => p.evaluate(() => window.__toasts[window.__toasts.length - 1] || '');
   const lastBlock = () => p.$eval('#invblock', e => e.textContent).catch(() => ''); // blocking messages sit inline next to the button now, not in a toast
@@ -24,7 +27,8 @@ const near = (a, b) => Math.abs(a - b) < 0.006;
   const sendDoc = async (clickSel) => { if (clickSel) await p.click(clickSel); const v = await p.waitForSelector('#qcv_send', { timeout: 4000 }).catch(() => null); if (!v) return null; const [dl] = await Promise.all([p.waitForEvent('download', { timeout: 15000 }).catch(() => null), p.click('#qcv_send')]); await p.waitForSelector('#didgo', { timeout: 10000 }); await p.click('#didgo [data-didgo="text"]'); await p.waitForTimeout(400); return dl; };
   const openForm = async () => { if (await p.$('#nextinv')) { await p.click('#nextinv'); await p.waitForSelector('#mkinv'); } };
 
-  const nav = async (h) => { await p.goto(base + h, { waitUntil: 'load' }); await p.evaluate(() => window.__qcApp.route()); await p.waitForTimeout(250); }; // same-URL goto does not re-render, so route() after it
+  const nav = async (h) => { await p.goto(base + h, { waitUntil: 'load' }); await p.evaluate(__WALLDONE).catch(() => {}); await p.evaluate(() => window.__qcApp.route()); await p.waitForTimeout(250); }; // same-URL goto does not re-render, so route() after it
+  await p.evaluate(__WALLDONE).catch(() => {});
   const job = (id) => p.evaluate(id => JSON.parse(JSON.stringify(window.__qcApp.store.load().jobs.find(j => j.id === id))), id);
   const invs = async (id) => (await job(id)).invoices.map(i => ({ kind: i.kind, total: i.total, no: i.no, paid: i.paid_date, void: !!i.void, pays: (i.payments || []).length, dep: i.deposit_invoice_no || '' }));
   const mkinv = async (kind, before) => { await openForm(); await p.selectOption('#kind', kind); if (before) await before(); await sendDoc('#mkinv'); await p.waitForTimeout(600); return invs(ids.a); };
@@ -34,10 +38,15 @@ const near = (a, b) => Math.abs(a - b) < 0.006;
   // ---- kinds on a fresh accepted job
   await nav('#/job/' + ids.a + '/invoice'); let k = await kinds(); ok(JSON.stringify(k) === '["deposit","progress","final"]', 'fresh job offers deposit / progress / final: ' + JSON.stringify(k));
   ok(/Deposit, 10% of the quote/.test(await text()), 'deposit kind names the percentage');
-  // ---- ABN blank with GST on blocks any invoice
-  await p.evaluate(() => { const S = window.__qcApp.store.load(); S.details.abn = ''; window.__qcApp.store.save(); }); await nav('#/job/' + ids.a + '/invoice');
-  let list = await mkinv('deposit'); ok(list.length === 0 && /ABN/.test(await lastBlock()), 'no ABN + GST on: invoice blocked with an inline ABN message: ' + await lastBlock());
+  // ---- an invoice with no ABN is no longer a thing that can happen: the set-up wall asks for one before
+  // anything, and clearing it puts him straight back there rather than letting an invoice go out without it.
+  // no reload here: a fresh page re-runs this suite's own seeding, which would put the ABN straight back
+  await p.evaluate(() => { const S = window.__qcApp.store.load(); S.details.abn = ''; window.__qcApp.store.save(); location.hash = '#/'; });
+  await p.waitForTimeout(300); await p.evaluate(() => window.__qcApp.route()); await p.waitForTimeout(400);
+  const walled = await p.$eval('#app', e => e.innerText);
+  ok(/Your ABN/.test(walled) && /of 5/.test(walled), 'clearing the ABN puts him back at set-up, so no invoice can be raised without one');
   await p.evaluate(() => { const S = window.__qcApp.store.load(); S.details.abn = '12 345 678 901'; window.__qcApp.store.save(); });
+  let list;
   // ---- 3x rule through an agreed variation
   await p.evaluate((id) => { const st = window.__qcApp.store, j = st.load().jobs.find(j => j.id === id); j.variations.push({ id: 'huge', n: 1, date: st.today(), desc: 'Huge extra', amount: Math.round(j.quote.total * 4), how_agreed: 'text', agreed_date: st.today(), status: 'agreed', invoiced: false }); st.save(); }, ids.a);
   await nav('#/job/' + ids.a + '/invoice'); list = await mkinv('final'); ok(list.length === 0 && /3×|three times/.test(await lastBlock()), 'final at 4x the quote is blocked: ' + await lastBlock());

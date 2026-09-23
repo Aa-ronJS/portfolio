@@ -1,6 +1,6 @@
 // The set-up link (#/setup?d=j:... / z:...), the paste-the-code field, hosted sending wording and expiry, the Scoreboard.
 const __OPEN_SEC = () => { const f = () => document.querySelectorAll('details.sec:not([open])').forEach(d => { d.open = true; }); new MutationObserver(f).observe(document, { childList: true, subtree: true }); };
-const __JOINED = () => { try { const k = 'qc-app-v1', raw = localStorage.getItem(k); const s = raw ? JSON.parse(raw) : {}; s.account = Object.assign({ email: 'test@example.com', joined: '2026-01-01' }, s.account || {}); localStorage.setItem(k, JSON.stringify(s)); } catch (e) {} }; // the app asks for an email before it opens; these suites are about what comes after
+const __JOINED = () => { try { const k = 'qc-app-v1', raw = localStorage.getItem(k); const s = raw ? JSON.parse(raw) : {}; s.account = Object.assign({ email: 'test@example.com', joined: '2026-01-01' }, s.account || {}); s.details = s.details || {}; if (!s.details.trading_name) s.details.trading_name = 'Test Painting Co'; if (!s.details.abn) s.details.abn = '12 345 678 901'; if (!s.details.state) s.details.state = 'SA'; s.security = Object.assign({}, s.security, { setup_done: true }); s.payment = s.payment || { account_name: 'Test Painting Co', bsb: '063-000', account_number: '12345678' }; localStorage.setItem(k, JSON.stringify(s)); } catch (e) {} }; // the app asks for an email before it opens; these suites are about what comes after
 const { chromium, devices } = require('playwright-core');
 const http = require('http'), fs = require('fs'), path = require('path'), zlib = require('zlib');
 const ROOT = require('path').join(__dirname, '../..');
@@ -102,7 +102,7 @@ const isoDays = n => { const d = new Date(); d.setDate(d.getDate() + n); return 
   const roundtrip = await p.evaluate(code => window.__qcApp.decodeSetup(code).then(o => o.settings.details.insurance), hook.code); ok(roundtrip === 'Pol 9', 'decodeSetup reads what encodeSetup wrote');
   // ---- Scoreboard on a seeded state
   await p.evaluate(start => {
-    const st = window.__qcApp.store; st.reset(); const S = st.load(), T = st.today(), D = n => st.addDays(T, n); S.account = { email: 'test@example.com', joined: T }; // reset wipes the account too, as it should
+    const st = window.__qcApp.store; st.reset(); const S = st.load(); S.details.trading_name = S.details.trading_name || 'Test Painting Co'; S.details.abn = S.details.abn || '12 345 678 901'; S.details.state = S.details.state || 'SA'; S.security.setup_done = true; S.payment = S.payment || { account_name: 'Test Painting Co', bsb: '063-000', account_number: '12345678' }; const T0 = 0, T = st.today(), D = n => st.addDays(T, n); S.account = { email: 'test@example.com', joined: T }; // reset wipes the account too, as it should
     Object.assign(S.details, { trading_name: 'Test Painting Co', owner_name: 'Sam Tester' }); S.ui = { scoreboard_start: start };
     const iso = (day, h) => new Date(day + 'T' + (h < 10 ? '0' : '') + h + ':00:00').toISOString();
     const mk = (name, extra) => st.normaliseJob(Object.assign({ id: 'sb_' + name.toLowerCase(), client: { name, phone: '0411 222 333' }, status: 'quoted', quote: { total: 1100, subtotal: 1000, gst: 100, lines: [] } }, extra));

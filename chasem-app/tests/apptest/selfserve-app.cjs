@@ -1,6 +1,7 @@
+const __WALLDONE = () => { const st = window.__qcApp.store, S = st.load(); S.details.trading_name = S.details.trading_name || 'Test Painting Co'; if (!/\d{11}/.test(String(S.details.abn || '').replace(/\D/g, ''))) S.details.abn = '12 345 678 901'; S.details.state = S.details.state || 'SA'; S.security.setup_done = true; S.payment = S.payment || { account_name: 'Test', bsb: '063-000', account_number: '12345678' }; st.save(); };
 // Hands-off app: the price wizard that replaces the phone call, the subscription that renews itself, manage/cancel, and the banners.
 const __OPEN_SEC = () => { const f = () => document.querySelectorAll('details.sec:not([open])').forEach(d => { d.open = true; }); new MutationObserver(f).observe(document, { childList: true, subtree: true }); };
-const __JOINED = () => { try { const k = 'qc-app-v1', raw = localStorage.getItem(k); const s = raw ? JSON.parse(raw) : {}; s.account = Object.assign({ email: 'test@example.com', joined: '2026-01-01' }, s.account || {}); localStorage.setItem(k, JSON.stringify(s)); } catch (e) {} }; // the app asks for an email before it opens; these suites are about what comes after
+const __JOINED = () => { try { const k = 'qc-app-v1', raw = localStorage.getItem(k); const s = raw ? JSON.parse(raw) : {}; s.account = Object.assign({ email: 'test@example.com', joined: '2026-01-01' }, s.account || {}); s.details = s.details || {}; if (!s.details.trading_name) s.details.trading_name = 'Test Painting Co'; if (!s.details.abn) s.details.abn = '12 345 678 901'; if (!s.details.state) s.details.state = 'SA'; s.security = Object.assign({}, s.security, { setup_done: true }); s.payment = s.payment || { account_name: 'Test Painting Co', bsb: '063-000', account_number: '12345678' }; localStorage.setItem(k, JSON.stringify(s)); } catch (e) {} }; // the app asks for an email before it opens; these suites are about what comes after
 const { chromium, devices } = require('playwright-core');
 const http = require('http'), fs = require('fs'), path = require('path');
 const ROOT = require('path').join(__dirname, '../..');
@@ -23,14 +24,19 @@ const MOCK = () => { let saved = null; try { saved = JSON.parse(sessionStorage.g
   const setMock = (m) => p.evaluate(m => { window.__qcMock = Object.assign(window.__qcMock || {}, m); try { sessionStorage.setItem('qcmock', JSON.stringify(window.__qcMock)); } catch (e) {} }, m);
   const toastText = async () => { await p.waitForSelector('#toast:not([hidden])', { timeout: 4000 }).catch(() => null); return p.$eval('#toast', e => e.textContent).catch(() => ''); };
   await p.goto(base, { waitUntil: 'load' });
+  await p.evaluate(__WALLDONE).catch(() => {});
 
   // ---- nobody's name is in the app any more
   const src = fs.readFileSync(ROOT + '/app.js', 'utf8'); ok(!/Aaron/.test(src), 'no person is named anywhere in the app');
   // ---- the set-up card names the four self-service steps and links them
   await p.evaluate(() => { const st = window.__qcApp.store, S = st.load(); S.details.trading_name = 'Daves Painting'; st.save(); });
+  await p.evaluate(__WALLDONE).catch(() => {});
   await p.goto(base + '#/', { waitUntil: 'load' }); await p.reload({ waitUntil: 'load' }); await p.waitForSelector('#setupcard'); let t = await text();
-  ok(/1 of 4 done/.test(t) && /Make the prices yours/.test(t) && /Let it chase for you/.test(t) && /Ten minutes, whenever suits/.test(t), 'set-up card: four steps, done alone: ' + t.slice(t.indexOf('Set up'), t.indexOf('Set up') + 120).replace(/\n/g, ' '));
-  ok(await p.$('#setupcard a[href="#/myprices"]'), 'the prices step is a link to the wizard');
+  await p.evaluate(__WALLDONE).catch(() => {});
+  // the wall now makes him do his name, ABN, state, prices and how he gets paid before he reaches Home at
+  // all, so the only thing left to nudge about is letting it chase
+  ok(/Let it chase for you/.test(t) && /without you/.test(t) && !/of 4 done/.test(t), 'home nudges the one thing left, and no longer duplicates the wall: ' + t.replace(/\s+/g, ' ').slice(0, 90));
+  ok(await p.$('#setupcard a[href="#/settings"]'), 'the nudge links to where sending is turned on');
 
   // ---- 1. prices from a day rate
   await p.goto(base + '#/myprices', { waitUntil: 'load' }); await p.waitForSelector('#mp_daygo'); t = await text();
@@ -42,7 +48,7 @@ const MOCK = () => { let saved = null; try { saved = JSON.parse(sessionStorage.g
   let S = await state();
   ok(S.costing.labour_rate === 95 && S.costing.margin_pct === 45 && S.prices.p_walls > 0 && S.prices.p_walls !== before && S.security.setup_done === true, 'day rate becomes an hourly cost and every price moves: walls ' + before + ' -> ' + S.prices.p_walls);
   // ---- 2. prices matched to a job he already quoted
-  await p.evaluate(() => { const st = window.__qcApp.store, S = st.load(), d = st.defaults().prices; Object.keys(d).forEach(k => { S.prices[k] = d[k]; }); S.security.setup_done = false; st.save(); });
+  await p.evaluate(() => { const st = window.__qcApp.store, S = st.load(), d = st.defaults().prices; Object.keys(d).forEach(k => { S.prices[k] = d[k]; }); st.save(); });  // setup_done is the wall's flag now, not the wizard's
   await p.goto(base + '#/myprices', { waitUntil: 'load' }); await p.waitForSelector('#mp_jobgo');
   const startWalls = await p.evaluate(() => window.__qcApp.store.load().prices.p_walls);
   await p.fill('#mp_w', '4'); await p.fill('#mp_l', '5'); await p.fill('#mp_price', '2400'); await p.click('#mp_jobgo');

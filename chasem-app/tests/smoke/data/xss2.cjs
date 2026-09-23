@@ -5,7 +5,7 @@ const { boot } = require('./h.cjs');
   const P1 = '<img src=x onerror="window.__xss=1">', P2 = '"><svg onload=window.__xss=1>';
   async function seed(pl, tier) {
     return p.evaluate(([pl, tier]) => {
-      const store = window.__qcApp.store; store.reset(); const S = store.load();
+      const store = window.__qcApp.store; store.reset(); const S = store.load(); S.details.trading_name = S.details.trading_name || 'Test Painting Co'; S.details.abn = S.details.abn || '12 345 678 901'; S.details.state = S.details.state || 'SA'; S.security.setup_done = true; S.payment = S.payment || { account_name: 'Test Painting Co', bsb: '063-000', account_number: '12345678' }; 
       // UI tier: only fields a user can type in the app (settings text inputs, job/client fields, room/wall/extra names)
       Object.assign(S.details, { trading_name: pl, owner_name: pl, bsb: '063-000', account_number: '1', account_name: pl, sign_off: pl, other_payments: pl, postcode: '5000', address: pl, abn: pl, email: pl, phone: pl });
       S.wording.included = [pl]; S.wording.excluded = [pl]; S.wording.accept = pl; S.follow_up.quote_days = [1];

@@ -10,9 +10,9 @@ let fails = 0; const ok = (c, m) => { console.log((c ? 'PASS ' : 'FAIL ') + m); 
 const b64u = buf => Buffer.from(buf).toString('base64').replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, '');
 const jcode = obj => 'j:' + b64u(Buffer.from(JSON.stringify(obj), 'utf8'));
 const MOCK = () => { window.__qcCalls = []; let saved = null; try { saved = JSON.parse(sessionStorage.getItem('qcmock') || 'null'); } catch (e) {}
-  window.__qcMock = saved || { signup: null, relay: { ok: true, id: 'ID1' }, topup: { ok: true, messages: 100, charged: 35, left: 100, used: 0, included: 100 }, seat: { ok: true, seat: 2, link: 'https://x/app/#/setup?d=j:eyJ2IjoxfQ' } };
+  window.__qcMock = saved || { signup: null, signin: null, relay: { ok: true, id: 'ID1' }, topup: { ok: true, messages: 100, charged: 35, left: 100, used: 0, included: 100 }, seat: { ok: true, seat: 2, link: 'https://x/app/#/setup?d=j:eyJ2IjoxfQ' } };
   window.__qcRelayFetch = (u, o) => { const b = JSON.parse(o.body); window.__qcCalls.push({ url: u, body: b });
-    const r = /\/signup$/.test(u) ? window.__qcMock.signup : /\/topup$/.test(u) ? window.__qcMock.topup : /\/seat$/.test(u) ? window.__qcMock.seat : window.__qcMock.relay;
+    const r = /\/signin$/.test(u) ? window.__qcMock.signin : /\/signup$/.test(u) ? window.__qcMock.signup : /\/topup$/.test(u) ? window.__qcMock.topup : /\/seat$/.test(u) ? window.__qcMock.seat : window.__qcMock.relay;
     return Promise.resolve({ json: () => Promise.resolve(r) }); }; };
 
 (async () => {
@@ -28,7 +28,7 @@ const MOCK = () => { window.__qcCalls = []; let saved = null; try { saved = JSON
   // ---- the door: nothing works until the app knows whose it is
   cfg = "window.QC_APP = { maps_key: '', signup_url: 'https://relay.example.test/api/signup' };";
   await p.goto(base, { waitUntil: 'load' }); await p.waitForSelector('#joinform'); let t = await text();
-  ok(/Chasem/.test(t) && /three jobs free, chased to the end: 12 messages/.test(t) && /\$99 a month for 150/.test(t) && /a pack of 100 more is \$35/.test(t), 'the door states the free jobs, the plan and the pack: ' + t.replace(/\s+/g, ' ').slice(0, 90));
+  ok(/Chasem/.test(t) && /three jobs free, chased to the end: 12 messages/.test(t) && /\$99 a month for 150/.test(t) && /pack of 100 more is \$35/i.test(t), 'the door states the free jobs, the plan and the pack: ' + t.replace(/\s+/g, ' ').slice(0, 90));
   ok(/a job start to finish is usually four or five/.test(t) && /about 30 jobs/.test(t), 'the door says what a job actually costs in messages, before he has typed anything');
   ok(/A message is one text or one email the app sends for you/.test(t), 'it says what a message is before asking for anything');
   ok(/On this phone/.test(t) && /in your account too/.test(t) && /Keys and PIN stay here/.test(t), 'it says what is kept and what is not');
@@ -37,17 +37,24 @@ const MOCK = () => { window.__qcCalls = []; let saved = null; try { saved = JSON
   ok(/does not look like an email/.test(await p.$eval('#join_msg', e => e.textContent)), 'a bad address is refused on the phone, before any request');
   // the relay answers with a set-up link carrying the token and the free twelve
   const payload = { v: 1, settings: { details: { email: 'dave@example.com', trading_name: "Dave's Painting" }, sending: { server: 'https://relay.example.test/api/msg', token: 'qc1.FREE.SIG', server_has_creds: true, hosted: true, hosted_until: '', hosted_name: "Dave's Painting" } }, jobs: [], note: 'Your app, ready to go.' };
-  await setMock({ signup: { ok: true, free: 12, emailed: true, link: 'https://x/app/#/setup?d=' + jcode(payload) } });
-  await p.fill('#join_email', 'dave@example.com'); await p.fill('#join_name', "Dave's Painting"); await p.click('#join_go');
-  await p.waitForSelector('#setupload', { timeout: 6000 }); t = await text();
-  ok(/Set up your app\?/.test(t) && /Sending\s*on, in your name/.test(t), 'signing up lands on the set-up screen with sending on');
-  const call1 = await p.evaluate(() => window.__qcCalls.find(c => /signup/.test(c.url)));
-  ok(call1 && call1.body.email === 'dave@example.com' && call1.body.trading_name === "Dave's Painting", 'the email and business name go to the relay, nothing else');
-  await p.click('#setupload'); await p.waitForFunction(() => location.hash === '#/' || location.hash === '');
+  // the code step, then the account
+  await setMock({ signin: { ok: true, sent: true } });
+  await p.fill('#join_email', 'dave@example.com'); await p.click('#join_go'); await p.waitForTimeout(700);
+  await setMock({ signin: { ok: true, token: 'qc1.FREE.SIG', cus: 'cus_free1',
+    sending: { server: 'https://relay.example.test/api/msg', token: 'qc1.FREE.SIG', server_has_creds: true, hosted: true },
+    setup: payload } });
+  await p.fill('#join_code', '654321'); await p.waitForTimeout(900);
   let S = await state();
-  ok(S.account.email === 'dave@example.com' && S.sending.token === 'qc1.FREE.SIG' && S.details.trading_name === "Dave's Painting", 'the account, the token and the name are on the phone');
+  ok(S.account.email === 'dave@example.com' && S.sending.token === 'qc1.FREE.SIG', 'the account and the token are on the phone once the code is right');
+  ok(S.details.trading_name === "Dave's Painting", 'and his details came back with the account');
+  // a new account meets the wall, not the jobs list
+  t = await text();
+  ok(/of 5/.test(t), 'a new account is walked through set-up before anything else: ' + t.replace(/\s+/g, ' ').slice(0, 60));
+  await p.evaluate(() => { const st = window.__qcApp.store, S2 = st.load();
+    S2.details.abn = '12 345 678 901'; S2.details.state = 'SA'; S2.security.setup_done = true;
+    S2.payment = { account_name: 'Dave', bsb: '063-000', account_number: '12345678' }; st.save(); });
   await p.goto(base + '#/', { waitUntil: 'load' }); await p.reload({ waitUntil: 'load' }); await p.waitForSelector('h1'); t = await text();
-  ok(/Jobs/.test(t) && !(await p.$('#joinform')), 'from then on the app opens straight to the jobs');
+  ok(/Jobs/.test(t) && !(await p.$('#joinform')), 'and once set up it opens straight to the jobs');
 
   // ---- the balance, wherever it matters
   await setMock({ relay: { ok: true, id: 'SM1', left: 11, used: 1, included: 12, plan: 'free', period: 'once' } });
@@ -132,7 +139,7 @@ const MOCK = () => { window.__qcCalls = []; let saved = null; try { saved = JSON
   await p.evaluate(() => { try { localStorage.clear(); sessionStorage.removeItem('qcmock'); } catch (e) {} });
   cfg = "window.QC_APP = { maps_key: '', signup_url: '' };";
   await p.goto(base, { waitUntil: 'load' }); await p.waitForSelector('#joinform'); t = await text();
-  ok(/Sign-up is not switched on yet/.test(t), 'with no relay configured the door says so rather than pretending');
+  ok(/not switched on yet/.test(t), 'with no relay configured the door says so rather than pretending');
   await p.fill('#join_email', 'solo@example.com'); await p.click('#join_go');
   await p.waitForFunction(() => location.hash === '#/' || location.hash === '', { timeout: 4000 });
   ok(/Ready\. Sending is not switched on/.test(await toastText()), 'he still gets in, and is told the messages are his to send');

@@ -132,6 +132,8 @@
     if (!String(d.account_name || '').trim()) { d.account_name = d.trading_name; d.bsb = '063-000'; d.account_number = '12345678'; }
     if (mine && mine.phone) d.phone = mine.phone;
     if (mine && mine.email) d.email = mine.email;
+    // a test drive is meant to be usable the moment it lands, so the prices count as looked at
+    s.security = s.security || {}; s.security.setup_done = true;
     QCStore.save();
     return d;
   }
