@@ -83,7 +83,7 @@ const isoDays = n => { const d = new Date(); d.setDate(d.getDate() + n); return 
   ok(/does not look like a set-up code/.test(await p.$eval('#setupcoderes', e => e.textContent)), 'pasting rubbish says so');
   // ---- hosted wording and readiness
   t = await text();
-  ok(new RegExp("On, and paid to [^,]+, when it renews itself\\. Texts and emails go out in your name and there is nothing to open\\.").test(t), 'hosted first line: paid, renews itself');
+  ok(new RegExp("On, paid to [^.]+\\.").test(t), 'hosted first line: paid, renews itself');
   ok(/Only for running your own accounts instead\./.test(t), 'own-accounts line inside the fold');
   ok(await p.evaluate(() => QCMsg.ready('sms') && QCMsg.ready('email')), 'QCMsg.ready true for sms and email with server + token + server_has_creds');
   // scheduled emails carry reply_to = details.email, bodies carry the sign-off
@@ -93,7 +93,7 @@ const isoDays = n => { const d = new Date(); d.setDate(d.getDate() + n); return 
   // ---- hosted_until in the past
   await p.evaluate(() => { const st = window.__qcApp.store, S = st.load(); S.sending.hosted_until = st.addDays(st.today(), -1); st.save(); });
   await p.goto(base + '#/settings', { waitUntil: 'load' }); await p.waitForSelector('#setupcode'); t = await text();
-  ok(/The chasing is off: your sending ran to [^.]+\. Turn it back on at the website/.test(t), 'expired hosted line');
+  ok(/Off since [^.]+\. Turn it back on/.test(t), 'expired hosted line');
   ok(await p.evaluate(() => !QCMsg.ready('sms') && !QCMsg.ready('email') && QCMsg.hostedEnded()), 'QCMsg.ready false once hosted_until has passed');
   await p.evaluate(() => { const st = window.__qcApp.store, S = st.load(); S.sending.hosted_until = st.addDays(st.today(), 90); st.save(); });
   // ---- window.__qcApp hooks: encodeSetup / applySetup

@@ -158,3 +158,6 @@ a.sec.link::after{content:'\203A';color:var(--muted);font-size:1.4rem;line-heigh
 .card.door .f input{font-size:1.15rem;padding:14px 12px}
 .card.door .hint:empty{display:none}
 .card.door .row{justify-content:center}
+
+/* Nothing under a label that the label already said. */
+#app .hint:empty,#app p.muted:empty,#app label.f>span:empty{display:none}

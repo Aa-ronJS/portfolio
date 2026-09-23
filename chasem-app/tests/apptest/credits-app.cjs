@@ -74,7 +74,7 @@ const MOCK = () => { window.__qcCalls = []; let saved = null; try { saved = JSON
   ok(/No messages left\. The app still writes every message; you send it\./.test(t) && !!(await p.$('#balline a')), 'out of messages: the tab says so and offers the way out');
   const sch = await p.evaluate(async () => { window.__qcCalls = []; const r = await window.__qcApp.scheduleFollowUps(window.__qcApp.store.getJob('cr_a'), 'quote'); return { r: r, calls: window.__qcCalls.length }; });
   ok(sch.calls === 0 && sch.r.reason === 'out of messages' && sch.r.scheduled.length === 0, 'it does not even ask the relay when there is nothing left');
-  ok(/Out of messages\. The app still writes every one; you tap Send\./.test(await toastText()), 'and it says so in words a painter can act on');
+  ok(/Out of messages\. The app still writes them; you tap Send\./.test(await toastText()), 'and it says so in words a painter can act on');
   // the relay refusing mid-flight is reported, not swallowed
   await p.evaluate(() => { const st = window.__qcApp.store, S = st.load(); S.sending.bal_left = 5; st.save(); });
   await setMock({ relay: { ok: false, error: 'You are out of messages', out_of_messages: true, left: 0, used: 5, included: 5, plan: 'free' } });
@@ -108,10 +108,10 @@ const MOCK = () => { window.__qcCalls = []; let saved = null; try { saved = JSON
   // ---- the second phone
   await p.evaluate(() => { const st = window.__qcApp.store, S = st.load(); Object.assign(S.sending, { bal_left: 200, bal_included: 250, bal_used: 50, bal_plan: 'paid', bal_seats: 1, bal_seat: 1 }); st.save(); });
   await p.goto(base + '#/settings', { waitUntil: 'load' }); await p.reload({ waitUntil: 'load' }); await p.waitForSelector('#setupcode'); t = await text();
-  ok(/Two of you\? The two-phone plan is \$149 a month with 250 messages\./.test(t) && !(await p.$('#seatgo')), 'a one-phone plan is offered the two-phone plan, not a broken button');
+  ok(/Two of you\? Two phones, \$149 a month, 250 messages\./.test(t) && !(await p.$('#seatgo')), 'a one-phone plan is offered the two-phone plan, not a broken button');
   await p.evaluate(() => { const st = window.__qcApp.store, S = st.load(); S.sending.bal_seats = 2; st.save(); });
   await p.reload({ waitUntil: 'load' }); await p.waitForSelector('#seatgo'); t = await text();
-  ok(/Same business name, same messages, its own jobs/.test(t), 'the card says exactly what the second phone shares and what it does not');
+  ok(/Same name, same messages, its own jobs/.test(t), 'the card says exactly what the second phone shares and what it does not');
   await p.click('#seatgo'); await p.waitForSelector('#seatlink', { timeout: 5000 });
   const link2 = await p.$eval('#seatlink', e => e.value);
   const scall = await p.evaluate(() => window.__qcCalls.filter(c => /seat/.test(c.url)).pop());
@@ -120,13 +120,13 @@ const MOCK = () => { window.__qcCalls = []; let saved = null; try { saved = JSON
   // the second phone says what it is, and is not offered a third
   await p.evaluate(() => { const st = window.__qcApp.store, S = st.load(); S.sending.bal_seat = 2; st.save(); });
   await p.reload({ waitUntil: 'load' }); await p.waitForSelector('#setupcode'); t = await text();
-  ok(/This is the second phone on your plan/.test(t) && !(await p.$('#seatgo')), 'the second phone knows what it is and cannot mint another');
+  ok(/Second phone\. Same name, same messages/.test(t) && !(await p.$('#seatgo')), 'the second phone knows what it is and cannot mint another');
   // handing a job across
   await p.evaluate(() => { const st = window.__qcApp.store, S = st.load(); S.sending.bal_seat = 1; st.save(); });
   await p.goto(base + '#/job/cr_a/quote', { waitUntil: 'load' }); await p.waitForSelector('#handoff'); await p.click('#handoff');
   await p.waitForSelector('#hoff'); t = await text();
   const hlink = await p.$eval('#hoff', e => e.value);
-  ok(/#\/setup\?d=j:/.test(hlink) && /Send this job to the other phone/.test(t) && /this phone keeps its copy/.test(t), 'a job can be handed over, and it says it is a copy');
+  ok(/#\/setup\?d=j:/.test(hlink) && /Send this job to the other phone/.test(t) && /Both phones keep a copy/.test(t), 'a job can be handed over, and it says it is a copy');
   const carried = await p.evaluate(l => window.__qcApp.decodeSetup(l.split('d=')[1]).then(o => ({ jobs: o.jobs.length, name: o.jobs[0].client.name, note: o.note })), hlink);
   ok(carried.jobs === 1 && carried.name === 'Margaret' && /A job from the other phone: Margaret/.test(carried.note), 'the link carries that one job and says where it came from');
   await p.evaluate(() => { const st = window.__qcApp.store, S = st.load(); S.sending.bal_seats = 1; st.save(); });
@@ -140,7 +140,7 @@ const MOCK = () => { window.__qcCalls = []; let saved = null; try { saved = JSON
   ok(/not switched on yet/.test(t), 'with no relay configured the door says so rather than pretending');
   await p.fill('#join_email', 'solo@example.com'); await p.click('#join_go');
   await p.waitForFunction(() => location.hash === '#/' || location.hash === '', { timeout: 4000 });
-  ok(/Ready\. Sending is not switched on/.test(await toastText()), 'he still gets in, and is told the messages are his to send');
+  ok(/Ready\. The app writes each message/.test(await toastText()), 'he still gets in, and is told the messages are his to send');
   S = await state(); ok(S.account.email === 'solo@example.com' && S.account.offline === true, 'the account is recorded on the phone anyway');
   await b.close(); srv.close(); console.log(fails ? fails + ' FAILED' : 'ALL PASSED'); process.exit(fails ? 1 : 0);
 })().catch(e => { console.error(e); process.exit(2); });

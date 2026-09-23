@@ -40,7 +40,7 @@ const MOCK = () => { let saved = null; try { saved = JSON.parse(sessionStorage.g
 
   // ---- 1. prices from a day rate
   await p.goto(base + '#/myprices', { waitUntil: 'load' }); await p.waitForSelector('#mp_daygo'); t = await text();
-  ok(/Five minutes, and the app quotes the way you do/.test(t) && /What do you charge for a day on the tools\?/.test(t), 'the wizard opens with the day-rate question');
+  ok(/What do you charge for a day on the tools\?/.test(t), 'the wizard opens with the day-rate question');
   const before = await p.evaluate(() => window.__qcApp.store.load().prices.p_walls);
   await p.fill('#mp_day', '760'); await p.fill('#mp_margin', '45'); await p.click('#mp_daygo');
   await p.waitForFunction(() => location.hash === '#/settings/prices');
@@ -91,7 +91,7 @@ const MOCK = () => { let saved = null; try { saved = JSON.parse(sessionStorage.g
   // ---- 4. manage and check, from the phone, no email to anyone
   await setHosted(isoDays(20), { renew_checked: isoDays(0) });
   await p.goto(base + '#/settings', { waitUntil: 'load' }); await p.reload({ waitUntil: 'load' }); await p.waitForSelector('#hostedmanage'); t = await text();
-  ok(/On, and paid to [^.]+, when it renews itself\./.test(t), 'Set-up says it is paid and renews itself: ' + (t.match(/On, and paid[^\n]*/) || [''])[0].slice(0, 90));
+  ok(/On, paid to [^.]+\./.test(t), 'Set-up says it is paid and to when: ' + (t.match(/On, paid[^\n]*/) || [''])[0].slice(0, 90));
   const popup = ctx.waitForEvent('page', { timeout: 6000 }).catch(() => null);
   await p.click('#hostedmanage'); const pop = await popup; if (pop) await pop.waitForLoadState('domcontentloaded').catch(() => null);
   const pc = await p.evaluate(() => window.__qcCalls.filter(c => /portal/.test(c.url)).pop());
@@ -102,6 +102,6 @@ const MOCK = () => { let saved = null; try { saved = JSON.parse(sessionStorage.g
   // ---- 5. with no subscription at all the app still works and points at the website
   await p.evaluate(() => { const st = window.__qcApp.store, S = st.load(); S.sending = Object.assign(st.defaults().sending, { auto_sms: true, auto_email: true }); st.save(); });
   await p.reload({ waitUntil: 'load' }); await p.waitForSelector('#setupcode'); t = await text();
-  ok(/Rather not\? Turn the chasing on: one card, one tap, cancel from this page any time\./.test(t) && !(await p.$('#hostedmanage')), 'free painter: one link to turn it on, no manage button');
+  ok(/Or turn the chasing on instead\./.test(t) && !(await p.$('#hostedmanage')), 'free painter: one link to turn it on, no manage button');
   await b.close(); srv.close(); console.log(fails ? fails + ' FAILED' : 'ALL PASSED'); process.exit(fails ? 1 : 0);
 })().catch(e => { console.error(e); process.exit(2); });

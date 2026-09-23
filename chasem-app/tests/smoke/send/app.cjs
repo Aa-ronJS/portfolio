@@ -38,7 +38,7 @@ const sleep = (ms) => new Promise(r => setTimeout(r, ms));
     let ics = ''; if (dl) { const fp = OUT + '/A-followup.ics'; await dl.saveAs(fp); ics = fs.readFileSync(fp, 'utf8'); }
     const j = await s.job(); ok(dl && (ics.match(/BEGIN:VEVENT/g) || []).length === 3 && j.follow_ups.length === 3 && j.follow_ups.every(x => x.uid && !x.id), 'calendar path: 3 VEVENTs downloaded, 3 uid follow-ups stored (no relay ids)');
     ok(/TRIGGER;VALUE=DATE-TIME:\d{8}T\d{6}Z/.test(ics) && /DTSTART:\d{8}T090000/.test(ics), 'reminders at 09:00 (default reminder hour) with an absolute alarm');
-    await s.nav('#/chase', 'h1'); ok(/Nothing here sends by itself/.test(await s.p.$eval('#app', e => e.innerText)), 'Follow-ups tab says nothing sends by itself');
+    await s.nav('#/chase', 'h1'); ok(/Nothing sends by itself/.test(await s.p.$eval('#app', e => e.innerText)), 'Follow-ups tab says nothing sends by itself');
     ok(s.calls.length === 0, 'no relay calls made'); await s.done(); }
 
   // ---------- B. relay with server-held creds

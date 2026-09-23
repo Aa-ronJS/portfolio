@@ -37,7 +37,7 @@ let fails = 0; const ok = (c, m) => { console.log((c ? 'PASS ' : 'FAIL ') + m); 
   await p.goto(appBase + '#/chase', { waitUntil: 'load' }); await p.evaluate(() => window.__qcApp.route()); await p.waitForTimeout(400); const chase = await p.$eval('#app', e => e.innerText);
   ok(/Ray White/.test(chase) && /INV-/.test(chase) && /overdue|owing/i.test(chase), 'the loaded unpaid invoice shows on the follow-ups screen ready to chase');
   await p.goto(appBase + '#/settings', { waitUntil: 'load' }); await p.evaluate(() => window.__qcApp.route()); await p.waitForTimeout(300); const st = await p.evaluate(() => document.body.textContent);
-  ok(/On, and paid to /.test(st) && /Paste a set-up code/.test(st), 'Set-up says the subscription is paid and offers the paste field');
+  ok(/On, paid to /.test(st) && /Paste a set-up code/.test(st), 'Set-up says the subscription is paid and offers the paste field');
   await p.goto(appBase + '#/scoreboard', { waitUntil: 'load' }); await p.evaluate(() => window.__qcApp.route()); await p.waitForTimeout(300); const sb = await p.$eval('#app', e => e.innerText);
   ok(/Since/.test(sb) && /quote/i.test(sb), 'scoreboard renders: ' + sb.replace(/\s+/g, ' ').slice(0, 160));
   // loading the same link again adds nothing
