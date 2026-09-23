@@ -12,5 +12,6 @@ ok(hdr("chasem.app", "/") === "next" && hdr("chasem.app", "/app/") === "next" &&
 const v = JSON.parse(readFileSync(new URL("../vercel.json", import.meta.url)));
 const r = (v.redirects || []).filter((x) => /^\/app/.test(x.source));
 ok(["chasem.app", "www.chasem.app"].every((h) => r.some((x) => x.source === "/app/:path*" && x.has[0].value === h && x.destination === "https://go.chasem.app/:path*")), "chasem.app/app/... redirects to go.chasem.app/...");
+ok(["chasem.app", "www.chasem.app"].every((h) => r.some((x) => x.source === "/app/" && x.has[0].value === h && x.destination === "https://go.chasem.app/")), "and chasem.app/app/ itself, which :path* does not match on Vercel");
 ok(r.every((x) => x.has && x.has[0].value !== "go.chasem.app"), "go.chasem.app itself is never redirected");
 console.log(fails ? "FAILURES: " + fails : "ALL PASSED"); process.exit(fails ? 1 : 0);

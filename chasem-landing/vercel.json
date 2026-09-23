@@ -101,6 +101,17 @@
       "permanent": true
     },
     {
+      "source": "/app/",
+      "has": [
+        {
+          "type": "host",
+          "value": "chasem.app"
+        }
+      ],
+      "destination": "https://go.chasem.app/",
+      "permanent": true
+    },
+    {
       "source": "/app/:path*",
       "has": [
         {
@@ -113,6 +124,17 @@
     },
     {
       "source": "/app",
+      "has": [
+        {
+          "type": "host",
+          "value": "www.chasem.app"
+        }
+      ],
+      "destination": "https://go.chasem.app/",
+      "permanent": true
+    },
+    {
+      "source": "/app/",
       "has": [
         {
           "type": "host",
