@@ -70,6 +70,16 @@ export default async function handler(req, res) {
         out.stripe.canCreate = { status: r.status, code: (j.error && (j.error.code || j.error.type)) || "", message: ((j.error && j.error.message) || "").slice(0, 220) };
       }
     }
+    // What testers have said, readable without an inbox existing. The notes were always in the database;
+    // needing a mail forwarder to read your own feedback was a chore that did not have to exist.
+    if (body.action === "feedback") {
+      const r = await q(
+        `select id, painter_id, step, verdict, note, screen, app, created_at
+           from feedback order by created_at desc limit $1`, [Math.min(200, Math.max(1, parseInt(body.limit, 10) || 50))]);
+      out.feedback = r.rows;
+      const c = await q("select verdict, count(*)::int n from feedback group by verdict");
+      out.counts = Object.fromEntries(c.rows.map((x) => [x.verdict || "note", x.n]));
+    }
     if (body.action === "who") {
       const r = await q("select id, trading_name, reply_to, phone, state, created_at from painter order by created_at");
       out.painters = r.rows;

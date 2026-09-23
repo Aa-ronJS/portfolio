@@ -52,7 +52,9 @@ window.QC = {
   MAKER_NAME: "",                   // e.g. "Aaron, Melbourne"
   MAKER_PHOTO: "",                  // e.g. "maker.jpg" placed in public/; optional
   META_PIXEL_ID: "",                // e.g. "1234567890"; leave empty to disable
-  SUPPORT_EMAIL: "help@chasem.app", // forwarded to Aaron by ImprovMX; the MX and SPF records are on the domain. The only way
+  SUPPORT_EMAIL: "help@chasem.app", // Published on the privacy and terms pages, so it has to reach a person:
+  // it needs a forwarder (ImprovMX, Cloudflare Email Routing) or an inbox. Tester feedback does NOT depend on it --
+  // that goes into the database and is read back with /api/admin {action:"feedback"}.
                                     // anyone can reach us, so it is answered on business days.
   BUSINESS_NAME: "Factrie Pty Ltd", // the legal name that appears on privacy and terms
   ABN: "13 679 295 044"             // Factrie Pty Ltd, ACN 679 295 044. Empty = the ABN line is left out (never a placeholder).
