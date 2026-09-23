@@ -86,21 +86,25 @@ relay writes the payment down, and the next sync ticks the invoice off on
 his phone and moves the job to paid, without him doing anything.
 
 The code is `api/connect.js` (`start`, `status`, `link`, `void`),
-`api/paid.js` (the Connect webhook) and `db/007-payments.sql`. Three
-things have to be done once, by hand, before any of it works:
+`api/paid.js` (the Connect webhook) and `db/007-payments.sql`.
 
-1. **Sign up for Connect** at `dashboard.stripe.com/connect`. Until this
-   is done every call answers `{ ok: true, off: true }`, and the app
-   quietly offers bank transfer instead of showing an error.
-2. **Add a Connect webhook**: a second endpoint at
-   `https://chasem.app/api/paid`, set to *Listen to events on Connected
-   accounts*, for `checkout.session.completed` and
-   `checkout.session.async_payment_succeeded`. Put its signing secret in
-   `STRIPE_CONNECT_WEBHOOK_SECRET`. Without the secret the endpoint
-   answers 200 and records nothing, so Stripe does not retry for days.
-3. **Run the migration** (`{ secret, action: "migrate" }` on
-   `/api/admin`) to create the `payment` table. Until it exists, sync
-   returns no payments rather than failing.
+**One thing has to be done by hand, once:** sign up for Connect at
+`dashboard.stripe.com/connect` and accept the platform agreement. That is
+a legal acceptance; there is no API for it. Until it is done every call
+answers `{ ok: true, off: true }` and the app quietly offers bank
+transfer, with no error shown anywhere.
+
+Everything else looks after itself. The schema applies on the first
+request after a deploy (`ensureSchema` in `api/_db.js`), so a new table
+never needs anybody to remember a migrate call -- which in turn means
+every `db/*.sql` file here **must be safe to run twice**. And the first
+time a painter turns card payments on, the relay creates its own Stripe
+webhook endpoint pointed at `/api/paid`, listening on connected accounts
+for `checkout.session.completed` and
+`checkout.session.async_payment_succeeded`, and keeps what Stripe hands
+back in the `setting` table so it can check signatures.
+`STRIPE_CONNECT_WEBHOOK_SECRET` still works as an override if you ever
+make the endpoint by hand.
 
 `tests/paid.mjs` covers the lot against pglite and a stubbed Stripe, and
 `chasem-app/tests/apptest/cardpay.cjs` covers what the painter sees.

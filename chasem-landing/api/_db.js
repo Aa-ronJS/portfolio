@@ -67,6 +67,16 @@ export async function tx(fn) {
 
 export function dbConfigured() { return !!(globalThis.__relayDb || process.env.DATABASE_URL); }
 
+// Small things the relay remembers about itself. Never a painter's data.
+export async function getSetting(key) {
+  const r = await q("select value from setting where key=$1", [key]).catch(() => ({ rows: [] }));
+  return (r.rows[0] && r.rows[0].value) || "";
+}
+export async function setSetting(key, value) {
+  await q(`insert into setting (key, value) values ($1,$2)
+           on conflict (key) do update set value=excluded.value, updated_at=now()`, [key, String(value || "")]);
+}
+
 // Migrations are plain .sql files run in name order, each one recorded so a second run is a no-op.
 export async function migrate() {
   await q("create table if not exists migration (name text primary key, run_at timestamptz not null default now())");
@@ -77,8 +87,24 @@ export async function migrate() {
   for (const f of files) {
     if (done.has(f)) continue;
     await execAll(readFileSync(join(dir, f), "utf8"));
-    await q("insert into migration (name) values ($1)", [f]);
+    // Two cold starts can reach the same new migration at the same moment. Every .sql file here is written to
+    // be safe run twice (create/alter ... if not exists), so the race is harmless and the record is the only
+    // thing that must not collide.
+    await q("insert into migration (name) values ($1) on conflict (name) do nothing", [f]);
     ran.push(f);
   }
   return ran;
+}
+
+// The schema looks after itself.
+//
+// A new table used to mean somebody remembering to POST the migrate action with a secret, and a relay that
+// answered wrongly until they did. Now the first request after a deploy applies whatever is new, once per warm
+// instance, and a failure is swallowed: an out-of-date schema degrades one feature, where a thrown error here
+// would take down sending, sign-in and everything else with it.
+let schemaDone = null;
+export function ensureSchema() {
+  if (!dbConfigured()) return Promise.resolve([]);
+  if (!schemaDone) schemaDone = migrate().catch((e) => { schemaDone = null; return []; });
+  return schemaDone;
 }

@@ -12,7 +12,7 @@
 // Off until Connect is signed up for on the platform account, which is a dashboard thing, not a code thing.
 // Until then this answers { off: true } and the app offers bank transfer instead of pretending.
 import { cors, send, readJson, readToken, stripe } from "./_setup.js";
-import { q, dbConfigured } from "./_db.js";
+import { q, dbConfigured, ensureSchema, getSetting, setSetting } from "./_db.js";
 import { ensurePainter } from "./_store.js";
 
 const SITE = (process.env.SITE_URL || "https://chasem.app").replace(/\/+$/, "");
@@ -20,6 +20,27 @@ const BACK = SITE + "/app/#/settings?paid=";
 const NOT_SIGNED_UP = /signed up for Connect/i;
 
 export function connectConfigured() { return !!process.env.STRIPE_SECRET_KEY; }
+
+// Stripe has to be told where to send "he has been paid", or the money lands and nobody hears about it.
+// Rather than leave that as a dashboard step somebody forgets, the relay creates the endpoint itself the first
+// time a painter turns card payments on, and keeps what Stripe hands back so /api/paid can check signatures.
+const HOOK_EVENTS = ["checkout.session.completed", "checkout.session.async_payment_succeeded"];
+export const HOOK_KEY = "connect_webhook_secret";
+export async function ensureHook() {
+  const url = SITE + "/api/paid";
+  if (await getSetting(HOOK_KEY)) return "kept";
+  // One may already exist from an earlier deploy. Stripe only ever shows the signing secret at creation, so an
+  // existing endpoint has to be replaced rather than guessed at.
+  const found = await stripe("webhook_endpoints?limit=100");
+  const mine = (found.data || []).filter((e) => e.url === url);
+  for (const e of mine) await stripe("webhook_endpoints/" + encodeURIComponent(e.id), null, "DELETE");
+  const form = { url, connect: "true", description: "Chasem: a painter's invoice paid by card" };
+  HOOK_EVENTS.forEach((ev, i) => { form["enabled_events[" + i + "]"] = ev; });
+  const made = await stripe("webhook_endpoints", form);
+  if (!made || !made.secret) throw new Error("Stripe gave nothing to check signatures with");
+  await setSetting(HOOK_KEY, made.secret);
+  return mine.length ? "replaced" : "made";
+}
 
 async function row(painter) {
   return (await q("select stripe_account, pay_ready, pay_note from painter where id=$1", [painter])).rows[0] || null;
@@ -44,6 +65,7 @@ export default async function handler(req, res) {
   if (req.method === "OPTIONS") { res.statusCode = 204; return res.end(); }
   if (req.method !== "POST") return send(res, 405, { ok: false, error: "POST only" });
   if (!connectConfigured() || !dbConfigured()) return send(res, 200, { ok: true, off: true });
+  await ensureSchema();
 
   let body; try { body = await readJson(req, 10_000); } catch { return send(res, 400, { ok: false, error: "Bad JSON" }); }
   const p = readToken(body.token, process.env.RELAY_SIGNING_SECRET);
@@ -70,6 +92,9 @@ export default async function handler(req, res) {
         account: acct, type: "account_onboarding",
         refresh_url: BACK + "again", return_url: BACK + "back",
       });
+      // His account exists, so Connect is live on the platform: make sure Stripe has somewhere to tell us he
+      // has been paid, before he can take a cent. A failure here must not stop him signing up.
+      try { await ensureHook(); } catch (e) {}
       return send(res, 200, { ok: true, url: link.url });
     }
 

@@ -9,7 +9,7 @@
 // The code is stored as an HMAC, lasts ten minutes, dies after five wrong guesses, and the row is deleted the
 // moment it works. Six digits with those limits is 1 in 200,000 per attempt and five attempts in total.
 import { cors, send, readJson, stripe, mintToken, sendingSettings, setupLink, linkOnePayload, creds, email as sendEmail, FREE_MESSAGES } from "./_setup.js";
-import { q, dbConfigured } from "./_db.js";
+import { q, dbConfigured, ensureSchema } from "./_db.js";
 import { createHmac, timingSafeEqual, randomInt } from "node:crypto";
 
 const EMAIL = /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/;
@@ -52,6 +52,7 @@ export default async function handler(req, res) {
   if (req.method !== "POST") return send(res, 405, { ok: false, error: "POST only" });
   if (!okOrigin && req.headers.origin) return send(res, 403, { ok: false, error: "Not allowed from here" });
   if (!dbConfigured()) return send(res, 503, { ok: false, error: "Signing in is not switched on yet" });
+  await ensureSchema();
 
   let body; try { body = await readJson(req, 10_000); } catch { return send(res, 400, { ok: false, error: "Bad JSON" }); }
   const addr = norm(body && body.email);

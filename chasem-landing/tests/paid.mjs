@@ -10,7 +10,7 @@ const db = new PGlite();
 globalThis.__relayDb = { query: (t, p = []) => db.query(t, p), exec: (s) => db.exec(s) };
 Object.assign(process.env, {
   RELAY_SIGNING_SECRET: 'sign_me_0123456789', ALLOWED_ORIGINS: 'https://chasem.app',
-  STRIPE_SECRET_KEY: 'sk_test_x', STRIPE_CONNECT_WEBHOOK_SECRET: 'whsec_connect',
+  STRIPE_SECRET_KEY: 'sk_test_x',
   SITE_URL: 'https://chasem.app', APP_URL: 'https://chasem.app/app/', RELAY_URL: 'https://chasem.app/api/msg',
 });
 
@@ -29,21 +29,29 @@ globalThis.__relayFetch = async (url, opt = {}) => {
   if (/\/v1\/accounts\/acct_dave\/login_links$/.test(u)) return { ok: true, status: 200, json: async () => ({ url: 'https://connect.stripe.com/express/login' }) };
   if (/\/v1\/accounts\/acct_dave$/.test(u)) return { ok: true, status: 200, json: async () => accountState };
   if (/\/v1\/account_links$/.test(u)) return { ok: true, status: 200, json: async () => ({ url: 'https://connect.stripe.com/setup/e/acct_dave/abc' }) };
+  if (/\/v1\/webhook_endpoints\?/.test(u)) return { ok: true, status: 200, json: async () => ({ data: hooks }) };
+  if (/\/v1\/webhook_endpoints\/we_old$/.test(u)) { hooks = hooks.filter((h) => h.id !== 'we_old'); return { ok: true, status: 200, json: async () => ({ id: 'we_old', deleted: true }) }; }
+  if (/\/v1\/webhook_endpoints$/.test(u)) {
+    const made = { id: 'we_1', url: p.get('url'), connect: p.get('connect') === 'true', secret: 'whsec_made_by_the_relay',
+                   events: [p.get('enabled_events[0]'), p.get('enabled_events[1]')] };
+    hooks.push(made); return { ok: true, status: 200, json: async () => made };
+  }
   if (/\/v1\/prices$/.test(u)) return { ok: true, status: 200, json: async () => ({ id: 'price_1' }) };
   if (/\/v1\/payment_links\/plink_1$/.test(u)) return { ok: true, status: 200, json: async () => ({ id: 'plink_1', active: p.get('active') !== 'false' }) };
   if (/\/v1\/payment_links$/.test(u)) return { ok: true, status: 200, json: async () => ({ id: 'plink_1', url: 'https://buy.stripe.com/test_plink_1' }) };
   return { ok: true, status: 200, json: async () => ({}) };
 };
+let hooks = [];
 let accountState = { id: 'acct_dave', charges_enabled: false, payouts_enabled: false, requirements: { currently_due: ['external_account'] } };
 
-const { migrate, q } = await import('../api/_db.js');
+const { migrate, q, getSetting } = await import('../api/_db.js');
 const { signToken } = await import('../api/_setup.js');
 const connect = (await import('../api/connect.js')).default;
 const paid = (await import('../api/paid.js')).default;
 const sync = (await import('../api/sync.js')).default;
 
 let fails = 0; const ok = (c, m) => { console.log((c ? 'PASS ' : 'FAIL ') + m); if (!c) fails++; };
-await migrate();
+// Deliberately NOT migrated here: a deploy that adds a table has to look after itself.
 
 const TOKEN = signToken({ v: 1, cus: 'cus_dave', name: "Dave's Painting", reply_to: 'dave@example.com', plan: 'paid' }, process.env.RELAY_SIGNING_SECRET);
 const OTHER = signToken({ v: 1, cus: 'cus_sam', name: "Sam's Painting", reply_to: 'sam@example.com', plan: 'paid' }, process.env.RELAY_SIGNING_SECRET);
@@ -57,7 +65,7 @@ const conn = (body) => call(connect, body, '/api/connect');
 const pull = (body) => call(sync, body, '/api/sync');
 
 // A webhook Stripe would have signed, and one it would not.
-async function hook(event, { secret = process.env.STRIPE_CONNECT_WEBHOOK_SECRET, t = Math.floor(Date.now() / 1000) } = {}) {
+async function hook(event, { secret = 'whsec_made_by_the_relay', t = Math.floor(Date.now() / 1000) } = {}) {
   const raw = Buffer.from(JSON.stringify(event));
   const sig = createHmac('sha256', secret).update(t + '.').update(raw).digest('hex');
   const req = Readable.from([raw]);
@@ -69,8 +77,14 @@ const session = (over = {}) => ({
   metadata: { invoice: 'INV-1006', job: 'job_7', painter: 'cus_dave' }, ...over,
 });
 
-// ---- one tap: he gets an account and Stripe's own onboarding, and never sees a key
+// ---- a deploy that adds a table looks after itself
+ok((await q("select count(*)::int n from information_schema.tables where table_name='payment'")).rows[0].n === 0,
+  'the database starts without the new table, as a live one does the moment this deploys');
 const start = await conn({ token: TOKEN, action: 'start' });
+ok((await q("select count(*)::int n from information_schema.tables where table_name='payment'")).rows[0].n === 1,
+  'the first request after the deploy applies the migration, with nobody running anything by hand');
+
+// ---- one tap: he gets an account and Stripe's own onboarding, and never sees a key
 ok(start.ok && /^https:\/\/connect\.stripe\.com\/setup\//.test(start.url || ''), 'one tap hands back Stripe’s own onboarding page');
 const made = calls.filter((c) => /\/v1\/accounts$/.test(c.url))[0];
 ok(made && made.form.type === 'express' && made.form.country === 'AU' && made.form['capabilities[card_payments][requested]'] === 'true',
@@ -78,6 +92,15 @@ ok(made && made.form.type === 'express' && made.form.country === 'AU' && made.fo
 ok((await q("select stripe_account from painter where id='cus_dave'")).rows[0].stripe_account === 'acct_dave', 'the account is his, and remembered');
 const again = await conn({ token: TOKEN, action: 'start' });
 ok(again.ok && calls.filter((c) => /\/v1\/accounts$/.test(c.url)).length === 1, 'tapping twice does not make him a second account');
+
+// ---- and it tells Stripe where to send "he has been paid", rather than waiting to be told
+const theHook = hooks[0];
+ok(theHook && theHook.url === 'https://chasem.app/api/paid' && theHook.connect === true,
+  'the relay makes its own Connect webhook, pointed at itself');
+ok(theHook && theHook.events.indexOf('checkout.session.completed') >= 0 && theHook.events.indexOf('checkout.session.async_payment_succeeded') >= 0,
+  'listening for a card paid now and for a bank debit that clears later');
+ok((await getSetting('connect_webhook_secret')) === 'whsec_made_by_the_relay', 'and keeps what it is handed, so it can check signatures');
+ok(hooks.length === 1, 'a second painter signing up does not make a second endpoint');
 
 // ---- while Stripe is still checking, no invoice may carry a card button
 const waiting = await conn({ token: TOKEN, action: 'status' });

@@ -8,6 +8,7 @@
 // Authenticated by the signed token the app already holds. No passwords, nothing new to set up.
 import { cors, send, readJson, readToken } from "./_setup.js";
 import { q, tx, ensurePainter, dbConfigured, e164 } from "./_store.js";
+import { ensureSchema } from "./_db.js";
 import { gcalConfigured, syncCalendar } from "./gcal.js";
 
 const KINDS = new Set(["job", "client", "settings", "invoice"]);
@@ -37,6 +38,7 @@ export default async function handler(req, res) {
   if (req.method === "OPTIONS") { res.statusCode = 204; return res.end(); }
   if (req.method !== "POST") return send(res, 405, { ok: false, error: "POST only" });
   if (!dbConfigured()) return send(res, 503, { ok: false, error: "Sync is not switched on yet", off: true });
+  await ensureSchema();   // a deploy that adds a table needs nobody to remember anything
 
   let body; try { body = await readJson(req, 4_000_000); } catch (e) { return send(res, 400, { ok: false, error: "Bad JSON" }); }
   const p = readToken(body.token, process.env.RELAY_SIGNING_SECRET);

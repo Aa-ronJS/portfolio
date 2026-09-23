@@ -9,7 +9,8 @@
 // checkout.session.completed and checkout.session.async_payment_succeeded; its signing secret in
 // STRIPE_CONNECT_WEBHOOK_SECRET.
 import { rawBody, send, stripeSigned } from "./_setup.js";
-import { q, dbConfigured } from "./_db.js";
+import { q, dbConfigured, ensureSchema, getSetting } from "./_db.js";
+import { HOOK_KEY } from "./connect.js";
 
 export const config = { api: { bodyParser: false } };
 
@@ -17,10 +18,14 @@ const PAYING = ["checkout.session.completed", "checkout.session.async_payment_su
 
 export default async function handler(req, res) {
   if (req.method !== "POST") return send(res, 405, { ok: false, error: "POST only" });
-  const secret = process.env.STRIPE_CONNECT_WEBHOOK_SECRET || "";
-  // Nothing to verify against means the endpoint is not switched on yet. Answer 200 so Stripe does not retry
-  // for days over something only a dashboard can fix.
-  if (!secret || !dbConfigured()) return send(res, 200, { ok: true, off: true });
+  if (!dbConfigured()) return send(res, 200, { ok: true, off: true });
+  await ensureSchema();
+  // Normally whatever Stripe handed the relay when it made this endpoint itself. The environment variable is
+  // only an override, for an endpoint somebody made by hand.
+  const secret = process.env.STRIPE_CONNECT_WEBHOOK_SECRET || (await getSetting(HOOK_KEY));
+  // Nothing to check signatures against means no painter has turned card payments on yet, so there is nothing
+  // this could legitimately be. Answer 200 rather than have Stripe retry for days.
+  if (!secret) return send(res, 200, { ok: true, off: true });
 
   let raw; try { raw = await rawBody(req, 1_000_000); } catch (e) { return send(res, 413, { ok: false, error: e.message }); }
   if (!stripeSigned(raw, req.headers["stripe-signature"], secret)) return send(res, 400, { ok: false, error: "Bad signature" });
