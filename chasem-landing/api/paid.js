@@ -16,7 +16,19 @@ export const config = { api: { bodyParser: false } };
 
 const PAYING = ["checkout.session.completed", "checkout.session.async_payment_succeeded"];
 
+// Is this endpoint actually able to take a payment? Two things have to be true: the table exists (the schema
+// applies itself, so this says whether that worked) and there is something to check signatures with. Neither
+// is a secret, and knowing costs a deploy less than finding out when the first card is paid.
+async function health() {
+  if (!dbConfigured()) return { ok: true, db: false, table: false, listening: false };
+  await ensureSchema();
+  const t = await q("select to_regclass('public.payment') as t").then((r) => !!r.rows[0].t).catch(() => false);
+  const secret = process.env.STRIPE_CONNECT_WEBHOOK_SECRET || (await getSetting(HOOK_KEY));
+  return { ok: true, db: true, table: t, listening: !!(t && secret) };
+}
+
 export default async function handler(req, res) {
+  if (req.method === "GET") return send(res, 200, await health());
   if (req.method !== "POST") return send(res, 405, { ok: false, error: "POST only" });
   if (!dbConfigured()) return send(res, 200, { ok: true, off: true });
   await ensureSchema();

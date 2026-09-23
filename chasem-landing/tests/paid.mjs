@@ -151,6 +151,14 @@ ok(strange.ok && !strange.recorded, 'an account we do not know is ignored rather
 const ours = await hook({ id: 'evt_5', type: 'checkout.session.completed', data: { object: session({ id: 'cs_4' }) } });
 ok(ours.ok && !ours.recorded, 'our own subscription checkout is the other endpoint’s business, not this one’s');
 
+// ---- and it can be asked, from outside, whether it is really able to take a payment
+async function ping() {
+  const req = Readable.from([]); req.method = 'GET'; req.url = '/api/paid'; req.headers = {};
+  const r = res(); await paid(req, r); return JSON.parse(r.body);
+}
+const well = await ping();
+ok(well.table === true && well.listening === true, 'the endpoint says plainly that it is ready: ' + JSON.stringify(well));
+
 // ---- and the phone finds out
 const mine = await pull({ token: TOKEN, since: '1970-01-01T00:00:00.000Z' });
 ok(mine.ok && (mine.payments || []).length === 1 && mine.payments[0].invoice_no === 'INV-1006',
