@@ -507,7 +507,32 @@
     if (b.left <= 0) return 'No messages left' + (b.plan === 'paid' ? ' this month' : '') + '. The app still writes every message; you send it.';
     return b.left + ' of ' + (b.included == null ? b.left : b.included) + ' messages left ' + plan + '.';
   }
-  function topUpLink() { return siteUrl('#price'); }
+  // His own customer id, out of his own signed token. The payload is base64url JSON and is not a secret --
+  // it is his id, on his phone -- but the signature is what the relay checks, so nothing here can forge one.
+  function tokenCus() {
+    try {
+      var t = String((S.sending && S.sending.token) || ''); if (t.slice(0, 4) !== 'qc1.') return '';
+      var b = t.split('.')[1].replace(/-/g, '+').replace(/_/g, '/');
+      return String(JSON.parse(decodeURIComponent(escape(atob(b)))).cus || '');
+    } catch (e) { return ''; }
+  }
+  // The only road to the checkout. The relay holds the Payment Link and adds client_reference_id, which is
+  // what lets the webhook find the account he already has: his top-up packs move across, and the mate who
+  // sent him gets paid. Opened in a new tab because Stripe will not run in this one.
+  function openCheckout(plan, btn) {
+    var url = signupUrl(), tok = S.sending && S.sending.token;
+    if (!url || !tok) { openUrl(siteUrl('#price')); return Promise.resolve(false); }
+    if (btn) btn.disabled = true;
+    var f = window.__qcRelayFetch || window.fetch;
+    return f(url.replace(/\/[^\/]*$/, '/subscribe'), { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ token: tok, plan: plan || 'solo' }) })
+      .then(function (r) { return r.json(); })
+      .then(function (j) {
+        if (btn) btn.disabled = false;
+        if (!j || !j.ok || !j.url) throw new Error((j && j.error) || 'Could not open the checkout');
+        openUrl(j.url); return true;
+      })
+      .catch(function (e) { if (btn) btn.disabled = false; toast(e.message); return false; });
+  }
   function autoReady() { var a = window.__qcApp; if (a && typeof a.autoSendReady === 'function') { try { return !!a.autoSendReady(); } catch (e) {} } return !!(S.sending && S.sending.server && (QCMsg.ready('sms') || QCMsg.ready('email'))); }
   function fuLabel() { var a = window.__qcApp; if (a && typeof a.followUpLabel === 'function') { try { return String(a.followUpLabel()); } catch (e) {} } return autoReady() ? 'Automatic follow-ups' : 'Remind me to follow up'; }
   function fuHint() { return autoReady() ? 'Follow-up texts and emails go by themselves on the day. Hold reminders stops them.' : 'Nothing is sent without you. On the day, the Follow-ups tab shows the message written out; you tap Send.'; }
@@ -1415,6 +1440,35 @@
   function autoSendReady() { var sd = S.sending || {}; return !!((sd.auto_sms !== false && QCMsg.ready('sms')) || (sd.auto_email !== false && QCMsg.ready('email'))); }
   function autoSendLabel() { return autoSendReady() ? 'Automatic follow-ups (they go by themselves on the day)' : 'Remind me to follow up (nothing is sent without you; the message waits under Follow-ups on the day)'; }
   var chaseShowFinal = {};
+  // D7: the offer appears at the SECOND nudge on a live job, never the first. At the first he is still
+  // nervous that anything goes out in his name at all; by the second he has watched one go and nothing bad
+  // happened. At most twice, dismissible both times, and the wall at zero stays soft for ever -- the app
+  // keeps writing every message and he taps Send himself, free, whether he ever pays or not.
+  function offerCard(rows) {
+    if (!(QCMsg.ready('sms') || QCMsg.ready('email'))) return '';
+    var bal = QCMsg.balance(); if (bal.plan === 'paid') return '';
+    var ui = S.ui || (S.ui = {});
+    if (ui.offer_off || (+ui.offer_shown || 0) >= 2) return '';
+    var r = null;
+    for (var i = 0; i < rows.length; i++) { if (rows[i].kind === 'quote' && rows[i].tier >= 2 && rows[i].job && rows[i].job.client) { r = rows[i]; break; } }
+    if (!r) return '';
+    var j = r.job, who = j.client.first_name || j.client.name || 'They', what = j.quote_no || 'the quote';
+    var pend = pendingFollowUps(j).sort(function (a, b) { return a.day < b.day ? -1 : 1; })[0];
+    var when = pend ? QCPdf.fmtDate(pend.day) + ' morning' : 'on its next date';
+    var msg = (r.text && r.text.sms) || '';
+    ui.offer_shown = (+ui.offer_shown || 0) + 1; dirtyOffer = true;
+    return '<div class="card" id="offercard">' +
+      '<p><b>' + esc(who) + " hasn't come back on " + esc(what) + '.</b> The next nudge is due ' + esc(when) + '. This is what it says:</p>' +
+      (msg ? '<p class="hint" style="white-space:pre-wrap">' + esc(msg) + '</p>' : '') +
+      '<p>You can send that yourself. Tap Send and it goes from your phone. That stays free, whether you pay us or not.</p>' +
+      '<p>Or it goes ' + esc(when) + ' without you, and so do the next ' + PLAN_INCLUDED + ' messages a month, for $' + PLAN_PRICE + '. ' +
+      'A job usually takes three or four messages. Cancel from this screen. Two taps, no notice period, no one to ring.</p>' +
+      '<div class="row"><button class="btn ghost" id="offermine" type="button">Send it myself</button>' +
+      '<button class="btn tape" id="offerpay" type="button">Let it send</button>' +
+      '<button class="btn ghost sm" id="offerno" type="button">Not now</button></div></div>';
+  }
+  var dirtyOffer = false;
+
   function viewChase() {
     var dirty = false;
     var today = QCStore.today(), rows = [], owed = 0, fu = S.follow_up || {}, qd = fu.quote_days || [3, 7, 14], idays = fu.invoice_days || [3, 10, 21];
@@ -1436,7 +1490,8 @@
     var relay = QCMsg.ready('sms') || QCMsg.ready('email');
     var html = pendingBanner() + '<h1>Follow-ups</h1><p class="muted">Quotes at ' + qd.join(', ') + ' days after sending and unpaid invoices at ' + idays.join(', ') + ' days after due, set in Set-up. The message is written; read it, then send.</p>';
     if (!relay) html += '<p class="hint"><b>Nothing here sends by itself.</b> Tap Text to open Messages with the words ready; you press send.</p>';
-    else { var bl = QCMsg.balance(); if (bl.left != null) html += '<p class="hint" id="balline">' + (bl.left <= 0 ? '<span class="confirm"><b>' + esc(balanceLine()) + '</b></span> <a href="' + esc(topUpLink()) + '" target="_blank" rel="noopener">Top up or go monthly</a>' : esc(balanceLine()) + (bl.left <= 3 ? ' <a href="' + esc(topUpLink()) + '" target="_blank" rel="noopener">Top up</a>' : '')) + '</p>'; }
+    else { var bl = QCMsg.balance(); if (bl.left != null) html += '<p class="hint" id="balline">' + (bl.left <= 0 ? '<span class="confirm"><b>' + esc(balanceLine()) + '</b></span> <a href="#" data-gopay="1">Top up or go monthly</a>' : esc(balanceLine()) + (bl.left <= 3 ? ' <a href="#" data-gopay="1">Top up</a>' : '')) + '</p>'; }
+    html += offerCard(rows);
     html += '<div class="card"><div class="row between"><span>Overdue</span><h2>' + money(owed) + '</h2></div></div>';
     var groups = [], flat = []; S.jobs.forEach(function (j) { var pend = pendingFollowUps(j).sort(byDay), wait = waitingFollowUps(j); if (pend.length || wait.length) groups.push({ job: j, pend: pend, wait: wait }); });
     if (groups.length) html += '<div class="card"><h3>Scheduled</h3><p class="hint">These go by themselves on the day. Cancel any you do not want.</p>' + groups.map(function (g) {
@@ -1477,6 +1532,25 @@
     $app.querySelectorAll('[data-copy]').forEach(function (b) { b.addEventListener('click', function () { var t = rows[+b.dataset.copy].text.sms; if (navigator.clipboard) navigator.clipboard.writeText(t); toast('Copied'); }); });
     $app.querySelectorAll('[data-share]').forEach(function (b) { b.addEventListener('click', function () { var t = rows[+b.dataset.share].text.sms; if (navigator.share) navigator.share({ text: t }).catch(function () {}); else { if (navigator.clipboard) navigator.clipboard.writeText(t); toast('Copied. Paste it into WhatsApp or Messages.'); } }); });
     $app.querySelectorAll('[data-final]').forEach(function (b) { b.addEventListener('click', function () { var r = rows[+b.dataset.final]; chaseShowFinal[r.item.no] = !chaseShowFinal[r.item.no]; var y = window.scrollY; viewChase(); window.scrollTo(0, y); }); });
+    if (dirtyOffer) { save(); dirtyOffer = false; }   // the "shown" count is written once the card is actually on screen
+    var om = document.getElementById('offermine');
+    if (om) om.addEventListener('click', function () {
+      var t = (rows.filter(function (x) { return x.kind === 'quote' && x.tier >= 2; })[0] || {}).text;
+      var body = (t && t.sms) || '';
+      if (navigator.share && body) { navigator.share({ text: body }).catch(function () {}); }
+      else if (body) { try { navigator.clipboard.writeText(body); toast('Copied. Paste it into a text.'); } catch (e) { toast(body); } }
+      var c = document.getElementById('offercard'); if (c) c.hidden = true;
+    });
+    var op = document.getElementById('offerpay');
+    if (op) op.addEventListener('click', function () { openCheckout('solo', op); });
+    var on_ = document.getElementById('offerno');
+    if (on_) on_.addEventListener('click', function () {
+      var ui = S.ui || (S.ui = {});
+      if ((+ui.offer_shown || 0) >= 2) ui.offer_off = 1;   // asked twice and waved off both times: never again
+      save();
+      var c = document.getElementById('offercard'); if (c) c.hidden = true;
+    });
+    $app.querySelectorAll('[data-gopay]').forEach(function (b) { b.addEventListener('click', function (e) { e.preventDefault(); openCheckout(b.dataset.gopay === 'two' ? 'two' : 'solo', b); }); });
     $app.querySelectorAll('[data-sendnow]').forEach(function (b) { b.addEventListener('click', function () {
       var r = rows[+b.dataset.sendnow], ch = b.dataset.ch, j = r.job, name = r.kind === 'statement' ? r.name : (j.client.name || j.quote_no), lc = lastContact(j), lcDays = lc ? QCStore.daysBetween(lc.date, today) : null;
       if (lcDays != null && lcDays < 2 && !confirm('You contacted ' + name + ' ' + (lcDays === 0 ? 'today' : 'yesterday') + '. Send this as well?')) return;
@@ -1701,11 +1775,11 @@
 
     html += '<div class="card"><h2>Automatic texting and emailing</h2><p class="hint">' + (hostedEnded ? '<span class="confirm">The chasing is off: your sending ran to ' + esc(hostedTo) + '. Turn it back on at <a href="' + esc(SITE + '#price') + '" target="_blank" rel="noopener">the website</a> and one tap in the email puts it back, or connect your own accounts below. Nothing on this phone is lost.</span>' : hostedStopped ? '<span class="confirm">Cancelled. The chasing keeps running to ' + esc(hostedTo) + ' and stops after that. Change your mind any time with Manage below.</span>' : hosted ? 'On, and paid' + (hostedTo ? ' to ' + esc(hostedTo) + ', when it renews itself' : '') + '. Texts and emails go out in your name and there is nothing to open. Every text it sends ends with a way to reach you' + (String(S.details.phone || '').trim() ? ' on ' + esc(String(S.details.phone).trim()) + ', because the number it comes from cannot take replies.' : (String(S.details.email || '').trim() ? ' by email, because the number it comes from cannot take replies. <span class="confirm">Add your mobile in Your business above and texts point them there instead.</span>' : ', because the number it comes from cannot take replies. <span class="confirm">Add your mobile in Your business above so there is one to give.</span>')) : 'Your own texting and emailing accounts, instead of ours. Almost nobody needs this: it takes a computer and about an hour, and your plan already does the sending. Without either, the app writes every text and email and you press Send yourself; nothing goes out without you.' + (autoReady() ? ' Set up and working.' : ' Rather not? <a href="' + esc(SITE + '#price') + '" target="_blank" rel="noopener">Turn the chasing on</a>: one card, one tap, cancel from this page any time.')) + '</p>' +
       (hosted && QCMsg.balance().left != null ? '<p class="hint" id="balcard"><b>' + esc(balanceLine()) + '</b></p>' +
-        (QCMsg.balance().plan === 'paid' ? '<div class="row" id="toprow"><button class="btn ghost sm" id="topnow">Top up ' + TOPUP_MESSAGES + ' messages, $' + TOPUP_PRICE + '</button><label class="btn ghost sm"><input type="checkbox" id="topauto"' + (S.sending.auto_topup ? ' checked' : '') + '> Top up by itself when I run out</label><span class="hint" id="topres"></span></div>' : '<p class="hint"><a href="' + esc(topUpLink()) + '" target="_blank" rel="noopener">Go monthly: ' + PLAN_INCLUDED + ' messages for $' + PLAN_PRICE + ' a month</a>, which is about 30 jobs, quote to paid.</p>') : '') +
+        (QCMsg.balance().plan === 'paid' ? '<div class="row" id="toprow"><button class="btn ghost sm" id="topnow">Top up ' + TOPUP_MESSAGES + ' messages, $' + TOPUP_PRICE + '</button><label class="btn ghost sm"><input type="checkbox" id="topauto"' + (S.sending.auto_topup ? ' checked' : '') + '> Top up by itself when I run out</label><span class="hint" id="topres"></span></div>' : '<p class="hint"><a href="#" data-gopay="1">Go monthly: ' + PLAN_INCLUDED + ' messages for $' + PLAN_PRICE + ' a month</a>, which is about 30 jobs, quote to paid.</p>') : '') +
       (hosted && QCMsg.balance().plan === 'paid' ? (function () { var st2 = seats();
         if (st2.seat > 1) return '<p class="hint" id="seatcard">This is the second phone on your plan. It quotes and invoices in the same business name and draws on the same messages; jobs stay on the phone they were made on.</p>';
         if (st2.seats > 1) return '<div class="card sub" id="seatcard"><h3>Your second phone</h3><p class="hint">For whoever does the books or the other set of ladders. Same business name on the quotes, same pile of messages, and each phone keeps its own jobs. Doing this again replaces the second phone, so a lost handset is just this button.</p><div class="row"><button class="btn ghost sm" id="seatgo">Set up the second phone</button><span class="hint" id="seatres"></span></div><div id="seatout" hidden></div></div>';
-        return '<p class="hint" id="seatcard">Two of you? <a href="' + esc(topUpLink()) + '" target="_blank" rel="noopener">The two-phone plan is $' + PLAN2_PRICE + ' a month with ' + PLAN2_INCLUDED + ' messages</a>.</p>'; })() : '') +
+        return '<p class="hint" id="seatcard">Two of you? <a href="#" data-gopay="two">The two-phone plan is $' + PLAN2_PRICE + ' a month with ' + PLAN2_INCLUDED + ' messages</a>.</p>'; })() : '') +
       (hosted || hostedStopped ? '<div class="row" id="hostedrow"><button class="btn ghost sm" id="hostedmanage">Manage or cancel</button><button class="btn ghost sm" id="hostedcheck">Check my subscription</button><span class="hint" id="hostedres"></span></div>' : '') +
       '<label class="f">Paste a set-up code<span>or the whole set-up link from your welcome email; it loads your details, prices and jobs without wiping anything</span><textarea id="setupcode" rows="2" autocomplete="off" spellcheck="false" autocapitalize="off" placeholder="j:… or z:…"></textarea></label><div class="row"><button class="btn sm" id="setupcodego">Load</button><span class="hint" id="setupcoderes"></span></div>' +
       '<details class="sec sub"><summary><h3>Show me the set-up steps</h3></summary>' + (hosted ? '<p class="hint">You do not need any of this while the chasing is on. It is here for the day you would rather run your own accounts.</p>' : '') + '<p class="hint">Texts go through Twilio and emails through Resend, via a relay (a small web service of your own, set up on a computer). Keys stay on this phone and are left out of back-ups unless you tick the box under Back-up.</p>' +
@@ -1765,6 +1839,7 @@
     // Save a copy: through A2's Did-it-go step when it exists, else the phone's menu, else a plain file
     document.getElementById('export').addEventListener('click', function () { var blob = new Blob([QCStore.exportAll()], { type: 'application/json' }); var f = new File([blob], 'quote-and-chase-backup-' + QCStore.today() + '.json', { type: 'application/json' }); S.security.last_backup = QCStore.today(); save(); var keysNote = S.security.backup_include_keys ? ' Your passwords are in it: delete the file once it is on the new phone.' : ''; var a = window.__qcApp; if (a && typeof a.handOff === 'function') { try { a.handOff({ kind: 'backup', file: f, filename: f.name, whoName: 'yourself', onResult: function () {} }); return; } catch (e) {} } if (navigator.canShare && navigator.canShare({ files: [f] })) { navigator.share({ files: [f] }).catch(function () {}); toast('Your phone\'s menu is open. Pick Mail and send the file to yourself: that email is your back-up.' + keysNote); } else { var el = document.createElement('a'); el.href = URL.createObjectURL(blob); el.download = f.name; document.body.appendChild(el); el.click(); setTimeout(function () { el.remove(); }, 500); toast('Copy saved on this phone. Send it to yourself by email so you have it.' + keysNote); } });
     wireMate();
+    $app.querySelectorAll('[data-gopay]').forEach(function (b) { b.addEventListener('click', function (e) { e.preventDefault(); openCheckout(b.dataset.gopay === 'two' ? 'two' : 'solo', b); }); });
     refreshRef().then(function () { var c = document.getElementById('matewrap'); if (c && !c.innerHTML) { c.innerHTML = mateCard(); wireMate(); } });
     document.getElementById('import').addEventListener('change', function () { var f = this.files[0]; if (!f) return; var fr = new FileReader(); fr.onload = function () { try { var st = QCStore.importAll(fr.result); unlocked = true; toast(st && st.keys_removed ? 'Restored. Your texting and emailing passwords were not in the file; enter them under Automatic texting and emailing.' : 'Restored'); route(); } catch (e) { toast(e.message); } }; fr.readAsText(f); });
     document.getElementById('reset').addEventListener('click', function () { if (confirm('Wipe all jobs and settings on this phone? Save a copy first.')) { QCStore.reset(); route(); } });
