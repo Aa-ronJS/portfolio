@@ -148,3 +148,13 @@ a.sec.link::after{content:'\203A';color:var(--muted);font-size:1.4rem;line-heigh
 .wallsteps li.done::before{background:var(--ok);border-color:var(--ok)}
 .wallsteps li.now{color:var(--ink);font-weight:700}
 .wallsteps li.now::before{border-color:var(--tape)}
+
+/* The door: a logo, the name, and the way in. */
+.top[hidden]{display:none}
+.card.door{max-width:380px;margin:12vh auto 0;justify-items:center;text-align:center;gap:14px;padding:26px 20px}
+.card.door img.logo{width:72px;height:72px;border-radius:16px}
+.card.door h1{margin:0;font-size:1.7rem;letter-spacing:-.01em}
+.card.door form{display:grid;gap:12px;width:100%;text-align:left}
+.card.door .f input{font-size:1.15rem;padding:14px 12px}
+.card.door .hint:empty{display:none}
+.card.door .row{justify-content:center}

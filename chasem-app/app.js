@@ -73,22 +73,21 @@
   // phone reaches the same jobs, which is the whole of the account.
   function viewJoin(msg) {
     var url = signinUrl(), waiting = viewJoin.waiting || '';
-    $app.innerHTML = '<div class="card" style="max-width:420px;margin:24px auto 0"><h1>Chasem</h1>' +
-      '<p class="hint">A4 on the wall, one photo, quote sent. Then it chases.</p>' +
+    $app.innerHTML = '<div class="card door">' +
+      '<img class="logo" src="icons/icon-192.png" alt="" width="72" height="72">' +
+      '<h1>Chasem</h1>' +
       (msg ? '<p class="confirm">' + esc(msg) + '</p>' : '') +
       (waiting
-        ? '<form id="codeform" novalidate><label class="f">The six numbers<span>just emailed to ' + esc(waiting) + '</span>' +
+        ? '<form id="codeform" novalidate><label class="f">Your code<span>emailed to ' + esc(waiting) + '</span>' +
           '<input type="text" id="join_code" inputmode="numeric" autocomplete="one-time-code" pattern="[0-9]*" maxlength="6" placeholder="000000" style="font-size:1.6rem;letter-spacing:.3em;text-align:center"></label>' +
-          '<div class="row" style="margin-top:8px"><button class="btn tape" type="submit" id="code_go">Open my app</button></div>' +
+          '<button class="btn tape lg" type="submit" id="code_go">Open my app</button>' +
           '<p class="hint" id="join_msg"></p>' +
           '<div class="row"><button class="btn ghost sm" id="code_again">Send another</button><button class="btn ghost sm" id="code_back">Different email</button></div></form>'
-        : '<form id="joinform" novalidate><label class="f">Your email<span>this is your account, on any phone</span>' +
+        : '<form id="joinform" novalidate><label class="f">Your email' +
           '<input type="email" id="join_email" autocomplete="email" inputmode="email" required value="' + esc((S.account && S.account.email) || '') + '"></label>' +
-          '<div class="row" style="margin-top:8px"><button class="btn tape" type="submit" id="join_go">Send me a code</button></div>' +
-          '<p class="hint" id="join_msg"></p></form>') +
-      // One line, because he is signing in, not shopping. The full story is on the page that sells it.
-      '<p class="hint">First 3 jobs free. Then $' + PLAN_PRICE + ' a month, or $' + TOPUP_PRICE + ' for ' + TOPUP_MESSAGES + ' more messages.' + (url ? '' : ' <span class="confirm">Signing in is not switched on yet.</span>') + '</p></div>';
-
+          '<button class="btn tape lg" type="submit" id="join_go">Send me a code</button>' +
+          '<p class="hint" id="join_msg">' + (url ? '' : 'Signing in is not switched on yet.') + '</p></form>') +
+      '</div>';
 
     var out = function () { return document.getElementById('join_msg'); };
     var call = function (body) {
@@ -308,6 +307,8 @@
     document.querySelectorAll('[data-nav]').forEach(function (a) { a.classList.toggle('on', a.dataset.nav === navKey); });
     // While he is at the door or the wall there is nowhere else to be, so the tabs are not offered.
     try { var gated = (!joined() || !wallDone()) && p[0] !== 'setup' && p[0] !== 'help';
+      var atDoor = !joined() && p[0] !== 'setup' && p[0] !== 'help' && !locked();
+      var hd = document.querySelector('header.top'); if (hd) hd.hidden = atDoor; // the door is the logo, the name and the way in: nothing above it
       var nv = document.querySelector('header.top nav'); if (nv) nv.hidden = gated; } catch (e) {}
     try { testBar(); } catch (e) {}
     try { saveTrouble(troubleKind); } catch (e) {}

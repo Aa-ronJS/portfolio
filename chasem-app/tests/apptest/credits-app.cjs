@@ -28,7 +28,8 @@ const MOCK = () => { window.__qcCalls = []; let saved = null; try { saved = JSON
   // ---- the door: nothing works until the app knows whose it is
   cfg = "window.QC_APP = { maps_key: '', signup_url: 'https://relay.example.test/api/signup' };";
   await p.goto(base, { waitUntil: 'load' }); await p.waitForSelector('#joinform'); let t = await text();
-  ok(/Chasem/.test(t) && /3 jobs free/.test(t) && /\$99 a month/.test(t) && /\$35 for 100/.test(t), 'the door states the price in one line: ' + t.replace(/\s+/g, ' ').slice(0, 90));
+  ok(/Chasem/.test(t) && /Your email/.test(t), 'the door is the name and the way in: ' + t.replace(/\s+/g, ' ').slice(0, 90));
+  ok(!/\$/.test(t) && !/free/i.test(t) && t.replace(/\s+/g, ' ').trim().length < 60, 'nothing else is on the door: ' + t.replace(/\s+/g, ' '));
   ok(!(await p.$('[data-nav]:not([hidden])')) || !/New job/.test(t), 'no jobs screen behind the door');
   await p.fill('#join_email', 'not-an-email'); await p.click('#join_go');
   ok(/does not look like an email/.test(await p.$eval('#join_msg', e => e.textContent)), 'a bad address is refused on the phone, before any request');
