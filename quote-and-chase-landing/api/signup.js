@@ -60,10 +60,19 @@ export default async function handler(req, res) {
     if (!cus) cus = await stripe("customers", { email: addr, ...(details.trading_name ? { name: details.trading_name } : details.owner_name ? { name: details.owner_name } : {}), "metadata[qc_source]": "signup", "metadata[qc_joined]": new Date().toISOString() });
   } catch (e) { return send(res, 502, { ok: false, error: "Could not start your account: " + e.message }); }
 
-  // a referral only counts for a genuinely new account, and never for referring yourself
-  const returning = String((cus.metadata || {}).qc_used || "") !== "" || !!(cus.metadata || {}).qc_referred_by;
-  if (referrer && (returning || referrer.id === cus.id)) referrer = null;
-  const free = referrer ? FREE_MESSAGES * 2 : FREE_MESSAGES;
+  // "Returning" is about having used the app, not about having been referred. Conflating the two dropped a
+  // referred painter back to 12 on his second set-up link while he had already spent against 24, which
+  // reads to him as every message failing at once.
+  const meta = cus.metadata || {};
+  const returning = String(meta.qc_used || "") !== "";
+  const alreadyReferred = !!meta.qc_referred_by;
+  // A second code cannot be claimed, and nobody refers himself. Note what this does NOT stop: his own code
+  // from a second email address is a different Stripe customer and passes. It is left alone deliberately --
+  // it wins him 12 extra messages, about $2.16 of Twilio, while the month that actually costs us is gated on
+  // a cleared $99. Machinery to catch it would cost more than the fraud.
+  if (referrer && (alreadyReferred || referrer.id === cus.id)) referrer = null;
+  // The doubled allowance is a property of the account from here on, not of this one request.
+  const free = (referrer || alreadyReferred) ? FREE_MESSAGES * 2 : FREE_MESSAGES;
   if (referrer) { try { await stripe("customers/" + encodeURIComponent(cus.id), { "metadata[qc_referred_by]": String(referrer.id), "metadata[qc_ref_used]": refCode }); } catch (e) { /* he still gets the messages */ } }
   // his own code, so the app can show it the moment he lands
   const myCode = await ensureRefCode(cus.id);
@@ -74,7 +83,7 @@ export default async function handler(req, res) {
   const sending = sendingSettings(token, "", details.trading_name || details.owner_name || "");
   if (sending.server) payload.settings.sending = sending;
   const link = setupLink(process.env.APP_URL, payload);
-  const out = { ok: true, link, free, emailed: false, returning, ref_code: myCode, referred: !!referrer };
+  const out = { ok: true, link, free, emailed: false, returning, ref_code: myCode, referred: !!(referrer || alreadyReferred) };
   try { const m = welcome(details, link, { free, referred: !!referrer, included: Number(process.env.INCLUDED_MESSAGES || 100), subscribe: !!process.env.SUBSCRIBE_URL, support: process.env.SUPPORT_EMAIL || "" });
     await sendEmail(creds(), { to: [addr], reply_to: process.env.SUPPORT_EMAIL || undefined, subject: m.subject, text: m.text }); out.emailed = true;
   } catch (e) { out.email_error = e.message; }

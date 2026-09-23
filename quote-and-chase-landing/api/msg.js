@@ -200,7 +200,12 @@ export default async function handler(req, res) {
       // This is a check, not a reservation: one painter on one phone cannot race himself.
       const need = needFrom(body.need);
       let bal = hosted && hosted.payload ? await readBalance(hosted.payload) : null;
-      if (!enoughFor(bal, need)) { bal = await refill(hosted.payload, bal); if (!enoughFor(bal, need)) return send(res, 402, { ok: false, error: need > 1 ? SHORT_FOR_JOB(need, bal.left) : OUT_OF_MESSAGES, out_of_messages: true, need, ...bal }); }
+      if (!enoughFor(bal, need)) {
+        // Only buy a pack when he is actually out. "Top up by itself when I run out" is what the switch
+        // says, and charging $35 while he still has messages in hand is not that.
+        if (bal && bal.counted && bal.left <= 0) bal = await refill(hosted.payload, bal);
+        if (!enoughFor(bal, need)) return send(res, 402, { ok: false, error: need > 1 && bal.left > 0 ? SHORT_FOR_JOB(need, bal.left) : OUT_OF_MESSAGES, out_of_messages: true, need, ...bal });
+      }
       const r = ch === "sms" ? await smsSend(c, body.to, body.body) : await emailSend(c, body);
       await noted(hosted, body, ch, body.to, r);
       const after = hosted && hosted.payload ? await spend(hosted.payload, 1).catch(() => null) : null;

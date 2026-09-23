@@ -213,26 +213,62 @@ export async function findByRefCode(code) {
 // A free month as a credit on the account: Stripe applies a negative balance to the next invoice by itself,
 // so there is no coupon to keep in step and no subscription to rewrite. Capped, because a painter who never
 // pays again still costs us to serve and stops believing the price.
+// A painter who started free and then subscribed has two customer records: the free one, which is where
+// qc_referred_by was written, and the billed one Checkout made. qc_upgraded_to points forward from the
+// first to the second. Credits and counters belong on the billed record, or the money lands on an account
+// that is never invoiced and api/ref.js -- which reads his live token -- reports nothing.
+export async function billedCustomer(cus) {
+  if (!cus) return null;
+  let cur = cus;
+  for (let hop = 0; hop < 3; hop++) {                 // bounded, so a metadata loop cannot hang a webhook
+    let c;
+    try { c = await stripe("customers/" + encodeURIComponent(cur)); } catch (e) { return null; }
+    const next = String((c.metadata || {}).qc_upgraded_to || "").trim();
+    if (!next || next === cur) return c;
+    cur = next;
+  }
+  try { return await stripe("customers/" + encodeURIComponent(cur)); } catch (e) { return null; }
+}
 export async function creditFreeMonth(referrer, about) {
   if (!referrer) return { ok: false, reason: "no referrer" };
-  let m = {}, who = {};
-  try { who = await stripe("customers/" + encodeURIComponent(referrer)); m = who.metadata || {}; } catch (e) { return { ok: false, reason: e.message }; }
+  const who = await billedCustomer(referrer);
+  if (!who || !who.id) return { ok: false, reason: "referrer not found" };
+  const m = who.metadata || {};
   const count = Math.max(0, parseInt(m.qc_ref_count, 10) || 0) + 1;
   const months = Math.max(0, parseInt(m.qc_ref_months, 10) || 0);
-  const form = { "metadata[qc_ref_count]": String(count) };
+  const at = (path, form) => stripe("customers/" + encodeURIComponent(who.id) + (path || ""), form);
+  const contact = { email: who.email || "", phone: who.phone || "" };
+
   if (months >= REF_CAP) {
-    try { await stripe("customers/" + encodeURIComponent(referrer), form); } catch (e) {}
-    return { ok: true, capped: true, count, months, email: who.email || "", phone: who.phone || "" };
+    try { await at("", { "metadata[qc_ref_count]": String(count) }); } catch (e) {}
+    return { ok: true, capped: true, count, months, ...contact };
   }
+  // Claim the month before the money moves. If the credit then fails we hand it back; if the WRITE fails we
+  // never credit at all. The other order loses the cap whenever a write is dropped, and a lost cap is a
+  // painter on nothing for ever.
+  try { await at("", { "metadata[qc_ref_months]": String(months + 1), "metadata[qc_ref_count]": String(count) }); }
+  catch (e) { return { ok: false, reason: "could not record the month: " + e.message }; }
+
+  // A month is worth what HIS plan costs, not the solo price: crediting $99 to a painter on the two-phone
+  // plan is short, and telling him "$99" when he pays $149 is worse.
+  let worth = PLAN_PRICE;
   try {
-    await stripe("customers/" + encodeURIComponent(referrer) + "/balance_transactions", {
-      amount: String(-Math.round(PLAN_PRICE * 100)), currency: REF_CURRENCY,
+    const subs = await stripe("subscriptions?limit=1&status=active&customer=" + encodeURIComponent(who.id));
+    const item = (((subs.data || [])[0] || {}).items || {}).data || [];
+    const cents = Number((item[0] || {}).price && item[0].price.unit_amount);
+    if (cents > 0) worth = Math.round(cents) / 100;
+  } catch (e) { /* the solo price is the honest floor */ }
+
+  try {
+    await at("/balance_transactions", {
+      amount: String(-Math.round(worth * 100)), currency: REF_CURRENCY,
       description: "Chasem: a free month for bringing " + String(about || "a mate").slice(0, 60),
     });
-  } catch (e) { return { ok: false, reason: e.message }; }
-  form["metadata[qc_ref_months]"] = String(months + 1);
-  try { await stripe("customers/" + encodeURIComponent(referrer), form); } catch (e) {}
-  return { ok: true, capped: false, count, months: months + 1, credited: PLAN_PRICE, email: who.email || "", phone: who.phone || "" };
+  } catch (e) {
+    try { await at("", { "metadata[qc_ref_months]": String(months) }); } catch (e2) {}   // give the month back
+    return { ok: false, reason: e.message };
+  }
+  return { ok: true, capped: false, count, months: months + 1, credited: worth, ...contact };
 }
 
 // ---- Stripe REST, form-encoded, no SDK

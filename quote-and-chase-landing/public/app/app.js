@@ -1717,8 +1717,11 @@
       .then(function (j) {
         if (!j || !j.ok) return;
         S.account = S.account || {};
+        // The code is derived and always right. The counts are not: when the relay could not read Stripe it
+        // still answers ok with zeros and says so, and writing those over his banked months tells a man who
+        // has earned three that he has none.
         S.account.ref_code = j.code || S.account.ref_code || '';
-        S.account.ref_count = j.count || 0; S.account.ref_months = j.months || 0; S.account.ref_cap = j.cap || 6;
+        if (!j.stale) { S.account.ref_count = j.count || 0; S.account.ref_months = j.months || 0; S.account.ref_cap = j.cap || 6; }
         save();
       }).catch(function () {});
   }

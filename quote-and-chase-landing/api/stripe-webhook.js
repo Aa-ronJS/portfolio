@@ -90,7 +90,7 @@ export default async function handler(req, res) {
             try { await stripe("customers/" + encodeURIComponent(mateId), { "metadata[qc_ref_paid]": new Date().toISOString() }); } catch (e) {}
             out.referral = { paid: !r.capped, capped: !!r.capped, months: r.months };
             const line = r.capped
-              ? `Chasem: ${who} is on, and that is ${r.count} mates you have sent us. You are at the ${REF_CAP}-month cap, so this one does not add another free month -- but your $99 is locked at $99 for as long as you stay.`
+              ? `Chasem: ${who} is on, and that is ${r.count} mates you have sent us. You are at the ${REF_CAP}-month cap, so this one does not add another free month. Thanks all the same.`
               : `Chasem: ${who} is on. That is a free month off your next bill, and ${r.months} banked so far. Thanks.`;
             const cc = creds();
             if (r.phone) { try { await sms(cc, r.phone, line); } catch (e) {} }

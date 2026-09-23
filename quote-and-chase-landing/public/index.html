@@ -679,7 +679,9 @@ footer .wrap{display:grid;gap:8px}
 // attributable, and remember it here too in case he wanders the page first and comes back.
 (function () {
   try {
-    var m = /[?&]r=([0-9A-Za-z]{4,12})/.exec(location.search || "");
+    // The same seven characters and the same alphabet the relay accepts. Looser than the server and the
+    // banner promises double the allowance to a misread code that will quietly deliver the normal one.
+    var m = /[?&]r=([23456789ABCDEFGHJKMNPQRSTUVWXYZabcdefghjkmnpqrstuvwxyz]{7})(?:&|$)/.exec(location.search || "");
     var code = m ? m[1].toUpperCase() : (sessionStorage.getItem("qc_ref") || "");
     if (!code) return;
     if (m) { try { sessionStorage.setItem("qc_ref", code); } catch (e) {} }
