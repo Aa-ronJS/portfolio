@@ -83,7 +83,7 @@
       '<form id="joinform" novalidate><label class="f">Your email<span>so your app is yours, and so the first messages can go out in your name</span><input type="email" id="join_email" autocomplete="email" inputmode="email" required></label>' +
       '<label class="f">Your business name<span>optional, it goes on your quotes</span><input type="text" id="join_name" autocomplete="organization"></label>' +
       '<div class="row" style="margin-top:8px"><button class="btn tape" type="submit" id="join_go">Start quoting</button><span class="hint" id="join_msg"></span></div></form>' +
-      '<p class="hint">Your first three jobs are on us, quoted and chased to the end: ' + FREE_SENDS + ' messages. A message is one text or one email the app sends for you, and a job start to finish is usually four or five of them. After that it is $' + PLAN_PRICE + ' a month for ' + PLAN_INCLUDED + ', which is about 30 jobs, and a pack of ' + TOPUP_MESSAGES + ' more is $' + TOPUP_PRICE + ' whenever you want it.</p>' +
+      '<p class="hint">Your first three jobs are on us, quoted and chased to the end: ' + FREE_SENDS + ' messages. A message is one text or one email the app sends for you, and a job start to finish is usually about three of them. After that it is $' + PLAN_PRICE + ' a month for ' + PLAN_INCLUDED + ', which is about 45 jobs, and a pack of ' + TOPUP_MESSAGES + ' more is $' + TOPUP_PRICE + ' whenever you want it.</p>' +
       '<p class="hint">Your jobs, prices and clients stay on this phone until you switch the chasing on; after that they are kept in your account too, so a customer can accept a quote and pick a day. Your keys and your PIN never leave this phone.' + (url ? '' : ' <span class="confirm">Sign-up is not switched on yet.</span>') + '</p>' +
       '<p class="hint">Already have a set-up link? Open it on this phone and it does all of this for you.</p></div>';
     var f = document.getElementById('joinform');
@@ -319,6 +319,25 @@
       { label: 'Your bank details', hint: 'Printed on your invoices so clients can pay you. Stay on this phone.', done: !!(String(d.bsb || '').trim() && String(d.account_number || '').trim()) },
       { label: 'Make the prices yours', hint: 'One question: what you charge for a day. They are filled in with average rates until you do.', href: '#/myprices', done: !!(S.security.setup_done || touched) },
       { label: 'Let it chase for you', hint: 'Quotes and invoices followed up by text and email in your name, without you. Or keep tapping Send yourself, free.', href: '#/settings', done: !!(S.sending.hosted === true || autoReady()) }]; }
+  // D9: his own results, in a line, on Home and not behind a card -- what went out, what came back and
+  // what the chasing did while he was on the tools. Money first, because that is the answer to "is this
+  // worth $99". Quiet until there is something true to say.
+  function homeCount() {
+    var start = S.ui && S.ui.scoreboard_start;
+    if (!/^\d{4}-\d{2}-\d{2}$/.test(String(start || ''))) return '';
+    var d;
+    try { d = scoreboardData(start); } catch (e) { return ''; }
+    if (!d || (!d.quotes && !d.paid.length && !d.auto)) return '';
+    var bits = [];
+    if (d.quotes) bits.push(d.quotes + ' quote' + (d.quotes === 1 ? '' : 's') + ' out');
+    if (d.paid.length) bits.push(d.paid.length + ' paid');
+    if (d.paid_total > 0) bits.push(money(d.paid_total) + ' in');
+    if (d.auto) bits.push(d.auto + ' nudge' + (d.auto === 1 ? '' : 's') + ' sent for you');
+    if (!bits.length) return '';
+    return '<p class="hint" id="homecount">Since ' + esc(shortDate(start)) + ': ' + esc(bits.join(', ')) +
+      '. <a href="#/scoreboard">The lot</a></p>';
+  }
+
   function viewHome() {
     if (typeof QCStore.purgeEmpty === 'function' && Date.now() - (route.storageAt || 0) > 1500) { try { QCStore.purgeEmpty(); } catch (e) {} S = QCStore.load(); if (!S.ui || typeof S.ui !== 'object') S.ui = {}; } // a Quick quote or New job that was backed out of with nothing typed goes, and its number comes back
     var jobs = S.jobs, today = QCStore.today(), steps = setupSteps(), allDone = steps.every(function (s) { return s.done; });
@@ -326,6 +345,7 @@
     var showSetup = !allDone && !S.security.setup_done && !S.ui.dismissed_setup_card;
     var html = pendingBanner();
     html += '<div class="row between"><h1>Jobs</h1><div class="row"><button class="btn tape" id="newjob">New job</button><a class="btn ghost sm" href="#/enquiry">Phone enquiry</a><button class="btn ghost sm" id="quick">Quick quote</button></div></div>';
+    html += homeCount();
     if (window.__qcInstallPrompt) html += '<div class="card"><div class="row between"><span><b>Put it on your home screen</b><span class="hint"> · opens like an app and works offline</span></span><button class="btn sm" id="install">Install</button></div></div>';
     var visits = jobs.filter(function (j) { return j.visit && j.visit.date >= today; }).sort(function (a, b) { return (a.visit.date + QCSched.hm(a.visit.start_min)) < (b.visit.date + QCSched.hm(b.visit.start_min)) ? -1 : 1; });
     if (visits.length) html += '<div class="card"><h3>Quote visits</h3>' + visits.slice(0, 5).map(function (j) { return '<a class="row between" href="#/enquiry/' + j.id + '" style="text-decoration:none;color:inherit"><span><b>' + esc(j.client.name || j.quote_no) + '</b> <span class="hint">' + esc(j.client.address || '') + '</span></span><span class="hint">' + QCPdf.fmtDate(j.visit.date) + ' ' + QCSched.nice(j.visit.start_min) + '</span></a>'; }).join('') + '</div>';
@@ -1022,6 +1042,7 @@
   var PAY_METHODS = [['transfer', 'Bank transfer'], ['cash', 'Cash'], ['card', 'Card'], ['other', 'Other']];
   function methodLabel(m) { var f = PAY_METHODS.filter(function (x) { return x[0] === m; })[0]; return f ? f[1] : (m === 'refund' ? 'Refund' : m === 'credit' ? 'Credit' : 'Other'); }
   function invPill(i) { if (i.void) return '<span class="pill bad">void</span>'; var b = invBal(i); if (b <= 0.004 && (i.total > 0 || invPaid(i) > 0)) return '<span class="pill ok">paid</span>'; if (invPaid(i) > 0) return '<span class="pill warn">part paid</span>'; return i.due < QCStore.today() ? '<span class="pill bad">overdue</span>' : '<span class="pill">unpaid</span>'; }
+  var pendingPayOpen = '';
   function viewInvoice(job, keep, qs) {
     if (!job.quote) return bounce('/job/' + job.id + '/quote');
     if (job.status === 'declined') { toast('Quote is declined. Reopen it and mark it accepted first.'); return bounce('/job/' + job.id + '/quote'); }
@@ -1112,6 +1133,8 @@
     function withLink(inv) { if (!(invBal(inv) > 0.004) || inv.pay_url || !(S.stripe && S.stripe.enabled && QCStripe.keyLooksRight(S.stripe.key))) return Promise.resolve(); toast('Creating card payment link'); return QCStripe.createPaymentLink(S.stripe.key, { amount: invBal(inv), name: (S.details.trading_name || 'Invoice') + ' ' + inv.no, invoiceNo: inv.no, jobId: job.id }).then(function (l) { inv.pay_url = l.url; inv.pay_link_id = l.id; save(); }).catch(function (e) { toast('Card link failed: ' + e.message + '. Invoice goes without it.'); }); }
     function sendNow(inv) { return withLink(inv).then(function () { return sendNow0(inv); }); }
     function sendNow0(inv) { var p1 = (QCMsg.ready('email') && job.client.email && S.sending.email_quotes !== false) ? emailInvoiceNow(job, inv) : Promise.resolve(false); return p1.then(function (ok) { if (ok) return afterInvoiceSent(inv).then(function () { viewInvoice(job, true); }); handInvoice(inv); }); }
+    var payQ = /(?:^|&)pay=([^&]*)/.exec(qs || '');
+    if (payQ) { try { history.replaceState(null, '', '#/job/' + job.id + '/invoice'); } catch (e) {} pendingPayOpen = decodeURIComponent(payQ[1] || ''); }
     var sendQ = /(?:^|&)send=([^&]*)/.exec(qs || ''); if (sendQ) { try { history.replaceState(null, '', '#/job/' + job.id + '/invoice'); } catch (e) {} var target = job.invoices.filter(function (i) { return i.no === decodeURIComponent(sendQ[1]) && !i.void; })[0]; if (target) setTimeout(function () { sendNow(target); }, 50); }
     var mk = document.getElementById('mkinv'); if (mk) mk.addEventListener('click', function () {
       var inv = build();
@@ -1137,6 +1160,13 @@
     function openForClient(exceptInv) { var out = []; if (!myKey) return out; S.jobs.forEach(function (j) { if (clientKey(j) !== myKey || j.status === 'cancelled') return; (j.invoices || []).forEach(function (i) { if (i !== exceptInv && !i.void && invBal(i) > 0.004) out.push({ job: j, inv: i }); }); }); out.sort(function (a, b) { return (a.inv.due || '') < (b.inv.due || '') ? -1 : 1; }); return out; }
     function recordOne(i, p) { i.payments = i.payments || []; p.id = QCStore.uid(); i.payments.push(p); }
     $app.querySelectorAll('[data-paid]').forEach(function (b) { b.addEventListener('click', function () { var f = document.getElementById('payform_' + b.dataset.paid); f.hidden = !f.hidden; if (!f.hidden) f.scrollIntoView({ block: 'nearest', behavior: 'smooth' }); }); });
+    if (pendingPayOpen) {
+      var want = pendingPayOpen; pendingPayOpen = '';
+      var btn = Array.prototype.filter.call($app.querySelectorAll('[data-paid]'), function (b) {
+        var inv = (job.invoices || [])[+b.dataset.paid]; return inv && inv.no === want;
+      })[0];
+      if (btn) btn.click();
+    }
     $app.querySelectorAll('[data-paygo]').forEach(function (b) { b.addEventListener('click', function () {
       var k = b.dataset.paygo, i = job.invoices[+k], a = r2(document.getElementById('pay_amt_' + k).value), d = document.getElementById('pay_date_' + k).value || today, how = document.getElementById('pay_how_' + k).value, ref = document.getElementById('pay_ref_' + k).value.trim();
       if (!(a > 0)) { toast('Type the amount received.'); return; } var bal = invBal(i), others = a > bal + 0.004 ? openForClient(i) : [];
@@ -1522,7 +1552,7 @@
         '<p class="hint">' + note + '</p>' +
         (hold ? '<p class="muted">Reminders are on hold' + (j.hold.note ? ': ' + esc(j.hold.note) : '') + '.</p><div class="row"><button class="btn sm" data-hold="' + k + '">Resume reminders</button><a class="btn ghost sm" href="#/job/' + j.id + '">Open job</a></div>' :
           (showFinal ? '<p class="legal">This threatens legal action. Send it only if you mean it.</p>' : '') + '<div class="msg">' + esc(t.sms) + '</div>' +
-          '<div class="row">' + (QCMsg.ready('sms') && phoneOk ? '<button class="btn tape" data-sendnow="' + k + '" data-ch="sms">Send text now</button>' : '') + (QCMsg.ready('email') && toEmail ? '<button class="btn" data-sendnow="' + k + '" data-ch="email">Send email now</button>' : '') + (phoneOk ? '<a class="btn ' + (QCMsg.ready('sms') ? 'ghost' : 'tape') + '" href="' + esc(sms) + '">Text</a>' : '') + (toEmail ? '<a class="btn ' + (QCMsg.ready('email') || phoneOk ? 'ghost' : '') + '" href="' + esc(mail) + '">Email</a>' : '') +
+          '<div class="row">' + (r.kind === 'invoice' ? '<button class="btn ghost" data-alreadypaid="' + k + '" type="button" title="Stop chasing this one">Already paid</button>' : '') + (QCMsg.ready('sms') && phoneOk ? '<button class="btn tape" data-sendnow="' + k + '" data-ch="sms">Send text now</button>' : '') + (QCMsg.ready('email') && toEmail ? '<button class="btn" data-sendnow="' + k + '" data-ch="email">Send email now</button>' : '') + (phoneOk ? '<a class="btn ' + (QCMsg.ready('sms') ? 'ghost' : 'tape') + '" href="' + esc(sms) + '">Text</a>' : '') + (toEmail ? '<a class="btn ' + (QCMsg.ready('email') || phoneOk ? 'ghost' : '') + '" href="' + esc(mail) + '">Email</a>' : '') +
           (r.kind === 'statement' && ho && window.QCPdf && QCPdf.statementPDF ? '<button class="btn ghost" data-stmt="' + k + '">Send the statement</button>' : '') + (r.kind === 'invoice' && ho && window.QCPdf && QCPdf.invoicePDF ? '<button class="btn ghost" data-invcopy="' + k + '">Send a copy of the invoice</button>' : '') +
           (r.kind === 'invoice' && r.tier === 3 ? '<button class="btn ghost" data-final="' + k + '">' + (showFinal ? 'Back to the reminder' : 'Show final notice') + '</button>' : '') + '</div>' +
           '<div class="row second"><button class="btn ghost sm" data-share="' + k + '">Share</button><button class="btn ghost sm" data-copy="' + k + '">Copy</button><button class="btn ghost sm" data-chased="' + (r.kind === 'statement' ? r.jobs.map(function (x) { return x.id; }).join(',') : j.id) + '">Mark chased</button><button class="btn ghost sm" data-hold="' + k + '">Hold</button><a class="btn ghost sm" href="#/job/' + j.id + '">Open job</a></div>') + '</div>';
@@ -1550,6 +1580,12 @@
       save();
       var c = document.getElementById('offercard'); if (c) c.hidden = true;
     });
+    $app.querySelectorAll('[data-alreadypaid]').forEach(function (b) { b.addEventListener('click', function () {
+      var r = rows[+b.dataset.alreadypaid]; if (!r || r.kind !== 'invoice') return;
+      // It goes to the invoice with the payment form open: the amount and the date are his to confirm,
+      // and guessing them for him would put a wrong figure in his books to save one tap.
+      go('/job/' + r.job.id + '/invoice?pay=' + encodeURIComponent(r.item.no));
+    }); });
     $app.querySelectorAll('[data-gopay]').forEach(function (b) { b.addEventListener('click', function (e) { e.preventDefault(); openCheckout(b.dataset.gopay === 'two' ? 'two' : 'solo', b); }); });
     $app.querySelectorAll('[data-sendnow]').forEach(function (b) { b.addEventListener('click', function () {
       var r = rows[+b.dataset.sendnow], ch = b.dataset.ch, j = r.job, name = r.kind === 'statement' ? r.name : (j.client.name || j.quote_no), lc = lastContact(j), lcDays = lc ? QCStore.daysBetween(lc.date, today) : null;
@@ -1778,7 +1814,7 @@
 
     html += '<div class="card"><h2>Automatic texting and emailing</h2><p class="hint">' + (hostedEnded ? '<span class="confirm">The chasing is off: your sending ran to ' + esc(hostedTo) + '. Turn it back on at <a href="' + esc(SITE + '#price') + '" target="_blank" rel="noopener">the website</a> and one tap in the email puts it back, or connect your own accounts below. Nothing on this phone is lost.</span>' : hostedStopped ? '<span class="confirm">Cancelled. The chasing keeps running to ' + esc(hostedTo) + ' and stops after that. Change your mind any time with Manage below.</span>' : hosted ? 'On, and paid' + (hostedTo ? ' to ' + esc(hostedTo) + ', when it renews itself' : '') + '. Texts and emails go out in your name and there is nothing to open. Every text it sends ends with a way to reach you' + (String(S.details.phone || '').trim() ? ' on ' + esc(String(S.details.phone).trim()) + ', because the number it comes from cannot take replies.' : (String(S.details.email || '').trim() ? ' by email, because the number it comes from cannot take replies. <span class="confirm">Add your mobile in Your business above and texts point them there instead.</span>' : ', because the number it comes from cannot take replies. <span class="confirm">Add your mobile in Your business above so there is one to give.</span>')) : 'Your own texting and emailing accounts, instead of ours. Almost nobody needs this: it takes a computer and about an hour, and your plan already does the sending. Without either, the app writes every text and email and you press Send yourself; nothing goes out without you.' + (autoReady() ? ' Set up and working.' : ' Rather not? <a href="' + esc(SITE + '#price') + '" target="_blank" rel="noopener">Turn the chasing on</a>: one card, one tap, cancel from this page any time.')) + '</p>' +
       (hosted && QCMsg.balance().left != null ? '<p class="hint" id="balcard"><b>' + esc(balanceLine()) + '</b></p>' +
-        (QCMsg.balance().plan === 'paid' ? '<div class="row" id="toprow"><button class="btn ghost sm" id="topnow">Top up ' + TOPUP_MESSAGES + ' messages, $' + TOPUP_PRICE + '</button><label class="btn ghost sm"><input type="checkbox" id="topauto"' + (S.sending.auto_topup ? ' checked' : '') + '> Top up by itself when I run out</label><span class="hint" id="topres"></span></div>' : '<p class="hint"><a href="#" data-gopay="1">Go monthly: ' + PLAN_INCLUDED + ' messages for $' + PLAN_PRICE + ' a month</a>, which is about 30 jobs, quote to paid.</p>') : '') +
+        (QCMsg.balance().plan === 'paid' ? '<div class="row" id="toprow"><button class="btn ghost sm" id="topnow">Top up ' + TOPUP_MESSAGES + ' messages, $' + TOPUP_PRICE + '</button><label class="btn ghost sm"><input type="checkbox" id="topauto"' + (S.sending.auto_topup ? ' checked' : '') + '> Top up by itself when I run out</label><span class="hint" id="topres"></span></div>' : '<p class="hint"><a href="#" data-gopay="1">Go monthly: ' + PLAN_INCLUDED + ' messages for $' + PLAN_PRICE + ' a month</a>, which is about 45 jobs, quote to paid.</p>') : '') +
       (hosted && QCMsg.balance().plan === 'paid' ? (function () { var st2 = seats();
         if (st2.seat > 1) return '<p class="hint" id="seatcard">This is the second phone on your plan. It quotes and invoices in the same business name and draws on the same messages; jobs stay on the phone they were made on.</p>';
         if (st2.seats > 1) return '<div class="card sub" id="seatcard"><h3>Your second phone</h3><p class="hint">For whoever does the books or the other set of ladders. Same business name on the quotes, same pile of messages, and each phone keeps its own jobs. Doing this again replaces the second phone, so a lost handset is just this button.</p><div class="row"><button class="btn ghost sm" id="seatgo">Set up the second phone</button><span class="hint" id="seatres"></span></div><div id="seatout" hidden></div></div>';
@@ -1811,7 +1847,7 @@
     ['testsms', 'testemail'].forEach(function (id) { document.getElementById(id).addEventListener('click', function () { var to = document.getElementById('testto').value.trim(), out = document.getElementById('testres'); if (!to) { out.textContent = 'Type a number or email first.'; return; } out.textContent = 'Sending…'; QCMsg.call({ action: 'test', channel: id === 'testsms' ? 'sms' : 'email', to: to }).then(function (r) { out.textContent = 'Sent (' + (r.id || 'ok') + ').'; }).catch(function (e) { out.textContent = 'Failed: ' + e.message; }); }); });
     var sg = document.getElementById('seatgo'); if (sg) sg.addEventListener('click', function () { var o = document.getElementById('seatres'), box = document.getElementById('seatout'); o.textContent = 'Making the link…'; sg.disabled = true; addSeat().then(function (link) { sg.disabled = false; o.textContent = ''; box.hidden = false; box.innerHTML = '<p class="hint">Open this on the other phone and tap Load. It is the only set-up that phone needs.</p><textarea id="seatlink" rows="3" readonly onclick="this.select()">' + esc(link) + '</textarea><div class="row"><button class="btn sm" id="seatcopy">Copy the link</button><a class="btn ghost sm" id="seatshare" href="#">Send it</a></div>'; document.getElementById('seatcopy').addEventListener('click', function () { var ta = document.getElementById('seatlink'); ta.select(); try { navigator.clipboard.writeText(link); } catch (e) { document.execCommand('copy'); } toast('Copied. Open it on the other phone.'); }); var sh = document.getElementById('seatshare'); sh.addEventListener('click', function (e) { e.preventDefault(); if (navigator.share) navigator.share({ title: 'Set up the second phone', text: link }).catch(function () {}); else { sh.setAttribute('href', 'sms:?&body=' + encodeURIComponent(link)); location.href = sh.getAttribute('href'); } }); }).catch(function (e) { sg.disabled = false; o.textContent = e.message; }); });
     var tn = document.getElementById('topnow'); if (tn) tn.addEventListener('click', function () { var o = document.getElementById('topres'); o.textContent = 'Charging your card…'; tn.disabled = true; topUp({ buy: true }).then(function (j) { tn.disabled = false; o.textContent = ''; toast(j.messages + ' messages added, $' + j.charged + ' charged to your card.'); viewSettings(); }).catch(function (e) { tn.disabled = false; o.textContent = e.needsCard ? 'Your card needs a look. Tap Manage to fix it.' : e.message; }); });
-    var ta = document.getElementById('topauto'); if (ta) ta.addEventListener('click', function () { var on = ta.checked, o = document.getElementById('topres'); o.textContent = 'Saving…'; topUp({ auto: on }).then(function () { S = QCStore.load(); S.sending.auto_topup = on; save(); o.textContent = on ? 'On. Up to three packs a month, never more.' : 'Off.'; }).catch(function (e) { ta.checked = !on; o.textContent = e.message; }); });
+    var ta = document.getElementById('topauto'); if (ta) ta.addEventListener('click', function () { var on = ta.checked, o = document.getElementById('topres'); o.textContent = 'Saving…'; topUp({ auto: on }).then(function () { S = QCStore.load(); S.sending.auto_topup = on; save(); o.textContent = on ? 'On. Up to three packs a month, never more: $' + (TOPUP_PRICE * 3) + ' is the worst month you can have.' : 'Off.'; }).catch(function (e) { ta.checked = !on; o.textContent = e.message; }); });
     var hm = document.getElementById('hostedmanage'); if (hm) hm.addEventListener('click', function () { var o = document.getElementById('hostedres'); o.textContent = 'Opening…'; hm.disabled = true; hostedPortal().then(function (u) { o.textContent = ''; hm.disabled = false; window.open(u, '_blank', 'noopener'); }).catch(function (e) { hm.disabled = false; o.textContent = e.message; }); });
     var hc = document.getElementById('hostedcheck'); if (hc) hc.addEventListener('click', function () { var o = document.getElementById('hostedres'); o.textContent = 'Checking…'; hc.disabled = true; renewHosted(true).then(function (j) { hc.disabled = false; if (!j) { o.textContent = 'Could not reach the sending system. Try again later.'; return; } o.textContent = j.active ? (j.status === 'past_due' ? 'Your card needs fixing. Tap Manage.' : 'Paid up to ' + shortDate(j.until)) : 'Cancelled. Runs to ' + shortDate(j.until || S.sending.hosted_until) + '.'; setTimeout(function () { viewSettings(); }, 1200); }).catch(function () { hc.disabled = false; o.textContent = 'Could not reach the sending system.'; }); });
     var scg = document.getElementById('setupcodego'); if (scg) scg.addEventListener('click', function () { var v = document.getElementById('setupcode').value, out = document.getElementById('setupcoderes'), code = setupCode(v); if (!v.trim()) { out.textContent = 'Paste the code first.'; return; } if (!code) { out.textContent = 'That does not look like a set-up code. Copy the whole thing and try again.'; return; } out.textContent = ''; go('/setup?d=' + code); });
