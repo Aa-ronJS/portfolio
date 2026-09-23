@@ -7,8 +7,8 @@ window.QC = {
                                     // where the phone app lives: https://go.chasem.app/, the canonical address, which this same
                                     // project serves from public/app/ (see middleware.js). Anywhere else -- a preview, localhost --
                                     // it is the relative copy, so a preview never sends people to production. A painter's jobs live
-                                    // in his phone's storage for the address he opened; the app's move.js carries them across from
-                                    // the old address, https://chasem.app/app/, which still works and forwards to the new one.
+                                    // in his phone's storage for the address he opened, so this one does not move again. The old
+                                    // https://chasem.app/app/ redirects here (vercel.json).
 
   // ---- one product, one price, messages included. The painter starts inside the app with his email; the card comes later, from inside.
   PLAN_PRICE: 99,                   // AUD a month. Must match the Stripe Payment Link and the relay. Shown on the card, the FAQ and the terms.

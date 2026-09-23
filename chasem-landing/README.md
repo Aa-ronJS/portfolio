@@ -14,15 +14,11 @@ stays on https://chasem.app. Both are this one Vercel project:
 path except `/api/` and `/y/`, which answer on both hosts), so the app
 still calls its relay on its own address and there is only one deploy.
 
-The app used to live at https://chasem.app/app/, and that address still
-works. `move.js` in the app hands a painter's data across through a hidden
-`move.html` frame before anything redirects: the old address forwards only
-once go.chasem.app has answered and has the work (or there was nothing to
-carry); an empty go.chasem.app asks the old address for its work; neither
-side ever writes over work the other already has, and the old copy is never
-deleted. If go.chasem.app is not up, nothing changes. `tests/apptest/move.cjs`
-in the app covers all of it. Do not remove `/app/` from the site: home-screen
-icons, sent set-up links and Stripe return links still point there.
+The app used to live at https://chasem.app/app/; that address is now a
+permanent redirect to go.chasem.app (the path and the `#/...` screen come
+along), set in `vercel.json` for the chasem.app and www hosts only, so
+previews still serve the app at `/app/`. `tests/routing.mjs` covers the
+routing and the redirect.
 
 ```
 public/index.html   the page (hero, what it does, demo, install, own-it, price, FAQ)

@@ -3,9 +3,8 @@
 # this one project. Attaches the domains, deploys to production, and says what is left.
 # Idempotent -- safe to run again.
 #
-# go.chasem.app is attached before the deploy on purpose: the old address, chasem.app/app/,
-# only forwards painters once go.chasem.app answers, so order does not break anything, but
-# the site's "Open the app" links point at go.chasem.app from this deploy on.
+# go.chasem.app is attached before the deploy, so the site's app links and the
+# chasem.app/app/ redirect point somewhere the moment the deploy lands.
 #
 #   VERCEL_TOKEN=xxxxx bash tools/finish-domain.sh
 #
@@ -49,13 +48,13 @@ cat <<'NOTE'
 
     Everything else already defaults to chasem.app (site, relay) and
     go.chasem.app (the app) in the code. If APP_URL is set, set it to
-    https://go.chasem.app/ -- the old value still works, it just forwards.
+    https://go.chasem.app/ -- the old value still works, via the redirect.
 
 ==> then check it, in this order:
       curl -sI https://chasem.app/ | head -1
       curl -sI https://go.chasem.app/ | head -1          # the app
-      curl -s https://go.chasem.app/ | grep -c move.js    # 1: it is the app, not the site
-      curl -sI https://chasem.app/app/ | head -1         # the old address still answers
+      curl -s https://go.chasem.app/ | grep -c sw.js      # 1: it is the app, not the site
+      curl -sI https://chasem.app/app/ | grep -i location # the old address redirects to go.chasem.app
       curl -s -X POST https://chasem.app/api/msg \
         -H 'Content-Type: application/json' -H 'Origin: https://chasem.app' \
         -d '{"action":"ping"}'

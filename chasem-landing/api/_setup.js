@@ -3,7 +3,7 @@ import { createHmac, timingSafeEqual } from "node:crypto";
 
 export const f = (...a) => (globalThis.__relayFetch || fetch)(...a);
 export function send(res, status, obj) { res.statusCode = status; res.setHeader("Content-Type", "application/json"); res.end(JSON.stringify(obj)); }
-// The app lives at go.chasem.app; chasem.app/app/ is where it used to be and still hands painters across. Those three
+// The app lives at go.chasem.app; chasem.app/app/ redirects there. Those three
 // are always allowed, whatever ALLOWED_ORIGINS says, so setting that variable can never lock the app out of its own relay.
 export const APP_URL = String(process.env.APP_URL || "https://go.chasem.app/").replace(/\/?$/, "/");
 export const PRODUCT_ORIGINS = ["https://go.chasem.app", "https://chasem.app", "https://www.chasem.app"];

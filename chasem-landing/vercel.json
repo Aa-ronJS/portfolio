@@ -67,30 +67,6 @@
           "value": "no-store"
         }
       ]
-    },
-    {
-      "source": "/app/move(.html)?",
-      "headers": [
-        {
-          "key": "Content-Security-Policy",
-          "value": "frame-ancestors https://go.chasem.app https://chasem.app https://www.chasem.app"
-        }
-      ]
-    },
-    {
-      "source": "/move(.html)?",
-      "has": [
-        {
-          "type": "host",
-          "value": "go.chasem.app"
-        }
-      ],
-      "headers": [
-        {
-          "key": "Content-Security-Policy",
-          "value": "frame-ancestors https://go.chasem.app https://chasem.app https://www.chasem.app"
-        }
-      ]
     }
   ],
   "rewrites": [
@@ -111,6 +87,50 @@
     {
       "source": "/measure",
       "destination": "/measure/",
+      "permanent": true
+    },
+    {
+      "source": "/app",
+      "has": [
+        {
+          "type": "host",
+          "value": "chasem.app"
+        }
+      ],
+      "destination": "https://go.chasem.app/",
+      "permanent": true
+    },
+    {
+      "source": "/app/:path*",
+      "has": [
+        {
+          "type": "host",
+          "value": "chasem.app"
+        }
+      ],
+      "destination": "https://go.chasem.app/:path*",
+      "permanent": true
+    },
+    {
+      "source": "/app",
+      "has": [
+        {
+          "type": "host",
+          "value": "www.chasem.app"
+        }
+      ],
+      "destination": "https://go.chasem.app/",
+      "permanent": true
+    },
+    {
+      "source": "/app/:path*",
+      "has": [
+        {
+          "type": "host",
+          "value": "www.chasem.app"
+        }
+      ],
+      "destination": "https://go.chasem.app/:path*",
       "permanent": true
     }
   ]

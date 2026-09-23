@@ -15,7 +15,7 @@ Three independent things live here:
 - **Chasem** — a quoting and chasing app for Australian house painters.
   The site is https://chasem.app; the app itself is https://go.chasem.app
   (same Vercel project, routed by `chasem-landing/middleware.js`; the old
-  https://chasem.app/app/ hands data across and forwards, see `move.js`). Three directories: `chasem-app/` is the
+  https://chasem.app/app/ is a plain redirect to it). Three directories: `chasem-app/` is the
   phone app itself (vanilla ES5, no build step, `npm test` runs ~35
   browser suites); `chasem-landing/` is the site and the serverless
   relay it talks to, deployed with `npx vercel deploy --prod`, with its
