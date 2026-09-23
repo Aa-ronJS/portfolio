@@ -36,13 +36,15 @@ function png(f) { const b = fs.readFileSync(f); return { w: b.readUInt32BE(16), 
   fs.appendFileSync(COPY + '/app.css', '\n#app{--smoke:1}\n'); fs.appendFileSync(COPY + '/app.js', '\nwindow.__smokeMarker = 2;\n');
   await p.goto(base + '#/', { waitUntil: 'load' }); await p.reload({ waitUntil: 'load' }); await p.waitForTimeout(400);
   const first = await p.evaluate(() => ({ css: getComputedStyle(document.getElementById('app')).getPropertyValue('--smoke').trim(), js: window.__smokeMarker || 0 }));
-  ok(first.css === '' && first.js === 0, 'first load after a file change still serves the cached (stale) copy: ' + JSON.stringify(first));
+  // App code comes from the network first now. A painter who opens the app after a deploy gets the new one
+  // straight away; he was getting last week's screens until he happened to open it twice.
+  ok(first.css === '1' && first.js === 2, 'a change is live on the very first load, not the second: ' + JSON.stringify(first));
   await p.reload({ waitUntil: 'load' }); await p.waitForTimeout(800);
   const second = await p.evaluate(() => ({ css: getComputedStyle(document.getElementById('app')).getPropertyValue('--smoke').trim(), js: window.__smokeMarker || 0 }));
-  ok(second.css === '1' && second.js === 2, 'second load gets the new content (stale-while-revalidate): ' + JSON.stringify(second));
+  ok(second.css === '1' && second.js === 2, 'and stays live: ' + JSON.stringify(second));
   // index.html change without VERSION bump
   fs.writeFileSync(COPY + '/index.html', fs.readFileSync(COPY + '/index.html', 'utf8').replace('<title>Chasem</title>', '<title>Chasem v2</title>'));
-  await p.reload({ waitUntil: 'load' }); const t1 = await p.title(); await p.waitForTimeout(300); await p.reload({ waitUntil: 'load' }); const t2 = await p.title(); ok(t1 === 'Chasem' && t2 === 'Chasem v2', 'navigation (index.html) also stale-then-fresh: ' + t1 + ' -> ' + t2);
+  await p.reload({ waitUntil: 'load' }); const t1 = await p.title(); await p.waitForTimeout(300); await p.reload({ waitUntil: 'load' }); const t2 = await p.title(); ok(t1 === 'Chasem v2' && t2 === 'Chasem v2', 'the page itself is fresh on the first load too: ' + t1 + ' -> ' + t2);
   // does the SW swallow a 404? (cache miss + server 404 -> passes through)
   const s404 = await p.evaluate(() => fetch('nope.js').then(r => r.status)); ok(s404 === 404, 'uncached missing file returns 404 through SW: ' + s404);
   // cross-origin GET through the SW while offline -> should reject, not hang

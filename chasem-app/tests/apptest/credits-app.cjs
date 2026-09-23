@@ -28,10 +28,7 @@ const MOCK = () => { window.__qcCalls = []; let saved = null; try { saved = JSON
   // ---- the door: nothing works until the app knows whose it is
   cfg = "window.QC_APP = { maps_key: '', signup_url: 'https://relay.example.test/api/signup' };";
   await p.goto(base, { waitUntil: 'load' }); await p.waitForSelector('#joinform'); let t = await text();
-  ok(/Chasem/.test(t) && /three jobs free, chased to the end: 12 messages/.test(t) && /\$99 a month for 150/.test(t) && /pack of 100 more is \$35/i.test(t), 'the door states the free jobs, the plan and the pack: ' + t.replace(/\s+/g, ' ').slice(0, 90));
-  ok(/a job start to finish is usually four or five/.test(t) && /about 30 jobs/.test(t), 'the door says what a job actually costs in messages, before he has typed anything');
-  ok(/A message is one text or one email the app sends for you/.test(t), 'it says what a message is before asking for anything');
-  ok(/On this phone/.test(t) && /in your account too/.test(t) && /Keys and PIN stay here/.test(t), 'it says what is kept and what is not');
+  ok(/Chasem/.test(t) && /3 jobs free/.test(t) && /\$99 a month/.test(t) && /\$35 for 100/.test(t), 'the door states the price in one line: ' + t.replace(/\s+/g, ' ').slice(0, 90));
   ok(!(await p.$('[data-nav]:not([hidden])')) || !/New job/.test(t), 'no jobs screen behind the door');
   await p.fill('#join_email', 'not-an-email'); await p.click('#join_go');
   ok(/does not look like an email/.test(await p.$eval('#join_msg', e => e.textContent)), 'a bad address is refused on the phone, before any request');

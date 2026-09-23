@@ -7,7 +7,7 @@ const srv = http.createServer((req, res) => { let p = decodeURIComponent(req.url
 let fails = 0; const ok = (c, m) => { console.log((c ? 'PASS ' : 'FAIL ') + m); if (!c) fails++; };
 // signed in, and nothing else: exactly what a new account looks like
 const SIGNED = () => { try { const k = 'qc-app-v1', s = JSON.parse(localStorage.getItem(k) || '{}');
-  s.account = { email: 'new@example.com', joined: '2026-01-01' };
+  s.account = { email: 'new@example.com', joined: '2026-01-01', verified: true };
   s.sending = { server: 'https://relay.example/api/msg', token: 'qc1.x.y', hosted: true, server_has_creds: true };
   localStorage.setItem(k, JSON.stringify(s)); } catch (e) {} };
 
@@ -22,7 +22,7 @@ const SIGNED = () => { try { const k = 'qc-app-v1', s = JSON.parse(localStorage.
 
   await p.goto(base, { waitUntil: 'load' }); await p.waitForTimeout(700);
   let t = await text();
-  ok(/1 of 5/.test(t) && /What is your business called/.test(t), 'a new account lands on one question, not the jobs list');
+  ok(/1 of 5/.test(t) && /Your business name/.test(t), 'a new account lands on one question, not the jobs list');
   ok(!/New job|Quick quote/.test(t), 'and nothing else is on the screen');
   ok(await p.$eval('header.top nav', e => e.hidden), 'the tabs are not offered while he is walled');
 
@@ -49,8 +49,9 @@ const SIGNED = () => { try { const k = 'qc-app-v1', s = JSON.parse(localStorage.
   ok(/3 of 5/.test(await text()) && /state/.test(await text()), 'then the state');
   await p.click('[data-state="SA"]');
   await p.waitForFunction(() => /4 of 5/.test(document.querySelector('#app').innerText), null, { timeout: 4000 }).catch(() => {});
-  ok(/4 of 5/.test(await text()) && /charge for a day/.test(await text()), 'then the day rate');
-  await p.fill('#w_in', '40'); await p.click('#w_next'); await p.waitForTimeout(250);
+  ok(/4 of 5/.test(await text()) && /day rate/i.test(await text()), 'then the day rate');
+  await p.fill('#w_in', '40'); await p.click('#w_next');
+  await p.waitForFunction(() => /between 100 and 3000/.test(document.querySelector('#app').innerText), null, { timeout: 4000 }).catch(() => {});
   ok(/between 100 and 3000/.test(await text()), 'a day rate that cannot be right is refused');
   await p.fill('#w_in', '650'); await p.click('#w_next');
   await p.waitForFunction(() => /5 of 5/.test(document.querySelector('#app').innerText), null, { timeout: 4000 }).catch(() => {});

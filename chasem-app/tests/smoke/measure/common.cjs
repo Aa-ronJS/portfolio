@@ -11,7 +11,7 @@ function serve() {
 // The app asks for an email before it shows anything. These tests are about measuring, not joining, so an
 // account goes on the phone before the app boots, the same shape the join screen writes with no relay.
 const joinScript = () => {
-  const ACC = { email: 'test@example.com', joined: '2026-01-01', offline: true };
+  const ACC = { email: 'test@example.com', joined: '2026-01-01', offline: true, verified: true };
   const seed = () => { try { const raw = localStorage.getItem('qc-app-v1'); const s = raw ? JSON.parse(raw) : {}; if (!s.account || !s.account.email) { s.account = ACC; s.details = s.details || {}; if (!s.details.trading_name) s.details.trading_name = 'Test Painting Co'; if (!s.details.abn) s.details.abn = '12 345 678 901'; if (!s.details.state) s.details.state = 'SA'; s.security = Object.assign({}, s.security, { setup_done: true }); s.payment = s.payment || { account_name: 'Test Painting Co', bsb: '063-000', account_number: '12345678' };  localStorage.setItem('qc-app-v1', JSON.stringify(s)); } } catch (e) {} };
   seed();
   const realClear = localStorage.clear.bind(localStorage);

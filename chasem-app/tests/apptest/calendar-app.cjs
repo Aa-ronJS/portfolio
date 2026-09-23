@@ -27,7 +27,7 @@ const seed = () => {
   // what the relay last said about the calendar is remembered on the phone; each case starts without it
   try { const k = 'qc-sync-v1', m = JSON.parse(localStorage.getItem(k) || '{}'); delete m.calendar; localStorage.setItem(k, JSON.stringify(m)); } catch (e) {}
   const st = window.__qcApp.store, S = st.load();
-  S.account = { email: 'dave@example.com', joined: st.today() }; S.details.trading_name = S.details.trading_name || 'Test Painting Co'; S.details.abn = S.details.abn || '12 345 678 901'; S.details.state = S.details.state || 'SA'; S.security.setup_done = true; S.payment = S.payment || { account_name: 'Test Painting Co', bsb: '063-000', account_number: '12345678' }; 
+  S.account = { email: 'dave@example.com', joined: st.today(), verified: true }; S.details.trading_name = S.details.trading_name || 'Test Painting Co'; S.details.abn = S.details.abn || '12 345 678 901'; S.details.state = S.details.state || 'SA'; S.security.setup_done = true; S.payment = S.payment || { account_name: 'Test Painting Co', bsb: '063-000', account_number: '12345678' }; 
   S.details.trading_name = "Dave's Painting"; S.details.email = 'dave@example.com'; S.details.state = 'SA';
   S.sending = Object.assign({}, S.sending, { server: 'https://relay.example/api/msg', hosted: true, token: 'qc1.eyJ2IjoxfQ.sig', server_has_creds: true });
   st.save();

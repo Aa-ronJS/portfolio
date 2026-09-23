@@ -12,14 +12,27 @@ const { boot, SP, fs } = require('./h.cjs');
   // 1. export -> wipe -> import -> identical
   await p.evaluate(j => window.__qcApp.store.importAll(j), backup);
   const exp1 = await p.evaluate(() => window.__qcApp.store.exportAll());
-  await p.evaluate(() => window.__qcApp.store.reset()); const afterWipe = await p.evaluate(() => window.__qcApp.store.load().jobs.length); ok(afterWipe === 0, 'wipe clears jobs');
+  await p.evaluate(() => { const st = window.__qcApp.store; st.reset(); const S = st.load();
+    S.account = { email: 'test@example.com', joined: st.today(), offline: true, verified: true };
+    S.details.trading_name = 'Test Painting Co'; S.details.abn = '12 345 678 901'; S.details.state = 'SA';
+    S.security.setup_done = true; S.payment = { account_name: 'T', bsb: '063-000', account_number: '12345678' }; st.save(); }); const afterWipe = await p.evaluate(() => window.__qcApp.store.load().jobs.length); ok(afterWipe === 0, 'wipe clears jobs');
   await p.evaluate(j => window.__qcApp.store.importAll(j), exp1); const exp2 = await p.evaluate(() => window.__qcApp.store.exportAll());
   const strip = (x) => { const o = JSON.parse(x); delete o.rev; delete o.saved_at; return JSON.stringify(o); }; ok(strip(exp1) === strip(exp2), 'export -> wipe -> import -> export is identical (save counter aside)'); if (exp1 !== exp2) { const a = JSON.parse(exp1), b = JSON.parse(exp2); Object.keys(a).forEach(k => { if (JSON.stringify(a[k]) !== JSON.stringify(b[k])) t.note('differs: ' + k); }); }
   // export via the Settings button
+  // the import above replaced the whole store with an export taken before this suite set itself up
+  await p.evaluate(() => { const st = window.__qcApp.store, S = st.load();
+    S.account = { email: 'test@example.com', joined: st.today(), offline: true, verified: true };
+    S.details.trading_name = S.details.trading_name || 'Test Painting Co'; S.details.abn = '12 345 678 901'; S.details.state = 'SA';
+    S.security.setup_done = true; S.payment = { account_name: 'T', bsb: '063-000', account_number: '12345678' }; st.save(); });
   await t.go('#/settings'); await p.waitForSelector('#export'); const [dl] = await Promise.all([p.waitForEvent('download', { timeout: 5000 }).catch(() => null), p.click('#export')]); ok(dl && /chasem-backup-\d{4}-\d\d-\d\d\.json/.test(dl.suggestedFilename()), 'Save back-up downloads a dated JSON');
 
   // 2. bad imports through the UI file picker
-  async function importText(txt, name) { await t.go('#/settings'); await p.waitForSelector('#import'); await p.setInputFiles('#import', { name: name || 'b.json', mimeType: 'application/json', buffer: Buffer.from(txt) }); await p.waitForTimeout(250); return p.$eval('#toast', e => e.textContent); }
+  // every import replaces the store, so put the account and the set-up back before reaching for Set-up again
+  const reseat = () => p.evaluate(() => { const st = window.__qcApp.store, S = st.load();
+    S.account = { email: 'test@example.com', joined: st.today(), offline: true, verified: true };
+    S.details.trading_name = S.details.trading_name || 'Test Painting Co'; S.details.abn = '12 345 678 901'; S.details.state = 'SA';
+    S.security.setup_done = true; S.payment = { account_name: 'T', bsb: '063-000', account_number: '12345678' }; st.save(); }).catch(() => {});
+  async function importText(txt, name) { await reseat(); await t.go('#/settings'); await p.waitForSelector('#import'); await p.setInputFiles('#import', { name: name || 'b.json', mimeType: 'application/json', buffer: Buffer.from(txt) }); await p.waitForTimeout(250); return p.$eval('#toast', e => e.textContent); }
   const jobsBefore = await p.evaluate(() => window.__qcApp.store.load().jobs.length);
   let m = await importText('garbage {{{'); ok(/Unexpected|JSON|not valid/i.test(m), 'garbage import -> error toast: ' + m);
   m = await importText('{}'); ok(/Not a Chasem/.test(m), '{} import -> rejected: ' + m);
@@ -56,7 +69,7 @@ const { boot, SP, fs } = require('./h.cjs');
   // 4. localStorage quota exceeded
   await p.evaluate(j => window.__qcApp.store.importAll(j), backup);
   await p.evaluate(() => { const orig = Storage.prototype.setItem; window.__origSet = orig; Storage.prototype.setItem = function () { const e = new Error('QuotaExceededError'); e.name = 'QuotaExceededError'; throw e; }; });
-  await t.go('#/settings'); await p.waitForSelector('[data-bind="details.trading_name"]'); await p.fill('[data-bind="details.trading_name"]', 'Quota Co'); await p.waitForTimeout(100);
+  await reseat(); await t.go('#/settings'); await p.waitForSelector('[data-bind="details.trading_name"]'); await p.fill('[data-bind="details.trading_name"]', 'Quota Co'); await p.waitForTimeout(100);
   let toast = await t.toast(); ok(/Could not save/.test(toast) && !t.errors.length, 'quota exceeded on a settings edit -> toast "' + toast + '", no crash');
   await t.go('#/'); await p.waitForSelector('#newjob'); await p.evaluate(() => { document.getElementById('toast').hidden = true; document.getElementById('toast').textContent = ''; }); await p.click('#newjob'); await p.waitForTimeout(200); toast = await t.toast();
   ok(/Could not save/.test(toast), 'quota exceeded on New job -> user warned (toast: "' + toast + '")');

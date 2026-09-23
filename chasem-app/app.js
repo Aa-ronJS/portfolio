@@ -62,7 +62,10 @@
   // The app opens once it knows who it belongs to: an email, which brings back a set-up link carrying the sending token and
   // the twelve messages everyone starts with: three whole jobs, because a job is four (the quote, then three chases, and the
   // ones that never have to go are given back). A set-up link from an email or a receipt joins the same way, without typing anything.
-  function joined() { return !!(S.account && S.account.email) || !!(S.sending && S.sending.token); }
+  // Signed in means the inbox was proved, not that an address is sitting in storage. An account made before
+  // codes existed, or one someone typed in by hand, is asked to sign in once; his jobs are in his account and
+  // come back with him. 'offline' is the no-relay mode, where there is no server to prove anything against.
+  function joined() { var a = S.account || {}; return !!(a.email && (a.verified === true || a.offline === true)); }
   function signupUrl() { var u = String((S.sending && S.sending.server) || window.QC_APP && window.QC_APP.signup_url || '').trim(); if (u) return u.replace(/\/[^\/]*$/, '/signup'); return (window.QC_APP && window.QC_APP.signup_url) || ''; }
   function signinUrl() { var u = signupUrl(); return u ? u.replace(/\/[^\/]*$/, '/signin') : ''; }
 
@@ -83,11 +86,9 @@
           '<input type="email" id="join_email" autocomplete="email" inputmode="email" required value="' + esc((S.account && S.account.email) || '') + '"></label>' +
           '<div class="row" style="margin-top:8px"><button class="btn tape" type="submit" id="join_go">Send me a code</button></div>' +
           '<p class="hint" id="join_msg"></p></form>') +
-      // The price, in the only unit that means anything to him: jobs. This is the one place prose earns its
-      // keep, because he is deciding whether to hand over money.
-      '<p class="hint">First three jobs free, chased to the end: ' + FREE_SENDS + ' messages. A message is one text or one email the app sends for you, and a job start to finish is usually four or five.</p>' +
-      '<p class="hint">After that $' + PLAN_PRICE + ' a month for ' + PLAN_INCLUDED + ', about 30 jobs. A pack of ' + TOPUP_MESSAGES + ' more is $' + TOPUP_PRICE + '.' + (url ? '' : ' <span class="confirm">Signing in is not switched on yet.</span>') + '</p>' +
-      '<p class="hint">On this phone. With chasing on, in your account too, so a customer can accept while your phone is in your pocket. Keys and PIN stay here.</p></div>';
+      // One line, because he is signing in, not shopping. The full story is on the page that sells it.
+      '<p class="hint">First 3 jobs free. Then $' + PLAN_PRICE + ' a month, or $' + TOPUP_PRICE + ' for ' + TOPUP_MESSAGES + ' more messages.' + (url ? '' : ' <span class="confirm">Signing in is not switched on yet.</span>') + '</p></div>';
+
 
     var out = function () { return document.getElementById('join_msg'); };
     var call = function (body) {
@@ -121,7 +122,7 @@
       call({ action: 'check', email: waiting, code: code }).then(function (j) {
         if (!j || !j.ok || !j.token) { btn.disabled = false; out().textContent = (j && j.error) || 'That did not work.'; box.select(); return; }
         S = QCStore.load();
-        S.account = { email: waiting, joined: QCStore.today(), cus: j.cus || '' };
+        S.account = { email: waiting, joined: QCStore.today(), cus: j.cus || '', verified: true };
         if (j.sending) S.sending = Object.assign({}, S.sending, j.sending);
         save();
         viewJoin.waiting = '';
@@ -390,26 +391,23 @@
     var n = steps.filter(function (x) { return x.done; }).length;
 
     var html = '<div class="wall"><p class="hint">' + (n + 1) + ' of ' + steps.length + '</p>';
-    if (at.id === 'name') html += '<h1>What is your business called?</h1>' +
-      '<p class="hint">It goes at the top of every quote.</p>' +
+    if (at.id === 'name') html += '<h1>Your business name</h1>' +
       '<label class="f"><input type="text" id="w_in" autocomplete="organization" placeholder="Dave\u2019s Painting" value="' + esc(S.details.trading_name || '') + '"></label>';
     else if (at.id === 'abn') html += '<h1>Your ABN</h1>' +
-      '<p class="hint">Printed on your quotes and invoices.</p>' +
       '<label class="f"><input type="text" id="w_in" inputmode="numeric" placeholder="12 345 678 901" value="' + esc(S.details.abn || '') + '"></label>';
-    else if (at.id === 'state') html += '<h1>Which state do you work in?</h1>' +
-      '<p class="hint">Sets your public holidays and your deposit limit.</p>' +
+    else if (at.id === 'state') html += '<h1>Your state</h1>' +
       '<div class="row wrap" id="w_states">' + ['SA', 'NSW', 'VIC', 'QLD', 'WA', 'TAS', 'NT', 'ACT'].map(function (st) {
         return '<button class="btn' + (S.details.state === st ? ' tape' : ' ghost') + '" data-state="' + st + '">' + st + '</button>'; }).join('') + '</div>';
-    else if (at.id === 'prices') html += '<h1>What do you charge for a day?</h1>' +
-      '<p class="hint">One painter, on the tools, before GST. Every price is worked out from it.</p>' +
+    else if (at.id === 'prices') html += '<h1>Your day rate</h1>' +
+      '<p class="hint">One painter, before GST.</p>' +
       '<label class="f"><input type="number" id="w_in" inputmode="numeric" min="100" max="3000" step="10" placeholder="650" value="' + esc(dayRate() || '') + '"></label>';
-    else if (at.id === 'pay') html += '<h1>How do you want to be paid?</h1>' + payChoices();
+    else if (at.id === 'pay') html += '<h1>Getting paid</h1>' + payChoices();
 
     if (at.id !== 'state' && at.id !== 'pay') html += '<div class="row"><button class="btn tape lg" id="w_next">Next</button></div>';
     html += '<p class="hint" id="w_msg"></p>';
     html += '<ol class="wallsteps">' + steps.map(function (x) {
       return '<li class="' + (x.done ? 'done' : x.id === at.id ? 'now' : '') + '">' + esc(x.label) + '</li>'; }).join('') + '</ol>';
-    html += '<p class="hint"><a href="#/help">How it works</a> &middot; <a href="#" id="w_out">Sign out</a></p></div>';
+    html += '<p class="hint"><a href="#/help">Help</a> &middot; <a href="#" id="w_out">Sign out</a></p></div>';
     $app.innerHTML = html;
     wireWall(at);
   }
@@ -433,9 +431,7 @@
 
   function payChoices() {
     var pay = S.payment || {}, off = pay.card_off === true;
-    return '<p class="hint">' + (off
-      ? 'Card payments are not switched on yet. Bank transfer for now.'
-      : 'Card is tracked for you: the app sees when an invoice is paid.') + '</p>' +
+    return (off ? '<p class="hint">Card is not switched on yet.</p>' : '') +
       (off ? '' : '<div class="row"><button class="btn tape lg" id="w_card">Get paid by card</button></div>') +
       '<details class="sec sub"' + (off ? ' open' : '') + '><summary><h3>Bank transfer instead</h3></summary>' +
       '<label class="f">Account name<input type="text" id="w_an" autocomplete="off" value="' + esc(pay.account_name || S.details.account_name || '') + '"></label>' +
@@ -510,8 +506,7 @@
   // The wall already made him do his name, ABN, state, prices and how he gets paid. The only thing left that
   // he can put off is letting it chase for him, so that is all Home nudges about.
   function setupSteps() {
-    return [{ label: 'Let it chase for you', hint: 'In your name, without you. Or keep tapping Send, free.',
-              href: '#/settings', done: !!(S.sending.hosted === true || autoReady()) }];
+    return [{ label: 'Follow-ups', href: '#/settings', done: !!(S.sending.hosted === true || autoReady()) }];
   }
   function viewHome() {
     if (typeof QCStore.purgeEmpty === 'function' && Date.now() - (route.storageAt || 0) > 1500) { try { QCStore.purgeEmpty(); } catch (e) {} S = QCStore.load(); if (!S.ui || typeof S.ui !== 'object') S.ui = {}; } // a Quick quote or New job that was backed out of with nothing typed goes, and its number comes back
@@ -527,7 +522,9 @@
     if (visits.length) html += '<div class="card"><h3>Quote visits</h3>' + visits.slice(0, 5).map(function (j) { return '<a class="row between" href="#/enquiry/' + j.id + '" style="text-decoration:none;color:inherit"><span><b>' + esc(j.client.name || j.quote_no) + '</b> <span class="hint">' + esc(j.client.address || '') + '</span></span><span class="hint">' + QCPdf.fmtDate(j.visit.date) + ' ' + QCSched.nice(j.visit.start_min) + '</span></a>'; }).join('') + '</div>';
     var booked = jobs.filter(function (j) { return j.booking && j.booking.end >= today; }).sort(function (a, b) { return a.booking.start < b.booking.start ? -1 : 1; });
     if (booked.length) html += '<div class="card"><h3>Booked</h3>' + booked.slice(0, 4).map(function (j) { return '<div class="row between"><span><b>' + esc(j.client.name || j.quote_no) + '</b> <span class="hint">' + esc(j.client.address || '') + '</span></span><span class="hint">' + QCPdf.fmtDate(j.booking.start) + (j.booking.days > 1 ? ', ' + j.booking.days + ' days' : '') + '</span></div>'; }).join('') + '</div>';
-    if (showSetup) html += '<div class="card" id="setupcard"><h2>Let it chase for you</h2>' +
+    if (showSetup) html += '<div class="card" id="setupcard"><div class="row between"><h2>Follow-ups</h2>' +
+      '<a class="btn tape sm" href="#/settings" id="setupgo">Turn on</a></div>' +
+      '<div class="row"><button class="btn ghost sm" id="setuphide">Not now</button></div></div>';
       '<p class="hint">Quotes and invoices followed up in your name, without you. Or keep tapping Send, free.</p>' +
       '<div class="row between"><a class="btn tape" href="#/settings" id="setupgo">Turn it on</a><button class="btn ghost sm" id="setuphide">Not now</button></div></div>';
     var counts = { all: jobs.length, enquiry: 0, quoted: 0, accepted: 0, invoiced: 0, paid: 0 }; jobs.forEach(function (j) { if (counts[j.status] != null) counts[j.status]++; });
@@ -2209,7 +2206,7 @@
         if (w.to_chase.invoices || w.to_chase.quotes) rows.push(['To chase', [w.to_chase.invoices ? w.to_chase.invoices + ' unpaid invoice' + (w.to_chase.invoices > 1 ? 's' : '') : '', w.to_chase.quotes ? w.to_chase.quotes + ' open quote' + (w.to_chase.quotes > 1 ? 's' : '') : ''].filter(Boolean).join(', ') + '. Nothing is sent until you tap Start the chasing.']);
         if (w.scoreboard_start) rows.push(['Scoreboard', 'counts from ' + shortDate(w.scoreboard_start)]);
         $app.innerHTML = '<h1>Set up your app?</h1>' + (w.note ? '<p class="hint">' + esc(w.note) + '</p>' : '') + '<div class="card"><h3>What is in it</h3>' + rows.map(function (r) { return '<div class="row between" style="border-top:1px solid var(--line);padding-top:6px"><span>' + esc(r[0]) + '</span><b>' + esc(r[1]) + '</b></div>'; }).join('') + '<p class="hint">Adds to this phone. Nothing already here is replaced.</p><div class="row between"><button class="btn tape" id="setupload">Load</button><a class="btn ghost sm" href="#/">Not now</a></div></div>';
-        document.getElementById('setupload').addEventListener('click', function () { var b = this; b.disabled = true; try { var res = applySetup(obj); if (!isObj(S.account)) S.account = {}; if (!S.account.email) { S.account.email = String((((obj.settings || {}).details) || {}).email || (S.sending && S.sending.hosted_name) || 'set-up link'); S.account.joined = QCStore.today(); save(); } toast(setupToast(res).replace(/\.?$/, '') + (res.loaded.some(chaseable) ? '. Nothing is sent until you tap Start the chasing.' : '.')); go('/'); } catch (e) { b.disabled = false; showBlock(b, e.message, { kind: 'bad' }); } });
+        document.getElementById('setupload').addEventListener('click', function () { var b = this; b.disabled = true; try { var res = applySetup(obj); if (!isObj(S.account)) S.account = {}; if (!S.account.email) { S.account.email = String((((obj.settings || {}).details) || {}).email || (S.sending && S.sending.hosted_name) || 'set-up link'); S.account.joined = QCStore.today(); S.account.verified = true; save(); } toast(setupToast(res).replace(/\.?$/, '') + (res.loaded.some(chaseable) ? '. Nothing is sent until you tap Start the chasing.' : '.')); go('/'); } catch (e) { b.disabled = false; showBlock(b, e.message, { kind: 'bad' }); } });
       }).catch(function (e) { paste(e.message); });
     }
     if (code) show(code); else paste(badLink ? 'That does not look like a set-up code. Copy the whole link from your welcome email and try again.' : '');
