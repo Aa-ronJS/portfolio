@@ -40,6 +40,15 @@ Three independent things live here:
   Both are load-bearing: a change that makes either worse is a
   regression even if it ships a feature.
 
+  **Pictures over words, where a painter already knows the picture.**
+  Icons come from `chasem-app/pics.js` (inline SVG, offline) as a
+  picture over a one-word caption; an action with consequences never
+  goes out as a bare icon, and every icon button carries its full name
+  in `aria-label`. Colour follows a traffic light: green done, yellow
+  in hand, red when money is overdue. If `pics.js` fails to load,
+  every button must still work with its word
+  (`tests/apptest/pics.cjs`).
+
 The portfolio site and the pipeline share nothing except
 `public/fonts/satoshi-var.woff2`, which the pipeline ships converted to
 TTF for captions.

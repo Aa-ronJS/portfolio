@@ -10,7 +10,7 @@ const L = require('./lib.cjs'); const { ok, wire } = L;
   for (const h of empties) { const n = log.length; await p.goto(base + h, { waitUntil: 'load' }); await p.waitForTimeout(150); const t = await text(); const e = errsSince(n); ok(!e.length && t.length > 20, 'empty store route ' + h + ' -> ' + (await hash()) + ' renders (' + t.slice(0, 30).replace(/\n/g, ' ') + ')' + (e.length ? ' ERR ' + e[0].text : '')); }
   ok(!(await p.evaluate(() => document.querySelector('#app script, #app img[onerror]'))), 'no injected script/img from malformed hash');
   // #/enquiry/nonexistent renders new-enquiry form at that url
-  await p.goto(base + '#/enquiry/nonexistent', { waitUntil: 'load' }); ok(/Phone enquiry/.test(await text()), 'enquiry/nonexistent renders as blank enquiry (does not bounce): hash=' + await hash());
+  await p.goto(base + '#/enquiry/nonexistent', { waitUntil: 'load' }); await p.waitForTimeout(200); ok((await hash()) === '#/' && /Jobs/.test(await text()), 'enquiry/nonexistent bounces home, like job/nonexistent, so a dead link lands somewhere: hash=' + await hash());
   // back trap: settings -> job/nonexistent (bounces) -> back
   await p.goto(base + '#/settings', { waitUntil: 'load' }); await p.evaluate(() => { location.hash = '#/job/nonexistent'; }); await p.waitForTimeout(200); ok((await hash()) === '#/', 'job/nonexistent bounces to #/ (got ' + await hash() + ')');
   await p.goBack(); await p.waitForTimeout(250); const afterBack = await hash(); ok(afterBack === '#/settings', 'browser back after a bounced route returns to #/settings, got ' + afterBack + ' (history.length=' + await p.evaluate(() => history.length) + ')');

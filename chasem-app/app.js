@@ -2,6 +2,9 @@
 (function () {
   'use strict';
   var $app = document.getElementById('app'), S;
+  // The pictures are a nicety. If pics.js did not arrive (an old cache, one bar of signal) every button still
+  // has its word and works.
+  var QCPics = window.QCPics || { svg: function () { return ''; }, tile: function (n, w) { return String(w).replace(/[&<>"]/g, ''); }, says: function () { return ''; }, has: function () { return false; } };
   function esc(s) { return String(s == null ? '' : s).replace(/[&<>"']/g, function (c) { return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]; }); }
   function money(n) { return QCPdf.money(n); }
   function rateFmt(r) { return Math.abs(r - Math.round(r)) < 0.005 ? money(r) : '$' + (Math.round(r * 100) / 100).toFixed(2); }
@@ -357,9 +360,27 @@
     return '<span class="pill ' + m[1] + '">' + m[0] + '</span>' + (j.hold && j.hold.on ? ' <span class="pill warn">On hold</span>' : '');
   }
   var homeFilter = 'all', homeQuery = '';
+  // Where a job is up to, as five pictures: asked, quoted, yes, invoiced, paid. Done steps solid, this one
+  // ringed, the rest faint. The word is still there for a screen reader. A declined or cancelled job has no
+  // step to be on, so it keeps its word.
+  var STAGES = [['enquiry', 'phone'], ['quoted', 'quote'], ['accepted', 'yes'], ['invoiced', 'invoice'], ['paid', 'cash']];
+  function stageTrack(j) {
+    var at = { enquiry: 0, draft: 1, quoted: 1, accepted: 2, invoiced: 3, paid: 4 }[j.status];
+    if (at == null || !window.QCPics) return statusPill(j);
+    var word = statusPill(j).replace(/<[^>]+>/g, ' ').replace(/\s+/g, ' ').trim();
+    var tone = j.status === 'invoiced' && jobOwing(j) > 0 && (j.invoices || []).some(function (i) { return invOpen(i) && i.due && i.due < QCStore.today(); }) ? ' bad' : '';   // green done, yellow in hand, red when money is overdue
+    var h = '<span class="track" role="img" aria-label="' + esc(word) + '">';
+    STAGES.forEach(function (s, i) {
+      if (i) h += '<span class="gap' + (i <= at ? ' done' : '') + '"></span>';
+      // a paid job is finished: every step done, nothing still in hand
+      h += '<span class="st' + (i < at || j.status === 'paid' ? ' done' : i === at ? ' now' + tone : '') + '">' + QCPics.svg(s[1]) + '</span>';
+    });
+    h += '</span><span class="sr">' + esc(word) + '</span>';
+    return h + (j.hold && j.hold.on ? ' <span class="pill warn">On hold</span>' : '');
+  }
   function jobCard(j) {
     var total = j.quote ? money(j.quote.total) : (j.ballpark ? money(j.ballpark.low) + ' to ' + money(j.ballpark.high) : ''), owing = j.status === 'invoiced' ? jobOwing(j) : 0;
-    return '<a class="job" href="' + (j.status === 'enquiry' ? '#/enquiry/' + j.id : '#/job/' + j.id) + '"><div class="row between"><b>' + esc(j.client.name || 'New job') + '</b><span class="sub">' + esc(j.client.address || (jobDesc(j) === 'the painting' ? '' : j.summary)) + '</span></div><div class="row between"><span>' + statusPill(j) + '</span><span class="sub">' + esc(j.quote_no) + (owing > 0 ? ' · owing ' + money(owing) : total ? ' · ' + total : '') + '</span></div></a>';
+    return '<a class="job" href="' + (j.status === 'enquiry' ? '#/enquiry/' + j.id : '#/job/' + j.id) + '"><div class="row between"><b>' + esc(j.client.name || 'New job') + '</b><span class="sub">' + esc(j.client.address || (jobDesc(j) === 'the painting' ? '' : j.summary)) + '</span></div><div class="row between"><span>' + stageTrack(j) + '</span><span class="sub">' + esc(j.quote_no) + (owing > 0 ? ' · owing ' + money(owing) : total ? ' · ' + total : '') + '</span></div></a>';
   }
   // the three first-run steps: done when the detail is there; the card goes once all three are, or when the painter hides it
   // ---------- the wall
@@ -551,7 +572,7 @@
     // about the one thing he can still put off.
     var showSetup = !allDone && !S.ui.dismissed_setup_card;
     var html = pendingBanner();
-    html += '<div class="row between"><h1>Jobs</h1><div class="row"><button class="btn tape" id="newjob">New job</button><a class="btn ghost sm" href="#/enquiry">Phone enquiry</a><button class="btn ghost sm" id="quick">Quick quote</button></div></div>';
+    html += '<div class="row between"><h1>Jobs</h1><div class="row"><button class="btn tape tile" id="newjob"' + QCPics.says('New job') + '>' + QCPics.tile('plus', 'New job') + '</button><a class="btn ghost tile" href="#/enquiry"' + QCPics.says('Phone enquiry') + '>' + QCPics.tile('phone', 'Enquiry') + '</a><button class="btn ghost tile" id="quick"' + QCPics.says('Quick quote') + '>' + QCPics.tile('zap', 'Quick') + '</button></div></div>';
     if (window.__qcInstallPrompt) html += '<div class="card"><div class="row between"><span><b>Put it on your home screen</b><span class="hint"> · opens like an app and works offline</span></span><button class="btn sm" id="install">Install</button></div></div>';
     var visits = jobs.filter(function (j) { return j.visit && j.visit.date >= today; }).sort(function (a, b) { return (a.visit.date + QCSched.hm(a.visit.start_min)) < (b.visit.date + QCSched.hm(b.visit.start_min)) ? -1 : 1; });
     if (visits.length) html += '<div class="card"><h3>Quote visits</h3>' + visits.slice(0, 5).map(function (j) { return '<a class="row between" href="#/enquiry/' + j.id + '" style="text-decoration:none;color:inherit"><span><b>' + esc(j.client.name || j.quote_no) + '</b> <span class="hint">' + esc(j.client.address || '') + '</span></span><span class="hint">' + QCPdf.fmtDate(j.visit.date) + ' ' + QCSched.nice(j.visit.start_min) + '</span></a>'; }).join('') + '</div>';
@@ -1703,10 +1724,10 @@
         '<p class="hint">' + note + '</p>' +
         (hold ? '<p class="muted">Reminders are on hold' + (j.hold.note ? ': ' + esc(j.hold.note) : '') + '.</p><div class="row"><button class="btn sm" data-hold="' + k + '">Resume reminders</button><a class="btn ghost sm" href="#/job/' + j.id + '">Open job</a></div>' :
           (showFinal ? '<p class="legal">This threatens legal action. Send it only if you mean it.</p>' : '') + '<div class="msg">' + esc(t.sms) + '</div>' +
-          '<div class="row">' + (QCMsg.ready('sms') && phoneOk ? '<button class="btn tape" data-sendnow="' + k + '" data-ch="sms">Send text now</button>' : '') + (QCMsg.ready('email') && toEmail ? '<button class="btn" data-sendnow="' + k + '" data-ch="email">Send email now</button>' : '') + (phoneOk ? '<a class="btn ' + (QCMsg.ready('sms') ? 'ghost' : 'tape') + '" href="' + esc(sms) + '">Text</a>' : '') + (toEmail ? '<a class="btn ' + (QCMsg.ready('email') || phoneOk ? 'ghost' : '') + '" href="' + esc(mail) + '">Email</a>' : '') +
-          (r.kind === 'statement' && ho && window.QCPdf && QCPdf.statementPDF ? '<button class="btn ghost" data-stmt="' + k + '">Send the statement</button>' : '') + (r.kind === 'invoice' && ho && window.QCPdf && QCPdf.invoicePDF ? '<button class="btn ghost" data-invcopy="' + k + '">Send a copy of the invoice</button>' : '') +
+          '<div class="row">' + (QCMsg.ready('sms') && phoneOk ? '<button class="btn tape" data-sendnow="' + k + '" data-ch="sms">Send text now</button>' : '') + (QCMsg.ready('email') && toEmail ? '<button class="btn" data-sendnow="' + k + '" data-ch="email">Send email now</button>' : '') + (phoneOk ? '<a class="btn tile ' + (QCMsg.ready('sms') ? 'ghost' : 'tape') + '" href="' + esc(sms) + '"' + QCPics.says('Text') + '>' + QCPics.tile('text', 'Text') + '</a>' : '') + (toEmail ? '<a class="btn tile ' + (QCMsg.ready('email') || phoneOk ? 'ghost' : '') + '" href="' + esc(mail) + '"' + QCPics.says('Email') + '>' + QCPics.tile('mail', 'Email') + '</a>' : '') +
+          (r.kind === 'statement' && ho && window.QCPdf && QCPdf.statementPDF ? '<button class="btn ghost tile" data-stmt="' + k + '"' + QCPics.says('Send the statement') + '>' + QCPics.tile('doc', 'Statement') + '</button>' : '') + (r.kind === 'invoice' && ho && window.QCPdf && QCPdf.invoicePDF ? '<button class="btn ghost tile" data-invcopy="' + k + '"' + QCPics.says('Send a copy of the invoice') + '>' + QCPics.tile('invoice', 'Invoice') + '</button>' : '') +
           (r.kind === 'invoice' && r.tier === 3 ? '<button class="btn ghost" data-final="' + k + '">' + (showFinal ? 'Back to the reminder' : 'Show final notice') + '</button>' : '') + '</div>' +
-          '<div class="row second"><button class="btn ghost sm" data-share="' + k + '">Share</button><button class="btn ghost sm" data-copy="' + k + '">Copy</button><button class="btn ghost sm" data-chased="' + (r.kind === 'statement' ? r.jobs.map(function (x) { return x.id; }).join(',') : j.id) + '">Mark chased</button><button class="btn ghost sm" data-hold="' + k + '">Hold</button><a class="btn ghost sm" href="#/job/' + j.id + '">Open job</a></div>') + '</div>';
+          '<div class="row second tiles"><button class="btn ghost tile" data-share="' + k + '"' + QCPics.says('Share') + '>' + QCPics.tile('share', 'Share') + '</button><button class="btn ghost tile" data-copy="' + k + '"' + QCPics.says('Copy the message') + '>' + QCPics.tile('copy', 'Copy') + '</button><button class="btn ghost tile" data-chased="' + (r.kind === 'statement' ? r.jobs.map(function (x) { return x.id; }).join(',') : j.id) + '"' + QCPics.says('Mark chased') + '>' + QCPics.tile('check', 'Chased') + '</button><button class="btn ghost tile" data-hold="' + k + '"' + QCPics.says('Hold the reminders') + '>' + QCPics.tile('pause', 'Hold') + '</button><a class="btn ghost tile" href="#/job/' + j.id + '"' + QCPics.says('Open job') + '>' + QCPics.tile('open', 'Job') + '</a></div>') + '</div>';
     });
     if (dirty) save();
     $app.innerHTML = html; wireBanner();
@@ -1805,7 +1826,7 @@
   // ---------- photos on the job: camera or library, squeezed to 1024 px JPEG, up to 8, with a caption and an "on quote" tick (up to 4 print)
   function photosCard(job, roomId) {
     var all = job.photos || [], list = roomId ? all.filter(function (p) { return p.room === roomId; }) : all;
-    return '<div class="card" id="photos"><div class="row between"><h3>Photos</h3><div class="row"><label class="btn ghost sm">Camera<input type="file" accept="image/*" capture="environment" data-photo="cam"></label><label class="btn ghost sm">Library<input type="file" accept="image/*" multiple data-photo="lib"></label></div></div>' +
+    return '<div class="card" id="photos"><div class="row between"><h3>Photos</h3><div class="row"><label class="btn ghost tile"' + QCPics.says('Take a photo') + '>' + QCPics.tile('camera', 'Camera') + '<input type="file" accept="image/*" capture="environment" data-photo="cam"></label><label class="btn ghost tile"' + QCPics.says('Choose photos') + '>' + QCPics.tile('image', 'Photos') + '<input type="file" accept="image/*" multiple data-photo="lib"></label></div></div>' +
       (list.length ? '<div class="pgrid">' + list.map(function (p) { return '<figure class="ph"><img src="' + esc(/^data:image\//.test(p.data) ? p.data : '') + '" alt=""><input type="text" placeholder="Caption" aria-label="Photo caption" data-pcap="' + esc(p.id) + '" value="' + esc(p.caption || '') + '"><div class="row between"><label class="hint"><input type="checkbox" data-pq="' + esc(p.id) + '" ' + (p.on_quote ? 'checked' : '') + '> on quote</label><button class="btn ghost sm" data-pdel="' + esc(p.id) + '">Delete</button></div></figure>'; }).join('') + '</div>' : '<p class="hint">Up to 4 go on the quote.</p>') +
       (all.length >= 8 ? '<p class="hint">8 photos is the limit per job.</p>' : '') + '</div>';
   }
@@ -2409,6 +2430,11 @@
   try { if (QCStore.storageOk && !QCStore.storageOk()) saveTrouble('blocked'); } catch (e) {}
 
   route();
+  // The tabs: picture over its word. Done here so the pictures have one source.
+  try { [['home', 'jobs'], ['chase', 'bell'], ['settings', 'setup']].forEach(function (t) {
+    var a = document.querySelector('[data-nav="' + t[0] + '"]'); if (!a || a.querySelector('.ico')) return;
+    a.innerHTML = QCPics.svg(t[1]) + '<span class="w">' + esc(a.textContent) + '</span>';
+  }); } catch (e) {}
   window.__qcApp = { route: route, store: QCStore, pricing: QCPricing, sync: syncNow, openUrl: function (u) { openUrl(u); }, setOpen: function (f) { openUrl = f; } };
   // W4 helpers for other screens: soft delete with Undo, duplicate, client picker data, paint order text, photo card, message text and greeting
   Object.assign(window.__qcApp, { syncNow: syncNow, retryLocalQueue: retryLocalQueue, showBlock: showBlock, autoSendReady: autoSendReady, autoSendLabel: autoSendLabel, dayDate: dayDate, statusPill: statusPill, deleteJob: deleteJob, restoreJob: restoreJob, duplicateJob: duplicateJob, clients: clients, materialsText: materialsText, photosCard: photosCard, wirePhotos: wirePhotos, chaseText: chaseText, greet: greet, signoff: signoff, jobDesc: jobDesc, scheduleFollowUps: scheduleFollowUps, cancelJobFollowUps: cancelJobFollowUps, cancelQuoteFollowUps: cancelQuoteFollowUps, cancelInvoiceFollowUps: cancelInvoiceFollowUps, pendingFollowUps: pendingFollowUps, waitingFollowUps: waitingFollowUps, lastContact: lastContact, isLandline: QCMsg.isLandline, nextSendTime: function (d, h, st) { return QCCal.nextSendTime(d, h == null ? fuHour() : h, st == null ? stateCode() : st); } });

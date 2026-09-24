@@ -27,7 +27,7 @@ const { boot } = require('./h.cjs');
   for (const [pl, label] of [[P1, 'img onerror'], [P2, 'svg onload breakout']]) {
     const ids = await seed(pl);
     const routes = ['#/', '#/job/' + ids.id, '#/job/' + ids.id + '/room/' + ids.rid, '#/job/' + ids.id + '/room/' + ids.rid2, '#/job/' + ids.id + '/quote', '#/job/' + ids.id + '/invoice', '#/chase', '#/enquiry', '#/enquiry/' + ids.id, '#/settings', '#/help'];
-    for (const h of routes) { t.drainErrors(); await t.go(h, 250); const e = t.drainErrors(); const x = await xss(); const imgs = await p.$$eval('#app img[src="x"], #app svg', els => els.length); ok(x === undefined && e.length === 0 && imgs === 0, `${label}: ${h} -> __xss=${x}, injected nodes=${imgs}` + (e.length ? ' ERR ' + e[0].split('\n')[0] : '')); }
+    for (const h of routes) { t.drainErrors(); await t.go(h, 250); const e = t.drainErrors(); const x = await xss(); const imgs = await p.$$eval('#app img[src="x"], #app svg:not(.ico), #app svg[onload], #app svg [onload]', els => els.length); ok(x === undefined && e.length === 0 && imgs === 0, `${label}: ${h} -> __xss=${x}, injected nodes=${imgs}` + (e.length ? ' ERR ' + e[0].split('\n')[0] : '')); }
     // Chase hrefs
     await t.go('#/chase', 250); const hrefs = await p.$$eval('#app a[href^="sms:"], #app a[href^="mailto:"]', as => as.map(a => a.getAttribute('href')));
     ok(hrefs.length >= 2, label + ': chase has sms:/mailto: links (' + hrefs.length + ')');

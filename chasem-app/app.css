@@ -161,3 +161,36 @@ a.sec.link::after{content:'\203A';color:var(--muted);font-size:1.4rem;line-heigh
 
 /* Nothing under a label that the label already said. */
 #app .hint:empty,#app p.muted:empty,#app label.f>span:empty{display:none}
+
+/* Pictures over words. The icon does the recognising; a one-word caption under it settles any doubt. */
+.ico{width:22px;height:22px;flex:0 0 auto;fill:none;stroke:currentColor;stroke-width:2;stroke-linecap:round;stroke-linejoin:round;vertical-align:middle}
+.btn.tile{display:inline-flex;flex-direction:column;align-items:center;justify-content:center;gap:4px;min-width:64px;min-height:60px;padding:8px 10px;line-height:1.05}
+.btn.tile .ico{width:26px;height:26px}
+.btn.tile .w{font-size:.82rem;font-weight:600;white-space:nowrap}
+.row.tiles{gap:8px;flex-wrap:wrap}
+.card.chase .row.second .btn.tile{min-height:56px;min-width:58px;padding:6px 8px}
+.card.chase .row.second .btn.tile .ico{width:22px;height:22px}
+/* the tabs: picture over its word */
+.top nav a{display:inline-flex;flex-direction:column;align-items:center;gap:2px;line-height:1.05;font-size:.82rem}
+.top nav a .ico{width:24px;height:24px}
+/* where a job is up to, as a picture: done steps solid, this step ringed, the rest faint */
+.track{display:inline-flex;align-items:center;gap:3px}
+.track .st{display:inline-flex;align-items:center;justify-content:center;width:26px;height:26px;border-radius:50%;color:var(--muted);opacity:.4}
+.track .st .ico{width:16px;height:16px}
+.track .st.done{color:var(--ok);opacity:1}
+.track .st.now{color:#16181D;background:#F5B700;opacity:1}   /* in progress: yellow, like a traffic light */
+.track .st.now.bad{background:var(--bad);color:#fff}
+.track .gap{width:6px;height:2px;background:var(--line);border-radius:1px}
+.track .gap.done{background:var(--ok)}
+.sr{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}
+/* the track must never push a job card past the edge of the screen */
+.joblist{grid-template-columns:minmax(0,1fr)}
+.job>.row:last-child{flex-wrap:wrap;align-items:center;row-gap:4px}
+.track .st{width:24px;height:24px}
+.track .st .ico{width:15px;height:15px}
+.track .gap{width:5px}
+/* A job card is a link, but not a button-sized one: its two rows stack. (The thumb-size rule above makes
+   every in-app link inline-flex, which laid a card's rows side by side.) */
+#app a.job[href]{display:grid;align-items:stretch}
+.card.chase .row.second.tiles{flex-wrap:nowrap}
+.card.chase .row.second.tiles .btn.tile{flex:1 1 0;min-width:0}
