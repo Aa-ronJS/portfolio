@@ -229,13 +229,24 @@
   function lineCells(doc, l, showRates) { var c = [lineDesc(l), qtyText(l.qty), unitText(l.unit, l.qty)]; if (showRates) c.push(num(l.rate) ? money(l.rate, doc.cents) : ''); c.push(doc.m(l.amount)); return c; }
   // lines grouped by room (line.group, else line.room) with a subtotal per room when there is more than one room
   function groupedRows(doc, lines, showRates, opts) {
-    opts = opts || {}; var groups = [], by = {}, rows = [];
-    lines.forEach(function (l) { var g = String(l.group || l.room || 'Job'); if (!by[g]) { by[g] = []; groups.push(g); } by[g].push(l); });
-    groups = groups.map(function (g, i) { return { g: g, i: i, o: GROUP_ORDER[g] || 0 }; }).sort(function (a, b) { return a.o - b.o || a.i - b.i; }).map(function (x) { return x.g; });
-    groups.forEach(function (g) {
-      var ls = by[g]; rows.push({ cells: [GROUP_LABEL[g] || g, '', '', '', ''], group: true, bold: true });
+    opts = opts || {}; var runs = [], rows = [], count = {}, seen = {};
+    // A run is one room, in the order the pricing engine emitted it. Grouping by name instead would fold two
+    // bedrooms into one block with one subtotal over both, and a customer reading that sees the same room
+    // charged twice. Same name, two rooms: two blocks, numbered so he can tell them apart.
+    lines.forEach(function (l) {
+      var g = String(l.group || l.room || 'Job'), k = String(l.gkey || g), last = runs[runs.length - 1];
+      if (last && last.k === k) last.lines.push(l); else runs.push({ k: k, g: g, lines: [l] });
+    });
+    runs.forEach(function (r, i) { r.i = i; r.o = GROUP_ORDER[r.g] || 0; count[r.g] = (count[r.g] || 0) + 1; });
+    runs.forEach(function (r) {
+      r.label = GROUP_LABEL[r.g] || r.g;
+      if (count[r.g] > 1 && !GROUP_ORDER[r.g]) { seen[r.g] = (seen[r.g] || 0) + 1; r.label += ' ' + seen[r.g]; }
+    });
+    runs.sort(function (a, b) { return a.o - b.o || a.i - b.i; });
+    runs.forEach(function (r) {
+      var ls = r.lines; rows.push({ cells: [r.label, '', '', '', ''], group: true, bold: true });
       ls.forEach(function (l) { rows.push({ cells: lineCells(doc, l, showRates), color: l.confirm ? ORANGE : null }); });
-      if (ls.length > 1 && groups.length > 1 && !GROUP_ORDER[g] && !opts.noSubtotals) rows.push({ kv: [(GROUP_LABEL[g] || g) + ' subtotal', doc.m(sum(ls, function (l) { return l.amount; }))], noline: true, color: MUTE, size: 8.3 });
+      if (ls.length > 1 && runs.length > 1 && !GROUP_ORDER[r.g] && !opts.noSubtotals) rows.push({ kv: [r.label + ' subtotal', doc.m(sum(ls, function (l) { return l.amount; }))], noline: true, color: MUTE, size: 8.3 });
     });
     return rows;
   }
@@ -342,7 +353,8 @@
     var std = dropSentences(Array.isArray(wd.terms) ? wd.terms.filter(Boolean) : [], depositApplies ? /deposit shown/i : /\bdeposit\b/i);
     if (!hasInt) std = dropSentences(std, /\brooms?\b|clear access/i);
     if (!hasInt && main.length) { var at = std.length; std.forEach(function (t, i) { if (at === std.length && /variations? are priced/i.test(t)) at = i + 1; }); std.splice(at, 0, 'Please keep the areas being painted clear on the booked days: move vehicles, pot plants, outdoor furniture and anything else near the walls, and leave power and water available.'); }
-    var terms = ['Valid until ' + fmtDate(valid) + '. Fixed price for the work and areas described.'].concat(std);
+    // The validity date is in the header block, so the terms say the thing the header cannot: that the price is fixed.
+    var terms = ['Fixed price for the work and areas described.'].concat(std);
     if (!depositApplies) terms.push('No deposit required. Payment ' + dueTxt + '.');
     else if (pct >= 100 && !cap) terms.push('Full payment (' + doc.m(deposit) + ') confirms the booking.');
     else if (cap) terms.push('A deposit of ' + doc.m(deposit) + ' confirms the booking, the most allowed for this work' + (cap.state ? ' under ' + cap.state + ' rules' : '') + '. The balance is due ' + dueTxt + '.');
@@ -350,7 +362,7 @@
     if (Array.isArray(job.progress_schedule) && job.progress_schedule.length) terms.push('Payment schedule: ' + job.progress_schedule.map(function (p) { return (p.label || '') + ' ' + num(p.pct) + '%'; }).join(', ') + '. Each claim is due ' + (days > 0 ? 'within ' + days + ' ' + plural(days, 'day', 'days') : 'on receipt') + '.');
     if (hasExt) { var wx = Array.isArray(wd.terms_ext) ? wd.terms_ext.filter(Boolean) : []; terms = terms.concat(wx.length ? wx : ['Exterior dates may move with the weather. We do not paint in rain, on wet surfaces or in extreme heat; days lost this way extend the finish date.']); }
     var wy = parseInt(wd.warranty_years, 10); if (isNaN(wy)) wy = 5;
-    if (wy > 0) terms.push('Workmanship guarantee: ' + wy + ' ' + plural(wy, 'year', 'years') + ' against peeling and flaking caused by our application (excludes decks, exterior horizontal surfaces, substrate movement, moisture ingress and pre-existing coating failure). Statutory warranties apply and are not limited by this quote.');
+    if (wy > 0) terms.push('Workmanship guarantee: ' + wy + ' ' + plural(wy, 'year', 'years') + ' against peeling and flaking caused by our application (excludes decks, exterior horizontal surfaces, substrate movement, moisture ingress and pre-existing coating failure).' + (/statutory/i.test(std.join(' ')) ? '' : ' Statutory warranties apply and are not limited by this quote.'));
     else terms.push('Statutory warranties apply and are not limited by this quote.');
     doc.h('Terms'); doc.bullets(terms);
 
@@ -381,7 +393,7 @@
   function kindLine(inv, job) {
     var qn = quoteNo(job), k = inv.kind_line ? String(inv.kind_line) : '';
     if (inv.kind === 'progress' && !/progress claim/i.test(k)) return ('Progress claim' + (num(inv.pct) ? ' ' + num(inv.pct) + '% of quote ' + qn : ' on quote ' + qn) + '.' + (k ? ' ' + k : ''));
-    if (k) return k;
+    if (k && k.toLowerCase() !== String(inv.kind || '').toLowerCase()) return k;   // a bare 'deposit' is the kind, not a sentence to print at the client
     return { deposit: 'Deposit to confirm the booking.', full: 'Work completed as quoted in ' + qn + '.', final: 'Final invoice on completion.' }[inv.kind] || '';
   }
   function findVariation(l, job) {

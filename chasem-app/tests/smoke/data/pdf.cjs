@@ -78,6 +78,16 @@ const { boot, loadPdfjs, OUT, fs } = require('./h.cjs');
   t.note(`rate column: premium walls ${prem.qty} x $${prem.rate} = $${prem.amount}; rates print with cents (only when details.show_rates is on)`);
   // quotePDF on job with no frozen quote
   const nq = await p.evaluate(() => { const S = window.__qcApp.store.load(); const job = window.__qcApp.store.newJob(); try { QCPdf.quotePDF(job, S, window.__qcApp.pricing.priceJob(job, S)); return 'ok'; } catch (e) { return e.message; } }); t.note('quotePDF on unfrozen job (job.quote null): ' + nq);
+  // Two rooms with the same name are two rooms. Grouping by name folded them into one block with one subtotal
+  // over both, and a customer reading that sees his bedroom charged twice.
+  const two = await gen({ rooms: [{ L: 4, W: 3.5, H: 2.4, name: 'Bedroom', surfaces: { walls: true } },
+                                  { L: 3, W: 3, H: 2.4, name: 'Bedroom', surfaces: { walls: true } },
+                                  { L: 5, W: 1.2, H: 2.4, name: 'Hallway', surfaces: { walls: true } }] });
+  const flat = (two.text || []).join(' ');
+  ok(!two.err && /Bedroom 1/.test(flat) && /Bedroom 2/.test(flat), 'two rooms called Bedroom print as Bedroom 1 and Bedroom 2');
+  ok(/Bedroom 1 subtotal/.test(flat) && /Bedroom 2 subtotal/.test(flat), 'each gets its own subtotal, not one over both');
+  ok(/Hallway/.test(flat) && !/Hallway 1/.test(flat), 'a room with a name of its own is not numbered');
+
   ok(t.errors.length === 0, 'no page errors during PDF tests');
   await t.done();
 })().catch(e => { console.error(e); process.exit(1); });

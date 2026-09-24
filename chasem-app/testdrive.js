@@ -71,7 +71,7 @@
     function invoice(j, kind, no, dateAgo, dueAgo, paid) {
       var total = kind === 'deposit' ? Math.round(j.quote.total * 0.1) : j.quote.total;
       var sub = Math.round((total / 1.1) * 100) / 100;
-      return { kind: kind, kind_line: kind, no: no, date: back(dateAgo), due: back(dueAgo), paid_date: paid ? back(Math.max(0, dueAgo - 2)) : '',
+      return { kind: kind, no: no, date: back(dateAgo), due: back(dueAgo), paid_date: paid ? back(Math.max(0, dueAgo - 2)) : '',
         lines: [{ desc: (kind === 'deposit' ? 'Deposit for ' : 'Painting, ') + j.quote_no, amount: sub }],
         subtotal: sub, gst: Math.round((total - sub) * 100) / 100, total: total, follow_ups: [] };
     }

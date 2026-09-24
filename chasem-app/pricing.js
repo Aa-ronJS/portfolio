@@ -111,6 +111,9 @@
   // one room or area through the engine: {room, lines (what the quote shows), cost_lines (what the hours and litres come from), assumptions, notes, confirm, typed, source, override, engine_subtotal}
   function roomLines(room, ctx) {
     var q = roomQuantities(room, ctx.rules), prices = ctx.prices, rules = ctx.rules, lines = [], confirm = [], ext = room.type === 'exterior';
+    // group is the name the client reads; gkey is which room it actually is. Two bedrooms share a name and
+    // must not share a block on the quote.
+    var gkey = String(room.id || q.room);   // replaced by the room's position in priceJob; this is only for a room priced on its own
     q.lines.forEach(function (l) {
       var lab = label(prices, l.key), rate = prices[l.key], missing, eff, prov = l.source, base, loading = 0, loadingDesc = '';
       if (l.rate_override != null) { eff = pos(l.rate_override); missing = false; }
@@ -120,7 +123,7 @@
       base = round2(eff);
       if (l.uplift && ctx.upPct > 0) { eff *= (1 + ctx.upPct / 100); loading = ctx.upPct; loadingDesc = 'two storey +' + ctx.upPct + '%'; prov += '; ' + loadingDesc; }
       eff = round2(eff);
-      lines.push({ key: l.key, room: q.room, group: q.room, desc: lab.label + (l.uplift ? ', two storey' : ''), client_desc: clientDesc(l.key, lab, l), qty: l.qty, unit: lab.unit, rate: eff, base_rate: base, loading: loading, loading_desc: loadingDesc, amount: round2(l.qty * eff), source: l.source, provenance: prov, confirm: missing });
+      lines.push({ key: l.key, room: q.room, group: q.room, gkey: gkey, desc: lab.label + (l.uplift ? ', two storey' : ''), client_desc: clientDesc(l.key, lab, l), qty: l.qty, unit: lab.unit, rate: eff, base_rate: base, loading: loading, loading_desc: loadingDesc, amount: round2(l.qty * eff), source: l.source, provenance: prov, confirm: missing });
       if (missing) confirm.push(q.room + ': no rate for "' + lab.label + '" in your price list.');
     });
     var out = { room: q.room, lines: lines, cost_lines: lines, assumptions: q.assumptions, notes: q.notes, confirm: confirm, typed: q.typed, source: q.source, override: false, engine_subtotal: round2(lines.reduce(function (s, l) { return s + l.amount; }, 0)) };
@@ -128,7 +131,7 @@
     var ov = overrideOf(room);
     if (ov != null) {
       var what = ext ? 'area' : 'room';
-      out.lines = [{ key: 'room_price', room: q.room, group: q.room, desc: q.room + ', as quoted', client_desc: q.room + ', as quoted', qty: 1, unit: what, rate: ov, base_rate: ov, loading: 0, loading_desc: '', amount: ov, source: 'your price for this ' + what, provenance: 'your price for this ' + what + (lines.length ? '; the price list came to $' + out.engine_subtotal : ''), confirm: false, override: true, engine_amount: out.engine_subtotal }];
+      out.lines = [{ key: 'room_price', room: q.room, group: q.room, gkey: gkey, desc: q.room + ', as quoted', client_desc: q.room + ', as quoted', qty: 1, unit: what, rate: ov, base_rate: ov, loading: 0, loading_desc: '', amount: ov, source: 'your price for this ' + what, provenance: 'your price for this ' + what + (lines.length ? '; the price list came to $' + out.engine_subtotal : ''), confirm: false, override: true, engine_amount: out.engine_subtotal }];
       out.confirm = []; out.override = true;
       if (lines.length) out.notes = out.notes.concat([q.room + ': your price $' + ov + ' used; the price list came to $' + out.engine_subtotal + '.']);
     }
@@ -140,8 +143,11 @@
     var ctx = context(job, settings), prices = ctx.prices, rules = ctx.rules, costing = ctx.costing, det = settings.details || {}, C = ctx.C, mk = ctx.mk, clientPaint = ctx.clientPaint;
     var lines = [], costLines = [], assumptions = [], notes = [], confirm = [], anyTyped = false, hasExt = false, hasInt = false, anyClient = false;
     if (job.premium_paint) assumptions.push('Premium paint requested: ' + n(rules.premium_paint_pct) + '% added to painting lines.');
-    (job.rooms || []).forEach(function (room) {
+    (job.rooms || []).forEach(function (room, ri) {
       var rl = roomLines(room, ctx); if (rl.typed) anyTyped = true;
+      // Which room this is, for the quote's benefit: an id can be missing or copied, a position cannot. Two
+      // rooms both called "Bedroom" must print as two blocks, not one with a subtotal over both.
+      rl.lines.forEach(function (l) { l.gkey = 'r' + ri; });
       if (rl.lines.length) { if (room.type === 'exterior') hasExt = true; else hasInt = true; if (room.measured_by === 'client') anyClient = true; }
       lines = lines.concat(rl.lines); costLines = costLines.concat(rl.cost_lines);
       assumptions = assumptions.concat(rl.assumptions); notes = notes.concat(rl.notes); confirm = confirm.concat(rl.confirm);
