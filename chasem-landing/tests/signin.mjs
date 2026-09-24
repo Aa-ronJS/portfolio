@@ -35,9 +35,10 @@ let fails = 0; const ok = (c, m) => { console.log((c ? 'PASS ' : 'FAIL ') + m); 
 await migrate();
 
 function res() { return { statusCode: 0, headers: {}, body: '', setHeader(k, v) { this.headers[k.toLowerCase()] = v; }, end(b) { this.body = b || ''; } }; }
-async function post(body) {
+async function post(body, ip) {
   const req = Readable.from([Buffer.from(JSON.stringify(body))]);
   req.method = 'POST'; req.url = '/api/signin'; req.headers = { origin: 'https://chasem.app', 'content-type': 'application/json' };
+  if (ip) req.headers['x-forwarded-for'] = ip + ', 10.0.0.1';
   const r = res(); await signin(req, r); return { status: r.statusCode, ...(r.body ? JSON.parse(r.body) : {}) };
 }
 const codeFrom = (m) => (String(m.text).match(/Your code is (\d{6})/) || [])[1];
@@ -111,6 +112,34 @@ await post({ action: 'start', email: 'peek@example.com' });
 const peek = codeFrom(mails[0]);
 const stored = (await q("select code_hash from signin where email='peek@example.com'")).rows[0].code_hash;
 ok(stored !== peek && !stored.includes(peek), 'the code is stored as a hash, not as the number itself');
+
+// ---- a script asking for codes for a thousand different addresses
+// The per-address limit cannot see this: every address is new. Each code costs money and teaches mail
+// providers that chasem.app sends junk, which would put painters' real quotes in spam.
+await q('delete from signin_bucket');
+mails.length = 0;
+let firstRefused = 0;
+for (let i = 1; i <= 35; i++) {
+  const r = await post({ action: 'start', email: 'spray' + i + '@example.com' }, '203.0.113.7');
+  if (!r.ok && !firstRefused) firstRefused = i;
+}
+ok(firstRefused === 31, 'one place gets 30 codes an hour and the 31st is refused (' + firstRefused + ')');
+ok(mails.length === 30, 'and nothing past the 30th is emailed: ' + mails.length);
+const elsewhere = await post({ action: 'start', email: 'fresh@example.com' }, '198.51.100.20');
+ok(elsewhere.ok, 'a painter somewhere else is not caught by it');
+const why = await post({ action: 'start', email: 'spray99@example.com' }, '203.0.113.7');
+ok(why.status === 429 && /from here/.test(why.error || ''), 'the refusal says what happened in plain words: ' + why.error);
+const keyed = (await q("select bucket from signin_bucket where bucket like 'ip:%'")).rows.map((r) => r.bucket).join(' ');
+ok(!/203\.0\.113\.7/.test(keyed), 'the address a request came from is kept only as a hash');
+
+// ---- and a spread-out attack, one code from each of many places
+await q('delete from signin_bucket');
+let allRefused = 0;
+for (let i = 1; i <= 305 && !allRefused; i++) {
+  const r = await post({ action: 'start', email: 'wide' + i + '@example.com' }, '192.0.2.' + (i % 250) + '.' + i);
+  if (!r.ok) allRefused = i;
+}
+ok(allRefused === 301, 'past 300 codes an hour across everyone, the next is refused wherever it comes from (' + allRefused + ')');
 
 console.log(fails ? 'FAILURES ' + fails : 'ALL PASSED');
 process.exit(fails ? 1 : 0);

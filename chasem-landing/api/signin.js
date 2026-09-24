@@ -14,6 +14,11 @@ import { createHmac, timingSafeEqual, randomInt } from "node:crypto";
 
 const EMAIL = /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/;
 const CODE_LIFE_MIN = 10, MAX_TRIES = 5, MAX_PER_HOUR = 5;
+// Per place asked from, and across everyone. Australian mobile networks put many phones behind one address, so
+// the per-place figure is set well above what a crew of painters signing in on one carrier would ever reach;
+// the overall one is far above launch volume and exists so a spread-out attack stops too.
+const MAX_PER_IP_HOUR = Number(process.env.SIGNIN_PER_IP_HOUR) || 30;
+const MAX_ALL_HOUR = Number(process.env.SIGNIN_ALL_HOUR) || 300;
 const clean = (v, n) => String(v == null ? "" : v).replace(/[\u0000-\u001f]/g, " ").replace(/\s+/g, " ").trim().slice(0, n);
 const norm = (v) => clean(v, 160).toLowerCase();
 
@@ -25,6 +30,24 @@ function same(a, b) {
   return x.length === y.length && timingSafeEqual(x, y);
 }
 function sixDigits() { return String(randomInt(0, 1000000)).padStart(6, "0"); }
+
+// Vercel sets both headers itself, so neither can be forged from outside. The address is only ever kept hashed.
+function place(req) {
+  const h = req.headers || {};
+  const ip = String(h["x-real-ip"] || String(h["x-forwarded-for"] || "").split(",")[0] || "").trim();
+  if (!ip) return "";
+  return "ip:" + createHmac("sha256", process.env.RELAY_SIGNING_SECRET || "").update(ip).digest("base64").slice(0, 22);
+}
+// One more code from this bucket this hour. True when that is still within the limit.
+async function spend(bucket, max) {
+  const r = await q(
+    `insert into signin_bucket (bucket, window_at, n) values ($1, now(), 1)
+     on conflict (bucket) do update set
+       n = case when signin_bucket.window_at > now() - interval '1 hour' then signin_bucket.n + 1 else 1 end,
+       window_at = case when signin_bucket.window_at > now() - interval '1 hour' then signin_bucket.window_at else now() end
+     returning n`, [bucket]);
+  return r.rows[0].n <= max;
+}
 
 function codeEmail(code) {
   return {
@@ -62,6 +85,9 @@ export default async function handler(req, res) {
     const row = (await q("select sent_at, sent_count from signin where email=$1", [addr])).rows[0];
     const within = row && Date.now() - new Date(row.sent_at).getTime() < 3600_000;
     if (within && row.sent_count >= MAX_PER_HOUR) return send(res, 429, { ok: false, error: "Too many codes for that address. Try again in an hour." });
+    const from = place(req);
+    if (from && !(await spend(from, MAX_PER_IP_HOUR))) return send(res, 429, { ok: false, error: "Too many codes asked for from here. Try again in an hour." });
+    if (!(await spend("all", MAX_ALL_HOUR))) return send(res, 429, { ok: false, error: "Chasem is very busy right now. Try again in a little while." });
 
     const code = sixDigits();
     await q(

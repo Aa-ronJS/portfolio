@@ -18,17 +18,20 @@ const done = new Map(); // event ids this warm instance has already handled; Str
 export function welcomeEmail(details, link, env) {
   const first = String(details.owner_name || "").trim().split(/\s+/)[0] || "there";
   const help = env.SUPPORT_EMAIL ? `Anything at all, email ${env.SUPPORT_EMAIL} and a person answers.` : "";
+  // The app itself asks for anything it still needs (day rate, how he gets paid) before it lets him quote, so
+  // this says what the link does and gives one way out if it will not open. Nothing else.
+  const app = String(env.APP_URL || "https://chasem.app/app/").replace(/^https?:\/\//, "");
   const text = `Hi ${first},
 
-You're on. One tap sets it all up: open this on the phone you quote from and tap Load.
+You're on. Open this on the phone you quote from and tap Load:
 
 ${link}
 
-That puts your business name${details.abn ? ", your ABN" : ""}${details.licence ? ", your licence" : ""} and your state's deposit rule on every quote, and switches your follow-ups on: quotes and invoices chased by text and email in your name, from the app, without you. Nothing to open, no accounts, no passwords.
+Your business details go on every quote, and your follow-ups are on: quotes and invoices chased by text and email in your name, without you.
 
-Then, on the phone, three things worth five minutes: set your five prices in Set-up (they start filled in), put in your bank details, and add anyone who already owes you so the app can start chasing them.
+If the link will not open, go to ${app} and sign in with this email address instead.
 
-Change the wording of the nudges, pause them, cancel or update your card any time from Set-up in the app. ${help}
+The app asks for anything else it needs. Pause, change the wording or cancel any time in Set-up.${help ? "\n\n" + help : ""}
 
 Chasem`;
   return { subject: "Your chasing is on: one tap to set up the app", text };
@@ -79,7 +82,7 @@ export default async function handler(req, res) {
   if (sending && sending.server) payload.settings.sending = sending;
   const link = setupLink(process.env.APP_URL, payload);
   out.link_length = link.length;
-  const c = creds(), env = { SUPPORT_EMAIL: process.env.SUPPORT_EMAIL || process.env.OWNER_EMAIL || "" };
+  const c = creds(), env = { SUPPORT_EMAIL: process.env.SUPPORT_EMAIL || process.env.OWNER_EMAIL || "", APP_URL: process.env.APP_URL || "" };
   if (details.email) { try { const m = welcomeEmail(details, link, env); await email(c, { to: [details.email], reply_to: process.env.SUPPORT_EMAIL || process.env.OWNER_EMAIL || undefined, subject: m.subject, text: m.text, ...(process.env.OWNER_EMAIL ? { bcc: [process.env.OWNER_EMAIL] } : {}) }); out.emailed = true; } catch (e) { out.email_error = e.message; } }
   if (details.phone) { try { await sms(c, details.phone, `Chasem: you're on. The set-up link is in your email (${details.email || "the address you paid with"}). Open it on the phone you quote from and tap Load.`); out.texted = true; } catch (e) { out.sms_error = e.message; } }
   if (process.env.OWNER_MOBILE) { try { await sms(c, process.env.OWNER_MOBILE, `SIGN-UP: ${details.trading_name || details.owner_name || "a painter"}${details.state ? ", " + details.state : ""}. Link ${out.emailed ? "emailed" : "NOT emailed: " + (out.email_error || "no email")}, sending ${out.hosted ? "on" : "OFF"}.`); } catch (e) {} }

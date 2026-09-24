@@ -1,5 +1,8 @@
 # Launch checklist
 
+> This list is for the downloadable **laptop pack** only. The hosted phone
+> app at chasem.app has its own go-live list: `chasem-landing/GO-LIVE.md`.
+
 Everything below the line is done and in the repo. Above the line is
 what only you can do, in order. Nothing else is waiting on me.
 

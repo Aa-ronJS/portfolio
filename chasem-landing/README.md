@@ -74,7 +74,8 @@ The QR code on the page draws itself from the deployed URL, so it is
 correct on any domain. `qr.svg` is the static fallback and the print
 version; regenerate it for the final domain before printing cards.
 
-The full go-live list is in `../chasem/launch/LAUNCH-CHECKLIST.md`.
+The go-live list for the app is `GO-LIVE.md`, next to this file. The older
+laptop pack has its own in `../chasem-pack/launch/LAUNCH-CHECKLIST.md`.
 
 ## Card payments (Stripe Connect)
 
