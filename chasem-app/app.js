@@ -22,7 +22,7 @@
     var pref = {}; try { pref = JSON.parse(localStorage.getItem('qc-sections') || '{}'); } catch (e) {}
     Array.prototype.slice.call(root.querySelectorAll(':scope > .card')).forEach(function (card) {
       var h = card.firstElementChild; if (!h || h.tagName !== 'H2') return; var title = h.textContent.trim();
-      var det = document.createElement('details'); det.className = 'card sec'; var sum = document.createElement('summary'); sum.appendChild(h); det.appendChild(sum);
+      var det = document.createElement('details'); det.className = 'card sec' + (card.classList.contains('ponly') ? ' ponly' : ''); var sum = document.createElement('summary'); sum.appendChild(h); det.appendChild(sum);
       while (card.firstChild) det.appendChild(card.firstChild); card.parentNode.replaceChild(det, card);
       var open = (title in pref) ? !!pref[title] : (!setUp && openTitles.indexOf(title) >= 0); det.open = open;
       sum.addEventListener('click', function () { setTimeout(function () { pref[title] = det.open; try { localStorage.setItem('qc-sections', JSON.stringify(pref)); } catch (e) {} }, 0); }); // remember only what the user taps, not the initial state
@@ -43,8 +43,8 @@
   // 'Cheers, Dave' (first name only unless Set-up says otherwise)
   function signoff(st) { var d = (st || S).details, name = String(d.owner_name || '').trim(); if (d.first_name_signoff !== false && name) name = name.split(/\s+/)[0]; return (d.sign_off || 'Cheers') + (name ? ', ' + name : ''); }
   function fullSignoff(st) { var d = (st || S).details; var who = [String(d.owner_name || '').trim(), String(d.trading_name || '').trim()].filter(Boolean).join(', '); return 'Regards' + (who ? ', ' + who : ''); }
-  // the job in a customer's words: the description if it reads like one, else 'the painting'. Never the client's name or an internal label.
-  function jobDesc(job) { var s = String(job.summary || '').trim(), nm = String((job.client && job.client.name) || '').trim(); if (!s) return 'the painting'; var words = nm.split(/\s+/).filter(function (w) { return w.replace(/[^\w]/g, '').length > 2; }); var leak = words.some(function (w) { return new RegExp('\\b' + w.replace(/[^\w]/g, '') + '\\b', 'i').test(s); }); if (leak || /\b(person|test|draft|quoted|client)\b/i.test(s)) return 'the painting'; if (/^[A-Z][a-z]/.test(s)) s = s.charAt(0).toLowerCase() + s.slice(1); return s; }
+  // the job in a customer's words: the description if it reads like one, else 'the work'. Never the client's name or an internal label.
+  function jobDesc(job) { var s = String(job.summary || '').trim(), nm = String((job.client && job.client.name) || '').trim(); if (!s) return 'the work'; var words = nm.split(/\s+/).filter(function (w) { return w.replace(/[^\w]/g, '').length > 2; }); var leak = words.some(function (w) { return new RegExp('\\b' + w.replace(/[^\w]/g, '') + '\\b', 'i').test(s); }); if (leak || /\b(person|test|draft|quoted|client)\b/i.test(s)) return 'the work'; if (/^[A-Z][a-z]/.test(s)) s = s.charAt(0).toLowerCase() + s.slice(1); return s; }
   function shortDate(iso) { if (!iso) return ''; var d = new Date(iso + 'T00:00:00'); return d.toLocaleDateString('en-AU', { day: 'numeric', month: 'long' }) + (d.getFullYear() !== new Date().getFullYear() ? ' ' + d.getFullYear() : ''); }
   function stateCode() { return String((S.details && S.details.state) || '').toUpperCase(); }
   var SITE = '../'; // the website this app was served from; the app itself never needs it except to send someone to sign up or manage a card
@@ -306,9 +306,11 @@
     try { if (window.event && window.event.type === 'storage') route.storageAt = Date.now(); } catch (e) {} // store.js re-routes this tab when another tab writes: Home must not purge the job that tab is typing into
     try { window.scrollTo(0, 0); } catch (e) {} // every screen opens at the top; a form never opens scrolled to its bottom
     setTimeout(afterRoute, 0);
-    var navKey = { '': 'home', job: 'home', enquiry: 'home', help: '', chase: 'chase', settings: 'settings', setup: 'settings', scoreboard: 'home', myprices: 'settings', test: '' }[p[0] || '']; if (navKey == null) navKey = 'home';
+    var navKey = { '': 'home', add: 'home', job: 'home', enquiry: 'home', help: '', chase: 'chase', settings: 'settings', setup: 'settings', scoreboard: 'home', myprices: 'settings', test: '' }[p[0] || '']; if (navKey == null) navKey = 'home';
     document.querySelectorAll('[data-nav]').forEach(function (a) { a.classList.toggle('on', a.dataset.nav === navKey); });
     // While he is at the door or the wall there is nowhere else to be, so the tabs are not offered.
+    if (!S.details.trade && (S.security.setup_done || (typeof pricesTouched === 'function' && pricesTouched()))) { S.details.trade = 'painter'; save(); }
+    try { document.body.classList.toggle('notpainter', !paintsHere()); } catch (e) {}
     try { var gated = (!joined() || !wallDone()) && p[0] !== 'setup' && p[0] !== 'help';
       var atDoor = !joined() && p[0] !== 'setup' && p[0] !== 'help' && !locked();
       var hd = document.querySelector('header.top'); if (hd) hd.hidden = atDoor; // the door is the logo, the name and the way in: nothing above it
@@ -326,7 +328,7 @@
       setTimeout(function () { syncNow(); }, 2200);
       window.addEventListener('online', function () { retryPendingCancels().catch(function () {}); syncNow(); });
       document.addEventListener('visibilitychange', function () { if (!document.hidden && Date.now() - QCSync.lastAt() > 120000) syncNow(); }); }
-    if (!p[0]) return viewHome();
+    if (!p[0]) { var fq = /(?:^|&)f=(\w+)/.exec(qs || ''); if (fq) homeFilter = fq[1]; return viewHome(); }
     if (p[0] === 'settings') { if (p[1] === 'log') return viewSentLog(); if (qs) calendarReturn(qs); viewSettings(); if (p[1]) openSection({ backup: 'Back-up', prices: 'Prices', bank: 'Bank details' }[p[1]] || ''); return; }
     if (p[0] === 'chase') return viewChase();
     if (p[0] === 'help') return viewHelp();
@@ -335,6 +337,7 @@
     if (p[0] === 'scoreboard') return viewScoreboard();
     if (p[0] === 'myprices') return viewMyPrices();
     if (p[0] === 'handoff' && p[1]) { var hj = QCStore.getJob(p[1]); if (!hj) return bounce('/'); return viewHandOff(hj); }
+    if (p[0] === 'add') return viewAdd(p[1] || '');
     if (p[0] === 'enquiry') { if (p[1] && !QCStore.getJob(p[1])) return bounce('/'); return viewEnquiry(p[1] ? QCStore.getJob(p[1]) : null); }
     if (p[0] === 'job' && p[1]) {
       var job = QCStore.getJob(p[1]); if (!job) return bounce('/');
@@ -380,7 +383,7 @@
   }
   function jobCard(j) {
     var total = j.quote ? money(j.quote.total) : (j.ballpark ? money(j.ballpark.low) + ' to ' + money(j.ballpark.high) : ''), owing = j.status === 'invoiced' ? jobOwing(j) : 0;
-    return '<a class="job" href="' + (j.status === 'enquiry' ? '#/enquiry/' + j.id : '#/job/' + j.id) + '"><div class="row between"><b>' + esc(j.client.name || 'New job') + '</b><span class="sub">' + esc(j.client.address || (jobDesc(j) === 'the painting' ? '' : j.summary)) + '</span></div><div class="row between"><span>' + stageTrack(j) + '</span><span class="sub">' + esc(j.quote_no) + (owing > 0 ? ' · owing ' + money(owing) : total ? ' · ' + total : '') + '</span></div></a>';
+    return '<a class="job" href="' + (j.status === 'enquiry' ? '#/enquiry/' + j.id : '#/job/' + j.id) + '"><div class="row between"><b>' + esc(j.client.name || 'New job') + '</b><span class="sub">' + esc(j.client.address || (jobDesc(j) === 'the work' ? '' : j.summary)) + '</span></div><div class="row between"><span>' + stageTrack(j) + '</span><span class="sub">' + esc(j.quote_no) + (owing > 0 ? ' · owing ' + money(owing) : total ? ' · ' + total : '') + '</span></div></a>';
   }
   // the three first-run steps: done when the detail is there; the card goes once all three are, or when the painter hides it
   // ---------- the wall
@@ -391,6 +394,15 @@
     return !!(pay.stripe_started || (String(pay.bsb || '').trim() && String(pay.account_number || '').trim()) ||
               (String(S.details.bsb || '').trim() && String(S.details.account_number || '').trim()));
   }
+  // Every trade. The state building-work rules (the deposit caps) cover the building trades; a cleaner, a
+  // gardener and pest control are not building work. When in doubt the cap applies: a smaller deposit than
+  // asked is a safe mistake, a larger one than the law allows is not.
+  var TRADES = [['painter', 'Painter', 1], ['electrician', 'Electrician', 1], ['plumber', 'Plumber', 1], ['carpenter', 'Carpenter', 1], ['builder', 'Builder', 1],
+    ['tiler', 'Tiler', 1], ['plasterer', 'Plasterer', 1], ['roofer', 'Roofer', 1], ['landscaper', 'Landscaper', 1], ['concreter', 'Concreter', 1], ['fencer', 'Fencer', 1],
+    ['aircon', 'Air-con', 1], ['handyman', 'Handyman', 1], ['cleaner', 'Cleaner', 0], ['gardener', 'Gardener', 0], ['pest', 'Pest control', 0], ['other', 'Something else', 1]];
+  function trade() { return String((S && S.details && S.details.trade) || ''); }   // safe before the account is read
+  function paintsHere() { return trade() === 'painter'; }   // the room-by-room quote builder and photo measuring are for painters
+  function buildingTrade() { var t = trade(); return !TRADES.some(function (x) { return x[0] === t && x[2] === 0; }); }
   function wallSteps() {
     var d = S.details, defaults = (QCStore.defaults && QCStore.defaults().prices) || {};
     var touched = Object.keys(defaults).some(function (k) { return S.prices[k] !== defaults[k]; });
@@ -398,7 +410,7 @@
       { id: 'name',   label: 'Your business name', done: !!String(d.trading_name || '').trim() },
       { id: 'abn',    label: 'Your ABN',           done: /\d{11}/.test(String(d.abn || '').replace(/\D/g, '')) },
       { id: 'state',  label: 'Your state',         done: !!String(d.state || '').trim() },
-      { id: 'prices', label: 'Your day rate',      done: !!(touched || S.security.setup_done) },
+      { id: 'trade',  label: 'Your trade',         done: !!trade() },
       { id: 'pay',    label: 'How you get paid',   done: payStarted() }
     ];
   }
@@ -414,18 +426,17 @@
 
     var html = '<div class="wall"><p class="hint">' + (n + 1) + ' of ' + steps.length + '</p>';
     if (at.id === 'name') html += '<h1>Your business name</h1>' +
-      '<label class="f"><input type="text" id="w_in" autocomplete="organization" placeholder="Dave\u2019s Painting" value="' + esc(S.details.trading_name || '') + '"></label>';
+      '<label class="f"><input type="text" id="w_in" autocomplete="organization" placeholder="Smith & Sons" value="' + esc(S.details.trading_name || '') + '"></label>';
     else if (at.id === 'abn') html += '<h1>Your ABN</h1>' +
       '<label class="f"><input type="text" id="w_in" inputmode="numeric" placeholder="12 345 678 901" value="' + esc(S.details.abn || '') + '"></label>';
     else if (at.id === 'state') html += '<h1>Your state</h1>' +
       '<div class="row wrap" id="w_states">' + ['SA', 'NSW', 'VIC', 'QLD', 'WA', 'TAS', 'NT', 'ACT'].map(function (st) {
         return '<button class="btn' + (S.details.state === st ? ' tape' : ' ghost') + '" data-state="' + st + '">' + st + '</button>'; }).join('') + '</div>';
-    else if (at.id === 'prices') html += '<h1>Your day rate</h1>' +
-      '<p class="hint">One painter, before GST.</p>' +
-      '<label class="f"><input type="number" id="w_in" inputmode="numeric" min="100" max="3000" step="10" placeholder="650" value="' + esc(dayRate() || '') + '"></label>';
+    else if (at.id === 'trade') html += '<h1>Your trade</h1>' +
+      '<div class="tradegrid" id="w_trades">' + TRADES.map(function (t) { return '<button class="btn ghost" data-trade="' + t[0] + '">' + esc(t[1]) + '</button>'; }).join('') + '</div>';
     else if (at.id === 'pay') html += '<h1>Getting paid</h1>' + payChoices();
 
-    if (at.id !== 'state' && at.id !== 'pay') html += '<div class="row"><button class="btn tape lg" id="w_next">Next</button></div>';
+    if (at.id !== 'state' && at.id !== 'pay' && at.id !== 'trade') html += '<div class="row"><button class="btn tape lg" id="w_next">Next</button></div>';
     html += '<p class="hint" id="w_msg"></p>';
     html += '<ol class="wallsteps">' + steps.map(function (x) {
       return '<li class="' + (x.done ? 'done' : x.id === at.id ? 'now' : '') + '">' + esc(x.label) + '</li>'; }).join('') + '</ol>';
@@ -480,6 +491,9 @@
     if (nb) nb.addEventListener('click', next);
     if (box) box.addEventListener('keydown', function (e) { if (e.key === 'Enter') { e.preventDefault(); next(); } });
 
+    Array.prototype.forEach.call($app.querySelectorAll('[data-trade]'), function (b) {
+      b.addEventListener('click', function () { S.details.trade = b.getAttribute('data-trade'); save(); viewWall(); });
+    });
     Array.prototype.forEach.call($app.querySelectorAll('[data-state]'), function (b) {
       b.addEventListener('click', function () { S.details.state = b.getAttribute('data-state'); save(); viewWall(); });
     });
@@ -564,6 +578,25 @@
   function setupSteps() {
     return [{ label: 'Follow-ups', href: '#/settings', done: !!(S.sending.hosted === true || autoReady()) }];
   }
+  // What matters most, first: money owed (red), quotes waiting on an answer (yellow), work won (green).
+  // Each tile opens the list behind it. Nothing to show, no strip.
+  function moneyStrip(jobs) {
+    var owed = 0, late = 0, waiting = 0, nWait = 0, won = 0, today = QCStore.today();
+    jobs.forEach(function (j) {
+      if (j.status === 'cancelled' || j.status === 'declined') return;
+      (j.invoices || []).forEach(function (i) { if (invOpen(i) && invOut(i)) { var b = invBal(i); owed = r2(owed + b); if (i.due && i.due < today) late = r2(late + b); } });
+      if (j.status === 'quoted' && j.sent_date && j.quote) { waiting = r2(waiting + (+j.quote.total || 0)); nWait++; }
+      if (j.status === 'accepted') won++;
+    });
+    if (!owed && !nWait && !won) return '';
+    var tile = function (cls, icon, big, word, href, label) { return '<a class="mtile ' + cls + '" href="' + href + '" aria-label="' + esc(label) + '">' + QCPics.svg(icon) + '<b>' + big + '</b><span>' + word + '</span></a>'; };
+    return '<div class="mstrip">' +
+      tile(late > 0 ? 'bad' : owed > 0 ? 'warn' : 'none', 'invoice', money0(owed), 'Owed', '#/chase', 'Owed to you: ' + money(owed) + (late > 0 ? ', ' + money(late) + ' overdue' : '')) +
+      tile(nWait ? 'warn' : 'none', 'quote', money0(waiting), nWait === 1 ? '1 quote' : nWait + ' quotes', '#/?f=quoted', nWait + ' quotes waiting on an answer, ' + money(waiting)) +
+      tile(won ? 'ok' : 'none', 'yes', String(won), 'Won', '#/?f=accepted', won + ' won, to book or start') + '</div>';
+  }
+  // whole dollars, and thousands as k once the figure would not fit a third of a phone: $980, $4,378, $12.1k
+  function money0(v) { v = Math.round(v); if (v >= 10000) return '$' + (v >= 100000 ? Math.round(v / 1000) : (Math.round(v / 100) / 10)) + 'k'; return '$' + v.toLocaleString('en-AU'); }
   function viewHome() {
     if (typeof QCStore.purgeEmpty === 'function' && Date.now() - (route.storageAt || 0) > 1500) { try { QCStore.purgeEmpty(); } catch (e) {} S = QCStore.load(); if (!S.ui || typeof S.ui !== 'object') S.ui = {}; } // a Quick quote or New job that was backed out of with nothing typed goes, and its number comes back
     var jobs = S.jobs, today = QCStore.today(), steps = setupSteps(), allDone = steps.every(function (s) { return s.done; });
@@ -572,7 +605,8 @@
     // about the one thing he can still put off.
     var showSetup = !allDone && !S.ui.dismissed_setup_card;
     var html = pendingBanner();
-    html += '<div class="row between"><h1>Jobs</h1><div class="row"><button class="btn tape tile" id="newjob"' + QCPics.says('New job') + '>' + QCPics.tile('plus', 'New job') + '</button><a class="btn ghost tile" href="#/enquiry"' + QCPics.says('Phone enquiry') + '>' + QCPics.tile('phone', 'Enquiry') + '</a><button class="btn ghost tile" id="quick"' + QCPics.says('Quick quote') + '>' + QCPics.tile('zap', 'Quick') + '</button></div></div>';
+    html += '<div class="row between"><h1>Jobs</h1><div class="row"><a class="btn tape tile" id="chaseadd" href="#/add"' + QCPics.says('Chase a quote') + '>' + QCPics.tile('chase', 'Chase') + '</a><button class="btn ghost tile ponly" id="newjob"' + QCPics.says('New job') + '>' + QCPics.tile('plus', 'New') + '</button><a class="btn ghost tile ponly" href="#/enquiry"' + QCPics.says('Phone enquiry') + '>' + QCPics.tile('phone', 'Enquiry') + '</a><button class="btn ghost tile ponly" id="quick"' + QCPics.says('Quick quote') + '>' + QCPics.tile('zap', 'Quick') + '</button></div></div>';
+    html += moneyStrip(jobs);
     if (window.__qcInstallPrompt) html += '<div class="card"><div class="row between"><span><b>Put it on your home screen</b><span class="hint"> · opens like an app and works offline</span></span><button class="btn sm" id="install">Install</button></div></div>';
     var visits = jobs.filter(function (j) { return j.visit && j.visit.date >= today; }).sort(function (a, b) { return (a.visit.date + QCSched.hm(a.visit.start_min)) < (b.visit.date + QCSched.hm(b.visit.start_min)) ? -1 : 1; });
     if (visits.length) html += '<div class="card"><h3>Quote visits</h3>' + visits.slice(0, 5).map(function (j) { return '<a class="row between" href="#/enquiry/' + j.id + '" style="text-decoration:none;color:inherit"><span><b>' + esc(j.client.name || j.quote_no) + '</b> <span class="hint">' + esc(j.client.address || '') + '</span></span><span class="hint">' + QCPdf.fmtDate(j.visit.date) + ' ' + QCSched.nice(j.visit.start_min) + '</span></a>'; }).join('') + '</div>';
@@ -585,12 +619,12 @@
       '<div class="row between"><a class="btn tape" href="#/settings" id="setupgo">Turn it on</a><button class="btn ghost sm" id="setuphide">Not now</button></div></div>';
     var counts = { all: jobs.length, enquiry: 0, quoted: 0, accepted: 0, invoiced: 0, paid: 0 }; jobs.forEach(function (j) { if (counts[j.status] != null) counts[j.status]++; });
     var chips = [['all', 'All'], ['enquiry', 'Enquiry'], ['quoted', 'Quoted'], ['accepted', 'Accepted'], ['invoiced', 'Invoiced'], ['paid', 'Paid']].filter(function (c) { return c[0] === 'all' || counts[c[0]] > 0 || homeFilter === c[0]; }); // no "Paid 0" chips
-    if (!jobs.length) html += '<div class="card empty">No jobs yet. Tap New job.</div>';
+    if (!jobs.length) html += '<a class="card empty emptychase" href="#/add">' + QCPics.svg('chase') + '<span>Nothing to chase yet. <b>Add a quote you sent.</b></span></a>';
     else html += '<div class="card"><input type="search" id="q" placeholder="Search name, address or quote number" aria-label="Search jobs" value="' + esc(homeQuery) + '" autocomplete="off"><div class="chips" id="chips">' + chips.map(function (c) { return '<button class="chip' + (homeFilter === c[0] ? ' on' : '') + '" data-chip="' + c[0] + '">' + c[1] + ' <span>' + counts[c[0]] + '</span></button>'; }).join('') + '</div></div><div class="joblist" id="joblist"></div>';
     var lb = S.security && S.security.last_backup, invoiced = jobs.some(function (j) { return (j.invoices || []).length; }), stale = !lb || QCStore.daysBetween(lb, today) > 7;
     html += '<p class="hint" id="backupline">' + (invoiced && stale ? '<span class="confirm">Invoices sent since your last copy' + (lb ? ' (' + QCPdf.fmtDate(lb) + ')' : '') + '.</span> ' : lb ? 'Last copy ' + QCPdf.fmtDate(lb) + '. ' : 'Save a copy. ') + '<a href="#/settings/backup">Save copy</a> · <a href="#/help">How it works</a></p>';
     if (S.ui.scoreboard_start) html += '<div class="card" id="scorecard"><div class="row between"><span><b>How it is going</b><span class="hint"> · since ' + esc(shortDate(S.ui.scoreboard_start)) + '</span></span><a class="btn sm" href="#/scoreboard">Scoreboard</a></div></div>';
-    if (S.ui.book_chase === 'ready') { var bj = bookJobs(), bc = bookCounts(bj); if (!bj.length) S.ui.book_chase = ''; else html += '<div class="card" id="bookchase"><h3>Money you are owed</h3><p class="hint">' + [bc.invoices ? bc.invoices + ' unpaid invoice' + (bc.invoices > 1 ? 's' : '') : '', bc.quotes ? bc.quotes + ' open quote' + (bc.quotes > 1 ? 's' : '') : ''].filter(Boolean).join(' and ') + ' ready to chase. Nothing has been sent. Read the wording on the Follow-ups tab first, change any of it in Set-up, then tap Start and the reminders queue themselves (the first ones go ' + esc(whenText(QCCal.nextSendTime(QCStore.today(), fuHour(), stateCode()).date.getTime() < Date.now() + 10 * 60000 ? QCCal.nextSendTime(QCStore.addDays(QCStore.today(), 1), fuHour(), stateCode()).iso : QCCal.nextSendTime(QCStore.today(), fuHour(), stateCode()).iso)) + ').</p><div class="row"><button class="btn tape sm" id="bookgo">Start the chasing</button><a class="btn ghost sm" href="#/chase">Read the wording</a><button class="btn ghost sm" id="bookhide">Not for these</button></div></div>'; }
+    if (S.ui.book_chase === 'ready') { var bj = bookJobs(), bc = bookCounts(bj); if (!bj.length) S.ui.book_chase = ''; else html += '<div class="card" id="bookchase"><h3>Money you are owed</h3><p class="hint">' + [bc.invoices ? bc.invoices + ' unpaid invoice' + (bc.invoices > 1 ? 's' : '') : '', bc.quotes ? bc.quotes + ' open quote' + (bc.quotes > 1 ? 's' : '') : ''].filter(Boolean).join(' and ') + ' to chase. Nothing sent yet.</p><div class="row"><button class="btn tape sm" id="bookgo">Start the chasing</button><a class="btn ghost sm" href="#/chase">Read the wording</a><button class="btn ghost sm" id="bookhide">Not for these</button></div></div>'; }
     var hs = S.sending || {};
     if (hs.hosted === true) {
       var hEnd = QCMsg.hostedEnded && QCMsg.hostedEnded(hs), hTo = /^\d{4}-\d{2}-\d{2}$/.test(String(hs.hosted_until || '')) ? shortDate(hs.hosted_until) : '', hLeft = hTo ? QCStore.daysBetween(QCStore.today(), hs.hosted_until) : 99;
@@ -653,6 +687,8 @@
   function realCap(cap) { if (!cap) return null; if (cap.pct >= 100 || /no (legal|statutory|specific) cap|conservative default|no state set/i.test(cap.reason || '')) return null; return cap; }
   var STATE_NAMES = { NSW: 'NSW', VIC: 'Victoria', QLD: 'Queensland', SA: 'South Australia', WA: 'WA', TAS: 'Tasmania', NT: 'the NT', ACT: 'the ACT' };
   var LICENSED = { NSW: 'contractor licence', VIC: 'building practitioner registration', QLD: 'QBCC licence', SA: 'building work contractor licence', WA: 'painter registration' }; // states that license painters; TAS, NT and ACT do not
+  // WA registers painters by name; for any other trade there the field is just the licence
+  function licenceWord(st) { return st === 'WA' && !paintsHere() ? 'licence' : LICENSED[st]; }
   function stateName(st) { return STATE_NAMES[st] || st || 'your state'; }
   // the legal deposit limit in plain words, for the job page and the quote page
   function capLimitPhrase(st, total) {
@@ -667,7 +703,7 @@
   function depositFor(job, total) {
     total = r2(total); var asked = job && job.deposit_pct != null && job.deposit_pct !== '' && !isNaN(parseFloat(job.deposit_pct)) ? Math.min(100, Math.max(0, parseFloat(job.deposit_pct))) : depDefaultFor(job);
     var out = { asked: asked, pct: asked, amount: r2(total * asked / 100), capped: false, cap: null }, ct = job && job.client ? job.client.type : '';
-    if (ct === 'commercial' || ct === 'builder' || !(total > 0)) return out;
+    if (ct === 'commercial' || ct === 'builder' || !(total > 0) || !buildingTrade()) return out;
     var cap = realCap(depCapFor(total, stateOf())); out.cap = cap; if (!cap) return out;
     var capAmt = cap.amount != null ? r2(cap.amount) : (cap.pct != null ? r2(total * cap.pct / 100) : null);
     if (capAmt != null && out.amount > capAmt + 0.004) { out.amount = capAmt; out.pct = r2(capAmt / total * 100); out.capped = true; }
@@ -698,7 +734,7 @@
   }
   // A1: what stands between this job and a quote going out, in plain words. kind lets each screen pick what to show: abn, licence, contract, deposit, bank
   function warnList(job, priced) {
-    var w = [], det = S.details, st = stateOf(), total = r2(priced.total), th = thresholdFor(st), lic = LICENSED[st];
+    var w = [], det = S.details, st = stateOf(), total = r2(priced.total), th = thresholdFor(st), lic = licenceWord(st);
     if (!det.abn) w.push({ kind: 'abn', text: 'Add your ABN. It goes on every ' + (det.gst ? 'tax invoice, and a business client can hold back 47% of a payment without it' : 'invoice') + '.' });
     if (th && total >= th) {
       if (lic && !det.licence) w.push({ kind: 'licence', text: 'Add your ' + lic + ' number in Set-up. In ' + st + ' it goes on quotes over ' + money(th) + '.' });
@@ -1417,7 +1453,7 @@
   // Email bodies are written for the client: greeting from the contact name, the quote number and a real valid-until date, no internal summary.
   function quoteEmailText(job, priced) {
     var det = S.details, q = job.quote || {}, qno = q.number || job.quote_no, v = priced || q, valid = QCStore.addDays(q.date || QCStore.today(), parseInt(det.quote_valid_days, 10) || 30);
-    var desc = typeof jobDesc === 'function' ? jobDesc(job) : (job.summary || 'the painting'), accept = (q.snapshot && q.snapshot.wording && q.snapshot.wording.accept) || S.wording.accept || '';
+    var desc = typeof jobDesc === 'function' ? jobDesc(job) : (job.summary || 'the work'), accept = (q.snapshot && q.snapshot.wording && q.snapshot.wording.accept) || S.wording.accept || '';
     return greetLine(job) + '\n\nQuote ' + qno + ' for ' + desc + ' is attached: ' + money(v.total) + (v.gst ? ' inc GST' : '') + ', valid until ' + QCPdf.fmtDate(valid) + '.' + (q.version > 1 ? ' It replaces the earlier ' + job.quote_no + '.' : '') + ' The quote lists what is and is not included; please read it before accepting.\n\n' + accept + '\n\n' + signLine() + (det.trading_name ? '\n' + det.trading_name : '') + (det.phone ? ' · ' + det.phone : '');
   }
   function emailQuoteNow(job, priced) {
@@ -1570,7 +1606,7 @@
     });
     return chain.then(function () { return out; });
   }
-  function whenText(iso) { if (!iso) return ''; var d = new Date(iso), day = d.getFullYear() + '-' + (d.getMonth() < 9 ? '0' : '') + (d.getMonth() + 1) + '-' + (d.getDate() < 10 ? '0' : '') + d.getDate(), t = QCStore.today(); var h = d.getHours(), hh = (h % 12 || 12) + (h < 12 ? 'am' : 'pm'); return (day === t ? 'today' : day === QCStore.addDays(t, 1) ? 'tomorrow' : niceDay(day)) + ' at ' + hh; }
+  function whenText(iso) { if (!iso) return ''; var d = new Date(iso), day = d.getFullYear() + '-' + (d.getMonth() < 9 ? '0' : '') + (d.getMonth() + 1) + '-' + (d.getDate() < 10 ? '0' : '') + d.getDate(), t = QCStore.today(); var h = d.getHours(), hh = (h % 12 || 12) + (h < 12 ? 'am' : 'pm'); return (day === t ? 'today' : day === QCStore.addDays(t, 1) ? 'tomorrow' : niceDay(day).replace(new RegExp(' ' + new Date().getFullYear() + '$'), '')) + ' at ' + hh; }
   // cancel a list of relay-held reminders; anything that fails is queued in state.pending_cancels and retried on load and when back online
   function cancelList(list, jobId) {
     var todo = (list || []).filter(function (x) { return x.id && !x.cancelled && !x.sent; }); if (!todo.length) return Promise.resolve({ failed: 0, done: 0, error: '' });
@@ -1628,10 +1664,11 @@
     var tail = (det.trading_name ? '\n' + det.trading_name : '') + (phone ? (det.trading_name ? ' · ' : '\n') + phone : ''), cap = function (s) { return s.charAt(0).toUpperCase() + s.slice(1); }, body, subject;
     if (kind === 'quote') {
       var q = item || job.quote || {}, qd = S.follow_up.quote_days || [3, 7, 14], t1 = qd.length > 1 ? qd[1] : 7, t2 = qd.length > 2 ? qd[2] : (qd.length > 1 ? qd[1] : 14), tier = opts.tier || (days < t1 ? 1 : days < t2 ? 2 : 3);
-      var total = money(q.total || 0), no = job.quote_no, valid = shortDate(QCStore.addDays(q.date || job.sent_date || today, parseInt(det.quote_valid_days, 10) || 30)), week = shortDate(nextFreeWeek());
-      if (tier === 1) { body = 'just checking quote ' + no + ' (' + total + ') for ' + what + ' came through OK. If there is anything you would like me to explain, just ask.'; subject = 'Checking in on your quote ' + no; }
-      else if (tier === 2) { body = 'following up on quote ' + no + ' (' + total + ') for ' + what + '. I have a start slot the week of ' + week + ' if that suits, and I am happy to answer any questions first.'; subject = 'Quote ' + no + ': a start slot is open'; }
-      else { body = 'last note from me on quote ' + no + ' (' + total + ') for ' + what + '. It is valid until ' + valid + '. If the timing is not right, no problem at all, just let me know either way.'; subject = 'Quote ' + no + ', valid until ' + valid; }
+      // a quote made somewhere else without a number is "my quote": never a number the customer has not seen
+      var total = money(q.total || 0), no = job.no_number ? '' : job.quote_no, ref = no ? 'quote ' + no : 'my quote', valid = shortDate(QCStore.addDays(q.date || job.sent_date || today, parseInt(det.quote_valid_days, 10) || 30)), week = shortDate(nextFreeWeek());
+      if (tier === 1) { body = 'just checking ' + ref + ' (' + total + ') for ' + what + ' came through OK. If there is anything you would like me to explain, just ask.'; subject = 'Checking in on your quote' + (no ? ' ' + no : ''); }
+      else if (tier === 2) { body = 'following up on ' + ref + ' (' + total + ') for ' + what + '. I have a start slot the week of ' + week + ' if that suits, and I am happy to answer any questions first.'; subject = (no ? 'Quote ' + no + ': a' : 'A') + ' start slot is open'; }
+      else { body = 'last note from me on ' + ref + ' (' + total + ') for ' + what + '. It is valid until ' + valid + '. If the timing is not right, no problem at all, just let me know either way.'; subject = (no ? 'Quote ' + no : 'Your quote') + ', valid until ' + valid; }
       var qt = nudgeTemplate('quote'); if (qt) body = fillNudge(qt, Object.assign(tokens, { quote: no, total: total, week: week, valid: valid }));
       return { tier: tier, sms: hi + ' ' + body + ' ' + so + noReply, subject: subject, email: hi + '\n\n' + cap(body) + '\n\n' + so + tail };
     }
@@ -1792,7 +1829,7 @@
     var bpStatus = function (m, cls) { var el = document.getElementById('bpstatus'); if (el) { el.textContent = m; el.className = 'status ' + (cls || ''); } else toast(m); };
     function sendText(t, ref) {
       var phone = job.client.phone || '', landline = QCMsg.isLandline(phone);
-      if (landline) { if (job.client.email) { bpStatus('That is a landline, so no text. Mail is opening with the words ready; press send there.', 'ok'); openUrl('mailto:' + job.client.email.replace(/[\s"'<>?#&]/g, '') + '?subject=' + encodeURIComponent('Painting quote') + '&body=' + encodeURIComponent(t)); } else if (navigator.share) { bpStatus('That is a landline, so no text. Pick where to send it.', 'ok'); navigator.share({ text: t }).catch(function () {}); } else bpStatus('That is a landline number, so no text. Add an email address to send it.', 'warn'); return; }
+      if (landline) { if (job.client.email) { bpStatus('That is a landline, so no text. Mail is opening with the words ready; press send there.', 'ok'); openUrl('mailto:' + job.client.email.replace(/[\s"'<>?#&]/g, '') + '?subject=' + encodeURIComponent('Your quote') + '&body=' + encodeURIComponent(t)); } else if (navigator.share) { bpStatus('That is a landline, so no text. Pick where to send it.', 'ok'); navigator.share({ text: t }).catch(function () {}); } else bpStatus('That is a landline number, so no text. Add an email address to send it.', 'warn'); return; }
       if (QCMsg.ready('sms') && phone) { QCMsg.call({ action: 'send', channel: 'sms', to: phone, body: t, meta: { job: job.id, ref: ref } }).then(function () { job.last_chased = QCStore.today(); save(); bpStatus('Texted to ' + phone + '.', 'ok'); }).catch(function (e) { bpStatus('Could not send: ' + e.message, 'bad'); }); }
       else { if (!phone) { bpStatus('Type their mobile number first.', 'warn'); return; } bpStatus('Messages is opening with the text ready. Press send there.', 'ok'); openUrl('sms:' + phone.replace(/\s+/g, '') + '?&body=' + encodeURIComponent(t)); }
     }
@@ -2070,7 +2107,7 @@
   function viewSettings() {
     var d = S.details, html = '<h1>Set-up</h1><p class="hint">Saves as you type.</p>', dirty = false;
     if (S.booking.boss_on_tools == null) { S.booking.boss_on_tools = true; dirty = true; } if (!S.booking.visit_pref) { S.booking.visit_pref = 'any'; dirty = true; } if (!d.state && d.postcode && stateFromPostcode(d.postcode)) { d.state = stateFromPostcode(d.postcode); dirty = true; } if (dirty) save();
-    var lic = LICENSED[stateOf()], fn = String(d.owner_name || '').trim().split(/\s+/)[0] || '', full = String(d.owner_name || '').trim();
+    var lic = licenceWord(stateOf()), fn = String(d.owner_name || '').trim().split(/\s+/)[0] || '', full = String(d.owner_name || '').trim();
     function priceRow(p, hint) { return '<tr><td>' + esc(p[1]) + '<br><span class="hint">' + esc(hint != null ? hint : p[5]) + '</span></td><td class="n"><div class="row" style="justify-content:flex-end;flex-wrap:nowrap"><input type="number" step="0.5" min="0" aria-label="' + esc(p[1]) + ' price" data-price="' + p[0] + '" value="' + (S.prices[p[0]] == null ? '' : S.prices[p[0]]) + '" style="width:5.5em;text-align:right"><span class="hint">per ' + esc(unitWord(p[2])) + '</span></div></td></tr>'; }
     var licField = '<label class="f">' + (lic ? lic.charAt(0).toUpperCase() + lic.slice(1) : 'Licence') + ' no.<span>' + (lic ? 'printed on quotes and invoices' : 'if you hold one; printed on quotes') + '</span><input type="text" data-bind="details.licence"></label>';
     // Business: what every quote needs, then the rest behind More (optional)
@@ -2084,7 +2121,7 @@
     html += '<div class="card"><h2>Deposit and payment terms</h2><div class="g3"><label class="f">Deposit %<span>homeowners; change per job</span><input type="number" data-bind="details.deposit_pct" id="st_dep" min="0" max="100" step="0.5"></label><label class="f">Deposit due, days<span>after they accept</span><input type="number" data-bind="rules.deposit_due_days" min="0" placeholder="5"></label><label class="f">Payment days<span>after the invoice</span><input type="number" data-bind="details.balance_days" id="st_days" min="0"></label><label class="f">Quote valid, days<input type="number" data-bind="details.quote_valid_days" min="1"></label></div><p class="hint" id="depcap">' + esc(depCapNote()) + '</p>' +
       '<h3>Business clients</h3><p class="hint">Agents, strata, builders, commercial.</p><div class="g2"><label class="f">Deposit %<span>0 = no deposit</span><input type="number" data-bind="rules.business_deposit_pct" min="0" max="100" step="0.5" placeholder="0"></label><label class="f">Payment days<input type="number" data-bind="rules.business_days" min="0" placeholder="30"></label></div></div>';
     var items = QCStore.PRICE_ITEMS, five = Object.keys(FIVE).map(function (k) { return items.filter(function (p) { return p[0] === k; })[0]; }).filter(Boolean), rest = items.filter(function (p) { return !FIVE[p[0]]; });
-    html += '<div class="card"><h2>Prices</h2><p class="hint">Before GST, labour and paint in.</p><table><thead><tr><th>Item</th><th class="n">$</th></tr></thead><tbody>' + five.map(function (p) { return priceRow(p, FIVE[p[0]]); }).join('') + '</tbody></table>' +
+    html += '<div class="card ponly"><h2>Prices</h2><p class="hint">Before GST, labour and paint in.</p><table><thead><tr><th>Item</th><th class="n">$</th></tr></thead><tbody>' + five.map(function (p) { return priceRow(p, FIVE[p[0]]); }).join('') + '</tbody></table>' +
       '<details class="sec sub"><summary><h3>More prices</h3></summary><p class="hint">Leave blank anything you do not offer.</p><table><thead><tr><th>Item</th><th class="n">$</th></tr></thead><tbody>' + rest.map(function (p, i) { return (i === 0 || p[4] !== rest[i - 1][4] ? '<tr><td colspan="2"><span class="tag">' + (p[4] === 'interior' ? 'Inside' : p[4] === 'exterior' ? 'Outside' : 'Job') + '</span></td></tr>' : '') + priceRow(p); }).join('') + '</tbody></table>' +
       '<div class="g3"><label class="f">Minimum job $<input type="number" data-bind="rules.minimum_job" min="0"></label><label class="f">Travel $ per km<input type="number" step="0.1" data-bind="rules.travel_per_km" min="0"></label><label class="f">No travel charge within, km<input type="number" data-bind="rules.free_radius_km" min="0"></label><label class="btn ghost sm"><input type="checkbox" data-bind="rules.travel_return"> Charge travel both ways</label><label class="btn ghost sm"><input type="checkbox" data-bind="rules.travel_per_day"> Travel for each day on site</label><label class="f">Premium paint +%<input type="number" data-bind="rules.premium_paint_pct" min="0"></label><label class="f">Ceiling height m<input type="number" step="0.1" data-bind="rules.ceiling_height_m" min="2"></label></div></details></div>';
     html += '<p class="hint">Optional.</p>';
@@ -2097,14 +2134,14 @@
       html += '<a class="sec link" href="#/test"><h3>Test drive</h3>' + (t && t.on ? '<span class="pill warn">On</span>' : '') + '</a>';
     })();
     html += calendarCard();
-    html += '<div class="card"><h2>Quote terms</h2><p class="hint">One per line.</p><label class="f">Included, inside work<textarea id="w_inc" rows="5">' + esc(S.wording.included.join('\n')) + '</textarea></label><label class="f">Not included, inside work<textarea id="w_exc" rows="5">' + esc(S.wording.excluded.join('\n')) + '</textarea></label><label class="f">Included, outside work<textarea id="w_inc_ext" rows="4">' + esc((S.wording.included_ext || []).join('\n')) + '</textarea></label><label class="f">Not included, outside work<textarea id="w_exc_ext" rows="4">' + esc((S.wording.excluded_ext || []).join('\n')) + '</textarea></label><label class="f">Terms<span>after the validity and deposit lines</span><textarea id="w_terms" rows="4">' + esc((S.wording.terms || []).join('\n')) + '</textarea></label><div class="g2"><label class="f">Guarantee, years<input type="number" data-bind="wording.warranty_years" min="0"></label></div><label class="f">How to accept<textarea data-bind="wording.accept" rows="3"></textarea></label>' +
+    html += '<div class="card"><h2>Quote terms</h2><p class="hint">One per line.</p><label class="f ponly">Included, inside work<textarea id="w_inc" rows="5">' + esc(S.wording.included.join('\n')) + '</textarea></label><label class="f ponly">Not included, inside work<textarea id="w_exc" rows="5">' + esc(S.wording.excluded.join('\n')) + '</textarea></label><label class="f ponly">Included, outside work<textarea id="w_inc_ext" rows="4">' + esc((S.wording.included_ext || []).join('\n')) + '</textarea></label><label class="f ponly">Not included, outside work<textarea id="w_exc_ext" rows="4">' + esc((S.wording.excluded_ext || []).join('\n')) + '</textarea></label><label class="f">Terms<span>after the validity and deposit lines</span><textarea id="w_terms" rows="4">' + esc((S.wording.terms || []).join('\n')) + '</textarea></label><div class="g2"><label class="f">Guarantee, years<input type="number" data-bind="wording.warranty_years" min="0"></label></div><label class="f">How to accept<textarea data-bind="wording.accept" rows="3"></textarea></label>' +
       '<h3>Your nudges</h3><p class="hint">Blank uses the app\'s words. {name} {job} {quote} {total} {week} {valid} {invoice} {amount} {due} {card} {phone} fill themselves in.</p><label class="f">Quote nudge<span>after a quote has gone quiet</span><textarea data-bind="wording.nudges.quote" rows="3" placeholder="just checking quote {quote} ({total}) for {job} came through OK. If there is anything you would like me to explain, just ask."></textarea></label><label class="f">Deposit nudge<span>a deposit not yet paid</span><textarea data-bind="wording.nudges.deposit" rows="3" placeholder="a friendly reminder that the deposit for your job (invoice {invoice}, {amount}) was due on {due}. If it is already on its way, thank you and please ignore this. {card}"></textarea></label><label class="f">Overdue nudge<span>an invoice past its due date</span><textarea data-bind="wording.nudges.invoice" rows="3" placeholder="a friendly reminder that invoice {invoice} ({amount}) was due on {due}. If it is already on its way, thank you and please ignore this. {card}"></textarea></label>' +
-      '<h3>Products</h3><p class="hint">Printed with the coats.</p><div class="g2">' + Object.keys(QCCosting.PAINT).map(function (k) { return '<label class="f">' + esc(QCCosting.PAINT[k]) + '<input type="text" data-bind="wording.products.' + k + '" placeholder="Brand and product"></label>'; }).join('') + '</div></div>';
-    html += '<div class="card"><h2>Advanced: work prices out from my costs</h2><p class="hint">What an hour and a litre cost you.</p><div class="g3"><label class="f">An hour costs you $<input type="number" data-bind="costing.labour_rate" min="0"></label><label class="f">Markup on cost %<span id="mkhint">' + esc(markupNote()) + '</span><input type="number" data-bind="costing.margin_pct" id="st_markup" min="0"></label><label class="f">Painters on a job<input type="number" data-bind="costing.crew" min="1" max="20" placeholder="1"></label><label class="f">Hours per day<input type="number" data-bind="costing.hours_per_day" min="1" max="14" step="0.5" placeholder="8"></label><label class="f">Coats<input type="number" data-bind="costing.coats" min="1" max="3"></label><label class="f">Speed<span>1 = typical, 0.8 = faster, 1.2 = slower</span><input type="number" step="0.1" data-bind="costing.hours_scale" min="0.5"></label><label class="f">Spare paint %<span>extra paint built into the rates</span><input type="number" data-bind="costing.wastage_pct" min="0" max="50" placeholder="8"></label><label class="f">Set-up hours per job<input type="number" step="0.25" data-bind="costing.setup_hours" min="0" placeholder="1.5"></label><label class="f">Extra hours per day<span>set-up, clean-up</span><input type="number" step="0.25" data-bind="costing.daily_hours" min="0" placeholder="0.75"></label></div>' +
+      '<div class="ponly"><h3>Products</h3><p class="hint">Printed with the coats.</p><div class="g2">' + Object.keys(QCCosting.PAINT).map(function (k) { return '<label class="f">' + esc(QCCosting.PAINT[k]) + '<input type="text" data-bind="wording.products.' + k + '" placeholder="Brand and product"></label>'; }).join('') + '</div></div></div>';
+    html += '<div class="card ponly"><h2>Advanced: work prices out from my costs</h2><p class="hint">What an hour and a litre cost you.</p><div class="g3"><label class="f">An hour costs you $<input type="number" data-bind="costing.labour_rate" min="0"></label><label class="f">Markup on cost %<span id="mkhint">' + esc(markupNote()) + '</span><input type="number" data-bind="costing.margin_pct" id="st_markup" min="0"></label><label class="f">Painters on a job<input type="number" data-bind="costing.crew" min="1" max="20" placeholder="1"></label><label class="f">Hours per day<input type="number" data-bind="costing.hours_per_day" min="1" max="14" step="0.5" placeholder="8"></label><label class="f">Coats<input type="number" data-bind="costing.coats" min="1" max="3"></label><label class="f">Speed<span>1 = typical, 0.8 = faster, 1.2 = slower</span><input type="number" step="0.1" data-bind="costing.hours_scale" min="0.5"></label><label class="f">Spare paint %<span>extra paint built into the rates</span><input type="number" data-bind="costing.wastage_pct" min="0" max="50" placeholder="8"></label><label class="f">Set-up hours per job<input type="number" step="0.25" data-bind="costing.setup_hours" min="0" placeholder="1.5"></label><label class="f">Extra hours per day<span>set-up, clean-up</span><input type="number" step="0.25" data-bind="costing.daily_hours" min="0" placeholder="0.75"></label></div>' +
       '<h3>Paint</h3><table><thead><tr><th>Paint</th><th class="n">$ a litre</th><th class="n">m² a litre</th><th>Tin sizes, litres</th></tr></thead><tbody>' + Object.keys(QCCosting.PAINT).map(function (k) { return '<tr><td>' + esc(QCCosting.PAINT[k]) + '</td><td class="n"><input type="number" data-bind="costing.paint_price.' + k + '" min="0" aria-label="' + esc(QCCosting.PAINT[k]) + ' $ per litre" style="width:4.5em;padding:.5em .4em"></td><td class="n"><input type="number" data-bind="costing.coverage.' + k + '" min="1" aria-label="' + esc(QCCosting.PAINT[k]) + ' coverage" style="width:4.5em;padding:.5em .4em"></td><td><input type="text" data-bind="costing.tin_sizes.' + k + '" placeholder="4, 10, 15" aria-label="' + esc(QCCosting.PAINT[k]) + ' tin sizes" style="min-width:5.5em;padding:.5em .4em"></td></tr>'; }).join('') + '</tbody></table>' +
       '<label class="btn ghost sm"><input type="checkbox" data-bind="costing.charge_tins"> Add a line for whole tins on quotes (off: spare paint is in the rates)</label>' +
       '<div class="row"><button class="btn sm" id="derive">Calculate prices</button><span class="hint">Shows each change first.</span></div></div>';
-    html += '<div class="card"><h2>Maps and house size</h2><p class="hint">Addresses fill in as you type.' + (mapsOn() ? ' On.' : (QCMaps.key(S) ? ' Key saved; works when you are online.' : '')) + '</p><details class="sec sub"><summary><h3>Show me the set-up steps</h3></summary><p class="hint">On a computer, go to console.cloud.google.com, make a project, turn on Places API (New), Maps Static API and Solar API, then make an API key and restrict it to this app\'s web address. Google gives a free monthly amount that covers a painter\'s use; the Solar API (house size) is charged per look-up beyond it, so check the pricing page.</p><label class="f">Google Maps key<input type="text" data-bind="maps.key" autocomplete="off" spellcheck="false" placeholder="AIza…"></label></details></div>';
+    html += '<div class="card"><h2>' + (paintsHere() ? 'Maps and house size' : 'Maps') + '</h2><p class="hint">Addresses fill in as you type.' + (mapsOn() ? ' On.' : (QCMaps.key(S) ? ' Key saved; works when you are online.' : '')) + '</p><details class="sec sub"><summary><h3>Show me the set-up steps</h3></summary><p class="hint">On a computer, go to console.cloud.google.com, make a project, turn on Places API (New), Maps Static API and Solar API, then make an API key and restrict it to this app\'s web address. Google gives a free monthly amount that covers a tradie\'s use; the Solar API (house size) is charged per look-up beyond it, so check the pricing page.</p><label class="f">Google Maps key<input type="text" data-bind="maps.key" autocomplete="off" spellcheck="false" placeholder="AIza…"></label></details></div>';
     var pay = S.payment || {}, cardLine, cardBtns;
     if (pay.card_off === true) { cardLine = 'Not switched on yet.'; cardBtns = ''; }
     else if (pay.card_ready === true) { cardLine = 'On. Paying the invoice ticks it off here.'; cardBtns = '<button class="btn ghost sm" id="card_manage">Change my bank account</button>'; }
@@ -2228,6 +2265,7 @@
   function markupNote() { var m = parseFloat(S.costing && S.costing.margin_pct); if (!(m >= 0)) return 'cost plus this much'; return 'cost plus ' + m + '% (' + Math.round(m / (100 + m) * 100) + '% of the price)'; }
   // A1: one calm line per state about the deposit limit, for Set-up
   function depCapNote() {
+    if (!buildingTrade()) return '';   // not building work: no state limit to state
     var st = stateOf(), line = { NSW: 'NSW caps deposits at 10%.', VIC: 'Victoria caps deposits at 10%, 5% over $20,000.', QLD: 'Queensland caps deposits at 10%, 5% over $20,000.', SA: 'SA caps deposits at $1,000 under $20,000, 5% over.', WA: 'WA caps deposits at 6.5% from $7,500 up.' }[st];
     if (!st) return 'Pick your state under Business for the limit there.';
     if (!line) return 'No deposit limit in ' + stateName(st) + '.';
@@ -2271,15 +2309,154 @@
     out.scoreboard_start = /^\d{4}-\d{2}-\d{2}$/.test(String(obj.scoreboard_start || '')) ? String(obj.scoreboard_start) : ''; out.note = String(obj.note || '').slice(0, 200);
     return out;
   }
-  // merge into S and save; returns counts for the toast. Throws a plain sentence when the payload is not one of ours.
-  function applySetup(obj) {
-    if (!isObj(obj) || obj.v !== 1) throw new Error('That code is for a different version of the app. Open the link in your welcome email instead.');
-    if (JSON.stringify(obj).length > SETUP_MAX) throw new Error('That set-up is too big to load.');
-    var st = isObj(obj.settings) ? obj.settings : {}, res = { details: 0, prices: 0, settings: 0, jobs: 0, skipped: 0, loaded: [] };
-    SETUP_SECTIONS.forEach(function (k) { if (!isObj(st[k])) return; if (!isObj(S[k])) S[k] = {}; var n = mergeSection(S[k], st[k]); res.settings += n; if (k === 'details') res.details = n; if (k === 'prices') res.prices = n; });
-    if (st.details && S.rules) { if (!blank(st.details.deposit_pct)) S.rules.deposit_pct = S.details.deposit_pct; if (!blank(st.details.balance_days)) S.rules.balance_days = S.details.balance_days; } // the engine reads rules.*; Set-up keeps both in step, so does this
+  // ---------- Chase a quote made anywhere ----------
+  // One quote or invoice made somewhere else, as a job the app chases exactly like its own. The figure is what
+  // he quoted, with GST; nothing about rooms or rates is invented, and a number the customer never saw is
+  // never used.
+  function itemToJob(it) {
+    var today = QCStore.today(), gstOn = S.details.gst !== false, total = r2(Math.abs(+it.amount || 0)), sub = gstOn ? r2(total / 1.1) : total;
+    var name = String(it.name || '').trim(), first = looksBusiness(name) ? '' : name.split(/\s+/)[0];
+    var sent = /^\d{4}-\d{2}-\d{2}$/.test(it.date || '') && it.date <= today ? it.date : today, num = String(it.number || '').trim();
+    var j = { id: QCStore.uid(), created: sent, status: it.accepted ? 'accepted' : 'quoted', quote_no: num, no_number: !num, source: it.source || 'typed',
+      client: { name: name, first_name: first, phone: String(it.phone || '').trim(), email: String(it.email || '').trim(), address: String(it.address || '').trim(), type: it.business || looksBusiness(name) ? 'commercial' : 'homeowner', bill_to: String(it.business || '').trim(), abn: '', accounts_email: '' },
+      summary: String(it.what || '').trim(), manual_total: sub, sent_date: sent, sent_how: 'other', sent_confirmed: true,
+      quote: { number: num, total: total, subtotal: sub, sent_date: sent, date: sent }, photos: [], invoices: [] };
+    if (it.kind === 'invoice') {
+      var due = /^\d{4}-\d{2}-\d{2}$/.test(it.due || '') ? it.due : QCStore.addDays(sent, parseInt(S.details.balance_days, 10) || 7), paid = r2(Math.max(0, +it.paid || 0));
+      j.status = 'invoiced';
+      j.invoices = [{ no: num, kind: 'full', date: sent, due: due, total: total, subtotal: sub, gst: r2(total - sub), lines: [{ desc: j.summary || 'Work as invoiced', amount: sub }],
+        payments: paid > 0 ? [{ id: QCStore.uid(), date: today, amount: Math.min(paid, total), method: 'other', ref: 'Before Chasem' }] : [], credit_notes: [], sent_date: sent, sent_how: 'other', sent_confirmed: true, follow_ups: [] }];
+    }
+    if (it.photo) j.photos.push({ id: QCStore.uid(), data: it.photo, caption: 'The quote', room: '' });
+    return j;
+  }
+  // Already in the app? The same number, or the same person for the same money.
+  function alreadyHave(it) {
+    var num = String(it.number || '').trim().toLowerCase(), nm = String(it.name || '').trim().toLowerCase(), amt = r2(+it.amount || 0);
+    // A number alone is not enough: the app numbers its own quotes Q-1001 too, and so does half the software
+    // in the country. The same number AND the same person or money, or the same person for the same money.
+    return S.jobs.some(function (j) {
+      if (j.status === 'cancelled') return false;
+      var jn = String((j.client || {}).name || '').trim().toLowerCase(), jt = j.quote ? r2(j.quote.total) : 0, sameName = nm && jn === nm;
+      var sameMoney = Math.abs(jt - amt) < 0.01 || (j.invoices || []).some(function (i) { return Math.abs(r2(i.total) - amt) < 0.01; });
+      var sameNum = num && ((!j.no_number && String(j.quote_no || '').toLowerCase() === num) || (j.invoices || []).some(function (i) { return String(i.no || '').toLowerCase() === num; }));
+      return (sameNum && (sameName || sameMoney)) || (sameName && sameMoney);
+    });
+  }
+  // Brings them in, starts the chasing where sending is on, and says what happened in one line.
+  function chaseThese(items) {
+    items = items.filter(function (it) { return !alreadyHave(it); });
+    if (!items.length) return Promise.resolve({ added: 0, jobs: [] });
+    var got = importJobs(items.map(itemToJob)); save();
+    var live = got.loaded.filter(chaseable), send = QCMsg.ready('sms') || QCMsg.ready('email');
+    var queued = send && live.length ? queueLoadedFollowUps(live).catch(function () { return null; }) : Promise.resolve(null);
+    return queued.then(function (r) { return { added: got.jobs, jobs: got.loaded, queued: r }; });
+  }
+
+  var ADD_TABS = [['type', 'pen', 'Type'], ['paste', 'paste', 'Paste'], ['photo', 'camera', 'Photo'], ['sheet', 'sheet', 'Import']];
+  function viewAdd(tab) {
+    if (ADD_TABS.every(function (t) { return t[0] !== tab; })) tab = 'type';
+    if (!viewAdd.draft) { try { viewAdd.draft = JSON.parse(localStorage.getItem('qc-add-draft') || 'null'); } catch (e) {} }
+    var draft = viewAdd.draft || { kind: 'quote' }, today = QCStore.today();
+    var tabs = '<div class="row tiles addtabs" role="tablist">' + ADD_TABS.map(function (t) { return '<a class="btn tile ' + (t[0] === tab ? 'tape' : 'ghost') + '" role="tab" aria-selected="' + (t[0] === tab) + '" href="#/add/' + t[0] + '"' + QCPics.says(t[2]) + '>' + QCPics.tile(t[1], t[2]) + '</a>'; }).join('') + '</div>';
+    var html = '<a class="hint" href="#/">&larr; Jobs</a><h1>Chase a quote</h1>' + tabs;
+
+    if (tab === 'paste') {
+      html += '<div class="card"><label class="f">The text or email you sent<textarea id="pastebox" rows="7" placeholder="Hi Jane, quote for the deck is $2,450 inc GST..."></textarea></label><button class="btn tape lg" id="pastego">Read it</button><p class="hint" id="pastemsg"></p></div>';
+      $app.innerHTML = html;
+      document.getElementById('pastego').addEventListener('click', function () {
+        var t = document.getElementById('pastebox').value, f = QCIngest.parseText(t);
+        if (!String(t).trim()) { document.getElementById('pastemsg').textContent = 'Paste it in first.'; return; }
+        viewAdd.draft = { kind: f.kind, name: f.name, phone: f.phone, email: f.email, amount: f.amount > 0 ? f.amount : '', date: f.date, number: f.number, what: f.what, found: true };
+        try { localStorage.setItem('qc-add-draft', JSON.stringify(viewAdd.draft)); } catch (e) {}
+        go('/add/type');
+      });
+      return;
+    }
+
+    if (tab === 'sheet') {
+      html += '<div class="card"><label class="btn tape lg tile"' + QCPics.says('Choose the file') + '>' + QCPics.tile('sheet', 'Choose the file') + '<input type="file" id="sheetfile" accept=".csv,.txt,text/csv,text/plain"></label>' +
+        '<p class="hint">Tradify, ServiceM8, Fergus, simPRO, Xero, MYOB, QuickBooks: export quotes or invoices as CSV.</p></div><div id="sheetout"></div>';
+      $app.innerHTML = html;
+      document.getElementById('sheetfile').addEventListener('change', function () {
+        var f = this.files && this.files[0], out = document.getElementById('sheetout'); if (!f) return;
+        var rd = new FileReader();
+        rd.onerror = function () { out.innerHTML = '<p class="confirm">That file would not open. Save it as CSV and try again.</p>'; };
+        rd.onload = function () {
+          var r; try { r = QCIngest.readSheet(String(rd.result || '')); } catch (e) { r = { items: [], skipped: {} }; }
+          var fresh = r.items.filter(function (it) { return !alreadyHave(it); }), had = r.items.length - fresh.length, sk = r.skipped || {};
+          var left = [sk.paid ? sk.paid + ' paid' : '', sk.closed ? sk.closed + ' declined or void' : '', sk.draft ? sk.draft + ' never sent' : '', had ? had + ' already here' : '', sk.incomplete ? sk.incomplete + ' with no name or amount' : ''].filter(Boolean).join(' · ');
+          if (!fresh.length) { out.innerHTML = '<div class="card"><p class="confirm">' + (r.items.length ? 'Everything in that file is already here.' : 'No quotes or invoices found in that file.') + '</p>' + (left ? '<p class="hint">' + esc(left) + '</p>' : '') + '</div>'; return; }
+          out.innerHTML = '<div class="card"><h3>' + fresh.length + ' to chase</h3>' + (left ? '<p class="hint">Left out: ' + esc(left) + '</p>' : '') +
+            '<div class="sheetlist">' + fresh.map(function (it, i) { return '<label class="sheetrow"><input type="checkbox" data-i="' + i + '" checked><span><b>' + esc(it.name) + '</b> <span class="hint">' + esc([it.number, it.kind === 'invoice' ? 'invoice' : it.accepted ? 'accepted' : '', it.phone || it.email || 'no mobile or email'].filter(Boolean).join(' · ')) + '</span></span><span>' + money(it.amount) + '</span></label>'; }).join('') + '</div>' +
+            '<button class="btn tape lg" id="sheetgo">Chase ' + fresh.length + '</button></div>';
+          var boxes = out.querySelectorAll('input[data-i]'), go2 = document.getElementById('sheetgo');
+          var count = function () { var k = Array.prototype.filter.call(boxes, function (b) { return b.checked; }).length; go2.textContent = 'Chase ' + k; go2.disabled = !k; };
+          Array.prototype.forEach.call(boxes, function (b) { b.addEventListener('change', count); });
+          go2.addEventListener('click', function () {
+            go2.disabled = true;
+            var pick = Array.prototype.filter.call(boxes, function (b) { return b.checked; }).map(function (b) { var it = fresh[+b.getAttribute('data-i')]; it.source = 'sheet'; return it; });
+            chaseThese(pick).then(function (res) { toast(res.added + ' added to Follow-ups.'); go('/chase'); });
+          });
+        };
+        rd.readAsText(f);
+      });
+      return;
+    }
+
+    // Type, and what Paste and Photo found
+    var v = function (k) { return draft[k] == null ? '' : esc(draft[k]); };
+    var kindChips = '<div class="row chips kindchips"><button class="chip' + (draft.kind !== 'invoice' ? ' on' : '') + '" data-kind="quote">' + QCPics.svg('quote') + ' Quote</button><button class="chip' + (draft.kind === 'invoice' ? ' on' : '') + '" data-kind="invoice">' + QCPics.svg('invoice') + ' Invoice</button></div>';
+    var photoRow = tab === 'photo' ? '<div class="card"><label class="btn tape lg tile"' + QCPics.says('Take a photo of the quote') + '>' + QCPics.tile('camera', draft.photo ? 'Retake' : 'Photo of it') + '<input type="file" id="addphoto" accept="image/*" capture="environment"></label>' + (draft.photo ? '<img class="addthumb" src="' + draft.photo + '" alt="">' : '') + '</div>' : '';
+    html += photoRow + '<div class="card addform">' + (draft.found ? '<p class="hint">Check what it found.</p>' : '') + kindChips +
+      '<label class="f">Name<input type="text" id="a_name" autocomplete="off" value="' + v('name') + '"></label>' +
+      '<div class="g2"><label class="f">Mobile<input type="tel" id="a_phone" inputmode="tel" value="' + v('phone') + '"></label><label class="f">Email<input type="email" id="a_email" inputmode="email" value="' + v('email') + '"></label></div>' +
+      '<label class="f">$ with GST<input type="text" id="a_amount" inputmode="decimal" placeholder="0" value="' + v('amount') + '" style="font-size:1.4rem"></label>' +
+      '<div class="g2"><label class="f">Sent<input type="date" id="a_date" max="' + today + '" value="' + (v('date') || today) + '"></label>' + (draft.kind === 'invoice' ? '<label class="f">Due<input type="date" id="a_due" value="' + (v('due') || QCStore.addDays(v('date') || today, 7)) + '"></label>' : '<label class="f">Number<input type="text" id="a_number" value="' + v('number') + '"></label>') + '</div>' +
+      (draft.kind === 'invoice' ? '<label class="f">Number<input type="text" id="a_number" value="' + v('number') + '"></label>' : '') +
+      '<label class="f">What for<input type="text" id="a_what" placeholder="Bathroom regrout" value="' + v('what') + '"></label>' +
+      '<button class="btn tape lg" id="a_go" disabled>' + QCPics.svg('chase') + ' Chase it</button><p class="hint" id="a_msg"></p></div>';
+    $app.innerHTML = html;
+
+    var el = function (id) { return document.getElementById(id); };
+    var read = function () {
+      var d = { kind: draft.kind || 'quote', name: el('a_name').value.trim(), phone: QCIngest.tidyPhone(el('a_phone').value), email: el('a_email').value.trim(),
+        amount: QCIngest.parseMoney(el('a_amount').value), date: el('a_date').value || today, number: el('a_number').value.trim(), what: el('a_what').value.trim(), photo: draft.photo || '' };
+      if (el('a_due')) d.due = el('a_due').value;
+      return d;
+    };
+    // The button only lights up once there is someone to chase and something to chase them for.
+    var check = function () {
+      var d = read(), okMail = !d.email || /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(d.email), ready = d.name && (d.phone || d.email) && okMail && d.amount > 0;
+      el('a_go').disabled = !ready;
+      el('a_msg').textContent = !d.name ? '' : !(d.phone || d.email) ? 'A mobile or an email to chase.' : !okMail ? 'That email does not look right.' : !(d.amount > 0) ? 'How much?' : '';
+      viewAdd.draft = Object.assign({}, draft, d, { amount: el('a_amount').value, found: draft.found });
+      try { localStorage.setItem('qc-add-draft', JSON.stringify(viewAdd.draft)); } catch (e) {}   // a lost tab keeps what he typed
+    };
+    ['a_name', 'a_phone', 'a_email', 'a_amount', 'a_date', 'a_number', 'a_what', 'a_due'].forEach(function (id) { var x = el(id); if (x) x.addEventListener('input', check); });
+    Array.prototype.forEach.call($app.querySelectorAll('[data-kind]'), function (b) { b.addEventListener('click', function () { check(); viewAdd.draft.kind = b.getAttribute('data-kind'); viewAdd(tab); }); });
+    var ph = el('addphoto'); if (ph) ph.addEventListener('change', function () {
+      var f = this.files && this.files[0]; if (!f) return;
+      compressImage(f, 1400, 0.75).then(function (data) { if (!data) { toast('That photo would not open.'); return; } check(); viewAdd.draft.photo = data; viewAdd(tab); });
+    });
+    check();
+    el('a_go').addEventListener('click', function () {
+      var d = read(); el('a_go').disabled = true;
+      chaseThese([d]).then(function (res) {
+        viewAdd.draft = null; try { localStorage.removeItem('qc-add-draft'); } catch (e) {}
+        if (!res.added) { toast('That one is already here.'); go('/chase'); return; }
+        var who = d.name.split(/\s+/)[0], when = res.queued && res.queued.first ? ' First nudge ' + whenText(res.queued.first) + '.' : '';
+        toast('Chasing ' + who + '.' + when, { action: 'Another', onAction: function () { go('/add/' + tab); } });
+        go('/chase');
+      });
+    });
+  }
+  // Jobs whose quote or invoice was made somewhere else -- a set-up link, a quote typed in, a text pasted, a
+  // spreadsheet exported from another app -- all come in here and are chased exactly like the app's own.
+  function importJobs(list) {
+    var res = { jobs: 0, skipped: 0, loaded: [] };
     var have = {}; S.jobs.forEach(function (j) { have[j.id] = 1; }); var prefix = String(S.details.quote_prefix == null ? 'Q-' : S.details.quote_prefix);
-    (Array.isArray(obj.jobs) ? obj.jobs : []).forEach(function (j) {
+    (Array.isArray(list) ? list : []).forEach(function (j) {
       if (!isObj(j)) return; var id = String(j.id || '').replace(/[^A-Za-z0-9_-]/g, ''); if (id && have[id]) { res.skipped++; return; }
       var raw = JSON.parse(JSON.stringify(j)); if (!raw.quote_no || raw.quote_no === 'Q-?') raw.quote_no = QCStore.nextQuoteNo(true); if (raw.quote && isObj(raw.quote) && !raw.quote.number) raw.quote.number = raw.quote_no;
       (Array.isArray(raw.invoices) ? raw.invoices : []).forEach(function (inv) { if (!isObj(inv)) return; if (!inv.no || inv.no === 'INV-?') inv.no = QCStore.nextInvoiceNo(); if (inv.gst == null && inv.total != null && inv.subtotal != null) inv.gst = r2((+inv.total || 0) - (+inv.subtotal || 0)); if (inv.sent_confirmed == null) inv.sent_confirmed = !!inv.sent_date; });
@@ -2287,6 +2464,16 @@
       var num = job.quote_no.indexOf(prefix) === 0 ? parseInt(job.quote_no.slice(prefix.length), 10) : NaN; if (num >= (parseInt(S.next_quote, 10) || 1001)) S.next_quote = num + 1; // the painter's next quote number never repeats one a set-up link loaded
       job.from_book = true; have[job.id] = 1; S.jobs.push(job); res.jobs++; res.loaded.push(job);
     });
+    return res;
+  }
+  // merge into S and save; returns counts for the toast. Throws a plain sentence when the payload is not one of ours.
+  function applySetup(obj) {
+    if (!isObj(obj) || obj.v !== 1) throw new Error('That code is for a different version of the app. Open the link in your welcome email instead.');
+    if (JSON.stringify(obj).length > SETUP_MAX) throw new Error('That set-up is too big to load.');
+    var st = isObj(obj.settings) ? obj.settings : {}, res = { details: 0, prices: 0, settings: 0, jobs: 0, skipped: 0, loaded: [] };
+    SETUP_SECTIONS.forEach(function (k) { if (!isObj(st[k])) return; if (!isObj(S[k])) S[k] = {}; var n = mergeSection(S[k], st[k]); res.settings += n; if (k === 'details') res.details = n; if (k === 'prices') res.prices = n; });
+    if (st.details && S.rules) { if (!blank(st.details.deposit_pct)) S.rules.deposit_pct = S.details.deposit_pct; if (!blank(st.details.balance_days)) S.rules.balance_days = S.details.balance_days; } // the engine reads rules.*; Set-up keeps both in step, so does this
+    var got = importJobs(obj.jobs); res.jobs = got.jobs; res.skipped = got.skipped; res.loaded = got.loaded;
     if (res.loaded.some(chaseable)) { if (!isObj(S.ui)) S.ui = {}; S.ui.book_chase = 'ready'; }
     if (/^\d{4}-\d{2}-\d{2}$/.test(String(obj.scoreboard_start || ''))) { if (!isObj(S.ui)) S.ui = {}; S.ui.scoreboard_start = String(obj.scoreboard_start); }
     save(); return res;
@@ -2294,7 +2481,7 @@
   // the link-builder sends {number, total, subtotal, sent_date} and manual_total (ex GST): fill in what the quote screen, PDF and follow-ups read from a snapshot
   function bookQuote(job) {
     var q = job.quote, gstOn = S.details.gst !== false, sub = r2(parseFloat(q.subtotal) || parseFloat(job.manual_total) || 0), tot = r2(parseFloat(q.total) || 0); if (!tot && sub) tot = gstOn ? r2(sub * 1.1) : sub; if (!sub && tot) sub = gstOn ? r2(tot / 1.1) : tot;
-    var desc = String(job.summary || '').trim() || 'Painting as quoted';
+    var desc = String(job.summary || '').trim() || 'Work as quoted';
     if (!(q.lines || []).length) q.lines = [{ key: 'room_price', room: 'Job', group: 'Job', desc: desc, client_desc: desc, qty: 1, unit: 'job', rate: sub, base_rate: sub, loading: 0, loading_desc: '', amount: sub, source: 'from your book', provenance: 'from your book', confirm: false, override: true }];
     q.subtotal = sub; q.gst = r2(tot - sub); q.total = tot; q.sent_date = q.sent_date || job.sent_date || ''; q.date = q.date || q.sent_date || job.created; q.version = q.version || 1; q.number = q.number || job.quote_no; q.history = q.history || []; q.options = q.options || []; q.assumptions = q.assumptions || []; q.measured_rooms = 0; q.total_rooms = 0;
     if (q.deposit == null) { try { var dp = depositFor(job, tot); q.deposit = dp.amount; q.deposit_pct = dp.pct; } catch (e) { q.deposit = 0; } }

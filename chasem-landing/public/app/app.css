@@ -194,3 +194,35 @@ a.sec.link::after{content:'\203A';color:var(--muted);font-size:1.4rem;line-heigh
 #app a.job[href]{display:grid;align-items:stretch}
 .card.chase .row.second.tiles{flex-wrap:nowrap}
 .card.chase .row.second.tiles .btn.tile{flex:1 1 0;min-width:0}
+
+/* Chase a quote made anywhere */
+.addtabs{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:8px;margin:6px 0 10px}
+.addtabs .btn.tile{min-width:0}
+.addform .btn.lg{width:100%;display:inline-flex;align-items:center;justify-content:center;gap:8px}
+.addform .btn.lg .ico{width:22px;height:22px}
+.kindchips .chip{display:inline-flex;align-items:center;gap:6px;min-height:44px}
+.kindchips .chip .ico{width:18px;height:18px}
+.addthumb{display:block;width:100%;max-height:260px;object-fit:contain;border-radius:10px;margin-top:10px;background:var(--soft)}
+.card .btn.lg.tile{width:100%;min-height:72px}
+.sheetlist{display:grid;gap:2px;margin:6px 0 12px}
+.sheetrow{display:grid;grid-template-columns:auto minmax(0,1fr) auto;gap:10px;align-items:center;padding:10px 2px;border-top:1px solid var(--line);min-height:44px}
+.sheetrow input{width:22px;height:22px}
+.sheetrow>span:first-of-type{overflow:hidden;text-overflow:ellipsis}
+
+/* Every trade. The painter's own tools stay for painters and step aside for everyone else. */
+.notpainter .ponly{display:none!important}
+.tradegrid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px}
+.tradegrid .btn{min-height:52px;font-size:1rem;justify-content:center}
+
+/* The money, first: owed, waiting, won. Traffic-light colours, tap for the list behind it. */
+.mstrip{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px;margin:4px 0 10px}
+#app a.mtile[href]{display:flex;flex-direction:column;align-items:flex-start;gap:2px;padding:10px 12px;border-radius:12px;background:var(--paper);border:1px solid var(--line);border-left-width:6px;text-decoration:none;color:var(--ink);min-height:84px}
+.mtile .ico{width:20px;height:20px;color:var(--muted)}
+.mtile b{font-size:1.25rem;line-height:1.15;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:100%}
+.mtile span{font-size:.85rem;color:var(--muted)}
+#app a.mtile.bad[href]{border-left-color:var(--bad)}.mtile.bad .ico{color:var(--bad)}
+#app a.mtile.warn[href]{border-left-color:#F5B700}.mtile.warn .ico{color:#B38600}
+#app a.mtile.ok[href]{border-left-color:var(--ok)}.mtile.ok .ico{color:var(--ok)}
+.mtile.none{opacity:.6}
+#app a.emptychase[href]{display:flex;align-items:center;gap:12px;text-decoration:none;color:var(--ink);min-height:72px}
+.emptychase .ico{width:32px;height:32px;color:var(--tape)}

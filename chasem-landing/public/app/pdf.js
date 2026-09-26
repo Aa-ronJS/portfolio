@@ -165,7 +165,7 @@
   Doc.prototype.header = function (det, title, no, meta) {
     var d = this.d, y0 = 16, logoDone = false, fmt = imgFormat(det.logo);
     if (fmt) { try { var p = d.getImageProperties(det.logo), h = 14, w = h * p.width / p.height; if (w > 90) { w = 90; h = w * p.height / p.width; } d.addImage(det.logo, fmt, this.L, this.y - 5, w, h); this.y += h + 3; logoDone = true; } catch (e) {} } // logo replaces the trading name, with 8 mm of air below it
-    if (!logoDone) { this.text(det.trading_name || 'Your Painting Co', 15, 'bold', INK, this.L, 112); this.gap(0.8); }
+    if (!logoDone) { this.text(det.trading_name || 'Your business', 15, 'bold', INK, this.L, 112); this.gap(0.8); }
     var rows = [[det.owner_name, det.phone, det.email], [det.abn ? 'ABN ' + det.abn : '', det.address], [det.licence ? 'Licence ' + det.licence : '', det.insurance]];
     var self = this; rows.forEach(function (r) { var t = r.filter(Boolean).join('  ·  '); if (t) self.text(t, 8.5, 'normal', MUTE, self.L, 112); });
     d.setFontSize(8); d.setFont('helvetica', 'normal'); d.setTextColor.apply(d, FAINT); d.text(String(title).toUpperCase(), this.R, y0, { align: 'right' });

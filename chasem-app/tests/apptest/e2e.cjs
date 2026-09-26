@@ -147,7 +147,7 @@ const near = (a, b, tol) => Math.abs(a - b) <= (tol || 0.5);
   await p.click('a[data-nav="settings"]'); await p.waitForSelector('#export');
   const exp = await p.evaluate(() => window.__qcApp.store.exportAll()); ok(JSON.parse(exp).jobs.length === 2, 'export has 2 jobs');
   await p.evaluate(() => { localStorage.clear(); }); await p.reload({ waitUntil: 'load' }); await p.click('a[data-nav="home"]');
-  ok(/No jobs yet/.test(await p.$eval('#app', e => e.innerText)), 'wiped state shows empty');
+  ok(/Nothing to chase yet/.test(await p.$eval('#app', e => e.innerText)), 'wiped state shows empty, and the way to start');
   await p.click('a[data-nav="settings"]'); await p.waitForSelector('#import');
   const backupFile = require('path').join(require('os').tmpdir(), 'qc-e2e-backup.json');
   fs.writeFileSync(backupFile, exp); await p.setInputFiles('#import', backupFile);

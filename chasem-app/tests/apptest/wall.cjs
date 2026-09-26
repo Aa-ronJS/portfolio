@@ -49,14 +49,11 @@ const SIGNED = () => { try { const k = 'qc-app-v1', s = JSON.parse(localStorage.
   ok(/3 of 5/.test(await text()) && /state/.test(await text()), 'then the state');
   await p.click('[data-state="SA"]');
   await p.waitForFunction(() => /4 of 5/.test(document.querySelector('#app').innerText), null, { timeout: 4000 }).catch(() => {});
-  ok(/4 of 5/.test(await text()) && /day rate/i.test(await text()), 'then the day rate');
-  await p.fill('#w_in', '40'); await p.click('#w_next');
-  await p.waitForFunction(() => /between 100 and 3000/.test(document.querySelector('#app').innerText), null, { timeout: 4000 }).catch(() => {});
-  ok(/between 100 and 3000/.test(await text()), 'a day rate that cannot be right is refused');
-  await p.fill('#w_in', '650'); await p.click('#w_next');
+  ok(/4 of 5/.test(await text()) && /Your trade/.test(await text()), 'then his trade: one tap, any trade');
+  ok(await p.$('[data-trade="electrician"]') !== null && await p.$('[data-trade="cleaner"]') !== null && await p.$('[data-trade="other"]') !== null, 'every trade is there, and a way out for the rest');
+  await p.click('[data-trade="electrician"]');
   await p.waitForFunction(() => /5 of 5/.test(document.querySelector('#app').innerText), null, { timeout: 4000 }).catch(() => {});
-  const priced = await p.evaluate(() => { const S = window.__qcApp.store.load(); return { walls: S.prices.p_walls, hourly: S.costing.labour_rate }; });
-  ok(priced.hourly > 0 && priced.walls > 0, 'his day rate becomes an hourly cost and a whole price list: ' + JSON.stringify(priced));
+  ok((await p.evaluate(() => window.__qcApp.store.load().details.trade)) === 'electrician', 'the tap is the answer: no Next to press');
   ok(/5 of 5/.test(await text()) && /paid/.test(await text()), 'then how he gets paid');
 
   // card is the offer; with Connect not switched on it falls back rather than dead-ending
@@ -68,13 +65,14 @@ const SIGNED = () => { try { const k = 'qc-app-v1', s = JSON.parse(localStorage.
   await p.fill('#w_an', 'Dave'); await p.fill('#w_bsb', '063-000'); await p.fill('#w_acct', '12345678');
   await p.click('#w_bank'); await p.waitForTimeout(1000);
   t = await text();
-  if (!/New job/.test(t)) console.log('    DBG', JSON.stringify(await p.evaluate(() => { const S = window.__qcApp.store.load(); return { hash: location.hash, payment: S.payment, screen: document.querySelector('#app').innerText.replace(/\s+/g, ' ').slice(0, 70) }; })));
-  ok(/New job/.test(t) && !/of 5/.test(t), 'the last answer opens the app');
+  if (!/Chase/.test(t)) console.log('    DBG', JSON.stringify(await p.evaluate(() => { const S = window.__qcApp.store.load(); return { hash: location.hash, payment: S.payment, screen: document.querySelector('#app').innerText.replace(/\s+/g, ' ').slice(0, 70) }; })));
+  ok(/Chase/.test(t) && !/of 5/.test(t), 'the last answer opens the app, with Chase first');
+  ok(!(await p.$('#newjob:not([hidden])')) || !(await p.isVisible('#newjob')), 'an electrician is not offered the painter\'s room-by-room quote builder');
   ok(!(await p.$eval('header.top nav', e => e.hidden)), 'and the tabs come back');
 
   // it stays open
   await p.goto(base + '#/', { waitUntil: 'load' }); await p.waitForTimeout(500);
-  ok(/New job/.test(await text()), 'and stays open on the next visit');
+  ok(/Chase/.test(await text()), 'and stays open on the next visit');
 
   // taking a required thing away puts him back, so nothing can go out half-set
   await p.evaluate(() => { const S = window.__qcApp.store.load(); S.details.state = ''; window.__qcApp.store.save(); location.hash = '#/chase'; });

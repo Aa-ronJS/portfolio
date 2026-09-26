@@ -41,13 +41,13 @@ const MOCK = () => { window.__qcCalls = []; window.__qcRelayFetch = (u, o) => { 
   let tt = await toastText(); ok(/Loaded: .*4 jobs\. Nothing is sent until you tap Start the chasing\.$/.test(tt), 'Load toast says nothing is sent yet: ' + tt);
   let C = await calls(); ok(C.filter(c => c.action === 'schedule').length === 0, 'Load itself schedules nothing');
   await p.waitForSelector('#bookchase'); let t = await text();
-  ok(/Money you are owed\s+2 unpaid invoices and 2 open quotes ready to chase\. Nothing has been sent\./.test(t.replace(/\n+/g, ' ').replace(/\s+/g, ' ')) && /Start the chasing/.test(t) && /Read the wording/.test(t), 'home card lists the book and the Start button: ' + t.replace(/\s+/g, ' ').slice(t.indexOf('Your book'), t.indexOf('Your book') + 200));
+  ok(/Money you are owed\s+2 unpaid invoices and 2 open quotes to chase\. Nothing sent yet\./.test(t.replace(/\n+/g, ' ').replace(/\s+/g, ' ')) && /Start the chasing/.test(t) && /Read the wording/.test(t), 'home card lists the book and the Start button: ' + t.replace(/\s+/g, ' ').slice(t.indexOf('Your book'), t.indexOf('Your book') + 200));
   // the confirm screen said so too
   await p.goto(base + '#/setup?d=' + jcode(Object.assign({}, P, { jobs: P.jobs.map(j => Object.assign({}, j, { id: j.id + 'x' })) })), { waitUntil: 'load' }); await p.waitForSelector('#setupload'); const ct = await text();
   ok(/To chase\s*2 unpaid invoices, 2 open quotes\. Nothing is sent until you tap Start the chasing\./.test(ct), 'confirm screen has the To chase row: ' + ct.replace(/\s+/g, ' ').slice(0, 300));
   await p.goto(base + '#/', { waitUntil: 'load' }); await p.reload({ waitUntil: 'load' }); await p.waitForSelector('#bookgo'); await p.click('#bookgo');
   await p.waitForFunction(() => /reminder/.test(document.getElementById('toast').textContent), { timeout: 8000 }).catch(() => null);
-  tt = await toastText(); ok(/^4 reminders queued for 4 jobs in your book\. The first goes (today|tomorrow|[A-Z][a-z]+day \d+ [A-Z][a-z]+) at \d+(am|pm)\.$/.test(tt), 'Start toast names the queued reminders and the first send: ' + tt);
+  tt = await toastText(); ok(/^4 reminders queued for 4 jobs in your book\. The first goes (today|tomorrow|[A-Z][a-z]{2} \d+ [A-Z][a-z]{2}) at \d+(am|pm)\.$/.test(tt), 'Start toast names the queued reminders and the first send: ' + tt);
   ok(!(await p.$('#bookchase')), 'the book card goes once started');
   C = await calls(); const sched = C.filter(c => c.action === 'schedule');
   ok(sched.length === 4, 'loading a book of 4 jobs books 4 messages, one per chase, not the 7-8 it used to spend up front (' + sched.length + ')');

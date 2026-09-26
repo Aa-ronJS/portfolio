@@ -12,7 +12,7 @@ let fails = 0; const ok = (c, m) => { console.log((c ? 'PASS ' : 'FAIL ') + m); 
   p.on('pageerror', e => { console.log('PAGE ERROR', e.message); fails++; }); p.on('dialog', d => d.accept());
   await p.goto(base, { waitUntil: 'load' });
   // seed: a booked job at Gawler tomorrow and a visit at Elizabeth
-  await p.evaluate(() => { const st = window.__qcApp.store, S = st.load(); S.details.trading_name = 'Test Painting Co'; S.details.owner_name = 'Sam'; S.details.postcode = '5000'; S.details.state = 'SA'; const t = st.addDays(st.today(), 1);
+  await p.evaluate(() => { const st = window.__qcApp.store, S = st.load(); S.details.trading_name = 'Test Painting Co'; S.details.owner_name = 'Sam'; S.details.postcode = '5000'; S.details.state = 'SA'; let t = st.addDays(st.today(), 1); while ([0, 6].indexOf(new Date(t + 'T00:00:00').getDay()) >= 0) t = st.addDays(t, 1);
     const a = st.newJob(); a.client = { name: 'Gawler job', phone: '', email: '', address: '1 Main St Gawler SA 5118' }; a.status = 'accepted'; a.booking = { start: t, end: st.addDays(t, 1), hour: 7, days: 1, end_inclusive: t };
     const c = st.newJob(); c.client = { name: 'Elizabeth visit', phone: '', email: '', address: '2 Side St Elizabeth SA 5112' }; c.status = 'enquiry'; c.visit = { date: t, start_min: 16 * 60 + 30, minutes: 30 }; st.save(); });
   await p.click('a[data-nav="home"]'); await p.waitForSelector('a[href="#/enquiry"]'); ok(/Quote visits/.test(await p.$eval('#app', e => e.innerText)), 'home lists upcoming quote visits');

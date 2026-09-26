@@ -55,7 +55,7 @@ const pre = () => { try { const k = 'qc-app-v1', S = JSON.parse(localStorage.get
   await p.reload({ waitUntil: 'load' }); await p.waitForTimeout(600);
   await go('#/');
   const words = await p.$eval('#app', e => e.innerText);
-  ok(/New job/.test(words) && /Enquiry/.test(words) && /Quick/.test(words), 'without the pictures, Home still shows every way to start a job in words');
+  ok(/Chase/.test(words) && /New/.test(words) && /Enquiry/.test(words) && /Quick/.test(words), 'without the pictures, Home still shows every way to start a job in words');
   await p.click('#newjob'); await p.waitForTimeout(600);
   ok(/#\/job\//.test(await p.evaluate(() => location.hash)), 'and New job still works');
   await go('#/chase');
