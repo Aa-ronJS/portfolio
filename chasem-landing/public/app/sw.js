@@ -1,7 +1,7 @@
 /* Chasem: offline shell. Bump VERSION on every deploy. */
-var VERSION = 'qc-app-v56';
+var VERSION = 'qc-app-v57';
 var FILES = ['./', 'index.html', 'app.css', 'app.js', 'postcodes.js', 'config.js', 'maps.js', 'geo.js', 'costing.js', 'cal.js', 'stripe.js', 'msg.js', 'sync.js', 'testdrive.js', 'pics.js', 'ingest.js', 'schedule.js', 'store.js', 'pricing.js', 'detect.js', 'ar.js', 'measure.js', 'pdf.js', 'manifest.webmanifest',
-  'lib/cv.js', 'lib/aruco.js', 'lib/jspdf.umd.min.js', 'icons/icon-192.png', 'icons/icon-512.png', 'icons/icon-180.png', 'icons/icon-maskable-512.png'];
+  'lib/cv.js', 'lib/aruco.js', 'lib/jspdf.umd.min.js', 'icons/icon-192.png', 'icons/icon-512.png', 'icons/icon-180.png', 'icons/icon-maskable-512.png', 'icons/icon.svg'];
 self.addEventListener('install', function (e) { e.waitUntil(caches.open(VERSION).then(function (c) { return c.addAll(FILES); }).then(function () { return self.skipWaiting(); })); });
 self.addEventListener('activate', function (e) { e.waitUntil(caches.keys().then(function (keys) { return Promise.all(keys.filter(function (k) { return k !== VERSION; }).map(function (k) { return caches.delete(k); })); }).then(function () { return self.clients.claim(); })); });
 // App code is fetched from the network first, so a painter is never looking at last week's screens: the cache
