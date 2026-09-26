@@ -1,26 +1,42 @@
-# Chasem landing page
+# Chasem: site and relay
 
-The landing page for the free Chasem phone app (the product),
-with the optional $249 laptop pack and the hosted waiting list as the
-two paid tiers, plus a live "point your phone at a wall" demo behind a
-QR code. Static page, one Vercel serverless function that calls the
-Claude API for the demo, and the sending relay the app uses.
+Chasem chases quotes and invoices for Australian tradies: every quote
+followed up, every yes booked in, every invoice chased until it is paid.
+It is $99 a month (GST inclusive) with 150 messages; signing in with an
+email gives 12 free messages first. Painters also get quoting and
+measuring. This folder is the website, the serverless relay the app talks
+to, and a copy of the app itself. The go-live list is `GO-LIVE.md`.
 
-`public/app/` is a copy of `../chasem-app/`; keep them
-identical. The app keeps its data per address, so pick one canonical
-address and never move it. That address is https://chasem.app/app/, which
-the relative `APP_URL: "app/"` in `config.js` resolves to. It is the only
-one: the old GitHub Pages copy is retired and only redirects now.
+`public/app/` is a byte-for-byte copy of `../chasem-app/`; keep them
+identical and bump `sw.js`'s VERSION when you change one. The app keeps
+its data per address, so there is one canonical address,
+https://chasem.app/app/ (the relative `APP_URL: "app/"` in `config.js`).
 
 ```
-public/index.html   the page (hero, what it does, demo, install, own-it, price, FAQ)
-public/privacy.html what the app stores, what leaves the phone and to whom; hard-coded date
-public/terms.html   app as-is terms, pack purchase terms and 14-day guarantee, hosted list
-public/config.js    everything the owner fills in (TODO lines: SUPPORT_EMAIL, ABN, BUSINESS_NAME)
-public/qr-card.html printable A6 card with the QR for counters, vans, expos
-public/qr.svg       the QR code; regenerate for the real domain
-api/demo.js         POST /api/demo: photo + notes -> sample quote JSON
-tools/make-qr.py    regenerates qr.svg
+public/index.html     the page: hero, ways to bring quotes in, try-it box (the app's own reader, nothing sent),
+                      how it chases, painters, price, sign-up, what is where, FAQ
+public/privacy.html   what is stored, what leaves the phone and to whom (hard-coded "Last updated" date)
+public/terms.html     1 the app, 2 the plan and its guarantee, 3 the laptop pack, 4 changes
+public/welcome.html   after payment: the set-up button and the first steps
+public/config.js      prices, message counts, Stripe links, business name, ABN, support email
+public/app/           the app (copy of ../chasem-app)
+public/app-home.png, app-nudge.png, og.png   screenshots and share image, drawn from the app by
+                      ../chasem-app/tests/make-landing-shots.cjs and make-og.cjs
+api/signin.js         email and six-digit code; mints the free token
+api/sync.js           the phone's work to and from the account (jobs, settings, availability, payments)
+api/photo.js          job photos to and from private storage (Supabase)
+api/msg.js            sending: texts through Twilio, email through Resend, scheduled or now
+api/renew.js, portal.js, topup.js, stripe-webhook.js, setup-link.js, signup.js   the $99 plan and its messages
+api/y.js              the customer's accept and pick-a-start-day page
+api/sms-in.js         replies to our number: YES accepts, anything else is passed on
+api/gcal.js           optional Google Calendar free/busy
+api/connect.js, paid.js   card payments on invoices (Stripe Connect)
+api/find.js           Find: log in to Outlook, Gmail or Xero once and bring back the quotes found
+api/read.js           read a photo or scanned PDF of a quote (Claude)
+api/demo.js           the old painting photo demo; no page uses it now
+api/admin.js, feedback.js   owner tools and tester feedback
+db/*.sql              the schema, applied by itself on the first request after a deploy; every file must be safe to run twice
+tests/*.mjs           `npm test`, against pglite and stubbed providers
 ```
 
 ## Deploy
@@ -28,58 +44,48 @@ tools/make-qr.py    regenerates qr.svg
 ```bash
 cd chasem-landing
 npm install
-npx vercel                 # first deploy, creates the project
-npx vercel env add ANTHROPIC_API_KEY production   # paste a key from console.anthropic.com
-npx vercel --prod
+npm test
+npx vercel deploy --prod
 ```
 
-Then point the QR at the real URL and redeploy:
+## Environment (Vercel)
 
-```bash
-pip install segno
-python3 tools/make-qr.py https://your-domain.com.au/#try
-npx vercel --prod
-```
+| Variable | What it is for |
+|---|---|
+| `DATABASE_URL` | Postgres (Supabase). Sync, sign-in limits, found lists, payments, bookings. |
+| `RELAY_SIGNING_SECRET` | Signs every token; never change it once live or every phone is signed out. |
+| `SITE_URL`, `APP_URL`, `RELAY_URL`, `ALLOWED_ORIGINS` | https://chasem.app, https://chasem.app/app/, https://chasem.app/api/msg, the app's origins. |
+| `STRIPE_SECRET_KEY`, `STRIPE_WEBHOOK_SECRET` | The $99 plan, top-ups, and Connect. |
+| `TWILIO_ACCOUNT_SID`, `TWILIO_AUTH_TOKEN`, `TWILIO_MESSAGING_SERVICE_SID` | Texts. |
+| `RESEND_API_KEY`, `RESEND_FROM` | Email, including sign-in codes. |
+| `SUPPORT_EMAIL`, `OWNER_EMAIL`, `OWNER_MOBILE`, `FEEDBACK_TO` | Where help, sign-up alerts and tester feedback go. |
+| `SUPABASE_URL`, `SUPABASE_SERVICE_ROLE_KEY`, `SUPABASE_BUCKET` | Job photos in private storage. Without them photos stay on the phone. |
+| `MS_CLIENT_ID`, `MS_CLIENT_SECRET` | Find: Outlook. |
+| `GOOGLE_CLIENT_ID`, `GOOGLE_CLIENT_SECRET` | Find: Gmail, and Google Calendar free/busy (one Google client, two redirect addresses). |
+| `XERO_CLIENT_ID`, `XERO_CLIENT_SECRET` | Find: Xero. |
+| `ANTHROPIC_API_KEY` | Reading a photo or scanned PDF of a quote (`api/read.js`, Claude Opus 5). |
+| `READ_PER_HOUR`, `READ_FREE_PER_HOUR`, `READ_ALL_PER_HOUR` | Reads an hour per paid tradie (30), per free tradie (5), and in total (200). |
+| `SIGNIN_PER_IP_HOUR`, `SIGNIN_ALL_HOUR`, `MSG_PER_IP_LIMIT`, `AUTO_TOPUP_CAP` | Limits; the defaults are sensible. |
+| `MIGRATE_SECRET` | Optional: lets `/api/admin` run the schema by hand. |
 
-Until `ANTHROPIC_API_KEY` is set, the demo returns a canned example
-marked "Example result", so the page works on day one and nothing can
-run up a bill by accident.
+Each Find login and quote reading switches itself on when its values are
+set, and the website only mentions the ones that are
+(`GET /api/find?action=which`). Step-by-step registration is in
+`GO-LIVE.md`.
 
-## Wire up before running ads
+## Pages and files
 
-Everything you must edit is in `public/config.js`: the checkout URL for
-the laptop pack, the waiting-list URL and opening date for the hosted
-version, the email form endpoint, Meta pixel ID, business name, ABN,
-support email, and the date the video lessons will be delivered. Until
-the checkout and form are set, their buttons render "Coming soon" (with
-a mailto once `SUPPORT_EMAIL` is set) and the email forms stay hidden.
-Nothing on the site alerts. The footer, privacy and terms pages print
-the ABN and email only when they are set; the placeholders are gone, so
-an empty value shows "Contact email coming soon" rather than a fake one.
-The privacy and terms pages carry a hard-coded "Last updated" date;
-change it by hand when you change the words.
-
-Other pages: `privacy`, `terms` (the 14-day guarantee is stated there),
-`thanks` (post-purchase downloads; point your checkout's redirect at it)
-`measure/` (the photo measuring page with detect.js and ar.js, copied from
-`chasem-pack/pack/measure/`; keep them identical) and `qr-card`. The hosted tier is a founding list until the hosted app
-exists; its onboarding will reuse the intake fields in
-`chasem/prebuild/`. `public/downloads/` holds the three customer zips built
-by the two `package.sh` scripts; rebuild and copy them after any pack
-change. `public/sample-quote.pdf` must be a quote the phone app made
-(regenerate it from the app after any PDF change; the landing page links
-it as "See a quote it makes").
-
-The QR code on the page draws itself from the deployed URL, so it is
-correct on any domain. `qr.svg` is the static fallback and the print
-version; regenerate it for the final domain before printing cards.
-
-The go-live list for the app is `GO-LIVE.md`, next to this file. The older
-laptop pack has its own in `../chasem-pack/launch/LAUNCH-CHECKLIST.md`.
+`privacy` and `terms` carry a hard-coded "Last updated" date; change it
+by hand when you change the words. `laptop` sells the older laptop pack
+(`../chasem-pack`), `thanks` is its post-purchase page, `measure/` is the
+photo measuring page (keep it identical to `chasem-pack/pack/measure/`),
+and `qr-card` is a printable card. `public/sample-quote.pdf` must be a
+quote the app made; regenerate it with
+`node ../chasem-app/tests/make-sample-quote.cjs` after any PDF change.
 
 ## Card payments (Stripe Connect)
 
-A painter taps one button in Set-up, Stripe's own pages take his bank
+A tradie taps one button in Set-up, Stripe's own pages take his bank
 account and his ID, and every invoice he sends afterwards carries a Pay
 by card button drawn on **his** account. The money never passes through
 this platform. When a customer pays, Stripe posts to `/api/paid`, the
@@ -99,7 +105,7 @@ Everything else looks after itself. The schema applies on the first
 request after a deploy (`ensureSchema` in `api/_db.js`), so a new table
 never needs anybody to remember a migrate call -- which in turn means
 every `db/*.sql` file here **must be safe to run twice**. And the first
-time a painter turns card payments on, the relay creates its own Stripe
+time a tradie turns card payments on, the relay creates its own Stripe
 webhook endpoint pointed at `/api/paid`, listening on connected accounts
 for `checkout.session.completed` and
 `checkout.session.async_payment_succeeded`, and keeps what Stripe hands
@@ -110,48 +116,26 @@ make the endpoint by hand.
 `tests/paid.mjs` covers the lot against pglite and a stubbed Stripe, and
 `chasem-app/tests/apptest/cardpay.cjs` covers what the painter sees.
 
-## The demo function
+## Reading quotes (`api/read.js`)
 
-- Model: `claude-opus-5` with structured output (zod 4 schema), medium effort. Roughly
-  three to five cents per demo at current pricing.
-- The browser shrinks photos to 1280 px JPEG before upload, so requests
-  stay under Vercel's body limit and cost stays flat.
-- Guardrails: 3 MB cap, per-IP limit (6 per 10 minutes) and a per-day
-  cap (400) held in function memory. These are per instance and reset on
-  cold starts, so they are a brake, not a wall. For a real campaign also
-  turn on Vercel's Firewall rate limiting for `/api/demo`, and set a
-  monthly spend limit on the Anthropic key in the console.
-- `DEMO_DISABLED=1` switches the live demo off without a redeploy.
-  `DEMO_PER_IP_LIMIT` and `DEMO_DAILY_CAP` override the defaults.
-- Photos are sent once to the API and are not written anywhere. Say so
-  in your privacy policy; the page already says it in the footer.
-- If the photo is not a paintable surface the estimator says so kindly
-  instead of inventing a quote.
-
-## Test locally
-
-```bash
-npm run dev          # vercel dev serves the page and the function on localhost:3000
-```
-
-Without a key you get the canned example. With `ANTHROPIC_API_KEY` in
-`.env.local` you get real quotes from real photos. The demo price list
-in `api/demo.js` mirrors `chasem-pack/pack/business/price-list.md`;
-keep them in step if you change the defaults.
+A PDF from a quoting app is read on the phone (`ingest.js` parseDoc,
+pdf.js in `app/lib/`) and costs nothing. A photo, or a scanned PDF with no
+words in it, comes here: Claude Opus 5 with structured output and the
+server-side fallback, low effort, roughly 2 to 4 cents a read. Nothing is
+kept. It refuses to run without the database, because the database holds
+the per-hour counters, and PDFs over five pages are turned away before
+the model is asked. `tests/read.mjs` covers it with a stand-in model.
 
 ## Copy notes
 
-The story on every page is: the phone app is free and is the product;
-it stores data on the phone, exports a back-up, sends SMS and email
-through the relay when the painter sets it up (otherwise they tap Text
-or Email), takes cards through Stripe payment links, books into the
-phone calendar; the laptop pack is optional extras and needs a Claude
-subscription. Do not reintroduce "it never sends", "no subscription,
-ever", "not included: bookings, payments" or "makes a spreadsheet".
-No testimonials or usage numbers until there are real ones. The
-guarantee ("one real quote out in 14 days or your money back") applies
-to the pack and is a promise you must honour; if you change it, change
-the terms too. The footer's trademark line stays.
+The story on every page is: Chasem chases quotes and invoices for any
+trade; bring in the quotes you already sent (texts, emails, PDFs, files,
+or log in to your email or Xero); it follows them up on weekdays, books
+the yeses and chases invoices until paid; one plan, $99 a month, with free
+messages to start; painters also get quoting and measuring. Never promise
+a login (Outlook, Gmail, Xero) or photo reading that is not switched on.
+No testimonials or usage numbers until there are real ones. The footer's
+trademark line stays.
 
 ## The sending relay (`api/msg.js`)
 

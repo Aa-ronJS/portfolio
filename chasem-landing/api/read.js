@@ -3,7 +3,7 @@
 // how much, the number and the dates. The phone reads text PDFs itself; this is for what it cannot read.
 //
 // Nothing is kept: the picture goes to the model once and the answer comes back. Each tradie gets a number of
-// reads an hour and so does everyone together, because every read costs money. Without ANTHROPIC_API_KEY it says
+// reads an hour (fewer on the free plan) and so does everyone together, because every read costs money. Without ANTHROPIC_API_KEY it says
 // it is off, and the app lets him type it instead.
 
 import Anthropic from "@anthropic-ai/sdk";
@@ -14,7 +14,8 @@ import { q, dbConfigured, ensureSchema } from "./_db.js";
 
 const MODEL = "claude-opus-5";
 const MAX_BYTES = 3 * 1024 * 1024;   // decoded; the request itself has to stay under the platform's body limit
-const PER_HOUR = Number(process.env.READ_PER_HOUR || 30), ALL_PER_HOUR = Number(process.env.READ_ALL_PER_HOUR || 600);
+const PER_HOUR = Number(process.env.READ_PER_HOUR || 30), FREE_PER_HOUR = Number(process.env.READ_FREE_PER_HOUR || 5), ALL_PER_HOUR = Number(process.env.READ_ALL_PER_HOUR || 200);
+const MAX_PAGES = 5;   // a quote is a page or three; anything longer is not one, and costs a lot to read
 const TYPES = ["image/jpeg", "image/png", "image/webp", "application/pdf"];
 
 const Found = z.object({
@@ -74,18 +75,22 @@ export default async function handler(req, res) {
   let body; try { body = await readJson(req, 4_400_000); } catch (e) { return send(res, 413, { ok: false, error: "That file is too big to read. Type it in instead." }); }
   const p = readToken(body.token, process.env.RELAY_SIGNING_SECRET);
   if (!p || !p.cus) return send(res, 401, { ok: false, error: "That sending token is not one of ours" });
-  if (!readOn()) return send(res, 200, { ok: false, off: true, error: "Reading it is not switched on yet. Type it in." });
+  // every read costs money, so there is no reading without the counter that limits it
+  if (!readOn() || !dbConfigured()) return send(res, 200, { ok: false, off: true, error: "Reading it is not switched on yet. Type it in." });
 
   const media_type = TYPES.includes(body.media_type) ? body.media_type : "";
   const data = String(body.data || "").replace(/^data:[^,]+,/, "").replace(/\s+/g, "");
   if (!media_type || !data) return send(res, 400, { ok: false, error: "That is not a photo or a PDF." });
   if (Buffer.byteLength(data, "base64") > MAX_BYTES) return send(res, 413, { ok: false, error: "That file is too big to read. Type it in instead." });
 
-  if (dbConfigured()) {
-    await ensureSchema();
-    if (!(await spend("read:" + p.cus, PER_HOUR))) return send(res, 429, { ok: false, error: "That is a lot of reading for one hour. Type this one in, or try again later." });
-    if (!(await spend("read:all", ALL_PER_HOUR))) return send(res, 429, { ok: false, error: "Reading is busy right now. Type this one in, or try again soon." });
-  }
+  if (media_type === "application/pdf" && (Buffer.from(data, "base64").toString("latin1").match(/\/Type\s*\/Page(?![a-z])/g) || []).length > MAX_PAGES)
+    return send(res, 413, { ok: false, error: "That PDF has too many pages to be a quote. Type it in instead." });
+
+  // a paid plan that has lapsed reads like a free one
+  const paid = p.plan === "paid" && !(p.until && Date.now() > new Date(/^\d{4}-\d{2}-\d{2}$/.test(p.until) ? p.until + "T23:59:59+10:00" : p.until).getTime());
+  await ensureSchema();
+  if (!(await spend("read:" + p.cus, paid ? PER_HOUR : FREE_PER_HOUR))) return send(res, 429, { ok: false, error: "That is a lot of reading for one hour. Type this one in, or try again later." });
+  if (!(await spend("read:all", ALL_PER_HOUR))) return send(res, 429, { ok: false, error: "Reading is busy right now. Type this one in, or try again soon." });
 
   const own = body.own && typeof body.own === "object" ? body.own : {};
   const ownLine = ["trading_name", "owner_name", "abn", "phone", "email", "address"].map((k) => own[k] ? k.replace("_", " ") + ": " + clean(own[k], 120) : "").filter(Boolean).join("\n") || "(not given)";

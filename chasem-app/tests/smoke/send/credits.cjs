@@ -41,7 +41,9 @@ const send1 = (tok, ch) => call(msg, { action: 'send', channel: ch || 'sms', tok
   // ---- 1. an email is the whole sign-up
   let r = await call(signup, { email: 'Dave@Example.com ', name: 'Dave Smith', trading_name: "Dave's Painting" }, '/api/signup');
   ok(r.status === 200 && r.json.ok && r.json.free === 12 && r.json.emailed, 'signing up with an email returns a set-up link and emails it: ' + JSON.stringify({ free: r.json.free, emailed: r.json.emailed }));
-  const link1 = r.json.link, P = decode(link1), TOK = tokenOf(link1), pay = U.readToken(TOK, process.env.RELAY_SIGNING_SECRET);
+  // the link goes to the inbox only (handing it back would let anyone who guesses an email take the account)
+  ok(!r.json.link, 'the set-up link is never handed back to whoever typed the address');
+  const link1 = (/https:\/\/\S+#\/setup\?d=j:[A-Za-z0-9_-]+/.exec((sent.filter(s => s.kind === 'email').pop() || { json: {} }).json.text || '') || [])[0], P = decode(link1), TOK = tokenOf(link1), pay = U.readToken(TOK, process.env.RELAY_SIGNING_SECRET);
   ok(P.settings.details.email === 'dave@example.com' && P.settings.sending.hosted === true && pay.plan === 'free' && pay.inc === 12 && pay.cus === 'cus_1', 'the link carries his details, sending on, and a free token for three jobs: ' + JSON.stringify({ plan: pay.plan, inc: pay.inc }));
   const wel = sent.find(s => s.kind === 'email'); ok(/Your app is ready/.test(wel.json.subject) && /12 messages to start/.test(wel.json.text) && !/free forever|\$0/.test(wel.json.text), 'the welcome email says what a message is and never says free forever');
   r = await call(signup, { email: 'dave@example.com' }, '/api/signup');

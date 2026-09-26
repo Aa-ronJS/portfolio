@@ -197,7 +197,7 @@ export default async function handler(req, res) {
   if (req.method === "GET" && action === "callback") {
     if (!dbConfigured()) return toApp(res, "find?why=off");
     await ensureSchema();
-    const st = readToken(url.searchParams.get("state") || "", process.env.RELAY_SIGNING_SECRET);
+    const st = readToken(url.searchParams.get("state") || "", process.env.RELAY_SIGNING_SECRET, "find");
     const pv = st && PROVIDERS[st.provider];
     if (!st || !st.cus || st.kind !== "find" || !pv || !st.exp || Date.now() > st.exp) return toApp(res, "find?why=expired");
     const err = url.searchParams.get("error");
@@ -239,6 +239,7 @@ export default async function handler(req, res) {
   }
 
   if (body.action === "collect") {
+    await q("delete from found where created_at < now() - interval '" + KEEP_MIN + " minutes'").catch(() => {});   // an hour at most, whoever asks
     const row = (await q("select provider, account, items, scanned, created_at from found where id=$1 and painter_id=$2", [String(body.id || ""), p.cus])).rows[0];
     if (!row || Date.now() - new Date(row.created_at).getTime() > KEEP_MIN * 60000) return send(res, 404, { ok: false, error: "That look has expired. Log in again." });
     await q("delete from found where id=$1", [String(body.id)]);   // collected once, then gone

@@ -202,7 +202,9 @@ a.sec.link::after{content:'\203A';color:var(--muted);font-size:1.4rem;line-heigh
 .finder svg{width:34px;height:34px}
 #app a.finder[href]{display:flex}
 .finder{position:relative}
-.readtiles{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.overdue h2{color:var(--bad)}
+.readtiles,.wonlost{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.wonlost{margin:4px 0 12px}
 .readtiles .tile{position:relative}
 .shareway{display:flex;align-items:center;justify-content:space-between;gap:6px;padding:16px 10px}
 .shareway.later{opacity:.55}

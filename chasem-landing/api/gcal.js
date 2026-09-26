@@ -109,7 +109,7 @@ export default async function handler(req, res) {
     if (!gcalConfigured() || !dbConfigured()) return backToApp(res, "off");
     const err = url.searchParams.get("error");
     if (err) return backToApp(res, "no", err === "access_denied" ? "You said no to the permission." : err);
-    const st = readToken(url.searchParams.get("state") || "", process.env.RELAY_SIGNING_SECRET);
+    const st = readToken(url.searchParams.get("state") || "", process.env.RELAY_SIGNING_SECRET, "gcal");
     if (!st || !st.cus || st.kind !== "gcal" || !st.exp || Date.now() > st.exp) return backToApp(res, "expired");
     try {
       const t = await tokens({ code: url.searchParams.get("code") || "", grant_type: "authorization_code", redirect_uri: REDIRECT });

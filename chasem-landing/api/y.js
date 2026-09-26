@@ -72,17 +72,17 @@ function confirmed(job, b) {
   return `<h1>You're booked in.</h1>
     <div class="done"><b>${esc(prettyDay(typeof b.start_day === "string" ? b.start_day : ymd(new Date(b.start_day)), job.tz))}</b>
     ${b.days > 1 ? `<br><span class="fine">About ${b.days} days on site.</span>` : ""}
-    <br><span class="fine">${esc(job.trading_name || "Your painter")} has been told.</span></div>
-    <p class="fine" style="margin-top:14px">Need to change it? Reply to the text, or ring ${esc(job.painter_phone || job.trading_name || "your painter")}.</p>`;
+    <br><span class="fine">${esc(job.trading_name || "The business")} has been told.</span></div>
+    <p class="fine" style="margin-top:14px">Need to change it? Reply to the text, or ring ${esc(job.painter_phone || job.trading_name || "the business that quoted you")}.</p>`;
 }
 
 export default async function handler(req, res) {
-  if (!dbConfigured()) return page(res, 503, "Not available", "<h1>Not available yet</h1><p>This link is not working. Please contact your painter directly.</p>");
+  if (!dbConfigured()) return page(res, 503, "Not available", "<h1>Not available yet</h1><p>This link is not working. Please contact the business that sent it.</p>");
   const t = (req.url || "").split("?")[0].replace(/^\/(?:api\/y|y)\/?/, "").replace(/\/+$/, "") ||
             new URL(req.url || "", "https://x").searchParams.get("t") || "";
 
   let d = null; try { d = await load(t); } catch (e) { d = null; }
-  if (!d) return page(res, 404, "Link not found", "<h1>This link has expired</h1><p>Please contact your painter for a new one.</p>");
+  if (!d) return page(res, 404, "Link not found", "<h1>This link has expired</h1><p>Please contact the business that sent it for a new one.</p>");
   const { job } = d;
   const tz = job.tz || "Australia/Adelaide";
 
@@ -95,7 +95,7 @@ export default async function handler(req, res) {
     const busy = new Set((await q("select day from busy where painter_id=$1", [d.painter])).rows.map((r) => (typeof r.day === "string" ? r.day : ymd(new Date(r.day)))));
     const open = offerDays({ rules, busy, estDays: job.est_days || 1, today: todayIn(tz) });
     if (!open.includes(want)) {
-      return page(res, 409, "That day has gone", `<h1>That day has just gone</h1><p>Someone got in first, or your painter has taken it. Pick another.</p>` + pick(d, open, tz));
+      return page(res, 409, "That day has gone", `<h1>That day has just gone</h1><p>Someone got in first, or it has just been taken. Pick another.</p>` + pick(d, open, tz));
     }
     // Taking the days is the lock: the primary key on (painter, day, source) means two customers cannot both
     // win the same day, whichever of them tapped first.
@@ -136,11 +136,11 @@ export default async function handler(req, res) {
 
 function head(job) {
   return `<h1>${job.client_name ? esc(first(job.client_name)) + ", pick" : "Pick"} a start day</h1>
-    <div class="card"><div class="q"><b>${esc(job.trading_name || "Your painter")}</b><span>${esc(job.quote_no || "")} ${job.total_cents ? esc(money(job.total_cents)) : ""}</span></div>
-    <p class="fine">Days ${esc(job.trading_name || "your painter")} is free.</p></div>`;
+    <div class="card"><div class="q"><b>${esc(job.trading_name || "Your quote")}</b><span>${esc(job.quote_no || "")} ${job.total_cents ? esc(money(job.total_cents)) : ""}</span></div>
+    <p class="fine">Days ${esc(job.trading_name || "they")} ${job.trading_name ? "is" : "are"} free.</p></div>`;
 }
 function pick(d, open, tz) {
-  if (!open.length) return `<p>Nothing free in the next few weeks. Your painter will be in touch.</p>`;
+  if (!open.length) return `<p>Nothing free in the next few weeks. They will be in touch.</p>`;
   const est = d.job.est_days || 1;
   return `<form method="post">` + open.map((day) =>
     `<button class="day" name="day" value="${esc(day)}">${esc(prettyDay(day, tz))}${est > 1 ? `<small>about ${est} days on site</small>` : ""}</button>`

@@ -309,17 +309,22 @@
     if (pct >= 100 && !cap) deposit = fig.total;
     var days = balanceDays(job, det), hasExt = priced.has_exterior != null ? !!priced.has_exterior : main.some(isExtLine), hasInt = priced.has_interior != null ? !!priced.has_interior : (main.some(isIntLine) || (!hasExt && main.length > 0));
     if (!main.length && priced.has_exterior == null) { hasExt = (job.rooms || []).some(function (r) { return r && r.type === 'exterior'; }); hasInt = !hasExt; }
+    // Painting words (coats, paint, rooms being painted, a guarantee against peeling) belong on a painter's priced quote
+    // and nowhere else. An electrician's quote, or any quote brought in from elsewhere as one figure, gets none of them.
+    var painting = (!det.trade || det.trade === 'painter') && (main.length > 0 || (job.rooms || []).length > 0);
+    if (!painting) { hasInt = false; hasExt = false; }
     var figs = [fig.subtotal, fig.gst, fig.total, deposit].concat(all.map(function (l) { return l.amount; })); if (showRates) figs = figs.concat(all.map(function (l) { return l.rate; }));
     doc.cents = figs.some(hasCents);
 
-    doc.header(det, 'Quote', no, ['Date ' + fmtDate(qDate), 'Valid until ' + fmtDate(valid)]);
+    doc.header(det, 'Quote', job.no_number ? '' : no, ['Date ' + fmtDate(qDate), 'Valid until ' + fmtDate(valid)]);   // a number the customer never saw is never printed
     if (version > 1) { var prev = (q.history || []).slice(-1)[0]; doc.text('Revision ' + version + ' of ' + baseNo(job) + (prev && prev.date ? ', replaces the quote dated ' + fmtDate(prev.date) + '.' : ', replaces the earlier quote.'), 8.8, 'bold', MUTE); doc.gap(0.5); }
     clientBlock(doc, 'Prepared for', job);
     if (job.summary || job.notes_client) { doc.h('Description'); if (job.summary) doc.text(job.summary, 9.2); if (job.notes_client) { if (job.summary) doc.gap(1); doc.text(job.notes_client, 8.8, 'normal', BODY); } }
 
     doc.h('Price');
     var cols = lineCols(showRates), rows = groupedRows(doc, main, showRates);
-    if (!main.length) rows.push({ cells: ['No priced items yet', '', '', '', ''], color: MUTE });
+    if (!main.length && fig.total > 0) rows.push({ cells: [String(job.summary || '').trim() || 'As quoted', '', '', '', doc.m(fig.subtotal)] });
+    else if (!main.length) rows.push({ cells: ['No priced items yet', '', '', '', ''], color: MUTE });
     doc.table(cols, rows.concat(totalRows(doc, fig.subtotal, fig.gst, fig.total, gstOn)));
     if (opt.length) {
       doc.h('Options'); doc.text('Priced separately and not included in the total above. Tell us which you would like.', 8.6, 'normal', MUTE); doc.gap(1.2);
@@ -337,7 +342,7 @@
       else based.push('Sizes measured on site by us, except ' + byClient.map(function (r) { return roomName(r, sizedRooms.indexOf(r)); }).join(', ') + ' (sizes supplied by the client, confirmed on site before work starts).');
     }
     (priced.assumptions || []).forEach(function (a) { if (!/ceiling height assumed|as advised, not measured|supplied by (the )?client|sizes measured on site|measured on site by us|travel|paint in full tins|minimum job charge|premium paint requested|ceiling taken as|tins?:/i.test(String(a))) based.push(a); });
-    var coats = coatsLines(job, s, main);
+    var coats = painting ? coatsLines(job, s, main) : [];
     if (based.length || coats.length) { doc.h(based.length && coats.length ? 'Basis, coats and products' : based.length ? 'Basis' : 'Coats and products'); doc.bullets(based.concat(coats)); }
     var colours = colourRows(job);
     if (colours.length) { doc.h('Colour schedule'); doc.table([{ t: 'Room', w: 34 }, { t: 'Surface', w: 34 }, { t: 'Product', w: 54 }, { t: 'Colour', w: 36 }, { t: 'Sheen', w: 20 }], colours.map(function (c) { return { cells: [c.room || '', c.surface || '', c.product || '', c.colour || '', c.sheen || ''] }; }), { size: 8.4 }); }
@@ -345,14 +350,15 @@
 
     var inc = listFor(wd, 'included', hasInt, hasExt), exc = listFor(wd, 'excluded', hasInt, hasExt);
     if (job.client_paint) { inc = inc.filter(function (t) { return !/materials/i.test(t); }); if (!based.some(function (a) { return /paint supplied by (the )?client/i.test(a); })) inc = inc.concat(['Paint supplied by the client; we supply sundries and equipment.']); }
-    doc.twoCol([{ title: 'Included', items: inc }, { title: 'Not included', items: exc }]);
+    if (painting) doc.twoCol([{ title: 'Included', items: inc }, { title: 'Not included', items: exc }]);
 
     // terms: the painter's standard terms, minus clauses that do not fit this job. The deposit clause is replaced by the specific line below;
     // on a job with no interior rooms every sentence about rooms goes and the exterior access clause is used instead.
     var depositApplies = pct > 0 && deposit > 0, dueTxt = days > 0 ? 'within ' + days + ' ' + plural(days, 'day', 'days') + ' of completion' : 'on completion';
     var std = dropSentences(Array.isArray(wd.terms) ? wd.terms.filter(Boolean) : [], depositApplies ? /deposit shown/i : /\bdeposit\b/i);
     if (!hasInt) std = dropSentences(std, /\brooms?\b|clear access/i);
-    if (!hasInt && main.length) { var at = std.length; std.forEach(function (t, i) { if (at === std.length && /variations? are priced/i.test(t)) at = i + 1; }); std.splice(at, 0, 'Please keep the areas being painted clear on the booked days: move vehicles, pot plants, outdoor furniture and anything else near the walls, and leave power and water available.'); }
+    if (!painting) std = dropSentences(std, /\bpaint|\bcoats?\b|re-measured|measure more/i);
+    if (painting && !hasInt && main.length) { var at = std.length; std.forEach(function (t, i) { if (at === std.length && /variations? are priced/i.test(t)) at = i + 1; }); std.splice(at, 0, 'Please keep the areas being painted clear on the booked days: move vehicles, pot plants, outdoor furniture and anything else near the walls, and leave power and water available.'); }
     // The validity date is in the header block, so the terms say the thing the header cannot: that the price is fixed.
     var terms = ['Fixed price for the work and areas described.'].concat(std);
     if (!depositApplies) terms.push('No deposit required. Payment ' + dueTxt + '.');
@@ -361,9 +367,9 @@
     else terms.push('A ' + (Math.round(pct * 10) / 10) + '% deposit (' + doc.m(deposit) + ') confirms the booking. The balance is due ' + dueTxt + '.');
     if (Array.isArray(job.progress_schedule) && job.progress_schedule.length) terms.push('Payment schedule: ' + job.progress_schedule.map(function (p) { return (p.label || '') + ' ' + num(p.pct) + '%'; }).join(', ') + '. Each claim is due ' + (days > 0 ? 'within ' + days + ' ' + plural(days, 'day', 'days') : 'on receipt') + '.');
     if (hasExt) { var wx = Array.isArray(wd.terms_ext) ? wd.terms_ext.filter(Boolean) : []; terms = terms.concat(wx.length ? wx : ['Exterior dates may move with the weather. We do not paint in rain, on wet surfaces or in extreme heat; days lost this way extend the finish date.']); }
-    var wy = parseInt(wd.warranty_years, 10); if (isNaN(wy)) wy = 5;
+    var wy = parseInt(wd.warranty_years, 10); if (isNaN(wy)) wy = 5; if (!painting) wy = 0;   // the peeling-and-flaking guarantee is a painter's
     if (wy > 0) terms.push('Workmanship guarantee: ' + wy + ' ' + plural(wy, 'year', 'years') + ' against peeling and flaking caused by our application (excludes decks, exterior horizontal surfaces, substrate movement, moisture ingress and pre-existing coating failure).' + (/statutory/i.test(std.join(' ')) ? '' : ' Statutory warranties apply and are not limited by this quote.'));
-    else terms.push('Statutory warranties apply and are not limited by this quote.');
+    else if (!/statutory/i.test(std.join(' '))) terms.push('Statutory warranties apply and are not limited by this quote.');
     doc.h('Terms'); doc.bullets(terms);
 
     // to accept: one story. At or above the state's written-contract figure the quote is signed and sent back (by both sides); below it a reply by text or email is enough.

@@ -3,7 +3,7 @@
 'use strict';
 const { Readable } = require('node:stream');
 for (const k of ['ALLOWED_ORIGINS', 'MSG_PER_IP_LIMIT', 'ALLOW_CLIENT_CREDS', 'RELAY_TOKEN', 'RELAY_TOKENS', 'TWILIO_API_KEY', 'TWILIO_FROM', 'TWILIO_API_SECRET']) delete process.env[k];
-Object.assign(process.env, { TWILIO_ACCOUNT_SID: 'ACserver', TWILIO_AUTH_TOKEN: 'servertok', TWILIO_MESSAGING_SERVICE_SID: 'MGserver', RESEND_API_KEY: 're_server', RESEND_FROM: 'Chasem <hello@quoteandchase.com.au>' });
+Object.assign(process.env, { TWILIO_ACCOUNT_SID: 'ACserver', TWILIO_AUTH_TOKEN: 'servertok', TWILIO_MESSAGING_SERVICE_SID: 'MGserver', RESEND_API_KEY: 're_server', RESEND_FROM: 'Chasem <hello@chasem.app>' });
 delete globalThis.__relayFetch;
 const handler = require(require('path').join(__dirname, '../../../..', 'chasem-landing') + '/api/msg.js').default;
 
@@ -27,7 +27,7 @@ const last = () => calls[calls.length - 1];
 const day = (d) => new Date(Date.now() + d * 86400000).toISOString().slice(0, 10);
 const soon = () => new Date(Date.now() + 3 * 86400000).toISOString();
 const ENDED = 'Hosted sending has ended for this account';
-const FROM_ADDR = 'hello@quoteandchase.com.au';
+const FROM_ADDR = 'hello@chasem.app';
 
 (async () => {
   let r;
@@ -41,7 +41,7 @@ const FROM_ADDR = 'hello@quoteandchase.com.au';
   ok(!('hosted' in r.json) && !('until' in r.json) && !('name' in r.json), 'legacy ping carries no hosted/until/name keys');
   r = await run({ action: 'send', channel: 'email', token: 'legacy-secret', to: 'c@x.com', subject: 'Quote Q1', body: 'hi', reply_to: 'painter@own.com' });
   ok(r.status === 200 && r.json.ok && r.json.id, 'legacy email send -> ok');
-  ok(last().json.from === 'Chasem <hello@quoteandchase.com.au>', 'legacy From is RESEND_FROM verbatim (' + last().json.from + ')');
+  ok(last().json.from === 'Chasem <hello@chasem.app>', 'legacy From is RESEND_FROM verbatim (' + last().json.from + ')');
   ok(last().json.reply_to === 'painter@own.com', 'legacy Reply-To is the request reply_to');
   r = await run({ action: 'send', channel: 'email', token: 'legacy-secret', to: 'c@x.com', subject: 's', body: 'b' });
   ok(!('reply_to' in last().json), 'legacy email without reply_to sets no Reply-To');
@@ -56,7 +56,7 @@ const FROM_ADDR = 'hello@quoteandchase.com.au';
   r = await run({ action: 'ping' }); ok(r.status === 200 && r.json.token_required === false, 'no RELAY_TOKEN and no RELAY_TOKENS -> open relay as before (token_required false)');
   process.env.ALLOW_CLIENT_CREDS = '1'; delete process.env.RESEND_API_KEY;
   r = await run({ action: 'send', channel: 'email', to: 'c@x.com', subject: 's', body: 'b', creds: { resend_key: 're_phone', resend_from: 'Dave <dave@own.com>' } });
-  ok(r.status === 200 && last().opts.headers.Authorization === 'Bearer re_phone' && last().json.from === 'Chasem <hello@quoteandchase.com.au>', 'legacy ALLOW_CLIENT_CREDS: phone key fills the gap, env From still wins (as today)');
+  ok(r.status === 200 && last().opts.headers.Authorization === 'Bearer re_phone' && last().json.from === 'Chasem <hello@chasem.app>', 'legacy ALLOW_CLIENT_CREDS: phone key fills the gap, env From still wins (as today)');
   process.env.RESEND_API_KEY = 're_server'; delete process.env.ALLOW_CLIENT_CREDS;
 
   // ---------- 2. mapped token: From / Reply-To
@@ -88,16 +88,16 @@ const FROM_ADDR = 'hello@quoteandchase.com.au';
   ok(r.status === 200 && last().json.from === `"Open Ended" <${FROM_ADDR}>` && !('reply_to' in last().json), 'entry without until/reply_to: sends, no Reply-To, no expiry');
   r = await run({ action: 'send', channel: 'email', token: 'qc_evil', to: 'c@x.com', subject: 's', body: 'b' });
   ok(!/[\r\n"\\]/.test(last().json.from.replace(/^"|" </g, '')) && last().json.from.indexOf('Bcc: x@y.com') > 0 && last().json.from.indexOf('\n') < 0, 'display name is flattened: no CR/LF, quotes or backslashes (' + JSON.stringify(last().json.from) + ')');
-  process.env.RESEND_FROM = 'bare@quoteandchase.com.au';
+  process.env.RESEND_FROM = 'bare@chasem.app';
   r = await run({ action: 'send', channel: 'email', token: 'qc_dave', to: 'c@x.com', subject: 's', body: 'b' });
-  ok(last().json.from === `"Dave's Painting" <bare@quoteandchase.com.au>`, 'bare RESEND_FROM address gets the display name too');
-  process.env.RESEND_FROM = 'Chasem <hello@quoteandchase.com.au>';
+  ok(last().json.from === `"Dave's Painting" <bare@chasem.app>`, 'bare RESEND_FROM address gets the display name too');
+  process.env.RESEND_FROM = 'Chasem <hello@chasem.app>';
   // SMS: nothing appended, server Twilio used, phone creds ignored even when ALLOW_CLIENT_CREDS=1
   process.env.ALLOW_CLIENT_CREDS = '1';
   r = await run({ action: 'send', channel: 'sms', token: 'qc_dave', to: '0400 000 001', body: 'Quote sent. Dave', creds: { twilio_sid: 'ACphone', twilio_token: 'phonetok', twilio_service: 'MGphone', resend_key: 're_phone' } });
   ok(r.status === 200 && last().form.Body === 'Quote sent. Dave' && last().form.MessagingServiceSid === 'MGserver' && /ACserver/.test(last().url), 'mapped SMS: body untouched, server Twilio account and service used');
   r = await run({ action: 'send', channel: 'email', token: 'qc_dave', to: 'c@x.com', subject: 's', body: 'b', creds: { resend_key: 're_phone', resend_from: 'Dave <dave@own.com>' } });
-  ok(last().opts.headers.Authorization === 'Bearer re_server' && /hello@quoteandchase/.test(last().json.from), 'mapped token ignores creds in the body even with ALLOW_CLIENT_CREDS=1');
+  ok(last().opts.headers.Authorization === 'Bearer re_server' && /hello@chasem\.app/.test(last().json.from), 'mapped token ignores creds in the body even with ALLOW_CLIENT_CREDS=1');
   delete process.env.ALLOW_CLIENT_CREDS;
   // idempotency, schedule, cancel as today, kept apart per token
   r = await run({ action: 'schedule', channel: 'sms', token: 'qc_dave', to: '0400000001', body: 'chase 1', send_at: soon(), key: 'job1|chase|v1' });

@@ -1,6 +1,6 @@
 # Chasem go-live list (the hosted app)
 
-What stands between chasem.app and a painter paying for it. This replaces
+What stands between chasem.app and a tradie paying for it. This replaces
 `chasem-pack/launch/LAUNCH-CHECKLIST.md` for the app; that file is only
 about the older downloadable laptop pack.
 
@@ -24,7 +24,10 @@ curl -s https://chasem.app/api/paid                               # card payment
    GST. Set Australian GST up in Stripe Tax (or tell a session to run the
    `tax` action on `/api/admin`, which needs someone with live Stripe
    access to allow it).
-4. **Supabase off the free tier** before real painters keep real jobs on it.
+4. **Supabase off the free tier** before real tradies keep real jobs on it.
+   Job photos sync through Supabase Storage (`SUPABASE_URL`,
+   `SUPABASE_SERVICE_ROLE_KEY`, `SUPABASE_BUCKET`); without those set, a photo
+   stays on the phone it was taken on and everything else still works.
 5. **Two checks only a real phone can do:**
    - Send a real quote to yourself and confirm the follow-up arrives on the
      scheduled day.
@@ -53,7 +56,10 @@ curl -s https://chasem.app/api/paid                               # card payment
      Gmail API, OAuth consent screen (external), add the scope
      `gmail.readonly`, Credentials, OAuth client ID, Web application,
      redirect URI above. Put them in `GOOGLE_CLIENT_ID` and
-     `GOOGLE_CLIENT_SECRET`. Until Google verifies the app (reading mail is
+     `GOOGLE_CLIENT_SECRET`. The same Google client runs the optional
+     calendar connection, so keep (or add) its second redirect address,
+     `https://chasem.app/api/gcal?action=callback`, and the calendar
+     free/busy scope alongside `gmail.readonly`. Until Google verifies the app (reading mail is
      a "restricted" scope, which means a security assessment), only up to
      100 test users you list on the consent screen can use it, and they see
      an "unverified app" warning.
@@ -77,6 +83,6 @@ curl -s https://chasem.app/api/paid                               # card payment
   (`ensureSchema` in `api/_db.js`). Every `db/*.sql` file must be safe to
   run twice.
 - The Stripe Connect webhook is created by the relay the first time a
-  painter turns card payments on.
+  tradie turns card payments on.
 - The app's service worker fetches fresh code first, so a deploy reaches
   phones on their next load.

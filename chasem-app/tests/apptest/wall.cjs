@@ -22,14 +22,14 @@ const SIGNED = () => { try { const k = 'qc-app-v1', s = JSON.parse(localStorage.
 
   await p.goto(base, { waitUntil: 'load' }); await p.waitForTimeout(700);
   let t = await text();
-  ok(/1 of 5/.test(t) && /Your business name/.test(t), 'a new account lands on one question, not the jobs list');
+  ok(/1 of 6/.test(t) && /Your business name/.test(t), 'a new account lands on one question, not the jobs list');
   ok(!/New job|Quick quote/.test(t), 'and nothing else is on the screen');
   ok(await p.$eval('header.top nav', e => e.hidden), 'the tabs are not offered while he is walled');
 
   // no way round it
   for (const h of ['#/', '#/chase', '#/settings', '#/job/anything', '#/test']) {
     await p.evaluate(x => { location.hash = x; }, h); await p.waitForTimeout(350);
-    ok(/of 5/.test(await text()), 'typing ' + h + ' still lands on set-up');
+    ok(/of 6/.test(await text()), 'typing ' + h + ' still lands on set-up');
   }
   await p.evaluate(() => { location.hash = '#/help'; }); await p.waitForTimeout(350);
   ok(/How it works/.test(await text()), 'help still opens, so he is never stuck with nowhere to go');
@@ -39,22 +39,25 @@ const SIGNED = () => { try { const k = 'qc-app-v1', s = JSON.parse(localStorage.
   await p.click('#w_next'); await p.waitForTimeout(250);
   ok(/Type your business name/.test(await text()), 'an empty answer is refused rather than skipped');
   await p.fill('#w_in', "Dave's Painting"); await p.click('#w_next');
-  await p.waitForFunction(() => /2 of 5/.test(document.querySelector('#app').innerText), null, { timeout: 4000 }).catch(() => {});
-  ok(/2 of 5/.test(await text()) && /ABN/.test(await text()), 'answering moves him on');
+  await p.waitForFunction(() => /2 of 6/.test(document.querySelector('#app').innerText), null, { timeout: 4000 }).catch(() => {});
+  ok(/Your mobile/.test(await text()), 'then his mobile, so every text says how to reach him');
+  await p.fill('#w_in', '0412 345 678'); await p.click('#w_next');
+  await p.waitForFunction(() => /4 of 6/.test(document.querySelector('#app').innerText), null, { timeout: 4000 }).catch(() => {});
+  ok(/3 of 6/.test(await text()) && /ABN/.test(await text()), 'answering moves him on');
   await p.fill('#w_in', '123'); await p.click('#w_next');
   await p.waitForFunction(() => /11 numbers/.test(document.querySelector('#app').innerText), null, { timeout: 4000 }).catch(() => {});
   ok(/11 numbers/.test(await text()), 'an ABN that is not an ABN is refused');
   await p.fill('#w_in', '12 345 678 901'); await p.click('#w_next');
-  await p.waitForFunction(() => /3 of 5/.test(document.querySelector('#app').innerText), null, { timeout: 4000 }).catch(() => {});
-  ok(/3 of 5/.test(await text()) && /state/.test(await text()), 'then the state');
+  await p.waitForFunction(() => /3 of 6/.test(document.querySelector('#app').innerText), null, { timeout: 4000 }).catch(() => {});
+  ok(/4 of 6/.test(await text()) && /state/.test(await text()), 'then the state');
   await p.click('[data-state="SA"]');
-  await p.waitForFunction(() => /4 of 5/.test(document.querySelector('#app').innerText), null, { timeout: 4000 }).catch(() => {});
-  ok(/4 of 5/.test(await text()) && /Your trade/.test(await text()), 'then his trade: one tap, any trade');
+  await p.waitForFunction(() => /5 of 6/.test(document.querySelector('#app').innerText), null, { timeout: 4000 }).catch(() => {});
+  ok(/5 of 6/.test(await text()) && /Your trade/.test(await text()), 'then his trade: one tap, any trade');
   ok(await p.$('[data-trade="electrician"]') !== null && await p.$('[data-trade="cleaner"]') !== null && await p.$('[data-trade="other"]') !== null, 'every trade is there, and a way out for the rest');
   await p.click('[data-trade="electrician"]');
-  await p.waitForFunction(() => /5 of 5/.test(document.querySelector('#app').innerText), null, { timeout: 4000 }).catch(() => {});
+  await p.waitForFunction(() => /6 of 6/.test(document.querySelector('#app').innerText), null, { timeout: 4000 }).catch(() => {});
   ok((await p.evaluate(() => window.__qcApp.store.load().details.trade)) === 'electrician', 'the tap is the answer: no Next to press');
-  ok(/5 of 5/.test(await text()) && /paid/.test(await text()), 'then how he gets paid');
+  ok(/6 of 6/.test(await text()) && /paid/.test(await text()), 'then how he gets paid');
 
   // card is the offer; with Connect not switched on it falls back rather than dead-ending
   await p.click('#w_card'); await p.waitForTimeout(700);
@@ -66,7 +69,7 @@ const SIGNED = () => { try { const k = 'qc-app-v1', s = JSON.parse(localStorage.
   await p.click('#w_bank'); await p.waitForTimeout(1000);
   t = await text();
   if (!/Chase/.test(t)) console.log('    DBG', JSON.stringify(await p.evaluate(() => { const S = window.__qcApp.store.load(); return { hash: location.hash, payment: S.payment, screen: document.querySelector('#app').innerText.replace(/\s+/g, ' ').slice(0, 70) }; })));
-  ok(/Chase/.test(t) && !/of 5/.test(t), 'the last answer opens the app, with Chase first');
+  ok(/Chase/.test(t) && !/of 6/.test(t), 'the last answer opens the app, with Chase first');
   ok(!(await p.$('#newjob:not([hidden])')) || !(await p.isVisible('#newjob')), 'an electrician is not offered the painter\'s room-by-room quote builder');
   ok(!(await p.$eval('header.top nav', e => e.hidden)), 'and the tabs come back');
 
@@ -77,7 +80,7 @@ const SIGNED = () => { try { const k = 'qc-app-v1', s = JSON.parse(localStorage.
   // taking a required thing away puts him back, so nothing can go out half-set
   await p.evaluate(() => { const S = window.__qcApp.store.load(); S.details.state = ''; window.__qcApp.store.save(); location.hash = '#/chase'; });
   await p.waitForTimeout(500);
-  ok(/of 5/.test(await text()), 'clearing something required puts him straight back at set-up');
+  ok(/of 6/.test(await text()), 'clearing something required puts him straight back at set-up');
 
   await b.close(); srv.close(); console.log(fails ? 'FAILURES ' + fails : 'ALL PASSED'); process.exit(fails ? 1 : 0);
 })().catch(e => { console.error(e); process.exit(1); });

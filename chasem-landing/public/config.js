@@ -7,7 +7,7 @@ window.QC = {
                                     // https://chasem.app/app/ -- the canonical address. A painter's jobs live in his phone's storage
                                     // for the address he opened, so pick one address and never move it.
 
-  // ---- one product, one price, messages included. The painter starts inside the app with his email; the card comes later, from inside.
+  // ---- one product, one price, messages included. The tradie starts inside the app with his email; the card comes later, from inside.
   PLAN_PRICE: 99,                   // AUD a month. Must match the Stripe Payment Link and the relay. Shown on the card, the FAQ and the terms.
   INCLUDED_MESSAGES: 150,           // messages a month in the plan. Must match INCLUDED_MESSAGES on the relay.
   FREE_MESSAGES: 12,                // what an email alone gets him: three whole jobs, quoted and chased to the end, because a
@@ -44,7 +44,7 @@ window.QC = {
   // ---- plumbing
   FORM_ACTION: "",                  // ONE Formspree (or similar) endpoint. Every email capture posts here with a "list" field:
                                     //   sample-quote | send-to-laptop | chasing-on | laptop-pack.  Empty = the forms are hidden
-  MAKER_NOTE: "",                   // two or three sentences in your voice: who you are, why you made it, why it is free. Empty hides the block (TODO owner: the page is anonymous without it)
+  MAKER_NOTE: "",                   // two or three sentences in your voice: who you are and why you made it. Empty hides the block (TODO owner: the page is anonymous without it)
   MAKER_NAME: "",                   // e.g. "Aaron, Melbourne"
   MAKER_PHOTO: "",                  // e.g. "maker.jpg" placed in public/; optional
   META_PIXEL_ID: "",                // e.g. "1234567890"; leave empty to disable

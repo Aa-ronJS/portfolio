@@ -3,7 +3,7 @@
   "private": true,
   "version": "0.1.0",
   "type": "module",
-  "description": "Landing page and phone demo for the Chasem pack for painters",
+  "description": "Chasem site and serverless relay: sign-in, sync, sending, payments, Find and quote reading",
   "scripts": {
     "dev": "vercel dev",
     "deploy": "vercel --prod",

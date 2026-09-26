@@ -47,7 +47,7 @@ const withCfg = (patch) => baseCfg + '\nObject.assign(window.QC, ' + JSON.string
   ok(/Your quotes, from anywhere/.test(t) && /The chasing, without you/.test(t) && /Yes to booked/.test(t) && /Off in two taps/.test(t), 'the card promises the bringing in, the chasing, the booking, and cancelling in two taps');
   const at = await allText(); ok(/What counts as a message/.test(at) && /The first ten minutes, on the phone in your hand/.test(at) && /What you still do: mark it paid, and back it up/.test(at) && /Before you say no/.test(at) && /I already use Tradify/.test(at), 'detail folds: sign-up, what runs, what is still his, and the objections');
   ok(!(await p.$eval('#plan details.group', d => d.open)), 'detail folds closed on a phone');
-  ok(/What happens when you sign up/.test(t) && /No call to book, no reply to wait for, no account to verify/.test(t) && /chasing money by 9:05/.test(t), 'the after-signup section promises nobody in the loop');
+  ok(/What happens when you sign up/.test(t) && /No call to book, no reply to wait for, no password to make/.test(t) && /chasing money by 9:05/.test(t), 'the after-signup section promises nobody in the loop');
   ok(!/\bring you\b|book a call|book your\b|pick your hour|fifteen minutes on the phone|on the call/i.test(await allText()), 'nothing anywhere asks the tradie to get on a call');
   ok(/cancel from inside the app/i.test(await allText()), 'cancelling is described as something he does himself');
   ok(/One app, one price, and the texting and emailing already built in/.test(await allText()) && /like credit on a phone/.test(await allText()), 'the lede explains the model in one line');
