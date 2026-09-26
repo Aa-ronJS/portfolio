@@ -54,7 +54,7 @@
       .then(function (j) {
         // every reply carries what is left of this month's messages; the app keeps it so a screen can say so without asking again
         if (j && (j.left != null || j.included != null)) balance({ left: j.left, used: j.used, included: j.included, plan: j.plan, period: j.period, at: Date.now() });
-        if (!j.ok) { var err = new Error(j.error || 'Sending failed'); if (j.out_of_messages) err.outOfMessages = true; throw err; }
+        if (!j.ok) { var err = new Error(j.error || 'Sending failed'); if (j.out_of_messages) err.outOfMessages = true; if (j.day_full) err.dayFull = true; throw err; }
         if (logged) addLog(Object.assign({}, base, { id: j.id || payload.id || '', ok: true })); return j; })
       .catch(function (e) { if (logged) addLog(Object.assign({}, base, { kind: 'fail', ok: false, error: e.message })); throw e; });
   }
@@ -77,7 +77,7 @@
       var sendAt = it.send_at || atHour(it.day, hour);
       return call({ action: 'schedule', channel: it.channel, to: it.to, body: it.body, subject: it.subject, send_at: sendAt, ref: it.ref, key: it.key, reply_to: it.channel === 'email' ? (it.reply_to || undefined) : undefined, meta: { job: it.job, ref: it.ref } })
         .then(function (r) { return { ok: true, id: r.id, channel: it.channel, day: it.day, send_at: sendAt, to: it.to, what: it.ref, key: it.key, text: String(it.body || '').slice(0, 300), reused: !!r.reused }; })
-        .catch(function (e) { return { ok: false, error: e.message, channel: it.channel, day: it.day, send_at: sendAt, to: it.to, what: it.ref, key: it.key, text: String(it.body || '').slice(0, 300) }; });
+        .catch(function (e) { return { ok: false, out: !!e.outOfMessages, full: !!e.dayFull, error: e.message, channel: it.channel, day: it.day, send_at: sendAt, to: it.to, what: it.ref, key: it.key, text: String(it.body || '').slice(0, 300) }; });
     }));
   }
   function cancelAll(list, jobId) { return Promise.all((list || []).filter(function (x) { return x && x.id && !x.cancelled && !x.sent; }).map(function (x) { return call({ action: 'cancel', channel: x.channel, id: x.id, meta: { job: jobId || x.job || '', ref: x.what || '' } }).then(function () { x.cancelled = true; x.cancel_error = ''; return true; }).catch(function (e) { x.cancel_error = e.message; return false; }); })); }

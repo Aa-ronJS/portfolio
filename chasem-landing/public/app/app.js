@@ -269,20 +269,25 @@
 
   function retryLocalQueue() {
     var st = QCStore.load(), q = st.local_queue || []; if (!q.length) return Promise.resolve();
-    var wanted = []; q.forEach(function (it) {
+    var wanted = [], late = []; q.forEach(function (it) {
       var job = QCStore.getJob(it.job), inv = job && it.inv ? (job.invoices || []).filter(function (i) { return i.no === it.inv; })[0] : null;
       var alive = job && !(job.hold && job.hold.on) && (it.inv ? (inv && invOpen(inv)) : (job.status === 'quoted' && job.auto_follow_ups !== false));
-      if (!alive || new Date(it.send_at).getTime() < Date.now()) return; // dropped: no longer wanted, or its day has passed
+      if (!alive) return; // dropped: no longer wanted
+      if (new Date(it.send_at).getTime() < Date.now() + 10 * 60000) { if (!/\+late$/.test(String(it.ref || ''))) return; late.push(it); } // a nudge whose day has passed is dropped (the next one in the chase stands for it); the catch-up is the only message for money or a quote already overdue, so it goes at the next send time instead
       wanted.push(it);
     });
+    if (late.length) { var hr = fuHour(), stc = stateCode(), t = QCCal.nextSendTime(QCStore.today(), hr, stc); if (t.date.getTime() < Date.now() + 10 * 60000) t = QCCal.nextSendTime(QCStore.addDays(QCStore.today(), 1), hr, stc); late.forEach(function (it) { it.day = t.day; it.send_at = t.iso; }); spread(late, hr, stc); }
     var pick = nextInChase(wanted, true), keep = pick.later, now = pick.now;
     st.local_queue = keep.concat(now); if (!now.length) { if (keep.length !== q.length) save(); return Promise.resolve(); }
     return QCMsg.scheduleAll(now, fuHour()).then(function (res) {
-      var okd = res.filter(function (r) { return r.ok; }); okd.forEach(function (r) { var job = QCStore.getJob(r.job || (now.filter(function (i) { return i.key === r.key; })[0] || {}).job); if (!job) return; var it = now.filter(function (i) { return i.key === r.key; })[0]; if (it && it.inv) { var inv = job.invoices.filter(function (i) { return i.no === it.inv; })[0]; if (inv) inv.follow_ups = (inv.follow_ups || []).concat([r]); } else job.follow_ups = (job.follow_ups || []).concat([r]); });
+      var okd = res.filter(function (r) { return r.ok; }); okd.forEach(function (r) { var job = QCStore.getJob(r.job || (now.filter(function (i) { return i.key === r.key; })[0] || {}).job); if (!job) return; var it = now.filter(function (i) { return i.key === r.key; })[0]; if (it && it.inv) { var inv = job.invoices.filter(function (i) { return i.no === it.inv; })[0]; if (inv) { inv.follow_ups = (inv.follow_ups || []).concat([r]); inv.follow_up_error = ''; } } else { job.follow_ups = (job.follow_ups || []).concat([r]); job.follow_up_error = ''; } });
+      var full = {}; res.forEach(function (r) { if (!r.ok && r.full) full[r.key] = 1; }); nextDayFor(now.filter(function (i) { return full[i.key]; }));
       var okKeys = {}; okd.forEach(function (r) { okKeys[r.key] = 1; }); st.local_queue = st.local_queue.filter(function (i) { return !okKeys[i.key]; }); save(); if (okd.length) toast(okd.length + ' waiting follow-up' + (okd.length > 1 ? 's' : '') + ' now scheduled');
     });
   }
 
+  // one more go a few minutes on, while the app is still open, for bookings the relay turned away (no signal, too many at once)
+  function scheduleRetry() { if (scheduleRetry.t) return; scheduleRetry.t = setTimeout(function () { scheduleRetry.t = 0; retryLocalQueue().catch(function () {}); }, 11 * 60000); }
   // two-way binding: <input data-bind="path.to.key"> against a root object
   function bindAll(root, obj) {
     root.querySelectorAll('[data-bind]').forEach(function (el) {
@@ -326,7 +331,7 @@
       // A customer may have accepted, or picked a start day, while the phone was in his pocket. Pull it in and
       // show it without him asking. Best effort: no signal simply means next time.
       setTimeout(function () { syncNow(); }, 2200);
-      window.addEventListener('online', function () { retryPendingCancels().catch(function () {}); syncNow(); });
+      window.addEventListener('online', function () { retryPendingCancels().then(function () { return retryLocalQueue(); }).catch(function () {}); syncNow(); });
       document.addEventListener('visibilitychange', function () { if (!document.hidden && Date.now() - QCSync.lastAt() > 120000) syncNow(); }); }
     if (!p[0]) { var fq = /(?:^|&)f=(\w+)/.exec(qs || ''); if (fq) homeFilter = fq[1]; return viewHome(); }
     if (p[0] === 'settings') { if (p[1] === 'log') return viewSentLog(); if (qs) calendarReturn(qs); viewSettings(); if (p[1]) openSection({ backup: 'Back-up', prices: 'Prices', bank: 'Bank details' }[p[1]] || ''); return; }
@@ -1481,6 +1486,38 @@
   // with the sender -- a booked message is a spent message, so the one after it waits in state.local_queue and is booked
   // the next time the app opens, once the one before it has gone.
   function outOfMessagesToast() { var paid = QCMsg.balance().plan === 'paid'; toast('Out of messages. The app still writes them; you tap Send.', { action: paid ? 'Top up $' + TOPUP_PRICE : 'Set-up', onAction: function () { if (!paid) return go('/settings'); toast('Charging your card…'); topUp({ buy: true }).then(function (j) { toast(j.messages + ' messages added, $' + j.charged + ' charged. Try that again.'); }).catch(function (e) { toast(e.needsCard ? 'Your card needs a look. Set-up, then Manage.' : e.message); }); } }); }
+  // Pacing. Every tradie texts through one shared number, and a burst of catch-up texts to people who have not
+  // heard from him in weeks is what gets a number reported as spam and filtered for everybody. So the app never
+  // books more than CHASE_PER_DAY automatic messages on one business day, spaces them CHASE_GAP_MIN minutes apart,
+  // and rolls the rest to the next business day -- pushing the later nudges in the same chase back by as much, so a
+  // chase keeps its gaps. A quote older than STALE_QUOTE_DAYS is not chased by itself at all: that far out it reads
+  // as a cold text. It stays on Follow-ups with Text and Email for him to send one himself.
+  var CHASE_PER_DAY = 20, CHASE_GAP_MIN = 5, STALE_QUOTE_DAYS = 90;
+  function staleQuote(dateIso) { return /^\d{4}-\d{2}-\d{2}$/.test(String(dateIso || '')) && QCStore.daysBetween(dateIso, QCStore.today()) > STALE_QUOTE_DAYS; }
+  // automatic messages already booked with the sender or waiting on the phone, counted by the day they go
+  function dayLoad() {
+    var load = {}, now = Date.now(), put = function (x) { if (!x || x.cancelled || x.sent) return; var at = new Date(x.send_at || (x.day + 'T12:00:00')).getTime(); if (!(at > now)) return; var d = String(x.day || '').slice(0, 10) || QCStore.today(); load[d] = (load[d] || 0) + 1; };
+    (S.jobs || []).forEach(function (j) { (j.follow_ups || []).forEach(function (x) { if (x.id) put(x); }); (j.invoices || []).forEach(function (i) { (i.follow_ups || []).forEach(function (x) { if (x.id) put(x); }); }); });
+    (S.local_queue || []).forEach(put);
+    return load;
+  }
+  // give each would-be reminder its day and minute under the daily cap; changes items in place
+  function spread(items, hr, st) {
+    var load = dayLoad(), moved = {}, last = {};
+    items.slice().sort(bySendAt).forEach(function (it) {
+      var k = chaseKey(it), day = it.day, push = moved[k] || 0;
+      if (push) day = QCCal.nextSendTime(QCStore.addDays(day, push), hr, st).day;
+      // two messages in one chase are never less than two days apart (a catch-up and the day-7 nudge can fall together)
+      if (last[k] && day < QCStore.addDays(last[k], 2)) day = QCCal.nextSendTime(QCStore.addDays(last[k], 2), hr, st).day;
+      while ((load[day] || 0) >= CHASE_PER_DAY) day = QCCal.nextSendTime(QCStore.addDays(day, 1), hr, st).day;
+      var slot = load[day] || 0; load[day] = slot + 1;
+      var total = QCStore.daysBetween(it.day, day); if (total > push) moved[k] = total;
+      var w = QCCal.nextSendTime(day, hr, st); it.day = w.day; last[k] = w.day; it.send_at = new Date(w.date.getTime() + slot * CHASE_GAP_MIN * 60000).toISOString();
+    });
+    return items;
+  }
+  // the relay said that day is already full for this account: the message moves to the next business day, never away
+  function nextDayFor(list) { var hr = fuHour(), st = stateCode(); list.forEach(function (it) { it.day = QCCal.nextSendTime(QCStore.addDays(it.day || QCStore.today(), 1), hr, st).day; }); return spread(list, hr, st); }
   function scheduleFollowUps(job, kind, opts) {
     opts = opts || {}; var say = opts.quiet ? function () {} : toast;
     if (QCMsg.outOfMessages()) return (function () { if (!opts.quiet) outOfMessagesToast(); return Promise.resolve({ scheduled: [], failed: [], waiting: [], skipped: [], reason: 'out of messages' }); })();
@@ -1489,6 +1526,7 @@
     if (job.hold && job.hold.on) return stop('Reminders are on hold for this job.', 'hold');
     if (kind === 'quote' && job.status !== 'quoted') return stop('Quote follow-ups only go while the quote is waiting on the client.', 'status');
     if (kind === 'quote' && job.auto_follow_ups === false) return stop('Automatic follow-ups are off for this job.', 'off');
+    if (kind === 'quote' && staleQuote(job.sent_date || (job.quote && job.quote.date))) return stop('Over three months since that quote, so it is not chased by itself. Send one yourself from Follow-ups.', 'stale');
     var landline = !!job.client.phone && QCMsg.isLandline(job.client.phone);
     var canSms = sd.auto_sms && QCMsg.ready('sms') && job.client.phone && !landline, canEmail = sd.auto_email && QCMsg.ready('email') && job.client.email;
     if (!canSms && !canEmail) return stop(landline && !job.client.email ? 'That number is a landline, so no SMS. Add an email to schedule reminders.' : (!job.client.phone && !job.client.email ? 'No mobile or email on the job, so nothing can be scheduled.' : 'No sending channel is ready for this client.'), 'no channel ready');
@@ -1501,19 +1539,24 @@
     // a date already passed and nothing sent yet: the first reminder goes at the next send time (friendly), the later dates stay; when every date has passed, that one reminder is all
     if (kind === 'quote') { var base = job.sent_date || today, qChased = (job.follow_ups || []).some(function (x) { return x.sent; }) || !!(job.last_chased && job.last_chased >= base), qr = (fu.quote_days || [3, 7, 14]).map(function (d) { return add(QCStore.addDays(base, d), chaseText('quote', job, job.quote, d, { auto: true }), 'quote+' + d); }); if (anyPast(qr) && !qChased && add(soon(), chaseText('quote', job, job.quote, QCStore.daysBetween(base, today), { auto: true, tier: allPast(qr) ? 2 : 1 }), 'quote+late') === 'ok') late.push('quote+late'); }
     else { (job.invoices || []).filter(function (i) { return invOpen(i) && invOut(i); }).forEach(function (inv) { var floor = inv.kind === 'deposit' ? addBusinessDays(inv.due, 3, st) : inv.due; var ir = (fu.invoice_days || [3, 10, 21]).map(function (d) { var day = QCStore.addDays(inv.due, d); if (day < floor) day = floor; return add(day, chaseText('invoice', job, inv, d, { auto: true }), inv.no + '+' + d, inv.no); }); if (anyPast(ir) && !invChased(job, inv) && add(soon(), chaseText('invoice', job, inv, Math.max(0, QCStore.daysBetween(inv.due, today)), { auto: true }), inv.no + '+late', inv.no) === 'ok') late.push(inv.no + '+late'); }); }
+    spread(items, hr, st);
     var pick = nextInChase(items, false), later = pick.later, now = pick.now;
     if (later.length) S.local_queue = (S.local_queue || []).concat(later.map(function (it) { return Object.assign({ kind: kind, queued: today }, it); }));
     if (landline && canEmail) toast('Landline number, so reminders go by email.');
-    var summary = function (okRes, bad) { var bits = []; if (bad.length) bits.push(bad.length + ' follow-up' + (bad.length > 1 ? 's' : '') + ' could not be scheduled: ' + bad[0].error); if (okRes.length) bits.push(okRes.length + ' follow-up' + (okRes.length > 1 ? 's' : '') + ' scheduled by ' + (okRes[0].channel === 'sms' ? 'SMS' : 'email')); if (later.length) bits.push(later.length + ' after that, booked as each one falls due'); if (skipped.length) bits.push(late.length ? skipped.length + ' past date' + (skipped.length > 1 ? 's' : '') + ' folded into one reminder at the next send time' : skipped.length + ' skipped, the date has passed'); return bits.join('. ') + '.'; };
+    var summary = function (okRes, bad, waiting) { var bits = []; if (bad.length) bits.push(bad.length + ' follow-up' + (bad.length > 1 ? 's' : '') + ' could not be scheduled: ' + bad[0].error); if (waiting) bits.push(waiting + ' not booked yet, it tries again by itself'); if (okRes.length) bits.push(okRes.length + ' follow-up' + (okRes.length > 1 ? 's' : '') + ' scheduled by ' + (okRes[0].channel === 'sms' ? 'SMS' : 'email')); if (later.length) bits.push(later.length + ' after that, booked as each one falls due'); if (skipped.length) bits.push(late.length ? skipped.length + ' past date' + (skipped.length > 1 ? 's' : '') + ' folded into one reminder at the next send time' : skipped.length + ' skipped, the date has passed'); return bits.join('. ') + '.'; };
     if (!now.length) { if (!later.length && !skipped.length) return stop('Follow-ups already scheduled', 'have'); save(); say(summary([], [])); return Promise.resolve({ scheduled: [], failed: [], waiting: later, skipped: skipped }); }
     return QCMsg.scheduleAll(now, hr).then(function (res) {
-      var okRes = res.filter(function (r) { return r.ok; }), bad = res.filter(function (r) { return !r.ok; });
+      var okRes = res.filter(function (r) { return r.ok; }), bad = res.filter(function (r) { return !r.ok; }), gone = bad.filter(function (r) { return r.out; });
+      // no signal, a busy relay: nothing is lost, it waits on the phone with its day and is booked on the next try
+      var retry = bad.filter(function (r) { return !r.out; }).map(function (r) { return now.filter(function (i) { return i.key === r.key; })[0]; }).filter(Boolean);
+      nextDayFor(retry.filter(function (it) { return bad.some(function (r) { return r.key === it.key && r.full; }); }));
+      if (retry.length) { S.local_queue = (S.local_queue || []).concat(retry.map(function (it) { return Object.assign({ kind: kind, queued: today }, it); })); scheduleRetry(); }
       okRes.forEach(function (r) { r.job = job.id; });
       if (kind === 'quote') job.follow_ups = (job.follow_ups || []).concat(okRes); else job.invoices.forEach(function (inv) { var mine = okRes.filter(function (r) { return r.what.indexOf(inv.no + '+') === 0; }); if (mine.length) inv.follow_ups = (inv.follow_ups || []).concat(mine); });
-      var errTxt = bad.length ? bad.length + ' follow-up' + (bad.length > 1 ? 's' : '') + ' could not be scheduled: ' + bad[0].error : '';
+      var errTxt = gone.length ? gone.length + ' follow-up' + (gone.length > 1 ? 's' : '') + ' could not be scheduled: ' + gone[0].error : bad.length ? bad.length + ' follow-up' + (bad.length > 1 ? 's' : '') + ' not booked yet (' + bad[0].error + '). It tries again by itself.' : '';
       if (kind === 'quote') job.follow_up_error = errTxt; else job.invoices.forEach(function (inv) { if (bad.some(function (b) { return b.what.indexOf(inv.no + '+') === 0; })) inv.follow_up_error = errTxt; else if (okRes.some(function (r) { return r.what.indexOf(inv.no + '+') === 0; })) inv.follow_up_error = ''; });
-      save(); say(summary(okRes, bad));
-      return { scheduled: okRes, failed: bad, waiting: later, skipped: skipped, late: late };
+      save(); say(summary(okRes, gone, retry.length));
+      return { scheduled: okRes, failed: bad, waiting: later.concat(retry), skipped: skipped, late: late };
     });
   }
   // Pulls in what happened while he was away and tells him, in his words, what changed.
@@ -1598,11 +1641,11 @@
   }
   // after a set-up link loads a painter's book, nothing is sent by itself: Home shows the book and "Start the chasing" queues the reminders for every open quote and unpaid invoice in it, quietly, one summary at the end
   function queueLoadedFollowUps(jobs) {
-    var out = { scheduled: 0, first: '', jobs: 0 }; if (!(jobs || []).length || !(QCMsg.ready('sms') || QCMsg.ready('email'))) return Promise.resolve(out);
+    var out = { scheduled: 0, first: '', last: '', jobs: 0 }; if (!(jobs || []).length || !(QCMsg.ready('sms') || QCMsg.ready('email'))) return Promise.resolve(out);
     var chain = Promise.resolve();
     jobs.forEach(function (job) {
       var kinds = []; if (job.status === 'quoted' && job.sent_date && job.sent_confirmed) kinds.push('quote'); if ((job.invoices || []).some(function (i) { return invOpen(i) && invOut(i); })) kinds.push('invoice');
-      kinds.forEach(function (k) { chain = chain.then(function () { return scheduleFollowUps(job, k, { quiet: true }); }).then(function (r) { var got = (r && r.scheduled) || []; if (got.length) out.jobs++; got.forEach(function (x) { out.scheduled++; if (!out.first || x.send_at < out.first) out.first = x.send_at; }); }).catch(function () {}); });
+      kinds.forEach(function (k) { chain = chain.then(function () { return scheduleFollowUps(job, k, { quiet: true }); }).then(function (r) { var got = (r && r.scheduled) || []; if (got.length) out.jobs++; got.forEach(function (x) { out.scheduled++; if (!out.first || x.send_at < out.first) out.first = x.send_at; if (x.send_at > out.last) out.last = x.send_at; }); }).catch(function () {}); });
     });
     return chain.then(function () { return out; });
   }
@@ -2356,19 +2399,21 @@
   // A list of quotes and invoices from somewhere else, each ticked, with what was left out and why in one line.
   // He unticks what he does not want and taps Chase.
   function pickList(out, items, sk, source, heading) {
+    var oldQuote = function (it) { return it.kind !== 'invoice' && !it.accepted && staleQuote(it.date); };
     var fresh = items.filter(function (it) { return !alreadyHave(it); }), had = items.length - fresh.length;
     var left = [sk.paid ? sk.paid + ' paid' : '', sk.closed ? sk.closed + ' declined or void' : '', sk.draft ? sk.draft + ' never sent' : '', had ? had + ' already here' : '', sk.incomplete ? sk.incomplete + ' with no name or amount' : ''].filter(Boolean).join(' · ');
     if (!fresh.length) { out.innerHTML = '<div class="card"><p class="confirm">' + (items.length ? 'Everything found is already here.' : 'No quotes or invoices found.') + '</p>' + (!items.length && source === 'sheet' ? '<p class="hint">From Tradify, ServiceM8, Xero and the like: export quotes as CSV.</p>' : '') + (left ? '<p class="hint">' + esc(left) + '</p>' : '') + '</div>'; return; }
     out.innerHTML = '<div class="card">' + (heading ? '<p class="hint">' + esc(heading) + '</p>' : '') + '<h3>' + fresh.length + ' to chase</h3>' + (left ? '<p class="hint">Left out: ' + esc(left) + '</p>' : '') +
-      '<div class="sheetlist">' + fresh.map(function (it, i) { return '<label class="sheetrow"><input type="checkbox" data-i="' + i + '" checked><span><b>' + esc(it.name) + '</b> <span class="hint">' + esc([it.number, it.kind === 'invoice' ? 'invoice' : it.accepted ? 'won' : '', it.date ? shortDate(it.date) : '', it.phone || it.email || 'no mobile or email'].filter(Boolean).join(' · ')) + '</span></span><span>' + money(it.amount) + '</span></label>'; }).join('') + '</div>' +
+      '<div class="sheetlist">' + fresh.map(function (it, i) { var old = oldQuote(it); return '<label class="sheetrow"><input type="checkbox" data-i="' + i + '"' + (old ? '' : ' checked') + '><span><b>' + esc(it.name) + '</b> <span class="hint">' + esc([it.number, it.kind === 'invoice' ? 'invoice' : it.accepted ? 'won' : '', it.date ? shortDate(it.date) : '', it.phone || it.email || 'no mobile or email', old ? 'over 3 months: you send it' : ''].filter(Boolean).join(' · ')) + '</span></span><span>' + money(it.amount) + '</span></label>'; }).join('') + '</div>' + '<p class="hint" id="sheetpace"' + (fresh.filter(function (it) { return !oldQuote(it); }).length > CHASE_PER_DAY ? '' : ' hidden') + '>' + CHASE_PER_DAY + ' a day at most</p>' +
       '<button class="btn tape lg" id="sheetgo">Chase ' + fresh.length + '</button></div>';
     var boxes = out.querySelectorAll('input[data-i]'), go2 = document.getElementById('sheetgo');
-    var count = function () { var k = Array.prototype.filter.call(boxes, function (b) { return b.checked; }).length; go2.textContent = 'Chase ' + k; go2.disabled = !k; };
+    var pace = document.getElementById('sheetpace'), count = function () { var k = Array.prototype.filter.call(boxes, function (b) { return b.checked; }).length; go2.textContent = 'Chase ' + k; go2.disabled = !k; if (pace) pace.hidden = k <= CHASE_PER_DAY; };
     Array.prototype.forEach.call(boxes, function (b) { b.addEventListener('change', count); });
+    count();
     go2.addEventListener('click', function () {
       go2.disabled = true;
       var pick = Array.prototype.filter.call(boxes, function (b) { return b.checked; }).map(function (b) { var it = fresh[+b.getAttribute('data-i')]; it.source = it.source || source; return it; });
-      chaseThese(pick).then(function (res) { toast(res.added + ' added to Follow-ups.'); go('/chase'); });
+      chaseThese(pick).then(function (res) { var q = res.queued || {}; toast(res.added + ' added to Follow-ups.' + (q.last && q.last.slice(0, 10) !== String(q.first || '').slice(0, 10) ? ' The last goes ' + whenText(q.last) + '.' : '')); go('/chase'); });
     });
   }
   // Finding quotes by logging in to his email or Xero goes through the relay he already sends through.
@@ -2638,7 +2683,8 @@
         viewAdd.draft = null; viewAdd.readMsg = ''; try { localStorage.removeItem('qc-add-draft'); } catch (e) {}
         if (!res.added) { toast('That one is already here.'); go('/chase'); return; }
         var who = d.name.split(/\s+/)[0], when = res.queued && res.queued.first ? ' First nudge ' + whenText(res.queued.first) + '.' : '';
-        toast('Chasing ' + who + '.' + when, { action: 'Another', onAction: function () { go('/add/' + tab); } });
+        var old = d.kind !== 'invoice' && staleQuote(d.date);
+        toast(old ? who + ' added. Over three months old, so you send it: tap Text.' : 'Chasing ' + who + '.' + when, { action: 'Another', onAction: function () { go('/add/' + tab); } });
         go('/chase');
       });
     });

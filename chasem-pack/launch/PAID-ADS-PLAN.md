@@ -270,17 +270,20 @@ One row a week, and the same table split by `utm_content` and by trade:
 
 ## 7. Risks worth naming
 
-- **Tradies chasing lists.** Import makes it easy to bring in a hundred old quotes and chase them all. That is
-  the use case, but old and cold quotes from a CSV are where spam complaints come from. Every tradie
-  texts through **one shared Twilio Messaging Service**; if one number gets filtered, it is filtered for
-  everybody. Split the sender pool, and consider a per-day cap on first chases for imported quotes older than,
-  say, 60 days, before phase 3.
+- **Tradies chasing lists.** Import makes it easy to bring in a hundred quotes and chase them all, and every
+  tradie texts through **one shared Twilio Messaging Service**: if one number gets filtered, it is filtered for
+  everybody. Paced as of qc-app-v61: the app books at most 20 automatic messages a business day per tradie,
+  five minutes apart, rolls the rest on, keeps two days between messages to one customer, and does not chase a
+  quote over three months old by itself (the import list shows those unticked; he can still text them by hand).
+  The relay refuses more than 60 a day per tradie (`SEND_PER_DAY`) whatever the app asks. Still to do before
+  phase 3: split the sender pool, and make a customer's STOP reply cancel that tradie's remaining chasers to
+  that number (the relay records it, the app does not yet act on it).
 - **The free allowance empties on day one for importers.** Good for conversion speed, but "three jobs free"
   must stay literally true on the page when the importer chases ten quotes: make sure the in-app count says
   jobs, and the soft wall (he can still send by hand) holds.
-- **Busy tradies outgrow 150 messages.** A quote still books all three follow-ups at once. A tradie chasing 40
-  quotes a month in peak season runs out; that is the summer churn risk. The council's fix (book the first
-  follow-up now, the others on their own dates) is worth doing before phase 3.
+- **Busy tradies outgrow 150 messages.** Less than the council feared: the app now books only the next
+  follow-up in a chase, so a quote answered after the first nudge costs one message, not three. A tradie chasing
+  40+ quotes a month in peak season can still run out; watch top-up rates in the funnel report.
 - **The ad account.** New accounts get spending limits and occasional unexplained restrictions. Hold $100 a day
   for the first week, keep a second admin on Business Manager, and do not change the payment method mid-run.
 - **One support person.** At 100+ sign-ups a week, `help@chasem.app` has to reach you the same business day,

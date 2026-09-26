@@ -179,6 +179,8 @@ Two ways to run it:
 Always set `RELAY_TOKEN` to a long random string (`openssl rand -hex 24`) and
 paste the same string into the app under Set-up, Sending, "Relay token":
 the Origin check is hygiene, not security, and without a token anyone who
-learns the URL can send on your account. `MSG_PER_IP_LIMIT` (default 60 per
+learns the URL can send on your account. `SEND_PER_DAY` (default 60) is the most
+automatic messages one tradie can have going out on one day, per channel; the app
+paces itself at 20 a day, so this only stops an app that does not. `MSG_PER_IP_LIMIT` (default 60 per
 10 minutes) caps abuse. Test with
 `node tools/msg-relay-test.mjs` (mocked Twilio and Resend).

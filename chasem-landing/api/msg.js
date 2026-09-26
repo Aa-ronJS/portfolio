@@ -25,7 +25,8 @@
 // Every action returns { ok: true, ... } or { ok: false, error }.
 
 import { readToken, readBalance, spend, OUT_OF_MESSAGES, autoTopUpOn, chargeTopUp } from "./_setup.js";
-import { ensurePainter, recordOutbound, dbConfigured } from "./_store.js";
+import { ensurePainter, recordOutbound, dayCount, markCancelled, dbConfigured } from "./_store.js";
+import { ensureSchema } from "./_db.js";
 
 // Writing down who a message went to is what lets a reply find its way home. It must never be able to stop a
 // message going out, so every call is best effort and the send has already happened by the time we get here.
@@ -33,8 +34,18 @@ async function noted(hosted, body, channel, to, r) {
   if (!dbConfigured() || !hosted || !hosted.payload || !r || !r.id) return;
   try {
     await ensurePainter(hosted.payload);
-    await recordOutbound({ id: r.id, painter: hosted.payload.cus, job: body.job, channel, to, ref: body.ref });
+    await recordOutbound({ id: r.id, painter: hosted.payload.cus, job: body.job, channel, to, ref: body.ref, sendFor: body.action === "schedule" ? (r.send_at || body.send_at) : null });
   } catch (e) { /* routing a future reply is worth less than this message */ }
+}
+
+// At most this many automatic messages from one tradie on one day, per channel. The app books twenty a day at most
+// and he can send more by hand, so an honest app never meets it. Anything that goes wrong while counting lets the
+// message through: this guards the shared number, it must never be the reason a real chaser did not go.
+const DAY_CAP = Number(process.env.SEND_PER_DAY || 60);
+export const DAY_FULL = "That day already has as many messages as one account can send. It moves to the next day.";
+async function dayFull(hosted, channel, sendAt) {
+  if (!DAY_CAP || !dbConfigured() || !hosted || !hosted.payload || !hosted.payload.cus) return false;
+  try { await ensureSchema(); return (await dayCount(hosted.payload.cus, channel, sendAt)) >= DAY_CAP; } catch (e) { return false; }
 }
 
 const ALLOWED = (process.env.ALLOWED_ORIGINS || "https://chasem.app,https://www.chasem.app").split(",").map((s) => s.trim()).filter(Boolean);
@@ -205,6 +216,7 @@ export default async function handler(req, res) {
       // created is returned instead of a second message. Best effort: the map lives in this warm instance only and keeps the last 200 keys.
       const key = body.key != null ? keyPrefix + String(body.key).slice(0, 120) : ""; if (key && seen.has(key)) return send(res, 200, { ok: true, ...seen.get(key), reused: true });
       // A scheduled reminder holds a message the moment it is booked, and gives it back if it is cancelled before it goes.
+      if (await dayFull(hosted, ch, body.send_at)) return send(res, 429, { ok: false, error: DAY_FULL, day_full: true });
       let balS = hosted && hosted.payload ? await readBalance(hosted.payload) : null;
       if (balS && balS.counted && balS.left <= 0) { balS = await refill(hosted.payload, balS); if (balS.left <= 0) return send(res, 402, { ok: false, error: OUT_OF_MESSAGES, out_of_messages: true, ...balS }); }
       const r = ch === "sms" ? await smsSchedule(c, body.to, body.body, body.send_at) : await emailSchedule(c, body);
@@ -214,6 +226,7 @@ export default async function handler(req, res) {
       if (key) { seen.set(key, r); while (seen.size > 200) seen.delete(seen.keys().next().value); }
       return send(res, 200, { ok: true, ...r }); }
     if (body.action === "cancel") { if (!body.id) throw new Error("id is required"); const r = ch === "sms" ? await smsCancel(c, body.id) : await emailCancel(c, body.id);
+      if (hosted && dbConfigured()) await markCancelled(body.id);
       const back = hosted && hosted.payload ? await spend(hosted.payload, -1).catch(() => null) : null;
       return send(res, 200, { ok: true, ...r, ...(back ? { left: back.left, used: back.used } : {}) }); }
     if (body.action === "ping") { const p = { ok: true, sms: !!(c.twilioSid && c.twilioToken && (c.twilioService || c.twilioFrom)), sms_schedule: !!(c.twilioSid && c.twilioToken && c.twilioService), email: !!(c.resendKey && c.resendFrom), client_creds: process.env.ALLOW_CLIENT_CREDS === "1", token_required: !!process.env.RELAY_TOKEN || !!process.env.RELAY_SIGNING_SECRET || Object.keys(tokenMap()).length > 0 };

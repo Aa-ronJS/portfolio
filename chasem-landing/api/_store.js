@@ -38,15 +38,30 @@ export async function ensurePainter(p, extra = {}) {
 
 // Every message the relay sends is written down against its job, which is the whole trick behind routing a
 // reply: the client's number is the key, and the newest send to it says who was talking to them.
-export async function recordOutbound({ id, painter, job, channel, to, ref }) {
+export async function recordOutbound({ id, painter, job, channel, to, ref, sendFor }) {
   if (!id || !painter) return;
   const addr = channel === "sms" ? e164(to) : String(to || "").trim().toLowerCase();
+  const at = sendFor && !isNaN(new Date(sendFor).getTime()) ? new Date(sendFor).toISOString() : null;
   await q(
-    `insert into outbound (id, painter_id, job_id, channel, to_addr, ref)
-       values ($1,$2,$3,$4,$5,$6) on conflict (id) do nothing`,
-    [String(id), painter, String(job || ""), channel, addr, String(ref || "")]
+    `insert into outbound (id, painter_id, job_id, channel, to_addr, ref, send_for)
+       values ($1,$2,$3,$4,$5,$6,coalesce($7::timestamptz, now())) on conflict (id) do nothing`,
+    [String(id), painter, String(job || ""), channel, addr, String(ref || ""), at]
   ).catch(() => {});
 }
+
+// How many messages one tradie already has going out on the Australian day that `sendAt` falls on (taken as
+// UTC+10: a backstop, not a clock anyone reads), not counting ones taken back. Throws if the database cannot say.
+export async function dayCount(painter, channel, sendAt) {
+  const t = new Date(sendAt).getTime(), shift = 10 * 3600000, day = 86400000;
+  const start = Math.floor((t + shift) / day) * day - shift;
+  const r = await q(
+    `select count(*)::int n from outbound where painter_id=$1 and channel=$2 and not cancelled
+       and coalesce(send_for, sent_at) >= $3 and coalesce(send_for, sent_at) < $4`,
+    [painter, channel, new Date(start).toISOString(), new Date(start + day).toISOString()]
+  );
+  return r.rows[0].n;
+}
+export async function markCancelled(id) { if (id) await q("update outbound set cancelled = true where id=$1", [String(id)]).catch(() => {}); }
 
 // Who was this number last quoted by? Prefer a job the app has actually told us about and that is still open;
 // fall back to the last thing we sent them, which is all we know before the app has synced.
