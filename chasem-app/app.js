@@ -411,7 +411,8 @@
     return [
       { id: 'name',   label: 'Your business name', done: !!String(d.trading_name || '').trim() },
       // every text says who it is from and how to reach him; without a number a customer has no way back
-      { id: 'mobile', label: 'Your mobile',        done: /^0[2-478]\d{8}$/.test(String(d.phone || '').replace(/\D/g, '').replace(/^61/, '0')) },
+      // (an account already past set-up is not stopped for it: its texts carry the business name and the email instead)
+      { id: 'mobile', label: 'Your mobile',        done: /^0[2-478]\d{8}$/.test(String(d.phone || '').replace(/\D/g, '').replace(/^61/, '0')) || !!(S.security && S.security.setup_done) },
       { id: 'abn',    label: 'Your ABN',           done: /\d{11}/.test(String(d.abn || '').replace(/\D/g, '')) },
       { id: 'state',  label: 'Your state',         done: !!String(d.state || '').trim() },
       { id: 'trade',  label: 'Your trade',         done: !!trade() },

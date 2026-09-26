@@ -103,13 +103,14 @@ const NEW = (tok) => () => { try { const k = 'qc-app-v1', s = JSON.parse(localSt
   await p.evaluate((tok) => { window.__qcApp.applySetup({ v: 1, settings: { sending: { server: 'https://chasem.app/api/msg', token: tok } } }); }, mine2);
   S = await state(); ok(S.sending.token === mine2, 'his own account\'s new token (after paying) is taken');
 
-  // ---- an older account with no mobile is asked for it, once, and nothing else
+  // ---- an account already past set-up is not stopped for a mobile; its texts still say who and how to reply
   const p2 = await ctx.newPage(); p2.on('pageerror', e => { console.log('PAGE ERROR', e.message); fails++; });
   await p2.goto(base, { waitUntil: 'load' });
-  await p2.evaluate(() => { const st = window.__qcApp.store, S = st.load(); S.details.phone = ''; st.save(); }); await p2.reload({ waitUntil: 'load' }); await p2.waitForTimeout(600);
-  ok(/Your mobile/.test(await p2.$eval('#app', e => e.innerText)), 'an account with no mobile is asked for it on its next open');
-  await p2.fill('#w_in', '0412 345 678'); await p2.click('#w_next'); await p2.waitForTimeout(600);
-  ok(/Chase/.test(await p2.$eval('#app', e => e.innerText)), 'and straight back to work');
+  await p2.evaluate(() => { const st = window.__qcApp.store, S = st.load(); S.details.phone = ''; S.details.owner_name = ''; st.save(); }); await p2.reload({ waitUntil: 'load' }); await p2.waitForTimeout(600);
+  ok(!/Your mobile/.test(await p2.$eval('#app', e => e.innerText)), 'an account already set up is not stopped to give a mobile');
+  await p2.evaluate(() => { location.hash = '#/chase'; }); await p2.waitForTimeout(700);
+  const t2 = await p2.$eval('#app', e => e.innerText);
+  ok(/Cheers, Steele Electrical/.test(t2) && /dave@steele\.com\.au/.test(t2), 'its texts end with the business name and give his email to reply to');
 
   await b.close(); srv.close();
   console.log(fails ? '\nFAILURES: ' + fails : '\nALL PASSED'); process.exit(fails ? 1 : 0);
