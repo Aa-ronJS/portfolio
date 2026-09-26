@@ -12,7 +12,7 @@ Three independent things live here:
   the shots). Start with `animation-pipeline/CLAUDE.md`, then its
   `README.md`. Environment setup: `animation-pipeline/setup.sh`.
 
-- **Chasem** — a quoting and chasing app for Australian house painters,
+- **Chasem** — chases quotes and invoices for Australian tradies (painters also get quoting and measuring),
   live at https://chasem.app. Three directories: `chasem-app/` is the
   phone app itself (vanilla ES5, no build step, `npm test` runs ~35
   browser suites); `chasem-landing/` is the site and the serverless

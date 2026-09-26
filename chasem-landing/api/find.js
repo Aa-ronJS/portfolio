@@ -213,6 +213,12 @@ export default async function handler(req, res) {
     } catch (e) { return toApp(res, "find?why=failed&p=" + st.provider); }
   }
 
+  // The website asks which logins are switched on, so it only ever mentions the ones that work. Names only.
+  if (req.method === "GET" && action === "which") {
+    res.setHeader("Cache-Control", "public, max-age=300");
+    return send(res, 200, { ok: true, providers: dbConfigured() ? providersOn().map((k) => PROVIDERS[k].name) : [] });
+  }
+
   if (!cors(req, res, "POST, OPTIONS")) return send(res, 403, { ok: false, error: "Not allowed from here" });
   if (req.method === "OPTIONS") { res.statusCode = 204; return res.end(); }
   if (req.method !== "POST") return send(res, 405, { ok: false, error: "POST only" });

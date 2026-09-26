@@ -73,6 +73,8 @@ ok(w.ok && w.providers.length === 0, 'with no keys set, none of the three is off
 Object.assign(process.env, { MS_CLIENT_ID: 'ms', MS_CLIENT_SECRET: 'mss', GOOGLE_CLIENT_ID: 'g', GOOGLE_CLIENT_SECRET: 'gs', XERO_CLIENT_ID: 'x', XERO_CLIENT_SECRET: 'xs' });
 w = await post({ token: TOKEN, action: 'which' });
 ok(w.providers.join(',') === 'microsoft,google,xero', 'with their keys set, all three are offered: ' + w.providers.join(', '));
+{ const req = Readable.from([]); req.method = 'GET'; req.url = '/api/find?action=which'; req.headers = {}; const r = res(); await find(req, r); const j = JSON.parse(r.body);
+  ok(r.statusCode === 200 && j.providers.join(',') === 'Outlook,Gmail,Xero' && !/client|secret|ms|mss/i.test(JSON.stringify(j.providers)), 'the website can ask, with no token, which logins are on, and gets their names only: ' + j.providers.join(', ')); }
 
 // ---- the login pages are the providers' own, and ask only to read
 const ms = await post({ token: TOKEN, action: 'start', provider: 'microsoft' });
