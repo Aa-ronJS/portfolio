@@ -61,6 +61,10 @@
       "maxDuration": 60,
       "memory": 512,
       "includeFiles": "public/app/ingest.js"
+    },
+    "api/read.js": {
+      "maxDuration": 60,
+      "memory": 1024
     }
   },
   "headers": [

@@ -188,5 +188,17 @@ ok(r.items.some(i => i.phone === '0420 111 000' && i.amount === 640), 'a chat na
 eq(I.readTexts('not,a,messages,file\n1,2,3,4').items.length, 0, 'a CSV that is not messages reads as nothing');
 eq(I.readTexts('<html><body>hello</body></html>').items.length, 0, 'an XML file that is not a backup reads as nothing');
 
+// ---- a quote or invoice document: his own details never taken for the customer's
+const own = { trading_name: 'Steele Electrical', owner_name: 'Dave Steele', phone: '0412 345 678', email: 'dave@steele.com.au' };
+let d = I.parseDoc(['Steele Electrical', 'ABN 12 345 678 901', 'Ph 0412 345 678 dave@steele.com.au', 'QUOTE', 'Quote Number: QU-0042', 'Quote Date: 03/09/2026', 'Valid Until: 03/10/2026', 'Prepared For:', 'Jane Mitchell', '0412 111 222 jane.m@example.com', 'Description: Switchboard upgrade', 'Subtotal $2,227.27', 'GST $222.73', 'Total (inc GST) $2,450.00'].join('\n'), own);
+ok(d.name === 'Jane Mitchell' && d.amount === 2450 && d.number === 'QU-0042' && d.kind === 'quote', 'a quote document: Jane Mitchell, $2,450, QU-0042 (' + JSON.stringify(d) + ')');
+ok(d.phone === '0412 111 222' && d.email === 'jane.m@example.com', 'her phone and email, never his own at the top');
+ok(d.date === '2026-09-03' && d.due === '' && d.what === 'Switchboard upgrade', 'the quote date, not the valid-until date, and what it is for');
+d = I.parseDoc('TAX INVOICE\nSteele Electrical ABN 12 345 678 901\nBill To: Bay Cafe Pty Ltd, 3 Jetty Rd\nInvoice # INV-1006   Date 1 September 2026   Due Date 15 September 2026\nAmount Due $3,885.20', own);
+ok(d.kind === 'invoice' && d.name === 'Bay Cafe Pty Ltd' && d.number === 'INV-1006' && d.date === '2026-09-01' && d.due === '2026-09-15' && d.amount === 3885.2, 'an invoice: bill-to, number, issue and due dates on one line, amount due');
+d = I.parseDoc('Dave Steele\nSteele Electrical\nQuote for: Dave Steele\nTo: Mick Jones\nTotal $500', own);
+ok(d.name === 'Mick Jones', 'his own name on a "for" line is skipped for the real customer (' + d.name + ')');
+eq(I.parseDoc('', own).name, '', 'an empty document reads as nothing, and does not throw');
+
 console.log(fails ? '\nFAILURES: ' + fails : '\nALL PASSED');
 process.exit(fails ? 1 : 0);

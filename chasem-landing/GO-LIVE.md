@@ -60,8 +60,11 @@ curl -s https://chasem.app/api/paid                               # card payment
 
 ## Decide when it matters
 
-- **The photo demo on the landing page** returns a canned example until
-  `ANTHROPIC_API_KEY` is set in Vercel. Setting it costs money per photo.
+- **`ANTHROPIC_API_KEY` in Vercel** switches on reading a photo (or a scanned
+  PDF) of a quote in the app, roughly 2 to 4 cents a read, capped at 30 reads
+  an hour per tradie and 600 an hour in total (`READ_PER_HOUR`,
+  `READ_ALL_PER_HOUR`). Without it the app asks him to type those in; PDFs
+  from quoting apps are read on the phone either way, at no cost.
 - **Ads:** `MAKER_NOTE`, `MAKER_NAME`, `MAKER_PHOTO` and `META_PIXEL_ID` in
   `public/config.js` are empty. Nothing needs them until you run ads.
 - **Vercel Firewall rate limiting** on `/api/demo` before raising ad spend.

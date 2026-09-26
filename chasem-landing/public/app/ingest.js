@@ -205,6 +205,56 @@
     return { items: items, skipped: skipped, map: map, headers: headers };
   }
 
+  // ---- a quote or invoice document (the text of a PDF, or what a photo of one says) -----------------------------
+  // A document carries his own name, phone, email and ABN at the top, so those are never taken for the customer's.
+  // Labels win over guesses: "Prepared for", "Bill to", "Quote date", "Due date", "Total".
+  var DATE_RE = /\d{1,2}[\/.\-]\d{1,2}[\/.\-]\d{2,4}|\d{4}-\d{2}-\d{2}|\d{1,2}(?:st|nd|rd|th)?\s+[A-Za-z]{3,9},?\s+\d{4}|[A-Za-z]{3,9}\s+\d{1,2}(?:st|nd|rd|th)?,?\s+\d{4}/;
+  function digits(s) { return String(s || '').replace(/\D/g, '').replace(/^61/, '0'); }
+  function parseDoc(text, own) {
+    own = own || {};
+    var t = String(text == null ? '' : text).replace(/\r/g, '').replace(/[ \t ]+/g, ' ');
+    var lines = t.split('\n').map(function (l) { return l.trim(); }).filter(Boolean);
+    var ownPhones = [own.phone, own.mobile].map(digits).filter(function (d) { return d.length >= 8; });
+    var ownEmail = String(own.email || '').trim().toLowerCase(), ownNames = [own.name, own.trading_name, own.owner_name].map(function (n) { return String(n || '').trim().toLowerCase(); }).filter(Boolean);
+    var isOwnName = function (n) { n = String(n || '').trim().toLowerCase(); return !!n && ownNames.some(function (o) { return o === n || (o.length > 3 && (o.indexOf(n) >= 0 || n.indexOf(o) >= 0)); }); };
+    // what the plain reader makes of it, before anything of his own is removed
+    var base = parseText(lines.join('\n'));
+    var out = { kind: base.kind, name: '', phone: '', email: '', amount: base.amount, date: '', due: '', number: base.number, what: '' };
+    if (/\bquot(?:e|ation)\b|\bestimate\b/i.test(t)) out.kind = 'quote';
+    else if (/\b(?:tax )?invoice\b/i.test(t)) out.kind = 'invoice';
+    // contact details that are not his
+    var emails = t.match(new RegExp(EMAIL.source, 'g')) || [];
+    for (var i = 0; i < emails.length; i++) { var e = emails[i].toLowerCase(); if (e !== ownEmail) { out.email = e; break; } }
+    var mob = t.match(new RegExp(MOBILE.source, 'g')) || [], land = t.match(new RegExp(LANDLINE.source, 'g')) || [];
+    var phones = mob.concat(land);
+    for (i = 0; i < phones.length; i++) if (ownPhones.indexOf(digits(phones[i])) < 0) { out.phone = tidyPhone(phones[i]); break; }
+    // who it is for: a labelled line, or the line under a label on its own
+    var LABEL = /^(?:quote|quotation|estimate|invoice|tax invoice)?\s*(?:prepared for|quoted? for|estimate for|bill(?:ed)? to|invoice to|sold to|customer(?: name)?|client(?: name)?|attention|attn|to|for|name)\s*[:\-]?\s*(.*)$/i;
+    for (i = 0; i < lines.length && !out.name; i++) {
+      var m = lines[i].match(LABEL); if (!m || /^(?:total|date|due)/i.test(lines[i])) continue;
+      var v = m[1] || lines[i + 1] || '';
+      v = v.replace(EMAIL, '').replace(MOBILE, '').replace(LANDLINE, '').replace(/\b(?:ph|phone|mob|mobile|email|e)\s*:?\s*$/i, '').replace(/[,;|].*$/, '').trim();
+      if (v && /[A-Za-z]{2}/.test(v) && !/\d{3,}/.test(v) && v.length <= 60 && !isOwnName(v) && !LABEL.test(v)) out.name = v;
+    }
+    if (!out.name && base.name && !isOwnName(base.name)) out.name = base.name;
+    if (!out.name && out.email) out.name = titleCase(out.email.split('@')[0].replace(/[._\d]+/g, ' ').trim());
+    // dates: each read from right after its own label. "Due date", "Payment due" and "Pay by" are the due date;
+    // any other "date" is the date it was issued. "Valid until" is neither.
+    var labelled = new RegExp('\\b(due\\s+date|payment\\s+due|pay\\s+by|due(?:\\s+(?:on|by))?|(?:quote|quotation|invoice|issue|estimate)?\\s*date[d]?)\\s*[:\\-]?\\s*(' + DATE_RE.source + ')', 'ig'), dm;
+    while ((dm = labelled.exec(t))) {
+      if (/due|pay/i.test(dm[1])) { if (!out.due) out.due = parseDate(dm[2]); }
+      else if (!out.date) out.date = parseDate(dm[2]);
+    }
+    if (!out.date) { var any = t.match(DATE_RE); if (any) out.date = parseDate(any[0]); }
+    // what for: a labelled line, else what the plain reader found
+    for (i = 0; i < lines.length && !out.what; i++) {
+      var w = lines[i].match(/^(?:description|job|project|re|subject|scope(?: of works?)?|works?|site)\s*[:\-]\s*(.{3,80})$/i);
+      if (w && !/\$\s?\d/.test(w[1])) out.what = w[1].trim();
+    }
+    if (!out.what) out.what = base.what;
+    return out;
+  }
+
   // ---- every text he sent, from a backup of the phone ---------------------------------------------------------
   // Android lets a texts app read them, and "SMS Backup & Restore" (free, the one most people already have)
   // writes them all to one XML file. iPhone texts only come out through a computer, as a CSV with a column of
@@ -294,6 +344,6 @@
   }
   function readTexts(text, opts) { var r = textsReader(opts); r.push(text); return r.done(); }
 
-  var api = { parseText: parseText, parseCSV: parseCSV, readSheet: readSheet, textsReader: textsReader, readTexts: readTexts, mapColumns: mapColumns, parseDate: parseDate, parseMoney: parseMoney, tidyPhone: tidyPhone, FIELDS: FIELDS };
+  var api = { parseText: parseText, parseDoc: parseDoc, parseCSV: parseCSV, readSheet: readSheet, textsReader: textsReader, readTexts: readTexts, mapColumns: mapColumns, parseDate: parseDate, parseMoney: parseMoney, tidyPhone: tidyPhone, FIELDS: FIELDS };
   if (typeof module !== 'undefined' && module.exports) module.exports = api; else root.QCIngest = api;
 })(typeof globalThis !== 'undefined' ? globalThis : typeof self !== 'undefined' ? self : this);   // the phone, node tests, and the relay (an ES module, where `this` is undefined)

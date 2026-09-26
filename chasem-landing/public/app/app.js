@@ -2372,9 +2372,10 @@
     });
   }
   // Finding quotes by logging in to his email or Xero goes through the relay he already sends through.
-  function findCall(body) {
+  function findCall(body) { return relayCall('find', body); }
+  function relayCall(which, body) {
     var sd = S.sending || {}, url = String(sd.server || '').trim();
-    url = url ? url.replace(/\/[^\/]*$/, '/find') : '';
+    url = url ? url.replace(/\/[^\/]*$/, '/' + which) : '';
     if (!url || !sd.token) return Promise.resolve({ ok: false, off: true });
     var fetcher = window.__qcRelayFetch || window.fetch; body.token = sd.token;
     return fetcher(url, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body) })
@@ -2455,6 +2456,74 @@
       rd.readAsText(f);
     });
   }
+  // ---- a photo or a PDF of a quote, read ----------------------------------------------------------------------
+  // A PDF from a quoting app has its words in it, and the phone reads those itself, with no signal and at no cost.
+  // A photo, or a scanned PDF with no words in it, goes to the relay to be read. Whatever is found only fills the
+  // boxes he has not typed in, and he checks it before anything is chased.
+  var pdfLib = null;
+  function loadPdfJs() {
+    if (window.pdfjsLib) return Promise.resolve(window.pdfjsLib);
+    if (pdfLib) return pdfLib;
+    pdfLib = new Promise(function (res, rej) {
+      var sc = document.createElement('script'); sc.src = 'lib/pdf.min.js';
+      sc.onload = function () { if (!window.pdfjsLib) { pdfLib = null; return rej(new Error('no pdf reader')); } window.pdfjsLib.GlobalWorkerOptions.workerSrc = 'lib/pdf.worker.min.js'; res(window.pdfjsLib); };
+      sc.onerror = function () { pdfLib = null; rej(new Error('offline')); };
+      document.head.appendChild(sc);
+    });
+    return pdfLib;
+  }
+  function fileBytes(f) {
+    if (f.arrayBuffer) return f.arrayBuffer();
+    return new Promise(function (res, rej) { var r = new FileReader(); r.onload = function () { res(r.result); }; r.onerror = rej; r.readAsArrayBuffer(f); });
+  }
+  function toB64(buf) { var b = new Uint8Array(buf), out = '', i; for (i = 0; i < b.length; i += 32768) out += String.fromCharCode.apply(null, b.subarray(i, i + 32768)); return btoa(out); }
+  // The words on the first pages, a line at a time: pieces at the same height are one line, left to right.
+  function pdfWords(pdf) {
+    var lines = [], n = Math.min(pdf.numPages || 1, 3), chain = Promise.resolve();
+    for (var i = 1; i <= n; i++) (function (i) { chain = chain.then(function () { return pdf.getPage(i); }).then(function (pg) { return pg.getTextContent(); }).then(function (tc) {
+      var rows = {};
+      (tc.items || []).forEach(function (it) { if (!it.str || !String(it.str).trim()) return; var y = Math.round(it.transform[5] / 3); (rows[y] = rows[y] || []).push(it); });
+      Object.keys(rows).map(Number).sort(function (a, b) { return b - a; }).forEach(function (y) { lines.push(rows[y].sort(function (a, b) { return a.transform[4] - b.transform[4]; }).map(function (it) { return it.str; }).join(' ')); });
+    }); })(i);
+    return chain.then(function () { return lines.join('\n'); });
+  }
+  // Page one as a picture, kept with the job like a photo would be.
+  function pdfPicture(pdf) {
+    return pdf.getPage(1).then(function (pg) {
+      var v1 = pg.getViewport({ scale: 1 }), vp = pg.getViewport({ scale: Math.min(2, 1100 / v1.width) }), c = document.createElement('canvas');
+      c.width = Math.round(vp.width); c.height = Math.round(vp.height); var ctx = c.getContext('2d'); ctx.fillStyle = '#fff'; ctx.fillRect(0, 0, c.width, c.height);
+      return pg.render({ canvasContext: ctx, viewport: vp }).promise.then(function () { return c.toDataURL('image/jpeg', 0.72); });
+    });
+  }
+  function ownDetails() { var d = S.details || {}; return { trading_name: d.trading_name || '', owner_name: d.owner_name || '', abn: d.abn || '', phone: d.phone || '', email: d.email || '', address: d.address || '' }; }
+  function readByRelay(media_type, b64) {
+    return relayCall('read', { media_type: media_type, data: b64, own: ownDetails() }).then(function (r) { return r && r.ok && r.item ? { item: r.item } : { error: (r && r.error) || '', off: !!(r && r.off) }; });
+  }
+  // Read a picked file. Resolves { item, photo } or { error, photo }; never rejects.
+  function readQuoteFile(f) {
+    var isPdf = /pdf/i.test(f.type || '') || /\.pdf$/i.test(f.name || '');
+    if (!isPdf) return compressImage(f, 1400, 0.75).then(function (photo) {
+      if (!photo) return { error: 'That photo would not open.' };
+      return readByRelay('image/jpeg', photo.split(',')[1]).then(function (r) { r.photo = photo; return r; });
+    }).catch(function () { return { error: 'That photo would not open.' }; });
+    var bytes;
+    return fileBytes(f).then(function (b) { bytes = b; return loadPdfJs(); }).then(function (lib) {
+      return lib.getDocument({ data: new Uint8Array(bytes.slice(0)), isEvalSupported: false }).promise;
+    }).then(function (pdf) {
+      return Promise.all([pdfWords(pdf).catch(function () { return ''; }), pdfPicture(pdf).catch(function () { return ''; })]);
+    }).then(function (got) {
+      var words = got[0], photo = got[1], item = QCIngest.parseDoc(words, ownDetails());
+      if (item.name && item.amount > 0) return { item: item, photo: photo };
+      // no words (a scan) or not enough of them: the relay reads the page itself
+      if (bytes.byteLength > 2.5 * 1024 * 1024) return { item: words.trim() ? item : null, photo: photo, error: words.trim() ? '' : 'That PDF is too big to read. Type it in.' };
+      return readByRelay('application/pdf', toB64(bytes)).then(function (r) { r.photo = photo; if (!r.item && words.trim()) r.item = item; return r; });
+    }).catch(function () {
+      // the PDF reader could not load (no signal the first time) or the file is not a PDF it can open
+      if (!bytes) return { error: 'That file would not open.' };
+      if (bytes.byteLength > 2.5 * 1024 * 1024) return { error: 'That file would not open. Type it in.' };
+      return readByRelay('application/pdf', toB64(bytes));
+    });
+  }
   var ADD_TABS = [['find', 'send', 'Find'], ['type', 'pen', 'Type'], ['paste', 'paste', 'Paste'], ['photo', 'camera', 'Photo']];
   function viewAdd(tab, qs) {
     // Which logins are switched on is asked once. Until the answer comes, and if there are none, Find has Texts and File.
@@ -2511,7 +2580,9 @@
     // Type, and what Paste and Photo found
     var v = function (k) { return draft[k] == null ? '' : esc(draft[k]); };
     var kindChips = '<div class="row chips kindchips"><button class="chip' + (draft.kind !== 'invoice' ? ' on' : '') + '" data-kind="quote">' + QCPics.svg('quote') + ' Quote</button><button class="chip' + (draft.kind === 'invoice' ? ' on' : '') + '" data-kind="invoice">' + QCPics.svg('invoice') + ' Invoice</button></div>';
-    var photoRow = tab === 'photo' ? '<div class="card"><label class="btn tape lg tile"' + QCPics.says('Take a photo of the quote') + '>' + QCPics.tile('camera', draft.photo ? 'Retake' : 'Photo of it') + '<input type="file" id="addphoto" accept="image/*" capture="environment"></label>' + (draft.photo ? '<img class="addthumb" src="' + draft.photo + '" alt="">' : '') + '</div>' : '';
+    var photoRow = tab === 'photo' ? '<div class="card"><div class="row tiles readtiles"><label class="btn tape lg tile"' + QCPics.says('Take a photo of the quote') + '>' + QCPics.tile('camera', draft.photo ? 'Retake' : 'Photo') + '<input type="file" id="addphoto" accept="image/*" capture="environment"></label>' +
+      '<label class="btn ghost lg tile"' + QCPics.says('Choose a PDF or a picture of the quote') + '>' + QCPics.tile('doc', 'PDF or picture') + '<input type="file" id="addfile" accept="application/pdf,.pdf,image/*"></label></div>' +
+      '<p class="hint" id="readmsg">' + esc(viewAdd.readMsg || '') + '</p>' + (draft.photo ? '<img class="addthumb" src="' + draft.photo + '" alt="">' : '') + '</div>' : '';
     html += photoRow + '<div class="card addform">' + (draft.found ? '<p class="hint">Check what it found.</p>' : '') + kindChips +
       '<label class="f">Name<input type="text" id="a_name" autocomplete="off" value="' + v('name') + '"></label>' +
       '<div class="g2"><label class="f">Mobile<input type="tel" id="a_phone" inputmode="tel" value="' + v('phone') + '"></label><label class="f">Email<input type="email" id="a_email" inputmode="email" value="' + v('email') + '"></label></div>' +
@@ -2538,16 +2609,33 @@
       try { localStorage.setItem('qc-add-draft', JSON.stringify(viewAdd.draft)); } catch (e) {}   // a lost tab keeps what he typed
     };
     ['a_name', 'a_phone', 'a_email', 'a_amount', 'a_date', 'a_number', 'a_what', 'a_due'].forEach(function (id) { var x = el(id); if (x) x.addEventListener('input', check); });
-    Array.prototype.forEach.call($app.querySelectorAll('[data-kind]'), function (b) { b.addEventListener('click', function () { check(); viewAdd.draft.kind = b.getAttribute('data-kind'); viewAdd(tab); }); });
-    var ph = el('addphoto'); if (ph) ph.addEventListener('change', function () {
+    Array.prototype.forEach.call($app.querySelectorAll('[data-kind]'), function (b) { b.addEventListener('click', function () { check(); viewAdd.draft.kind = b.getAttribute('data-kind'); viewAdd.draft.kindSet = true; viewAdd(tab); }); });
+    var pick = function () {
       var f = this.files && this.files[0]; if (!f) return;
-      compressImage(f, 1400, 0.75).then(function (data) { if (!data) { toast('That photo would not open.'); return; } check(); viewAdd.draft.photo = data; viewAdd(tab); });
-    });
+      check(); el('readmsg').textContent = 'Reading it\u2026';
+      Array.prototype.forEach.call($app.querySelectorAll('.readtiles input'), function (x) { x.disabled = true; });
+      readQuoteFile(f).then(function (r) {
+        var d = viewAdd.draft || {}, it = r.item;
+        if (r.photo) d.photo = r.photo;
+        if (it) {
+          // only the boxes he has not filled
+          ['name', 'phone', 'email', 'number', 'what', 'due'].forEach(function (k) { if (!String(d[k] || '').trim() && it[k]) d[k] = it[k]; });
+          if (!(QCIngest.parseMoney(d.amount) > 0) && it.amount > 0) d.amount = it.amount;
+          if (it.date && (!d.date || d.date === QCStore.today())) d.date = it.date;
+          if (it.kind && !d.kindSet) d.kind = it.kind;   // unless he has already said which it is
+          d.found = true;
+        }
+        viewAdd.readMsg = it ? '' : (r.error || 'Type the name and amount.');
+        viewAdd.draft = d; try { localStorage.setItem('qc-add-draft', JSON.stringify(d)); } catch (e) {}
+        if (/^#\/add\/photo/.test(location.hash)) viewAdd(tab);
+      });
+    };
+    ['addphoto', 'addfile'].forEach(function (id) { var x = el(id); if (x) x.addEventListener('change', pick); });
     check();
     el('a_go').addEventListener('click', function () {
       var d = read(); el('a_go').disabled = true;
       chaseThese([d]).then(function (res) {
-        viewAdd.draft = null; try { localStorage.removeItem('qc-add-draft'); } catch (e) {}
+        viewAdd.draft = null; viewAdd.readMsg = ''; try { localStorage.removeItem('qc-add-draft'); } catch (e) {}
         if (!res.added) { toast('That one is already here.'); go('/chase'); return; }
         var who = d.name.split(/\s+/)[0], when = res.queued && res.queued.first ? ' First nudge ' + whenText(res.queued.first) + '.' : '';
         toast('Chasing ' + who + '.' + when, { action: 'Another', onAction: function () { go('/add/' + tab); } });
