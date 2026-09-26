@@ -1,276 +1,298 @@
-# Paid ads: the first 100 painters on $99 a month
+# Paid ads: the first 100 tradies on $99 a month
 
-Written 26 Sep 2026, against what is live on chasem.app and go.chasem.app today. It builds on
-[`GO-TO-MARKET.md`](GO-TO-MARKET.md) (the council's settled decisions on persona, channel, hook and the stop
-number) and replaces [`meta-ads.md`](meta-ads.md), which sells the $249 laptop pack as "no subscription, ever"
-and must not be used for this campaign.
+Written 26 Sep 2026 against what is live on chasem.app and go.chasem.app today, which is the every-trade
+version: "You quote. Chasem chases." (commits 86ce15f to 21b74ce on `claude/video-course-claude-code-v818j7`,
+deployed but not yet merged to master). It replaces [`meta-ads.md`](meta-ads.md), which sells the $249 laptop
+pack and must not run. It keeps the council's stop rule from [`GO-TO-MARKET.md`](GO-TO-MARKET.md) (D10) but not
+its persona or hook: those were for the notepad painter, and the product is now for every tradie who sends
+quotes.
 
-**The short version.** Meta only, broad targeting, phone-shot 9:16 video built on the A4-sheet hook. About
-**$30,000 to $38,000 of spend over five to six months** gets 100 painters paying, if the funnel lands inside
-the council's numbers. But **not one dollar goes out until the tracking is fixed**: today the live site has no
-pixel, the app reports nothing to Meta, and the database cannot tell you when a painter first sent a quote.
-Paying for clicks you cannot follow to a sale is the one way to spend the money and learn nothing.
+**The short version.** Meta only to start, broad Australian targeting, phone-shot 9:16 video built on the
+follow-up nobody sends, with trade call-outs on the first line. About **$25,000 (base case) to $34,000 (if the
+funnel lands on the council's floor numbers) over five to six months** gets 100 tradies paying past the
+money-back window. But **not one dollar goes out until the tracking works**: the live site has no pixel, the app
+reports nothing to Meta, the Start button throws away which ad a tradie came from, and the database cannot tell
+you when someone first chased a quote.
 
-"Genuine" in this plan means **still paying after the 30-day money-back window**, i.e. a second successful
-charge. First charges are reported too, but the target is 100 second charges.
+"Genuine" means **still paying after the 30-day money-back window**, i.e. a second successful charge.
 
 ---
 
-## 1. Where the product is today
+## 1. What is being sold now
 
-What is ready to sell:
+**One sentence:** you keep quoting however you quote; Chasem follows up every quote on day 3, 7 and 14 in your
+name, books the yeses, and chases the invoices until they are paid.
 
-- The app is live at go.chasem.app: email and a six-digit code at the door, a five-question set-up wall
-  (business name, ABN, state, day rate, how he gets paid), then quoting with the A4 sheet, sending, and
-  chasing on its own.
-- The offer is clean and fully self-serve: 12 free messages (three whole jobs, quoted and chased to the end),
-  no card to start, $99 a month inc GST for 150 messages, $149 for two phones, $35 top-up packs, cancel in two
-  taps, thirty days money back. Stripe Payment Links are live.
-- The landing page at chasem.app was rebuilt on 23 Sep: hero, real app screenshots, the live photo demo,
-  pricing, guarantee, FAQ.
-- The test drive loads a realistic week of jobs, which makes shooting screen recordings for ads easy.
-- There are no painters on it yet ("nobody is on the app yet", commit c58cc07). So: no testimonials, no
-  usage numbers, and the ACL rule stands, no claims you cannot back.
+What makes this much easier to advertise than the painter app was:
 
-What would waste ad money if you ran today (checked on the live site, 26 Sep):
+- **No switching.** "Keep your quoting app, your templates or your notepad." A tradie on Tradify, ServiceM8,
+  Fergus, simPRO, Xero, MYOB or QuickBooks exports a CSV and drops it in; one who quotes by text pastes the text;
+  a PDF is read on the phone. The council excluded the job-app user as a persona because he would pull the
+  roadmap toward job management. That objection is gone: Chasem now sits beside his app instead of replacing it.
+- **Value in the first session.** He does not have to wait for his next quote. The quotes he sent last week are
+  the first thing he chases, today. That shortens every clock in this plan.
+- **The try-it box on the page.** Paste a quote you sent, see the three follow-ups it would send, nothing leaves
+  the page. It is the demo, and it works for every trade.
+- **One price.** $99 a month inc GST, 150 messages, first three jobs free (12 messages), no card to start,
+  $35 top-up packs, thirty days money back, cancel in two taps. The $149 two-phone plan is gone.
+- **Painters still get more:** room-by-room quoting and A4-sheet measuring. They become one trade among many in
+  the ads, with their own creative.
+
+Who it is for: **the owner-operator tradie, alone or with one to four others, who quotes homeowners and small
+businesses himself** and has quotes sitting unanswered. Best fits are trades where a customer takes days or weeks
+to decide: painters, landscapers, fencers, builders and carpenters doing renovations, tilers, roofers, concreters,
+air-con and solar installers, cleaners on contracts. Weaker fits are trades that mostly turn up and charge on the
+day (emergency plumbing, small electrical call-outs). The ads test the trades rather than guess (section 4).
+
+## 2. What would waste ad money if you ran today
+
+Checked on the live site and in the code, 26 Sep:
 
 | # | Gap | Why it matters for ads | Size |
 |---|-----|------------------------|------|
-| 1 | `META_PIXEL_ID` is empty on the live `config.js` | Meta has no signal at all; it cannot optimise and you cannot read results | 10 min |
-| 2 | The pixel only lives on the landing page. The app, where sign-up, activation and payment happen, fires nothing | Meta can only optimise for "clicked the button", the shallowest and worst event | half a day |
-| 3 | The "Start" links send people to `https://go.chasem.app/` **without** the UTM tags or `fbclid` | Every painter looks organic; you cannot tell which ad made him | 30 min |
-| 4 | `api/signup.js:54` stamps `qc_joined` as a date only, there is no `qc_first_send`, and the source is always `"signup"` | Cost per activated painter, the number that decides the spend, cannot be computed | about an hour (the council said so in D6) |
-| 5 | No funnel report | You need one table a week: sign-ups, code verified, wall done, first real send, offer shown, paid, second charge, refunds, by ad | half a day, one more `api/admin` action |
-| 6 | Card payments are advertised on the page ("Invoices and card payments", the meta description) while `/api/paid` answers `listening: false` and Connect may not be signed up | A painter who signs up for the thing in the ad and finds "Not switched on yet" is a refund and a bad word in a Facebook group | 15 min at dashboard.stripe.com/connect, then test one invoice |
-| 7 | `MAKER_NOTE`, `MAKER_NAME`, `MAKER_PHOTO` empty | With no testimonials, a real person's face and name is the only trust on the page | 20 min |
-| 8 | The real-wall accuracy check (LAUNCH-CHECKLIST item 3) | Needed before any ad or caption says how accurate the measuring is | 10 min with a tape |
+| 1 | `META_PIXEL_ID` empty on the live `config.js` | Meta has no signal; it cannot optimise and you cannot read results | 10 min |
+| 2 | The pixel lives on the landing page only. Sign-up, the first chase and payment happen in the app, which fires nothing | Meta can only optimise for "tapped Start", the shallowest and worst event | half a day |
+| 3 | The Start button (`index.html:537`) sends people to `https://go.chasem.app/` **without** the UTM tags or `fbclid` | Every tradie looks organic; you cannot tell which ad or which trade made him | 30 min |
+| 4 | `api/signup.js:54` stamps `qc_joined` as a date only, the source is always `"signup"`, there is no first-chase timestamp, and the trade he picked is not on the customer record | Cost per activated tradie, the number that decides the spend, cannot be computed, let alone per trade | about an hour |
+| 5 | No funnel report | You need one table a week, by ad and by trade (section 6) | half a day, one more `api/admin` action |
+| 6 | Maker note, name and photo empty | With no customers and no testimonials, a real person's face is the only trust on the page | 20 min |
+| 7 | From `GO-LIVE.md`: leaked credentials not yet rotated, GST not set up in Stripe Tax, Supabase still on the free tier | Fine for a handful of testers; not for 50 sign-ups a week and real invoices | an afternoon |
+| 8 | Optional features that are **off**: Outlook / Gmail / Xero "Find my quotes" (no OAuth keys), reading a photo of a quote (no `ANTHROPIC_API_KEY`), card payments (`/api/paid` answers `listening: false`) | The page already hides Find until it is on. The ads must not mention any of the three until each one works | none, just discipline |
 
-And one structural risk, which is a decision for you rather than a fix:
+One risk to measure rather than guess: **the door.** Email, then the mail app for a six-digit code, then the
+set-up questions (now one tap on a trade instead of a day rate), all before he chases anything. For a cold
+visitor from a Reel at 8pm, each is a place to leave, and the code depends on landing in Gmail, Outlook, iCloud
+and Bigpond inboxes within seconds. Measure it on the first 1,000 clicks:
 
-**The door.** The council decided the email is asked for at the first Send, never at the door (D4, unanimous).
-What shipped since is the opposite, for good security reasons: email, then switch to the mail app for a
-six-digit code, then five questions, before he sees anything. For a cold visitor from a Reel at 8pm, each of
-those is a place to leave, and the code step also depends on Resend landing in Gmail, Outlook, iCloud and
-Bigpond inboxes within seconds. Do not rebuild it on a guess. Measure it for the first 1,000 clicks (that is
-what gaps 2 to 5 are for) and act on the numbers:
+- code sent to code verified below 70%: fix deliverability first, then consider letting him paste or import his
+  quotes before the door and asking for the email when he taps Chase;
+- set-up started to finished below 85%: cut it to trade and business name, and ask the rest when a message first
+  needs it.
 
-- code sent to code verified below 70%: fix deliverability first, then consider letting him price one room
-  before the door, with the email and code asked at Send, as the council designed;
-- wall started to wall done below 80%: cut the wall to business name and day rate, and ask ABN, state and
-  payment at the first Send (the quote screen already has an inline ABN box).
+## 3. The arithmetic
 
-## 2. The arithmetic
+Every assumption gets replaced by the real number as soon as there is one.
 
-Assumptions, each one checked weekly against the real funnel and replaced as soon as there is data:
+| Step | Base case | Floor (council numbers) |
+|------|-----------|-------------------------|
+| Cost per link click | $2.00 | $2.50 |
+| Click to app opened | 20% | 18% |
+| App opened to code verified | 70% | 65% |
+| Verified to set-up done | 85% | 80% |
+| Set-up done to **activated** (chasing switched on for a real quote to a real customer, inside 7 days) | 55% | 40% |
+| Activated to paid | 15% | 12% |
+| Paid to second charge | 85% | 85% |
 
-| Step | Assumption | Source |
-|------|------------|--------|
-| Cost per link click | $1.50 to $2.50 | Australian trade audiences on Reels and Feed, broad targeting |
-| Click to app opened | 20% | a one-screen page with a strong Start button |
-| App opened to code verified | 70% | the door, see above |
-| Verified to wall done | 80% | five one-tap-ish questions |
-| Wall done to activated (a real quote sent to a customer who is not him, inside 7 days) | 40% | his next quote may be a week away |
-| Activated to paid | 12% floor, 15 to 20% hoped | council D10 gate |
-| Paid to second charge (past the guarantee) | 85% | |
+Activation is higher than in the painter plan because he no longer needs a new job to activate: he brings in a
+quote he already sent and switches the chasing on, often in the first five minutes.
 
-So, per 1,000 clicks at $2: about 200 opens, 140 verified, 112 through the wall, **45 activated** (**$44 each**,
-right on the council's $45 stop), and at 15% about **6.7 paying**, i.e. **about $300 per paying painter** and
-$350 per genuine one. At the 12% floor it is about $370 per paying painter, still inside the $400 ceiling.
+Per 1,000 clicks, base case: $2,000 buys about 200 opens, 140 verified, 119 set up, **65 activated
+($31 each)**, 9.8 paying (**about $205 per paying tradie**, $240 per genuine one). On the floor: $2,500 buys
+about 25 activated ($100 each), which breaches the stop rule. The truth will sit between the two, and the stop
+rule decides which side (section 5).
 
-Is $350 affordable? $99 inc GST is $90 ex GST. Less Stripe (about $1.85) and the cost of sending
-($12 to $24 a month depending on volume, from the GO-TO-MARKET table), a painter contributes **about $65 to $75 a
-month**. At $350 that pays back in five months. At 5% monthly churn he is worth about $1,400 over his life.
-It works, but not with much room, which is why the stop rule matters.
+Can it pay back? $99 inc GST is $90 ex GST. Less Stripe (about $1.85) and the sending (about $12 to $24 a month,
+from the GO-TO-MARKET table), a tradie contributes **about $65 to $75 a month**. At $240 that is a
+three-to-four-month payback; at $350 it is five. At 5% monthly churn a tradie is worth about $1,400.
 
-**Path to 100 genuine customers:** roughly 100 / 0.85 / 0.15 = **about 785 activated painters, 17,000 clicks,
-$30,000 to $38,000**, with churn during the months it takes adding another 10 to 15 customers to find.
+**Path to 100 genuine customers:** 100 / 0.85 / 0.15 = **about 785 activated tradies**. Base case: 12,000
+clicks, **about $25,000**. Council-floor case at the $45 stop line: **about $34,000**. Churn during the months
+it takes adds another 10 to 15 customers to find, which is inside these ranges.
 
-Timing lag: a painter who signs up today spends his 12 free messages over one to three weeks, sees the offer at
-the second nudge (day 7 of a live quote), pays, and has his second charge 30 days after that. **Paid revenue
-lags spend by about three weeks, and "genuine" lags it by about seven.** Do not judge a week's spend on that
-week's payments.
-
-## 3. Before the first dollar (week 0)
-
-In this order. Nothing else starts until all of it is done and tested as a stranger on a real phone.
-
-1. **Meta Business Manager.** Business verified, ad account in AUD, domain `chasem.app` verified, pixel created.
-   Pixel ID into `META_PIXEL_ID` in `chasem-landing/public/config.js` and deployed.
-2. **Carry attribution into the app.** The Start links append the page's own `utm_*` and `fbclid` to
-   `go.chasem.app/`; the app keeps them from first open until sign-up and hands them to `/api/signup`, which
-   writes them to the Stripe customer (`qc_source`, `qc_campaign`, `qc_ad`, `fbclid`).
-3. **Events from the app, server-side as well as in the browser.** iOS blocks a lot of browser pixel traffic,
-   so the relay sends the important ones through Meta's Conversions API, with the same `event_id` as the
-   browser event so Meta counts each once:
-
-   | Event | When | Where it is sent from |
-   |-------|------|------------------------|
-   | `Lead` | Start tapped on the landing page | page (already there) |
-   | `CompleteRegistration` | six-digit code verified | `api/signin.js` / `api/signup.js` |
-   | `StartTrial` (used as "wall done") | fifth wall question answered | app |
-   | `Activated` (custom) | first quote sent to a customer who is not him | `api/msg.js`, write-once, same moment as `qc_first_send` |
-   | `Subscribe` | first paid charge, with `value: 90, currency: AUD` | `api/stripe-webhook.js` |
-
-4. **Timestamps.** `qc_joined` becomes a full ISO instant; add write-once `qc_wall_done`, `qc_first_send`,
-   `qc_offer_seen`, `qc_paid`. Without these no clock in this plan can be read.
-5. **One funnel report.** `POST /api/admin {action:"funnel", from, to}` returns the table in section 6 by week
-   and by `utm_content`. It reads the Stripe customers and the painter table; no new tool.
-6. **Card payments live or not advertised.** Sign up for Connect, turn it on as a painter, pay one invoice
-   with a real card, see it tick off. If you would rather not yet, take "card payments" out of the meta
-   description and the feature card until it works. The ad itself will not mention cards either way.
-7. **The rest of the checklist items that touch a stranger:** maker note and photo, the real-wall accuracy
-   test, Vercel Firewall rate limit on `/api/demo`, a monthly spend cap on the Anthropic key, and send yourself
-   the sign-in code to a Gmail, an Outlook, an iCloud and a Bigpond address and time how long each takes to
-   arrive and which folder it lands in.
-8. **Brand search.** A Google Ads campaign on the exact word `chasem` only, $5 a day cap. People who see a
-   Reel go and search the name; this costs almost nothing and stops a competitor or a reseller sitting on it.
-   This is not the Search spend the council rejected; no generic or competitor keywords.
-
-Items 2 to 5 are code and need the usual care: every write survives a lost connection, and a tracking failure
-must never block a sign-up or a send. Fire and forget, always.
+**Timing.** Twelve free messages is three to four quotes chased. A tradie who imports ten open quotes runs out
+in a day or two and sees the offer within the first week; one who only chases new quotes takes two to three
+weeks. So **first payments lag spend by one to three weeks, and "genuine" lags by five to seven.** Never judge a
+week's spend on that week's payments.
 
 ## 4. The campaign
 
-**One campaign, one ad set, four to six ads.** Small accounts learn fastest when the budget is not split.
+### Before the first dollar (week 0, start by 6 Oct)
 
-- **Objective:** Sales, with the conversion event `CompleteRegistration` to start. Meta needs roughly 50
-  conversions a week to settle, and at $100 a day you will get about 40 to 70 verified sign-ups a week but only
-  15 to 25 activations. Move the optimisation event to `Activated` once it is running above 50 a week (around
-  $200 a day). Never optimise for `Lead`: it rewards people who tap and leave.
-- **Audience:** Australia, 25 to 60, Advantage+ audience. Suggestions: house painting, painting and
-  decorating, Dulux, Haymes, Taubmans, Wattyl, Bunnings Trade, Master Painters Australia, small business owner.
-  Let the first line and the first frame do the targeting; the council's point stands that a new-build subbie
-  does not stop for a hallway repaint.
-- **Placements:** Advantage+, but every ad supplies its own 9:16 cut, so Reels, Stories and Feed never crop.
-- **Exclusions:** anyone already signed up (a custom audience from the `CompleteRegistration` event) from the
-  prospecting ad set.
-- **Destination:** chasem.app with `?utm_source=meta&utm_medium=paid&utm_campaign=first100&utm_content=<ad>`.
-  After 40 activations, split-test sending phone traffic straight to go.chasem.app (council D3), judged on cost
-  per activated painter only.
+Nothing starts until all of this is done and tested as a stranger on a real phone from an ad preview.
 
-### Creative: five concepts, all phone-shot, captions burned in
+1. **Meta Business Manager.** Business verified, ad account in AUD, domain `chasem.app` verified, pixel created
+   and its ID in `META_PIXEL_ID`.
+2. **Carry attribution into the app.** The Start links append the page's own `utm_*` and `fbclid` to
+   `go.chasem.app/`. The app keeps them from first open to sign-up and hands them to `/api/signup`, which
+   writes them onto the Stripe customer (`qc_source`, `qc_campaign`, `qc_ad`, `fbclid`), along with the trade
+   he picks (`qc_trade`).
+3. **Events from the app, in the browser and server-side.** iOS blocks much of the browser pixel, so the relay
+   also sends the important events through Meta's Conversions API, with the same `event_id` so each counts once:
 
-Most Reels play muted, so every word that matters is on screen. Shot on a phone in a real house, not
-produced; a polished ad reads as someone selling software, a shaky one reads as a painter.
+   | Event | When | Sent from |
+   |-------|------|-----------|
+   | `Lead` | Start tapped on the landing page | page (already there) |
+   | `CompleteRegistration` | six-digit code verified | `api/signup.js` / `api/signin.js` |
+   | `StartTrial` (meaning set-up done) | last set-up question answered, with the trade | app |
+   | `Activated` (custom) | first chase booked on a real quote, write-once | `api/msg.js`, same moment as `qc_first_chase` |
+   | `Subscribe` | first paid charge, `value: 90, currency: AUD` | `api/stripe-webhook.js` |
 
-1. **The sheet (the council's hook, lead ad).** First frame, first three seconds: a hand tapes an A4 sheet to a
-   hallway wall. Take one photo. Cut to the rooms filling in. Cut to the PDF quote total. End: "Quote it before
-   you leave the driveway. Three jobs free." 15 to 22 seconds.
-2. **The chase.** Screen recording from the test drive: the Follow-ups tab with "Sharon hasn't come back on the
-   Thomson quote", the message it wrote, and the day it goes. Caption: "You forgot to follow up. It didn't."
-   No money figure.
-3. **The driveway.** Painter in the ute, phone in hand, 20 seconds: "Used to write quotes at the kitchen table
-   at nine at night. Now it's sent before I've backed out." Shoot this with a real painter as soon as there is
-   one who will say it; until then, not at all. No actors saying things nobody said.
-4. **The maker.** You, to camera, 30 seconds: who you are, why you built it, three jobs free, no card, your
-   name on the guarantee. Founder ads do well with tradies because they are a person, not a platform.
-5. **The screens (static, for Feed).** Four-card carousel of the real app screenshots in `public/img/`, one
-   line each: tape the sheet; the rooms price themselves; the quote goes out; the chasing sends itself.
+4. **Timestamps.** `qc_joined` becomes a full ISO instant; add write-once `qc_setup_done`, `qc_first_chase`,
+   `qc_offer_seen`, `qc_paid`.
+5. **The funnel report.** `POST /api/admin {action:"funnel", from, to}` returns section 6's table by week, by
+   `utm_content` and by trade.
+6. **Gaps 6 and 7** from section 2: maker note and photo; rotate the credentials, GST in Stripe Tax, Supabase
+   off the free tier.
+7. **Deliverability.** Send yourself the sign-in code at a Gmail, an Outlook, an iCloud and a Bigpond address;
+   time each one and note which folder it lands in.
+8. **Brand search.** A Google Ads campaign on the exact word `chasem` only, capped at $5 a day. People who see
+   a Reel search the name.
+
+Items 2 to 5 are code under the two Chasem rules: every tracking call is fire-and-forget, and a tracking
+failure never blocks a sign-up or a send.
+
+### Structure
+
+**One campaign, one prospecting ad set, six to eight ads.** A small account learns fastest when the budget is
+not split, so trades are tested through **creative**, not through separate ad sets.
+
+- **Objective:** Sales, optimising for `CompleteRegistration` at first (Meta needs about 50 a week, and at
+  $100 a day you get roughly 40 to 70). Move it to `Activated` once that runs above 50 a week, which is about
+  $150 to $200 a day. Never optimise for `Lead`.
+- **Audience:** Australia, 25 to 65, Advantage+ audience. Suggestions: Tradify, ServiceM8, Fergus, hipages,
+  Oneflare, Bunnings Trade, Reece, Tradelink, Dulux Trade, small business owner, self-employed, and the trade
+  interests (electrician, plumbing, carpentry, landscaping, painting and decorating). hipages and Oneflare are
+  worth naming because tradies on them quote a lot of strangers, and most of those quotes go unanswered.
+- **Placements:** Advantage+, every ad with its own 9:16 cut.
+- **Exclusions:** everyone who has already signed up (a custom audience on `CompleteRegistration`).
+- **Destination:** chasem.app with
+  `?utm_source=meta&utm_medium=paid&utm_campaign=first100&utm_content=<concept>-<trade>`.
+  After 40 activations, split-test sending phone traffic straight to go.chasem.app, judged on cost per
+  activated tradie only.
+
+### Creative: phone-shot, captions burned in
+
+Most Reels play muted, so everything that matters is on screen. Shot on a phone on a real job, not produced.
+
+1. **The follow-up you didn't send (lead ad, every trade).** On the tools; the phone buzzes; on screen:
+   *"Yes please, can you start on the 14th?"* Cut to Chasem's follow-ups tab: that yes came from the day-7
+   message it sent while he was working. End card: "You quote. Chasem chases. First three jobs free."
+   15 to 20 seconds.
+2. **Paste it in.** Screen recording: copy a quote text already sent, paste it into Chasem, it pulls out the
+   name, the amount and the number, and shows the three follow-ups with their days. "Already sent the quote?
+   Chase it from here."
+3. **Keep your quoting app.** Screen recording: export from your job app, drop the file in, tick, Chase. Copy
+   says "your quoting app", not competitors' names; the landing page names them. The job-app user is the
+   easiest tradie to convince that quotes go unanswered: his app shows him how many.
+4. **Owed, waiting, won.** Home screen: what you are owed in red, what is waiting on a yes in yellow, what you
+   have won in green. "Know where the money is before you've had a coffee."
+5. **The maker.** You, to camera, 30 seconds: who you are, why you built it, three jobs free, no card, your name
+   on the guarantee.
+6. **Painters.** The A4 sheet onto the wall, one photo, the priced quote, then the chasing. Painters get
+   the product nobody else gets; this is the ad for them.
+7. **Trade call-outs.** Concept 1 re-cut with the first line of text and the first on-screen word swapped:
+   *Painters / Sparkies / Landscapers / Builders / Plumbers / Tilers*. Same video, different first three
+   seconds. The trade that wins on cost per activation gets its own filmed version in phase 2.
+8. **Real tradies (from phase 2).** Ask the first twenty payers, from inside the app, for a 20-second clip
+   in exchange for a free month. These replace concept 5 as the best ads you will have.
 
 ### Words
 
-Primary text, rotate three:
-
-> **Painters:** tape an A4 sheet to the wall, take one photo, and the quote is priced at your rates before
-> you leave the driveway. It sends the quote, then chases it on day 3, 7 and 14 so you don't have to.
+> **Tradies:** how many quotes did you send last month that never got an answer?
 >
-> Your first three jobs are free. No card. $99 a month after that if you want it to keep sending.
-
-> **Painters:** how many quotes went out last month that you never followed up?
+> Chasem follows up every one on day 3, 7 and 14, by text, in your name, and stops the moment they say yes.
+> Then it books them in and chases the invoice. Keep quoting the way you do now.
 >
-> Chasem writes the follow-up and sends it on the day, in your name and in your words. You just get
-> the yes.
+> First three jobs free. No card.
+
+> **Sparkies:** you quote. Chasem chases.
 >
-> Three jobs free, quoted and chased to the end. No card to start.
+> Paste in the quotes you've already sent, or drop in the export from your quoting app. It writes the
+> follow-ups and sends them while you're on the tools.
+>
+> Three jobs free, no card, $99 a month after that if you want it to keep going.
 
-> A quoting app made for house painters, on your phone. A4 sheet on the wall, one photo, priced quote out.
-> Follow-ups send themselves. Three jobs free.
+> The awkward "just checking in on that quote" texts, sent for you, on weekdays, in your words. Chasem, for
+> Australian tradies. First three jobs free.
 
-Headlines: "Quote it before you leave the driveway" / "Three jobs free. No card." / "The follow-up sends
-itself". Call to action button: **Sign up**.
+Headlines: "You quote. Chasem chases." / "The follow-up sends itself" / "Chase the quotes you've already sent" /
+"Three jobs free. No card." Button: **Sign up**.
 
-What not to say, on top of `meta-ads.md`'s list: no dollar figures of money recovered or hours saved (there are
-no customers to back them), no accuracy figure until the real-wall test is done, no "AI", no competitor names,
-no "free app" (it is three free jobs, then $99), and nothing about card payments until they work.
+**What not to say:** no dollar figures for money recovered or hours saved (no customers yet to back them); no
+competitor names in ad copy; no "AI"; no "free app" (it is three free jobs, then $99); nothing about Outlook,
+Gmail or Xero login, reading a photo of a quote, or card payments until each is switched on; no measuring
+accuracy figure until the real-wall test in `GO-LIVE.md` is done; no "replaces your quoting app"; say "works
+alongside it", which is true.
 
-## 5. Phases and budget
+## 5. Phases, budget, and the rules for moving money
 
-| Phase | When | Daily | Spend | What it is for | Expected by the end |
-|-------|------|-------|-------|----------------|----------------------|
-| 0. Fix | week 0 (start by 6 Oct) | $0 | $0 | section 3 | tracking proven end to end with a test sign-up from an ad preview |
-| 1. Learn | weeks 1-3 | $100 | ~$2,100 | find one or two ads that make activated painters; find out where the door leaks | ~40-50 activated, 3-6 paying (lagged) |
-| 2. Prove | weeks 4-9 | $150 | ~$6,300 | reach ~110 activations, when activated-to-paid can first be read | ~20 paying, first second-charges |
-| Pause | 20 Dec - 12 Jan | $20 retargeting only | ~$500 | painters are off; CPMs spike before Christmas | |
-| 3. Scale | mid Jan - April | $250-350 | ~$22,000-27,000 | peak repaint season before winter; add retargeting and lookalikes | 100 genuine |
+| Phase | When | Daily | Spend | For | Expected by the end (base) |
+|-------|------|-------|-------|-----|----------------------------|
+| 0. Fix | week 0 | $0 | $0 | section 4's list | a test sign-up from an ad preview visible in the funnel report |
+| 1. Learn | weeks 1-3 | $100 | ~$2,100 | find the ads and the trades that make activated tradies; find where the door leaks | ~60 activated, 5-8 paying |
+| 2. Prove | weeks 4-9 | $150 | ~$6,300 | reach ~110 activations to read activated-to-paid; film the winning trade | ~30 paying |
+| Pause | 20 Dec - 12 Jan | $20 retargeting | ~$500 | tradies are off; pre-Christmas CPMs are the year's highest | |
+| 3. Scale | mid Jan - April | $200-300 | ~$16,000-25,000 | peak season for quoting; retargeting and lookalikes | 100 genuine |
 
-Total **about $31,000 to $36,000**. Timing matters: October to March is when domestic repaints are quoted, so a
-painter who signs up now hits his three free jobs fast. Winter (June to August) roughly halves quotes a week,
-so the free messages last longer and conversion slows. Getting to 100 before May is worth more than doing it
-cheaply in winter.
+Total **about $25,000 to $34,000**. October to March is when homeowners get quotes for outdoor and renovation
+work; getting to 100 before winter is worth more than doing it cheaply in June.
 
-**Cash:** by month four the painters already paying contribute $1,500 to $3,000 a month, so the true
-out-of-pocket peaks at about $25,000 to $28,000, not the whole spend.
+**Cash:** by month four the tradies already paying bring in $2,000 to $3,500 a month, so the out-of-pocket peak
+is about $20,000 to $27,000.
 
-### Rules for moving money
-
-Checked every Monday, on the numbers from the funnel report, never on Meta's own column alone.
+Checked every Monday, from the funnel report, never from Meta's own columns alone.
 
 Per ad, after $80 spent:
-- link click-through under 0.8%, or cost per click over $3.50: pause it;
-- three-second view rate under 25%: the first frame is wrong, re-cut the opening, keep the rest.
+- link click-through under 0.8%, or cost per click over $3.50: pause;
+- three-second view rate under 25%: the first frame is wrong, re-cut the opening only.
+
+Per trade (from `utm_content`), after 20 activations:
+- cost per activation more than 1.5 times the account average: stop that trade's call-out;
+- under 0.7 times: give it its own filmed ad.
 
 Per campaign:
-- **cost per verified sign-up:** target $15, look hard at anything over $25;
-- **cost per activated painter:** target $30. **Stop at $45 sustained for two weeks.** Do not act on it before
-  40 activations (council D10);
-- **activated to paid at or above 12%**, judged monthly and not before about 110 activations. At 40
-  activations, 12% and 20% cannot be told apart; do not pretend to;
-- **scale:** while cost per activation is under $35, raise the budget 20% every four days. A bigger jump
-  resets Meta's learning;
-- **refunds:** each one is read in full. Two refunds naming the same thing pauses scaling until it is fixed.
+- **cost per verified sign-up:** target $15, look hard above $25;
+- **cost per activated tradie:** target $30. **Stop at $45 sustained for two weeks** (the council's number: at
+  12% activated-to-paid, $45 is a $375 CAC, inside the $400 ceiling). Do not act before 40 activations;
+- **activated to paid at or above 12%**, monthly, not before about 110 activations. At 40, 12% and 20% cannot be
+  told apart;
+- **scale:** while cost per activation is under $35, raise the budget 20% every four days;
+- **refunds:** each one is read in full. Two naming the same thing pause scaling until it is fixed.
 
-If the stop fires, the order to look is: the door (section 1), then the page, then the creative, then the
-price. The council's rule: leads but no payments after 300 visitors, test the page before touching the price.
+If the stop fires, look in this order: the door, the page, the creative, then the price.
 
 ### Scale-phase additions
 
-From about 50 paying customers:
-- **Retargeting ad set,** 10-15% of budget: landing-page visitors who did not tap Start, and 50%+ video viewers,
-  last 30 days. Show the chase ad and the maker ad. Never retarget people who signed up; the app and its own
-  emails talk to them.
-- **Lookalike suggestion** from activated painters (and from payers once there are 100).
-- **Real painters on camera.** Ask the first twenty payers, from inside the app, whether they would do a
-  20-second clip for a free month. These replace concept 3 and become the best-performing ads.
-- **A second ad set for the two-phone plan** only if payers show real demand for it.
+- **Retargeting**, 10-15% of budget: page visitors who did not tap Start and 50%+ video viewers, last 30 days.
+  Never retarget people who signed up; the app and its own emails talk to them.
+- **Lookalike suggestions** from activated tradies, then from payers.
+- **Google Search, a capped test.** The council's "no inventory" finding was for painter quoting terms. The
+  every-trade product opens wider terms (quoting app for tradies, quote follow up, tradie invoicing app). Check
+  Keyword Planner; if the set carries more than about 2,000 searches a month, run $15 a day for a month on exact
+  and phrase match, judged by the same cost-per-activation rule. No competitor brand terms.
 
 ## 6. The weekly table
 
-One row a week, one column per step, from `api/admin {action:"funnel"}`:
+One row a week, and the same table split by `utm_content` and by trade:
 
-| Week | Spend | Clicks | CPC | App opens | Codes sent | Verified | Wall done | Activated | $/activated | Offer seen | Paid | Refunds | 2nd charge | Paying total |
-|------|-------|--------|-----|-----------|------------|----------|-----------|-----------|-------------|------------|------|---------|------------|--------------|
-
-Plus the same table split by `utm_content`, which is what decides which ads live.
+| Week | Spend | Clicks | CPC | App opens | Codes sent | Verified | Set up | Activated | $/activated | Offer seen | Paid | Refunds | 2nd charge | Paying total |
+|------|-------|--------|-----|-----------|------------|----------|--------|-----------|-------------|------------|------|---------|------------|--------------|
 
 ## 7. Risks worth naming
 
-- **The shared Twilio sender.** Every painter texts through one Messaging Service. If one texts a bought list
-  the number can be filtered for all of them. Split the sender pool before about 50 painters.
-- **Busy painters outgrow 150 messages.** A quote still books all three nudges at Send (four messages a job),
-  so a painter doing 30+ quotes a month in peak season runs out. That is the churn risk in summer, exactly when
-  this campaign lands. The council's first fix (book nudge one at Send, let two and three book on their own
-  dates) is worth doing before phase 3.
-- **The ad account.** New accounts get spending limits and sometimes get restricted for no stated reason. Run
-  the first week at the planned $100 a day, keep a second admin on Business Manager, and do not change the
-  payment method mid-campaign.
-- **One support person.** At 100+ sign-ups a week, the questions arrive. `SUPPORT_EMAIL` has to reach a person
-  the same day, and the page promises it.
+- **Tradies chasing lists.** Import makes it easy to bring in a hundred old quotes and chase them all. That is
+  the use case, but old and cold quotes from a CSV are where spam complaints come from. Every tradie
+  texts through **one shared Twilio Messaging Service**; if one number gets filtered, it is filtered for
+  everybody. Split the sender pool, and consider a per-day cap on first chases for imported quotes older than,
+  say, 60 days, before phase 3.
+- **The free allowance empties on day one for importers.** Good for conversion speed, but "three jobs free"
+  must stay literally true on the page when the importer chases ten quotes: make sure the in-app count says
+  jobs, and the soft wall (he can still send by hand) holds.
+- **Busy tradies outgrow 150 messages.** A quote still books all three follow-ups at once. A tradie chasing 40
+  quotes a month in peak season runs out; that is the summer churn risk. The council's fix (book the first
+  follow-up now, the others on their own dates) is worth doing before phase 3.
+- **The ad account.** New accounts get spending limits and occasional unexplained restrictions. Hold $100 a day
+  for the first week, keep a second admin on Business Manager, and do not change the payment method mid-run.
+- **One support person.** At 100+ sign-ups a week, `help@chasem.app` has to reach you the same business day,
+  as the page promises.
 
 ## 8. What I need from you
 
 1. Meta Business Manager set up and the pixel ID.
-2. Connect signed up at dashboard.stripe.com/connect, or a yes to taking card payments off the page for now.
+2. The `GO-LIVE.md` items that touch money: rotate the credentials, GST in Stripe Tax, Supabase off the free
+   tier.
 3. The maker note, your name as it should read, and a photo.
-4. Twenty minutes on a real wall with a tape, and an hour shooting concepts 1, 2 and 4 on your phone.
-5. A yes to building section 3 items 2 to 5 (attribution, app events, timestamps, funnel report).
-6. Your call on the door, once the first 1,000 clicks have shown where it leaks.
+4. An hour on a real job shooting concepts 1, 2 and 5 on your phone (concept 6 too, if a painter will let you).
+5. A yes to building section 4's items 2 to 5 (attribution, app events, timestamps, funnel report). They would
+   go on top of the every-trade branch, since that is what is live.
+6. Your call on the door, once the first 1,000 clicks show where it leaks.

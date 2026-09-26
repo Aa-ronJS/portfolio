@@ -1,7 +1,7 @@
 # Meta ads: first campaign for the Chasem course (painters)
 
 > **Superseded for the $99 app.** This file sells the $249 laptop pack as "no subscription, ever" and
-> must not be used for the Chasem app campaign. The current plan is [`PAID-ADS-PLAN.md`](PAID-ADS-PLAN.md).
+> must not be used for the Chasem app, which is now for every trade. The current plan is [`PAID-ADS-PLAN.md`](PAID-ADS-PLAN.md).
 
 Positioning: "Own it." A quoting tool that is theirs. No subscription,
 ever. They set it up themselves in an afternoon, on their own laptop,
