@@ -55,17 +55,17 @@ const sleep = (ms) => new Promise(r => setTimeout(r, ms));
 
   // ---------- C. one of three schedules fails; second click must not duplicate
   { let n = 0; const s = await scenario('C', { relay: (body) => { if (body.action === 'schedule') { n++; if (n === 1) return { ok: false, error: 'Twilio: Messaging Service not found' }; } return null; }, seed: (S, st, mk) => { S.sending = Object.assign({}, S.sending, SENDING); return mk({}); } });
-    await s.nav('#/job/' + s.id + '/quote', '#autofu'); await s.p.click('#autofu'); await s.p.waitForFunction(() => window.__toasts.some(t => /could not be scheduled/.test(t)), null, { timeout: 10000 }).catch(() => {});
+    await s.nav('#/job/' + s.id + '/quote', '#autofu'); await s.p.click('#autofu'); await s.p.waitForFunction(() => window.__toasts.some(t => /not booked yet/.test(t)), null, { timeout: 10000 }).catch(() => {});
     let t = await s.toasts(), j = await s.job(); note('C toasts after first click: ' + JSON.stringify(t));
-    ok(t.some(x => /^1 follow-up could not be scheduled: Twilio/.test(x)), 'toast says 1 failed with the relay error');
-    ok((j.follow_ups || []).filter(x => x.id).length === 0, 'nothing is stored as booked when the booking failed');
-    ok((await s.store()).local_queue.filter(q => q.job === s.id).length === 2, 'the two after it still wait their turn');
-    // second click retries the one that failed, and does not book it twice
+    ok(t.some(x => /^1 follow-up not booked yet \(Twilio: Messaging Service not found\), it tries again by itself/.test(x)), 'toast says 1 is waiting, with the relay error, and that it tries again');
+    const waiting = (await s.store()).local_queue.filter(q => q.job === s.id);
+    ok(waiting.length === 3 || (j.follow_ups || []).filter(x => x.id).length === 1, 'the failed one is not lost: it waits on the phone with the two after it, or is already booked by the retry');
+    // the retry books it once; a second tap books nothing more
     await s.p.waitForSelector('#autofu'); const before = s.calls.filter(c => c.action === 'schedule').length; await s.p.click('#autofu'); await s.p.waitForFunction(() => window.__qcApp.store.load().jobs[0].follow_ups.some(x => x.id), null, { timeout: 10000 }).catch(() => {}); await sleep(1000);
     j = await s.job(); const whats = j.follow_ups.filter(x => x.id).map(x => x.what).sort(), dupes = whats.filter((w, i) => whats.indexOf(w) !== i);
     note('C after second click: follow_ups=' + JSON.stringify(j.follow_ups.map(x => x.what + '@' + x.day)) + ' schedule calls total=' + s.calls.filter(c => c.action === 'schedule').length);
     ok(whats.length === 1 && dupes.length === 0, 'the retry books it once (' + JSON.stringify(whats) + ', duplicates ' + JSON.stringify(dupes) + ')');
-    ok(s.calls.filter(c => c.action === 'schedule').length - before === 1, 'second click only retries the failed one (actually re-sent ' + (s.calls.filter(c => c.action === 'schedule').length - before) + ')');
+    ok(s.calls.filter(c => c.action === 'schedule').length === 2, 'two booking calls in all: the one refused and the one retry (' + s.calls.filter(c => c.action === 'schedule').length + ')');
     await s.done(); }
 
   // ---------- D. cancel fails with a network error while accepting
