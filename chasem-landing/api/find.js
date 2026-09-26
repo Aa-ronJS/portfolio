@@ -150,7 +150,8 @@ const PROVIDERS = {
     on: () => !!(env("XERO_CLIENT_ID") && env("XERO_CLIENT_SECRET")),
     login: (state) => "https://login.xero.com/identity/connect/authorize?" + form({
       response_type: "code", client_id: env("XERO_CLIENT_ID"), redirect_uri: BACK,
-      scope: "openid profile email accounting.transactions.read accounting.contacts.read", state,
+      // Xero apps made since March 2026 only get granular scopes: quotes and invoices are both accounting.invoices
+      scope: "openid profile email accounting.invoices.read accounting.contacts.read", state,
     }),
     token: (code) => swap("https://identity.xero.com/connect/token", { grant_type: "authorization_code", code, redirect_uri: BACK },
       { Authorization: "Basic " + Buffer.from(env("XERO_CLIENT_ID") + ":" + env("XERO_CLIENT_SECRET")).toString("base64") }),

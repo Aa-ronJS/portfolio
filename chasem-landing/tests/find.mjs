@@ -77,6 +77,9 @@ ok(w.providers.join(',') === 'microsoft,google,xero', 'with their keys set, all 
   ok(r.statusCode === 200 && j.providers.join(',') === 'Outlook,Gmail,Xero' && !/client|secret|ms|mss/i.test(JSON.stringify(j.providers)), 'the website can ask, with no token, which logins are on, and gets their names only: ' + j.providers.join(', ')); }
 
 // ---- the login pages are the providers' own, and ask only to read
+{ const xl = await post({ token: TOKEN, action: 'start', provider: 'xero' });
+  const sc = new URL(xl.url).searchParams.get('scope') || '';
+  ok(/accounting\.invoices\.read/.test(sc) && /accounting\.contacts\.read/.test(sc) && !/accounting\.transactions/.test(sc), 'Xero: read-only granular scopes, which is all a new Xero app may ask for: ' + sc); }
 const ms = await post({ token: TOKEN, action: 'start', provider: 'microsoft' });
 ok(/^https:\/\/login\.microsoftonline\.com\//.test(ms.url) && /scope=User\.Read%20Mail\.Read/.test(ms.url), 'Outlook: Microsoft’s own login, asking only to read mail');
 ok(new URL(ms.url).searchParams.get('redirect_uri') === 'https://chasem.app/find/back', 'and it comes back to one plain address');
@@ -92,7 +95,7 @@ ok(new URL(ms.url).searchParams.get('redirect_uri') === 'https://chasem.app/find
 const gg = await post({ token: TOKEN, action: 'start', provider: 'google' });
 ok(/^https:\/\/accounts\.google\.com\//.test(gg.url) && /gmail\.readonly/.test(gg.url) && /access_type=online/.test(gg.url), 'Gmail: Google’s own login, read only, and no lasting access asked for');
 const xr = await post({ token: TOKEN, action: 'start', provider: 'xero' });
-ok(/^https:\/\/login\.xero\.com\//.test(xr.url) && /accounting\.transactions\.read/.test(xr.url) && !/offline_access/.test(xr.url), 'Xero: Xero’s own login, read only, no lasting access');
+ok(/^https:\/\/login\.xero\.com\//.test(xr.url) && /accounting\.invoices\.read/.test(xr.url) && !/offline_access/.test(xr.url), 'Xero: Xero’s own login, read only, no lasting access');
 const bad = await post({ token: TOKEN, action: 'start', provider: 'myspace' });
 ok(!bad.ok, 'an unknown provider is refused');
 
