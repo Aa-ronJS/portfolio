@@ -159,8 +159,7 @@ textarea{width:100%;font:1rem var(--body);padding:.8em .9em;border:1.5px solid v
 .howto li b{color:var(--ink)}
 
 /* price */
-.tiers{display:grid;gap:20px}
-@media (min-width:860px){.tiers{grid-template-columns:1fr 1.15fr;align-items:stretch}}
+.tiers{display:grid;gap:20px;max-width:760px;margin-left:auto;margin-right:auto}
 .tier{background:var(--paper);color:var(--doc-ink);border-radius:10px;padding:clamp(22px,3.5vw,34px);box-shadow:var(--shadow);display:grid;gap:16px;align-content:start}
 .tier.featured{outline:2px solid var(--tape);outline-offset:-2px}
 .tier .eyebrow{color:var(--tape-deep)}
@@ -362,22 +361,6 @@ footer .wrap{display:grid;gap:8px}
           <p><b>"There's two of us."</b> One phone quotes and invoices; the diary goes into your phone calendar and can be shared to the other phone. Two people quoting from two phones is not this yet.</p>
         </details>
         <p class="fine"><a href="#" data-sub>Start with your first three jobs free</a></p>
-      </div>
-      <div class="tier" id="plan2">
-        <p class="eyebrow">Two phones</p>
-        <div class="price">$<span data-price2>149</span><small><span data-gst></span>a month</small><span class="founding"><b data-included2>250</b> messages included, shared between the two of you.</span></div>
-        <p class="tierlede"><b style="color:var(--doc-ink)">For the two of you: one on the tools, one doing the books.</b> Everything above, on two phones, one bill.</p>
-        <ul>
-          <li>The same business name on every quote and every message, from either phone</li>
-          <li>One pile of messages, drawn on by both</li>
-          <li>Each phone keeps its own jobs, and you can hand a job across in two taps</li>
-          <li>Set the second phone up from the first: one link, no second sign-up</li>
-        </ul>
-        <div class="buy">
-          <a class="btn ghost" href="#" data-sub2><span>Start free, then two phones</span></a>
-          <small>Start the same way, with your email and your first three jobs free. Switch to two phones from inside the app whenever the second one is needed.</small>
-        </div>
-        <p class="fine">Not a full crew system: two phones do not keep themselves in step, because nobody's jobs are stored on our server. If you need five people looking at the same diary, this is not it yet.</p>
       </div>
     </div>
     <p class="fine">No sign-up call, no demo, no salesperson: there is nobody to talk to unless you email, and then it is me.</p>
@@ -604,14 +587,14 @@ footer .wrap{display:grid;gap:8px}
   // price, from config, so the page and the receipt never disagree
   var subPrice = num(C.PLAN_PRICE, 49);
   setAll('[data-price]', String(subPrice)); setAll('[data-hosted-year]', String(Math.round(subPrice * 12)));
-  setAll('[data-included]', String(num(C.INCLUDED_MESSAGES, 150))); setAll('[data-price2]', String(num(C.PLAN2_PRICE, 149))); setAll('[data-included2]', String(num(C.INCLUDED_MESSAGES_TWO, 250))); setAll('[data-free]', String(num(C.FREE_MESSAGES, 12)));
+  setAll('[data-included]', String(num(C.INCLUDED_MESSAGES, 150))); setAll('[data-free]', String(num(C.FREE_MESSAGES, 12)));
   setAll('[data-topup]', String(num(C.TOPUP_MESSAGES, 100))); setAll('[data-topup-price]', String(num(C.TOPUP_PRICE, 20)));
   setAll('[data-pack-price]', String(num(C.PACK_PRICE, 249)));
   if (C.GST_REGISTERED) { setAll('[data-gst]', 'inc GST, '); setAll('[data-gst-note]', ' (a tax invoice with GST shown)'); }
   if (C.HELP_SAME_DAY === false) setAll('[data-help-speed]', 'within one business day');
 
   // the subscription: every [data-sub] link becomes the checkout when there is one; else an email list; else a mailto; else quiet
-  var subs = Array.prototype.slice.call(document.querySelectorAll('[data-sub],[data-sub2]'));
+  var subs = Array.prototype.slice.call(document.querySelectorAll('[data-sub]'));
   // the ask is not a checkout: it opens the app, where an email and the free messages get him quoting. The card comes later, from inside.
   var appHref = String(C.APP_URL || 'app/');
   subs.forEach(function(a){ a.setAttribute('href', appHref); a.addEventListener('click', function(){ track('Lead', { content_name: 'signup_start' }); }); });

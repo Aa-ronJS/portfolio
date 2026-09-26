@@ -148,7 +148,7 @@
     if (back) back.addEventListener('click', function (e) { e.preventDefault(); viewJoin.waiting = ''; viewJoin(); });
   }
 
-  var FREE_SENDS = 12, PLAN_INCLUDED = 150, PLAN_PRICE = 99, TOPUP_MESSAGES = 100, TOPUP_PRICE = 35, PLAN2_INCLUDED = 250, PLAN2_PRICE = 149;
+  var FREE_SENDS = 12, PLAN_INCLUDED = 150, PLAN_PRICE = 99, TOPUP_MESSAGES = 100, TOPUP_PRICE = 35;
   document.addEventListener('visibilitychange', function () { if (document.hidden) { hiddenAt = Date.now(); return; } if (unlocked && hiddenAt && Date.now() - hiddenAt > 5 * 60000 && S && S.security && S.security.pin) { unlocked = false; route(); } });
   function viewLock() {
     $app.innerHTML = '<div class="card" style="max-width:360px;margin:30px auto 0"><h1>Enter your PIN</h1><form id="pinform"><label class="f">PIN<input type="password" id="pin" inputmode="numeric" pattern="[0-9]*" autocomplete="off" maxlength="6" autofocus></label><div class="row" style="margin-top:8px"><button class="btn tape" type="submit">Unlock</button></div><p class="status bad" id="pinmsg"></p></form>' +
@@ -2158,7 +2158,7 @@
       (hosted && QCMsg.balance().plan === 'paid' ? (function () { var st2 = seats();
         if (st2.seat > 1) return '<p class="hint" id="seatcard">Second phone. Same name, same messages; jobs stay on the phone they were made on.</p>';
         if (st2.seats > 1) return '<div class="card sub" id="seatcard"><h3>Your second phone</h3><p class="hint">Same name, same messages, its own jobs.</p><div class="row"><button class="btn ghost sm" id="seatgo">Set up the second phone</button><span class="hint" id="seatres"></span></div><div id="seatout" hidden></div></div>';
-        return '<p class="hint" id="seatcard">Two of you? <a href="' + esc(topUpLink()) + '" target="_blank" rel="noopener">Two phones, $' + PLAN2_PRICE + ' a month, ' + PLAN2_INCLUDED + ' messages</a>.</p>'; })() : '') +
+        return ''; })() : '') +
       (hosted || hostedStopped ? '<div class="row" id="hostedrow"><button class="btn ghost sm" id="hostedmanage">Manage or cancel</button><button class="btn ghost sm" id="hostedcheck">Check my subscription</button><span class="hint" id="hostedres"></span></div>' : '') +
       '<label class="f">Paste a set-up code<span>or the whole set-up link from your welcome email</span><textarea id="setupcode" rows="2" autocomplete="off" spellcheck="false" autocapitalize="off" placeholder="j:… or z:…"></textarea></label><div class="row"><button class="btn sm" id="setupcodego">Load</button><span class="hint" id="setupcoderes"></span></div>' +
       '<details class="sec sub"><summary><h3>Show me the set-up steps</h3></summary>' + (hosted ? '<p class="hint">Only for running your own accounts instead.</p>' : '') + '<p class="hint">Twilio for texts, Resend for email, through your own relay. Keys stay on this phone and out of back-ups unless you tick the box under Back-up.</p>' +

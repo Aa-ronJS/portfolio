@@ -108,7 +108,7 @@ const MOCK = () => { window.__qcCalls = []; let saved = null; try { saved = JSON
   // ---- the second phone
   await p.evaluate(() => { const st = window.__qcApp.store, S = st.load(); Object.assign(S.sending, { bal_left: 200, bal_included: 250, bal_used: 50, bal_plan: 'paid', bal_seats: 1, bal_seat: 1 }); st.save(); });
   await p.goto(base + '#/settings', { waitUntil: 'load' }); await p.reload({ waitUntil: 'load' }); await p.waitForSelector('#setupcode'); t = await text();
-  ok(/Two of you\? Two phones, \$149 a month, 250 messages\./.test(t) && !(await p.$('#seatgo')), 'a one-phone plan is offered the two-phone plan, not a broken button');
+  ok(!/Two phones|\$149/.test(t) && !(await p.$('#seatgo')), 'there is one plan: no two-phone offer, and no second-phone button on it');
   await p.evaluate(() => { const st = window.__qcApp.store, S = st.load(); S.sending.bal_seats = 2; st.save(); });
   await p.reload({ waitUntil: 'load' }); await p.waitForSelector('#seatgo'); t = await text();
   ok(/Same name, same messages, its own jobs/.test(t), 'the card says exactly what the second phone shares and what it does not');

@@ -20,7 +20,7 @@ curl -s https://chasem.app/api/paid                               # card payment
    on the privacy and terms pages. The ImprovMX MX and SPF records are on the
    domain; whether the alias forwards anywhere is only visible in ImprovMX.
 3. **GST on the subscription.** `config.js` says the business is GST
-   registered, so the $99 and $149 monthly invoices Stripe sends must show
+   registered, so the $99 monthly invoices Stripe sends must show
    GST. Set Australian GST up in Stripe Tax (or tell a session to run the
    `tax` action on `/api/admin`, which needs someone with live Stripe
    access to allow it).
