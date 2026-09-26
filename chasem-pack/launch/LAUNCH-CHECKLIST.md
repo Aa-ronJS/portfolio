@@ -10,6 +10,8 @@ what only you can do, in order. Nothing else is waiting on me.
 > step-by-step version, with the two scripts that do most of it for you.
 > What follows is the reference for what each piece is and why.
 >
+> **The paid ads plan for the first 100 painters:** [`PAID-ADS-PLAN.md`](PAID-ADS-PLAN.md).
+>
 > **Who this is sold to, and how:** [`GO-TO-MARKET.md`](GO-TO-MARKET.md) —
 > the painter, the channel, the hook, the free allowance, where the offer
 > appears and the number that decides more ad spend, with the reasoning
