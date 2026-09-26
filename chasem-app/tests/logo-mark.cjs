@@ -2,9 +2,9 @@
 exports.art = function (fg) {
   return '<g fill="none" stroke="' + fg + '" stroke-linecap="round" stroke-linejoin="round">' +
     '<path d="M351.4 138.6 A118 118 0 1 0 351.4 305.4" stroke-width="66"/>' +               // the C, open to the front
-    '<path d="M282 352 L338 394 L316 452 L352 456" stroke-width="30"/>' +                   // front leg, reaching
-    '<path d="M250 352 L208 400 L152 384" stroke-width="30"/>' +                            // back leg, kicked up
-    '<path d="M56 176 H112 M30 226 H104 M62 276 H112" stroke-width="22" opacity=".75"/>' +  // speed
+    '<path d="M284 356 L330 386 L316 424 L344 428" stroke-width="28"/>' +                   // front leg, short and quick
+    '<path d="M250 356 L214 392 L172 380" stroke-width="28"/>' +                            // back leg, kicked back
+    '<path d="M58 180 H96 M40 226 H92 M62 272 H96" stroke-width="20" opacity=".75"/>' +  // speed
     '</g>';
 };
 exports.icon = function (o) {

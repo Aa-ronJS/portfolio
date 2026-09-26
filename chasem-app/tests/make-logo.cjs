@@ -5,7 +5,7 @@ const { chromium } = require('playwright-core'); const fs = require('fs'); const
   const p = await b.newPage();
   const shot = async (svg, size, out) => { await p.setViewportSize({ width: size, height: size }); await p.setContent('<html><body style="margin:0;background:transparent">' + svg.replace('<svg ', '<svg width="' + size + '" height="' + size + '" ') + '</body></html>'); await p.screenshot({ path: out, omitBackground: true, clip: { x: 0, y: 0, width: size, height: size } }); };
   const dir = process.argv[2] || require('path').join(__dirname, '../icons');
-  const rounded = M.icon({ scale: 0.76 }), square = M.icon({ scale: 0.76, round: 0 }), mask = M.icon({ scale: 0.56, round: 0 });
+  const rounded = M.icon({ scale: 1.1 }), square = M.icon({ scale: 1.1, round: 0 }), mask = M.icon({ scale: 0.84, round: 0 });
   await shot(rounded, 192, dir + '/icon-192.png'); await shot(rounded, 512, dir + '/icon-512.png');
   await shot(square, 180, dir + '/icon-180.png');   // iOS rounds it itself
   await shot(mask, 512, dir + '/icon-maskable-512.png');
