@@ -196,7 +196,10 @@ a.sec.link::after{content:'\203A';color:var(--muted);font-size:1.4rem;line-heigh
 .card.chase .row.second.tiles .btn.tile{flex:1 1 0;min-width:0}
 
 /* Chase a quote made anywhere */
-.addtabs{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:8px;margin:6px 0 10px}
+.addtabs{display:grid;grid-auto-flow:column;grid-auto-columns:minmax(0,1fr);gap:6px;margin:6px 0 10px}
+.finders{display:grid;grid-template-columns:repeat(auto-fit,minmax(130px,1fr));gap:10px;margin:4px 0 10px}
+.finder{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:6px;min-height:96px;font-size:1.1rem;font-weight:700}
+.finder svg{width:34px;height:34px}
 .addtabs .btn.tile{min-width:0}
 .addform .btn.lg{width:100%;display:inline-flex;align-items:center;justify-content:center;gap:8px}
 .addform .btn.lg .ico{width:22px;height:22px}

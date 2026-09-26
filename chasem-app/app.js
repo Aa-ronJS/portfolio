@@ -337,7 +337,7 @@
     if (p[0] === 'scoreboard') return viewScoreboard();
     if (p[0] === 'myprices') return viewMyPrices();
     if (p[0] === 'handoff' && p[1]) { var hj = QCStore.getJob(p[1]); if (!hj) return bounce('/'); return viewHandOff(hj); }
-    if (p[0] === 'add') return viewAdd(p[1] || '');
+    if (p[0] === 'add') return viewAdd(p[1] || '', qs);
     if (p[0] === 'enquiry') { if (p[1] && !QCStore.getJob(p[1])) return bounce('/'); return viewEnquiry(p[1] ? QCStore.getJob(p[1]) : null); }
     if (p[0] === 'job' && p[1]) {
       var job = QCStore.getJob(p[1]); if (!job) return bounce('/');
@@ -2353,13 +2353,76 @@
     return queued.then(function (r) { return { added: got.jobs, jobs: got.loaded, queued: r }; });
   }
 
-  var ADD_TABS = [['type', 'pen', 'Type'], ['paste', 'paste', 'Paste'], ['photo', 'camera', 'Photo'], ['sheet', 'sheet', 'Import']];
-  function viewAdd(tab) {
-    if (ADD_TABS.every(function (t) { return t[0] !== tab; })) tab = 'type';
+  // A list of quotes and invoices from somewhere else, each ticked, with what was left out and why in one line.
+  // He unticks what he does not want and taps Chase.
+  function pickList(out, items, sk, source, heading) {
+    var fresh = items.filter(function (it) { return !alreadyHave(it); }), had = items.length - fresh.length;
+    var left = [sk.paid ? sk.paid + ' paid' : '', sk.closed ? sk.closed + ' declined or void' : '', sk.draft ? sk.draft + ' never sent' : '', had ? had + ' already here' : '', sk.incomplete ? sk.incomplete + ' with no name or amount' : ''].filter(Boolean).join(' · ');
+    if (!fresh.length) { out.innerHTML = '<div class="card"><p class="confirm">' + (items.length ? 'Everything found is already here.' : 'No quotes or invoices found.') + '</p>' + (left ? '<p class="hint">' + esc(left) + '</p>' : '') + '</div>'; return; }
+    out.innerHTML = '<div class="card">' + (heading ? '<p class="hint">' + esc(heading) + '</p>' : '') + '<h3>' + fresh.length + ' to chase</h3>' + (left ? '<p class="hint">Left out: ' + esc(left) + '</p>' : '') +
+      '<div class="sheetlist">' + fresh.map(function (it, i) { return '<label class="sheetrow"><input type="checkbox" data-i="' + i + '" checked><span><b>' + esc(it.name) + '</b> <span class="hint">' + esc([it.number, it.kind === 'invoice' ? 'invoice' : it.accepted ? 'won' : '', it.date ? shortDate(it.date) : '', it.phone || it.email || 'no mobile or email'].filter(Boolean).join(' · ')) + '</span></span><span>' + money(it.amount) + '</span></label>'; }).join('') + '</div>' +
+      '<button class="btn tape lg" id="sheetgo">Chase ' + fresh.length + '</button></div>';
+    var boxes = out.querySelectorAll('input[data-i]'), go2 = document.getElementById('sheetgo');
+    var count = function () { var k = Array.prototype.filter.call(boxes, function (b) { return b.checked; }).length; go2.textContent = 'Chase ' + k; go2.disabled = !k; };
+    Array.prototype.forEach.call(boxes, function (b) { b.addEventListener('change', count); });
+    go2.addEventListener('click', function () {
+      go2.disabled = true;
+      var pick = Array.prototype.filter.call(boxes, function (b) { return b.checked; }).map(function (b) { var it = fresh[+b.getAttribute('data-i')]; it.source = it.source || source; return it; });
+      chaseThese(pick).then(function (res) { toast(res.added + ' added to Follow-ups.'); go('/chase'); });
+    });
+  }
+  // Finding quotes by logging in to his email or Xero goes through the relay he already sends through.
+  function findCall(body) {
+    var sd = S.sending || {}, url = String(sd.server || '').trim();
+    url = url ? url.replace(/\/[^\/]*$/, '/find') : '';
+    if (!url || !sd.token) return Promise.resolve({ ok: false, off: true });
+    var fetcher = window.__qcRelayFetch || window.fetch; body.token = sd.token;
+    return fetcher(url, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body) })
+      .then(function (r) { return r.json(); }).catch(function () { return { ok: false, error: 'No signal. Try again when you have some.' }; });
+  }
+  var FINDERS = { microsoft: ['mail', 'Outlook'], google: ['mail', 'Gmail'], xero: ['sheet', 'Xero'] };
+  function viewFound(qs) {
+    var k = (/(?:^|&)k=([\w-]+)/.exec(qs || '') || [])[1] || '';
+    $app.innerHTML = '<a class="hint" href="#/">&larr; Jobs</a><h1>Chase a quote</h1><div class="card"><p class="hint">Reading what you sent…</p></div>';
+    // Collected once. A reload after that finds nothing, so the list is kept on the phone until it is used.
+    var kept = null; try { kept = JSON.parse(sessionStorage.getItem('qc-found-' + k) || 'null'); } catch (e) {}
+    var got = kept ? Promise.resolve(kept) : findCall({ action: 'collect', id: k }).then(function (r) { if (r && r.ok) { try { sessionStorage.setItem('qc-found-' + k, JSON.stringify(r)); } catch (e) {} } return r; });
+    got.then(function (r) {
+      if (!r || !r.ok) { $app.innerHTML = '<a class="hint" href="#/">&larr; Jobs</a><h1>Chase a quote</h1><div class="card"><p class="confirm">' + esc((r && r.error) || 'That did not work.') + '</p><a class="btn tape lg" href="#/add/find">Log in again</a></div>'; return; }
+      var head = 'From ' + (r.name || 'your account') + (r.account ? ', ' + r.account : '') + ': ' + (r.scanned || 0) + ' looked at.';
+      $app.innerHTML = '<a class="hint" href="#/">&larr; Jobs</a><h1>Chase a quote</h1><div id="foundout"></div>';
+      pickList(document.getElementById('foundout'), r.items || [], {}, r.provider || 'email', head);
+    });
+  }
+  var ADD_TABS = [['find', 'send', 'Find'], ['type', 'pen', 'Type'], ['paste', 'paste', 'Paste'], ['photo', 'camera', 'Photo'], ['sheet', 'sheet', 'Import']];
+  function viewAdd(tab, qs) {
+    // Which logins are switched on is asked once; until the answer comes, and if there are none, Find is not shown.
+    if (viewAdd.finders == null) { viewAdd.finders = []; findCall({ action: 'which' }).then(function (r) { viewAdd.finders = (r && r.ok && r.providers) || (r && r.off ? [] : null); if (!viewAdd.finders) return; if (viewAdd.finders.length && /^#\/add\/?$/.test(location.hash)) viewAdd('find'); }); }
+    var canFind = !!(viewAdd.finders && viewAdd.finders.length);
+    if (tab === 'found') return viewFound(qs);
+    if (!tab) tab = canFind ? 'find' : 'type';
+    if (ADD_TABS.every(function (t) { return t[0] !== tab; }) || (tab === 'find' && !canFind && !/why=/.test(qs || ''))) tab = 'type';
     if (!viewAdd.draft) { try { viewAdd.draft = JSON.parse(localStorage.getItem('qc-add-draft') || 'null'); } catch (e) {} }
     var draft = viewAdd.draft || { kind: 'quote' }, today = QCStore.today();
-    var tabs = '<div class="row tiles addtabs" role="tablist">' + ADD_TABS.map(function (t) { return '<a class="btn tile ' + (t[0] === tab ? 'tape' : 'ghost') + '" role="tab" aria-selected="' + (t[0] === tab) + '" href="#/add/' + t[0] + '"' + QCPics.says(t[2]) + '>' + QCPics.tile(t[1], t[2]) + '</a>'; }).join('') + '</div>';
+    var tabs = '<div class="row tiles addtabs" role="tablist">' + ADD_TABS.filter(function (t) { return t[0] !== 'find' || canFind; }).map(function (t) { return '<a class="btn tile ' + (t[0] === tab ? 'tape' : 'ghost') + '" role="tab" aria-selected="' + (t[0] === tab) + '" href="#/add/' + t[0] + '"' + QCPics.says(t[2]) + '>' + QCPics.tile(t[1], t[2]) + '</a>'; }).join('') + '</div>';
     var html = '<a class="hint" href="#/">&larr; Jobs</a><h1>Chase a quote</h1>' + tabs;
+
+    if (tab === 'find') {
+      var why = (/(?:^|&)why=(\w+)/.exec(qs || '') || [])[1] || '';
+      var said = { no: 'You said no, so nothing was read. Try again, or add them another way.', expired: 'That took too long. Log in again.', failed: 'That did not work. Log in again, or add them another way.', off: 'That is not switched on yet.' }[why] || '';
+      html += (said ? '<p class="confirm">' + esc(said) + '</p>' : '') + '<div class="finders">' + (viewAdd.finders || []).filter(function (k) { return FINDERS[k]; }).map(function (k) {
+        return '<button class="btn ghost finder" data-find="' + k + '"' + QCPics.says('Log in to ' + FINDERS[k][1]) + '>' + QCPics.svg(FINDERS[k][0]) + '<span>' + FINDERS[k][1] + '</span></button>'; }).join('') +
+        '</div><p class="hint">Log in, tap Allow. It reads what you sent, once, and keeps only the quotes.</p><p class="hint" id="findmsg"></p>';
+      $app.innerHTML = html;
+      Array.prototype.forEach.call($app.querySelectorAll('[data-find]'), function (b) { b.addEventListener('click', function () {
+        b.disabled = true; document.getElementById('findmsg').textContent = 'Opening the login\u2026';
+        findCall({ action: 'start', provider: b.getAttribute('data-find') }).then(function (r) {
+          if (!r || !r.ok || !r.url) { b.disabled = false; document.getElementById('findmsg').textContent = (r && r.error) || 'That did not work.'; return; }
+          location.href = r.url;
+        });
+      }); });
+      return;
+    }
 
     if (tab === 'paste') {
       html += '<div class="card"><label class="f">The text or email you sent<textarea id="pastebox" rows="7" placeholder="Hi Jane, quote for the deck is $2,450 inc GST..."></textarea></label><button class="btn tape lg" id="pastego">Read it</button><p class="hint" id="pastemsg"></p></div>';
@@ -2384,20 +2447,7 @@
         rd.onerror = function () { out.innerHTML = '<p class="confirm">That file would not open. Save it as CSV and try again.</p>'; };
         rd.onload = function () {
           var r; try { r = QCIngest.readSheet(String(rd.result || '')); } catch (e) { r = { items: [], skipped: {} }; }
-          var fresh = r.items.filter(function (it) { return !alreadyHave(it); }), had = r.items.length - fresh.length, sk = r.skipped || {};
-          var left = [sk.paid ? sk.paid + ' paid' : '', sk.closed ? sk.closed + ' declined or void' : '', sk.draft ? sk.draft + ' never sent' : '', had ? had + ' already here' : '', sk.incomplete ? sk.incomplete + ' with no name or amount' : ''].filter(Boolean).join(' · ');
-          if (!fresh.length) { out.innerHTML = '<div class="card"><p class="confirm">' + (r.items.length ? 'Everything in that file is already here.' : 'No quotes or invoices found in that file.') + '</p>' + (left ? '<p class="hint">' + esc(left) + '</p>' : '') + '</div>'; return; }
-          out.innerHTML = '<div class="card"><h3>' + fresh.length + ' to chase</h3>' + (left ? '<p class="hint">Left out: ' + esc(left) + '</p>' : '') +
-            '<div class="sheetlist">' + fresh.map(function (it, i) { return '<label class="sheetrow"><input type="checkbox" data-i="' + i + '" checked><span><b>' + esc(it.name) + '</b> <span class="hint">' + esc([it.number, it.kind === 'invoice' ? 'invoice' : it.accepted ? 'accepted' : '', it.phone || it.email || 'no mobile or email'].filter(Boolean).join(' · ')) + '</span></span><span>' + money(it.amount) + '</span></label>'; }).join('') + '</div>' +
-            '<button class="btn tape lg" id="sheetgo">Chase ' + fresh.length + '</button></div>';
-          var boxes = out.querySelectorAll('input[data-i]'), go2 = document.getElementById('sheetgo');
-          var count = function () { var k = Array.prototype.filter.call(boxes, function (b) { return b.checked; }).length; go2.textContent = 'Chase ' + k; go2.disabled = !k; };
-          Array.prototype.forEach.call(boxes, function (b) { b.addEventListener('change', count); });
-          go2.addEventListener('click', function () {
-            go2.disabled = true;
-            var pick = Array.prototype.filter.call(boxes, function (b) { return b.checked; }).map(function (b) { var it = fresh[+b.getAttribute('data-i')]; it.source = 'sheet'; return it; });
-            chaseThese(pick).then(function (res) { toast(res.added + ' added to Follow-ups.'); go('/chase'); });
-          });
+          pickList(out, r.items, r.skipped || {}, 'sheet');
         };
         rd.readAsText(f);
       });

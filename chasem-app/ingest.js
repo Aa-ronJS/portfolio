@@ -205,4 +205,4 @@
 
   var api = { parseText: parseText, parseCSV: parseCSV, readSheet: readSheet, mapColumns: mapColumns, parseDate: parseDate, parseMoney: parseMoney, tidyPhone: tidyPhone, FIELDS: FIELDS };
   if (typeof module !== 'undefined' && module.exports) module.exports = api; else root.QCIngest = api;
-})(this);
+})(typeof globalThis !== 'undefined' ? globalThis : typeof self !== 'undefined' ? self : this);   // the phone, node tests, and the relay (an ES module, where `this` is undefined)

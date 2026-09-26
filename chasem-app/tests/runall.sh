@@ -7,7 +7,7 @@ cd "$(dirname "$0")" || exit 1
 ONLY="$*"
 SUITES="apptest/flow apptest/e2e apptest/sendflow apptest/enquiry apptest/invguard apptest/auto apptest/geom
         apptest/detect apptest/sched-unit apptest/perf apptest/credits-app apptest/selfserve-app
-        apptest/prefill-e2e apptest/setup-link apptest/calendar-app apptest/testdrive apptest/hostile apptest/usable apptest/wall apptest/signin apptest/cardpay apptest/pics apptest/addquote apptest/landing2 apptest/landing-welcome apptest/council6
+        apptest/prefill-e2e apptest/setup-link apptest/calendar-app apptest/testdrive apptest/hostile apptest/usable apptest/wall apptest/signin apptest/cardpay apptest/pics apptest/addquote apptest/find apptest/landing2 apptest/landing-welcome apptest/council6
         smoke/data/engine2 smoke/data/ingest smoke/data/import smoke/data/pdf smoke/data/pricing smoke/data/xss smoke/data/xss2
         smoke/measure/flow smoke/measure/flow2 smoke/measure/inputs smoke/measure/lidar smoke/measure/scale smoke/measure/ar
         smoke/send/app smoke/send/unit

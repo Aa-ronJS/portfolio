@@ -34,6 +34,29 @@ curl -s https://chasem.app/api/paid                               # card payment
    Stripe Connect platform agreement in the Stripe dashboard, left sidebar,
    Connect. Everything after that sets itself up; see "Card payments" in
    `README.md`.
+7. **Find my quotes (optional, the app works without it):** each login
+   shows up in the app the moment its two values are in Vercel's
+   environment settings. Every one uses the same return address:
+   `https://chasem.app/find/back`.
+   - **Outlook / Microsoft 365** (about 10 minutes): portal.azure.com, App
+     registrations, New registration, "Accounts in any organizational
+     directory and personal Microsoft accounts", Web redirect URI above.
+     API permissions: Microsoft Graph, delegated, `Mail.Read` and
+     `User.Read`. Certificates & secrets, new client secret. Put the
+     Application (client) ID in `MS_CLIENT_ID` and the secret's value in
+     `MS_CLIENT_SECRET`.
+   - **Xero** (about 5 minutes): developer.xero.com, My Apps, New app, Web
+     app, redirect URI above. Put the client ID and secret in
+     `XERO_CLIENT_ID` and `XERO_CLIENT_SECRET`. Past a small number of
+     connected businesses Xero asks for certification or a paid plan.
+   - **Gmail** (slow): console.cloud.google.com, new project, enable the
+     Gmail API, OAuth consent screen (external), add the scope
+     `gmail.readonly`, Credentials, OAuth client ID, Web application,
+     redirect URI above. Put them in `GOOGLE_CLIENT_ID` and
+     `GOOGLE_CLIENT_SECRET`. Until Google verifies the app (reading mail is
+     a "restricted" scope, which means a security assessment), only up to
+     100 test users you list on the consent screen can use it, and they see
+     an "unverified app" warning.
 
 ## Decide when it matters
 
