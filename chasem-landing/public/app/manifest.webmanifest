@@ -1,10 +1,15 @@
 {
   "name": "Chasem",
   "short_name": "Chasem",
-  "description": "Measure a wall with a sheet of paper, price it at your rates, send the quote, invoice, chase.",
+  "description": "Chase your quotes, book the jobs, get paid.",
   "start_url": "./",
   "scope": "./",
   "display": "standalone",
+  "share_target": {
+    "action": "./",
+    "method": "GET",
+    "params": { "title": "share_title", "text": "share_text", "url": "share_url" }
+  },
   "background_color": "#F7F7F4",
   "theme_color": "#2B7BD6",
   "icons": [

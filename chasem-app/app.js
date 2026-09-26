@@ -2358,7 +2358,7 @@
   function pickList(out, items, sk, source, heading) {
     var fresh = items.filter(function (it) { return !alreadyHave(it); }), had = items.length - fresh.length;
     var left = [sk.paid ? sk.paid + ' paid' : '', sk.closed ? sk.closed + ' declined or void' : '', sk.draft ? sk.draft + ' never sent' : '', had ? had + ' already here' : '', sk.incomplete ? sk.incomplete + ' with no name or amount' : ''].filter(Boolean).join(' · ');
-    if (!fresh.length) { out.innerHTML = '<div class="card"><p class="confirm">' + (items.length ? 'Everything found is already here.' : 'No quotes or invoices found.') + '</p>' + (left ? '<p class="hint">' + esc(left) + '</p>' : '') + '</div>'; return; }
+    if (!fresh.length) { out.innerHTML = '<div class="card"><p class="confirm">' + (items.length ? 'Everything found is already here.' : 'No quotes or invoices found.') + '</p>' + (!items.length && source === 'sheet' ? '<p class="hint">From Tradify, ServiceM8, Xero and the like: export quotes as CSV.</p>' : '') + (left ? '<p class="hint">' + esc(left) + '</p>' : '') + '</div>'; return; }
     out.innerHTML = '<div class="card">' + (heading ? '<p class="hint">' + esc(heading) + '</p>' : '') + '<h3>' + fresh.length + ' to chase</h3>' + (left ? '<p class="hint">Left out: ' + esc(left) + '</p>' : '') +
       '<div class="sheetlist">' + fresh.map(function (it, i) { return '<label class="sheetrow"><input type="checkbox" data-i="' + i + '" checked><span><b>' + esc(it.name) + '</b> <span class="hint">' + esc([it.number, it.kind === 'invoice' ? 'invoice' : it.accepted ? 'won' : '', it.date ? shortDate(it.date) : '', it.phone || it.email || 'no mobile or email'].filter(Boolean).join(' · ')) + '</span></span><span>' + money(it.amount) + '</span></label>'; }).join('') + '</div>' +
       '<button class="btn tape lg" id="sheetgo">Chase ' + fresh.length + '</button></div>';
@@ -2380,7 +2380,7 @@
     return fetcher(url, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body) })
       .then(function (r) { return r.json(); }).catch(function () { return { ok: false, error: 'No signal. Try again when you have some.' }; });
   }
-  var FINDERS = { microsoft: ['mail', 'Outlook'], google: ['mail', 'Gmail'], xero: ['sheet', 'Xero'] };
+  var FINDERS = { microsoft: ['mail', 'Outlook'], google: ['mail', 'Gmail'], xero: ['invoice', 'Xero'] };
   function viewFound(qs) {
     var k = (/(?:^|&)k=([\w-]+)/.exec(qs || '') || [])[1] || '';
     $app.innerHTML = '<a class="hint" href="#/">&larr; Jobs</a><h1>Chase a quote</h1><div class="card"><p class="hint">Reading what you sent…</p></div>';
@@ -2394,26 +2394,91 @@
       pickList(document.getElementById('foundout'), r.items || [], {}, r.provider || 'email', head);
     });
   }
-  var ADD_TABS = [['find', 'send', 'Find'], ['type', 'pen', 'Type'], ['paste', 'paste', 'Paste'], ['photo', 'camera', 'Photo'], ['sheet', 'sheet', 'Import']];
+  // A whole texts backup, read in pieces so a big one with photos in it does not run the phone out of memory.
+  function readTextsFile(f, out) {
+    out.innerHTML = '<div class="card"><p class="hint" id="readpct">Reading…</p></div>';
+    var rd = QCIngest.textsReader(), size = f.size || 0, at = 0, STEP = 2 * 1048576, dec = null;
+    try { dec = new TextDecoder('utf-8'); } catch (e) {}
+    var fail = function () { out.innerHTML = '<div class="card"><p class="confirm">That file would not open. Choose it again.</p></div>'; };
+    var finish = function () {
+      var r; try { r = rd.done(); } catch (e) { return fail(); }
+      if (document.body.contains(out)) pickList(out, r.items, r.skipped || {}, 'texts', r.scanned + ' texts looked at.');
+    };
+    if (!dec || !f.slice) { var one = new FileReader(); one.onerror = fail; one.onload = function () { try { rd.push(String(one.result || '')); } catch (e) { return fail(); } finish(); }; one.readAsText(f); return; }
+    var next = function () {
+      if (at >= size) { try { rd.push(dec.decode()); } catch (e) {} return finish(); }
+      var fr = new FileReader(); fr.onerror = fail;
+      fr.onload = function () {
+        try { rd.push(dec.decode(new Uint8Array(fr.result), { stream: true })); } catch (e) { return fail(); }
+        at += STEP; var el = document.getElementById('readpct'); if (el) el.textContent = 'Reading… ' + Math.min(99, Math.round(at / size * 100)) + '%';
+        setTimeout(next, 0);
+      };
+      fr.readAsArrayBuffer(f.slice(at, at + STEP));
+    };
+    next();
+  }
+  var ANDROID = /Android/i.test(navigator.userAgent || '');
+  // His texts. No web app can read a phone's texts, and on iPhone no app at all can. Android lets him share
+  // any text into Chasem once it is on the home screen: hold it, Share, Chasem. Everywhere else, copy and paste.
+  function viewTexts() {
+    if (!ANDROID) return bounce('/add/paste');
+    var installed = (window.matchMedia && window.matchMedia('(display-mode: standalone)').matches) || navigator.standalone;
+    var way = [['text', 'Hold a text'], ['share', 'Share'], ['', 'Chasem']].map(function (w) {
+      return '<span class="swstep">' + (w[0] ? QCPics.svg(w[0]) : '<img src="icons/icon-192.png" alt="" width="34" height="34">') + '<span>' + w[1] + '</span></span>'; }).join('<span class="swto" aria-hidden="true">→</span>');
+    var html = '<a class="hint" href="#/add/find">&larr; Back</a><h1>Your texts</h1>';
+    if (!installed) html += '<div class="card">' + (window.__qcInstallPrompt ? '<button class="btn tape lg tile" id="instapp"' + QCPics.says('Add Chasem to this phone') + '>' + QCPics.tile('plus', 'Add to this phone') + '</button>' : '<p class="confirm">Chrome menu → Install app.</p>') + '</div>';
+    html += '<div class="card shareway' + (installed ? '' : ' later') + '" role="img" aria-label="Hold a text, tap Share, then Chasem">' + way + '</div>' +
+      '<a class="btn ghost lg tile" href="#/add/paste"' + QCPics.says('Or paste it') + '>' + QCPics.tile('paste', 'Or paste it') + '</a>';
+    $app.innerHTML = html;
+    var ins = document.getElementById('instapp');
+    if (ins) ins.addEventListener('click', function () { var ev = window.__qcInstallPrompt; if (!ev) return; ins.disabled = true; ev.prompt(); (ev.userChoice || Promise.resolve({})).then(function (r) { if (r && r.outcome === 'accepted') { window.__qcInstallPrompt = null; toast('Added'); viewTexts(); } else ins.disabled = false; }).catch(function () { ins.disabled = false; }); });
+  }
+  // What a pasted or shared text or email says, ready to check on Type.
+  function draftFrom(t) {
+    var f = QCIngest.parseText(t);
+    viewAdd.draft = { kind: f.kind, name: f.name, phone: f.phone, email: f.email, amount: f.amount > 0 ? f.amount : '', date: f.date, number: f.number, what: f.what, found: true };
+    try { localStorage.setItem('qc-add-draft', JSON.stringify(viewAdd.draft)); } catch (e) {}
+  }
+  // A file exported from the app he quotes with (Tradify, ServiceM8, Xero...) or a file of his texts.
+  function wireFile() {
+    document.getElementById('sheetfile').addEventListener('change', function () {
+      var f = this.files && this.files[0], out = document.getElementById('sheetout'); if (!f) return;
+      if (/\.xml$/i.test(f.name || '') || /xml/.test(f.type || '')) return readTextsFile(f, out);
+      var rd = new FileReader();
+      rd.onerror = function () { out.innerHTML = '<p class="confirm">That file would not open. Save it as CSV and try again.</p>'; };
+      rd.onload = function () {
+        var r, t; try { r = QCIngest.readSheet(String(rd.result || '')); } catch (e) { r = { items: [], skipped: {} }; }
+        // not quotes, but a file of messages (an iPhone export): read it as texts
+        if (!r.items.length) { try { t = QCIngest.readTexts(String(rd.result || '')); if (t.items.length) r = t; } catch (e) {} }
+        pickList(out, r.items, r.skipped || {}, t && r === t ? 'texts' : 'sheet');
+      };
+      rd.readAsText(f);
+    });
+  }
+  var ADD_TABS = [['find', 'send', 'Find'], ['type', 'pen', 'Type'], ['paste', 'paste', 'Paste'], ['photo', 'camera', 'Photo']];
   function viewAdd(tab, qs) {
-    // Which logins are switched on is asked once; until the answer comes, and if there are none, Find is not shown.
-    if (viewAdd.finders == null) { viewAdd.finders = []; findCall({ action: 'which' }).then(function (r) { viewAdd.finders = (r && r.ok && r.providers) || (r && r.off ? [] : null); if (!viewAdd.finders) return; if (viewAdd.finders.length && /^#\/add\/?$/.test(location.hash)) viewAdd('find'); }); }
-    var canFind = !!(viewAdd.finders && viewAdd.finders.length);
+    // Which logins are switched on is asked once. Until the answer comes, and if there are none, Find has Texts and File.
+    if (viewAdd.finders == null) { viewAdd.finders = []; findCall({ action: 'which' }).then(function (r) { viewAdd.finders = (r && r.ok && r.providers) || (r && r.off ? [] : null); if (!viewAdd.finders) return; var so = document.getElementById('sheetout'); if (viewAdd.finders.length && /^#\/add\/?(?:find|sheet)?$/.test(location.hash) && so && !so.innerHTML) viewAdd('find'); }); }
+    var logins = (viewAdd.finders || []).filter(function (k) { return FINDERS[k]; });
     if (tab === 'found') return viewFound(qs);
-    if (!tab) tab = canFind ? 'find' : 'type';
-    if (ADD_TABS.every(function (t) { return t[0] !== tab; }) || (tab === 'find' && !canFind && !/why=/.test(qs || ''))) tab = 'type';
+    if (tab === 'texts') return viewTexts();
+    if (!tab || tab === 'sheet') tab = 'find';
+    if (ADD_TABS.every(function (t) { return t[0] !== tab; })) tab = 'type';
     if (!viewAdd.draft) { try { viewAdd.draft = JSON.parse(localStorage.getItem('qc-add-draft') || 'null'); } catch (e) {} }
     var draft = viewAdd.draft || { kind: 'quote' }, today = QCStore.today();
-    var tabs = '<div class="row tiles addtabs" role="tablist">' + ADD_TABS.filter(function (t) { return t[0] !== 'find' || canFind; }).map(function (t) { return '<a class="btn tile ' + (t[0] === tab ? 'tape' : 'ghost') + '" role="tab" aria-selected="' + (t[0] === tab) + '" href="#/add/' + t[0] + '"' + QCPics.says(t[2]) + '>' + QCPics.tile(t[1], t[2]) + '</a>'; }).join('') + '</div>';
+    var tabs = '<div class="row tiles addtabs" role="tablist">' + ADD_TABS.map(function (t) { return '<a class="btn tile ' + (t[0] === tab ? 'tape' : 'ghost') + '" role="tab" aria-selected="' + (t[0] === tab) + '" href="#/add/' + t[0] + '"' + QCPics.says(t[2]) + '>' + QCPics.tile(t[1], t[2]) + '</a>'; }).join('') + '</div>';
     var html = '<a class="hint" href="#/">&larr; Jobs</a><h1>Chase a quote</h1>' + tabs;
 
     if (tab === 'find') {
       var why = (/(?:^|&)why=(\w+)/.exec(qs || '') || [])[1] || '';
       var said = { no: 'You said no, so nothing was read. Try again, or add them another way.', expired: 'That took too long. Log in again.', failed: 'That did not work. Log in again, or add them another way.', off: 'That is not switched on yet.' }[why] || '';
-      html += (said ? '<p class="confirm">' + esc(said) + '</p>' : '') + '<div class="finders">' + (viewAdd.finders || []).filter(function (k) { return FINDERS[k]; }).map(function (k) {
+      html += (said ? '<p class="confirm">' + esc(said) + '</p>' : '') + '<div class="finders">' + logins.map(function (k) {
         return '<button class="btn ghost finder" data-find="' + k + '"' + QCPics.says('Log in to ' + FINDERS[k][1]) + '>' + QCPics.svg(FINDERS[k][0]) + '<span>' + FINDERS[k][1] + '</span></button>'; }).join('') +
-        '</div><p class="hint">Log in, tap Allow. It reads what you sent, once, and keeps only the quotes.</p><p class="hint" id="findmsg"></p>';
+        '<a class="btn ghost finder" href="#/add/texts"' + QCPics.says('Texts') + '>' + QCPics.svg('text') + '<span>Texts</span></a>' +
+        '<label class="btn ghost finder"' + QCPics.says('Choose a file') + '>' + QCPics.svg('sheet') + '<span>File</span><input type="file" id="sheetfile" accept=".csv,.txt,.xml,text/csv,text/plain,text/xml,application/xml"></label>' +
+        '</div>' + (logins.length ? '<p class="hint">Log in, tap Allow. It reads what you sent, once, and keeps only the quotes.</p>' : '') + '<p class="hint" id="findmsg"></p><div id="sheetout"></div>';
       $app.innerHTML = html;
+      wireFile();
       Array.prototype.forEach.call($app.querySelectorAll('[data-find]'), function (b) { b.addEventListener('click', function () {
         b.disabled = true; document.getElementById('findmsg').textContent = 'Opening the login\u2026';
         findCall({ action: 'start', provider: b.getAttribute('data-find') }).then(function (r) {
@@ -2425,31 +2490,20 @@
     }
 
     if (tab === 'paste') {
-      html += '<div class="card"><label class="f">The text or email you sent<textarea id="pastebox" rows="7" placeholder="Hi Jane, quote for the deck is $2,450 inc GST..."></textarea></label><button class="btn tape lg" id="pastego">Read it</button><p class="hint" id="pastemsg"></p></div>';
+      var clip = !!(navigator.clipboard && navigator.clipboard.readText);
+      html += '<div class="card">' + (clip ? '<button class="btn tape lg tile" id="pasteclip"' + QCPics.says('Paste') + '>' + QCPics.tile('paste', 'Paste') + '</button>' : '') + '<label class="f">The text or email you sent<textarea id="pastebox" rows="7" placeholder="Hi Jane, quote for the deck is $2,450 inc GST..."></textarea></label><button class="btn tape lg" id="pastego">Read it</button><p class="hint" id="pastemsg"></p></div>';
       $app.innerHTML = html;
       document.getElementById('pastego').addEventListener('click', function () {
-        var t = document.getElementById('pastebox').value, f = QCIngest.parseText(t);
-        if (!String(t).trim()) { document.getElementById('pastemsg').textContent = 'Paste it in first.'; return; }
-        viewAdd.draft = { kind: f.kind, name: f.name, phone: f.phone, email: f.email, amount: f.amount > 0 ? f.amount : '', date: f.date, number: f.number, what: f.what, found: true };
-        try { localStorage.setItem('qc-add-draft', JSON.stringify(viewAdd.draft)); } catch (e) {}
-        go('/add/type');
+        var t = document.getElementById('pastebox').value;
+        if (!String(t).trim()) { document.getElementById('pastemsg').textContent = 'Hold a text, tap Copy, then Paste.'; return; }
+        draftFrom(t); go('/add/type');
       });
-      return;
-    }
-
-    if (tab === 'sheet') {
-      html += '<div class="card"><label class="btn tape lg tile"' + QCPics.says('Choose the file') + '>' + QCPics.tile('sheet', 'Choose the file') + '<input type="file" id="sheetfile" accept=".csv,.txt,text/csv,text/plain"></label>' +
-        '<p class="hint">Tradify, ServiceM8, Fergus, simPRO, Xero, MYOB, QuickBooks: export quotes or invoices as CSV.</p></div><div id="sheetout"></div>';
-      $app.innerHTML = html;
-      document.getElementById('sheetfile').addEventListener('change', function () {
-        var f = this.files && this.files[0], out = document.getElementById('sheetout'); if (!f) return;
-        var rd = new FileReader();
-        rd.onerror = function () { out.innerHTML = '<p class="confirm">That file would not open. Save it as CSV and try again.</p>'; };
-        rd.onload = function () {
-          var r; try { r = QCIngest.readSheet(String(rd.result || '')); } catch (e) { r = { items: [], skipped: {} }; }
-          pickList(out, r.items, r.skipped || {}, 'sheet');
-        };
-        rd.readAsText(f);
+      if (clip) document.getElementById('pasteclip').addEventListener('click', function () {
+        var box = document.getElementById('pastebox'), msg = document.getElementById('pastemsg');
+        navigator.clipboard.readText().then(function (t) {
+          if (!String(t || '').trim()) { msg.textContent = 'Nothing copied yet. Hold a text, tap Copy, come back.'; return; }
+          box.value = t; document.getElementById('pastego').click();
+        }).catch(function () { box.focus(); msg.textContent = 'Hold in the box, tap Paste.'; });
       });
       return;
     }
@@ -2666,6 +2720,14 @@
   // A private window cannot keep anything, and he should know before he types a job into it, not after.
   try { if (QCStore.storageOk && !QCStore.storageOk()) saveTrouble('blocked'); } catch (e) {}
 
+  // Shared in from another app (on Android: hold a text, Share, Chasem). Read it and open it ready to check.
+  (function () { try {
+    var sq = location.search || '', part = function (k) { var m = new RegExp('[?&]' + k + '=([^&]*)').exec(sq); return m ? decodeURIComponent(m[1].replace(/\+/g, ' ')) : ''; };
+    var shared = [part('share_title'), part('share_text'), part('share_url')].filter(Boolean).join('\n');
+    if (!/[?&]share_/.test(sq)) return;
+    if (shared.trim()) draftFrom(shared);
+    history.replaceState(null, '', location.pathname + '#/add/' + (shared.trim() ? 'type' : 'paste'));
+  } catch (e) {} })();
   route();
   // The tabs: picture over its word. Done here so the pictures have one source.
   try { [['home', 'jobs'], ['chase', 'bell'], ['settings', 'setup']].forEach(function (t) {

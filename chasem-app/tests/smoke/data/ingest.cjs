@@ -133,5 +133,60 @@ ok(r.items.length === 0, 'an empty file reads as nothing, and does not throw');
 r = I.readSheet('just,some,words\nno,money,here');
 ok(r.items.length === 0, 'a file that is not quotes reads as nothing');
 
+// ---- every text he sent, from a backup (Android: SMS Backup & Restore XML)
+const NOW = Date.UTC(2026, 8, 26), ago = (d) => String(NOW - d * 86400000);
+const esc = (t) => t.replace(/&/g, '&amp;').replace(/"/g, '&quot;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/\n/g, '&#10;');
+const sms = (addr, name, type, d, body) => '<sms protocol="0" address="' + addr + '" date="' + ago(d) + '" type="' + type + '" subject="null" body="' + esc(body) + '" toa="null" sc_toa="null" service_center="null" read="1" status="-1" locked="0" date_sent="0" readable_date="x" contact_name="' + name + '" />\n';
+const photo = 'A'.repeat(300000);
+const xml = '<?xml version=\'1.0\' encoding=\'UTF-8\' standalone=\'yes\' ?>\n<!--File Created By SMS Backup & Restore v10.20.002-->\n<smses count="12" backup_set="x" backup_date="1">\n' +
+  sms('+61412111222', 'Jane Mitchell', '1', 20, 'Hi mate can you quote the deck?') +
+  sms('+61412111222', 'Jane Mitchell', '2', 18, 'Hi Jane, quote for the deck is $2,450 inc GST. Q-2041. Let me know!') +
+  sms('+61412111222', 'Jane Mitchell', '2', 12, 'Hi Jane, sorry revised: $2,300 inc GST all up') +
+  sms('0413 222 333', '(Unknown)', '2', 9, 'Hi Tom, price for the downlights is $880 including GST') +
+  sms('0413222333', '(Unknown)', '1', 8, 'Yep go ahead, when can you start?') +
+  sms('+61414333444', 'Ray Cole', '2', 30, 'Ray, invoice INV-1006 for the rewire, total $3,885.20 due on the 15th') +
+  sms('+61414333444', 'Ray Cole', '1', 25, 'Paid it this morning thanks') +
+  sms('+61415444555', 'Lee Park', '2', 40, 'Lee, quote for the fence $4,100 inc gst') +
+  sms('+61415444555', 'Lee Park', '1', 35, 'Thanks but we have gone with someone else') +
+  sms('+61416555666', 'Mum', '2', 3, 'Running late, be there at 6') +
+  sms('+61417666777', 'Sam Old', '2', 400, 'Quote for the roof $9,000') +
+  sms('TELSTRA', 'TELSTRA', '1', 2, 'Your bill of $95 is due') +
+  sms('+61412999888~+61412999777', '', '2', 5, 'Quote for you both $500') +
+  '<mms date="' + ago(6) + '" msg_box="2" address="+61418777888" contact_name="Kim Vo" m_type="128"><parts>' +
+  '<part seq="-1" ct="application/smil" name="null" text="&lt;smil&gt;&lt;/smil&gt;" />' +
+  '<part seq="0" ct="image/jpeg" name="IMG_1.jpg" cl="IMG_1.jpg" data="' + photo + '" />' +
+  '<part seq="0" ct="text/plain" name="null" chset="106" text="Hi Kim, here&apos;s the quote for the bathroom regrout: $1,150 inc GST &#128512;" />' +
+  '</parts><addrs><addr address="+61418777888" type="151" charset="106" /></addrs></mms>\n</smses>\n';
+r = I.readTexts(xml, { now: NOW });
+const by = Object.fromEntries(r.items.map(i => [i.name, i]));
+ok(r.items.length === 3, 'from 15 texts to 9 people, three are quotes to chase: ' + r.items.map(i => i.name).join(', '));
+eq(by['Jane Mitchell'] && by['Jane Mitchell'].amount, 2300, 'a revised price replaces the first: the latest one sent is what gets chased');
+eq(by['Jane Mitchell'] && by['Jane Mitchell'].phone, '0412 111 222', 'the mobile is the one it was sent to, tidied');
+eq(by['Jane Mitchell'] && by['Jane Mitchell'].date, '2026-09-14', 'the date is the day that text went');
+eq(by['Tom'] && by['Tom'].accepted, true, 'Tom said "Yep go ahead": it comes in as won, to book, not to chase (named from "Hi Tom" as he is not in contacts)');
+eq(by['Kim Vo'] && by['Kim Vo'].amount, 1150, 'a picture message with a photo in it is read for its words, and the photo stepped over');
+ok(!by['Ray Cole'] && r.skipped.paid === 1, 'an invoice the customer said they paid is left out, and counted as paid');
+ok(!by['Lee Park'] && r.skipped.closed === 1, 'a quote they turned down is left out, and counted');
+ok(!by['Mum'] && !by['Sam Old'] && !r.items.some(i => /TELSTRA/.test(i.name)), 'no price, over six months old, a company short code: none of them');
+ok(!r.items.some(i => i.amount === 500), 'a group text is not a customer quote');
+// fed in small pieces, as a big file is, it finds the same
+const rd = I.textsReader({ now: NOW }); for (let i = 0; i < xml.length; i += 4096) rd.push(xml.slice(i, i + 4096));
+const r2 = rd.done();
+ok(JSON.stringify(r2.items) === JSON.stringify(r.items), 'read in 4 KB pieces, the answer is the same (' + r2.items.length + ')');
+
+// ---- an iPhone export via a computer: a CSV with the message text in it
+const csv = '"Chat Session","Message Date","Delivered Date","Read Date","Edited Date","Service","Type","Sender ID","Sender Name","Status","Replying to","Subject","Text","Attachment","Attachment type"\n' +
+  '"Priya Shah","2026-09-01 09:10:00","","","","iMessage","Incoming","+61419888999","Priya Shah","Read","","","Can you quote the fence painting?","",""\n' +
+  '"Priya Shah","2026-09-02 17:40:00","","","","iMessage","Outgoing","","","Delivered","","","Hi Priya, quote for the fence painting is $1,980 inc GST","",""\n' +
+  '"0420 111 000","2026-09-05 08:00:00","","","","SMS","Outgoing","","","Sent","","","Price for the gate $640 all up","",""\n' +
+  '"Priya Shah","2026-09-03 07:00:00","","","","iMessage","Incoming","+61419888999","Priya Shah","Read","","","Thanks, will let you know","",""\n';
+r = I.readTexts(csv, { now: NOW });
+const byc = Object.fromEntries(r.items.map(i => [i.name, i]));
+eq(byc['Priya Shah'] && byc['Priya Shah'].phone, '0419 888 999', 'iPhone CSV: the quote to Priya, her mobile taken from her own messages');
+eq(byc['Priya Shah'] && byc['Priya Shah'].amount, 1980, 'and the amount');
+ok(r.items.some(i => i.phone === '0420 111 000' && i.amount === 640), 'a chat named by its number works too');
+eq(I.readTexts('not,a,messages,file\n1,2,3,4').items.length, 0, 'a CSV that is not messages reads as nothing');
+eq(I.readTexts('<html><body>hello</body></html>').items.length, 0, 'an XML file that is not a backup reads as nothing');
+
 console.log(fails ? '\nFAILURES: ' + fails : '\nALL PASSED');
 process.exit(fails ? 1 : 0);

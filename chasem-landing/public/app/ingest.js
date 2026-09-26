@@ -86,7 +86,9 @@
       if (hi) out.name = hi[1];
     }
     if (!out.name && out.email) out.name = titleCase(out.email.split('@')[0].replace(/[._\d]+/g, ' ').trim());
-    var num = (subj && subj[1].match(NUMBER)) || body.match(NUMBER); if (num) out.number = num[1].toUpperCase();
+    // "Q-311", "INV-1006", "QU-0042" are numbers whole; otherwise the word quote or invoice then a number
+    var TAG = /\b((?:QUO|QU|QT|Q|INV|IN|EST|JOB|J)-\d{2,8})\b/i;
+    var num = (subj && (subj[1].match(TAG) || subj[1].match(NUMBER))) || body.match(TAG) || body.match(NUMBER); if (num) out.number = num[1].toUpperCase();
     // amounts: a line that says total wins; otherwise the largest figure, which on a quote is nearly always it
     var best = NaN, labelled = NaN, re = /(?:A?\$|AUD\s?)\s?\d[\d,]*(?:\.\d{1,2})?(?:\s?k\b)?|\b\d{1,3}(?:,\d{3})+(?:\.\d{1,2})?\b/gi, m;
     body.split('\n').forEach(function (line) {
@@ -203,6 +205,95 @@
     return { items: items, skipped: skipped, map: map, headers: headers };
   }
 
-  var api = { parseText: parseText, parseCSV: parseCSV, readSheet: readSheet, mapColumns: mapColumns, parseDate: parseDate, parseMoney: parseMoney, tidyPhone: tidyPhone, FIELDS: FIELDS };
+  // ---- every text he sent, from a backup of the phone ---------------------------------------------------------
+  // Android lets a texts app read them, and "SMS Backup & Restore" (free, the one most people already have)
+  // writes them all to one XML file. iPhone texts only come out through a computer, as a CSV with a column of
+  // message text. Either way: the texts he sent that put a price on a job, the latest for each person, and what
+  // the customer said after it. A backup with photos in it can be hundreds of megabytes, so it is fed in pieces
+  // and photos are stepped over rather than read.
+  var ENT = { amp: '&', lt: '<', gt: '>', quot: '"', apos: "'" };
+  function chr(n) { return n > 0xFFFF && String.fromCodePoint ? String.fromCodePoint(n) : String.fromCharCode(n > 0xFFFF ? 0xFFFD : n); }
+  function unent(s) { return String(s).replace(/&(#x[0-9a-f]+|#\d+|amp|lt|gt|quot|apos);/gi, function (m, e) { e = e.toLowerCase(); return e.charAt(0) === '#' ? chr(e.charAt(1) === 'x' ? parseInt(e.slice(2), 16) : +e.slice(1)) : ENT[e]; }); }
+  function attrs(tag) { var o = {}, re = /([\w:-]+)="([^"]*)"/g, m; while ((m = re.exec(tag))) o[m[1]] = unent(m[2]); return o; }
+  var PRICEY = /quot|estimat|invoice|price|\bcost|\$|\binc(?:l|luding)?\.?\s*gst|all up|total/i;
+  var SAID_YES = /\b(yes|yep|yeah|yes please|go ahead|sounds good|happy (?:to go|with that|with the)|let'?s do it|book (?:it|us|me) in|accept(?:ed)?|go for it|deal|when can you start)\b/i;
+  var SAID_NO = /\b(no thanks|not going ahead|won'?t be going ahead|gone with (?:someone|another)|went with (?:someone|another)|too (?:expensive|dear)|declin)/i;
+  var SAID_PAID = /\b(paid|transferred|payment (?:sent|made|done)|sent (?:the|you the) (?:money|payment))\b/i;
+  function textsReader(opts) {
+    opts = opts || {};
+    var now = opts.now || Date.now(), since = now - (opts.days || 180) * 86400000;
+    var buf = '', from = 0, csv = null, mms = null, threads = {}, scanned = 0;
+    function add(addr, name, out, when, body) {
+      if (!addr || /[~,;]/.test(addr) || String(addr).replace(/\D/g, '').length < 8) return;   // group texts and short codes are not customers
+      when = +when || 0; if (when && when < since) return;
+      var ph = tidyPhone(addr), k = ph.replace(/\D/g, '');
+      var th = threads[k] || (threads[k] = { phone: ph, name: '', msgs: [] });
+      if (name && name !== '(Unknown)' && !/^\+?[\d\s()-]+$/.test(name)) th.name = name;
+      th.msgs.push({ out: out, when: when, body: String(body || '') }); scanned++;
+    }
+    function tags() {
+      for (;;) {
+        var lt = buf.indexOf('<', from); if (lt < 0) { buf = ''; from = 0; return; }
+        var gt = buf.indexOf('>', lt); if (gt < 0) { buf = buf.slice(lt); from = 0; return; }
+        var head = buf.substr(lt, 8), tag;
+        if (/^<sms[\s/>]/.test(head)) { var a = attrs(buf.slice(lt, gt)); add(a.address, a.contact_name, a.type === '2', a.date, a.body); }
+        else if (/^<mms[\s/>]/.test(head)) { mms = attrs(buf.slice(lt, gt)); mms.text = ''; }
+        else if (/^<part[\s/>]/.test(head) && mms) {
+          tag = buf.slice(lt, gt); var cut = tag.indexOf(' data="'); if (cut > 0) tag = tag.slice(0, cut);   // a photo: step over it
+          if (/\bct="text\/plain"/.test(tag)) { var pa = attrs(tag); if (pa.text && pa.text !== 'null') mms.text += (mms.text ? '\n' : '') + pa.text; }
+        }
+        else if (/^<\/mms>/.test(head) && mms) { add(mms.address, mms.contact_name, mms.msg_box === '2', mms.date, mms.text); mms = null; }
+        from = gt + 1;
+      }
+    }
+    function push(chunk) {
+      chunk = String(chunk || '');
+      if (csv === null && buf === '' && /\S/.test(chunk)) csv = !/^\s*(?:﻿)?</.test(chunk);
+      if (csv) { buf += chunk; return; }
+      buf = buf.slice(from) + chunk; from = 0; tags();
+    }
+    // A CSV of messages: a column of text, a column saying which way it went, and who the chat was with.
+    function readCsv() {
+      var rows = parseCSV(buf); buf = ''; if (rows.length < 2) return;
+      var hs = rows[0].map(key), col = function (re) { for (var i = 0; i < hs.length; i++) if (re.test(hs[i])) return i; return -1; };
+      var tx = col(/^(text|body|message|messagetext|messagebody|content)$/), dir = col(/^(type|direction|messagetype|folder|box|sentreceived|isfromme|fromme|isoutgoing)$/);
+      var who = col(/^(chatsession|conversation|thread|chat|contact|contactname|name|recipient|to|address|phonenumber|phone|number)$/);
+      var sid = col(/^(senderid|sender|from|fromaddress|handle)$/), dt = col(/^(messagedate|date|datetime|sentdate|timestamp|time)$/);
+      if (tx < 0 || (who < 0 && sid < 0)) return;
+      var phones = {};
+      rows.slice(1).forEach(function (r) { var w = r[who] || '', s = r[sid] || '', p = (String(w).match(MOBILE) || String(s).match(MOBILE) || [''])[0]; if (w && p && !phones[w]) phones[w] = p; });
+      rows.slice(1).forEach(function (r) {
+        var d = dir >= 0 ? String(r[dir] || '').toLowerCase() : '', out = /out|sent|^2$|true|yes|from me/.test(d) && !/incom|receiv|inbox/.test(d);
+        if (dir >= 0 && /^(isfromme|fromme|isoutgoing)$/.test(hs[dir])) out = /^(1|true|yes)$/.test(d);
+        var w = who >= 0 ? String(r[who] || '') : '', addr = phones[w] || (String(w).match(MOBILE) || [''])[0] || (!out && sid >= 0 ? r[sid] : '');
+        var when = dt >= 0 ? Date.parse(parseDate(r[dt]) || r[dt]) : 0;
+        add(addr, w && !MOBILE.test(w) ? w : '', out, when, r[tx]);
+      });
+    }
+    function done() {
+      if (csv) readCsv();
+      var items = [], skipped = {};
+      Object.keys(threads).forEach(function (k) {
+        var th = threads[k], msgs = th.msgs.sort(function (a, b) { return a.when - b.when; }), q = null, it = null;
+        for (var i = msgs.length - 1; i >= 0 && !q; i--) {
+          var m = msgs[i]; if (!m.out || !PRICEY.test(m.body)) continue;
+          var p = parseText(m.body); if (p.amount >= 50 && p.amount <= 5000000) { q = m; it = p; }
+        }
+        if (!q) return;
+        var after = msgs.filter(function (m) { return !m.out && m.when > q.when; }).map(function (m) { return m.body; }).join('\n');
+        if (SAID_NO.test(after)) { skipped.closed = (skipped.closed || 0) + 1; return; }
+        if (it.kind === 'invoice' && SAID_PAID.test(after)) { skipped.paid = (skipped.paid || 0) + 1; return; }
+        var d = q.when ? new Date(q.when) : null;
+        items.push({ kind: it.kind, name: th.name || it.name || th.phone, business: '', phone: th.phone, email: it.email, amount: it.amount, date: d ? iso(d.getFullYear(), d.getMonth() + 1, d.getDate()) : it.date,
+          due: '', number: it.number, what: it.what, accepted: it.kind === 'quote' && SAID_YES.test(after), paid: 0, source: 'texts' });
+      });
+      items.sort(function (a, b) { return String(b.date).localeCompare(String(a.date)); });
+      return { items: items, skipped: skipped, scanned: scanned, people: Object.keys(threads).length };
+    }
+    return { push: push, done: done };
+  }
+  function readTexts(text, opts) { var r = textsReader(opts); r.push(text); return r.done(); }
+
+  var api = { parseText: parseText, parseCSV: parseCSV, readSheet: readSheet, textsReader: textsReader, readTexts: readTexts, mapColumns: mapColumns, parseDate: parseDate, parseMoney: parseMoney, tidyPhone: tidyPhone, FIELDS: FIELDS };
   if (typeof module !== 'undefined' && module.exports) module.exports = api; else root.QCIngest = api;
 })(typeof globalThis !== 'undefined' ? globalThis : typeof self !== 'undefined' ? self : this);   // the phone, node tests, and the relay (an ES module, where `this` is undefined)

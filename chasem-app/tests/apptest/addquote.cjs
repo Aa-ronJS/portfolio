@@ -22,8 +22,9 @@ const pre = () => { try { const k = 'qc-app-v1', S = JSON.parse(localStorage.get
   // ---- Home: chasing comes first
   const first = await p.$eval('#app .btn.tile', e => e.getAttribute('aria-label')).catch(() => '');
   ok(first === 'Chase a quote', 'the first button on Home is Chase a quote (' + first + ')');
-  await p.click('#chaseadd'); await p.waitForSelector('#a_name');
-  ok(/#\/add/.test(await p.evaluate(() => location.hash)), 'and it opens the Chase a quote screen');
+  await p.click('#chaseadd'); await p.waitForSelector('#sheetfile', { state: 'attached' });
+  ok(/#\/add/.test(await p.evaluate(() => location.hash)), 'and it opens the Chase a quote screen, on Find');
+  await p.click('#app .addtabs [aria-label="Type"]'); await p.waitForSelector('#a_name');
 
   // ---- Type one in: the button only lights up when there is enough to chase
   const lit = () => p.$eval('#a_go', e => !e.disabled);
@@ -106,7 +107,7 @@ const pre = () => { try { const k = 'qc-app-v1', S = JSON.parse(localStorage.get
   ok(/already here/.test(await text()) && !(await p.$('#sheetgo')), 'importing the same file again adds nothing');
   await p.setInputFiles('#sheetfile', { name: 'notes.csv', mimeType: 'text/csv', buffer: Buffer.from('hello,world\nno,money') });
   await p.waitForTimeout(600);
-  ok(/No quotes or invoices found/.test(await text()), 'a file that is not quotes says so, and does not break');
+  ok(/No quotes or invoices found/.test(await text()) && /export quotes as CSV/.test(await text()), 'a file that is not quotes says so, says what file to get, and does not break');
 
   // ---- Home leads with money: owed, waiting, won
   await go('#/');

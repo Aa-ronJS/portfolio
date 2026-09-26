@@ -41,7 +41,7 @@ const relay = () => {
   const calls = await p.evaluate(() => window.__calls.map(c => c.url + ' ' + c.b.action + ' ' + c.b.token));
   ok(calls[0] === 'https://relay.test/api/find which qc1.x.y', 'it asks the relay he already sends through, with his token: ' + calls[0]);
   const wide = await p.evaluate(() => document.documentElement.scrollWidth <= innerWidth);
-  ok(wide, 'five tabs still fit a phone without sideways scrolling');
+  ok(wide, 'the tabs still fit a phone without sideways scrolling');
 
   // ---- Tap Outlook: off to their login, back to a ticked list
   await p.click('[data-find="microsoft"]'); await p.waitForTimeout(1200);
@@ -79,14 +79,56 @@ const relay = () => {
   const p2 = await ctx.newPage(); p2.on('pageerror', e => { console.log('PAGE ERROR', e.message); fails++; });
   await p2.addInitScript(() => { window.__find = { providers: [] }; }); await p2.addInitScript(relay);
   await p2.goto(base + '#/add', { waitUntil: 'load' }); await p2.waitForTimeout(900);
-  ok((await p2.evaluate(() => window.__calls.length)) === 1 && !(await p2.$('#app [data-find]')) && !(await p2.$('#app .addtabs [aria-label="Find"]')) && await p2.$('#a_name'), 'with no login switched on, Find is not there and it opens on Type');
+  ok((await p2.evaluate(() => window.__calls.length)) === 1 && !(await p2.$('#app [data-find]')) && await p2.$('#app a.finder[href="#/add/texts"]') && await p2.$('#sheetfile'), 'with no login switched on, Find still has Texts and File');
+  ok(!(await p2.$('#app .addtabs [aria-label="Import"]')), 'and there is no separate Import: a file is one of the ways Find finds');
+  await p2.click('#app a.finder[href="#/add/texts"]'); await p2.waitForTimeout(600);
+  ok(/#\/add\/paste/.test(await p2.evaluate(() => location.hash)) && await p2.$('#pastebox'), 'on an iPhone, Texts goes to Paste: no app can read an iPhone\'s texts');
   // ---- No signal when it asks: Type now, and it asks again next time
   const p3 = await ctx.newPage(); p3.on('pageerror', e => { console.log('PAGE ERROR', e.message); fails++; });
   await p3.addInitScript(() => { window.__find = { providers: ['google'], down: true }; }); await p3.addInitScript(relay);
   await p3.goto(base + '#/add', { waitUntil: 'load' }); await p3.waitForTimeout(900);
-  ok(await p3.$('#a_name'), 'no signal: it opens on Type, nothing broken');
+  ok(await p3.$('#app a.finder[href="#/add/texts"]') && !(await p3.$('[data-find]')), 'no signal: Find opens with Texts and File, nothing broken');
   await p3.evaluate(() => { window.__find.down = false; location.hash = '#/'; setTimeout(() => { location.hash = '#/add'; }, 100); }); await p3.waitForTimeout(1200);
   ok(await p3.$('[data-find="google"]'), 'with signal back, Find turns up (Gmail)');
+
+  // ---- iPhone: one tap pastes what he copied and reads it
+  await ctx.grantPermissions(['clipboard-read', 'clipboard-write'], { origin: base.replace(/\/$/, '') });
+  await p2.evaluate(() => navigator.clipboard.writeText('Hi Grace, quote for the laundry tiling is $1,640 inc GST. Cheers, Dave'));
+  await p2.click('#pasteclip'); await p2.waitForTimeout(800);
+  ok(/#\/add\/type/.test(await p2.evaluate(() => location.hash)) && (await p2.$eval('#a_name', e => e.value)) === 'Grace' && /1640|1,640/.test(await p2.$eval('#a_amount', e => e.value)), 'Paste: one tap reads the copied text into Grace, $1,640, ready to check');
+
+  // ---- Android: share one text straight in
+  const actx = await b.newContext({ ...devices['Pixel 7'], serviceWorkers: 'block' }); const a = await actx.newPage();
+  a.on('pageerror', e => { console.log('PAGE ERROR', e.message); fails++; }); a.on('dialog', d => d.accept());
+  await a.addInitScript(pre); await a.addInitScript(() => { window.__find = { providers: [] }; }); await a.addInitScript(relay);
+  await a.goto(base + '?share_text=' + encodeURIComponent('Hi Ben, price for the switchboard is $2,980 inc GST. Q-311'), { waitUntil: 'load' }); await a.waitForTimeout(900);
+  ok(/#\/add\/type$/.test(await a.evaluate(() => location.hash)) && !/share_text/.test(await a.evaluate(() => location.search)), 'a text shared in from Messages opens ready to check, and the address is tidied');
+  ok((await a.$eval('#a_name', e => e.value)) === 'Ben' && /2980|2,980/.test(await a.$eval('#a_amount', e => e.value)) && (await a.$eval('#a_number', e => e.value)) === 'Q-311', 'with Ben, $2,980 and Q-311 filled in: ' + await a.$eval('#a_number', e => e.value));
+
+  const atext = () => a.$eval('#app', e => e.innerText);
+  // ---- Android: the whole texts backup
+  await a.evaluate(() => { localStorage.removeItem('qc-add-draft'); location.hash = '#/'; }); await a.waitForTimeout(300);
+  await a.click('#chaseadd'); await a.waitForTimeout(700);
+  ok(await a.$('#app a.finder[href="#/add/texts"]'), 'on Android, Chase opens on Find with Texts, even with no login switched on');
+  await a.click('#app a.finder[href="#/add/texts"]'); await a.waitForTimeout(500);
+  const way = await a.$eval('#app .shareway', e => e.innerText.replace(/\s+/g, ' ').trim()).catch(() => '');
+  ok(/Hold a text → Share → Chasem/.test(way), 'Android Texts is a picture of the way in: ' + way);
+  ok(!/play\.google|SMS Backup|download/i.test(await atext()), 'and asks for no other app');
+  { const tt = await atext(); ok(/Install app|Add to this phone/.test(tt) && await a.$('#app a[href="#/add/paste"]'), 'not on the home screen yet: it says how, and Paste is right there: ' + tt.replace(/\s+/g, ' ')); }
+  await a.evaluate(() => { location.hash = '#/add/find'; }); await a.waitForTimeout(600);
+  const NOW = Date.now(), ago = (d) => String(NOW - d * 86400000), sms = (addr, name, type, d, body) => '<sms address="' + addr + '" date="' + ago(d) + '" type="' + type + '" body="' + body + '" contact_name="' + name + '" />\n';
+  let xml = '<?xml version="1.0"?>\n<smses count="4">\n' + sms('+61412555111', 'Alan Byrne', '2', 6, 'Hi Alan, quote for the hot water system is $3,150 inc GST') + sms('+61412555222', 'Mia Chen', '2', 4, 'Mia, price for the gutters $1,200 all up') + sms('+61412555222', 'Mia Chen', '1', 3, 'Yes please go ahead') + sms('+61412555333', 'Footy', '2', 1, 'Training at 6');
+  xml += '<mms date="' + ago(2) + '" msg_box="2" address="+61412555444" contact_name="Zoe"><parts><part ct="image/jpeg" data="' + 'B'.repeat(5 * 1048576) + '" /><part ct="text/plain" text="Zoe, quote for the carport $6,400 inc GST" /></parts></mms>\n</smses>';
+  await a.setInputFiles('#sheetfile', { name: 'sms-20260926.xml', mimeType: 'text/xml', buffer: Buffer.from(xml) }); await a.waitForTimeout(2500);
+  const at = await a.$eval('#app', e => e.innerText);
+  ok(/3 to chase/.test(at) && /Alan Byrne/.test(at) && /Mia Chen/.test(at) && /Zoe/.test(at) && !/Footy/.test(at), 'File: a 5 MB texts backup with a photo in it: three quotes found, the footy text left out');
+  ok(/5 texts looked at/.test(at) && /won/.test(at), 'it says how many it looked at, and marks Mia won (she said yes)');
+  await a.click('#sheetgo'); await a.waitForTimeout(1200);
+  const AS = await a.evaluate(() => JSON.parse(localStorage.getItem('qc-app-v1')));
+  const mia = AS.jobs.find(j => j.client.name === 'Mia Chen'), alan = AS.jobs.find(j => j.client.name === 'Alan Byrne');
+  ok(alan && alan.status === 'quoted' && alan.client.phone === '0412 555 111', 'Alan is a quote to chase, with his mobile');
+  ok(mia && mia.status === 'accepted', 'Mia is a job won, to book (' + (mia && mia.status) + ')');
+  await actx.close();
 
   await b.close(); srv.close();
   console.log(fails ? '\nFAILURES: ' + fails : '\nALL PASSED');
