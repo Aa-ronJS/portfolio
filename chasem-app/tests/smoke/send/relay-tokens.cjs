@@ -158,5 +158,6 @@ const FROM_ADDR = 'hello@chasem.app';
   r = await run({ action: 'ping', token: 'qc_dave' }); ok(r.json.hosted === true, 'map is re-read when the env value changes');
 
   console.log('\n' + (n - fails) + '/' + n + ' passed' + (fails ? ', ' + fails + ' FAILED' : ''));
+  console.log(fails ? 'FAILURES ' + fails : 'ALL PASSED');
   process.exit(fails ? 1 : 0);
 })().catch((e) => { console.error('CRASH', e); process.exit(2); });

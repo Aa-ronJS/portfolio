@@ -57,7 +57,7 @@ const isoDays = n => { const d = new Date(); d.setDate(d.getDate() + n); return 
   ok(S.ui.scoreboard_start === start, 'scoreboard start stored');
   // the loaded quote holds its figure on the quote screen and the chase screen
   await p.goto(base + '#/job/pf_b/quote', { waitUntil: 'load' }); await p.waitForSelector('h1'); t = await text();
-  ok(/From your book, loaded when you set up/.test(t) && /\$2,200/.test(t) && !/With the changes since/.test(t) && /Repaint hall/.test(t), 'quote screen shows the book figure, no revision warning');
+  ok(/Your own quote, brought in/.test(t) && /\$2,200/.test(t) && !/With the changes since/.test(t) && /Repaint hall/.test(t), 'quote screen shows the book figure, no revision warning');
   await p.goto(base + '#/chase', { waitUntil: 'load' }); await p.waitForSelector('h1'); t = await text();
   ok(/New Person/.test(t) && /\$2,200/.test(t) && /Owing Person/.test(t) && /\$3,300/.test(t), 'chase lists the loaded quote and the loaded invoice at their figures');
   // ---- loading the same link again adds nothing
