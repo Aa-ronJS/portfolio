@@ -25,8 +25,9 @@
 // Every action returns { ok: true, ... } or { ok: false, error }.
 
 import { readToken, readBalance, spend, OUT_OF_MESSAGES, autoTopUpOn, chargeTopUp } from "./_setup.js";
-import { ensurePainter, recordOutbound, dayCount, markCancelled, optedOut, dbConfigured } from "./_store.js";
+import { ensurePainter, recordOutbound, dayCount, markCancelled, optedOut, markFirstChase, dbConfigured } from "./_store.js";
 import { ensureSchema } from "./_db.js";
+import { metaEvent } from "./_meta.js";
 
 // Writing down who a message went to is what lets a reply find its way home. It must never be able to stop a
 // message going out, so every call is best effort and the send has already happened by the time we get here.
@@ -35,6 +36,9 @@ async function noted(hosted, body, channel, to, r) {
   try {
     await ensurePainter(hosted.payload);
     await recordOutbound({ id: r.id, painter: hosted.payload.cus, job: body.job, channel, to, ref: body.ref, sendFor: body.action === "schedule" ? (r.send_at || body.send_at) : null });
+    // a test-drive message is re-addressed to his own phone and marked so; it is not a customer
+    if (!body.diverted_from) { const row = await markFirstChase(hosted.payload.cus, channel, to);
+      if (row && row.joined_at) await metaEvent("Activated", { email: row.reply_to, id: row.id, fbclid: row.fbclid, clickedAt: row.clicked_at, eventId: "chase-" + row.id }); }
   } catch (e) { /* routing a future reply is worth less than this message */ }
 }
 

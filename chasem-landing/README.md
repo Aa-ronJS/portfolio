@@ -75,7 +75,9 @@ npx vercel deploy --prod
 | `ANTHROPIC_API_KEY` | Reading a photo or scanned PDF of a quote (`api/read.js`, Claude Opus 5). |
 | `READ_PER_HOUR`, `READ_FREE_PER_HOUR`, `READ_ALL_PER_HOUR` | Reads an hour per paid tradie (30), per free tradie (5), and in total (200). |
 | `SIGNIN_PER_IP_HOUR`, `SIGNIN_ALL_HOUR`, `MSG_PER_IP_LIMIT`, `AUTO_TOPUP_CAP` | Limits; the defaults are sensible. |
-| `MIGRATE_SECRET` | Optional: lets `/api/admin` run the schema by hand. |
+| `SEND_PER_DAY` | Most automatic messages one tradie can have going on one day, per channel (60). |
+| `META_PIXEL_ID`, `META_CAPI_TOKEN` | Tells Meta, from the server, when a tradie from an ad signs up, finishes set-up (`StartTrial`), sends his first chase (`Activated`) and subscribes. Off until both are set. `META_TEST_EVENT_CODE` sends to Events Manager's test view; `META_API_VERSION` (default v21.0) if Meta retires it. |
+| `MIGRATE_SECRET` | Lets `/api/admin` run the schema by hand, and read the funnel: `{secret, action: "funnel", by: "week" \| "ad" \| "campaign" \| "source" \| "trade", seconds: true}` gives joined, set up, chasing, chasing inside 7 days, paid and still paying. |
 
 Each Find login and quote reading switches itself on when its values are
 set, and the website only mentions the ones that are

@@ -10,6 +10,9 @@
 // here for checkout.session.completed and checkout.session.async_payment_succeeded; its signing secret in STRIPE_WEBHOOK_SECRET.
 // Env: STRIPE_SECRET_KEY, RELAY_SIGNING_SECRET, RELAY_URL (<site>/api/msg), APP_URL, SUPPORT_EMAIL, optional OWNER_MOBILE and
 // OWNER_EMAIL (a heads-up text and a copy of the email; neither is needed for the painter to be up and running).
+import { markPaid, dbConfigured } from "./_store.js";
+import { metaEvent } from "./_meta.js";
+import { ensureSchema } from "./_db.js";
 import { rawBody, send, stripeSigned, detailsFromSession, linkOnePayload, setupLink, creds, sms, email, mintToken, untilFor, sendingSettings, stripe, INCLUDED, TOPUP_MESSAGES, readBalance, planOf } from "./_setup.js";
 
 export const config = { api: { bodyParser: false } };
@@ -73,6 +76,9 @@ export default async function handler(req, res) {
       out.seats = plan.seats; out.included = plan.inc;
       // a painter who started on the free five keeps any top-up he had bought, and his old record is marked so the list stays clean
       if (s.client_reference_id && s.client_reference_id !== (sub.customer || s.customer)) { try { await stripe("customers/" + encodeURIComponent(s.client_reference_id), { "metadata[qc_upgraded_to]": String(sub.customer || s.customer) }); } catch (e) {} }
+      // the funnel's last step, written once, and Meta told the money (ex GST) exactly once
+      if (dbConfigured()) { try { await ensureSchema(); const row = await markPaid([s.client_reference_id, sub.customer || s.customer], sub.customer || s.customer);
+        if (row && row.joined_at) await metaEvent("Subscribe", { email: row.reply_to || details.email, id: row.id, fbclid: row.fbclid, clickedAt: row.clicked_at, eventId: "paid-" + row.id, value: Math.round((Number(s.amount_total) || 9900) / 1.1) / 100 }); } catch (e) {} }
       sending = sendingSettings(token, until, details.trading_name || details.owner_name || "");
       out.hosted = !!sending.server; out.until = until;
       if (!sending.server) out.warning = "RELAY_URL is not set, so the link cannot switch sending on";

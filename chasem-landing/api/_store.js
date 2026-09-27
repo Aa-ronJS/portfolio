@@ -87,6 +87,48 @@ export async function optOutsFor(painter, since) {
   return r.rows;
 }
 
+// ---- the funnel: each step written once, the first time it happens. Each returns the painter row when this
+// call was the one that wrote it (so the caller tells Meta exactly once), or null.
+const SRC_KEYS = ["utm_source", "utm_medium", "utm_campaign", "utm_content", "utm_term", "fbclid"];
+export function cleanSrc(o) {
+  const out = {}; if (!o || typeof o !== "object") return out;
+  for (const k of SRC_KEYS) { const v = String(o[k] == null ? "" : o[k]).replace(/[\u0000-\u001f]/g, "").trim().slice(0, 200); if (v) out[k] = v; }
+  const at = new Date(o.at || ""); if (!isNaN(at.getTime())) out.at = at.toISOString();
+  return out;
+}
+export async function markJoined(painter, src) {
+  const s = cleanSrc(src);
+  const r = await q(
+    `update painter set joined_at = now(), utm_source=$2, utm_medium=$3, utm_campaign=$4, utm_content=$5, utm_term=$6, fbclid=$7, clicked_at=$8
+      where id=$1 and joined_at is null returning *`,
+    [painter, s.utm_source || "", s.utm_medium || "", s.utm_campaign || "", s.utm_content || "", s.utm_term || "", s.fbclid || "", s.at || null]);
+  return r.rows[0] || null;
+}
+export async function markSetup(painter, trade, done) {
+  if (trade) await q("update painter set trade=$2 where id=$1 and trade is distinct from $2", [painter, String(trade).slice(0, 40)]);
+  if (!done) return null;
+  const r = await q("update painter set setup_at = now() where id=$1 and setup_at is null returning *", [painter]);
+  return r.rows[0] || null;
+}
+// A message to someone who is not him: not a test-drive message re-addressed to his own phone, not his own number
+// or inbox. That is the moment the app has done its job for him once.
+export async function markFirstChase(painter, channel, to) {
+  const addr = channel === "sms" ? e164(to) : String(to || "").trim().toLowerCase();
+  if (!addr) return null;
+  const r = await q(
+    `update painter set first_chase_at = now()
+      where id=$1 and first_chase_at is null and (phone = '' or phone <> $2) and (reply_to = '' or lower(reply_to) <> $2)
+      returning *`, [painter, addr]);
+  return r.rows[0] || null;
+}
+// His first subscription payment. The row may be under the free account he signed up with (client_reference_id),
+// the paying Stripe customer, or both; the one with joined_at is the one the funnel counts.
+export async function markPaid(ids, payingCus) {
+  const list = [...new Set((ids || []).filter(Boolean).map(String))]; if (!list.length) return null;
+  const r = await q("update painter set paid_at = now(), paid_cus = $2 where id = any($1) and paid_at is null returning *", [list, String(payingCus || "")]);
+  return r.rows.find((x) => x.joined_at) || r.rows[0] || null;
+}
+
 // Who was this number last quoted by? Prefer a job the app has actually told us about and that is still open;
 // fall back to the last thing we sent them, which is all we know before the app has synced.
 export async function findByPhone(phone) {

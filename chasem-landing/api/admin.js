@@ -6,11 +6,12 @@
 //   { secret, action: "migrate" }  -> applies db/*.sql, reports which ran and what exists now
 //   { secret, action: "status" }   -> what is configured and what the tables look like
 //   { secret, action: "bucket" }   -> makes the private photo bucket
+//   { secret, action: "funnel", by?, from?, to?, seconds? } -> joined, set up, chasing, paid, by week/ad/campaign/source/trade
 //
 // Guarded by MIGRATE_SECRET, which is not any of the other secrets and can be deleted once launch is done.
 // It never takes SQL from the request: the only statements it runs are the ones in the repo.
 import { send, readJson, f } from "./_setup.js";
-import { q, migrate, dbConfigured } from "./_db.js";
+import { q, migrate, dbConfigured, ensureSchema } from "./_db.js";
 import { forgetPainter } from "./_store.js";
 import { deletePainterPhotos, ensureBucket, photosConfigured } from "./_photos.js";
 import { timingSafeEqual } from "node:crypto";
@@ -79,6 +80,36 @@ export default async function handler(req, res) {
       out.feedback = r.rows;
       const c = await q("select verdict, count(*)::int n from feedback group by verdict");
       out.counts = Object.fromEntries(c.rows.map((x) => [x.verdict || "note", x.n]));
+    }
+    // The funnel, by week (default), by ad, by campaign or by trade: joined, set up, chasing (and chasing inside a
+    // week of joining), paid, and with seconds:true, still paying after the guarantee (a second paid invoice,
+    // asked of Stripe one tradie at a time). Only tradies who joined since the funnel was written down are in it.
+    if (body.action === "funnel") {
+      await ensureSchema();
+      const to = new Date(body.to || Date.now()), from = new Date(body.from || (Date.now() - 56 * 86400000));
+      const dims = { week: "to_char(date_trunc('week', joined_at at time zone 'Australia/Adelaide'), 'YYYY-MM-DD')",
+        ad: "coalesce(nullif(utm_content,''),'(none)')", campaign: "coalesce(nullif(utm_campaign,''),'(none)')",
+        source: "coalesce(nullif(utm_source,''),'(none)')", trade: "coalesce(nullif(trade,''),'(not picked)')" };
+      const by = dims[body.by] ? body.by : "week";
+      const r = await q(
+        `select ${dims[by]} as k, count(*)::int joined, count(setup_at)::int set_up, count(first_chase_at)::int chasing,
+                count(*) filter (where first_chase_at < joined_at + interval '7 days')::int chasing_7d, count(paid_at)::int paid,
+                array_remove(array_agg(case when paid_at is not null then coalesce(nullif(paid_cus,''), id) end), null) paying
+           from painter where joined_at >= $1 and joined_at < $2 group by 1 order by 1`, [from.toISOString(), to.toISOString()]);
+      out.by = by; out.from = from.toISOString(); out.to = to.toISOString();
+      out.funnel = [];
+      for (const row of r.rows) {
+        const line = { [by]: row.k, joined: row.joined, set_up: row.set_up, chasing: row.chasing, chasing_7d: row.chasing_7d, paid: row.paid };
+        if (body.seconds && process.env.STRIPE_SECRET_KEY) {
+          let n = 0;
+          for (const cus of (row.paying || []).slice(0, 200)) {
+            try { const inv = await (await f("https://api.stripe.com/v1/invoices?status=paid&limit=3&customer=" + encodeURIComponent(cus), { headers: { Authorization: "Bearer " + process.env.STRIPE_SECRET_KEY } })).json();
+              if (((inv && inv.data) || []).filter((i) => Number(i.amount_paid) > 0).length >= 2) n++; } catch (e) {}
+          }
+          line.still_paying = n;
+        }
+        out.funnel.push(line);
+      }
     }
     if (body.action === "who") {
       const r = await q("select id, trading_name, reply_to, phone, state, created_at from painter order by created_at");

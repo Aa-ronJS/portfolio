@@ -121,7 +121,7 @@
       var code = String(box.value || '').replace(/\D/g, '');
       if (code.length !== 6) { out().textContent = 'Six numbers.'; box.focus(); return; }
       btn.disabled = true; out().textContent = 'One moment\u2026';
-      call({ action: 'check', email: waiting, code: code }).then(function (j) {
+      call({ action: 'check', email: waiting, code: code, src: S.src || undefined }).then(function (j) {
         if (!j || !j.ok || !j.token) { btn.disabled = false; out().textContent = (j && j.error) || 'That did not work.'; box.select(); return; }
         S = QCStore.load();
         S.account = { email: waiting, joined: QCStore.today(), cus: j.cus || '', verified: true };
@@ -288,6 +288,13 @@
 
   // one more go a few minutes on, while the app is still open, for bookings the relay turned away (no signal, too many at once)
   function scheduleRetry() { if (scheduleRetry.t) return; scheduleRetry.t = setTimeout(function () { scheduleRetry.t = 0; retryLocalQueue().catch(function () {}); }, 11 * 60000); }
+  // The ad he came from (the landing page passes its utm tags and Meta's fbclid through to the app), kept from the
+  // first open until his sign-in hands it to the server. First touch wins; nothing here can stop the app opening.
+  function keepSource() {
+    try { if (S.src && S.src.at) return; var q = new URLSearchParams(location.search), got = {}, any = false;
+      ['utm_source', 'utm_medium', 'utm_campaign', 'utm_content', 'utm_term', 'fbclid'].forEach(function (k) { var v = q.get(k); if (v) { got[k] = String(v).slice(0, 200); any = true; } });
+      if (!any) return; got.at = new Date().toISOString(); S.src = got; save(); } catch (e) {}
+  }
   // two-way binding: <input data-bind="path.to.key"> against a root object
   function bindAll(root, obj) {
     root.querySelectorAll('[data-bind]').forEach(function (el) {
@@ -307,6 +314,7 @@
     if (window.__qcMeasure && window.__qcMeasure.unsaved && window.__qcMeasure.unsaved()) { window.__qcMeasure.saveNow(); toast('Wall saved'); }
     window.__qcMeasure = null; creating = false;
     S = QCStore.load(); ['pending_cancels', 'local_queue', 'trash'].forEach(function (k) { if (!Array.isArray(S[k])) S[k] = []; }); if (!S.security || typeof S.security !== 'object') S.security = { pin: '', backup_include_keys: false }; if (!S.log || typeof S.log !== 'object') S.log = { sent: [] }; if (!S.ui || typeof S.ui !== 'object') S.ui = {};
+    if (!route.srcKept) { route.srcKept = true; keepSource(); } // before the door: he may not have an account yet
     var h = location.hash.replace(/^#\/?/, ''), qs = '', qi = h.indexOf('?'); if (qi >= 0) { qs = h.slice(qi + 1); h = h.slice(0, qi); } var p = h.split('/'); // #/setup?d=... carries the set-up code after the ?
     try { if (window.event && window.event.type === 'storage') route.storageAt = Date.now(); } catch (e) {} // store.js re-routes this tab when another tab writes: Home must not purge the job that tab is typing into
     try { window.scrollTo(0, 0); } catch (e) {} // every screen opens at the top; a form never opens scrolled to its bottom

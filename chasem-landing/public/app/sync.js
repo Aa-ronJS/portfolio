@@ -145,7 +145,7 @@
     });
 
     var payload = { token: sd.token, since: m.since || '', push: push.slice(0, 300),
-      me: { trading_name: S.details.trading_name || '', reply_to: S.details.email || '', phone: S.details.phone || '', state: S.details.state || '' },
+      me: { trading_name: S.details.trading_name || '', reply_to: S.details.email || '', phone: S.details.phone || '', state: S.details.state || '', trade: S.details.trade || '', setup: !!(S.security && S.security.setup_done) },
       busy: busyDays(S), rules: rules(S) };
 
     var f = window.__qcRelayFetch || window.fetch;

@@ -10,6 +10,8 @@
 // moment it works. Six digits with those limits is 1 in 200,000 per attempt and five attempts in total.
 import { cors, send, readJson, stripe, mintToken, sendingSettings, setupLink, linkOnePayload, creds, email as sendEmail, FREE_MESSAGES } from "./_setup.js";
 import { q, dbConfigured, ensureSchema } from "./_db.js";
+import { ensurePainter, markJoined } from "./_store.js";
+import { metaEvent } from "./_meta.js";
 import { createHmac, timingSafeEqual, randomInt } from "node:crypto";
 
 const EMAIL = /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/;
@@ -65,8 +67,21 @@ Chasem`,
 // The Stripe customer for this address is the account. Finding it is how a second phone reaches the same jobs.
 async function account(addr) {
   const found = await stripe("customers?limit=1&email=" + encodeURIComponent(addr));
-  if (found && Array.isArray(found.data) && found.data[0]) return found.data[0];
-  return await stripe("customers", { email: addr, "metadata[qc]": "1" });
+  if (found && Array.isArray(found.data) && found.data[0]) return { cus: found.data[0], created: false };
+  return { cus: await stripe("customers", { email: addr, "metadata[qc]": "1", "metadata[qc_joined]": new Date().toISOString() }), created: true };
+}
+// The first proved sign-in of a new account: where he came from goes on his row, and Meta hears "registered".
+// None of it may stand between him and the app, so every failure is swallowed.
+async function joined(req, cus, addr, src) {
+  if (!dbConfigured()) return;
+  try {
+    await ensurePainter({ cus: cus.id }, { reply_to: addr });
+    const row = await markJoined(cus.id, src);
+    if (!row) return;
+    const h = req.headers || {};
+    await metaEvent("CompleteRegistration", { email: addr, id: cus.id, fbclid: row.fbclid, clickedAt: row.clicked_at, eventId: "reg-" + cus.id,
+      ip: String(h["x-real-ip"] || String(h["x-forwarded-for"] || "").split(",")[0] || "").trim(), ua: h["user-agent"] || "" });
+  } catch (e) {}
 }
 
 export default async function handler(req, res) {
@@ -119,7 +134,8 @@ export default async function handler(req, res) {
     }
 
     await q("delete from signin where email=$1", [addr]);
-    const cus = await account(addr);
+    const { cus, created } = await account(addr);
+    if (created) await joined(req, cus, addr, body.src);
     const name = clean((cus.metadata && cus.metadata.qc_trading_name) || cus.name || "", 80);
     const token = mintToken({ cus: cus.id, name, reply_to: addr, until: "", plan: (cus.metadata && cus.metadata.qc_plan) || "free", inc: FREE_MESSAGES });
     const details = { email: addr }; if (name) details.trading_name = name;

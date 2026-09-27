@@ -72,7 +72,11 @@ curl -s https://chasem.app/api/paid                               # card payment
   `READ_ALL_PER_HOUR`). Without it the app asks him to type those in; PDFs
   from quoting apps are read on the phone either way, at no cost.
 - **Ads:** `MAKER_NOTE`, `MAKER_NAME`, `MAKER_PHOTO` and `META_PIXEL_ID` in
-  `public/config.js` are empty. Nothing needs them until you run ads.
+  `public/config.js` are empty. Nothing needs them until you run ads. For ads,
+  also put the same pixel ID in Vercel as `META_PIXEL_ID`, with a Conversions
+  API token from Events Manager as `META_CAPI_TOKEN` (and `MIGRATE_SECRET`,
+  to read the funnel). Set `META_TEST_EVENT_CODE` for the first test sign-up,
+  watch the four events arrive in Events Manager's test view, then remove it.
 - **Vercel Firewall rate limiting** on `/api/demo` before raising ad spend.
   Sign-in already limits itself: 5 codes an hour per address, 30 per place
   asked from, 300 across everyone.

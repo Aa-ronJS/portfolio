@@ -520,6 +520,12 @@ footer .wrap{display:grid;gap:8px}
   function num(v, d){ var x = parseFloat(v); return isNaN(x) ? d : x; }
 
   // app links
+  // The ad a visitor came from goes with him into the app (a different address, so it has to ride on the link):
+  // the utm tags and Meta's fbclid, nothing else. The app keeps them until he signs in.
+  function withSrc(u){ try { var q = new URLSearchParams(location.search), x = new URL(u, location.href), any = false;
+    ['utm_source','utm_medium','utm_campaign','utm_content','utm_term','fbclid'].forEach(function(k){ var v = q.get(k); if (v) { x.searchParams.set(k, v.slice(0, 200)); any = true; } });
+    return any ? x.href : u; } catch (e) { return u; } }
+  if (C.APP_URL) C.APP_URL = withSrc(C.APP_URL);
   if (C.APP_URL) document.querySelectorAll('[data-app]').forEach(function(a){ a.setAttribute('href', C.APP_URL); });
 
   // price, from config, so the page and the receipt never disagree

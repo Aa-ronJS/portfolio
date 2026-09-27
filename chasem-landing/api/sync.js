@@ -7,9 +7,10 @@
 //
 // Authenticated by the signed token the app already holds. No passwords, nothing new to set up.
 import { cors, send, readJson, readToken } from "./_setup.js";
-import { q, tx, ensurePainter, dbConfigured, e164, optOutsFor } from "./_store.js";
+import { q, tx, ensurePainter, dbConfigured, e164, optOutsFor, markSetup } from "./_store.js";
 import { ensureSchema } from "./_db.js";
 import { gcalConfigured, syncCalendar } from "./gcal.js";
+import { metaEvent } from "./_meta.js";
 
 const KINDS = new Set(["job", "client", "settings", "invoice"]);
 const cents = (v) => Math.round(Number(v || 0) * 100);
@@ -45,6 +46,9 @@ export default async function handler(req, res) {
   if (!p || !p.cus) return send(res, 401, { ok: false, error: "That sending token is not one of ours" });
 
   await ensurePainter(p, body.me || {});
+  // the trade he picked, and the set-up questions answered: steps in the funnel, written once
+  try { const me = body.me || {}, row = await markSetup(p.cus, String(me.trade || ""), me.setup === true);
+    if (row && row.joined_at) await metaEvent("StartTrial", { email: row.reply_to, id: row.id, fbclid: row.fbclid, clickedAt: row.clicked_at, eventId: "setup-" + row.id }); } catch (e) {}
   const now = new Date().toISOString();
   const pushed = Array.isArray(body.push) ? body.push.slice(0, 500) : [];
   let taken = 0;
