@@ -7,7 +7,7 @@
 //
 // Authenticated by the signed token the app already holds. No passwords, nothing new to set up.
 import { cors, send, readJson, readToken } from "./_setup.js";
-import { q, tx, ensurePainter, dbConfigured, e164 } from "./_store.js";
+import { q, tx, ensurePainter, dbConfigured, e164, optOutsFor } from "./_store.js";
 import { ensureSchema } from "./_db.js";
 import { gcalConfigured, syncCalendar } from "./gcal.js";
 
@@ -124,9 +124,12 @@ export default async function handler(req, res) {
     `select id, job_id, invoice_no, amount_cents, currency, paid_at from payment
       where painter_id=$1 and received_at > $2 order by received_at limit 200`, [p.cus, since]).catch(() => ({ rows: [] }));
 
+  // Customers of his who replied STOP (or START) to the shared number, so the phone stops texting them.
+  const optouts = await optOutsFor(p.cus, since).catch(() => []);
+
   return send(res, 200, {
     ok: true, now, took: taken,
     changes: changed.rows.map((r) => ({ kind: r.kind, id: r.id, rev: Number(r.rev), deleted: r.deleted, body: r.body })),
-    bookings: bookings.rows, replies: replies.rows, payments: payments.rows, calendar,
+    bookings: bookings.rows, replies: replies.rows, payments: payments.rows, optouts, calendar,
   });
 }

@@ -8,7 +8,7 @@
 // Set as the "A message comes in" webhook on the Messaging Service (HTTP POST). Signed requests only.
 // TWILIO_INBOUND_URL when the public URL differs from what Vercel sees, because the signature covers the URL.
 import { rawBody, twilioSigned, creds, sms, email as sendEmail, signToken } from "./_setup.js";
-import { findByPhone, seenInbound, recordInbound, markAccepted, dbConfigured, e164 } from "./_store.js";
+import { findByPhone, seenInbound, recordInbound, markAccepted, dbConfigured, e164, setOptOut } from "./_store.js";
 
 export const config = { api: { bodyParser: false } };
 // Kept for the case we still cannot place a number: better than silence, and it names no one.
@@ -49,7 +49,20 @@ export default async function handler(req, res) {
   const from = e164(params.From || ""), body = String(params.Body || "").trim(), sid = String(params.MessageSid || "");
 
   if (/^(stop|stopall|unsubscribe|cancel|end|quit)$/i.test(body)) { // Twilio's own opt-out handling answers these
-    if (dbConfigured()) await recordInbound({ id: sid, from, body, action: "stop" }).catch(() => {});
+    if (dbConfigured()) {
+      await setOptOut(from, true).catch(() => {});
+      // written against the tradie who last texted them, so it shows among his replies and he knows why the texts stopped
+      const who = await findByPhone(from).catch(() => null);
+      await recordInbound({ id: sid, painter: who && who.painter_id, job: who && who.job_id, from, body, action: "stop" }).catch(() => {});
+    }
+    return twiml(res, 200, "");
+  }
+  if (/^(start|unstop)$/i.test(body)) { // and these, the other way
+    if (dbConfigured()) {
+      await setOptOut(from, false).catch(() => {});
+      const who = await findByPhone(from).catch(() => null);
+      await recordInbound({ id: sid, painter: who && who.painter_id, job: who && who.job_id, from, body, action: "start" }).catch(() => {});
+    }
     return twiml(res, 200, "");
   }
   // Twilio retries a webhook it believes failed, and a second YES must not accept a second time.

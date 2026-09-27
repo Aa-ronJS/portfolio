@@ -89,6 +89,12 @@
                           amount: Math.round(Number(pay.amount_cents) || 0) / 100, method: 'card', ref: 'Card' });
       touched++;
     });
+    // A customer replied STOP (or START) to the shared number: the phone stops (or starts) texting that number.
+    (res.optouts || []).forEach(function (o) {
+      if (!o || !o.addr) return; if (!S.sms_stop || typeof S.sms_stop !== 'object') S.sms_stop = {};
+      if (o.stopped) { if (!S.sms_stop[o.addr]) { S.sms_stop[o.addr] = String(o.updated_at || '').slice(0, 10) || QCStore.today(); touched++; } }
+      else if (S.sms_stop[o.addr]) { delete S.sms_stop[o.addr]; touched++; }
+    });
     if ((res.replies || []).length) {
       S.replies = (S.replies || []).concat(res.replies.map(function (r) {
         return { id: r.id, job: r.job_id, from: r.from_addr, text: r.body, action: r.action, at: r.received_at };

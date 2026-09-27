@@ -54,7 +54,7 @@
       .then(function (j) {
         // every reply carries what is left of this month's messages; the app keeps it so a screen can say so without asking again
         if (j && (j.left != null || j.included != null)) balance({ left: j.left, used: j.used, included: j.included, plan: j.plan, period: j.period, at: Date.now() });
-        if (!j.ok) { var err = new Error(j.error || 'Sending failed'); if (j.out_of_messages) err.outOfMessages = true; if (j.day_full) err.dayFull = true; throw err; }
+        if (!j.ok) { var err = new Error(j.error || 'Sending failed'); if (j.out_of_messages) err.outOfMessages = true; if (j.day_full) err.dayFull = true; if (j.opted_out) { err.optedOut = true; markStop(payload.to, true); } throw err; }
         if (logged) addLog(Object.assign({}, base, { id: j.id || payload.id || '', ok: true })); return j; })
       .catch(function (e) { if (logged) addLog(Object.assign({}, base, { kind: 'fail', ok: false, error: e.message })); throw e; });
   }
@@ -65,6 +65,10 @@
       var c = st.sending; return { left: c.bal_left == null ? null : +c.bal_left, used: +c.bal_used || 0, included: c.bal_included == null ? null : +c.bal_included, plan: c.bal_plan || '', period: c.bal_period || '', seats: +c.bal_seats || 1, seat: +c.bal_seat || 1, at: +c.bal_at || 0 };
     } catch (e) { return { left: null, used: 0, included: null, plan: '', period: '', at: 0 }; }
   }
+  // Numbers that replied STOP to the shared number, kept on the phone as +61... so every way of writing one matches.
+  function e164(phone) { var s = String(phone || '').replace(/[^\d+]/g, ''); if (!s) return ''; if (s.charAt(0) === '+') return s; if (s.indexOf('61') === 0 && s.length === 11) return '+' + s; if (s.charAt(0) === '0') return '+61' + s.slice(1); return s; }
+  function stopped(phone) { try { var st = QCStore.load(), a = e164(phone); return !!(a && st.sms_stop && st.sms_stop[a]); } catch (e) { return false; } }
+  function markStop(phone, on) { try { var st = QCStore.load(), a = e164(phone); if (!a) return; if (!st.sms_stop || typeof st.sms_stop !== 'object') st.sms_stop = {}; if (on) st.sms_stop[a] = st.sms_stop[a] || todayIso(); else delete st.sms_stop[a]; QCStore.save(); } catch (e) {} }
   function outOfMessages() { var b = balance(); return b.left != null && b.left <= 0; }
   function atHour(dayIso, hour) { return new Date(dayIso + 'T' + (hour < 10 ? '0' : '') + hour + ':00:00').toISOString(); }
   function pdfBase64(doc) { var ab = doc.output('arraybuffer'), u = new Uint8Array(ab), s = ''; for (var i = 0; i < u.length; i += 0x8000) s += String.fromCharCode.apply(null, u.subarray(i, i + 0x8000)); return btoa(s); }
@@ -77,9 +81,9 @@
       var sendAt = it.send_at || atHour(it.day, hour);
       return call({ action: 'schedule', channel: it.channel, to: it.to, body: it.body, subject: it.subject, send_at: sendAt, ref: it.ref, key: it.key, reply_to: it.channel === 'email' ? (it.reply_to || undefined) : undefined, meta: { job: it.job, ref: it.ref } })
         .then(function (r) { return { ok: true, id: r.id, channel: it.channel, day: it.day, send_at: sendAt, to: it.to, what: it.ref, key: it.key, text: String(it.body || '').slice(0, 300), reused: !!r.reused }; })
-        .catch(function (e) { return { ok: false, out: !!e.outOfMessages, full: !!e.dayFull, error: e.message, channel: it.channel, day: it.day, send_at: sendAt, to: it.to, what: it.ref, key: it.key, text: String(it.body || '').slice(0, 300) }; });
+        .catch(function (e) { return { ok: false, out: !!e.outOfMessages, full: !!e.dayFull, stop: !!e.optedOut, error: e.message, channel: it.channel, day: it.day, send_at: sendAt, to: it.to, what: it.ref, key: it.key, text: String(it.body || '').slice(0, 300) }; });
     }));
   }
   function cancelAll(list, jobId) { return Promise.all((list || []).filter(function (x) { return x && x.id && !x.cancelled && !x.sent; }).map(function (x) { return call({ action: 'cancel', channel: x.channel, id: x.id, meta: { job: jobId || x.job || '', ref: x.what || '' } }).then(function () { x.cancelled = true; x.cancel_error = ''; return true; }).catch(function (e) { x.cancel_error = e.message; return false; }); })); }
-  window.QCMsg = { cfg: cfg, divert: divert, ready: ready, balance: balance, outOfMessages: outOfMessages, hostedEnded: hostedEnded, call: call, scheduleAll: scheduleAll, cancelAll: cancelAll, pdfBase64: pdfBase64, atHour: atHour, isLandline: isLandline, isMobile: isMobile, addLog: addLog, withinWindow: withinWindow, WINDOW_DAYS: WINDOW_DAYS };
+  window.QCMsg = { cfg: cfg, divert: divert, ready: ready, balance: balance, outOfMessages: outOfMessages, hostedEnded: hostedEnded, call: call, scheduleAll: scheduleAll, cancelAll: cancelAll, pdfBase64: pdfBase64, atHour: atHour, isLandline: isLandline, isMobile: isMobile, addLog: addLog, withinWindow: withinWindow, WINDOW_DAYS: WINDOW_DAYS, e164: e164, stopped: stopped, markStop: markStop };
 })();

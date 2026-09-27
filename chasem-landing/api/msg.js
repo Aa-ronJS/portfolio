@@ -25,7 +25,7 @@
 // Every action returns { ok: true, ... } or { ok: false, error }.
 
 import { readToken, readBalance, spend, OUT_OF_MESSAGES, autoTopUpOn, chargeTopUp } from "./_setup.js";
-import { ensurePainter, recordOutbound, dayCount, markCancelled, dbConfigured } from "./_store.js";
+import { ensurePainter, recordOutbound, dayCount, markCancelled, optedOut, dbConfigured } from "./_store.js";
 import { ensureSchema } from "./_db.js";
 
 // Writing down who a message went to is what lets a reply find its way home. It must never be able to stop a
@@ -46,6 +46,15 @@ export const DAY_FULL = "That day already has as many messages as one account ca
 async function dayFull(hosted, channel, sendAt) {
   if (!DAY_CAP || !dbConfigured() || !hosted || !hosted.payload || !hosted.payload.cus) return false;
   try { await ensureSchema(); return (await dayCount(hosted.payload.cus, channel, sendAt)) >= DAY_CAP; } catch (e) { return false; }
+}
+
+// A number that replied STOP gets no more texts from anyone on the shared number. The refusal names the reason so
+// the app can take the texting away for that customer. If the database cannot say, the text goes: this must
+// never be why a real chaser did not.
+export const OPTED_OUT = "They replied STOP, so no more texts to that number. Email still works.";
+async function stopped(channel, to) {
+  if (channel !== "sms" || !dbConfigured()) return false;
+  try { await ensureSchema(); return await optedOut(to); } catch (e) { return false; }
 }
 
 const ALLOWED = ["https://go.chasem.app", "https://chasem.app", "https://www.chasem.app"].concat((process.env.ALLOWED_ORIGINS || "").split(",").map((s) => s.trim()).filter(Boolean)); // the app's own addresses always, as in _setup.js
@@ -205,6 +214,7 @@ export default async function handler(req, res) {
   try {
     if (body.action === "test") { const r = ch === "sms" ? await smsSend(c, body.to, "Chasem test: SMS sending works.") : await emailSend(c, { to: body.to, subject: "Chasem test", body: "Email sending works." }); return send(res, 200, { ok: true, ...r }); }
     if (body.action === "send") { if (!body.to || (ch === "sms" ? !body.body : (!body.body && !body.html))) throw new Error("to and body are required"); if (String(body.body || "").length > 1600) throw new Error("Message too long");
+      if (await stopped(ch, body.to)) return send(res, 409, { ok: false, error: OPTED_OUT, opted_out: true });
       let bal = hosted && hosted.payload ? await readBalance(hosted.payload) : null;
       if (bal && bal.counted && bal.left <= 0) { bal = await refill(hosted.payload, bal); if (bal.left <= 0) return send(res, 402, { ok: false, error: OUT_OF_MESSAGES, out_of_messages: true, ...bal }); }
       const r = ch === "sms" ? await smsSend(c, body.to, body.body) : await emailSend(c, body);
@@ -216,6 +226,7 @@ export default async function handler(req, res) {
       // created is returned instead of a second message. Best effort: the map lives in this warm instance only and keeps the last 200 keys.
       const key = body.key != null ? keyPrefix + String(body.key).slice(0, 120) : ""; if (key && seen.has(key)) return send(res, 200, { ok: true, ...seen.get(key), reused: true });
       // A scheduled reminder holds a message the moment it is booked, and gives it back if it is cancelled before it goes.
+      if (await stopped(ch, body.to)) return send(res, 409, { ok: false, error: OPTED_OUT, opted_out: true });
       if (await dayFull(hosted, ch, body.send_at)) return send(res, 429, { ok: false, error: DAY_FULL, day_full: true });
       let balS = hosted && hosted.payload ? await readBalance(hosted.payload) : null;
       if (balS && balS.counted && balS.left <= 0) { balS = await refill(hosted.payload, balS); if (balS.left <= 0) return send(res, 402, { ok: false, error: OUT_OF_MESSAGES, out_of_messages: true, ...balS }); }

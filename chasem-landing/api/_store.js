@@ -63,6 +63,30 @@ export async function dayCount(painter, channel, sendAt) {
 }
 export async function markCancelled(id) { if (id) await q("update outbound set cancelled = true where id=$1", [String(id)]).catch(() => {}); }
 
+// A customer replied STOP (stopped=true) or START (false). Kept per number, not per tradie: they said it to the
+// shared number, and Twilio stops everything from it to them either way.
+export async function setOptOut(phone, stopped) {
+  const addr = e164(phone); if (!addr) return;
+  await q(`insert into optout (addr, stopped, updated_at) values ($1,$2,now())
+             on conflict (addr) do update set stopped=excluded.stopped, updated_at=now()`, [addr, !!stopped]);
+}
+// Has this number asked for no more texts? Throws if the database cannot say; the caller decides what that means.
+export async function optedOut(phone) {
+  const addr = e164(phone); if (!addr) return false;
+  const r = await q("select stopped from optout where addr=$1", [addr]);
+  return !!(r.rows[0] && r.rows[0].stopped);
+}
+// The stops and starts, since `since`, for numbers this tradie has texted or has on a job.
+export async function optOutsFor(painter, since) {
+  const r = await q(
+    `select o.addr, o.stopped, o.updated_at from optout o
+      where o.updated_at > $2
+        and (exists (select 1 from outbound b where b.painter_id=$1 and b.to_addr=o.addr)
+          or exists (select 1 from job_index j where j.painter_id=$1 and j.client_phone=o.addr))
+      order by o.updated_at limit 500`, [painter, since]);
+  return r.rows;
+}
+
 // Who was this number last quoted by? Prefer a job the app has actually told us about and that is still open;
 // fall back to the last thing we sent them, which is all we know before the app has synced.
 export async function findByPhone(phone) {
