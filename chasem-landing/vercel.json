@@ -101,6 +101,72 @@
       "source": "/measure",
       "destination": "/measure/",
       "permanent": true
+    },
+    {
+      "source": "/app",
+      "has": [
+        {
+          "type": "host",
+          "value": "chasem.app"
+        }
+      ],
+      "destination": "https://go.chasem.app/",
+      "permanent": true
+    },
+    {
+      "source": "/app/",
+      "has": [
+        {
+          "type": "host",
+          "value": "chasem.app"
+        }
+      ],
+      "destination": "https://go.chasem.app/",
+      "permanent": true
+    },
+    {
+      "source": "/app/:path*",
+      "has": [
+        {
+          "type": "host",
+          "value": "chasem.app"
+        }
+      ],
+      "destination": "https://go.chasem.app/:path*",
+      "permanent": true
+    },
+    {
+      "source": "/app",
+      "has": [
+        {
+          "type": "host",
+          "value": "www.chasem.app"
+        }
+      ],
+      "destination": "https://go.chasem.app/",
+      "permanent": true
+    },
+    {
+      "source": "/app/",
+      "has": [
+        {
+          "type": "host",
+          "value": "www.chasem.app"
+        }
+      ],
+      "destination": "https://go.chasem.app/",
+      "permanent": true
+    },
+    {
+      "source": "/app/:path*",
+      "has": [
+        {
+          "type": "host",
+          "value": "www.chasem.app"
+        }
+      ],
+      "destination": "https://go.chasem.app/:path*",
+      "permanent": true
     }
   ]
 }

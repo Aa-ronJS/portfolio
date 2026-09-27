@@ -8,9 +8,18 @@ measuring. This folder is the website, the serverless relay the app talks
 to, and a copy of the app itself. The go-live list is `GO-LIVE.md`.
 
 `public/app/` is a byte-for-byte copy of `../chasem-app/`; keep them
-identical and bump `sw.js`'s VERSION when you change one. The app keeps
-its data per address, so there is one canonical address,
-https://chasem.app/app/ (the relative `APP_URL: "app/"` in `config.js`).
+identical and bump `sw.js`'s VERSION when you change one. The app keeps its data per address, so there is one canonical
+address and it does not move again: **https://go.chasem.app/**. The site
+stays on https://chasem.app. Both are this one Vercel project:
+`middleware.js` serves `public/app/` at the root of go.chasem.app (every
+path except `/api/` and `/y/`, which answer on both hosts), so the app
+still calls its relay on its own address and there is only one deploy.
+
+The app used to live at https://chasem.app/app/; that address is now a
+permanent redirect to go.chasem.app (the path and the `#/...` screen come
+along), set in `vercel.json` for the chasem.app and www hosts only, so
+previews still serve the app at `/app/`. `tests/routing.mjs` covers the
+routing and the redirect.
 
 ```
 public/index.html     the page: hero, ways to bring quotes in, try-it box (the app's own reader, nothing sent),
@@ -54,7 +63,7 @@ npx vercel deploy --prod
 |---|---|
 | `DATABASE_URL` | Postgres (Supabase). Sync, sign-in limits, found lists, payments, bookings. |
 | `RELAY_SIGNING_SECRET` | Signs every token; never change it once live or every phone is signed out. |
-| `SITE_URL`, `APP_URL`, `RELAY_URL`, `ALLOWED_ORIGINS` | https://chasem.app, https://chasem.app/app/, https://chasem.app/api/msg, the app's origins. |
+| `SITE_URL`, `APP_URL`, `RELAY_URL`, `ALLOWED_ORIGINS` | https://chasem.app, https://go.chasem.app/, https://chasem.app/api/msg, the app's origins. |
 | `STRIPE_SECRET_KEY`, `STRIPE_WEBHOOK_SECRET` | The $99 plan, top-ups, and Connect. |
 | `TWILIO_ACCOUNT_SID`, `TWILIO_AUTH_TOKEN`, `TWILIO_MESSAGING_SERVICE_SID` | Texts. |
 | `RESEND_API_KEY`, `RESEND_FROM` | Email, including sign-in codes. |
@@ -134,7 +143,10 @@ or log in to your email or Xero); it follows them up on weekdays, books
 the yeses and chases invoices until paid; one plan, $99 a month, with free
 messages to start; painters also get quoting and measuring. Never promise
 a login (Outlook, Gmail, Xero) or photo reading that is not switched on.
-No testimonials or usage numbers until there are real ones. The footer's
+No testimonials or usage numbers until there are real ones. Do not
+reintroduce "a free app", "charges nothing" or a card at sign-up. The
+guarantee ("thirty days, money back, no reason needed") is a promise you
+must honour; if you change it, change the terms too. The footer's
 trademark line stays.
 
 ## The sending relay (`api/msg.js`)
@@ -151,8 +163,8 @@ Two ways to run it:
    Vercel and set `TWILIO_ACCOUNT_SID`, `TWILIO_AUTH_TOKEN`,
    `TWILIO_MESSAGING_SERVICE_SID` (or `TWILIO_FROM`), `RESEND_API_KEY`,
    `RESEND_FROM` (an address on a domain verified in Resend) and
-   `ALLOWED_ORIGINS` (the app's origins, e.g.
-   `https://chasem.app,https://www.chasem.app`).
+   `ALLOWED_ORIGINS` (any origins beyond go.chasem.app, chasem.app and
+   www.chasem.app, which are always allowed).
    In the app's Set-up, paste the URL `https://chasem.app/api/msg` and
    tick "the server already has my Twilio and Resend details".
 2. **Shared relay, credentials on the phone.** Set `ALLOW_CLIENT_CREDS=1`

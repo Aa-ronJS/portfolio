@@ -12,8 +12,10 @@ Three independent things live here:
   the shots). Start with `animation-pipeline/CLAUDE.md`, then its
   `README.md`. Environment setup: `animation-pipeline/setup.sh`.
 
-- **Chasem** — chases quotes and invoices for Australian tradies (painters also get quoting and measuring),
-  live at https://chasem.app. Three directories: `chasem-app/` is the
+- **Chasem** — chases quotes and invoices for Australian tradies (painters also get quoting and measuring).
+  The site is https://chasem.app; the app itself is https://go.chasem.app
+  (same Vercel project, routed by `chasem-landing/middleware.js`; the old
+  https://chasem.app/app/ is a plain redirect to it). Three directories: `chasem-app/` is the
   phone app itself (vanilla ES5, no build step, `npm test` runs ~50
   browser suites); `chasem-landing/` is the site and the serverless
   relay it talks to, deployed with `npx vercel deploy --prod`, with its

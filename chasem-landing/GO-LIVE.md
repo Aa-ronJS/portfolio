@@ -7,7 +7,7 @@ about the older downloadable laptop pack.
 Check the live state any time:
 
 ```
-curl -s https://chasem.app/app/ | grep -o 'QC_VERSION="[^"]*"'   # the app build that is live
+curl -s https://go.chasem.app/ | grep -o 'QC_VERSION="[^"]*"'   # the app build that is live
 curl -s https://chasem.app/api/paid                               # card payments: table, listening
 ```
 

@@ -3,9 +3,12 @@
 // never a "Coming soon" shopfront). Lines marked TODO must be filled in by the owner before launch; the page
 // never invents a value. Nothing here books a call or needs a human: the product is self-service end to end.
 window.QC = {
-  APP_URL: "app/",                  // where the phone app lives. Relative "app/" is the copy in this project, so on chasem.app it is
-                                    // https://chasem.app/app/ -- the canonical address. A painter's jobs live in his phone's storage
-                                    // for the address he opened, so pick one address and never move it.
+  APP_URL: typeof location === "undefined" || /(^|\.)chasem\.app$/.test(location.hostname) ? "https://go.chasem.app/" : "app/",
+                                    // where the phone app lives: https://go.chasem.app/, the canonical address, which this same
+                                    // project serves from public/app/ (see middleware.js). Anywhere else -- a preview, localhost --
+                                    // it is the relative copy, so a preview never sends people to production. A painter's jobs live
+                                    // in his phone's storage for the address he opened, so this one does not move again. The old
+                                    // https://chasem.app/app/ redirects here (vercel.json).
 
   // ---- one product, one price, messages included. The tradie starts inside the app with his email; the card comes later, from inside.
   PLAN_PRICE: 99,                   // AUD a month. Must match the Stripe Payment Link and the relay. Shown on the card, the FAQ and the terms.

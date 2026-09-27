@@ -11,7 +11,7 @@
 // deletes the token and every day it put in.
 //
 // Off unless GOOGLE_CLIENT_ID and GOOGLE_CLIENT_SECRET are set, like every other optional part of the relay.
-import { cors, send, readJson, readToken, signToken, f } from "./_setup.js";
+import { cors, send, readJson, readToken, signToken, f, APP_URL } from "./_setup.js";
 import { q, dbConfigured } from "./_db.js";
 import { ensurePainter } from "./_store.js";
 
@@ -96,7 +96,7 @@ export async function syncCalendar(painter, days) {
 }
 
 function backToApp(res, result, why) {
-  const url = SITE + "/app/#/settings?calendar=" + encodeURIComponent(result) + (why ? "&why=" + encodeURIComponent(String(why).slice(0, 120)) : "");
+  const url = APP_URL + "#/settings?calendar=" + encodeURIComponent(result) + (why ? "&why=" + encodeURIComponent(String(why).slice(0, 120)) : "");
   res.statusCode = 302; res.setHeader("Location", url); res.end();
 }
 

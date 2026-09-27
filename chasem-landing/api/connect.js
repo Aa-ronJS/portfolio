@@ -11,12 +11,12 @@
 //
 // Off until Connect is signed up for on the platform account, which is a dashboard thing, not a code thing.
 // Until then this answers { off: true } and the app offers bank transfer instead of pretending.
-import { cors, send, readJson, readToken, stripe } from "./_setup.js";
+import { cors, send, readJson, readToken, stripe, APP_URL } from "./_setup.js";
 import { q, dbConfigured, ensureSchema, getSetting, setSetting } from "./_db.js";
 import { ensurePainter } from "./_store.js";
 
 const SITE = (process.env.SITE_URL || "https://chasem.app").replace(/\/+$/, "");
-const BACK = SITE + "/app/#/settings?paid=";
+const BACK = APP_URL + "#/settings?paid=";
 const NOT_SIGNED_UP = /signed up for Connect/i;
 
 export function connectConfigured() { return !!process.env.STRIPE_SECRET_KEY; }
