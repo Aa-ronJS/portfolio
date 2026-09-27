@@ -48,13 +48,13 @@ day (emergency plumbing, small electrical call-outs). The ads test the trades ra
 
 Checked on the live site and in the code, 26 Sep:
 
-| # | Gap | Why it matters for ads | Size |
+| # | Gap | Why it matters for ads | Size / status |
 |---|-----|------------------------|------|
 | 1 | `META_PIXEL_ID` empty on the live `config.js` | Meta has no signal; it cannot optimise and you cannot read results | 10 min |
-| 2 | The pixel lives on the landing page only. Sign-up, the first chase and payment happen in the app, which fires nothing | Meta can only optimise for "tapped Start", the shallowest and worst event | half a day |
-| 3 | The Start button (`index.html:537`) sends people to `https://go.chasem.app/` **without** the UTM tags or `fbclid` | Every tradie looks organic; you cannot tell which ad or which trade made him | 30 min |
-| 4 | `api/signup.js:54` stamps `qc_joined` as a date only, the source is always `"signup"`, there is no first-chase timestamp, and the trade he picked is not on the customer record | Cost per activated tradie, the number that decides the spend, cannot be computed, let alone per trade | about an hour |
-| 5 | No funnel report | You need one table a week, by ad and by trade (section 6) | half a day, one more `api/admin` action |
+| 2 | The pixel lives on the landing page only. Sign-up, the first chase and payment happen in the app, which fires nothing | Meta can only optimise for "tapped Start", the shallowest and worst event | **Done** (qc-app-v64, see below) |
+| 3 | The Start button (`index.html:537`) sends people to `https://go.chasem.app/` **without** the UTM tags or `fbclid` | Every tradie looks organic; you cannot tell which ad or which trade made him | **Done** (qc-app-v64, see below) |
+| 4 | `api/signup.js:54` stamps `qc_joined` as a date only, the source is always `"signup"`, there is no first-chase timestamp, and the trade he picked is not on the customer record | Cost per activated tradie, the number that decides the spend, cannot be computed, let alone per trade | **Done** (qc-app-v64, see below) |
+| 5 | No funnel report | You need one table a week, by ad and by trade (section 6) | **Done** (qc-app-v64, see below) |
 | 6 | Maker note, name and photo empty | With no customers and no testimonials, a real person's face is the only trust on the page | 20 min |
 | 7 | From `GO-LIVE.md`: leaked credentials not yet rotated, GST not set up in Stripe Tax, Supabase still on the free tier | Fine for a handful of testers; not for 50 sign-ups a week and real invoices | an afternoon |
 | 8 | Optional features that are **off**: Outlook / Gmail / Xero "Find my quotes" (no OAuth keys), reading a photo of a quote (no `ANTHROPIC_API_KEY`), card payments (`/api/paid` answers `listening: false`) | The page already hides Find until it is on. The ads must not mention any of the three until each one works | none, just discipline |
@@ -276,8 +276,9 @@ One row a week, and the same table split by `utm_content` and by trade:
   five minutes apart, rolls the rest on, keeps two days between messages to one customer, and does not chase a
   quote over three months old by itself (the import list shows those unticked; he can still text them by hand).
   The relay refuses more than 60 a day per tradie (`SEND_PER_DAY`) whatever the app asks. Still to do before
-  phase 3: split the sender pool, and make a customer's STOP reply cancel that tradie's remaining chasers to
-  that number (the relay records it, the app does not yet act on it).
+  phase 3: split the sender pool. A customer's STOP is now honoured everywhere (qc-app-v63): the relay refuses
+  any text to that number from any tradie, the phone takes back what was booked, carries on by email, and
+  shows "Replied STOP" with no way to text them.
 - **The free allowance empties on day one for importers.** Good for conversion speed, but "three jobs free"
   must stay literally true on the page when the importer chases ten quotes: make sure the in-app count says
   jobs, and the soft wall (he can still send by hand) holds.
@@ -296,6 +297,7 @@ One row a week, and the same table split by `utm_content` and by trade:
    tier.
 3. The maker note, your name as it should read, and a photo.
 4. An hour on a real job shooting concepts 1, 2 and 5 on your phone (concept 6 too, if a painter will let you).
-5. A yes to building section 4's items 2 to 5 (attribution, app events, timestamps, funnel report). They would
-   go on top of the every-trade branch, since that is what is live.
+5. ~~Tracking~~ built (qc-app-v64): the ad rides into the app, the server writes joined / set up / first chase /
+   paid once each, tells Meta through the Conversions API (`META_PIXEL_ID` + `META_CAPI_TOKEN` in Vercel), and
+   `/api/admin {action:"funnel"}` gives section 6's table by week, ad, campaign or trade.
 6. Your call on the door, once the first 1,000 clicks show where it leaks.
