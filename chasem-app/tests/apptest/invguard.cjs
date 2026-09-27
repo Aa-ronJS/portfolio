@@ -44,7 +44,7 @@ const near = (a, b) => Math.abs(a - b) < 0.006;
   await p.evaluate(() => { const S = window.__qcApp.store.load(); S.details.abn = ''; window.__qcApp.store.save(); location.hash = '#/'; });
   await p.waitForTimeout(300); await p.evaluate(() => window.__qcApp.route()); await p.waitForTimeout(400);
   const walled = await p.$eval('#app', e => e.innerText);
-  ok(/Your ABN/.test(walled) && /of 5/.test(walled), 'clearing the ABN puts him back at set-up, so no invoice can be raised without one');
+  ok(/Your ABN/.test(walled) && /of 6/.test(walled), 'clearing the ABN puts him back at set-up, so no invoice can be raised without one');
   await p.evaluate(() => { const S = window.__qcApp.store.load(); S.details.abn = '12 345 678 901'; window.__qcApp.store.save(); });
   let list;
   // ---- 3x rule through an agreed variation

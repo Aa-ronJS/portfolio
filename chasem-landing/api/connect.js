@@ -34,7 +34,7 @@ export async function ensureHook() {
   const found = await stripe("webhook_endpoints?limit=100");
   const mine = (found.data || []).filter((e) => e.url === url);
   for (const e of mine) await stripe("webhook_endpoints/" + encodeURIComponent(e.id), null, "DELETE");
-  const form = { url, connect: "true", description: "Chasem: a painter's invoice paid by card" };
+  const form = { url, connect: "true", description: "Chasem: a tradie's invoice paid by card" };
   HOOK_EVENTS.forEach((ev, i) => { form["enabled_events[" + i + "]"] = ev; });
   const made = await stripe("webhook_endpoints", form);
   if (!made || !made.secret) throw new Error("Stripe gave nothing to check signatures with");
@@ -82,7 +82,7 @@ export default async function handler(req, res) {
           type: "express", country: "AU", email: p.reply_to || "",
           "capabilities[card_payments][requested]": "true",
           "capabilities[transfers][requested]": "true",
-          "business_profile[product_description]": "Painting and decorating",
+          "business_profile[product_description]": "Trade services for homes and businesses",
           "metadata[painter]": p.cus,
         });
         acct = made.id;

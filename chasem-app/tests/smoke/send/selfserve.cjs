@@ -2,7 +2,7 @@
 'use strict';
 const { Readable } = require('node:stream'); const { createHmac } = require('node:crypto');
 for (const k of ['ALLOWED_ORIGINS','TWILIO_API_KEY','TWILIO_FROM','TWILIO_API_SECRET','TWILIO_INBOUND_URL','RELAY_TOKEN','RELAY_TOKENS','RELAY_REVOKED','ALLOW_CLIENT_CREDS']) delete process.env[k];
-Object.assign(process.env, { TWILIO_ACCOUNT_SID:'ACserver', TWILIO_AUTH_TOKEN:'twtok', TWILIO_MESSAGING_SERVICE_SID:'MGserver', RESEND_API_KEY:'re_server', RESEND_FROM:'Chasem <hello@quoteandchase.com.au>', STRIPE_WEBHOOK_SECRET:'whsec_test', STRIPE_SECRET_KEY:'rk_test_x', RELAY_SIGNING_SECRET:'sign_me_please_0123456789', RELAY_URL:'https://qc.vercel.app/api/msg', APP_URL:'https://chasem.app/app/', SUPPORT_EMAIL:'help@quoteandchase.com.au', OWNER_MOBILE:'0400 111 222', SITE_URL:'https://chasem.app/' });
+Object.assign(process.env, { TWILIO_ACCOUNT_SID:'ACserver', TWILIO_AUTH_TOKEN:'twtok', TWILIO_MESSAGING_SERVICE_SID:'MGserver', RESEND_API_KEY:'re_server', RESEND_FROM:'Chasem <hello@chasem.app>', STRIPE_WEBHOOK_SECRET:'whsec_test', STRIPE_SECRET_KEY:'rk_test_x', RELAY_SIGNING_SECRET:'sign_me_please_0123456789', RELAY_URL:'https://qc.vercel.app/api/msg', APP_URL:'https://chasem.app/app/', SUPPORT_EMAIL:'help@chasem.app', OWNER_MOBILE:'0400 111 222', SITE_URL:'https://chasem.app/' });
 const U = require(require('path').join(__dirname, '../../../..', 'chasem-landing') + '/api/_setup.js');
 const wh = require(require('path').join(__dirname, '../../../..', 'chasem-landing') + '/api/stripe-webhook.js');
 const renew = require(require('path').join(__dirname, '../../../..', 'chasem-landing') + '/api/renew.js').default;
@@ -42,7 +42,7 @@ const call = async (h, body, url, headers) => { const r = res(); await h(req(bod
   const link = (/https:\/\/chasem\.app\/app\/#\/setup\?d=j:[A-Za-z0-9_-]+/.exec(em.json.text) || [])[0];
   const P = decode(link);
   ok(P.settings.details.trading_name === "Dave's Painting" && P.settings.sending && P.settings.sending.hosted === true && P.settings.sending.server === 'https://qc.vercel.app/api/msg' && P.settings.sending.server_has_creds === true && P.settings.sending.hosted_name === "Dave's Painting" && /^\d{4}-\d{2}-\d{2}$/.test(P.settings.sending.hosted_until), 'the link carries details and a live sending config: ' + JSON.stringify(P.settings.sending).slice(0, 160));
-  ok(/You're on\. One tap sets it all up/.test(em.json.text) && !/ring|call you|phone call|book/i.test(em.json.text) && /help@quoteandchase\.com\.au/.test(em.json.text), 'the welcome email promises no call and gives an email for help');
+  ok(/You're on\. Open this on the phone you quote from and tap Load/.test(em.json.text) && !/ring|call you|phone call|book/i.test(em.json.text) && /help@chasem\.app/.test(em.json.text), 'the welcome email promises no call and gives an email for help');
   const painterText = calls.filter(c => c.form && c.form.To === '+61412000000').pop();
   ok(painterText && /you're on\. The set-up link is in your email/.test(painterText.form.Body), 'the painter also gets a text saying where the link is');
   const TOKEN = P.settings.sending.token;
@@ -52,7 +52,7 @@ const call = async (h, body, url, headers) => { const r = res(); await h(req(bod
   ok(m.status === 200 && m.json.hosted === true && m.json.signed === true && m.json.name === "Dave's Painting" && m.json.renew === '/api/renew', 'relay ping: hosted, signed, knows its own renew path');
   m = await call(msg, { action: 'send', channel: 'email', token: TOKEN, to: 'client@example.com', subject: 's', body: 'b' });
   const sent = calls.filter(c => c.json && c.json.from).pop();
-  ok(m.status === 200 && m.json.ok && sent.json.from === '"Dave\'s Painting" <hello@quoteandchase.com.au>' && sent.json.reply_to === 'dave@example.com', 'relay sends in his name with replies to him, on our accounts');
+  ok(m.status === 200 && m.json.ok && sent.json.from === '"Dave\'s Painting" <hello@chasem.app>' && sent.json.reply_to === 'dave@example.com', 'relay sends in his name with replies to him, on our accounts');
   const bad = TOKEN.slice(0, -2) + (TOKEN.slice(-2) === 'aa' ? 'bb' : 'aa');
   m = await call(msg, { action: 'ping', token: bad }); ok(m.status === 401, 'a token with a tampered signature is refused');
   m = await call(msg, { action: 'ping', token: 'qc1.eyJ2IjoxfQ.notasignature' }); ok(m.status === 401, 'a made-up token is refused');

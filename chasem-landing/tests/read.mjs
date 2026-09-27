@@ -48,6 +48,22 @@ r = await post({ token: TOKEN, media_type: 'image/jpeg', data: JPEG, own });
 ok(r.status === 429 && /Type this one in/.test(r.error) && sent.length === 3, 'the fourth is refused before the model is asked, in plain words');
 const other = signToken({ v: 1, cus: 'cus_sam', name: 'Sam', plan: 'paid' }, process.env.RELAY_SIGNING_SECRET);
 
+// ---- the free plan gets fewer, a long PDF is refused before it costs anything
+const free = signToken({ v: 1, cus: 'cus_free', plan: 'free', until: '' }, process.env.RELAY_SIGNING_SECRET);
+answer = { is_quote_or_invoice: true, kind: 'quote', customer_name: 'A', customer_business: '', customer_phone: '', customer_email: '', total_inc_gst: 10, amount_still_owing: 0, number: '', date: '', due_date: '', what_for: '' };
+let freeOk = 0; for (let i = 0; i < 7; i++) { const x = await post({ token: free, media_type: 'image/jpeg', data: JPEG }); if (x.ok) freeOk++; }
+ok(freeOk === 5, 'a free account gets 5 reads an hour (' + freeOk + ')');
+const lapsed = signToken({ v: 1, cus: 'cus_lapsed', plan: 'paid', until: '2020-01-01' }, process.env.RELAY_SIGNING_SECRET);
+let lapsedOk = 0; for (let i = 0; i < 7; i++) { const x = await post({ token: lapsed, media_type: 'image/jpeg', data: JPEG }); if (x.ok) lapsedOk++; }
+ok(lapsedOk === 5, 'a paid plan that has lapsed reads like a free one (' + lapsedOk + ')');
+const before = sent.length, longPdf = Buffer.from('%PDF-1.4\n' + Array(8).fill('1 0 obj << /Type /Page >> endobj').join('\n') + '\n<< /Type /Pages >>').toString('base64');
+r = await post({ token: signToken({ v: 1, cus: 'cus_pdf', plan: 'paid' }, process.env.RELAY_SIGNING_SECRET), media_type: 'application/pdf', data: longPdf });
+ok(r.status === 413 && /too many pages/.test(r.error) && sent.length === before, 'an 8-page PDF is refused before the model is asked');
+// a login state from Find is not a login token
+const state = signToken({ v: 1, kind: 'find', cus: 'cus_dave', provider: 'microsoft', exp: Date.now() + 60000 }, process.env.RELAY_SIGNING_SECRET);
+r = await post({ token: state, media_type: 'image/jpeg', data: JPEG });
+ok(r.status === 401, 'a Find login state cannot be used as his token');
+
 // ---- what goes wrong, goes wrong gently
 answer = Object.assign({}, answer, { is_quote_or_invoice: false });
 r = await post({ token: other, media_type: 'image/png', data: JPEG, own: {} });
@@ -65,5 +81,11 @@ ok(r.status === 401, 'no token, no read');
 globalThis.__readClient.beta.messages.parse = async () => { throw new Error('socket hang up'); };
 r = await post({ token: signToken({ v: 1, cus: 'cus_kim', plan: 'paid' }, process.env.RELAY_SIGNING_SECRET), media_type: 'image/jpeg', data: JPEG });
 ok(r.status === 500 && /Try again, or type it in/.test(r.error), 'a failure on the way says try again, or type it in');
+
+const saved = globalThis.__relayDb; delete globalThis.__relayDb; delete process.env.DATABASE_URL;
+globalThis.__readClient.beta.messages.parse = async () => ({ stop_reason: 'end_turn', parsed_output: answer });
+r = await post({ token: other, media_type: 'image/jpeg', data: JPEG });
+ok(r.ok === false && r.off === true, 'without the database there is no counter, so no reading at all');
+globalThis.__relayDb = saved;
 
 console.log(fails ? '\nFAILURES: ' + fails : '\nALL PASSED'); process.exit(fails ? 1 : 0);

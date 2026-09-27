@@ -12,7 +12,7 @@ import { findByPhone, seenInbound, recordInbound, markAccepted, dbConfigured, e1
 
 export const config = { api: { bodyParser: false } };
 // Kept for the case we still cannot place a number: better than silence, and it names no one.
-export const REPLY = "This number sends messages for a painting business and cannot take replies. Please use the phone number or email in the message you received.";
+export const REPLY = "This number sends messages for a local business and cannot take replies. Please use the phone number or email in the message you received.";
 const YES = /^(y|ye|yes|yep|yeah|yup|ok|okay|sure|accept|accepted|go ahead|go|deal|sounds good|happy|all good)\b[\s.!]*$/i;
 
 const xml = (s) => String(s).replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
@@ -80,6 +80,6 @@ export default async function handler(req, res) {
   await recordInbound({ id: sid, painter: hit.painter_id, job: hit.job_id, from, body, action: "forwarded" }).catch(() => {});
   const sent = await tellPainter(c, hit, `${who}${hit.quote_no ? " (" + hit.quote_no + ")" : ""} replied: ${body.slice(0, 300) || "(no text)"}`);
   return twiml(res, 200, sent.length
-    ? `Thanks — I've passed that on to ${hit.trading_name || "the painter"}. They'll come back to you.`
+    ? `Thanks — I've passed that on to ${hit.trading_name || "the business"}. They'll come back to you.`
     : REPLY);
 }

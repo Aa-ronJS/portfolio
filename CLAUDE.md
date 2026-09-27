@@ -14,7 +14,7 @@ Three independent things live here:
 
 - **Chasem** — chases quotes and invoices for Australian tradies (painters also get quoting and measuring),
   live at https://chasem.app. Three directories: `chasem-app/` is the
-  phone app itself (vanilla ES5, no build step, `npm test` runs ~35
+  phone app itself (vanilla ES5, no build step, `npm test` runs ~50
   browser suites); `chasem-landing/` is the site and the serverless
   relay it talks to, deployed with `npx vercel deploy --prod`, with its
   own `npm test` against pglite; `chasem-pack/` is the older

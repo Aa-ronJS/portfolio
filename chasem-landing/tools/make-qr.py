@@ -13,7 +13,7 @@ try:
 except ImportError:
     sys.exit("Run: pip install segno")
 
-url = sys.argv[1] if len(sys.argv) > 1 else "https://quoteandchase.example.com/#try"
+url = sys.argv[1] if len(sys.argv) > 1 else "https://chasem.app/#try"
 out = pathlib.Path(__file__).resolve().parent.parent / "public" / "qr.svg"
 qr = segno.make(url, error="m")
 qr.save(str(out), kind="svg", scale=8, border=2, dark="#16181d", light=None, xmldecl=False, svgclass=None, lineclass=None, omitsize=False)

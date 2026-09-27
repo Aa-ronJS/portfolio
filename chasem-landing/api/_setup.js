@@ -53,13 +53,19 @@ export function signToken(payload, secret) {
   const body = b64url(Buffer.from(JSON.stringify(payload), "utf8"));
   return "qc1." + body + "." + b64url(createHmac("sha256", secret || "").update(body).digest());
 }
-export function readToken(token, secret) {
+// A token with a "kind" (an OAuth state for Find or Calendar) is only ever good for that one purpose, and only until
+// it expires: readToken(t, secret) refuses it, readToken(t, secret, "find") accepts nothing else.
+export function readToken(token, secret, kind) {
   if (typeof token !== "string" || token.slice(0, 4) !== "qc1." || !secret) return null;
   const parts = token.split("."); if (parts.length !== 3) return null;
   const want = b64url(createHmac("sha256", secret).update(parts[1]).digest());
   const a = Buffer.from(parts[2]), b = Buffer.from(want);
   if (a.length !== b.length || !timingSafeEqual(a, b)) return null;
-  try { const p = JSON.parse(Buffer.from(parts[1].replace(/-/g, "+").replace(/_/g, "/"), "base64").toString("utf8")); return p && typeof p === "object" && p.v === 1 ? p : null; } catch { return null; }
+  let p; try { p = JSON.parse(Buffer.from(parts[1].replace(/-/g, "+").replace(/_/g, "/"), "base64").toString("utf8")); } catch { return null; }
+  if (!p || typeof p !== "object" || p.v !== 1) return null;
+  if ((p.kind || kind) && p.kind !== kind) return null;
+  if (kind && !(Number(p.exp) > Date.now())) return null;
+  return p;
 }
 // A token lasts to the end of the paid period plus a few days' grace, so a renewal that is a day late never stops the chasing.
 export const GRACE_DAYS = 5;

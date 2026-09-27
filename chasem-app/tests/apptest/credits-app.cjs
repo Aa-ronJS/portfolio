@@ -47,7 +47,7 @@ const MOCK = () => { window.__qcCalls = []; let saved = null; try { saved = JSON
   ok(S.details.trading_name === "Dave's Painting", 'and his details came back with the account');
   // a new account meets the wall, not the jobs list
   t = await text();
-  ok(/of 5/.test(t), 'a new account is walked through set-up before anything else: ' + t.replace(/\s+/g, ' ').slice(0, 60));
+  ok(/of 6/.test(t), 'a new account is walked through set-up before anything else: ' + t.replace(/\s+/g, ' ').slice(0, 60));
   await p.evaluate(() => { const st = window.__qcApp.store, S2 = st.load();
     S2.details.abn = '12 345 678 901'; S2.details.state = 'SA'; S2.security.setup_done = true;
     S2.payment = { account_name: 'Dave', bsb: '063-000', account_number: '12345678' }; st.save(); });

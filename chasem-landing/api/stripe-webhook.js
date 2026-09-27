@@ -85,6 +85,6 @@ export default async function handler(req, res) {
   const c = creds(), env = { SUPPORT_EMAIL: process.env.SUPPORT_EMAIL || process.env.OWNER_EMAIL || "", APP_URL: process.env.APP_URL || "" };
   if (details.email) { try { const m = welcomeEmail(details, link, env); await email(c, { to: [details.email], reply_to: process.env.SUPPORT_EMAIL || process.env.OWNER_EMAIL || undefined, subject: m.subject, text: m.text, ...(process.env.OWNER_EMAIL ? { bcc: [process.env.OWNER_EMAIL] } : {}) }); out.emailed = true; } catch (e) { out.email_error = e.message; } }
   if (details.phone) { try { await sms(c, details.phone, `Chasem: you're on. The set-up link is in your email (${details.email || "the address you paid with"}). Open it on the phone you quote from and tap Load.`); out.texted = true; } catch (e) { out.sms_error = e.message; } }
-  if (process.env.OWNER_MOBILE) { try { await sms(c, process.env.OWNER_MOBILE, `SIGN-UP: ${details.trading_name || details.owner_name || "a painter"}${details.state ? ", " + details.state : ""}. Link ${out.emailed ? "emailed" : "NOT emailed: " + (out.email_error || "no email")}, sending ${out.hosted ? "on" : "OFF"}.`); } catch (e) {} }
+  if (process.env.OWNER_MOBILE) { try { await sms(c, process.env.OWNER_MOBILE, `SIGN-UP: ${details.trading_name || details.owner_name || "someone"}${details.state ? ", " + details.state : ""}. Link ${out.emailed ? "emailed" : "NOT emailed: " + (out.email_error || "no email")}, sending ${out.hosted ? "on" : "OFF"}.`); } catch (e) {} }
   return send(res, 200, out);
 }

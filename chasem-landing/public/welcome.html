@@ -34,13 +34,13 @@ code{font-family:ui-monospace,Menlo,monospace;font-size:.85rem;word-break:break-
   <p data-my-ready hidden><a class="btn" href="#" data-my-link>Set up my app</a></p>
   <p data-my-ready hidden>Open this on the phone you quote from and tap Load. Your business name, ABN, licence and your state's deposit rule go in, and your month's messages are on it from that moment. The same link is in your email, so you can do it on the ute tomorrow instead.</p>
   <p data-my-fail hidden>Your set-up link is in the welcome email, arriving now at the address you paid with. Open it on the phone you quote from and tap Load. Not there in an hour? <span data-contact>Email me</span> and I will send it again.</p>
-  <p class="guarantee" data-my-ready hidden>Open it on the phone you actually quote from. The app keeps everything on that phone, so the link is worth nothing to anyone else and it is the only set-up there is.</p>
+  <p class="guarantee" data-my-ready hidden>Open it on the phone you quote from. Your jobs are kept in your account as well, so any phone you sign in on with the same email shows them.</p>
 </div>
 
 <div class="box">
   <b>2. Bring in the quotes you already have out</b>
   <p>Tap Chase on the Jobs screen. Paste a text you sent, drop in the file from your quoting app, or type them in. Each one lands ready to chase. Painters: the app also asks what you charge for a day on the tools and works your price list out from it.</p>
-  <p>While you are in there, put your bank details in so your invoices can be paid, and read the three nudges under Set-up. Change any wording that does not sound like you.</p>
+  <p>While you are in there, read the three nudges under Set-up. Change any wording that does not sound like you.</p>
 </div>
 
 <div class="box">
@@ -71,7 +71,7 @@ code{font-family:ui-monospace,Menlo,monospace;font-size:.85rem;word-break:break-
       .then(function(j){ if (j && j.ok && j.paid && j.link) { document.querySelector('[data-my-link]').setAttribute('href', j.link); show('[data-my-ready]'); } else show('[data-my-fail]'); })
       .catch(function(){ show('[data-my-fail]'); });
   }
-  if (C.META_PIXEL_ID) {!function(f,b,e,v,n,t,s){if(f.fbq)return;n=f.fbq=function(){n.callMethod?n.callMethod.apply(n,arguments):n.queue.push(arguments)};if(!f._fbq)f._fbq=n;n.push=n;n.loaded=!0;n.version='2.0';n.queue=[];t=b.createElement(e);t.async=!0;t.src=v;s=b.getElementsByTagName(e)[0];s.parentNode.insertBefore(t,s)}(window,document,'script','https://connect.facebook.net/en_US/fbevents.js'); window.fbq('init', C.META_PIXEL_ID); window.fbq('track', 'Subscribe', { value: parseFloat(C.PLAN_PRICE) || 49, currency: 'AUD', content_name: 'plan' }); }
+  if (C.META_PIXEL_ID) {!function(f,b,e,v,n,t,s){if(f.fbq)return;n=f.fbq=function(){n.callMethod?n.callMethod.apply(n,arguments):n.queue.push(arguments)};if(!f._fbq)f._fbq=n;n.push=n;n.loaded=!0;n.version='2.0';n.queue=[];t=b.createElement(e);t.async=!0;t.src=v;s=b.getElementsByTagName(e)[0];s.parentNode.insertBefore(t,s)}(window,document,'script','https://connect.facebook.net/en_US/fbevents.js'); window.fbq('init', C.META_PIXEL_ID); window.fbq('track', 'Subscribe', { value: parseFloat(C.PLAN_PRICE) || 99, currency: 'AUD', content_name: 'plan' }); }
 })();
 </script>
 </body>
