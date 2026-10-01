@@ -243,7 +243,7 @@ a.sec.link::after{content:'\203A';color:var(--muted);font-size:1.4rem;line-heigh
 
 /* ---------- Brand lockup and the front door (Log in, Create an account, Reset)
    Design pre-flight (design-repo DESIGN.md section 1), written before this CSS:
-   1 Audience: an Australian tradie, often a painter, on a mid-range phone in the ute or on a ladder, one bar of
+   1 Audience: any Australian tradie who sends quotes (sparky, plumber, painter, builder), on a mid-range phone, one bar of
      signal, not confident with apps. First visit is from an ad or chasem.app; later visits are a second phone.
    2 Register: product-confident (a paid SaaS front door), held quiet so the form is the whole page.
    3 Reference: Stripe's dashboard sign-in. The move lifted: the wordmark sits outside and above the form, top
