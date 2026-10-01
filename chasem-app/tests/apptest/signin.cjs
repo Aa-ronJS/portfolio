@@ -34,48 +34,48 @@ const MOCK = () => {
 
   await p.goto(base, { waitUntil: 'load' }); await p.waitForTimeout(600);
   let t = await text();
-  ok(/Chasem/.test(t) && !!(await p.$('#join_email')), 'a phone with no account is asked for an email and nothing else');
-  ok(!(await p.$('#join_name')), 'and not for a business name yet: one thing at a time');
+  ok(/Chasem/.test(t) && !!(await p.$('#a_email')), 'a phone with no account opens on Log in, with the email-a-code way in beside it');
+  ok(!(await p.$('#a_name')), 'and not on sign-up: that is one tap away');
 
   // a bad address never reaches the relay
-  await p.fill('#join_email', 'nope'); await p.click('#join_go'); await p.waitForTimeout(300);
+  await p.fill('#a_email', 'nope'); await p.click('#a_codein'); await p.waitForTimeout(300);
   ok(/does not look like an email/.test(await text()), 'a thing that is not an email is caught on the phone');
   ok((await p.evaluate(() => window.__calls.length)) === 0, 'and never reaches the relay');
 
   // the code step
-  await p.fill('#join_email', 'Dave@Example.com'); await p.click('#join_go'); await p.waitForTimeout(700);
+  await p.fill('#a_email', 'Dave@Example.com'); await p.click('#a_codein'); await p.waitForTimeout(700);
   const startCall = await p.evaluate(() => window.__calls[0]);
   ok(startCall && startCall.body.action === 'start' && startCall.body.email === 'dave@example.com', 'the address is lower-cased before it is sent (' + (startCall && startCall.body.email) + ')');
   t = await text();
-  ok(!!(await p.$('#join_code')) && /dave@example\.com/.test(t), 'then it asks for the six numbers and says where they went');
+  ok(!!(await p.$('#a_code')) && /dave@example\.com/.test(t), 'then it asks for the six numbers and says where they went');
   ok(!(await p.evaluate(() => (window.__qcApp.store.load().sending || {}).token)), 'and nothing is on the phone yet: the email alone is not a way in');
 
   // a wrong code
-  await p.fill('#join_code', '111111'); await p.waitForTimeout(900);
+  await p.fill('#a_code', '111111'); await p.waitForTimeout(900);
   ok(/code is wrong/.test(await text()), 'a wrong code says so, in the relay\'s words');
   ok(!(await p.evaluate(() => (window.__qcApp.store.load().sending || {}).token)), 'and still lets nobody in');
 
   // the right one, typed rather than submitted: a phone keypad has no Enter
-  await p.fill('#join_code', ''); await p.fill('#join_code', '654321'); await p.waitForTimeout(1000);
+  await p.fill('#a_code', ''); await p.fill('#a_code', '654321'); await p.waitForTimeout(1000);
   const S = await p.evaluate(() => window.__qcApp.store.load());
   ok(S.sending && S.sending.token === 'qc1.eyJ2IjoxfQ.sig', 'the right code opens the app, with no Enter needed');
   ok(S.account && S.account.email === 'dave@example.com' && S.account.cus === 'cus_live1', 'the account is the email, and it remembers which one');
   ok(S.details.trading_name === "Dave's Painting", 'and his details come back with it, so a new phone is not a blank app');
-  ok(!/join_email/.test(await p.evaluate(() => document.querySelector('#app').innerHTML)), 'the door is gone once he is in');
+  ok(!/a_email/.test(await p.evaluate(() => document.querySelector('#app').innerHTML)), 'the door is gone once he is in');
 
   // send another / different email
   await p.evaluate(() => { localStorage.clear(); }); await p.reload({ waitUntil: 'load' }); await p.waitForTimeout(500);
-  await p.fill('#join_email', 'dave@example.com'); await p.click('#join_go'); await p.waitForTimeout(600);
-  await p.click('#code_again'); await p.waitForTimeout(600);
+  await p.fill('#a_email', 'dave@example.com'); await p.click('#a_codein'); await p.waitForTimeout(600);
+  await p.click('#a_again'); await p.waitForTimeout(600);
   ok(/Sent/.test(await text()), 'he can ask for another code');
-  await p.click('#code_back'); await p.waitForTimeout(400);
-  ok(!!(await p.$('#join_email')), 'and go back to change the address he typed');
+  await p.click('#a_back'); await p.waitForTimeout(400);
+  ok(!!(await p.$('#a_email')), 'and go back to change the address he typed');
 
   // the relay being down does not eat the app
-  await p.evaluate(() => { window.__qcRelayFetch = () => Promise.reject(new Error('offline')); });
-  await p.fill('#join_email', 'dave@example.com'); await p.click('#join_go'); await p.waitForTimeout(700);
+  await p.evaluate(() => { window.__qcRelayFetch = () => Promise.reject(new Error('offline')); }); await ctx.setOffline(true);
+  await p.fill('#a_email', 'dave@example.com'); await p.click('#a_codein'); await p.waitForTimeout(700);
   ok(/No signal/.test(await text()), 'with no signal it says so rather than hanging: ' + (await text()).replace(/\s+/g, ' ').slice(0, 60));
-  ok(!!(await p.$('#join_go')), 'and leaves the button usable for another go');
+  ok(!!(await p.$('#a_codein')) && !(await p.$eval('#a_codein', e => e.disabled)), 'and leaves the button usable for another go');
 
   await b.close(); srv.close(); console.log(fails ? 'FAILURES ' + fails : 'ALL PASSED'); process.exit(fails ? 1 : 0);
 })().catch(e => { console.error(e); process.exit(1); });

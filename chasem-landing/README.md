@@ -182,3 +182,25 @@ automatic messages one tradie can have going out on one day, per channel; the ap
 paces itself at 20 a day, so this only stops an app that does not. `MSG_PER_IP_LIMIT` (default 60 per
 10 minutes) caps abuse. Test with
 `node tools/msg-relay-test.mjs` (mocked Twilio and Resend).
+
+## Accounts (`api/signin.js`, `api/account.js`)
+
+Log in is an email and a password; Create an account takes a name, an optional business name, the email and a
+password, then proves the inbox with a six-digit emailed code before anything exists. Forgot password and
+"Email me a code instead" use the same code. Passwords are scrypt hashes in the `account` table
+(`db/014-accounts.sql`); ten wrong in a row lock the account for fifteen minutes, and one place gets 60 tries an
+hour. An account from before passwords is asked for the code once and picks a password then. Set-up > Account
+changes the password or the email (a code to the new address), logs out, and deletes the account (refused while
+a plan is still live, so nothing keeps charging). `tests/accounts.mjs` covers the server and
+`chasem-app/tests/apptest/account-app.cjs` covers the screens.
+
+Known limit: the phone's token does not expire, so changing the password does not log out other phones.
+
+## Try it by hand, server and all
+
+```bash
+node tools/local.mjs   # http://localhost:8400/ is the app; http://localhost:8400/__mail is the test inbox
+```
+
+Real handlers and a real Postgres (pglite, kept in `.local/`); Stripe and email are stand-ins, so nothing is
+charged or sent. Codes appear in the test inbox. Delete `.local/` to start from nothing.

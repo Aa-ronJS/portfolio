@@ -261,7 +261,7 @@ footer .wrap{display:grid;gap:8px}
 <nav>
   <div class="wrap">
     <a class="mark" href="#top"><img src="app/icons/icon-192.png" alt="" width="28" height="28"><b>Chasem</b><span>for tradies</span></a>
-    <a class="btn tape" href="app/" data-app>Open the app</a>
+    <a class="btn tape" href="app/#/login" data-app data-door="login">Log in</a>
   </div>
 </nav>
 
@@ -272,7 +272,7 @@ footer .wrap{display:grid;gap:8px}
       <h1>You quote.<br>Chasem chases.</h1>
       <p class="lede">Every quote you have sent gets followed up. Every yes gets booked in. Every invoice gets chased until it is paid. In your name, in your words, on weekdays, while you are on the tools.</p>
       <div class="actions">
-        <a class="btn tape" href="app/" data-app data-sub>Start free, your first three jobs</a>
+        <a class="btn tape" href="app/#/signup" data-app data-sub data-door="signup">Start free, your first three jobs</a>
         <a class="btn ghost" href="#how">See how it chases</a>
       </div>
       <p class="fine">Your email and you are in. No card, no call, nothing to download from a store.</p>
@@ -526,7 +526,7 @@ footer .wrap{display:grid;gap:8px}
     ['utm_source','utm_medium','utm_campaign','utm_content','utm_term','fbclid'].forEach(function(k){ var v = q.get(k); if (v) { x.searchParams.set(k, v.slice(0, 200)); any = true; } });
     return any ? x.href : u; } catch (e) { return u; } }
   if (C.APP_URL) C.APP_URL = withSrc(C.APP_URL);
-  if (C.APP_URL) document.querySelectorAll('[data-app]').forEach(function(a){ a.setAttribute('href', C.APP_URL); });
+  if (C.APP_URL) document.querySelectorAll('[data-app]').forEach(function(a){ var d = a.getAttribute('data-door'); a.setAttribute('href', C.APP_URL + (d ? '#/' + d : '')); });
 
   // price, from config, so the page and the receipt never disagree
   var subPrice = num(C.PLAN_PRICE, 49);
@@ -541,7 +541,7 @@ footer .wrap{display:grid;gap:8px}
   var subs = Array.prototype.slice.call(document.querySelectorAll('[data-sub]'));
   // the ask is not a checkout: it opens the app, where an email and the free messages get him quoting. The card comes later, from inside.
   var appHref = String(C.APP_URL || 'app/');
-  subs.forEach(function(a){ a.setAttribute('href', appHref); a.addEventListener('click', function(){ track('Lead', { content_name: 'signup_start' }); }); });
+  subs.forEach(function(a){ a.setAttribute('href', appHref + '#/signup'); a.addEventListener('click', function(){ track('Lead', { content_name: 'signup_start' }); }); });
   if (window.matchMedia && matchMedia('(min-width: 900px)').matches) document.querySelectorAll('#plan details.group').forEach(function(d){ d.open = true; });
 
   // Every email capture posts to the one FORM_ACTION with a hidden "list" field, in the background. Without FORM_ACTION the forms stay hidden.
@@ -619,8 +619,8 @@ footer .wrap{display:grid;gap:8px}
     ];
     out.innerHTML = '<div class="who"><b>' + esc(f.name || 'Your customer') + ' &middot; ' + esc(total) + '</b><span>' + esc([f.number, f.what, f.phone || f.email].filter(Boolean).join(' · ') || 'Add their mobile or email and it is ready to chase.') + '</span></div>' +
       n.map(function(x){ return '<p class="when">' + esc(when(x[0])) + ', 9am</p><div class="bubble">' + esc(hi + ' ' + x[1]) + ' Cheers</div>'; }).join('') +
-      '<p class="fine">It stops the moment they say yes. <a href="app/" data-app>Chase it for real</a>, free.</p>';
-    if (C.APP_URL) out.querySelectorAll('[data-app]').forEach(function(a){ a.setAttribute('href', C.APP_URL); });
+      '<p class="fine">It stops the moment they say yes. <a href="app/#/signup" data-app data-door="signup">Chase it for real</a>, free.</p>';
+    if (C.APP_URL) out.querySelectorAll('[data-app]').forEach(function(a){ var d = a.getAttribute('data-door'); a.setAttribute('href', C.APP_URL + (d ? '#/' + d : '')); });
     track('ViewContent', { content_name: 'paste_demo' });
   }
   $('readit').addEventListener('click', show);

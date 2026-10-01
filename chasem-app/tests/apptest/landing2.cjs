@@ -27,7 +27,7 @@ const withCfg = (patch) => baseCfg + '\nObject.assign(window.QC, ' + JSON.string
   const firstScreen = await p.evaluate(() => Array.from(document.querySelectorAll('.hero .stack *')).filter(e => e.getBoundingClientRect().top < 664).map(e => e.textContent).join(' '));
   ok(/Start free, your first three jobs/.test(firstScreen), 'the way in is on the first screen');
   ok(!/Coming soon/.test(t), 'no "Coming soon" shopfront anywhere');
-  ok((await p.$$('[data-sub]')).length >= 2 && (await p.$$eval('[data-sub]', as => as.every(a => a.getAttribute('href') === 'app/'))), 'with nothing configured every ask opens the app, because that is where sign-up happens');
+  ok((await p.$$('[data-sub]')).length >= 2 && (await p.$$eval('[data-sub]', as => as.every(a => a.getAttribute('href') === 'app/#/signup'))), 'with nothing configured every ask opens Create an account in the app, because that is where sign-up happens');
   ok(!(await p.$('#maker:not([hidden])')), 'maker block hidden until written');
   ok(!/Contact email coming soon|to be added/.test(t), 'no placeholder contact line');
   // nobody is told painting is the point any more: painters get one section of their own
@@ -91,7 +91,7 @@ const withCfg = (patch) => baseCfg + '\nObject.assign(window.QC, ' + JSON.string
   // ---- state 3: checkout wired, GST registered, founding places 0
   cfgOverride = withCfg({ SUBSCRIBE_URL: 'https://buy.stripe.com/test_sub', GST_REGISTERED: true, PLAN_PRICE: 49, HELP_SAME_DAY: false, BUSINESS_PHONE: '0400 000 000', PHONE_HOURS: 'weekdays 4 to 7pm', SETUP_LOG: [{ date: '6 Oct', state: 'VIC', who: 'Dave, Ballarat', quote_on_call: true, sending_live: true }, { date: '8 Oct', state: 'NSW', quote_on_call: true, sending_live: false, second_session: true }] });
   await p.goto(base, { waitUntil: 'load' }); await p.waitForTimeout(400); t = await text();
-  ok((await p.$$eval('[data-sub]', as => as.every(a => a.getAttribute('href') === 'app/'))), 'every ask opens the app, wherever the config stands');
+  ok((await p.$$eval('[data-sub]', as => as.every(a => a.getAttribute('href') === 'app/#/signup'))), 'every ask opens the app, wherever the config stands');
   ok(/inc GST, a month/.test(t) && /tax invoice with GST shown/.test(await allText()), 'price and GST wording follow config');
   ok(/Thirty days, money back, no reason needed\./.test(t) && /within one business day/.test(await allText()), 'guarantee tag and the slower help promise follow config');
   ok(errors.length === 0, 'state 3: no page errors');

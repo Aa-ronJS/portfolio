@@ -12,11 +12,12 @@
 <link rel="icon" href="icons/icon.svg" type="image/svg+xml">
 <link rel="icon" href="icons/icon-192.png" type="image/png">
 <title>Chasem</title>
+<link rel="preload" href="fonts/bricolage-latin.woff2" as="font" type="font/woff2" crossorigin>
 <link rel="stylesheet" href="app.css">
 </head>
 <body>
 <header class="top">
-  <a class="brand" href="#/"><img src="icons/icon-192.png" alt="" width="26" height="26">Chase<span>m</span></a>
+  <a class="brand" href="#/" aria-label="Chasem, your jobs"><span class="lockup"><svg class="cmark" viewBox="0 0 512 512" aria-hidden="true" focusable="false"><rect width="512" height="512" rx="112" fill="#2468C8"/><g transform="translate(256 256) scale(1.1) translate(-250.5 -222)"><g fill="none" stroke="#fff" stroke-linecap="round" stroke-linejoin="round"><path d="M351.4 138.6 A118 118 0 1 0 351.4 305.4" stroke-width="66"/><path d="M284 356 L330 386 L316 424 L344 428" stroke-width="28"/><path d="M250 356 L214 392 L172 380" stroke-width="28"/><path d="M58 180 H96 M40 226 H92 M62 272 H96" stroke-width="20" opacity=".75"/></g></g></svg><span class="word">Chasem</span></span></a>
   <nav>
     <a href="#/" data-nav="home">Jobs</a>
     <a href="#/chase" data-nav="chase">Follow-ups</a>
@@ -27,7 +28,7 @@
 <div id="testbar" class="testbar" hidden></div>
 <main id="app" class="wrap"></main>
 <div id="toast" class="toast" hidden></div>
-<script>window.QC_VERSION="qc-app-v64";
+<script>window.QC_VERSION="qc-app-v65";
 // Android offers "Install app" through this event; the app keeps it and shows an Install button on Home.
 window.addEventListener('beforeinstallprompt', function (e) { e.preventDefault(); window.__qcInstallPrompt = e; if (window.__qcApp && window.__qcApp.route && !location.hash.replace(/^#\/?/, '')) window.__qcApp.route(); });
 window.addEventListener('appinstalled', function () { window.__qcInstallPrompt = null; });</script>

@@ -45,8 +45,8 @@ const TAGS = 'utm_source=meta&utm_medium=paid&utm_campaign=first100&utm_content=
   ok(S.src.utm_content === 'followup-sparkies', 'the first ad wins over a later one');
 
   // ---- and hands them over with the code
-  await p.fill('#join_email', 'dave@example.com'); await p.click('#join_go'); await p.waitForSelector('#join_code');
-  await p.fill('#join_code', '654321'); await p.waitForTimeout(1200);
+  await p.fill('#a_email', 'dave@example.com'); await p.click('#a_codein'); await p.waitForSelector('#a_code');
+  await p.fill('#a_code', '654321'); await p.waitForTimeout(1200);
   const check = (await p.evaluate(() => window.__calls)).find(c => /\/signin$/.test(c.url) && c.body.action === 'check');
   ok(check && check.body.src && check.body.src.utm_content === 'followup-sparkies' && check.body.src.fbclid === 'IwAR123', 'the code check carries where he came from');
   const start = (await p.evaluate(() => window.__calls)).find(c => /\/signin$/.test(c.url) && c.body.action === 'start');

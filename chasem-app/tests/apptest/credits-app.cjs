@@ -27,21 +27,21 @@ const MOCK = () => { window.__qcCalls = []; let saved = null; try { saved = JSON
 
   // ---- the door: nothing works until the app knows whose it is
   cfg = "window.QC_APP = { maps_key: '', signup_url: 'https://relay.example.test/api/signup' };";
-  await p.goto(base, { waitUntil: 'load' }); await p.waitForSelector('#joinform'); let t = await text();
-  ok(/Chasem/.test(t) && /Your email/.test(t), 'the door is the name and the way in: ' + t.replace(/\s+/g, ' ').slice(0, 90));
-  ok(!/\$/.test(t) && !/free/i.test(t) && t.replace(/\s+/g, ' ').trim().length < 60, 'nothing else is on the door: ' + t.replace(/\s+/g, ' '));
+  await p.goto(base, { waitUntil: 'load' }); await p.waitForSelector('#a_form'); let t = await text();
+  ok(/Chasem/.test(t) && /Log in/.test(t) && /Email/.test(t), 'the door is the name and the way in: ' + t.replace(/\s+/g, ' ').slice(0, 90));
+  ok(!/\$/.test(t) && !/free/i.test(t), 'no prices on the door: ' + t.replace(/\s+/g, ' '));
   ok(!(await p.$('[data-nav]:not([hidden])')) || !/New job/.test(t), 'no jobs screen behind the door');
-  await p.fill('#join_email', 'not-an-email'); await p.click('#join_go');
-  ok(/does not look like an email/.test(await p.$eval('#join_msg', e => e.textContent)), 'a bad address is refused on the phone, before any request');
+  await p.fill('#a_email', 'not-an-email'); await p.click('#a_codein');
+  ok(/does not look like an email/.test(await p.$eval('#a_email_err', e => e.textContent)), 'a bad address is refused on the phone, before any request');
   // the relay answers with a set-up link carrying the token and the free twelve
   const payload = { v: 1, settings: { details: { email: 'dave@example.com', trading_name: "Dave's Painting" }, sending: { server: 'https://relay.example.test/api/msg', token: 'qc1.FREE.SIG', server_has_creds: true, hosted: true, hosted_until: '', hosted_name: "Dave's Painting" } }, jobs: [], note: 'Your app, ready to go.' };
   // the code step, then the account
   await setMock({ signin: { ok: true, sent: true } });
-  await p.fill('#join_email', 'dave@example.com'); await p.click('#join_go'); await p.waitForTimeout(700);
+  await p.fill('#a_email', 'dave@example.com'); await p.click('#a_codein'); await p.waitForTimeout(700);
   await setMock({ signin: { ok: true, token: 'qc1.FREE.SIG', cus: 'cus_free1',
     sending: { server: 'https://relay.example.test/api/msg', token: 'qc1.FREE.SIG', server_has_creds: true, hosted: true },
     setup: payload } });
-  await p.fill('#join_code', '654321'); await p.waitForTimeout(900);
+  await p.fill('#a_code', '654321'); await p.waitForTimeout(900);
   let S = await state();
   ok(S.account.email === 'dave@example.com' && S.sending.token === 'qc1.FREE.SIG', 'the account and the token are on the phone once the code is right');
   ok(S.details.trading_name === "Dave's Painting", 'and his details came back with the account');
@@ -136,9 +136,9 @@ const MOCK = () => { window.__qcCalls = []; let saved = null; try { saved = JSON
   // ---- a painter with no sending at all still gets in and still works
   await p.evaluate(() => { try { localStorage.clear(); sessionStorage.removeItem('qcmock'); } catch (e) {} });
   cfg = "window.QC_APP = { maps_key: '', signup_url: '' };";
-  await p.goto(base, { waitUntil: 'load' }); await p.waitForSelector('#joinform'); t = await text();
+  await p.goto(base, { waitUntil: 'load' }); await p.waitForSelector('#a_form'); t = await text();
   ok(/not switched on yet/.test(t), 'with no relay configured the door says so rather than pretending');
-  await p.fill('#join_email', 'solo@example.com'); await p.click('#join_go');
+  await p.fill('#a_email', 'solo@example.com'); await p.click('#a_codein');
   await p.waitForFunction(() => location.hash === '#/' || location.hash === '', { timeout: 4000 });
   ok(/Ready\. The app writes each message/.test(await toastText()), 'he still gets in, and is told the messages are his to send');
   S = await state(); ok(S.account.email === 'solo@example.com' && S.account.offline === true, 'the account is recorded on the phone anyway');

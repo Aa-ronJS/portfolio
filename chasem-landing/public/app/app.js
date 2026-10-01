@@ -22,7 +22,7 @@
     var pref = {}; try { pref = JSON.parse(localStorage.getItem('qc-sections') || '{}'); } catch (e) {}
     Array.prototype.slice.call(root.querySelectorAll(':scope > .card')).forEach(function (card) {
       var h = card.firstElementChild; if (!h || h.tagName !== 'H2') return; var title = h.textContent.trim();
-      var det = document.createElement('details'); det.className = 'card sec' + (card.classList.contains('ponly') ? ' ponly' : ''); var sum = document.createElement('summary'); sum.appendChild(h); det.appendChild(sum);
+      var det = document.createElement('details'); det.className = 'card sec' + (card.classList.contains('ponly') ? ' ponly' : ''); if (card.id) det.id = card.id; var sum = document.createElement('summary'); sum.appendChild(h); det.appendChild(sum);
       while (card.firstChild) det.appendChild(card.firstChild); card.parentNode.replaceChild(det, card);
       var open = (title in pref) ? !!pref[title] : (!setUp && openTitles.indexOf(title) >= 0); det.open = open;
       sum.addEventListener('click', function () { setTimeout(function () { pref[title] = det.open; try { localStorage.setItem('qc-sections', JSON.stringify(pref)); } catch (e) {} }, 0); }); // remember only what the user taps, not the initial state
@@ -72,81 +72,240 @@
   function signupUrl() { var u = String((S.sending && S.sending.server) || window.QC_APP && window.QC_APP.signup_url || '').trim(); if (u) return u.replace(/\/[^\/]*$/, '/signup'); return (window.QC_APP && window.QC_APP.signup_url) || ''; }
   function signinUrl() { var u = signupUrl(); return u ? u.replace(/\/[^\/]*$/, '/signin') : ''; }
 
-  // The front door: an address, then the six numbers that prove the inbox is his. The same address on any
-  // phone reaches the same jobs, which is the whole of the account.
-  function viewJoin(msg) {
-    var url = signinUrl(), waiting = viewJoin.waiting || '';
-    $app.innerHTML = '<div class="card door">' +
-      '<img class="logo" src="icons/icon-192.png" alt="" width="72" height="72">' +
-      '<h1>Chasem</h1>' +
-      (msg ? '<p class="confirm">' + esc(msg) + '</p>' : '') +
-      (waiting
-        ? '<form id="codeform" novalidate><label class="f">Your code<span>emailed to ' + esc(waiting) + '</span>' +
-          '<input type="text" id="join_code" inputmode="numeric" autocomplete="one-time-code" pattern="[0-9]*" maxlength="6" placeholder="000000" style="font-size:1.6rem;letter-spacing:.3em;text-align:center"></label>' +
-          '<button class="btn tape lg" type="submit" id="code_go">Open my app</button>' +
-          '<p class="hint" id="join_msg"></p>' +
-          '<div class="row"><button class="btn ghost sm" id="code_again">Send another</button><button class="btn ghost sm" id="code_back">Different email</button></div></form>'
-        : '<form id="joinform" novalidate><label class="f">Your email' +
-          '<input type="email" id="join_email" autocomplete="email" inputmode="email" required value="' + esc((S.account && S.account.email) || '') + '"></label>' +
-          '<button class="btn tape lg" type="submit" id="join_go">Send me a code</button>' +
-          '<p class="hint" id="join_msg">' + (url ? '' : 'Signing in is not switched on yet.') + '</p></form>') +
-      '</div>';
-
-    var out = function () { return document.getElementById('join_msg'); };
-    var call = function (body) {
-      var fetcher = window.__qcRelayFetch || window.fetch;
+  // The front door, like every other app he uses: Log in with an email and a password, or Create an account.
+  // Signing up proves the inbox once with a six-digit code before anything is his; after that it is the password.
+  // The emailed code stays as the way back in: a forgotten password, an account made before passwords existed,
+  // or a phone with no password on it. The same email on any phone reaches the same jobs.
+  // The password lives only in this variable while a form is open. It is never saved on the phone.
+  var auth = { mode: 'login', step: '', email: '', name: '', business: '', password: '', note: '' };
+  function accountUrl() { var u = signinUrl(); return u ? u.replace(/\/[^\/]*$/, '/account') : ''; }
+  // What went wrong with a call, in words that are true. "No signal" only when the phone says it has none.
+  function authCall(url, body) {
+    var fetcher = window.__qcRelayFetch || window.fetch;
+    var offline = function () { return typeof navigator !== 'undefined' && navigator.onLine === false; };
+    var down = { ok: false, down: true, error: 'Chasem is not answering right now. Your jobs are safe on this phone. Try again in a minute.' };
+    try {
       return fetcher(url, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body) })
-        .then(function (r) { return r.json(); })
-        .catch(function () { return { ok: false, error: 'No signal. Try again when you have some.' }; });
-    };
-
-    var f = document.getElementById('joinform');
-    if (f) f.addEventListener('submit', function (e) {
-      e.preventDefault();
-      var em = String(document.getElementById('join_email').value || '').trim().toLowerCase(), btn = document.getElementById('join_go');
-      if (!/^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(em)) { out().textContent = 'That does not look like an email address.'; return; }
-      if (!url) { S.account = { email: em, joined: QCStore.today(), offline: true }; save(); toast('Ready. The app writes each message; you send it.'); go('/'); return; }
-      btn.disabled = true; out().textContent = 'Sending\u2026';
-      call({ action: 'start', email: em }).then(function (j) {
-        if (!j || !j.ok) { btn.disabled = false; out().textContent = (j && j.error) || 'That did not work.'; return; }
-        viewJoin.waiting = em; viewJoin(); 
-        var box = document.getElementById('join_code'); if (box) box.focus();
-      });
-    });
-
-    var cf = document.getElementById('codeform');
-    if (cf) cf.addEventListener('submit', function (e) {
-      e.preventDefault();
-      var box = document.getElementById('join_code'), btn = document.getElementById('code_go');
-      var code = String(box.value || '').replace(/\D/g, '');
-      if (code.length !== 6) { out().textContent = 'Six numbers.'; box.focus(); return; }
-      btn.disabled = true; out().textContent = 'One moment\u2026';
-      call({ action: 'check', email: waiting, code: code, src: S.src || undefined }).then(function (j) {
-        if (!j || !j.ok || !j.token) { btn.disabled = false; out().textContent = (j && j.error) || 'That did not work.'; box.select(); return; }
-        S = QCStore.load();
-        S.account = { email: waiting, joined: QCStore.today(), cus: j.cus || '', verified: true };
-        if (j.sending) S.sending = Object.assign({}, S.sending, j.sending);
-        save();
-        viewJoin.waiting = '';
-        // his details, prices and jobs come back with the account when there are any
-        if (j.setup) { try { applySetup(j.setup); } catch (e2) {} }
-        go('/');
-      });
-    });
-    // six numbers pasted or typed: no Enter needed on a phone keypad
-    var cbox = document.getElementById('join_code');
-    if (cbox) cbox.addEventListener('input', function () {
-      var v = String(cbox.value || '').replace(/\D/g, '').slice(0, 6); cbox.value = v;
-      if (v.length === 6) cf.dispatchEvent(new Event('submit', { cancelable: true }));
-    });
-    var again = document.getElementById('code_again');
-    if (again) again.addEventListener('click', function (e) {
-      e.preventDefault(); again.disabled = true; out().textContent = 'Sending\u2026';
-      call({ action: 'start', email: waiting }).then(function (j) { again.disabled = false; out().textContent = j && j.ok ? 'Sent. Check your email.' : (j && j.error) || 'That did not work.'; });
-    });
-    var back = document.getElementById('code_back');
-    if (back) back.addEventListener('click', function (e) { e.preventDefault(); viewJoin.waiting = ''; viewJoin(); });
+        .then(function (r) {
+          return Promise.resolve(r.json ? r.json() : null).then(function (j) {
+            if (j && typeof j === 'object') return j;
+            return down;
+          }, function () { return offline() ? { ok: false, error: 'No signal. Try again when you have some.' } : down; });
+        }, function () { return offline() ? { ok: false, error: 'No signal. Try again when you have some.' } : down; });
+    } catch (e) { return Promise.resolve(down); }
   }
+  var MARK = '<svg class="cmark" viewBox="0 0 512 512" aria-hidden="true" focusable="false"><rect width="512" height="512" rx="112" fill="#2468C8"/><g transform="translate(256 256) scale(1.1) translate(-250.5 -222)"><g fill="none" stroke="#fff" stroke-linecap="round" stroke-linejoin="round"><path d="M351.4 138.6 A118 118 0 1 0 351.4 305.4" stroke-width="66"/><path d="M284 356 L330 386 L316 424 L344 428" stroke-width="28"/><path d="M250 356 L214 392 L172 380" stroke-width="28"/><path class="speed" d="M58 180 H96 M40 226 H92 M62 272 H96" stroke-width="20" opacity=".75"/></g></g></svg>';
+  var LOCKUP = '<span class="lockup">' + MARK + '<span class="word">Chasem</span></span>';
+  function eyeBtn(id) { return '<button type="button" class="eye" data-eye="' + id + '" aria-label="Show password" aria-pressed="false">Show</button>'; }
+  function pwField(id, label, opts) {
+    opts = opts || {};
+    return '<div class="f auth-f"><div class="lab"><label for="' + id + '">' + esc(label) + '</label>' + (opts.forgot ? '<a href="#/forgot" id="a_forgot">Forgot password?</a>' : '') + '</div>' +
+      (opts.hint ? '<p class="fhint" id="' + id + '_hint">' + esc(opts.hint) + '</p>' : '') +
+      '<div class="pw"><input type="password" id="' + id + '" autocomplete="' + (opts.newpw ? 'new-password' : 'current-password') + '"' + (opts.hint ? ' aria-describedby="' + id + '_hint"' : '') + ' minlength="' + (opts.newpw ? 8 : 1) + '" required>' + eyeBtn(id) + '</div>' +
+      '<p class="ferr" id="' + id + '_err" role="alert"></p></div>';
+  }
+  function field(id, label, type, value, opts) {
+    opts = opts || {};
+    return '<div class="f auth-f"><div class="lab"><label for="' + id + '">' + esc(label) + (opts.optional ? ' <span class="opt">optional</span>' : '') + '</label></div>' +
+      '<input type="' + type + '" id="' + id + '" value="' + esc(value || '') + '"' + (opts.ac ? ' autocomplete="' + opts.ac + '"' : '') + (opts.im ? ' inputmode="' + opts.im + '"' : '') + (opts.extra || '') + '>' +
+      '<p class="ferr" id="' + id + '_err" role="alert"></p></div>';
+  }
+  function codeField() {
+    return '<div class="f auth-f"><div class="lab"><label for="a_code">Code from the email</label></div>' +
+      '<input type="text" id="a_code" class="code" inputmode="numeric" autocomplete="one-time-code" pattern="[0-9]*" maxlength="6" placeholder="000000">' +
+      '<p class="ferr" id="a_code_err" role="alert"></p></div>';
+  }
+
+  // mode: 'login' | 'signup' | 'forgot'. step: '' (the form) or 'code' (the six numbers from the email).
+  function viewJoin(msg, mode) {
+    if (mode && mode !== auth.mode) { auth.mode = mode; auth.step = ''; auth.password = ''; auth.note = ''; }
+    var url = signinUrl(), m = auth.mode, st = auth.step;
+    if (!auth.email) auth.email = String((S.account && S.account.email) || S.last_email || '');
+    var head, sub = '', form = '', foot = '';
+    if (st === 'code') {
+      var why = m === 'signup' ? 'to finish making your account' : m === 'reset' ? 'to set your password' : auth.pwAfter ? 'and pick a password' : 'to log in';
+      head = 'Check your email';
+      sub = 'We sent a six-digit code to <b>' + esc(auth.email) + '</b>. Type it in ' + why + '.';
+      form = '<form id="a_form" class="auth-form" novalidate>' + codeField() +
+        ((m === 'forgot' || auth.pwAfter) ? pwField('a_pw', 'New password', { newpw: true, hint: 'At least 8 characters. A few words together is easy to remember.' }) : '') +
+        '<button class="btn tape lg wide" type="submit" id="a_go">' + (m === 'signup' ? 'Create account' : (m === 'forgot' || auth.pwAfter) ? 'Save password and log in' : 'Log in') + '</button>' +
+        '<p class="formmsg" id="a_msg" role="status"></p></form>' +
+        '<div class="auth-alt"><button type="button" class="linkbtn" id="a_again">Send another code</button><button type="button" class="linkbtn" id="a_back">Use a different email</button></div>';
+    } else if (m === 'signup') {
+      head = 'Create your account';
+      sub = 'Your first three jobs are free. No card needed.';
+      form = '<form id="a_form" class="auth-form" novalidate>' +
+        field('a_name', 'Your name', 'text', auth.name, { ac: 'name', extra: ' autocapitalize="words" required' }) +
+        field('a_biz', 'Business name', 'text', auth.business, { ac: 'organization', optional: true, extra: ' autocapitalize="words"' }) +
+        field('a_email', 'Email', 'email', auth.email, { ac: 'email', im: 'email', extra: ' autocapitalize="off" spellcheck="false" required' }) +
+        pwField('a_pw', 'Password', { newpw: true, hint: 'At least 8 characters. A few words together is easy to remember.' }) +
+        '<button class="btn tape lg wide" type="submit" id="a_go">Create account</button>' +
+        '<p class="formmsg" id="a_msg" role="status"></p>' +
+        '<p class="fine">By creating an account you agree to the <a href="https://chasem.app/terms" target="_blank" rel="noopener">terms</a> and <a href="https://chasem.app/privacy" target="_blank" rel="noopener">privacy policy</a>.</p></form>';
+      foot = 'Already have an account? <a href="#/login" id="a_switch">Log in</a>';
+    } else if (m === 'forgot') {
+      head = 'Reset your password';
+      sub = 'Type the email you log in with. We will send you a code to set a new password.';
+      form = '<form id="a_form" class="auth-form" novalidate>' +
+        field('a_email', 'Email', 'email', auth.email, { ac: 'email', im: 'email', extra: ' autocapitalize="off" spellcheck="false" required' }) +
+        '<button class="btn tape lg wide" type="submit" id="a_go">Send me a code</button>' +
+        '<p class="formmsg" id="a_msg" role="status"></p></form>';
+      foot = '<a href="#/login" id="a_switch">Back to log in</a>';
+    } else {
+      head = 'Log in';
+      form = '<form id="a_form" class="auth-form" novalidate>' +
+        field('a_email', 'Email', 'email', auth.email, { ac: 'username', im: 'email', extra: ' autocapitalize="off" spellcheck="false" required' }) +
+        pwField('a_pw', 'Password', { forgot: true }) +
+        '<button class="btn tape lg wide" type="submit" id="a_go">Log in</button>' +
+        '<p class="formmsg" id="a_msg" role="status"></p></form>' +
+        '<div class="or"><span>or</span></div>' +
+        '<button type="button" class="btn ghost lg wide" id="a_codein">Email me a code instead</button>';
+      foot = 'New to Chasem? <a href="#/signup" id="a_switch">Create an account</a>';
+    }
+    $app.innerHTML = '<div class="authpage">' +
+      '<a class="authbrand" href="https://chasem.app/" aria-label="Chasem home">' + LOCKUP + '</a>' +
+      '<div class="authbox"><h1>' + head + '</h1>' + (sub ? '<p class="authsub">' + sub + '</p>' : '') +
+      (msg || auth.note ? '<p class="notice" role="status">' + esc(msg || auth.note) + '</p>' : '') +
+      (url ? '' : '<p class="notice">Signing in is not switched on yet in this copy. You can still use the app on this phone.</p>') +
+      form + (foot ? '<p class="authfoot">' + foot + '</p>' : '') + '</div>' +
+      '<p class="authlegal"><a href="#/help">Help</a><a href="https://chasem.app/privacy" target="_blank" rel="noopener">Privacy</a><a href="https://chasem.app/terms" target="_blank" rel="noopener">Terms</a></p></div>';
+    wireJoin(url);
+  }
+
+  function wireJoin(url) {
+    var $ = function (id) { return document.getElementById(id); };
+    var msg = function (t, bad) { var o = $('a_msg'); if (o) { o.textContent = t || ''; o.className = 'formmsg' + (bad ? ' bad' : ''); } };
+    var clearErrs = function () { Array.prototype.forEach.call(document.querySelectorAll('.ferr'), function (e) { e.textContent = ''; }); Array.prototype.forEach.call(document.querySelectorAll('[aria-invalid]'), function (e) { e.removeAttribute('aria-invalid'); }); msg(''); };
+    // a refusal goes next to the box it is about, or under the button when it is about the whole thing
+    var fail = function (j, map) {
+      var btn = $('a_go'); if (btn) { btn.disabled = false; btn.textContent = btn.getAttribute('data-word') || btn.textContent; }
+      var id = j && j.field && map && map[j.field], box = id && $(id), err = id && $(id + '_err');
+      if (box && err) { err.textContent = j.error; box.setAttribute('aria-invalid', 'true'); box.focus(); }
+      else msg((j && j.error) || 'That did not work. Try again.', true);
+    };
+    var busy = function (word) { var btn = $('a_go'); if (btn) { btn.setAttribute('data-word', btn.textContent); btn.disabled = true; btn.textContent = word; } msg(''); };
+    var emailOk = function (id) {
+      var v = String(($(id) || {}).value || '').trim().toLowerCase();
+      if (!/^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(v)) { var e = $(id + '_err'); if (e) e.textContent = v ? 'That does not look like an email address. It needs an @ and a dot, like name@gmail.com.' : 'Type your email address.'; $(id).setAttribute('aria-invalid', 'true'); $(id).focus(); return ''; }
+      return v;
+    };
+    var pwOk = function (id, isNew) {
+      var v = String(($(id) || {}).value || '');
+      var why = !v ? (isNew ? 'Pick a password.' : 'Type your password.') : (isNew && v.length < 8) ? 'Use at least 8 characters.' : '';
+      if (why) { var e = $(id + '_err'); if (e) e.textContent = why; $(id).setAttribute('aria-invalid', 'true'); $(id).focus(); return null; }
+      return v;
+    };
+    // the way in, whichever door it came through
+    var inside = function (j) {
+      S = QCStore.load();
+      S.account = { email: j.email || auth.email, joined: QCStore.today(), cus: j.cus || '', verified: true, has_password: j.has_password !== false };
+      if (j.sending) S.sending = Object.assign({}, S.sending, j.sending);
+      save();
+      if (j.setup) { try { applySetup(j.setup); } catch (e2) {} }
+      auth = { mode: 'login', step: '', email: '', name: '', business: '', password: '', note: '' };
+      home();
+    };
+    var sendCode = function () { return authCall(url, { action: 'start', email: auth.email }); };
+    var src = function () { return (S && S.src) || undefined; };
+    var toCode = function (note) { auth.step = 'code'; auth.note = note || ''; viewJoin(); var c = $('a_code'); if (c) c.focus(); };
+
+    // show and hide the password; the word changes with it, so it never relies on the picture
+    Array.prototype.forEach.call(document.querySelectorAll('[data-eye]'), function (b) {
+      b.addEventListener('click', function () { var box = $(b.getAttribute('data-eye')); var show = box.type === 'password'; box.type = show ? 'text' : 'password'; b.textContent = show ? 'Hide' : 'Show'; b.setAttribute('aria-pressed', show ? 'true' : 'false'); b.setAttribute('aria-label', show ? 'Hide password' : 'Show password'); box.focus(); });
+    });
+    // remember what was typed when switching between Log in and Create an account
+    var em = $('a_email'); if (em) em.addEventListener('input', function () { auth.email = String(em.value || '').trim().toLowerCase(); });
+    var nm = $('a_name'); if (nm) nm.addEventListener('input', function () { auth.name = nm.value; });
+    var bz = $('a_biz'); if (bz) bz.addEventListener('input', function () { auth.business = bz.value; });
+
+    var f = $('a_form'); if (!f) return;
+    f.addEventListener('submit', function (e) {
+      e.preventDefault(); clearErrs();
+      var m = auth.mode;
+      if (auth.step === 'code') {
+        var cbox = $('a_code'), code = String(cbox.value || '').replace(/\D/g, '');
+        if (code.length !== 6) { $('a_code_err').textContent = 'The code is six numbers.'; cbox.setAttribute('aria-invalid', 'true'); cbox.focus(); return; }
+        var setPw = m === 'signup' ? auth.password : (m === 'forgot' || auth.pwAfter) ? pwOk('a_pw', true) : null;
+        if (setPw === null && (m === 'forgot' || auth.pwAfter)) return;
+        busy('One moment…');
+        var body = { action: 'check', email: auth.email, code: code, src: src() };
+        if (setPw) body.password = setPw;
+        if (m === 'signup') { body.name = auth.name; body.business = auth.business; }
+        authCall(url, body).then(function (j) {
+          if (!j || !j.ok || !j.token) { if (j && j.field === 'password' && m === 'signup') { auth.step = ''; viewJoin(); return fail(j, { password: 'a_pw' }); } return fail(j, { code: 'a_code', password: 'a_pw' }); }
+          inside(j);
+        });
+        return;
+      }
+      if (m === 'signup') {
+        var name = String($('a_name').value || '').trim();
+        if (!name) { $('a_name_err').textContent = 'Type your name. It goes on your quotes.'; $('a_name').setAttribute('aria-invalid', 'true'); $('a_name').focus(); return; }
+        var se = emailOk('a_email'); if (!se) return;
+        var sp = pwOk('a_pw', true); if (sp === null) return;
+        auth.name = name; auth.business = String($('a_biz').value || '').trim(); auth.email = se; auth.password = sp;
+        if (!url) return offlineIn(se);
+        busy('Creating your account…');
+        authCall(url, { action: 'signup', email: se, password: sp, name: auth.name, business: auth.business }).then(function (j) {
+          if (!j || !j.ok) { if (j && j.exists) { auth.mode = 'login'; auth.step = ''; auth.password = ''; return viewJoin('There is already an account for ' + se + '. Log in with its password.'); } return fail(j, { email: 'a_email', password: 'a_pw', name: 'a_name' }); }
+          toCode();
+        });
+        return;
+      }
+      if (m === 'forgot') {
+        var fe = emailOk('a_email'); if (!fe) return; auth.email = fe;
+        busy('Sending…');
+        sendCode().then(function (j) { if (!j || !j.ok) return fail(j, { email: 'a_email' }); toCode(); });
+        return;
+      }
+      var le = emailOk('a_email'); if (!le) return;
+      var lp = pwOk('a_pw', false); if (lp === null) return;
+      auth.email = le;
+      if (!url) return offlineIn(le);
+      busy('Logging in…');
+      authCall(url, { action: 'login', email: le, password: lp }).then(function (j) {
+        if (j && j.ok && j.token) return inside(j);
+        if (j && j.need === 'code') {
+          // an account from before passwords: prove the inbox once and pick a password
+          auth.pwAfter = true;
+          return sendCode().then(function (k) { if (!k || !k.ok) return fail(k); toCode('Your account was made before Chasem had passwords. Type the code we just emailed you and pick a password.'); });
+        }
+        fail(j, { email: 'a_email', password: 'a_pw' });
+      });
+    });
+
+    var codeIn = $('a_codein');
+    if (codeIn) codeIn.addEventListener('click', function () {
+      clearErrs(); var ce = emailOk('a_email'); if (!ce) return; auth.email = ce;
+      if (!url) return offlineIn(ce);
+      codeIn.disabled = true; msg('Sending…');
+      sendCode().then(function (j) { codeIn.disabled = false; if (!j || !j.ok) return fail(j, { email: 'a_email' }); auth.pwAfter = false; toCode(); });
+    });
+    // six numbers typed or pasted: on its own, no Enter needed on a phone keypad, unless a password comes next
+    var cb = $('a_code');
+    if (cb) cb.addEventListener('input', function () {
+      var v = String(cb.value || '').replace(/\D/g, '').slice(0, 6); cb.value = v;
+      if (v.length === 6) { if ($('a_pw')) $('a_pw').focus(); else f.dispatchEvent(new Event('submit', { cancelable: true })); }
+    });
+    var again = $('a_again');
+    if (again) again.addEventListener('click', function () {
+      again.disabled = true; msg('Sending…');
+      sendCode().then(function (j) { again.disabled = false; msg(j && j.ok ? 'Sent. Check your email, and your junk folder.' : (j && j.error) || 'That did not work.', !(j && j.ok)); });
+    });
+    var back = $('a_back');
+    if (back) back.addEventListener('click', function () { auth.step = ''; auth.note = ''; auth.pwAfter = false; viewJoin(); });
+  }
+  // A copy of the app with no server behind it: the email is all there is, and every message is his to send.
+  function offlineIn(email) { S.account = { email: email, joined: QCStore.today(), offline: true }; save(); toast('Ready. The app writes each message; you send it.'); home(); }
+
+  function logOut() {
+    var was = (S.account && S.account.email) || '';
+    S.account = null; S.sending = Object.assign({}, S.sending, { token: '', hosted: false }); S.last_email = was; save();
+    // the email stays filled in for next time, as every app does; the password never does
+    auth = { mode: 'login', step: '', email: was, name: '', business: '', password: '', note: '' };
+    if (location.hash === '#/login') route(); else go('/login');
+  }
+  // to Home, whether or not the address bar is already there
+  function home() { if (location.hash === '#/' || location.hash === '') route(); else go('/'); }
 
   var FREE_SENDS = 12, PLAN_INCLUDED = 150, PLAN_PRICE = 99, TOPUP_MESSAGES = 100, TOPUP_PRICE = 35;
   document.addEventListener('visibilitychange', function () { if (document.hidden) { hiddenAt = Date.now(); return; } if (unlocked && hiddenAt && Date.now() - hiddenAt > 5 * 60000 && S && S.security && S.security.pin) { unlocked = false; route(); } });
@@ -332,7 +491,8 @@
     try { saveTrouble(troubleKind); } catch (e) {}
     refreshPreview = function () {};
     if (locked()) return viewLock();
-    if (!joined() && p[0] !== 'setup' && p[0] !== 'help') return viewJoin();
+    if (!joined() && p[0] !== 'setup' && p[0] !== 'help') return viewJoin('', p[0] === 'signup' || p[0] === 'forgot' ? p[0] : 'login');
+    if (p[0] === 'login' || p[0] === 'signup' || p[0] === 'forgot') return go('/');
     // the email he signed in with is the one customers reply to, until he says otherwise
     if (S.account && S.account.email && S.details && !String(S.details.email || '').trim()) { S.details.email = String(S.account.email); save(); }
     // Nothing until the four things are done. Help and a set-up link still open, so he is never stuck.
@@ -461,7 +621,7 @@
     html += '<p class="hint" id="w_msg"></p>';
     html += '<ol class="wallsteps">' + steps.map(function (x) {
       return '<li class="' + (x.done ? 'done' : x.id === at.id ? 'now' : '') + '">' + esc(x.label) + '</li>'; }).join('') + '</ol>';
-    html += '<p class="hint"><a href="#/help">Help</a> &middot; <a href="#" id="w_out">Sign out</a></p></div>';
+    html += '<p class="hint"><a href="#/help">Help</a> &middot; <a href="#" id="w_out">Log out</a></p></div>';
     $app.innerHTML = html;
     wireWall(at);
   }
@@ -549,8 +709,8 @@
     var out = document.getElementById('w_out');
     if (out) out.addEventListener('click', function (e) {
       e.preventDefault();
-      if (!confirm('Sign out of this phone? Your jobs stay in your account.')) return;
-      S.account = null; S.sending = Object.assign({}, S.sending, { token: '', hosted: false }); save(); route();
+      if (!confirm('Log out of this phone? Your jobs stay in your account.')) return;
+      logOut();
     });
   }
 
@@ -2224,12 +2384,100 @@
     if (clr) clr.addEventListener('click', function () { if (confirm('Clear the list?')) { QCTest.clearFound(); viewTest(); } });
   }
 
+  // ---------- Set-up > Account: who is logged in, the password, the email, logging out, and deleting the account.
+  // Each change is a small form inside the card; nothing about getting in changes without the current password.
+  var acctUI = { open: '', email: '' };
+  function accountCard() {
+    var a = S.account || {}, hosted = !!(signinUrl() && !a.offline);
+    return '<div class="card" id="acctcard"><h2>Account</h2><div id="acct_body">' + accountBody(a, hosted) + '</div></div>';
+  }
+  function accountBody(a, hosted) {
+    var who = '<p class="acct-who">' + (a.email ? 'Logged in as <b>' + esc(a.email) + '</b>' : 'Not logged in') + '</p>';
+    if (!hosted) return who + '<p class="hint">This copy of the app has no accounts switched on, so everything stays on this phone.</p><div class="row"><button class="btn ghost sm" id="acct_out">Log out</button></div>';
+    var hasPw = a.has_password !== false, ui = acctUI.open;
+    var pw = function (id, label, newpw) { return '<div class="f auth-f"><div class="lab"><label for="' + id + '">' + label + '</label></div><div class="pw"><input type="password" id="' + id + '" autocomplete="' + (newpw ? 'new-password' : 'current-password') + '">' + eyeBtn(id) + '</div><p class="ferr" id="' + id + '_err" role="alert"></p></div>'; };
+    var out = '';
+    if (ui === 'password') out = '<form class="acct-form" id="acct_f">' + (hasPw ? pw('ac_cur', 'Current password') : '') + pw('ac_new', hasPw ? 'New password' : 'Pick a password', true) +
+      '<p class="fhint">At least 8 characters.</p><div class="row"><button class="btn tape sm" type="submit">' + (hasPw ? 'Change password' : 'Set password') + '</button><button class="btn ghost sm" type="button" data-acct="">Cancel</button></div><p class="formmsg" id="ac_msg" role="status"></p></form>';
+    else if (ui === 'email') out = '<form class="acct-form" id="acct_f"><div class="f auth-f"><div class="lab"><label for="ac_email">New email</label></div><input type="email" id="ac_email" autocomplete="email" inputmode="email" autocapitalize="off" spellcheck="false" value="' + esc(acctUI.email) + '"><p class="ferr" id="ac_email_err" role="alert"></p></div>' + pw('ac_pw', 'Your password') +
+      '<div class="row"><button class="btn tape sm" type="submit">Send a code to it</button><button class="btn ghost sm" type="button" data-acct="">Cancel</button></div><p class="formmsg" id="ac_msg" role="status"></p></form>';
+    else if (ui === 'emailcode') out = '<form class="acct-form" id="acct_f"><p>We sent a six-digit code to <b>' + esc(acctUI.email) + '</b>. Type it in to move your account there.</p><div class="f auth-f"><div class="lab"><label for="ac_code">Code from the email</label></div><input type="text" id="ac_code" class="code" inputmode="numeric" autocomplete="one-time-code" pattern="[0-9]*" maxlength="6" placeholder="000000"><p class="ferr" id="ac_code_err" role="alert"></p></div>' +
+      '<div class="row"><button class="btn tape sm" type="submit">Change email</button><button class="btn ghost sm" type="button" data-acct="">Cancel</button></div><p class="formmsg" id="ac_msg" role="status"></p></form>';
+    else if (ui === 'delete') out = '<form class="acct-form danger-zone" id="acct_f"><p><b>Delete your account?</b> Your jobs, quotes, invoices and customers are deleted from Chasem and from this phone. This cannot be undone.</p><p class="hint">Want a copy first? Use Back-up below, then come back.</p>' +
+      pw('ac_pw', 'Type your password to delete') + '<div class="row"><button class="btn danger sm" type="submit">Delete my account</button><button class="btn ghost sm" type="button" data-acct="">Keep my account</button></div><p class="formmsg" id="ac_msg" role="status"></p></form>';
+    else out = (hasPw ? '' : '<p class="notice">Your account has no password yet. Set one so you can log in on another phone.</p>') +
+      '<div class="acct-rows">' +
+      '<div class="acct-row"><span><b>Password</b><span class="hint">' + (hasPw ? 'Set' : 'Not set') + '</span></span><button class="btn ghost sm" data-acct="password">' + (hasPw ? 'Change' : 'Set password') + '</button></div>' +
+      '<div class="acct-row"><span><b>Email</b><span class="hint">' + esc(a.email || '') + '</span></span><button class="btn ghost sm" data-acct="email"' + (hasPw ? '' : ' disabled title="Set a password first"') + '>Change</button></div>' +
+      '</div><div class="row between"><button class="btn ghost sm" id="acct_out">Log out</button><button class="linkbtn danger" data-acct="delete"' + (hasPw ? '' : ' disabled') + '>Delete account</button></div>';
+    return who + out;
+  }
+  function wireAccount() {
+    var body = document.getElementById('acct_body'); if (!body) return;
+    var redraw = function () { body.innerHTML = accountBody(S.account || {}, !!(signinUrl() && !(S.account || {}).offline)); wireAccount(); };
+    var $ = function (id) { return document.getElementById(id); };
+    var outBtn = $('acct_out'); if (outBtn) outBtn.addEventListener('click', function () { if (confirm('Log out of this phone? Your jobs stay in your account.')) logOut(); });
+    Array.prototype.forEach.call(body.querySelectorAll('[data-acct]'), function (b) { b.addEventListener('click', function (e) { e.preventDefault(); acctUI.open = b.getAttribute('data-acct'); redraw(); var first = body.querySelector('input'); if (first) first.focus(); }); });
+    Array.prototype.forEach.call(body.querySelectorAll('[data-eye]'), function (b) {
+      b.addEventListener('click', function () { var box = $(b.getAttribute('data-eye')); var show = box.type === 'password'; box.type = show ? 'text' : 'password'; b.textContent = show ? 'Hide' : 'Show'; b.setAttribute('aria-pressed', show ? 'true' : 'false'); b.setAttribute('aria-label', show ? 'Hide password' : 'Show password'); });
+    });
+    var f = $('acct_f'); if (!f) return;
+    var msg = function (t, bad) { var o = $('ac_msg'); if (o) { o.textContent = t || ''; o.className = 'formmsg' + (bad ? ' bad' : ''); } };
+    var err = function (id, t) { var e = $(id + '_err'); if (e) { e.textContent = t; $(id).setAttribute('aria-invalid', 'true'); $(id).focus(); return true; } return false; };
+    var tok = String((S.sending || {}).token || '');
+    var call = function (b) { b.token = tok; return authCall(accountUrl(), b); };
+    var map = { current: 'ac_cur', next: 'ac_new', password: 'ac_pw', new_email: 'ac_email', code: 'ac_code' };
+    var fail = function (j, btn) { if (btn) btn.disabled = false; if (!(j && j.field && map[j.field] && err(map[j.field], j.error))) msg((j && j.error) || 'That did not work. Try again.', true); };
+    f.addEventListener('submit', function (e) {
+      e.preventDefault(); msg(''); Array.prototype.forEach.call(f.querySelectorAll('.ferr'), function (x) { x.textContent = ''; });
+      var btn = f.querySelector('button[type=submit]'), ui = acctUI.open;
+      if (ui === 'password') {
+        var cur = $('ac_cur') ? $('ac_cur').value : '', nx = $('ac_new').value;
+        if ($('ac_cur') && !cur) return err('ac_cur', 'Type your current password.');
+        if (nx.length < 8) return err('ac_new', 'Use at least 8 characters.');
+        btn.disabled = true; msg('Saving…');
+        call({ action: 'password', current: cur, next: nx }).then(function (j) {
+          if (!j || !j.ok) return fail(j, btn);
+          S.account = Object.assign({}, S.account, { has_password: true }); save(); acctUI.open = ''; redraw(); toast('Password saved.');
+        });
+      } else if (ui === 'email') {
+        var ne = String($('ac_email').value || '').trim().toLowerCase(), p = $('ac_pw').value;
+        if (!/^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(ne)) return err('ac_email', 'That does not look like an email address.');
+        if (!p) return err('ac_pw', 'Type your password.');
+        btn.disabled = true; msg('Sending…'); acctUI.email = ne; acctUI.was = (S.account || {}).email || '';
+        call({ action: 'email_start', new_email: ne, password: p }).then(function (j) { if (!j || !j.ok) return fail(j, btn); acctUI.open = 'emailcode'; redraw(); var c = $('ac_code'); if (c) c.focus(); });
+      } else if (ui === 'emailcode') {
+        var code = String($('ac_code').value || '').replace(/\D/g, '');
+        if (code.length !== 6) return err('ac_code', 'The code is six numbers.');
+        btn.disabled = true; msg('One moment…');
+        call({ action: 'email_check', new_email: acctUI.email, code: code }).then(function (j) {
+          if (!j || !j.ok || !j.token) return fail(j, btn);
+          S.account = Object.assign({}, S.account, { email: j.email });
+          if (j.sending) S.sending = Object.assign({}, S.sending, j.sending);
+          if (S.details && (!S.details.email || S.details.email === acctUI.was)) S.details.email = j.email;
+          save(); acctUI = { open: '', email: '' }; redraw(); toast('Your account email is now ' + j.email + '.');
+        });
+      } else if (ui === 'delete') {
+        var dp = $('ac_pw').value; if (!dp) return err('ac_pw', 'Type your password.');
+        btn.disabled = true; msg('Deleting…');
+        call({ action: 'delete', password: dp }).then(function (j) {
+          if (!j || !j.ok) return fail(j, btn);
+          // the server copy is gone; the phone's copy goes with it, so nothing of the account is left behind
+          QCStore.reset(); S = QCStore.load(); auth = { mode: 'signup', step: '', email: '', name: '', business: '', password: '', note: '' };
+          acctUI = { open: '', email: '' };
+          toast('Your account is deleted.'); go('/signup');
+        });
+      }
+    });
+  }
+
   function viewSettings() {
     var d = S.details, html = '<h1>Set-up</h1><p class="hint">Saves as you type.</p>', dirty = false;
     if (S.booking.boss_on_tools == null) { S.booking.boss_on_tools = true; dirty = true; } if (!S.booking.visit_pref) { S.booking.visit_pref = 'any'; dirty = true; } if (!d.state && d.postcode && stateFromPostcode(d.postcode)) { d.state = stateFromPostcode(d.postcode); dirty = true; } if (dirty) save();
     var lic = licenceWord(stateOf()), fn = String(d.owner_name || '').trim().split(/\s+/)[0] || '', full = String(d.owner_name || '').trim();
     function priceRow(p, hint) { return '<tr><td>' + esc(p[1]) + '<br><span class="hint">' + esc(hint != null ? hint : p[5]) + '</span></td><td class="n"><div class="row" style="justify-content:flex-end;flex-wrap:nowrap"><input type="number" step="0.5" min="0" aria-label="' + esc(p[1]) + ' price" data-price="' + p[0] + '" value="' + (S.prices[p[0]] == null ? '' : S.prices[p[0]]) + '" style="width:5.5em;text-align:right"><span class="hint">per ' + esc(unitWord(p[2])) + '</span></div></td></tr>'; }
     var licField = '<label class="f">' + (lic ? lic.charAt(0).toUpperCase() + lic.slice(1) : 'Licence') + ' no.<span>' + (lic ? 'printed on quotes and invoices' : 'if you hold one; printed on quotes') + '</span><input type="text" data-bind="details.licence"></label>';
+    html += accountCard();
     // Business: what every quote needs, then the rest behind More (optional)
     html += '<div class="card"><h2>Business</h2><div class="g2"><label class="f">Trading name<input type="text" data-bind="details.trading_name"></label><label class="f">Your name<input type="text" data-bind="details.owner_name"></label><label class="f">ABN<span>goes on every quote and invoice</span><input type="text" data-bind="details.abn" inputmode="numeric"></label><label class="f">Mobile<input type="tel" data-bind="details.phone"></label><label class="f">Email<input type="email" data-bind="details.email"></label><label class="f">State<span>sets the deposit limit</span><select data-bind="details.state" id="st_state"><option value="">Pick one</option>' + STATES.map(function (st) { return '<option value="' + st + '">' + st + '</option>'; }).join('') + '</select></label><label class="f">Postcode<span>where you start the day</span><input type="text" data-bind="details.postcode" id="st_pc" inputmode="numeric" placeholder="e.g. 5000"></label>' + (lic ? licField : '') + '</div>' +
       '<details class="sec sub"><summary><h3>More (optional)</h3></summary><div class="g2">' + (lic ? '' : licField) + '<label class="f">Insurance<span>e.g. Public liability $10m</span><input type="text" data-bind="details.insurance"></label><label class="f">Service area<span>e.g. Bendigo and district</span><input type="text" data-bind="details.service_area"></label><label class="f">Sign-off<span>ends every text, e.g. Cheers</span><input type="text" data-bind="details.sign_off"></label></div><label class="f">Business address<input type="text" data-bind="details.address"></label>' +
@@ -2296,6 +2544,7 @@
     wireAddress($app.querySelector('[data-bind="details.address"]'), function (pl) { S.details.site = { lat: pl.lat, lng: pl.lng, place_id: pl.place_id || '' }; var pc = document.getElementById('st_pc'); if (pl.postcode && pc && !pc.value) { pc.value = pl.postcode; pc.dispatchEvent(new Event('input', { bubbles: true })); } if (pl.state && !S.details.state) S.details.state = pl.state; save(); });
     sectionise($app, ['Business', 'Bank details', 'Prices'], !!(S.details.trading_name && S.details.bsb));
     bindAll($app, S);
+    wireAccount();
     // a two-second "Saved" beside the heading of whichever section was just changed
     function tick(el) { var det = el && el.closest ? el.closest('details.sec') : null; while (det && det.classList.contains('sub')) det = det.parentElement ? det.parentElement.closest('details.sec') : null; var sum = det ? det.firstElementChild : null; if (!sum || sum.tagName !== 'SUMMARY') return; var sp = sum.querySelector('.tick'); if (!sp) { sp = document.createElement('span'); sp.className = 'tick'; sum.appendChild(sp); } sp.textContent = QCStore.lastError() ? 'Not saved' : 'Saved'; clearTimeout(sp._t); sp._t = setTimeout(function () { sp.textContent = ''; }, 2000); }
     $app.addEventListener('input', function (e) { tick(e.target); }); $app.addEventListener('change', function (e) { tick(e.target); });

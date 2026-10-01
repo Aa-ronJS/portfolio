@@ -41,7 +41,7 @@ const LINK = 'https://chasem.app/app/#/setup?d=j:eyJ2IjoxfQ';
   // ---- the ask on the landing page always opens the app, because that is where sign-up happens now
   cfgOverride = withCfg({ SUBSCRIBE_URL: 'https://buy.stripe.com/test_sub' });
   await p.goto(base, { waitUntil: 'load' }); await p.waitForTimeout(300);
-  ok((await p.$$eval('[data-sub]', as => as.every(a => a.getAttribute('href') === 'app/'))), 'with a checkout configured the page still sends him to the app, not to a card form');
+  ok((await p.$$eval('[data-sub]', as => as.every(a => a.getAttribute('href') === 'app/#/signup'))), 'with a checkout configured the page still sends him to the app, not to a card form');
   cfgOverride = withCfg({ SUBSCRIBE_URL: '', FORM_ACTION: '', SUPPORT_EMAIL: '' });
   await p.goto(base, { waitUntil: 'load' }); await p.waitForTimeout(300);
   ok((await p.$$('[data-sub]:not([hidden])')).length >= 2 && !/Opening soon|Coming soon/.test(await vis()), 'with nothing configured the way in still works and there is no shopfront');
