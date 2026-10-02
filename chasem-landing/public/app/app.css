@@ -246,8 +246,9 @@ a.sec.link::after{content:'\203A';color:var(--muted);font-size:1.4rem;line-heigh
    1 Audience: any Australian tradie who sends quotes (sparky, plumber, painter, builder), on a mid-range phone, one bar of
      signal, not confident with apps. First visit is from an ad or chasem.app; later visits are a second phone.
    2 Register: product-confident (a paid SaaS front door), held quiet so the form is the whole page.
-   3 Reference: Stripe's dashboard sign-in. The move lifted: the wordmark sits outside and above the form, top
-     left, and the form is a plain left-aligned column with the "no account? create one" switch at its foot.
+   3 Reference: Stripe's dashboard sign-in for the column and the switch at its foot. Changed 2 Oct 2026 at
+     Aaron's request (feedback rv-muqdoi2c): the logo, heading, lines of text and links are centred; the boxes
+     stay full width with their labels above them.
    4 Accent: the existing tape blue, sampled from the logo (icons/icon.svg fill #2468C8). The primary button
      wears it; nothing else on the page does (2.10, brand accent, because the ground is neutral).
    5 Type: Bricolage Grotesque (display: wordmark and the page heading) over the system UI face the app already
@@ -372,3 +373,15 @@ a.sec.link::after{content:'\203A';color:var(--muted);font-size:1.4rem;line-heigh
 .rv-fine{font-size:.85rem}.rv-fine a{color:var(--muted)}
 .rv-toast{position:fixed;left:50%;transform:translateX(-50%);bottom:calc(70px + env(safe-area-inset-bottom,0px));z-index:9994;background:var(--ink);color:var(--ground);padding:10px 16px;border-radius:10px;font-weight:600;max-width:90vw}
 .rv-fab:focus-visible,.rv-b:focus-visible,.rv-k:focus-visible,.rv-send:focus-visible{outline:2px solid #E8590C;outline-offset:2px}
+
+/* Centred front door and set-up headings (Aaron's feedback, 2 Oct 2026). Labels stay over their boxes. */
+.authpage{justify-items:center;text-align:center}
+.authbrand{justify-self:center}
+.authbox{width:100%}
+.authbox h1,.authsub,.authfoot,.notice,.formmsg,.fine{text-align:center}
+.auth-form,.auth-f{text-align:left}
+.auth-f input.code{text-align:center;padding-left:.35em}
+.auth-alt{justify-content:center}
+.authlegal{justify-content:center}
+.wall2 h1,.wall2 .wsub,.wall2 .wq,.wall2 .formmsg{text-align:center}
+.wall2 .wfoot{justify-content:center}
