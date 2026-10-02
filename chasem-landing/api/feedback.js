@@ -6,7 +6,9 @@
 // Works with no token: a tester who has not signed up yet still has something worth saying. What it will not do
 // is take any more than a note.
 import { cors, send, readJson, readToken, f } from "./_setup.js";
-import { q, dbConfigured } from "./_db.js";
+import { q, dbConfigured, ensureSchema } from "./_db.js";
+import { place, spend } from "./_account.js";
+import { timingSafeEqual } from "node:crypto";
 
 const clean = (v, n) => String(v == null ? "" : v).replace(/[\u0000-\u001f]/g, " ").trim().slice(0, n);
 const TO = process.env.FEEDBACK_TO || process.env.SUPPORT_EMAIL || "help@chasem.app";
@@ -14,7 +16,7 @@ const TO = process.env.FEEDBACK_TO || process.env.SUPPORT_EMAIL || "help@chasem.
 function digest(items, who) {
   const lines = items.map((i) => {
     const mark = i.verdict === "broken" ? "BROKEN" : i.verdict === "works" ? "works " : "note  ";
-    return [mark + "  " + (i.step || "(no step)"), i.note ? "        " + i.note.replace(/\n/g, "\n        ") : "", i.screen ? "        on " + i.screen : ""].filter(Boolean).join("\n");
+    return [mark + "  " + (i.step || i.target_text || "(no step)"), i.note ? "        " + i.note.replace(/\n/g, "\n        ") : "", i.screen ? "        on " + i.screen : ""].filter(Boolean).join("\n");
   });
   const broken = items.filter((i) => i.verdict === "broken").length;
   return {
@@ -28,7 +30,26 @@ export default async function handler(req, res) {
   if (req.method === "OPTIONS") { res.statusCode = 204; return res.end(); }
   if (req.method !== "POST") return send(res, 405, { ok: false, error: "POST only" });
 
-  let body; try { body = await readJson(req, 200_000); } catch (e) { return send(res, 400, { ok: false, error: "Bad JSON" }); }
+  let body; try { body = await readJson(req, 3_000_000); } catch (e) { return send(res, 400, { ok: false, error: "Bad JSON" }); }
+  if (dbConfigured()) await ensureSchema();
+
+  // Reading it back: for the script a session runs (tools/feedback.mjs), with its own key and nothing else.
+  if (body.action === "list" || body.action === "done") {
+    const want = process.env.FEEDBACK_READ_KEY || "", got = String(body.key || "");
+    const okKey = want.length >= 24 && got.length === want.length && timingSafeEqual(Buffer.from(got), Buffer.from(want));
+    if (!okKey) return send(res, 401, { ok: false, error: "No" });
+    if (body.action === "done") { const ids = (Array.isArray(body.ids) ? body.ids : []).map((x) => clean(x, 60)).slice(0, 200);
+      const r = await q("update feedback set done_at=now() where id = any($1) and done_at is null returning id", [ids]); return send(res, 200, { ok: true, done: r.rows.length }); }
+    const since = body.since ? new Date(body.since) : null;
+    const r = await q(`select id, painter_id, step, verdict, note, screen, app, ua, target, target_text, ${body.full ? "html, page," : ""} rect, viewport, done_at, created_at
+                         from feedback where ($1::timestamptz is null or created_at > $1) and ($2::boolean or done_at is null)
+                        order by created_at asc limit $3`, [since && !isNaN(since) ? since.toISOString() : null, !!body.all, Math.min(200, Math.max(1, parseInt(body.limit, 10) || 50))]);
+    return send(res, 200, { ok: true, items: r.rows });
+  }
+
+  // A tester can send a lot, but one place cannot flood it.
+  if (dbConfigured()) { const from = place(req); if (from && !(await spend("fb:" + from, 120).catch(() => true))) return send(res, 429, { ok: false, error: "Too many notes from here. Try again in an hour." }); }
+
   const p = readToken(body.token, process.env.RELAY_SIGNING_SECRET);   // optional: a note is worth having either way
   const painter = (p && p.cus) || "";
   const who = clean(body.who, 120) || (p && p.name) || "";
@@ -36,6 +57,9 @@ export default async function handler(req, res) {
   const items = (Array.isArray(body.items) ? body.items : []).slice(0, 100).map((i) => ({
     id: clean(i && i.id, 60), step: clean(i && i.step, 120), verdict: clean(i && i.verdict, 12),
     note: clean(i && i.note, 4000), screen: clean(i && i.screen, 200), app: clean(i && i.app, 40), ua: clean(i && i.ua, 200),
+    target: clean(i && i.target, 1000), target_text: clean(i && i.target_text, 200),
+    html: String((i && i.html) || "").slice(0, 20000), page: String((i && i.page) || "").slice(0, 500000),
+    rect: (i && typeof i.rect === "object" && i.rect) || {}, viewport: (i && typeof i.viewport === "object" && i.viewport) || {},
   })).filter((i) => i.id && (i.note || i.verdict));
   if (!items.length) return send(res, 400, { ok: false, error: "Nothing to send" });
 
@@ -43,9 +67,9 @@ export default async function handler(req, res) {
   if (dbConfigured()) {
     for (const i of items) {
       const r = await q(
-        `insert into feedback (id, painter_id, step, verdict, note, screen, app, ua)
-           values ($1,$2,$3,$4,$5,$6,$7,$8) on conflict (id) do nothing returning id`,
-        [i.id, painter, i.step, i.verdict, i.note, i.screen, i.app, i.ua]).catch(() => ({ rows: [] }));
+        `insert into feedback (id, painter_id, step, verdict, note, screen, app, ua, target, target_text, html, page, rect, viewport)
+           values ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13::jsonb,$14::jsonb) on conflict (id) do nothing returning id`,
+        [i.id, painter, i.step, i.verdict, i.note, i.screen, i.app, i.ua, i.target, i.target_text, i.html, i.page, JSON.stringify(i.rect), JSON.stringify(i.viewport)]).catch(() => ({ rows: [] }));
       stored += r.rows.length;
     }
   }

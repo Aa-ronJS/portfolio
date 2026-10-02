@@ -24,6 +24,7 @@ if (!existsSync(secretFile)) writeFileSync(secretFile, randomBytes(24).toString(
 Object.assign(process.env, {
   RELAY_SIGNING_SECRET: readFileSync(secretFile, "utf8").trim(),
   STRIPE_SECRET_KEY: "sk_local_stand_in", RESEND_API_KEY: "re_local_stand_in", RESEND_FROM: "Chasem <help@chasem.app>",
+  FEEDBACK_READ_KEY: existsSync(join(LOCAL, "feedback-key")) ? readFileSync(join(LOCAL, "feedback-key"), "utf8").trim() : "",
   APP_URL: `http://localhost:${PORT}/`, RELAY_URL: `http://localhost:${PORT}/api/msg`, FREE_MESSAGES: "12",
 });
 

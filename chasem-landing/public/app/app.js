@@ -491,6 +491,8 @@
     try { saveTrouble(troubleKind); } catch (e) {}
     refreshPreview = function () {};
     if (locked()) return viewLock();
+    // #/review switches feedback mode on for this phone (review.js draws it), #/review/off switches it off
+    if (p[0] === 'review') { try { if (p[1] === 'off') localStorage.removeItem('qc-review'); else localStorage.setItem('qc-review', 'on'); } catch (e) {} if (window.QCReview) window.QCReview.sync(); toast(p[1] === 'off' ? 'Feedback mode is off.' : 'Feedback mode is on. Tap Feedback, then tap anything.'); return go('/'); }
     if (!joined() && p[0] !== 'setup' && p[0] !== 'help') return viewJoin('', p[0] === 'signup' || p[0] === 'forgot' ? p[0] : 'login');
     if (p[0] === 'login' || p[0] === 'signup' || p[0] === 'forgot') return go('/');
     // the email he signed in with is the one customers reply to, until he says otherwise
@@ -577,7 +579,7 @@
     ['aircon', 'Air-con', 1], ['handyman', 'Handyman', 1], ['cleaner', 'Cleaner', 0], ['gardener', 'Gardener', 0], ['pest', 'Pest control', 0], ['other', 'Something else', 1]];
   function trade() { return String((S && S.details && S.details.trade) || ''); }   // safe before the account is read
   function paintsHere() { return trade() === 'painter'; }   // the room-by-room quote builder and photo measuring are for painters
-  function buildingTrade() { var t = trade(); return !TRADES.some(function (x) { return x[0] === t && x[2] === 0; }); }
+  function buildingTrade() { var t = trade(); if (t === 'other') return !(S.details && S.details.trade_building === false); return !TRADES.some(function (x) { return x[0] === t && x[2] === 0; }); }
   function wallSteps() {
     var d = S.details, defaults = (QCStore.defaults && QCStore.defaults().prices) || {};
     var touched = Object.keys(defaults).some(function (k) { return S.prices[k] !== defaults[k]; });
@@ -588,42 +590,130 @@
       { id: 'mobile', label: 'Your mobile',        done: /^0[2-478]\d{8}$/.test(String(d.phone || '').replace(/\D/g, '').replace(/^61/, '0')) || !!(S.security && S.security.setup_done) },
       { id: 'abn',    label: 'Your ABN',           done: /\d{11}/.test(String(d.abn || '').replace(/\D/g, '')) },
       { id: 'state',  label: 'Your state',         done: !!String(d.state || '').trim() },
-      { id: 'trade',  label: 'Your trade',         done: !!trade() },
+      { id: 'trade',  label: 'Your trade',         done: !!trade() && (trade() !== 'other' || !!String(d.trade_other || '').trim()) },
       { id: 'pay',    label: 'How you get paid',   done: payStarted() }
     ];
   }
   function wallDone() { return wallSteps().every(function (x) { return x.done; }); }
 
+  // The set-up steps. Each one is a single question on its own screen, in the same look as Log in. Back goes to
+  // the step before, filled in as he left it; Next saves and moves on, through any step already answered, so
+  // going back to fix one thing never means typing the rest again.
+  var wallView = '';
+  var CHEV = '<svg viewBox="0 0 24 24" width="20" height="20" aria-hidden="true" focusable="false"><path d="M15 18l-6-6 6-6" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/></svg>';
   function viewWall() {
-    var steps = wallSteps(), at = null, i;
-    for (i = 0; i < steps.length; i++) if (!steps[i].done) { at = steps[i]; break; }
+    var steps = wallSteps(), idx = -1, i;
+    if (wallView) for (i = 0; i < steps.length; i++) if (steps[i].id === wallView) idx = i;
+    if (idx < 0) for (i = 0; i < steps.length; i++) if (!steps[i].done) { idx = i; break; }
     // Done: the hash is already '#/' because the wall never left it, so setting it again fires nothing.
     // Re-route by hand, or he answers the last question and the screen just sits there.
-    if (!at) { if (location.hash && location.hash !== '#/' && location.hash !== '#') { go('/'); } else { route(); } return; }
-    var n = steps.filter(function (x) { return x.done; }).length;
-
-    var html = '<div class="wall"><p class="hint">' + (n + 1) + ' of ' + steps.length + '</p>';
-    if (at.id === 'name') html += '<h1>Your business name</h1>' +
-      '<label class="f"><input type="text" id="w_in" autocomplete="organization" placeholder="Smith & Sons" value="' + esc(S.details.trading_name || '') + '"></label>';
-    else if (at.id === 'mobile') html += '<h1>Your mobile</h1>' +
-      '<label class="f"><input type="tel" id="w_in" inputmode="tel" autocomplete="tel" placeholder="0412 345 678" value="' + esc(S.details.phone || '') + '"></label>' +
-      '<label class="f">Your first name<span>texts end with it</span><input type="text" id="w_first" autocomplete="given-name" placeholder="Dave" value="' + esc(String(S.details.owner_name || '')) + '"></label>';
-    else if (at.id === 'abn') html += '<h1>Your ABN</h1>' +
-      '<label class="f"><input type="text" id="w_in" inputmode="numeric" placeholder="12 345 678 901" value="' + esc(S.details.abn || '') + '"></label>';
-    else if (at.id === 'state') html += '<h1>Your state</h1>' +
-      '<div class="row wrap" id="w_states">' + ['SA', 'NSW', 'VIC', 'QLD', 'WA', 'TAS', 'NT', 'ACT'].map(function (st) {
-        return '<button class="btn' + (S.details.state === st ? ' tape' : ' ghost') + '" data-state="' + st + '">' + st + '</button>'; }).join('') + '</div>';
-    else if (at.id === 'trade') html += '<h1>Your trade</h1>' +
-      '<div class="tradegrid" id="w_trades">' + TRADES.map(function (t) { return '<button class="btn ghost" data-trade="' + t[0] + '">' + esc(t[1]) + '</button>'; }).join('') + '</div>';
-    else if (at.id === 'pay') html += '<h1>Getting paid</h1>' + payChoices();
-
-    if (at.id !== 'state' && at.id !== 'pay' && at.id !== 'trade') html += '<div class="row"><button class="btn tape lg" id="w_next">Next</button></div>';
-    html += '<p class="hint" id="w_msg"></p>';
-    html += '<ol class="wallsteps">' + steps.map(function (x) {
-      return '<li class="' + (x.done ? 'done' : x.id === at.id ? 'now' : '') + '">' + esc(x.label) + '</li>'; }).join('') + '</ol>';
-    html += '<p class="hint"><a href="#/help">Help</a> &middot; <a href="#" id="w_out">Log out</a></p></div>';
+    if (idx < 0) { wallView = ''; if (location.hash && location.hash !== '#/' && location.hash !== '#') { go('/'); } else { route(); } return; }
+    var at = steps[idx], d = S.details, total = steps.length;
+    var input = function (id, type, value, opts) { opts = opts || {}; return '<input type="' + type + '" id="' + id + '" value="' + esc(value || '') + '"' + (opts.im ? ' inputmode="' + opts.im + '"' : '') + (opts.ac ? ' autocomplete="' + opts.ac + '"' : '') + (opts.ph ? ' placeholder="' + esc(opts.ph) + '"' : '') + (opts.label ? ' aria-labelledby="w_h"' : '') + '>'; };
+    var html = '<div class="wall2">' +
+      '<div class="wtop">' + (idx > 0 ? '<button type="button" class="wback" id="w_back">' + CHEV + 'Back</button>' : '<span></span>') +
+      '<span class="wcount">Step ' + (idx + 1) + ' of ' + total + '</span></div>' +
+      '<ol class="wbar" aria-label="Set-up progress">' + steps.map(function (x, j) { return '<li class="' + (j === idx ? 'now' : x.done ? 'done' : '') + '"><span class="sr">' + esc(x.label) + (x.done ? ', done' : j === idx ? ', now' : '') + '</span></li>'; }).join('') + '</ol>';
+    var sub = { name: 'It goes on every quote and invoice.', mobile: 'Customers reply to it, and texts are signed with your first name.', abn: 'It goes on every quote and invoice.',
+      state: 'For public holidays and the rules printed on your quotes.', trade: 'Painters also get room-by-room quotes and measuring from a photo.', pay: 'How customers pay your invoices. You can change it later in Set-up.' }[at.id];
+    html += '<h1 id="w_h">' + esc(at.id === 'pay' ? 'Getting paid' : at.label) + '</h1><p class="wsub">' + sub + '</p>';
+    if (at.id === 'name') html += '<div class="auth-f">' + input('w_in', 'text', d.trading_name, { ac: 'organization', ph: 'e.g. Smith & Sons Electrical', label: 1 }) + '</div>';
+    else if (at.id === 'mobile') html += '<div class="auth-f">' + input('w_in', 'tel', d.phone, { im: 'tel', ac: 'tel', ph: 'e.g. 0412 345 678', label: 1 }) + '</div>' +
+      '<div class="auth-f"><div class="lab"><label for="w_first">Your name</label></div>' + input('w_first', 'text', d.owner_name, { ac: 'name', ph: 'e.g. Dave Smith' }) + '</div>';
+    else if (at.id === 'abn') html += '<div class="auth-f">' + input('w_in', 'text', d.abn, { im: 'numeric', ph: 'e.g. 12 345 678 901', label: 1 }) + '</div>';
+    else if (at.id === 'state') html += '<div class="wgrid four" id="w_states" role="group" aria-labelledby="w_h">' + ['SA', 'NSW', 'VIC', 'QLD', 'WA', 'TAS', 'NT', 'ACT'].map(function (st) {
+        return '<button type="button" class="wtile' + (d.state === st ? ' on' : '') + '" data-state="' + st + '" aria-pressed="' + (d.state === st) + '">' + st + '</button>'; }).join('') + '</div>';
+    else if (at.id === 'trade') {
+      var other = d.trade === 'other';
+      html += '<div class="wgrid" id="w_trades" role="group" aria-labelledby="w_h">' + TRADES.map(function (t) {
+        return '<button type="button" class="wtile' + (d.trade === t[0] ? ' on' : '') + '" data-trade="' + t[0] + '" aria-pressed="' + (d.trade === t[0]) + '">' + esc(t[1]) + '</button>'; }).join('') + '</div>' +
+        '<div class="wother" id="w_other"' + (other ? '' : ' hidden') + '>' +
+        '<div class="auth-f"><div class="lab"><label for="w_tradeo">What is your trade?</label></div>' + input('w_tradeo', 'text', d.trade_other, { ph: 'e.g. Glazier' }) + '</div>' +
+        '<p class="wq">Is it building or repair work on homes?</p><div class="wgrid two" role="group" aria-label="Building or repair work">' +
+        '<button type="button" class="wtile' + (other && d.trade_building !== false ? ' on' : '') + '" data-building="1">Yes</button>' +
+        '<button type="button" class="wtile' + (other && d.trade_building === false ? ' on' : '') + '" data-building="0">No</button></div>' +
+        '<p class="fhint">Building work gets the extra terms the law asks for on quotes.</p></div>';
+    }
+    else if (at.id === 'pay') html += payChoices();
+    if (at.id === 'name' || at.id === 'mobile' || at.id === 'abn' || (at.id === 'trade' && d.trade === 'other')) html += '<button class="btn tape lg wide" id="w_next">Next</button>';
+    else if (at.done) html += '<button class="btn tape lg wide" id="w_next">Next</button>';
+    html += '<p class="formmsg bad" id="w_msg" role="alert"></p>';
+    html += '<p class="authlegal wfoot"><a href="#/help">Help</a><a href="#" id="w_out">Log out</a></p></div>';
     $app.innerHTML = html;
-    wireWall(at);
+    wireWall(at, idx, steps);
+  }
+
+  function wireWall(at, idx, steps) {
+    var msg = document.getElementById('w_msg'), box = document.getElementById('w_in');
+    var say = function (t) { if (msg) msg.textContent = t || ''; };
+    if (box && !box.value) { try { box.focus(); } catch (e) {} }
+    // forward one step, through steps already answered, so going back to fix one thing costs nothing else
+    var onward = function () { var nx = steps[idx + 1]; wallView = nx && nx.done ? nx.id : ''; save(); viewWall(); };
+    var next = function () {
+      var v = box ? String(box.value || '').trim() : '';
+      if (at.id === 'name') { if (!v) return say('Type your business name.'); S.details.trading_name = v; }
+      if (at.id === 'mobile') {
+        var ph = QCIngest.tidyPhone(v), dg = ph.replace(/\D/g, '');
+        if (!/^0[2-478]\d{8}$/.test(dg)) return say('A mobile is 10 numbers, like 0412 345 678.');
+        S.details.phone = ph; var fn = String((document.getElementById('w_first') || {}).value || '').trim(); if (fn) S.details.owner_name = fn;
+      }
+      if (at.id === 'abn') { if (String(v).replace(/\D/g, '').length !== 11) return say('An ABN is 11 numbers.'); S.details.abn = v; }
+      if (at.id === 'trade' && S.details.trade === 'other') {
+        var to = String((document.getElementById('w_tradeo') || {}).value || '').trim();
+        if (!to) { say('Type your trade.'); var tb = document.getElementById('w_tradeo'); if (tb) tb.focus(); return; }
+        S.details.trade_other = to; if (S.details.trade_building !== false) S.details.trade_building = true;
+      }
+      onward();
+    };
+    var nb = document.getElementById('w_next');
+    if (nb) nb.addEventListener('click', next);
+    Array.prototype.forEach.call($app.querySelectorAll('#w_in, #w_first, #w_tradeo'), function (el) { el.addEventListener('keydown', function (e) { if (e.key === 'Enter') { e.preventDefault(); next(); } }); });
+    var back = document.getElementById('w_back');
+    if (back) back.addEventListener('click', function () { wallView = steps[idx - 1].id; viewWall(); });
+
+    Array.prototype.forEach.call($app.querySelectorAll('[data-trade]'), function (b) {
+      b.addEventListener('click', function () {
+        S.details.trade = b.getAttribute('data-trade');
+        if (S.details.trade !== 'other') { onward(); return; }
+        // Something else: say what, and whether it is building work, before moving on
+        wallView = 'trade'; save(); viewWall(); var o = document.getElementById('w_tradeo'); if (o) o.focus();
+      });
+    });
+    Array.prototype.forEach.call($app.querySelectorAll('[data-building]'), function (b) {
+      b.addEventListener('click', function () { S.details.trade_building = b.getAttribute('data-building') === '1'; var keep = String((document.getElementById('w_tradeo') || {}).value || ''); S.details.trade_other = keep; wallView = 'trade'; save(); viewWall(); var o = document.getElementById('w_tradeo'); if (o && !o.value) o.focus(); });
+    });
+    Array.prototype.forEach.call($app.querySelectorAll('[data-state]'), function (b) {
+      b.addEventListener('click', function () { S.details.state = b.getAttribute('data-state'); onward(); });
+    });
+
+    var card = document.getElementById('w_card');
+    if (card) card.addEventListener('click', function () {
+      card.disabled = true; say('Opening Stripe…');
+      payConnect('start').then(function (r) {
+        card.disabled = false;
+        if (r && r.off) { S.payment = Object.assign({}, S.payment, { card_off: true }); save(); viewWall(); return; }
+        if (!r || !r.ok || !r.url) { say((r && r.error) || 'That did not work.'); return; }
+        S.payment = Object.assign({}, S.payment, { stripe_started: true }); save();
+        location.href = r.url;
+      });
+    });
+    var bank = document.getElementById('w_bank');
+    if (bank) bank.addEventListener('click', function () {
+      var an = document.getElementById('w_an').value.trim(), bsb = document.getElementById('w_bsb').value.trim(), ac = document.getElementById('w_acct').value.trim();
+      if (!an) return say('Whose account is it?');
+      if (String(bsb).replace(/\D/g, '').length !== 6) return say('A BSB is 6 numbers.');
+      if (String(ac).replace(/\D/g, '').length < 5) return say('That account number looks short.');
+      S.payment = Object.assign({}, S.payment, { account_name: an, bsb: bsb, account_number: ac });
+      S.details.account_name = an; S.details.bsb = bsb; S.details.account_number = ac;
+      wallView = ''; save(); viewWall();
+    });
+
+    var out = document.getElementById('w_out');
+    if (out) out.addEventListener('click', function (e) {
+      e.preventDefault();
+      if (!confirm('Log out of this phone? Your jobs stay in your account.')) return;
+      logOut();
+    });
   }
 
   // The costing engine thinks in an hourly rate; a painter thinks in a day. One is the other over his hours.
@@ -652,66 +742,6 @@
       '<label class="f">BSB<input type="text" id="w_bsb" inputmode="numeric" placeholder="063-000" value="' + esc(pay.bsb || S.details.bsb || '') + '"></label>' +
       '<label class="f">Account number<input type="text" id="w_acct" inputmode="numeric" value="' + esc(pay.account_number || S.details.account_number || '') + '"></label>' +
       '<div class="row"><button class="btn" id="w_bank">Use bank transfer</button></div></details>';
-  }
-
-  function wireWall(at) {
-    var msg = document.getElementById('w_msg'), box = document.getElementById('w_in');
-    var say = function (t) { if (msg) msg.textContent = t || ''; };
-    if (box) { try { box.focus(); } catch (e) {} }
-    var next = function () {
-      var v = box ? String(box.value || '').trim() : '';
-      if (at.id === 'name') { if (!v) return say('Type your business name.'); S.details.trading_name = v; }
-      if (at.id === 'mobile') {
-        var ph = QCIngest.tidyPhone(v), dg = ph.replace(/\D/g, '');
-        if (!/^0[2-478]\d{8}$/.test(dg)) return say('A mobile is 10 numbers, like 0412 345 678.');
-        S.details.phone = ph; var fn = String((document.getElementById('w_first') || {}).value || '').trim(); if (fn && !String(S.details.owner_name || '').trim()) S.details.owner_name = fn;
-      }
-      if (at.id === 'abn') { if (String(v).replace(/\D/g, '').length !== 11) return say('An ABN is 11 numbers.'); S.details.abn = v; }
-      if (at.id === 'prices') {
-        var n = parseFloat(v); if (!(n >= 100 && n <= 3000)) return say('Somewhere between 100 and 3000.');
-        setDayRate(n);
-      }
-      save(); viewWall();
-    };
-    var nb = document.getElementById('w_next');
-    if (nb) nb.addEventListener('click', next);
-    if (box) box.addEventListener('keydown', function (e) { if (e.key === 'Enter') { e.preventDefault(); next(); } });
-
-    Array.prototype.forEach.call($app.querySelectorAll('[data-trade]'), function (b) {
-      b.addEventListener('click', function () { S.details.trade = b.getAttribute('data-trade'); save(); viewWall(); });
-    });
-    Array.prototype.forEach.call($app.querySelectorAll('[data-state]'), function (b) {
-      b.addEventListener('click', function () { S.details.state = b.getAttribute('data-state'); save(); viewWall(); });
-    });
-
-    var card = document.getElementById('w_card');
-    if (card) card.addEventListener('click', function () {
-      card.disabled = true; say('Opening Stripe\u2026');
-      payConnect('start').then(function (r) {
-        card.disabled = false;
-        if (r && r.off) { S.payment = Object.assign({}, S.payment, { card_off: true }); save(); viewWall(); return; }
-        if (!r || !r.ok || !r.url) { say((r && r.error) || 'That did not work.'); return; }
-        S.payment = Object.assign({}, S.payment, { stripe_started: true }); save();
-        location.href = r.url;
-      });
-    });
-    var bank = document.getElementById('w_bank');
-    if (bank) bank.addEventListener('click', function () {
-      var an = document.getElementById('w_an').value.trim(), bsb = document.getElementById('w_bsb').value.trim(), ac = document.getElementById('w_acct').value.trim();
-      if (!an) return say('Whose account is it?');
-      if (String(bsb).replace(/\D/g, '').length !== 6) return say('A BSB is 6 numbers.');
-      if (String(ac).replace(/\D/g, '').length < 5) return say('That account number looks short.');
-      S.payment = Object.assign({}, S.payment, { account_name: an, bsb: bsb, account_number: ac });
-      S.details.account_name = an; S.details.bsb = bsb; S.details.account_number = ac;
-      save(); viewWall();
-    });
-
-    var out = document.getElementById('w_out');
-    if (out) out.addEventListener('click', function (e) {
-      e.preventDefault();
-      if (!confirm('Log out of this phone? Your jobs stay in your account.')) return;
-      logOut();
-    });
   }
 
   function payConnect(action, extra) {

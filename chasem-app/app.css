@@ -322,3 +322,53 @@ a.sec.link::after{content:'\203A';color:var(--muted);font-size:1.4rem;line-heigh
 }
 /* the app's .btn sets font with 'inherit' inside the shorthand, which browsers drop; on these screens the buttons use the page face */
 .authpage .btn,.acct-form .btn,#acct_body .btn{font-family:inherit}
+
+/* ---------- Set-up steps: one question a screen, in the front door's look. Back top left, the step count top
+   right, a six-part bar, the question as the heading, one line of why, the answer, one button. */
+.wall2{max-width:400px;width:100%;margin:0 auto;display:grid;gap:16px;padding-top:4px}
+.wtop{display:flex;justify-content:space-between;align-items:center;min-height:44px}
+.wback{display:inline-flex;align-items:center;gap:2px;min-height:44px;padding:0 10px 0 2px;margin-left:-4px;border:0;border-radius:8px;background:transparent;color:var(--tape-deep);font-family:inherit;font-weight:600;font-size:1rem;cursor:pointer}
+.wback:hover{background:var(--soft)}
+.wcount{font-size:.9rem;color:var(--muted);font-variant-numeric:tabular-nums}
+.wbar{list-style:none;margin:0 0 8px;padding:0;display:grid;grid-template-columns:repeat(6,1fr);gap:4px}
+.wbar li{height:6px;border-radius:3px;background:var(--line)}
+.wbar li.done{background:var(--tape)}
+.wbar li.now{background:var(--tape);opacity:.45}
+.sr{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}
+.wall2 h1{font-family:"Bricolage Grotesque","Bricolage fallback",system-ui,sans-serif;font-weight:700;font-size:clamp(1.75rem,1.5rem + 1.2vw,2.1rem);letter-spacing:-.02em;line-height:1.1;text-wrap:balance}
+.wsub{color:var(--muted);line-height:1.5;margin-top:-6px}
+.wall2 .auth-f input{font-size:1.1rem}
+.wgrid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px}
+.wgrid.four{grid-template-columns:repeat(4,minmax(0,1fr))}
+.wtile{min-height:52px;padding:10px 8px;border:1.5px solid var(--line);border-radius:10px;background:var(--paper);color:var(--ink);font-family:inherit;font-weight:600;font-size:1rem;cursor:pointer;text-align:center;line-height:1.2}
+.wtile:hover{border-color:var(--muted)}
+.wtile.on{border-color:var(--tape);background:var(--tape-soft);color:var(--tape-deep)}
+.wtile:focus-visible,.wback:focus-visible{outline:2px solid var(--tape);outline-offset:2px}
+.wother{display:grid;gap:12px;padding-top:4px}
+.wq{font-weight:600;margin-top:4px}
+.wfoot{margin-top:8px}
+.wall2 details.sec{background:var(--paper);border:1px solid var(--line);border-radius:10px;padding:12px 14px}
+.wall2 details.sec summary h3{display:inline;font-size:1rem}
+.wall2 .row .btn.lg{width:100%}
+
+/* ---------- Feedback mode (review.js): only on a phone that opened #/review. Sits above everything, never in the
+   way of the app's own bottom buttons for longer than it takes to pick something. */
+.rv-fab{position:fixed;left:12px;bottom:calc(12px + env(safe-area-inset-bottom,0px));z-index:9990;min-height:44px;padding:0 16px;border:0;border-radius:999px;background:var(--ink);color:var(--ground);font-family:inherit;font-weight:700;font-size:.92rem;box-shadow:0 2px 4px rgba(22,24,29,.18),0 8px 20px rgba(22,24,29,.22);cursor:pointer}
+.rv-hl{position:fixed;z-index:9991;pointer-events:none;border:3px solid #E8590C;border-radius:8px;background:rgba(232,89,12,.08);display:none}
+.rv-banner{position:fixed;left:8px;right:8px;top:calc(8px + env(safe-area-inset-top,0px));z-index:9992;display:flex;flex-wrap:wrap;align-items:center;gap:8px;padding:10px 12px;border-radius:12px;background:var(--ink);color:var(--ground);font-weight:600;box-shadow:0 8px 24px rgba(22,24,29,.3)}
+.rv-banner span{flex:1 1 12em}
+.rv-b{min-height:40px;padding:0 12px;border:1.5px solid currentColor;border-radius:8px;background:transparent;color:inherit;font-family:inherit;font-weight:600;font-size:.9rem;cursor:pointer}
+.rv-sheet{position:fixed;left:0;right:0;bottom:0;z-index:9993;display:grid;gap:12px;padding:16px 16px calc(16px + env(safe-area-inset-bottom,0px));background:var(--paper);color:var(--ink);border-top:1px solid var(--line);border-radius:14px 14px 0 0;box-shadow:0 -8px 30px rgba(22,24,29,.25);max-width:560px;margin:0 auto}
+.rv-sheet .rv-b{color:var(--ink);border-color:var(--line)}
+.rv-pick{display:grid;gap:8px}
+.rv-pick b{overflow-wrap:anywhere}
+.rv-row{display:flex;flex-wrap:wrap;gap:8px}.rv-row.end{justify-content:flex-end}
+.rv-kinds{display:flex;flex-wrap:wrap;gap:6px}
+.rv-k{min-height:40px;padding:0 12px;border:1.5px solid var(--line);border-radius:999px;background:transparent;color:var(--ink);font-family:inherit;font-weight:600;font-size:.9rem;cursor:pointer}
+.rv-k.on{border-color:#E8590C;background:rgba(232,89,12,.1);color:#B4430A}
+.rv-l{font-weight:600;font-size:.95rem}
+.rv-sheet textarea{width:100%;min-height:88px;font:1rem/1.4 inherit;font-family:inherit;padding:10px 12px;border:1.5px solid var(--line);border-radius:10px;background:var(--ground);color:var(--ink)}
+.rv-send{min-height:44px;padding:0 22px;border:0;border-radius:10px;background:#E8590C;color:#fff;font-family:inherit;font-weight:700;font-size:1rem;cursor:pointer}
+.rv-fine{font-size:.85rem}.rv-fine a{color:var(--muted)}
+.rv-toast{position:fixed;left:50%;transform:translateX(-50%);bottom:calc(70px + env(safe-area-inset-bottom,0px));z-index:9994;background:var(--ink);color:var(--ground);padding:10px 16px;border-radius:10px;font-weight:600;max-width:90vw}
+.rv-fab:focus-visible,.rv-b:focus-visible,.rv-k:focus-visible,.rv-send:focus-visible{outline:2px solid #E8590C;outline-offset:2px}
