@@ -43,6 +43,7 @@ export default async function handler(req, res) {
     return send(res, 200, { ok: true, view: E.reviewerView(state, who.reviewerId) });
   } catch (e) {
     const status = e instanceof E.EngineError ? e.status : 500;
-    return send(res, status, { ok: false, error: status === 500 ? "Something went wrong. Try again." : e.message, detail: status === 500 ? String(e && e.message) : undefined });
+    if (status === 500) console.error("reviewer:", e && e.message);
+    return send(res, status, { ok: false, error: status === 500 ? "Something went wrong. Try again." : e.message });
   }
 }

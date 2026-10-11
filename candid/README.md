@@ -23,6 +23,7 @@ api/_ai.js                           Claude (structured outputs) with a heuristi
 api/_store.js, _db.js                one JSON document per business, saved under a version check
 db/001-init.sql                      three tables
 tools/dev.mjs                        a local server on pglite, no accounts needed
+tests/engine.mjs                     the rules alone: balanced assignment, late ratings during settlement
 tests/period.mjs                     a whole period through the real handlers on real Postgres (pglite)
 tests/browser.mjs                    both pages in Chromium against the dev server
 ```
@@ -31,7 +32,7 @@ tests/browser.mjs                    both pages in Chromium against the dev serv
 
 ```
 npm install
-npm test                 # period.mjs, then browser.mjs if Playwright and Chromium are present
+npm test                 # engine.mjs, period.mjs, and browser.mjs when Playwright and Chromium are present
 node tools/dev.mjs       # http://localhost:3123, passcode local-passcode, data in memory
 ```
 
