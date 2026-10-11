@@ -1,38 +1,41 @@
-"""Thumbnails that look like the ones that win: a cut-out subject on a
-bold colour field with a white outline and a soft shadow, a face or an
-action, three or four words of condensed type with one word in the
-accent colour, everything readable at the 168x94 pixels a phone feed
-shows. Two layouts are rendered for every episode and the vision pass
-picks one:
+"""Thumbnails built the way the winners build them.
 
-  cutout  — subject removed from its background (rembg, if installed)
-            and placed over a deep two-tone field, text on the open side
-  wash    — the full frame under a colour wash and a dark gradient,
-            text bottom-left (the fallback when there is no clean cut)
+Counted across the top thumbnails of the channels this one competes
+with (examples/single-dads/benchmarks/): a face toward the camera with
+an expression (26 of 28), cropped chest-up so the head is a third of
+the frame (24/28), two to four words at a fifth of the frame height per
+line (22/28) with one word boxed or coloured (20/28), a second element
+that explains the idea — an object, an arrow, a number (24/28) — and
+the real environment behind, blurred and dimmed (27/28). Nothing that
+looks like a template.
 
-Everything here is Pillow; rembg is optional and the wash layout needs
-nothing but the frame.
+Layouts, all Pillow:
+
+  hero   — the subject lifted (rembg), cropped head-and-shoulders when
+           the pose allows, boosted, outlined, on the blurred and dimmed
+           original photo; huge type on the open side, the key word in a
+           filled box.
+  prop   — hero plus a second cut-out (an object fetched for the
+           purpose) and an arrow from the text to the subject.
+  wash   — the whole photo under a colour wash and a dark gradient with
+           the same type; the fallback when nothing can be lifted.
 """
 
+import math
 import os
 import re
 
-from PIL import Image, ImageDraw, ImageFilter, ImageFont
+from PIL import Image, ImageDraw, ImageEnhance, ImageFilter, ImageFont
 
 HERE = os.path.dirname(os.path.abspath(__file__))
 ROOT = os.path.dirname(HERE)
 FONT_DIRS = [os.path.join(ROOT, "fonts"), "/usr/share/fonts/truetype/dejavu"]
 DISPLAY_FONTS = ["Anton-Regular.ttf", "BebasNeue-Regular.ttf", "DejaVuSans-Bold.ttf"]
 
-# deep fields that make skin, white shirts and a yellow accent all pop;
-# picked per episode so the channel page is not one colour
-FIELDS = [
-    ((16, 30, 58), (31, 58, 110)),     # navy
-    ((20, 44, 42), (28, 84, 78)),      # deep teal
-    ((58, 18, 24), (120, 34, 46)),     # oxblood
-    ((26, 22, 48), (62, 44, 110)),     # indigo
-    ((40, 30, 12), (96, 66, 20)),      # umber
-]
+# the tint pulled over the blurred background, per episode, so the
+# channel page is not one colour; the type and box colours are fixed
+TINTS = [(12, 24, 52), (10, 40, 38), (52, 14, 20), (24, 18, 46), (36, 26, 8)]
+BOX_RED = (224, 49, 43)
 
 
 def find_font():
@@ -69,8 +72,7 @@ def cutout(frame):
     try:
         if _session is None:
             _session = new_session("u2net")
-        im = frame.convert("RGB")
-        out = remove(im, session=_session, alpha_matting=False)
+        out = remove(frame.convert("RGB"), session=_session, alpha_matting=False)
     except Exception as e:
         print("thumbnail: rembg failed (%s)" % e)
         return None
@@ -81,21 +83,39 @@ def cutout(frame):
     w, h = out.size
     cover = (bbox[2] - bbox[0]) * (bbox[3] - bbox[1]) / float(w * h)
     opaque = sum(alpha.histogram()[200:]) / float(w * h)
-    # a subject that is nearly the whole frame or nearly nothing is a
-    # bad cut; the wash layout handles those
     if cover < 0.08 or opaque > 0.85 or opaque < 0.04:
         return None
+    # trim to where the mask is actually solid, not its faint fringe
+    solid = alpha.point(lambda v: 255 if v > 120 else 0).getbbox() or bbox
+    return out.crop(solid)
+
+
+def head_crop(subject):
+    """When the subject stands taller than wide, keep the head and
+    shoulders — the top ~58% — so the face can be big. A wide pose (a
+    push-up, a crouch) is kept whole."""
+    w, h = subject.size
+    if h > w * 1.15:
+        return subject.crop((0, 0, w, int(h * 0.58)))
+    return subject
+
+
+def boost(subject):
+    """What every winning thumbnail does to its subject."""
+    rgb = subject.convert("RGB")
+    rgb = ImageEnhance.Color(rgb).enhance(1.28)
+    rgb = ImageEnhance.Contrast(rgb).enhance(1.12)
+    rgb = ImageEnhance.Brightness(rgb).enhance(1.04)
+    rgb = rgb.filter(ImageFilter.UnsharpMask(radius=2, percent=60, threshold=2))
+    out = rgb.convert("RGBA")
+    out.putalpha(subject.split()[-1])
     return out
 
 
 # ---------------------------------------------------------------- text
 
-def _split_words(text):
-    return [w for w in text.split() if w]
-
-
 def _accent_index(words):
-    """The word to colour: a number or percentage if there is one, else
+    """The word to box: a number or percentage if there is one, else
     the last word."""
     for i, w in enumerate(words):
         if re.search(r"\d", w):
@@ -104,8 +124,7 @@ def _accent_index(words):
 
 
 def _layout_lines(draw, words, font, max_w, max_lines):
-    """Balanced lines, as in the caption code: the split whose longest
-    line is shortest."""
+    """Balanced lines: the split whose longest line is shortest."""
     import itertools
 
     def width(ws):
@@ -125,24 +144,28 @@ def _layout_lines(draw, words, font, max_w, max_lines):
     return None
 
 
-def draw_text(im, text, box, accent, align="left", max_lines=2,
-              outline=True, shadow=True):
-    """Fit `text` in `box` (x0, y0, x1, y1) as large as it will go, with
-    the accent word coloured. Returns the bottom y used."""
+def draw_text(im, text, box, accent, align="left", max_lines=2, boxed=True):
+    """Fit `text` in `box` as large as it will go: white condensed type
+    with a heavy black stroke and shadow, the key word on a filled
+    accent box with dark type. Returns the rectangle the text used."""
     draw = ImageDraw.Draw(im)
-    words = _split_words(text.upper())
+    words = [w for w in text.upper().split() if w]
     if not words:
-        return box[1]
+        return box
     ai = _accent_index(words)
+    # a lone "3" is a stub; box "3 MINUTES" — merge a 1-2 character
+    # accent word with the one after it
+    if len(words[ai]) <= 2 and ai + 1 < len(words):
+        words = words[:ai] + [words[ai] + " " + words[ai + 1]] + words[ai + 2:]
     bw, bh = box[2] - box[0], box[3] - box[1]
-    size = int(bh * 0.9)
+    size = int(bh * 0.95)
     lines = None
     while size > 18:
         font = _font(size)
-        lines = _layout_lines(draw, words, font, bw, max_lines)
+        lines = _layout_lines(draw, words, font, bw * 0.96, max_lines)
         if lines:
             asc, desc = font.getmetrics()
-            lh = int((asc + desc) * 0.92)
+            lh = int((asc + desc) * 0.98)
             if lh * len(lines) <= bh:
                 break
         size -= 4
@@ -150,57 +173,69 @@ def draw_text(im, text, box, accent, align="left", max_lines=2,
         lines = [words]
         font = _font(size)
     asc, desc = font.getmetrics()
-    lh = int((asc + desc) * 0.92)
+    lh = int((asc + desc) * 0.98)
     total_h = lh * len(lines)
-    y = box[3] - total_h if align != "top" else box[1]
+    y = box[3] - total_h if align == "bottom" else box[1] + (bh - total_h) // 2
+    y0 = y
+    stroke = max(3, size // 13)
+    pad = size // 7
+    used_right = box[0]
     k = 0
     for line in lines:
         lw = draw.textbbox((0, 0), " ".join(line), font=font)[2]
-        x = box[0] if align == "left" else box[0] + (bw - lw) // 2
+        x = box[0] if align in ("left", "bottom") else box[0] + (bw - lw) // 2
         for w in line:
-            colour = accent if k == ai else (255, 255, 255)
+            ww = draw.textbbox((0, 0), w, font=font)[2]
+            if k == ai and boxed:
+                # a filled box, slightly tilted feel via a drop shadow
+                bx0, by0 = x - pad, y + asc // 8
+                bx1, by1 = x + ww + pad, y + asc + desc - asc // 10
+                draw.rounded_rectangle([bx0 + 6, by0 + 8, bx1 + 6, by1 + 8],
+                                       radius=size // 10, fill=(0, 0, 0, 170))
+                draw.rounded_rectangle([bx0, by0, bx1, by1], radius=size // 10, fill=accent)
+                draw.text((x, y), w, font=font, fill=(20, 20, 20))
+            else:
+                draw.text((x + size // 16, y + size // 16), w, font=font, fill=(0, 0, 0))
+                draw.text((x, y), w, font=font, fill=(255, 255, 255),
+                          stroke_width=stroke, stroke_fill=(0, 0, 0))
             k += 1
-            if shadow:
-                draw.text((x + size // 18, y + size // 18), w, font=font,
-                          fill=(0, 0, 0, 160))
-            draw.text((x, y), w, font=font, fill=colour,
-                      stroke_width=max(2, size // 16) if outline else 0,
-                      stroke_fill=(0, 0, 0))
             x += draw.textbbox((0, 0), w + " ", font=font)[2]
+        used_right = max(used_right, x)
         y += lh
-    return y
+    return (box[0], y0, used_right, y)
 
 
-# ---------------------------------------------------------------- layouts
+# ---------------------------------------------------------------- pieces
 
-def _field(size, pair, seed=0):
-    """A deep two-tone diagonal field with a soft lighter glow where the
-    subject will sit, and a faint diagonal texture so it is not flat."""
-    w, h = size
-    a, b = pair
-    base = Image.new("RGB", (w, h), a)
-    grad = Image.linear_gradient("L").rotate(35, expand=True).resize((w, h))
-    base = Image.composite(Image.new("RGB", (w, h), b), base, grad)
-    glow = Image.new("L", (w, h), 0)
+def backdrop(frame, size, tint):
+    """The original photo, filled to the frame, blurred, dimmed and
+    tinted, with a soft light where the subject will stand."""
+    W, H = size
+    im = frame.convert("RGB")
+    fw, fh = im.size
+    scale = max(W / fw, H / fh)
+    im = im.resize((int(fw * scale) + 1, int(fh * scale) + 1), Image.LANCZOS)
+    im = im.crop(((im.size[0] - W) // 2, (im.size[1] - H) // 2,
+                  (im.size[0] - W) // 2 + W, (im.size[1] - H) // 2 + H))
+    im = im.filter(ImageFilter.GaussianBlur(H // 70))
+    im = ImageEnhance.Color(im).enhance(0.75)
+    im = Image.blend(im, Image.new("RGB", size, tint), 0.45)
+    im = ImageEnhance.Brightness(im).enhance(0.72)
+    glow = Image.new("L", size, 0)
     gd = ImageDraw.Draw(glow)
-    cx, cy = int(w * 0.72), int(h * 0.55)
-    r = int(h * 0.62)
-    gd.ellipse([cx - r, cy - r, cx + r, cy + r], fill=110)
-    glow = glow.filter(ImageFilter.GaussianBlur(h // 6))
-    lighter = tuple(min(255, int(c * 1.55) + 18) for c in b)
-    base = Image.composite(Image.new("RGB", (w, h), lighter), base, glow)
-    stripes = Image.new("L", (w, h), 0)
-    sd = ImageDraw.Draw(stripes)
-    for x in range(-h, w + h, 64):
-        sd.line([(x, 0), (x + h, h)], fill=255, width=22)
-    stripes = stripes.point(lambda v: int(v * 0.045))
-    base = Image.composite(Image.new("RGB", (w, h), (255, 255, 255)), base, stripes)
-    return base
+    cx, cy, r = int(W * 0.74), int(H * 0.5), int(H * 0.7)
+    gd.ellipse([cx - r, cy - r, cx + r, cy + r], fill=120)
+    glow = glow.filter(ImageFilter.GaussianBlur(H // 5))
+    light = tuple(min(255, c + 90) for c in tint)
+    im = Image.composite(Image.new("RGB", size, light), im, glow)
+    vig = Image.new("L", size, 0)
+    ImageDraw.Draw(vig).ellipse([-W // 5, -H // 5, W + W // 5, H + H // 5], fill=255)
+    vig = vig.filter(ImageFilter.GaussianBlur(H // 4))
+    return Image.composite(im, ImageEnhance.Brightness(im).enhance(0.5), vig)
 
 
-def _outlined(subject, px, colour=(255, 255, 255)):
-    """The subject with a solid outline of `px` pixels and a soft shadow
-    behind it, as one RGBA layer."""
+def outlined(subject, px, colour=(255, 255, 255)):
+    """The subject with a solid outline and a soft shadow, one layer."""
     alpha = subject.split()[-1]
     pad = px * 3 + 24
     w, h = subject.size
@@ -208,94 +243,161 @@ def _outlined(subject, px, colour=(255, 255, 255)):
     big = Image.new("L", layer.size, 0)
     big.paste(alpha, (pad, pad))
     ring = big.filter(ImageFilter.MaxFilter(px * 2 + 1))
-    shadow = ring.filter(ImageFilter.GaussianBlur(px * 3)).point(lambda v: int(v * 0.55))
+    shadow = ring.filter(ImageFilter.GaussianBlur(px * 3)).point(lambda v: int(v * 0.6))
     layer.paste(Image.new("RGBA", layer.size, (0, 0, 0, 255)), (px, px * 2), shadow)
     layer.paste(Image.new("RGBA", layer.size, colour + (255,)), (0, 0), ring)
     layer.paste(subject, (pad, pad), subject)
-    return layer
+    return layer, pad
 
 
-def layout_cutout(frame, subject, text, accent, size, field_pair):
+def place_subject(im, subject, size, portrait, height_frac, right_margin=0.0):
+    """Scale the subject to a share of the frame height and set it on
+    the right, bottom-anchored. Returns its on-canvas box."""
     W, H = size
-    im = _field(size, field_pair)
-    portrait = H > W
-    # subject: scale to ~96% of height (portrait: ~55%), hug the right/bottom
     sw, sh = subject.size
-    target_h = int(H * (0.56 if portrait else 0.98))
+    target_h = int(H * height_frac)
     scale = target_h / float(sh)
-    subject = subject.resize((max(1, int(sw * scale)), target_h), Image.LANCZOS)
-    layer = _outlined(subject, max(4, H // 120))
-    lx = W - layer.size[0] + (layer.size[0] - subject.size[0]) // 2 - int(W * 0.02) \
-        if not portrait else (W - layer.size[0]) // 2
-    ly = H - layer.size[1] + (layer.size[1] - subject.size[1]) // 2 + int(H * 0.02)
-    im.paste(layer, (lx, ly), layer)
-    # text on the open side; with a wide subject it rides over the lower
-    # third, which the outline keeps legible
+    tw = max(1, int(sw * scale))
+    if tw > W * 0.62 and not portrait:               # a wide pose: cap the width
+        scale = W * 0.62 / sw
+        tw, target_h = int(W * 0.62), int(sh * scale)
+    subject = boost(subject.resize((tw, target_h), Image.LANCZOS))
+    layer, pad = outlined(subject, max(3, H // 150))
     if portrait:
-        box = (int(W * 0.06), int(H * 0.05), int(W * 0.94), int(H * 0.40))
-        draw_text(im, text, box, accent, align="centre", max_lines=3)
+        x = (W - tw) // 2
     else:
-        # the text gets at least 56% of the width even when the subject is
-        # wide; the outline keeps the letters legible where they overlap
-        text_w = max(int(W * 0.56), W - subject.size[0] - int(W * 0.08))
-        box = (int(W * 0.05), int(H * 0.10), min(int(W * 0.05) + text_w, int(W * 0.68)), int(H * 0.90))
-        draw_text(im, text, box, accent, align="left", max_lines=2)
+        x = W - tw - int(W * right_margin)
+    y = H - target_h + int(H * 0.015)                 # feet/hem just past the edge
+    im.paste(layer, (x - pad, y - pad), layer)
+    return (x, y, x + tw, y + target_h)
+
+
+def arrow(im, start, end, colour, width):
+    """A curved arrow from `start` to `end`, the kind the winners draw."""
+    draw = ImageDraw.Draw(im)
+    (x0, y0), (x1, y1) = start, end
+    cx, cy = (x0 + x1) / 2, min(y0, y1) - abs(x1 - x0) * 0.22
+    pts = []
+    for i in range(33):
+        t = i / 32
+        x = (1 - t) ** 2 * x0 + 2 * (1 - t) * t * cx + t ** 2 * x1
+        y = (1 - t) ** 2 * y0 + 2 * (1 - t) * t * cy + t ** 2 * y1
+        pts.append((x, y))
+    for w, c in ((width + 6, (0, 0, 0)), (width, colour)):
+        draw.line(pts, fill=c, width=w, joint="curve")
+    # head
+    ang = math.atan2(y1 - pts[-3][1], x1 - pts[-3][0])
+    L = width * 3.2
+    head = [(x1, y1),
+            (x1 - L * math.cos(ang - 0.5), y1 - L * math.sin(ang - 0.5)),
+            (x1 - L * math.cos(ang + 0.5), y1 - L * math.sin(ang + 0.5))]
+    draw.polygon(head, fill=(0, 0, 0))
+    inner = [(x1 - 4 * math.cos(ang), y1 - 4 * math.sin(ang)),
+             (x1 - (L - 7) * math.cos(ang - 0.45), y1 - (L - 7) * math.sin(ang - 0.45)),
+             (x1 - (L - 7) * math.cos(ang + 0.45), y1 - (L - 7) * math.sin(ang + 0.45))]
+    draw.polygon(inner, fill=colour)
+
+
+# ---------------------------------------------------------------- layouts
+
+def layout_hero(frame, subject, text, accent, size, tint, prop=None):
+    W, H = size
+    portrait = H > W
+    im = backdrop(frame, size, tint)
+    subj = head_crop(subject)
+    box = place_subject(im, subj, size, portrait,
+                        0.62 if portrait else 1.02, right_margin=0.0)
+    if portrait:
+        tbox = (int(W * 0.05), int(H * 0.05), int(W * 0.95), int(H * 0.36))
+        used = draw_text(im, text, tbox, accent, align="centre", max_lines=3)
+        if prop is not None:
+            _place_prop(im, prop, size, int(W * 0.06), int(H * 0.64), int(H * 0.26))
+        return im
+    # the type may run under the subject's shoulder: the outline keeps
+    # both legible, and the winners do exactly this
+    right = min(box[0] + int(W * 0.16), int(W * 0.74))
+    if prop is not None:
+        # text high, the object low, the face right: the Peptides layout
+        tbox = (int(W * 0.045), int(H * 0.05), max(right, int(W * 0.58)), int(H * 0.56))
+        used = draw_text(im, text, tbox, accent, align="left", max_lines=2)
+        pbox = _place_prop(im, prop, size, int(W * 0.05),
+                           int(H * 0.60), int(H * 0.37))
+        arrow(im, (pbox[2] + int(W * 0.015), pbox[1] + (pbox[3] - pbox[1]) // 2),
+              (box[0] + int((box[2] - box[0]) * 0.28), box[1] + int((box[3] - box[1]) * 0.55)),
+              accent, max(8, H // 70))
+    else:
+        tbox = (int(W * 0.045), int(H * 0.10), max(right, int(W * 0.56)), int(H * 0.90))
+        used = draw_text(im, text, tbox, accent, align="left", max_lines=2)
+        gap = box[0] - used[2]
+        if gap > W * 0.06:
+            arrow(im, (used[2] + int(W * 0.015), used[3] - int(H * 0.10)),
+                  (box[0] + int((box[2] - box[0]) * 0.30), box[1] + int((box[3] - box[1]) * 0.45)),
+                  accent, max(8, H // 70))
     return im
 
 
-def layout_wash(frame, text, accent, size, field_pair):
+def _place_prop(im, prop, size, x, y, target):
+    """An object cut-out, boosted and outlined, scaled so its longer side
+    is `target` pixels, top-left at (x, y). Returns its box."""
     W, H = size
-    im = frame.convert("RGB").resize(size, Image.LANCZOS)
-    im = im.filter(ImageFilter.GaussianBlur(0.5))
-    # a colour wash toward the field colour, then a bottom gradient so
-    # the type sits on something dark
-    wash = Image.new("RGB", size, field_pair[0])
-    im = Image.blend(im, wash, 0.22)
+    pw, ph = prop.size
+    scale = target / float(max(pw, ph))
+    prop = boost(prop.resize((max(1, int(pw * scale)), max(1, int(ph * scale))), Image.LANCZOS))
+    layer, pad = outlined(prop, max(3, H // 180))
+    im.paste(layer, (x - pad, y - pad), layer)
+    return (x, y, x + prop.size[0], y + prop.size[1])
+
+
+def layout_wash(frame, text, accent, size, tint):
+    W, H = size
+    im = frame.convert("RGB")
+    fw, fh = im.size
+    scale = max(W / fw, H / fh)
+    im = im.resize((int(fw * scale) + 1, int(fh * scale) + 1), Image.LANCZOS)
+    im = im.crop(((im.size[0] - W) // 2, (im.size[1] - H) // 2,
+                  (im.size[0] - W) // 2 + W, (im.size[1] - H) // 2 + H))
+    im = ImageEnhance.Color(im).enhance(1.2)
+    im = ImageEnhance.Contrast(im).enhance(1.1)
+    im = Image.blend(im, Image.new("RGB", size, tint), 0.18)
     shade = Image.new("RGB", size, (0, 0, 0))
     mask = Image.linear_gradient("L").resize(size).point(lambda v: int(v * 0.85))
     im = Image.composite(shade, im, mask)
-    # a slight vignette so the eye stays in the middle
-    vig = Image.new("L", size, 0)
-    vd = ImageDraw.Draw(vig)
-    vd.ellipse([-W // 4, -H // 4, W + W // 4, H + H // 4], fill=255)
-    vig = vig.filter(ImageFilter.GaussianBlur(H // 4))
-    im = Image.composite(im, Image.blend(im, shade, 0.35), vig)
     portrait = H > W
     if portrait:
-        box = (int(W * 0.06), int(H * 0.55), int(W * 0.94), int(H * 0.90))
-        draw_text(im, text, box, accent, align="centre", max_lines=3)
+        tbox = (int(W * 0.05), int(H * 0.56), int(W * 0.95), int(H * 0.92))
+        draw_text(im, text, tbox, accent, align="centre", max_lines=3)
     else:
-        box = (int(W * 0.05), int(H * 0.40), int(W * 0.78), int(H * 0.92))
-        draw_text(im, text, box, accent, align="left", max_lines=2)
-    # the accent bar: the one piece of branding
-    bar_y = int(H * 0.36) if not portrait else int(H * 0.52)
-    ImageDraw.Draw(im).rectangle([int(W * 0.05), bar_y, int(W * 0.05) + int(W * 0.10),
-                                  bar_y + max(5, H // 100)], fill=accent)
+        tbox = (int(W * 0.045), int(H * 0.44), int(W * 0.80), int(H * 0.95))
+        draw_text(im, text, tbox, accent, align="bottom", max_lines=2)
     return im
 
 
-def render(frame_path, text, accent_hex, size, seed, out_dir):
-    """Both layouts (cut-out when a subject can be lifted) -> list of
-    (name, path)."""
+def render(frame_path, text, accent_hex, size, seed, out_dir, prop_path=None):
+    """Every layout this frame allows -> list of (name, path)."""
     accent = _hex(accent_hex)
     frame = Image.open(frame_path).convert("RGB")
-    pair = FIELDS[seed % len(FIELDS)]
+    tint = TINTS[seed % len(TINTS)]
     os.makedirs(out_dir, exist_ok=True)
     outs = []
     subject = cutout(frame)
     if subject is not None:
-        p = os.path.join(out_dir, "cutout.jpg")
-        layout_cutout(frame, subject, text, accent, size, pair).save(p, quality=92)
-        outs.append(("cutout", p))
+        p = os.path.join(out_dir, "hero.jpg")
+        layout_hero(frame, subject, text, accent, size, tint).save(p, quality=92)
+        outs.append(("hero", p))
+        if prop_path and os.path.exists(prop_path):
+            prop = cutout(Image.open(prop_path).convert("RGB"))
+            if prop is not None:
+                p = os.path.join(out_dir, "prop.jpg")
+                layout_hero(frame, subject, text, accent, size, tint, prop=prop).save(p, quality=92)
+                outs.append(("prop", p))
     p = os.path.join(out_dir, "wash.jpg")
-    layout_wash(frame, text, accent, size, pair).save(p, quality=92)
+    layout_wash(frame, text, accent, size, tint).save(p, quality=92)
     outs.append(("wash", p))
     return outs
 
 
 def feed_sheet(paths, out):
-    """Each candidate at full, feed (168x94) and medium size, to judge
-    legibility the way a phone shows it."""
+    """Each candidate at full, feed (168x94) and medium size."""
     ims = [Image.open(p).convert("RGB") for p in paths]
     n = len(ims)
     sheet = Image.new("RGB", (1280, n * 380 + 20), (20, 20, 20))

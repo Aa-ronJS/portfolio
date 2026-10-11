@@ -266,13 +266,24 @@ and the one the owner called out: a photo with a dark gradient and
 white words is the look of every automated channel. The thumbnails
 that win in this niche lift the subject off the background onto a
 bold colour field with an outline, use condensed type with one word in
-the accent colour, and keep a face doing the thing. The compositor
-(`channel/thumb.py`) now does exactly that — rembg lifts the subject,
-five deep colour fields rotate per episode, Anton for the type, the
-number or last word in accent — and renders the washed photo as a
-fallback; Claude picks between the two. `thumbnails/` holds every
-variant with a feed-size sheet; `thumbnail.jpg` is A on the navy
-field.
+the accent colour, and keep a face doing the thing. The first rebuild put the
+subject on a striped colour field, which the owner rightly called
+still bland. So the council did what it should have done first: pulled
+the actual top thumbnails of the channels this one competes with
+(`benchmarks/`, 28 of them, counted trait by trait) and rebuilt to
+what they share — a face toward the camera cropped chest-up so the head
+is a third of the frame (26/28), two to four words at a fifth of the
+height per line with one boxed (22/28, 20/28), a second element that
+explains the idea such as an object or an arrow (24/28), and the real
+environment blurred and dimmed behind (27/28). The compositor
+(`channel/thumb.py`) now does that: the packaging pass names a
+camera-facing subject and a prop object, both are fetched as
+photographs, rembg lifts them, the subject is head-cropped and boosted
+over the blurred original, Anton type with the key word in a filled
+box, a `prop` layout with the object and an arrow, and the washed
+photo as fallback. `thumbnails/` holds three subjects × three layouts
+with a feed-size sheet; `thumbnail.jpg` is the seaside dad and baby
+with "3 MINUTES A DAY".
 
 ---
 

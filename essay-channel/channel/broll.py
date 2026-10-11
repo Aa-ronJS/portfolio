@@ -231,20 +231,23 @@ def plan_broll(cfg, ep, provider, llm=None):
             s["motion"] = _motion(rng, s["kind"])
     # photographs for the thumbnail: sharper than a video frame, and a
     # person doing the thing is what the thumbnail wants
-    thumb_cands = []
+    thumb_cands, prop_cands = [], []
+    script = ep.load("script") or {}
     if hasattr(provider, "photos"):
         seen = set()
-        for s in shots[:4]:
-            for q in (s["query"], s["alt"]):
-                if len(thumb_cands) >= 4 or not q:
-                    break
+        queries = [script.get("thumbnail_subject") or ""]
+        queries += [q for s in shots[:4] for q in (s["query"], s["alt"])]
+        for q in queries:
+            if len(thumb_cands) >= 5 or not q:
+                continue
+            if True:
                 try:
                     hits = provider.photos(q, n=4)
                 except Exception as e:
                     print("broll: thumbnail photo search %r failed: %s" % (q, e))
                     hits = []
                 for h in hits:
-                    if h["id"] in seen or len(thumb_cands) >= 4:
+                    if h["id"] in seen or len(thumb_cands) >= 5:
                         continue
                     path = _fetch(h, cache)
                     if path:
@@ -252,9 +255,23 @@ def plan_broll(cfg, ep, provider, llm=None):
                         credits[h["id"]] = {"credit": h["credit"], "page": h["page"]}
                         thumb_cands.append({"id": h["id"], "query": q,
                                             "file": os.path.relpath(path, cfg["_root"])})
+        prop_q = script.get("thumbnail_prop") or ""
+        if prop_q:
+            try:
+                hits = provider.photos(prop_q + " isolated", n=3) or provider.photos(prop_q, n=3)
+            except Exception as e:
+                print("broll: prop search %r failed: %s" % (prop_q, e))
+                hits = []
+            for h in hits[:2]:
+                path = _fetch(h, cache)
+                if path:
+                    credits[h["id"]] = {"credit": h["credit"], "page": h["page"]}
+                    prop_cands.append({"id": h["id"], "query": prop_q,
+                                       "file": os.path.relpath(path, cfg["_root"])})
     plan = {"shots": [_clean(s) for s in shots], "credits": credits,
             "provider": provider.name, "picks": picks,
-            "vision": bool(vision), "thumbnail_candidates": thumb_cands}
+            "vision": bool(vision), "thumbnail_candidates": thumb_cands,
+            "prop_candidates": prop_cands}
     ep.save("broll", plan)
     return ep.load("broll")
 

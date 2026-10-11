@@ -140,6 +140,8 @@ def write_script(cfg, llm, ep):
                              if x["candidate"] != pick["chosen"]]
     s["alternate_titles"] = [titles[i] for i in s["alternate_titles"]][:5]
     s["thumbnail_text"] = texts[pick["thumbnail"]]
+    s["thumbnail_subject"] = " ".join(str(p.get("thumbnail_subject") or "").split())[:60]
+    s["thumbnail_prop"] = " ".join(str(p.get("thumbnail_prop") or "").split())[:60]
     s["tags"] = [t.strip() for t in p.get("tags") or [] if t.strip()][:15]
     s["scores"] = history[-1]["scores"] if history else {}
     s["council"] = {"package": {k: v for k, v in pick.items()},

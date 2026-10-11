@@ -73,6 +73,8 @@ PACKAGE = {
     "titles": ["Why Every Shipping Container Is the Same Size",
                "The Box That Measures the World"],
     "thumbnail_texts": ["One Box Rules", "8 Feet Wide"],
+    "thumbnail_subject": "dock worker looking at camera",
+    "thumbnail_prop": "shipping container model",
     "summary": "Almost everything you own has crossed an ocean in a steel box of "
                "exactly the same dimensions. This is how one trucker's idea became "
                "the world's measuring stick.",

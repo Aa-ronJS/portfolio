@@ -16,11 +16,19 @@ What one episode from this channel looks like, for the brief now in
   episode), the script (seat by seat, with the chair's edits, which are
   applied in the files here) and thumbnails (four variants, judged at
   feed size).
-- `thumbnails/` — three photos × two layouts from the real compositor
-  (`channel/thumb.py`): the subject lifted onto a colour field, and the
-  washed photo; plus a sheet showing each at full, feed and medium size.
-- `thumbnail.jpg` — the chosen one (A, cut-out, navy). Photos: Kampus
-  Production and Ketut Subiyanto via Pexels (Pexels licence).
+- `benchmarks/` — the top thumbnails of the competing channels beside
+  the channel's own, with the traits counted; the rules the compositor
+  follows came from these.
+- `thumbnails/` — three subjects × three layouts from the real
+  compositor (`channel/thumb.py`): `hero` (the subject lifted and
+  head-cropped over the blurred original), `prop` (plus an object and an
+  arrow), `wash` (the fallback); and a sheet at full, feed and medium
+  size.
+- `thumbnail.jpg` — the chosen one (A-hero). Photos via Pexels under
+  the Pexels licence, IDs 4260395, 7499410, 6624446 (fathers), 9944852
+  (timer) and 19730401 (stopwatch); each photographer is credited on
+  the photo's Pexels page, and a live run writes the credit into the
+  video description automatically.
 
 How it was made: this example was written in a Claude Code session,
 not by a scheduled run, because the session had no API keys. The

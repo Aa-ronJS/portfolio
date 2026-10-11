@@ -363,7 +363,14 @@ def thumbnail(cfg, ep, final, llm=None):
     record["frame"] = choice
     text = script.get("thumbnail_text") or script["title"]
     seed = int(hashlib_sha1(ep.slug), 16)
-    layouts = thumb.render(cands[choice], text, cfg["look"]["accent"], size, seed, out_dir)
+    prop = None
+    for c in plan.get("prop_candidates") or []:
+        pp = os.path.join(cfg["_root"], c["file"])
+        if os.path.exists(pp):
+            prop = pp
+            break
+    layouts = thumb.render(cands[choice], text, cfg["look"]["accent"], size, seed, out_dir,
+                           prop_path=prop)
     pick = 0
     if llm is not None and len(layouts) > 1:
         try:

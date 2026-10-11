@@ -383,11 +383,15 @@ PICK_SCHEMA = {
 
 def pick_thumbnail(n):
     return (
-        "These %d frames are candidates for a YouTube thumbnail that will "
-        "carry a few large words. Choose the frame with the clearest single "
-        "subject, strong contrast, and room for text in the lower third; "
-        "avoid frames with text, logos, faces mid-expression, or motion "
-        "blur. Answer the frame number (1-%d)." % (n, n))
+        "These %d images are candidates for the subject of a YouTube "
+        "thumbnail; the subject will be lifted off its background, cropped "
+        "head-and-shoulders, and set beside large words. The thumbnails "
+        "that win in this channel's niche nearly all show a face toward "
+        "the camera with a readable expression. Choose the image with the "
+        "clearest such face (one adult, sharp, well lit, the expression "
+        "matching the video's feeling), not a back view, not a face "
+        "looking down, not a crowd; avoid text, logos and motion blur. "
+        "Answer the image number (1-%d)." % (n, n))
 
 
 THUMB_SCHEMA = {
@@ -649,8 +653,15 @@ def package_slate(cfg, script_json):
         "and two of your own. Each under 55 characters, important words "
         "first, no ALL CAPS, no exclamation marks. Then FOUR thumbnail "
         "texts of at most four words, each saying something a title does "
-        "not. Then a two-to-three sentence summary for the description, "
-        "and 8-12 tags a viewer would type.\n\nSCRIPT\n%s" % script_json)
+        "not. Then the thumbnail's picture: `thumbnail_subject`, a stock-"
+        "photo query for a person who stands for the viewer, facing the "
+        "camera with a readable expression, head and shoulders ('tired "
+        "father looking at camera', 'dad holding toddler smiling at "
+        "camera'); and `thumbnail_prop`, a query for one object that "
+        "stands for the video's idea, photographed alone ('kitchen timer', "
+        "'alarm clock', 'kettlebell on floor'). Then a two-to-three "
+        "sentence summary for the description, and 8-12 tags a viewer "
+        "would type.\n\nSCRIPT\n%s" % script_json)
 
 
 PACKAGE_SLATE_SCHEMA = {
@@ -658,10 +669,13 @@ PACKAGE_SLATE_SCHEMA = {
     "properties": {
         "titles": {"type": "array", "items": {"type": "string"}, "minItems": 1},
         "thumbnail_texts": {"type": "array", "items": {"type": "string"}, "minItems": 1},
+        "thumbnail_subject": {"type": "string"},
+        "thumbnail_prop": {"type": "string"},
         "summary": {"type": "string"},
         "tags": {"type": "array", "items": {"type": "string"}},
     },
-    "required": ["titles", "thumbnail_texts", "summary", "tags"],
+    "required": ["titles", "thumbnail_texts", "thumbnail_subject", "thumbnail_prop",
+                 "summary", "tags"],
     "additionalProperties": False,
 }
 
