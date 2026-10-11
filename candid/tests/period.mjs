@@ -40,7 +40,8 @@ const admin = (await import("../api/admin.js")).default, checkout = (await impor
 const E = await import("../api/_engine.js");
 
 let fails = 0; const ok = (c, m) => { console.log((c ? "PASS " : "FAIL ") + m); if (!c) fails++; };
-let clock = Date.parse("2026-10-12T09:00:00Z"); const realNow = Date.now; Date.now = () => clock; const day = (n) => { clock += n * 86400000; };
+// The clock starts at real time: sign-in codes expire on the database's own clock, so a pinned date would make them look expired.
+const realNow = Date.now; let clock = realNow(); Date.now = () => clock; const day = (n) => { clock += n * 86400000; };
 function res() { return { statusCode: 0, headers: {}, body: "", setHeader(k, v) { this.headers[k.toLowerCase()] = v; }, end(b) { this.body = b || ""; } }; }
 let cookie = "";
 async function call(fn, method, url, body, hdr = {}, raw) {
