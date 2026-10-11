@@ -1,0 +1,155 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>Candid</title>
+<meta name="robots" content="noindex">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Figtree:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap">
+<link rel="stylesheet" href="/app.css">
+</head>
+<body>
+<div class="phone" id="app"><div class="empty"><span class="spin"></span></div></div>
+<div class="toasts" id="toasts"></div>
+<script>
+'use strict';
+// The reviewer's page. The link is the seat: /r/<token>. Everything renders from api/reviewer.js's view.
+// The review draft is saved to the server as it is typed and mirrored in this browser, so a lost tab or a lost
+// bar of signal loses nothing.
+const FEE = 20;
+const FLAG_REASONS = ['untruthful', 'unfairly positive', 'unfairly negative', 'not about this product', 'abusive', 'pasted from elsewhere'];
+const token = (location.pathname.match(/\/r\/([A-Za-z0-9_-]+)/) || [])[1] || new URLSearchParams(location.search).get('token') || '';
+const V = { view: null, error: null, busy: null, step: 0, bugForm: false, dup: null, saving: '' };
+const $ = (s) => document.querySelector(s);
+const esc = (s) => String(s ?? '').replace(/[&<>"]/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
+const money = (n) => '$' + Number(n).toFixed(0);
+const fmt = (ms) => ms ? new Date(ms).toLocaleDateString('en-AU', { day: 'numeric', month: 'short' }) : '';
+const btn = (act, label, extra = '', cls = 'btn') => `<button class="${cls}" data-act="${act}" ${extra}>${label}</button>`;
+const chip = (label, kind = '', plain = false) => `<span class="chip ${kind}${plain ? ' plain' : ''}">${esc(label)}</span>`;
+function toast(msg, bad) { const t = document.createElement('div'); t.className = 'toast' + (bad ? ' bad' : ''); t.textContent = msg; $('#toasts').appendChild(t); setTimeout(() => t.remove(), bad ? 4200 : 2600); }
+const store = { get: (k) => { try { return JSON.parse(localStorage.getItem(k)) } catch (e) { return null } }, set: (k, v) => { try { localStorage.setItem(k, JSON.stringify(v)) } catch (e) {} }, del: (k) => { try { localStorage.removeItem(k) } catch (e) {} } };
+const DK = 'candid-draft-' + token;
+
+async function api(body) {
+  const r = await fetch('/api/reviewer' + (body ? '' : '?token=' + encodeURIComponent(token)), body ? { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify({ token, ...body }) } : {});
+  let j = {}; try { j = await r.json(); } catch (e) {}
+  if (!j.ok) throw new Error(j.error || 'Something went wrong (' + r.status + ')');
+  return j;
+}
+async function load() { try { const j = await api(); V.view = j.view; V.error = null; } catch (e) { V.error = e.message; } render(); }
+async function act(body, msg) { V.busy = 'Saving'; render(); try { const j = await api(body); V.view = j.view; if (msg) toast(msg); } catch (e) { toast(e.message, true); } V.busy = null; render(); }
+
+// ---------- draft autosave ----------
+let saveTimer = null, lastSent = '';
+function readForm() { const b = V.view.brief; return { sections: b.wants.map((_, i) => ($('#sec' + i) || {}).value || ''), closing: [0, 1, 2].map((i) => ($('#clo' + i) || {}).value || ''), received: !!($('#received') || {}).checked, at: Date.now() }; }
+function queueSave() {
+  const d = readForm(); store.set(DK, d); V.saving = 'Saving…'; const el = $('#savestate'); if (el) el.textContent = V.saving;
+  clearTimeout(saveTimer); saveTimer = setTimeout(async () => { const s = JSON.stringify({ s: d.sections, c: d.closing, r: d.received }); if (s === lastSent) { if ($('#savestate')) $('#savestate').textContent = 'Saved'; return; }
+    try { await api({ action: 'draft', sections: d.sections, closing: d.closing, received: d.received }); lastSent = s; V.saving = 'Saved'; } catch (e) { V.saving = 'Saved on this phone, not online yet'; } if ($('#savestate')) $('#savestate').textContent = V.saving; }, 900);
+}
+function draftFor() { const server = V.view.me.draft, local = store.get(DK); if (local && (!server || local.at > server.at)) return local; return server; }
+
+// ---------- views ----------
+function render() {
+  const app = $('#app');
+  if (V.error) { app.innerHTML = `<div class="panel"><div class="hero"><h1>${esc(V.error)}</h1><p class="muted">Ask the business for a fresh link.</p></div></div>`; return; }
+  if (!V.view) return;
+  const v = V.view, me = v.me, p = v.period;
+  const top = `<div class="bar-top"><div class="brand" style="padding:0"><span class="mark">C</span>Candid</div><span class="sm muted">${esc(me.pseudonym)} · rep ${me.rep}</span></div>`;
+  app.innerHTML = top + (V.busy ? `<div class="empty"><span class="spin"></span>&nbsp; ${esc(V.busy)}</div>` : body(v));
+}
+function body(v) {
+  const me = v.me, p = v.period, b = v.brief;
+  if (!me.current && me.seat !== 'invited') return `<div class="panel"><div class="hero"><h1>This period has ended</h1><p class="muted">Thanks for taking part. ${me.payout ? 'Payout: ' + me.payout + '.' : ''}</p></div></div>` + history(v);
+  if (me.seat === 'invited') return invite(v);
+  if (me.seat === 'released') return `<div class="panel"><div class="hero"><h1>This seat has closed</h1><p class="muted">The deadline passed or the invitation was declined.</p></div></div>`;
+  if (V.bugForm) return bugForm(v);
+  const parts = [];
+  if (!v.review && me.seat === 'accepted' && p.state === 'open') parts.push(reviewForm(v));
+  else if (v.review) parts.push(`<div class="panel"><div class="head"><h2>Your review</h2>${chip('Submitted ' + fmt(v.review.at), 'good')}</div>${v.review.scores ? `<div class="body"><div class="tiles"><div class="tile"><div class="k">Usefulness</div><div class="v">${v.review.scores.usefulness}</div></div><div class="tile"><div class="k">On brief</div><div class="v">${v.review.scores.onBrief}</div></div><div class="tile"><div class="k">Quality</div><div class="v">${v.review.scores.quality}</div></div></div>${v.review.status ? `<p class="sm" style="margin-top:10px">${esc(v.business)} marked it: <strong>${esc(v.review.status)}</strong>. That changes nothing about payment.</p>` : ''}</div>` : '<div class="body sm muted">Scored when peer rating ends.</div>'}</div>`);
+  else if (me.seat === 'accepted') parts.push(`<div class="callout">The open stage has ended, so no review can be submitted now.</div>`);
+  if (p.state === 'rating' && v.toRate.length && !v.ratingsDone) parts.push(rateForm(v));
+  else if (p.state === 'rating' && v.ratingsDone) parts.push(`<div class="callout good">Ratings in. Your fee releases when the period settles.</div>`);
+  v.flags.forEach((f) => parts.push(`<div class="panel"><div class="head"><h2>Flag · ${esc(f.reason)}</h2>${chip(f.state === 'decided' ? (f.decision === 'breach' ? 'Breach' : f.decision === 'clear' ? 'Cleared' : 'Low quality') : f.state === 'cleared' ? 'Cleared' : 'Open', f.state === 'decided' && f.decision === 'breach' ? 'bad' : f.state === 'queued' ? 'warn' : 'good')}</div><div class="body stack">${f.state === 'queued' && !f.reply ? `<p class="sm muted">A person will decide within 7 days. You can reply once.</p><div class="field"><textarea id="reply-${f.id}" placeholder="Your reply"></textarea></div><div>${btn('reply', 'Send', `data-id="${f.id}"`, 'btn primary')}</div>` : f.reply ? `<p class="sm">You replied: “${esc(f.reply)}”</p>` : ''}</div></div>`));
+  parts.push(`<div class="tiles"><div class="tile"><div class="k">Review fee</div><div class="v">${money(FEE)}</div><div class="s">${me.payout ? ({ released: 'released · being paid', paid: 'paid', held: 'held · ' + me.payoutReason, forfeited: 'forfeited · ' + me.payoutReason, pending: 'pending' })[me.payout] : 'after review + ratings'}</div></div><div class="tile"><div class="k">Issue payouts</div><div class="v">${money(v.bugs.filter((x) => x.unlocked).reduce((s, x) => s + (x.paidOut || 0), 0))}</div><div class="s">${v.bugs.filter((x) => x.payout === 'paid').length} paid</div></div></div>`);
+  parts.push(issuesPanel(v));
+  return parts.join('');
+}
+function invite(v) {
+  const b = v.brief, st = V.step;
+  if (st === 0) return `<div class="panel"><div class="body stack"><span class="sm muted">Invitation</span><h2>${esc(v.business)} wants your feedback</h2><dl class="kv"><dt>The job</dt><dd>${esc(b.job)}</dd><dt>You get</dt><dd>${money(FEE)} for a written review and three short peer ratings, paid by PayID</dd><dt>Who sees it</dt><dd>Only ${esc(v.business)}. Never published. They see a pseudonym, not your name.</dd></dl><div class="row">${btn('step', 'Accept', 'data-v="1"', 'btn primary lg')}${btn('decline', 'Decline', '', 'btn ghost')}</div></div></div>`;
+  if (st === 1) return `<div class="panel"><div class="body stack"><span class="sm muted">One check</span><h2>${esc(b.eligibility)}</h2><p class="muted">Is that you?</p><div class="row">${btn('step', 'Yes, that is me', 'data-v="2"', 'btn primary lg')}${btn('decline', 'No', '', 'btn ghost')}</div></div></div>`;
+  return `<div class="panel"><div class="body stack"><span class="sm muted">Last step</span><h2>Where to pay you</h2>
+    <div class="field"><label for="name">Your name</label><input type="text" id="name" autocomplete="name"></div>
+    <div class="field"><label for="email">Email</label><input type="email" id="email" autocomplete="email"><div class="help">So you can get this link back if you lose it.</div></div>
+    <div class="field"><label for="payid">PayID (mobile number or email)</label><input type="text" id="payid" autocomplete="tel"></div>
+    <div class="field"><label for="knew">Did you know ${esc(v.business)} before today?</label><select id="knew"><option value="">Choose</option><option value="no">No</option><option value="yes">Yes</option><option value="not sure">Not sure</option></select><div class="help">${esc(v.business)} only ever sees a count across all reviewers.</div></div>
+    <div class="row">${btn('accept', 'Take the seat', '', 'btn primary lg')}</div></div></div>`;
+}
+function reviewForm(v) {
+  const b = v.brief, d = draftFor() || { sections: [], closing: [], received: false };
+  return `<div class="panel"><div class="head"><h2>Your review</h2><span class="sm muted" id="savestate">${d.at ? 'Draft restored' : ''}</span></div><div class="body stack">
+    <p class="sm muted">Deadline ${fmt(v.me.acceptedAt + 14 * 86400000)}. Specific beats kind: what happened, when, what you expected.</p>
+    <div class="row"><input type="checkbox" id="received" ${d.received ? 'checked' : ''}><label for="received" style="margin:0">I have received the free product or job</label></div>
+    ${b.wants.map((q, i) => `<div class="field"><label for="sec${i}">${esc(q)}</label><textarea id="sec${i}" rows="4">${esc(d.sections[i] || '')}</textarea></div>`).join('')}
+    ${['What did you try to do?', 'Where did you stop, if anywhere?', 'What would you pay for this?'].map((q, i) => `<div class="field"><label for="clo${i}">${esc(q)}</label><input type="text" id="clo${i}" value="${esc(d.closing[i] || '')}"></div>`).join('')}
+    <div class="sticky-save"><span class="sm muted">${money(FEE)} after you also rate three peers</span>${btn('submit', 'Submit review', '', 'btn primary')}</div></div></div>`;
+}
+function issuesPanel(v) {
+  const can = ['accepted', 'submitted', 'rated'].includes(v.me.seat) && v.period.state === 'open';
+  return `<div class="panel"><div class="head"><h2>Issues</h2>${can ? btn('bugform', 'Report an issue', '', 'btn sm primary') : ''}</div><div class="body tight">
+    <p class="sm muted" style="padding:10px 16px 0">Things that make no sense, are not done, or should be done differently. Paid when the business unlocks them, by peer score.</p>
+    ${v.bugs.length ? `<div class="list">${v.bugs.map((x) => `<div><span>${esc(x.title)}</span>${x.dupOf ? chip('Confirmation', '', true) : x.unlocked ? chip(`Unlocked · ${money(x.paidOut)} to you${x.payout === 'paid' ? ' · paid' : ''}`, 'good') : x.scores ? (x.tier ? chip(`${x.tier.name} · ${money(x.tier.price)}`, 'accent') : chip('Not listed', 'bad')) : chip('Awaiting peer score', 'warn')}</div>`).join('')}</div>` : '<div class="empty">Nothing reported yet</div>'}
+    ${v.published.length ? `<div class="head" style="border-top:1px solid var(--line)"><h3 class="muted">Already on the list</h3><span class="xs muted">not paid again</span></div><div class="list">${v.published.map((x) => `<div><span class="sm">${esc(x.title)}</span>${chip(x.status, '', true)}</div>`).join('')}</div>` : ''}</div></div>`;
+}
+function bugForm(v) {
+  const d = V.dup;
+  return `<div class="panel"><div class="head"><h2>Report an issue</h2><button class="x" data-act="bugform-close" aria-label="Close">✕</button></div><div class="body stack">
+    ${d ? `<div class="callout">Looks like “${esc(d.match.title)}”, which is already on the list.<div class="row" style="margin-top:8px">${d.match.known ? '' : btn('dup-confirm', 'Confirm that one instead')}${btn('dup-anyway', 'Mine is different', '', 'btn primary')}</div></div>` : ''}
+    <div class="field"><label for="bt">Title</label><input type="text" id="bt" value="${esc(d ? d.data.title : '')}"></div>
+    <div class="field"><label for="bh">What happened</label><textarea id="bh" rows="4">${esc(d ? d.data.happened : '')}</textarea></div>
+    <div class="field"><label for="bi">What should happen instead</label><input type="text" id="bi" value="${esc(d ? d.data.instead : '')}"></div>
+    <div class="field"><label for="bw">Where in the journey</label><input type="text" id="bw" value="${esc(d ? d.data.where : '')}"></div>
+    ${d ? '' : `<div class="row">${btn('bug-submit', 'Submit', '', 'btn primary')}</div>`}</div></div>`;
+}
+function rateForm(v) {
+  return `<div class="panel"><div class="head"><h2>Rate three peers</h2><span class="sm muted">blind · text only</span></div><div class="body stack"><p class="sm muted">Your fee releases after this.</p>
+    ${v.toRate.map((rv, i) => `<div class="stack" style="padding-top:8px;border-top:1px solid var(--line)"><h3>Review ${i + 1} of ${v.toRate.length}</h3><div class="qa"><div class="a">${esc(rv.sections.join('\n\n'))}</div></div><div class="rate">
+      <span>Truthful as far as you can tell</span><select id="rt-${rv.id}-truthful"><option>yes</option><option>no</option></select>
+      <span>Fair</span><select id="rt-${rv.id}-fair"><option>yes</option><option>no</option></select>
+      <span>Matches your experience</span><select id="rt-${rv.id}-matches"><option>yes</option><option>partly</option><option>no</option></select>
+      <span>Useful, 1 to 5</span><select id="rt-${rv.id}-useful">${[5, 4, 3, 2, 1].map((n) => `<option ${n === 3 ? 'selected' : ''}>${n}</option>`).join('')}</select>
+      <span>Flag</span><select id="rt-${rv.id}-flag"><option value="">none</option>${FLAG_REASONS.map((x) => `<option>${x}</option>`).join('')}</select></div></div>`).join('')}
+    <div class="row">${btn('ratings', 'Submit ratings', '', 'btn primary lg')}</div></div></div>`;
+}
+const history = (v) => v.review ? `<div class="panel"><div class="head"><h2>Your review</h2>${v.review.scores ? chip('usefulness ' + v.review.scores.usefulness, 'accent') : ''}</div></div>` : '';
+
+// ---------- events ----------
+document.addEventListener('input', (ev) => { if (/^(sec\d|clo\d)$/.test(ev.target.id)) queueSave(); });
+document.addEventListener('change', (ev) => { if (ev.target.id === 'received') queueSave(); });
+document.addEventListener('click', async (ev) => {
+  const el = ev.target.closest('[data-act]'); if (!el) return; const act = el.dataset.act, id = el.dataset.id;
+  if (act === 'step') { V.step = Number(el.dataset.v); return render(); }
+  if (act === 'decline') return act_({ action: 'decline' });
+  if (act === 'accept') { const knew = $('#knew').value; if (!knew) return toast('Say whether you knew the business', true); return act_({ action: 'accept', eligible: true, knew, name: $('#name').value, email: $('#email').value, payid: $('#payid').value }, 'Seat taken'); }
+  if (act === 'submit') { const d = readForm(); if (d.sections.some((s) => s.trim().length < 20)) return toast('Every section needs a real answer', true); store.del(DK); await act_({ action: 'submitReview', sections: d.sections, closing: d.closing }, 'Review submitted'); return; }
+  if (act === 'bugform') { V.bugForm = true; V.dup = null; return render(); }
+  if (act === 'bugform-close') { V.bugForm = false; V.dup = null; return render(); }
+  if (act === 'bug-submit') {
+    const data = { title: $('#bt').value.trim(), happened: $('#bh').value.trim(), instead: $('#bi').value.trim(), where: $('#bw').value.trim() };
+    if (!data.title || data.happened.length < 10) return toast('A title and what happened are needed', true);
+    V.busy = 'Checking the list'; render();
+    try { const j = await api({ action: 'checkDup', title: data.title, happened: data.happened }); V.busy = null; if (j.match) { V.dup = { data, match: j.match }; return render(); } } catch (e) { V.busy = null; }
+    await act_({ action: 'submitBug', ...data }, 'Issue reported'); V.bugForm = false; return render();
+  }
+  if (act === 'dup-confirm') { const d = V.dup; V.dup = null; await act_({ action: 'submitBug', ...d.data, dupOf: d.match.id }, 'Confirmation added'); V.bugForm = false; return render(); }
+  if (act === 'dup-anyway') { const d = V.dup; V.dup = null; await act_({ action: 'submitBug', ...d.data }, 'Issue reported'); V.bugForm = false; return render(); }
+  if (act === 'ratings') { const entries = V.view.toRate.map((rv) => ({ reviewId: rv.id, truthful: $(`#rt-${rv.id}-truthful`).value === 'yes', fair: $(`#rt-${rv.id}-fair`).value === 'yes', matches: $(`#rt-${rv.id}-matches`).value, useful: Number($(`#rt-${rv.id}-useful`).value), flag: $(`#rt-${rv.id}-flag`).value || null })); return act_({ action: 'submitRatings', entries }, 'Ratings submitted'); }
+  if (act === 'reply') { const t = $('#reply-' + id).value.trim(); if (!t) return; return act_({ action: 'reply', flagId: id, text: t }, 'Reply sent'); }
+});
+async function act_(body, msg) { await act(body, msg); }
+document.addEventListener('visibilitychange', () => { if (!document.hidden && !V.bugForm && !(V.view && V.view.me.seat === 'accepted' && !V.view.review)) load(); });
+if (!token) { V.error = 'This link is not valid'; render(); } else load();
+</script>
+</body>
+</html>

@@ -51,10 +51,14 @@ Three independent things live here:
   every button must still work with its word
   (`tests/apptest/pics.cjs`).
 
-- **`feedback-demo/`** — a one-file clickable demo of a paid, private,
-  peer-checked feedback platform (an idea under assessment, not a
-  product). No build step; open `index.html` directly. The spec it
-  implements lives in a Claude Doc, not in the repo.
+- **Candid** — paid, private, peer-checked feedback (a pilot, built to
+  test on Aaron's own products). `candid/` is one Vercel project, no
+  build step: `public/` is the owner app and the reviewer page
+  (`/r/<token>`), `api/` the handlers, `api/_engine.js` the whole rule
+  set, `npm test` runs a full period on pglite and both pages in
+  Chromium. Start with `candid/README.md`. `feedback-demo/` is the
+  earlier one-file sandbox demo of the same idea with simulated
+  reviewers; the spec both follow lives in a Claude Doc.
 
 The portfolio site and the pipeline share nothing except
 `public/fonts/satoshi-var.woff2`, which the pipeline ships converted to
