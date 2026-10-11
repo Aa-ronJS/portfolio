@@ -6,3 +6,13 @@ node_modules/
 .env
 .env.*
 !.env.example
+
+# essay-channel: generated media stays out of git; the record (json/md) stays in
+essay-channel/cache/
+essay-channel/episodes/*/voice/
+essay-channel/episodes/*/work/
+essay-channel/episodes/*/*.mp4
+essay-channel/episodes/*/*.ass
+essay-channel/episodes/*/thumbnail.jpg
+essay-channel/music/*
+!essay-channel/music/README.md

@@ -1,0 +1,124 @@
+# The essay channel runs itself: every scheduled run makes one episode
+# (research, script, voice, b-roll, music, cut) and schedules it into
+# the next free release slot. Without the secrets below the job runs the
+# offline tests only, so a fork or a fresh clone stays green.
+#
+# Secrets to add (Settings → Secrets and variables → Actions):
+#   ANTHROPIC_API_KEY     research, topics and the script
+#   ELEVENLABS_API_KEY    narration (or OPENAI_API_KEY with voice.provider: openai)
+#   PEXELS_API_KEY        stock footage (or PIXABAY_API_KEY)
+#   YT_CLIENT_ID, YT_CLIENT_SECRET, YT_REFRESH_TOKEN   from `channel.py auth`
+#   JAMENDO_CLIENT_ID     only if music.jamendo is on
+
+name: essay-channel
+
+on:
+  schedule:
+    - cron: "17 2 * * 1,3,5"      # Mon/Wed/Fri 02:17 UTC: an episode before each slot
+  workflow_dispatch:
+    inputs:
+      topic:
+        description: "Make this topic instead of letting the channel pick"
+        required: false
+      dry_run:
+        description: "Make the video but do not upload"
+        type: boolean
+        default: false
+  pull_request:
+    paths: ["essay-channel/**", ".github/workflows/essay-channel.yml"]
+
+concurrency:
+  group: essay-channel
+  cancel-in-progress: false
+
+permissions:
+  contents: write
+
+jobs:
+  channel:
+    runs-on: ubuntu-latest
+    timeout-minutes: 90
+    defaults:
+      run:
+        working-directory: essay-channel
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event_name == 'pull_request' && github.sha || 'master' }}
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Install ffmpeg and Python deps
+        run: |
+          sudo apt-get update -qq && sudo apt-get install -y -qq ffmpeg fonts-dejavu-core
+          pip install -q -r requirements.txt
+
+      - name: Offline tests
+        run: python3 -m unittest -v
+
+      - name: Decide whether this run can publish
+        id: keys
+        env:
+          ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
+          YT_REFRESH_TOKEN: ${{ secrets.YT_REFRESH_TOKEN }}
+        run: |
+          if [ "${{ github.event_name }}" != "pull_request" ] && [ -n "$ANTHROPIC_API_KEY" ] && [ -n "$YT_REFRESH_TOKEN" ]; then
+            echo "live=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "live=false" >> "$GITHUB_OUTPUT"
+            echo "no ANTHROPIC_API_KEY / YT_REFRESH_TOKEN secrets (or this is a PR): tests only"
+          fi
+
+      - name: Cache stock footage and music between runs
+        if: steps.keys.outputs.live == 'true'
+        uses: actions/cache@v4
+        with:
+          path: essay-channel/cache
+          key: essay-channel-cache-${{ github.run_id }}
+          restore-keys: essay-channel-cache-
+
+      - name: Make and publish the next episode
+        if: steps.keys.outputs.live == 'true'
+        env:
+          ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
+          ELEVENLABS_API_KEY: ${{ secrets.ELEVENLABS_API_KEY }}
+          OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
+          PEXELS_API_KEY: ${{ secrets.PEXELS_API_KEY }}
+          PIXABAY_API_KEY: ${{ secrets.PIXABAY_API_KEY }}
+          JAMENDO_CLIENT_ID: ${{ secrets.JAMENDO_CLIENT_ID }}
+          YT_CLIENT_ID: ${{ secrets.YT_CLIENT_ID }}
+          YT_CLIENT_SECRET: ${{ secrets.YT_CLIENT_SECRET }}
+          YT_REFRESH_TOKEN: ${{ secrets.YT_REFRESH_TOKEN }}
+          TOPIC: ${{ github.event.inputs.topic }}
+          DRY_RUN: ${{ github.event.inputs.dry_run }}
+        run: |
+          set -- run
+          if [ -n "$TOPIC" ]; then set -- "$@" --topic "$TOPIC"; fi
+          if [ "$DRY_RUN" = "true" ]; then set -- "$@" --dry-run; fi
+          python3 channel.py "$@"
+
+      - name: Keep the video for a fortnight
+        if: steps.keys.outputs.live == 'true' && always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: episode-${{ github.run_number }}
+          path: |
+            essay-channel/episodes/*/final.mp4
+            essay-channel/episodes/*/thumbnail.jpg
+          retention-days: 14
+          if-no-files-found: ignore
+
+      - name: Commit the record (script, research, ledger)
+        if: steps.keys.outputs.live == 'true' && always()
+        run: |
+          git config user.name "essay-channel"
+          git config user.email "essay-channel@users.noreply.github.com"
+          git add -A episodes
+          [ -f ledger.json ] && git add ledger.json
+          if git diff --cached --quiet; then echo "nothing new to record"; exit 0; fi
+          title=$(python3 -c "import json,glob;fs=sorted(glob.glob('episodes/*/publish.json'),key=lambda p:__import__('os').path.getmtime(p));print(json.load(open(fs[-1]))['title'] if fs else 'work in progress')")
+          git commit -q -m "Episode: $title"
+          git pull -q --rebase origin master
+          git push -q origin HEAD:master

@@ -1,0 +1,6 @@
+anthropic>=1.13
+pyyaml
+pillow
+# plus ffmpeg (with libass, libx264) on your PATH
+# optional, for word-accurate captions with a voice provider that has no timestamps:
+# faster-whisper

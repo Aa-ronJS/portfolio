@@ -1,6 +1,6 @@
 # portfolio — repo map for Claude sessions
 
-Three independent things live here:
+Four independent things live here:
 
 - **`public/`** — Aaron's portfolio site (one HTML file, no build step),
   deployed to https://aaronsteele.vercel.app via `npx vercel deploy
@@ -11,6 +11,17 @@ Three independent things live here:
   including a voice-directed mode where spoken stage directions stage
   the shots). Start with `animation-pipeline/CLAUDE.md`, then its
   `README.md`. Environment setup: `animation-pipeline/setup.sh`.
+
+- **`essay-channel/`** — a YouTube channel that runs itself: one brief
+  in `channel.yaml`, and a scheduled GitHub Action researches a topic
+  (Claude + web search), writes the script, voices it (ElevenLabs or
+  OpenAI), cuts stock footage (Pexels/Pixabay) with captions and
+  music, and uploads to YouTube into the next release slot. Start with
+  `essay-channel/README.md`; `python3 channel.py --fake run` makes a
+  whole episode offline, `python3 -m unittest` is the test suite. The
+  stages are files in `episodes/<slug>/`: the text record is committed,
+  media is not. It shares nothing with the animation pipeline (which
+  deliberately has no generated voice or writing — keep it that way).
 
 - **Chasem** — chases quotes and invoices for Australian tradies (painters also get quoting and measuring).
   The site is https://chasem.app; the app itself is https://go.chasem.app
