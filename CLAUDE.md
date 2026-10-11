@@ -1,6 +1,6 @@
 # portfolio — repo map for Claude sessions
 
-Three independent things live here:
+Four independent things live here:
 
 - **`public/`** — Aaron's portfolio site (one HTML file, no build step),
   deployed to https://aaronsteele.vercel.app via `npx vercel deploy
@@ -50,6 +50,12 @@ Three independent things live here:
   in hand, red when money is overdue. If `pics.js` fails to load,
   every button must still work with its word
   (`tests/apptest/pics.cjs`).
+
+- **`clan-saga/`** — a plan (no code yet) for a Claude-driven game mod:
+  a clan's oral history from Ancestors: The Humankind Odyssey through to
+  Homo sapiens, where the player invents fire, pottery and the wheel by
+  describing how. Built on Aaron's Windows PC, not here. Start with
+  `clan-saga/README.md`.
 
 The portfolio site and the pipeline share nothing except
 `public/fonts/satoshi-var.woff2`, which the pipeline ships converted to
