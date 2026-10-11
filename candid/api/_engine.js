@@ -5,8 +5,8 @@
 // and saves it back under a version check (api/_store.js). Nothing in this file touches the network or the clock
 // directly: `now` and `ai` come in from the caller, so the tests run the real rules on a fixed clock.
 //
-// The rules are the spec's: the brief freezes per period, credit is spent before text is shown, payouts never
-// wait on the business, AI only triages, a person decides, and a flag undecided for 7 days releases the payout.
+// Rules: the brief is locked per period, credit is spent before text is shown, payouts do not depend on the
+// business, AI triages and a person decides, and a flag left 7 days releases the payout.
 
 export const FEE = 20, FEE_PCT = 0.2, PRIOR = 60, PRIOR_N = 5;
 export const SEAT_COST = Math.round(FEE * (1 + FEE_PCT));
@@ -48,14 +48,14 @@ export const seated = (s) => allReviewers(s).filter((r) => s.period && r.periodN
 const targetOf = (s, f) => (f.targetType === "review" ? s.reviews : s.bugs).find((x) => x.id === f.targetId);
 function log(s, now, event, detail, vis) { s.log.push({ at: now, event, detail, vis: vis || { business: true, reviewers: [] }, periodNo: s.period ? s.period.no : 0 }); }
 function uid(rng) { return Math.floor((rng || Math.random)() * 2176782336).toString(36).padStart(6, "0") + Math.floor(Math.random() * 1296).toString(36).padStart(2, "0"); }
-// Reviewers are named to the business (name, state, photo, and their business for B2B) and anonymous only to
-// each other: peer rating shows text alone. Until a seat is accepted it is just "Seat n".
+// Reviewers are named to the business (name, state, photo, and their business for B2B). Peer rating shows text only.
+// A seat is "Seat n" until accepted.
 
 // ---------- business actions ----------
 export function saveBrief(s, now, a) {
   const b = { v: s.briefs.length + 1, kind: a.kind === "b2b" ? "b2b" : "b2c", product: clean(a.product, 400), audience: clean(a.audience, 400), job: clean(a.job, 600), wants: lines(a.wants, 200, 5),
     known: lines(a.known, 200, 12), wontChange: clean(a.wontChange, 400), eligibility: clean(a.eligibility, 300), at: now };
-  if (!b.product || !b.job || b.wants.length < 1 || !b.eligibility) fail("The brief needs a product, the job, at least one question and an eligibility rule");
+  if (!b.product || !b.job || b.wants.length < 1 || !b.eligibility) fail("Product, job, at least one question and eligibility are required");
   s.briefs.push(b);
   if (s.period && s.period.state === "draft") s.period.briefV = b.v;
   log(s, now, "Brief saved", `v${b.v}` + (s.period && !["draft", "closed"].includes(s.period.state) ? ` · period keeps v${s.period.briefV}` : ""));
@@ -126,18 +126,18 @@ export function unlock(s, now, id) {
 export function accept(s, now, id, a) {
   const r = s.reviewers[id]; if (!r) fail("Not found", 404);
   if (r.seat !== "invited") fail("This invitation has been used");
-  if (!s.period || !["recruiting", "open"].includes(s.period.state)) fail("This period is no longer taking reviewers");
+  if (!s.period || !["recruiting", "open"].includes(s.period.state)) fail("This period is closed to new reviewers");
   const knew = ["yes", "no", "not sure"].includes(a.knew) ? a.knew : fail("Say whether you knew the business");
-  const email = clean(a.email, 120).toLowerCase(); if (!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(email)) fail("A real email address is needed for the payout");
-  const payid = clean(a.payid, 120); if (!payid) fail("A PayID (phone or email) is needed for the payout");
+  const email = clean(a.email, 120).toLowerCase(); if (!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(email)) fail("Enter a valid email address");
+  const payid = clean(a.payid, 120); if (!payid) fail("Enter a PayID");
   if (a.eligible !== true) fail("The eligibility check must be confirmed");
-  const name = clean(a.name, 80); if (name.length < 2) fail("Your name is needed; the business sees who wrote the review");
+  const name = clean(a.name, 80); if (name.length < 2) fail("Name is required");
   const state = String(a.state || "").toUpperCase(); if (!AU_STATES.includes(state)) fail("Choose your state");
   const company = clean(a.company, 120), role = clean(a.role, 80);
-  if (brief(s).kind === "b2b" && !company) fail("Your business name is needed for this review");
+  if (brief(s).kind === "b2b" && !company) fail("Business name is required");
   // A returning reviewer (same email in this business) carries their reputation and strikes over.
   const same = Object.values(s.reviewers).find((x) => x.id !== id && x.periodNo === s.period.no && x.contact && x.contact.email === email && x.seat !== "released");
-  if (same) fail("That email already holds a seat in this period");
+  if (same) fail("This email already has a seat");
   const prior = Object.values(s.reviewers).filter((x) => x.id !== id && x.contact && x.contact.email === email).sort((a, b) => (b.acceptedAt || 0) - (a.acceptedAt || 0))[0];
   if (prior) { r.rep = { ...prior.rep }; r.strikes = prior.strikes; r.status = prior.status; }
   if (r.status === "banned" || r.status === "suspended") fail("This account cannot take part");
@@ -161,7 +161,7 @@ export async function submitReview(s, now, id, d, ai, rng) {
   const b = brief(s);
   const sections = (Array.isArray(d.sections) ? d.sections : []).map((x) => clean(x, 4000));
   const closing = (Array.isArray(d.closing) ? d.closing : []).map((x) => clean(x, 500));
-  if (sections.length !== b.wants.length || sections.some((x) => x.length < 20)) fail("Every section needs an answer of at least 20 characters");
+  if (sections.length !== b.wants.length || sections.some((x) => x.length < 20)) fail("Each section needs at least 20 characters");
   const rv = { id: uid(rng), periodNo: s.period.no, reviewerId: id, sections, closing, briefV: s.period.briefV, at: now, ratings: [], scores: null, status: null, consent: d.consent === true };
   const scored = await ai.scoreReview({ sections, closing }, b);
   rv.ai = { onBrief: clamp(scored.onBrief), quality: clamp(scored.quality), by: scored.by };
@@ -183,14 +183,14 @@ export async function checkDuplicate(s, id, d, ai) {
 export async function submitBug(s, now, id, d, dupOf, ai, rng) {
   const r = s.reviewers[id]; if (!r) fail("Not found", 404);
   if (!["accepted", "submitted", "rated"].includes(r.seat)) fail("Accept the invitation first");
-  if (s.period.state !== "open") fail("Issues can be reported while the period is open");
-  if (cur(s, s.bugs).filter((x) => x.reviewerId === id).length >= 20) fail("That is enough issues for one period");
+  if (s.period.state !== "open") fail("Issues can only be reported while the period is open");
+  if (cur(s, s.bugs).filter((x) => x.reviewerId === id).length >= 20) fail("Limit of 20 issues per period");
   const bug = { id: uid(rng), periodNo: s.period.no, reviewerId: id, title: clean(d.title, 200), happened: clean(d.happened, 2000), instead: clean(d.instead, 1000), where: clean(d.where, 120),
     briefV: s.period.briefV, at: now, dupOf: null, confirmations: 0, ratings: [], unlocked: false, status: null, payout: null };
   if (!bug.title || bug.happened.length < 10) fail("A title and what happened are needed");
   if (dupOf) {
     const o = s.bugs.find((x) => x.id === dupOf);
-    if (!o || o.dupOf || o.reviewerId === id) fail("That is not an issue you can confirm");
+    if (!o || o.dupOf || o.reviewerId === id) fail("Cannot confirm this issue");
     bug.dupOf = o.id; o.confirmations += 1; s.bugs.push(bug);
     log(s, now, "Issue confirmed", `"${o.title}" · ${o.confirmations} confirmation${o.confirmations > 1 ? "s" : ""}`, { business: true, reviewers: [id] });
     return bug;
@@ -204,8 +204,8 @@ export async function submitBug(s, now, id, d, dupOf, ai, rng) {
 export function markReceived(s, now, id, v) { const r = s.reviewers[id]; if (!r) fail("Not found", 404); r.received = !!v; }
 export function markPhoto(s, now, id, has) { const r = s.reviewers[id]; if (!r || !r.profile) fail("Accept the invitation first"); r.profile.photo = !!has; }
 export function startRating(s, now, rng) {
-  // Balanced and blind: shuffle the submitters once, then each review is rated by the next three in the ring.
-  // Every rater gets exactly three (fewer only when fewer than four people submitted) and never their own.
+  // Shuffle the submitters once, then each review is rated by the next three in the ring. Each rater gets three
+  // (fewer when fewer than four people submitted) and not their own.
   const subs = seated(s).filter((r) => r.seat === "submitted").map((r) => [r.id, (rng || Math.random)()]).sort((a, b) => a[1] - b[1]).map((x) => x[0]);
   const n = subs.length;
   cur(s, s.reviews).forEach((rv) => { const i = subs.indexOf(rv.reviewerId); s.assignments[rv.id] = i < 0 ? [] : [1, 2, 3].filter((k) => k < n).map((k) => subs[(i + k) % n]); });
@@ -222,7 +222,7 @@ export async function submitRatings(s, now, id, entries, ai, rng) {
   const mine = cur(s, s.reviews).filter((rv) => s.assignments[rv.id].includes(id));
   const byId = new Map((Array.isArray(entries) ? entries : []).map((e) => [String(e.reviewId), e]));
   for (const rv of mine) {
-    const e = byId.get(rv.id); if (!e) fail("Rate every review you were given");
+    const e = byId.get(rv.id); if (!e) fail("Rate all assigned reviews");
     const useful = Math.round(Number(e.useful)); if (!(useful >= 1 && useful <= 5)) fail("Usefulness is 1 to 5");
     rv.ratings.push({ raterId: id, truthful: !!e.truthful, fair: !!e.fair, matches: ["yes", "partly", "no"].includes(e.matches) ? e.matches : "partly", useful });
     cur(s, s.bugs).filter((b) => b.reviewerId === rv.reviewerId && !b.dupOf).forEach((b) => b.ratings.push({ raterId: id, useful }));
@@ -236,8 +236,8 @@ export async function submitRatings(s, now, id, entries, ai, rng) {
 export function reply(s, now, id, flagId, text) {
   const f = s.flags.find((x) => x.id === flagId); if (!f) fail("Not found", 404);
   if (s.reviewers[targetOf(s, f).reviewerId].id !== id) fail("Not yours", 403);
-  if (f.state !== "queued" || f.reply) fail("No reply can be added now");
-  f.reply = clean(text, 1500); if (!f.reply) fail("Write something");
+  if (f.state !== "queued" || f.reply) fail("Replies are closed");
+  f.reply = clean(text, 1500); if (!f.reply) fail("Enter a reply");
   log(s, now, "Reply to flag", `${s.reviewers[id].pseudonym}`, { business: false, reviewers: [id] });
 }
 
@@ -364,7 +364,7 @@ export function businessView(s, tokens) {
     reviewers: seated(s).map((r) => ({ ...pub(r), token: r.seat === "invited" ? (tokens || {})[r.id] || null : null })),
     reviewCount: cur(s, s.reviews).length,
     reviews: (p && ["recruiting", "open"].includes(p.state) ? [] : cur(s, s.reviews)).map((rv) => ({ ...rv, flags: s.flags.filter((f) => f.targetId === rv.id).map(({ id, reason, source, state, decision, at }) => ({ id, reason, source, state, decision, at })) })),
-    // Issues are anonymous to the business. The platform knows who reported one, for the payout; the business never does.
+    // Issues are anonymous to the business. The platform keeps the reporter for the payout.
     bugs: cur(s, s.bugs).filter((b) => !b.dupOf).map((b) => { const { reviewerId, ratings, payout, paidOut, ...open } = b; return b.unlocked ? open : { id: b.id, category: b.ai && b.ai.category, teaser: b.ai && b.ai.teaser, provisional: b.ai ? Math.round((b.ai.onBrief + b.ai.quality) / 2) : null, scores: b.scores, tier: b.tier, confirmations: b.confirmations, unlocked: false, at: b.at }; }),
     log: s.log.filter((e) => e.vis.business).slice(-300),
   };

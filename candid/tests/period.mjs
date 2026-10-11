@@ -85,7 +85,7 @@ r = await R({ token: tokens[0], action: "photo", data: "data:image/jpeg;base64,"
 ok(r.status === 200 && r.view.me.photo === true, "a photo is stored and flagged");
 const people = [["no", "Dana", "dana@example.com"], ["yes", "Friend", "friend@example.com"], ["no", "Otto", "otto@example.com"], ["no", "Wren", "wren@example.com"], ["no", "Kite", "kite@example.com"]];
 r = await R({ token: tokens[1], action: "accept", knew: "no", eligible: true, name: "Dana again", state: "VIC", email: "dana@example.com", payid: "x" });
-ok(r.status === 400 && /already holds/.test(r.error), "the same email cannot take a second seat in one period");
+ok(r.status === 400 && /already has/.test(r.error), "the same email cannot take a second seat in one period");
 for (let i = 1; i < 5; i++) await R({ token: tokens[i], action: "accept", knew: people[i][0], eligible: true, name: people[i][1], state: "NSW", email: people[i][2], payid: "0400000" + i });
 r = await R({ token: tokens[0], action: "accept", knew: "no", eligible: true, name: "Dana", state: "VIC", email: "dana@example.com", payid: "x" });
 ok(r.status === 400 && /used/.test(r.error), "a link cannot be accepted twice");

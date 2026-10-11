@@ -584,7 +584,7 @@ function bOverview() {
       <div class="tile"><div class="k">Credits</div><div class="v">${money(S.credits.balance)}</div><div class="s">${money(S.credits.locked)} locked</div></div></div>
     <div class="panel"><div class="body">${stepper()}</div></div>
     <div class="grid">
-      <div class="panel"><div class="head"><h2>Needs you</h2></div><div class="body tight">${todo.length ? `<div class="list">${todo.map(([pg, t, s]) => `<div><div><div class="strong">${esc(t)}</div><div class="sm muted">${esc(s)}</div></div>${btn('page', 'Open', `data-v="${pg}"`, 'btn sm')}</div>`).join('')}</div>` : '<div class="empty">Nothing waiting on you</div>'}</div></div>
+      <div class="panel"><div class="head"><h2>To do</h2></div><div class="body tight">${todo.length ? `<div class="list">${todo.map(([pg, t, s]) => `<div><div><div class="strong">${esc(t)}</div><div class="sm muted">${esc(s)}</div></div>${btn('page', 'Open', `data-v="${pg}"`, 'btn sm')}</div>`).join('')}</div>` : '<div class="empty">Nothing to do</div>'}</div></div>
       <div class="panel"><div class="head"><h2>Recent activity</h2>${btn('page', 'All', 'data-v="activity"', 'btn ghost sm')}</div><div class="body tight">${recent.map(e => `<div class="lgrow"><span class="d">d${e.day}</span><span><span class="e">${esc(e.event)}</span> <span class="t">${esc(e.detail)}</span></span></div>`).join('') || '<div class="empty">No activity yet</div>'}</div></div>
     </div>`;
 }
@@ -599,7 +599,7 @@ function bPeriod() {
   else if (p.state === 'closed') action = `<div class="row between"><div class="sm muted">Closed day ${S.day}</div>${btn('newperiod', 'Start next period', '', 'btn primary')}</div>`;
   const knew = S.reviewers.filter(r => r.knew === 'yes').length, declared = S.reviewers.filter(r => r.knew).length;
   return `<div class="panel"><div class="body stack">${stepper()}${action}</div></div>
-    ${declared && knew > declared / 2 ? `<div class="callout">${knew} of ${declared} reviewers knew you before the invite. Kind reviews score low. Recruit from the kit below.</div>` : ''}
+    ${declared && knew > declared / 2 ? `<div class="callout">${knew} of ${declared} reviewers knew you. Reviews from people you know tend to score low. Use the recruitment kit to find others.</div>` : ''}
     <div class="panel"><div class="head"><h2>Seats</h2><span class="sm muted">${declared ? `${knew} of ${declared} knew you` : `brief v${p.briefV || '—'}`}</span></div><div class="body tight scroll"><table><thead><tr><th>Reviewer</th><th>Status</th><th class="r">Reputation</th><th>Payout</th><th>Invite</th></tr></thead><tbody>
       ${S.reviewers.map(r => `<tr><td class="strong">${esc(r.pseudonym)}</td><td>${seatChip(r)}</td><td class="r num">${repOf(r)}</td><td>${payoutChip(r)}</td><td class="num faint">${r.seat === 'invited' ? 'candid.app/i/' + r.id + 'k7' : '—'}</td></tr>`).join('')}</tbody></table></div></div>
     ${['funded', 'recruiting', 'open'].includes(p.state) ? `<div class="panel"><div class="head"><h2>Recruitment kit</h2>${btn('copy', 'Copy post', '', 'btn sm')}</div><div class="body stack">
@@ -701,9 +701,9 @@ function rRate() {
   if (p.state !== 'rating' && !S.ratingsDone[r.id]) return `<div class="panel"><div class="empty">Opens when the open stage ends</div></div>`;
   if (S.ratingsDone[r.id]) return `<div class="panel"><div class="hero"><h1>Ratings submitted</h1><p class="muted">${p.state === 'rating' ? 'Waiting for the other raters, or 7 days' : 'Period settled'}</p></div></div>`;
   const mine = cur(S.reviews).filter(rv => S.assignments[rv.id].includes(r.id));
-  return `<div class="row between"><span class="sm muted">Blind. Random. Text only. Your fee releases after this.</span></div>
+  return `<div class="row between"><span class="sm muted">Anonymous. Your fee is released after this.</span></div>
     ${mine.map((rv, i) => `<div class="panel"><div class="head"><h2>Review ${i + 1} of ${mine.length}</h2></div><div class="body stack"><div class="qa"><div class="a">${esc(rv.sections.join('\n\n'))}</div></div><div class="rate">
-      <span>Truthful as far as you can tell</span><select id="rt-${rv.id}-truthful"><option>yes</option><option>no</option></select>
+      <span>Seems truthful</span><select id="rt-${rv.id}-truthful"><option>yes</option><option>no</option></select>
       <span>Fair</span><select id="rt-${rv.id}-fair"><option>yes</option><option>no</option></select>
       <span>Matches your experience</span><select id="rt-${rv.id}-matches"><option>yes</option><option>partly</option><option>no</option></select>
       <span>Useful, 1 to 5</span><select id="rt-${rv.id}-useful">${[5, 4, 3, 2, 1].map(n => `<option ${n === 3 ? 'selected' : ''}>${n}</option>`).join('')}</select>

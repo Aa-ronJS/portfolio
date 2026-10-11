@@ -1,8 +1,6 @@
-// The four places Claude helps, and what happens without it.
-//
-// Every call here is advisory: it scores, categorises, deduplicates or triages, and a rule or a person decides.
-// Without ANTHROPIC_API_KEY, or when a call fails, a plain heuristic answers instead and says so in `by`, so a
-// Claude outage never blocks a submission, a payout or a close. Tests swap the client through globalThis.__candidAI.
+// Claude calls: score a review, score an issue, find a duplicate, triage a flag. Each is advisory; a rule or a
+// person decides. Without ANTHROPIC_API_KEY, or when a call fails, a heuristic answers and says so in `by`.
+// Tests swap the client through globalThis.__candidAI.
 import Anthropic from "@anthropic-ai/sdk";
 import { z } from "zod";
 import { betaZodOutputFormat } from "@anthropic-ai/sdk/helpers/beta/zod";

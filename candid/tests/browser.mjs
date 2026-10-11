@@ -106,7 +106,7 @@ try {
   await click(owner, 'tr.click'); await owner.waitForSelector(".drawer");
   const quoteBtns = await owner.locator('[data-act="quote"]').count();
   const drawerHead = await owner.locator(".drawer .dhead").textContent();
-  ok((quoteBtns === 3) === /may be quoted/.test(drawerHead), "quote buttons appear exactly when the reviewer consented");
+  ok((quoteBtns === 3) === /quotable/.test(drawerHead), "quote buttons appear exactly when the reviewer consented");
   await click(owner, '[data-act="status"][data-v="will use"]'); await settle(owner);
   await click(owner, '[data-act="close"].x');
   await click(owner, '[data-act="page"][data-v="payouts"]'); await owner.waitForSelector('[data-act="markPaid"]');

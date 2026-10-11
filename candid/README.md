@@ -1,25 +1,23 @@
 # Candid
 
-Paid, private, peer-checked feedback. A business writes a brief, prepays
-credits, and sends personal invite links to the people it has recruited.
-Each reviewer uses the product, writes a review against the brief with
-their name, state and photo on it (and their business for B2B), reports
-process issues anonymously, and blind-rates three peers. Reviewers are anonymous to
-each other, never to the business. A review is private unless the
-reviewer agrees it may be quoted; a quote carries the paid-study
-disclosure. Issues are listed as teasers and unlocked with credit,
-priced by the peer score. Claude triages flags; a person decides; a flag
-undecided for seven days releases the payout.
+Paid, private feedback for a business, checked by the reviewers' peers.
+The business writes a brief, prepays credits and sends one invite link
+per seat. Each reviewer uses the product, writes a signed review (name,
+state, photo, and business for B2B), reports issues anonymously, and
+rates three other reviews without seeing who wrote them. A review is
+private unless the reviewer agrees it can be quoted; a quote carries a
+paid-study note. Issues are listed as one-line summaries and unlocked
+with credit, priced by peer score. Claude triages flags, a person
+decides, and a flag left seven days releases the payout.
 
-One Vercel project, no build step. The rules live in `api/_engine.js`
-and are the whole product; everything else is plumbing and screens.
+One Vercel project, no build step. The rules are in `api/_engine.js`.
 
 ```
 public/index.html                    the landing page: what it is, how a period runs, price, early-access form
 public/app.html, app.js, app.css     the owner's app at /app: sign in, businesses, the period, reviews, issues,
                                      credits, brief, and the platform pages (queue, payouts, reviewers, leads)
-public/r.html                        the reviewer's page, reached at /r/<token>; carries the pitch at three
-                                     moments (invitation, after submitting, after payout) linking to /?via=<business>
+public/r.html                        the reviewer's page at /r/<token>, with promo cards after the invitation,
+                                     after submitting and after payout, linking to /?via=<business>
 api/auth.js                          one passcode, a signed cookie
 api/business.js                      the owner's reads and actions, one business at a time
 api/reviewer.js                      the reviewer's reads and actions, by invite token
@@ -66,8 +64,8 @@ triage; without it the built-in heuristics do, and the app says so.
 ## Running a pilot
 
 1. Sign in, create the business, answer the seven brief questions.
-2. Credits: add what you are prepared to pay. Card payments are not
-   connected in this build; the ledger records it.
+2. Credits: add the amount you want to spend. Card payments are not
+   connected yet; the ledger records it.
 3. Review period: start one, fund it (seats × $24: $20 to the reviewer,
    20% platform fee), open recruiting.
 4. Copy the recruitment post and the invite links. Each link is one seat
@@ -79,11 +77,11 @@ triage; without it the built-in heuristics do, and the app says so.
 6. When everyone has submitted, or you end the open stage, peer rating
    starts. Tell reviewers to open their link again. It closes when all
    ratings are in or after seven days.
-7. Settlement: scores are final, fees release unless a flag is open.
-   Queue: decide each flag. Payouts: pay by PayID from your bank, mark
-   paid. Issues: unlock what the score says is worth it.
+7. Settlement: scores are final and fees are released unless a flag is
+   open. Queue: decide each flag. Payouts: pay by PayID, mark paid.
+   Issues: unlock the ones you want.
 8. Next period starts on the latest brief. Reviewers who return with the
    same email keep their reputation.
 
-What is deliberately not here yet: card payments, automated payouts,
-email sending, a reviewer marketplace, more than one owner account.
+Not included yet: card payments, automated payouts, email sending, a
+reviewer marketplace, more than one owner account.

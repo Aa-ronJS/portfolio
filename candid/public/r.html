@@ -50,17 +50,17 @@ function queueSave() {
 }
 function draftFor() { const server = V.view.me.draft, local = store.get(DK); if (local && (!server || local.at > server.at)) return local; return server; }
 
-// ---------- the pitch, where goodwill is highest and never in the way of the job ----------
+// ---------- promo cards ----------
 const promo = (s, title, line) => `<div class="panel promo"><div class="body" style="display:flex;justify-content:space-between;gap:12px;align-items:center;flex-wrap:wrap"><div><div class="strong">${title}</div><div class="sm muted">${line}</div></div><a class="btn sm" href="/?via=${encodeURIComponent(V.via)}&s=${s}">See how it works</a></div></div>`;
 const PROMO = {
-  invite: () => promo('invite', 'Make something yourself?', 'Candid runs this for any business: paid, private, peer-checked feedback.'),
-  submitted: () => promo('submitted', 'Want this for your own thing?', 'Five honest strangers with their names on it, paid by you.'),
-  paid: () => promo('paid', 'You just got paid for being honest.', 'Businesses pay for exactly this. Run a period for yours.'),
+  invite: () => promo('invite', 'Run a business?', 'Candid can run a review period for it.'),
+  submitted: () => promo('submitted', 'Want reviews like this for your product?', 'Paid reviewers, checked by their peers.'),
+  paid: () => promo('paid', 'Need feedback on something of your own?', 'Run a review period on Candid.'),
 };
 // ---------- views ----------
 function render() {
   const app = $('#app');
-  if (V.error) { app.innerHTML = `<div class="panel"><div class="hero"><h1>${esc(V.error)}</h1><p class="muted">Ask the business for a fresh link.</p></div></div>`; return; }
+  if (V.error) { app.innerHTML = `<div class="panel"><div class="hero"><h1>${esc(V.error)}</h1><p class="muted">Ask the business for a new link.</p></div></div>`; return; }
   if (!V.view) return;
   const v = V.view, me = v.me, p = v.period;
   const top = `<div class="bar-top"><div class="brand" style="padding:0"><span class="mark">C</span>Candid</div><span class="sm muted">${esc(me.pseudonym)} · rep ${me.rep}</span></div>`;
@@ -75,11 +75,11 @@ function body(v) {
   const parts = [];
   if (!v.review && me.seat === 'accepted' && p.state === 'open') parts.push(reviewForm(v));
   else if (v.review) parts.push(`<div class="panel"><div class="head"><h2>Your review</h2>${chip('Submitted ' + fmt(v.review.at), 'good')}</div>${v.review.scores ? `<div class="body"><div class="tiles"><div class="tile"><div class="k">Usefulness</div><div class="v">${v.review.scores.usefulness}</div></div><div class="tile"><div class="k">On brief</div><div class="v">${v.review.scores.onBrief}</div></div><div class="tile"><div class="k">Quality</div><div class="v">${v.review.scores.quality}</div></div></div>${v.review.status ? `<p class="sm" style="margin-top:10px">${esc(v.business)} marked it: <strong>${esc(v.review.status)}</strong>. That changes nothing about payment.</p>` : ''}</div>` : '<div class="body sm muted">Scored when peer rating ends.</div>'}</div>`);
-  else if (me.seat === 'accepted') parts.push(`<div class="callout">The open stage has ended, so no review can be submitted now.</div>`);
+  else if (me.seat === 'accepted') parts.push(`<div class="callout">The open stage has ended. Reviews are closed.</div>`);
   if (p.state === 'rating' && v.toRate.length && !v.ratingsDone) parts.push(rateForm(v));
-  else if (p.state === 'rating' && v.ratingsDone) parts.push(`<div class="callout good">Ratings in. Your fee releases when the period settles.</div>`);
+  else if (p.state === 'rating' && v.ratingsDone) parts.push(`<div class="callout good">Ratings submitted. Your fee is released at settlement.</div>`);
   v.flags.forEach((f) => parts.push(`<div class="panel"><div class="head"><h2>Flag · ${esc(f.reason)}</h2>${chip(f.state === 'decided' ? (f.decision === 'breach' ? 'Breach' : f.decision === 'clear' ? 'Cleared' : 'Low quality') : f.state === 'cleared' ? 'Cleared' : 'Open', f.state === 'decided' && f.decision === 'breach' ? 'bad' : f.state === 'queued' ? 'warn' : 'good')}</div><div class="body stack">${f.state === 'queued' && !f.reply ? `<p class="sm muted">A person will decide within 7 days. You can reply once.</p><div class="field"><textarea id="reply-${f.id}" placeholder="Your reply"></textarea></div><div>${btn('reply', 'Send', `data-id="${f.id}"`, 'btn primary')}</div>` : f.reply ? `<p class="sm">You replied: “${esc(f.reply)}”</p>` : ''}</div></div>`));
-  parts.push(`<div class="tiles"><div class="tile"><div class="k">Review fee</div><div class="v">${money(FEE)}</div><div class="s">${me.payout ? ({ released: 'released · being paid', paid: 'paid', held: 'held · ' + me.payoutReason, forfeited: 'forfeited · ' + me.payoutReason, pending: 'pending' })[me.payout] : 'after review + ratings'}</div></div><div class="tile"><div class="k">Issue payouts</div><div class="v">${money(v.bugs.filter((x) => x.unlocked).reduce((s, x) => s + (x.paidOut || 0), 0))}</div><div class="s">${v.bugs.filter((x) => x.payout === 'paid').length} paid</div></div></div>`);
+  parts.push(`<div class="tiles"><div class="tile"><div class="k">Review fee</div><div class="v">${money(FEE)}</div><div class="s">${me.payout ? ({ released: 'released, payment on its way', paid: 'paid', held: 'held · ' + me.payoutReason, forfeited: 'forfeited · ' + me.payoutReason, pending: 'pending' })[me.payout] : 'after your review and ratings'}</div></div><div class="tile"><div class="k">Issue payouts</div><div class="v">${money(v.bugs.filter((x) => x.unlocked).reduce((s, x) => s + (x.paidOut || 0), 0))}</div><div class="s">${v.bugs.filter((x) => x.payout === 'paid').length} paid</div></div></div>`);
   parts.push(issuesPanel(v));
   if (me.payout === 'released' || me.payout === 'paid') parts.push(PROMO.paid());
   else if (v.review) parts.push(PROMO.submitted());
@@ -87,51 +87,51 @@ function body(v) {
 }
 function invite(v) {
   const b = v.brief, st = V.step;
-  if (st === 0) return `<div class="panel"><div class="body stack"><span class="sm muted">Invitation</span><h2>${esc(v.business)} wants your feedback</h2><dl class="kv"><dt>The job</dt><dd>${esc(b.job)}</dd><dt>You get</dt><dd>${money(FEE)} for a written review and three short peer ratings, paid by PayID</dd><dt>Who sees it</dt><dd>${esc(v.business)}, with your name, state and photo. Other reviewers never see who you are. It is quoted publicly only if you say so.</dd></dl><div class="row">${btn('step', 'Accept', 'data-v="1"', 'btn primary lg')}${btn('decline', 'Decline', '', 'btn ghost')}</div></div></div>` + PROMO.invite();
-  if (st === 1) return `<div class="panel"><div class="body stack"><span class="sm muted">One check</span><h2>${esc(b.eligibility)}</h2><p class="muted">Is that you?</p><div class="row">${btn('step', 'Yes, that is me', 'data-v="2"', 'btn primary lg')}${btn('decline', 'No', '', 'btn ghost')}</div></div></div>`;
+  if (st === 0) return `<div class="panel"><div class="body stack"><span class="sm muted">Invitation</span><h2>${esc(v.business)} wants your feedback</h2><dl class="kv"><dt>The job</dt><dd>${esc(b.job)}</dd><dt>You get</dt><dd>${money(FEE)} for a written review and three short peer ratings, paid by PayID</dd><dt>Who sees it</dt><dd>${esc(v.business)} sees it with your name, state and photo. Other reviewers do not see who you are. It is only quoted publicly if you agree.</dd></dl><div class="row">${btn('step', 'Accept', 'data-v="1"', 'btn primary lg')}${btn('decline', 'Decline', '', 'btn ghost')}</div></div></div>` + PROMO.invite();
+  if (st === 1) return `<div class="panel"><div class="body stack"><span class="sm muted">Eligibility</span><h2>${esc(b.eligibility)}</h2><p class="muted">Does this describe you?</p><div class="row">${btn('step', 'Yes', 'data-v="2"', 'btn primary lg')}${btn('decline', 'No', '', 'btn ghost')}</div></div></div>`;
   const b2b = b.kind === 'b2b';
-  return `<div class="panel"><div class="body stack"><span class="sm muted">Last step</span><h2>Who you are, and where to pay you</h2>
+  return `<div class="panel"><div class="body stack"><span class="sm muted">Last step</span><h2>Your details</h2>
     <div class="field"><label for="name">Your name</label><input type="text" id="name" autocomplete="name"><div class="help">${esc(v.business)} sees your name, state and photo on the review.</div></div>
     <div class="row" style="align-items:flex-start"><div class="field" style="flex:1"><label for="state">State</label><select id="state"><option value="">Choose</option>${AU_STATES.map((x) => `<option>${x}</option>`).join('')}</select></div>
-    <div class="field" style="flex:2;min-width:160px"><label for="photo">Photo</label><input type="file" id="photo" accept="image/*" capture="user"><div class="help" id="photohelp">A face, so the review is clearly yours.</div></div></div>
+    <div class="field" style="flex:2;min-width:160px"><label for="photo">Photo</label><input type="file" id="photo" accept="image/*" capture="user"><div class="help" id="photohelp">Shown next to your review.</div></div></div>
     ${b2b ? `<div class="field"><label for="company">Your business</label><input type="text" id="company" autocomplete="organization"></div><div class="field"><label for="role">Your role</label><input type="text" id="role" autocomplete="organization-title"></div>` : ''}
-    <div class="field"><label for="email">Email</label><input type="email" id="email" autocomplete="email"><div class="help">Platform only. So you can get this link back if you lose it.</div></div>
-    <div class="field"><label for="payid">PayID (mobile number or email)</label><input type="text" id="payid" autocomplete="tel"><div class="help">Platform only. The business never sees it.</div></div>
-    <div class="field"><label for="knew">Did you know ${esc(v.business)} before today?</label><select id="knew"><option value="">Choose</option><option value="no">No</option><option value="yes">Yes</option><option value="not sure">Not sure</option></select><div class="help">${esc(v.business)} only ever sees a count across all reviewers.</div></div>
-    <div class="row">${btn('accept', 'Take the seat', '', 'btn primary lg')}</div></div></div>`;
+    <div class="field"><label for="email">Email</label><input type="email" id="email" autocomplete="email"><div class="help">Not shown to the business. Used to resend your link.</div></div>
+    <div class="field"><label for="payid">PayID (mobile number or email)</label><input type="text" id="payid" autocomplete="tel"><div class="help">Not shown to the business.</div></div>
+    <div class="field"><label for="knew">Did you know ${esc(v.business)} before today?</label><select id="knew"><option value="">Choose</option><option value="no">No</option><option value="yes">Yes</option><option value="not sure">Not sure</option></select><div class="help">${esc(v.business)} sees only the total.</div></div>
+    <div class="row">${btn('accept', 'Accept', '', 'btn primary lg')}</div></div></div>`;
 }
 function reviewForm(v) {
   const b = v.brief, d = draftFor() || { sections: [], closing: [], received: false };
   return `<div class="panel"><div class="head"><h2>Your review</h2><span class="sm muted" id="savestate">${d.at ? 'Draft restored' : ''}</span></div><div class="body stack">
-    <p class="sm muted">Deadline ${fmt(v.me.acceptedAt + 14 * 86400000)}. Specific beats kind: what happened, when, what you expected.</p>
+    <p class="sm muted">Due by ${fmt(v.me.acceptedAt + 14 * 86400000)}. Say what happened, when, and what you expected.</p>
     <div class="row"><input type="checkbox" id="received" ${d.received ? 'checked' : ''}><label for="received" style="margin:0">I have received the free product or job</label></div>
     ${b.wants.map((q, i) => `<div class="field"><label for="sec${i}">${esc(q)}</label><textarea id="sec${i}" rows="4">${esc(d.sections[i] || '')}</textarea></div>`).join('')}
     ${['What did you try to do?', 'Where did you stop, if anywhere?', 'What would you pay for this?'].map((q, i) => `<div class="field"><label for="clo${i}">${esc(q)}</label><input type="text" id="clo${i}" value="${esc(d.closing[i] || '')}"></div>`).join('')}
     <div class="row" style="align-items:flex-start"><input type="checkbox" id="consent" ${d.consent ? 'checked' : ''} style="margin-top:4px"><label for="consent" style="margin:0;color:var(--ink);font-weight:400">${esc(v.business)} may quote this review publicly with my name, state and photo. It will say I took part in a paid product study.</label></div>
     ${!v.me.photo ? `<div class="row"><input type="file" id="photo2" accept="image/*" capture="user" style="width:auto"><span class="sm muted" id="photohelp">Add a photo</span></div>` : ''}
-    <div class="sticky-save"><span class="sm muted">${money(FEE)} after you also rate three peers</span>${btn('submit', 'Submit review', '', 'btn primary')}</div></div></div>`;
+    <div class="sticky-save"><span class="sm muted">${money(FEE)} is paid after you rate three other reviews</span>${btn('submit', 'Submit review', '', 'btn primary')}</div></div></div>`;
 }
 function issuesPanel(v) {
   const can = ['accepted', 'submitted', 'rated'].includes(v.me.seat) && v.period.state === 'open';
   return `<div class="panel"><div class="head"><h2>Issues</h2>${can ? btn('bugform', 'Report an issue', '', 'btn sm primary') : ''}</div><div class="body tight">
-    <p class="sm muted" style="padding:10px 16px 0">Things that make no sense, are not done, or should be done differently. Anonymous: the business never sees who reported one. Paid when it unlocks them, by peer score.</p>
+    <p class="sm muted" style="padding:10px 16px 0">Steps that are missing, wrong or confusing. Reported anonymously. Paid when the business unlocks the issue.</p>
     ${v.bugs.length ? `<div class="list">${v.bugs.map((x) => `<div><span>${esc(x.title)}</span>${x.dupOf ? chip('Confirmation', '', true) : x.unlocked ? chip(`Unlocked · ${money(x.paidOut)} to you${x.payout === 'paid' ? ' · paid' : ''}`, 'good') : x.scores ? (x.tier ? chip(`${x.tier.name} · ${money(x.tier.price)}`, 'accent') : chip('Not listed', 'bad')) : chip('Awaiting peer score', 'warn')}</div>`).join('')}</div>` : '<div class="empty">Nothing reported yet</div>'}
-    ${v.published.length ? `<div class="head" style="border-top:1px solid var(--line)"><h3 class="muted">Already on the list</h3><span class="xs muted">not paid again</span></div><div class="list">${v.published.map((x) => `<div><span class="sm">${esc(x.title)}</span>${chip(x.status, '', true)}</div>`).join('')}</div>` : ''}</div></div>`;
+    ${v.published.length ? `<div class="head" style="border-top:1px solid var(--line)"><h3 class="muted">Already reported</h3><span class="xs muted">not paid again</span></div><div class="list">${v.published.map((x) => `<div><span class="sm">${esc(x.title)}</span>${chip(x.status, '', true)}</div>`).join('')}</div>` : ''}</div></div>`;
 }
 function bugForm(v) {
   const d = V.dup;
   return `<div class="panel"><div class="head"><h2>Report an issue</h2><button class="x" data-act="bugform-close" aria-label="Close">✕</button></div><div class="body stack">
-    ${d ? `<div class="callout">Looks like “${esc(d.match.title)}”, which is already on the list.<div class="row" style="margin-top:8px">${d.match.known ? '' : btn('dup-confirm', 'Confirm that one instead')}${btn('dup-anyway', 'Mine is different', '', 'btn primary')}</div></div>` : ''}
+    ${d ? `<div class="callout">This looks like “${esc(d.match.title)}”, which is already reported.<div class="row" style="margin-top:8px">${d.match.known ? '' : btn('dup-confirm', 'Same issue')}${btn('dup-anyway', 'Mine is different', '', 'btn primary')}</div></div>` : ''}
     <div class="field"><label for="bt">Title</label><input type="text" id="bt" value="${esc(d ? d.data.title : '')}"></div>
     <div class="field"><label for="bh">What happened</label><textarea id="bh" rows="4">${esc(d ? d.data.happened : '')}</textarea></div>
     <div class="field"><label for="bi">What should happen instead</label><input type="text" id="bi" value="${esc(d ? d.data.instead : '')}"></div>
-    <div class="field"><label for="bw">Where in the journey</label><input type="text" id="bw" value="${esc(d ? d.data.where : '')}"></div>
+    <div class="field"><label for="bw">Where it happened</label><input type="text" id="bw" value="${esc(d ? d.data.where : '')}"></div>
     ${d ? '' : `<div class="row">${btn('bug-submit', 'Submit', '', 'btn primary')}</div>`}</div></div>`;
 }
 function rateForm(v) {
-  return `<div class="panel"><div class="head"><h2>Rate three peers</h2><span class="sm muted">blind · text only</span></div><div class="body stack"><p class="sm muted">Your fee releases after this.</p>
+  return `<div class="panel"><div class="head"><h2>Rate three reviews</h2><span class="sm muted">anonymous</span></div><div class="body stack"><p class="sm muted">Your fee is released after this.</p>
     ${v.toRate.map((rv, i) => `<div class="stack" style="padding-top:8px;border-top:1px solid var(--line)"><h3>Review ${i + 1} of ${v.toRate.length}</h3><div class="qa"><div class="a">${esc(rv.sections.join('\n\n'))}</div></div><div class="rate">
-      <span>Truthful as far as you can tell</span><select id="rt-${rv.id}-truthful"><option>yes</option><option>no</option></select>
+      <span>Seems truthful</span><select id="rt-${rv.id}-truthful"><option>yes</option><option>no</option></select>
       <span>Fair</span><select id="rt-${rv.id}-fair"><option>yes</option><option>no</option></select>
       <span>Matches your experience</span><select id="rt-${rv.id}-matches"><option>yes</option><option>partly</option><option>no</option></select>
       <span>Useful, 1 to 5</span><select id="rt-${rv.id}-useful">${[5, 4, 3, 2, 1].map((n) => `<option ${n === 3 ? 'selected' : ''}>${n}</option>`).join('')}</select>

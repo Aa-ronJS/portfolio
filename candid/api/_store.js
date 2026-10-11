@@ -28,7 +28,7 @@ export async function withBusiness(id, now, fn) {
     E.tick(state, now);
     const out = await fn(state);
     const u = await run("update business set state=$2, name=$3, version=version+1, updated_at=now() where id=$1 and version=$4", [id, JSON.stringify(state), state.name, row.version]);
-    if (!(u.rowCount ?? u.affectedRows)) throw new E.EngineError("Saved by someone else a moment ago. Reload and try again.", 409);
+    if (!(u.rowCount ?? u.affectedRows)) throw new E.EngineError("Changed elsewhere. Reload and try again.", 409);
     return { state, out };
   });
 }
