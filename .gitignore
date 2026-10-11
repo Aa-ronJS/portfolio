@@ -16,3 +16,7 @@ essay-channel/episodes/*/*.ass
 essay-channel/episodes/*/thumbnail.jpg
 essay-channel/music/*
 !essay-channel/music/README.md
+
+# python bytecode, anywhere
+__pycache__/
+*.pyc
