@@ -12,16 +12,19 @@ One Vercel project, no build step. The rules live in `api/_engine.js`
 and are the whole product; everything else is plumbing and screens.
 
 ```
-public/index.html, app.js, app.css   the owner's app: sign in, businesses, the period, reviews, issues,
-                                     credits, brief, and the platform pages (queue, payouts, reviewers)
-public/r.html                        the reviewer's page, reached at /r/<token>
+public/index.html                    the landing page: what it is, how a period runs, price, early-access form
+public/app.html, app.js, app.css     the owner's app at /app: sign in, businesses, the period, reviews, issues,
+                                     credits, brief, and the platform pages (queue, payouts, reviewers, leads)
+public/r.html                        the reviewer's page, reached at /r/<token>; carries the pitch at three
+                                     moments (invitation, after submitting, after payout) linking to /?via=<business>
 api/auth.js                          one passcode, a signed cookie
 api/business.js                      the owner's reads and actions, one business at a time
 api/reviewer.js                      the reviewer's reads and actions, by invite token
+api/lead.js                          early-access requests from the landing page, attributed to the business they came through
 api/_engine.js                       the rules: brief, period, seats, scoring, flags, settlement, the clock
 api/_ai.js                           Claude (structured outputs) with a heuristic fallback
 api/_store.js, _db.js                one JSON document per business, saved under a version check
-db/001-init.sql                      three tables
+db/*.sql                             four tables
 tools/dev.mjs                        a local server on pglite, no accounts needed
 tests/engine.mjs                     the rules alone: balanced assignment, late ratings during settlement
 tests/period.mjs                     a whole period through the real handlers on real Postgres (pglite)
@@ -33,7 +36,7 @@ tests/browser.mjs                    both pages in Chromium against the dev serv
 ```
 npm install
 npm test                 # engine.mjs, period.mjs, and browser.mjs when Playwright and Chromium are present
-node tools/dev.mjs       # http://localhost:3123, passcode local-passcode, data in memory
+node tools/dev.mjs       # http://localhost:3123 (landing), /app (owner, passcode local-passcode), data in memory
 ```
 
 Set `ANTHROPIC_API_KEY` to have Claude score, categorise, deduplicate and
@@ -54,6 +57,7 @@ triage; without it the built-in heuristics do, and the app says so.
    | `ANTHROPIC_API_KEY` | optional; Claude on, heuristics off |
 
 3. `npx vercel --prod`. The schema applies itself on the first request.
+   The owner app is at `/app`; `/` is the landing page ads point at.
 
 ## Running a pilot
 

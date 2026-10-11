@@ -31,7 +31,7 @@ export default async function handler(req, res) {
     const who = await S.resolveToken(token); if (!who) return send(res, 404, { ok: false, error: "This link is not valid" });
     if (req.method === "GET") {
       const b = await S.readBusiness(who.businessId, now); if (!b) return send(res, 404, { ok: false, error: "This link is not valid" });
-      return send(res, 200, { ok: true, view: E.reviewerView(b.state, who.reviewerId) });
+      return send(res, 200, { ok: true, view: E.reviewerView(b.state, who.reviewerId), via: who.businessId });
     }
     const fn = actions[body.action]; if (!fn) return send(res, 400, { ok: false, error: "Unknown action" });
     if (body.action === "checkDup") {
@@ -40,7 +40,7 @@ export default async function handler(req, res) {
       return send(res, 200, { ok: true, match: match ? { id: match.id, title: match.title, known: match.id.startsWith("known") } : null });
     }
     const { state } = await S.withBusiness(who.businessId, now, (s) => fn(s, now, who.reviewerId, body));
-    return send(res, 200, { ok: true, view: E.reviewerView(state, who.reviewerId) });
+    return send(res, 200, { ok: true, view: E.reviewerView(state, who.reviewerId), via: who.businessId });
   } catch (e) {
     const status = e instanceof E.EngineError ? e.status : 500;
     if (status === 500) console.error("reviewer:", e && e.message);

@@ -19,7 +19,7 @@
 const FEE = 20;
 const FLAG_REASONS = ['untruthful', 'unfairly positive', 'unfairly negative', 'not about this product', 'abusive', 'pasted from elsewhere'];
 const token = (location.pathname.match(/\/r\/([A-Za-z0-9_-]+)/) || [])[1] || new URLSearchParams(location.search).get('token') || '';
-const V = { view: null, error: null, busy: null, step: 0, bugForm: false, dup: null, saving: '' };
+const V = { view: null, via: '', error: null, busy: null, step: 0, bugForm: false, dup: null, saving: '' };
 const $ = (s) => document.querySelector(s);
 const esc = (s) => String(s ?? '').replace(/[&<>"]/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
 const money = (n) => '$' + Number(n).toFixed(0);
@@ -36,8 +36,8 @@ async function api(body) {
   if (!j.ok) throw new Error(j.error || 'Something went wrong (' + r.status + ')');
   return j;
 }
-async function load() { try { const j = await api(); V.view = j.view; V.error = null; } catch (e) { V.error = e.message; } render(); }
-async function act(body, msg) { V.busy = 'Saving'; render(); try { const j = await api(body); V.view = j.view; if (msg) toast(msg); } catch (e) { toast(e.message, true); } V.busy = null; render(); }
+async function load() { try { const j = await api(); V.view = j.view; V.via = j.via || ''; V.error = null; } catch (e) { V.error = e.message; } render(); }
+async function act(body, msg) { V.busy = 'Saving'; render(); try { const j = await api(body); V.view = j.view; V.via = j.via || V.via; if (msg) toast(msg); } catch (e) { toast(e.message, true); } V.busy = null; render(); }
 
 // ---------- draft autosave ----------
 let saveTimer = null, lastSent = '';
@@ -49,6 +49,13 @@ function queueSave() {
 }
 function draftFor() { const server = V.view.me.draft, local = store.get(DK); if (local && (!server || local.at > server.at)) return local; return server; }
 
+// ---------- the pitch, where goodwill is highest and never in the way of the job ----------
+const promo = (s, title, line) => `<div class="panel promo"><div class="body" style="display:flex;justify-content:space-between;gap:12px;align-items:center;flex-wrap:wrap"><div><div class="strong">${title}</div><div class="sm muted">${line}</div></div><a class="btn sm" href="/?via=${encodeURIComponent(V.via)}&s=${s}">See how it works</a></div></div>`;
+const PROMO = {
+  invite: () => promo('invite', 'Make something yourself?', 'Candid runs this for any business: paid, private, peer-checked feedback.'),
+  submitted: () => promo('submitted', 'Want this for your own thing?', 'Five honest strangers, paid by you, read only by you.'),
+  paid: () => promo('paid', 'You just got paid for being honest.', 'Businesses pay for exactly this. Run a period for yours.'),
+};
 // ---------- views ----------
 function render() {
   const app = $('#app');
@@ -60,7 +67,7 @@ function render() {
 }
 function body(v) {
   const me = v.me, p = v.period, b = v.brief;
-  if (!me.current && me.seat !== 'invited') return `<div class="panel"><div class="hero"><h1>This period has ended</h1><p class="muted">Thanks for taking part. ${me.payout ? 'Payout: ' + me.payout + '.' : ''}</p></div></div>` + history(v);
+  if (!me.current && me.seat !== 'invited') return `<div class="panel"><div class="hero"><h1>This period has ended</h1><p class="muted">Thanks for taking part. ${me.payout ? 'Payout: ' + me.payout + '.' : ''}</p></div></div>` + history(v) + (me.payout === 'paid' || me.payout === 'released' ? PROMO.paid() : '');
   if (me.seat === 'invited') return invite(v);
   if (me.seat === 'released') return `<div class="panel"><div class="hero"><h1>This seat has closed</h1><p class="muted">The deadline passed or the invitation was declined.</p></div></div>`;
   if (V.bugForm) return bugForm(v);
@@ -73,11 +80,13 @@ function body(v) {
   v.flags.forEach((f) => parts.push(`<div class="panel"><div class="head"><h2>Flag · ${esc(f.reason)}</h2>${chip(f.state === 'decided' ? (f.decision === 'breach' ? 'Breach' : f.decision === 'clear' ? 'Cleared' : 'Low quality') : f.state === 'cleared' ? 'Cleared' : 'Open', f.state === 'decided' && f.decision === 'breach' ? 'bad' : f.state === 'queued' ? 'warn' : 'good')}</div><div class="body stack">${f.state === 'queued' && !f.reply ? `<p class="sm muted">A person will decide within 7 days. You can reply once.</p><div class="field"><textarea id="reply-${f.id}" placeholder="Your reply"></textarea></div><div>${btn('reply', 'Send', `data-id="${f.id}"`, 'btn primary')}</div>` : f.reply ? `<p class="sm">You replied: “${esc(f.reply)}”</p>` : ''}</div></div>`));
   parts.push(`<div class="tiles"><div class="tile"><div class="k">Review fee</div><div class="v">${money(FEE)}</div><div class="s">${me.payout ? ({ released: 'released · being paid', paid: 'paid', held: 'held · ' + me.payoutReason, forfeited: 'forfeited · ' + me.payoutReason, pending: 'pending' })[me.payout] : 'after review + ratings'}</div></div><div class="tile"><div class="k">Issue payouts</div><div class="v">${money(v.bugs.filter((x) => x.unlocked).reduce((s, x) => s + (x.paidOut || 0), 0))}</div><div class="s">${v.bugs.filter((x) => x.payout === 'paid').length} paid</div></div></div>`);
   parts.push(issuesPanel(v));
+  if (me.payout === 'released' || me.payout === 'paid') parts.push(PROMO.paid());
+  else if (v.review) parts.push(PROMO.submitted());
   return parts.join('');
 }
 function invite(v) {
   const b = v.brief, st = V.step;
-  if (st === 0) return `<div class="panel"><div class="body stack"><span class="sm muted">Invitation</span><h2>${esc(v.business)} wants your feedback</h2><dl class="kv"><dt>The job</dt><dd>${esc(b.job)}</dd><dt>You get</dt><dd>${money(FEE)} for a written review and three short peer ratings, paid by PayID</dd><dt>Who sees it</dt><dd>Only ${esc(v.business)}. Never published. They see a pseudonym, not your name.</dd></dl><div class="row">${btn('step', 'Accept', 'data-v="1"', 'btn primary lg')}${btn('decline', 'Decline', '', 'btn ghost')}</div></div></div>`;
+  if (st === 0) return `<div class="panel"><div class="body stack"><span class="sm muted">Invitation</span><h2>${esc(v.business)} wants your feedback</h2><dl class="kv"><dt>The job</dt><dd>${esc(b.job)}</dd><dt>You get</dt><dd>${money(FEE)} for a written review and three short peer ratings, paid by PayID</dd><dt>Who sees it</dt><dd>Only ${esc(v.business)}. Never published. They see a pseudonym, not your name.</dd></dl><div class="row">${btn('step', 'Accept', 'data-v="1"', 'btn primary lg')}${btn('decline', 'Decline', '', 'btn ghost')}</div></div></div>` + PROMO.invite();
   if (st === 1) return `<div class="panel"><div class="body stack"><span class="sm muted">One check</span><h2>${esc(b.eligibility)}</h2><p class="muted">Is that you?</p><div class="row">${btn('step', 'Yes, that is me', 'data-v="2"', 'btn primary lg')}${btn('decline', 'No', '', 'btn ghost')}</div></div></div>`;
   return `<div class="panel"><div class="body stack"><span class="sm muted">Last step</span><h2>Where to pay you</h2>
     <div class="field"><label for="name">Your name</label><input type="text" id="name" autocomplete="name"></div>

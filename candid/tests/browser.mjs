@@ -19,7 +19,7 @@ const click = async (p, sel) => { await p.click(sel); await p.waitForTimeout(150
 const settle = (p) => p.waitForFunction(() => !document.querySelector(".spin"));
 try {
   const owner = await page();
-  await owner.goto(base + "/"); await owner.waitForSelector("#pass");
+  await owner.goto(base + "/app"); await owner.waitForSelector("#pass");
   await owner.fill("#pass", "wrong"); await click(owner, '[data-act="login"]'); await owner.waitForSelector("#loginerr:not(:empty)");
   ok(true, "a wrong passcode shows an error on the sign-in card");
   await owner.fill("#pass", "browser-passcode"); await click(owner, '[data-act="login"]'); await owner.waitForSelector("#newname");
@@ -110,7 +110,7 @@ try {
   await phones[1].reload(); await phones[1].waitForSelector(".tile");
   const feeTile = await phones[1].locator(".tile").filter({ hasText: "Review fee" }).textContent();
   ok(/released|paid/.test(feeTile), "the flagged-then-cleared reviewer sees their fee released (" + feeTile.trim().replace(/\s+/g, " ") + ")");
-  const mobileOwner = await page(400); await mobileOwner.goto(base + "/"); await mobileOwner.waitForSelector("#pass");
+  const mobileOwner = await page(400); await mobileOwner.goto(base + "/app"); await mobileOwner.waitForSelector("#pass");
   await mobileOwner.fill("#pass", "browser-passcode"); await click(mobileOwner, '[data-act="login"]'); await mobileOwner.waitForSelector(".tiles");
   await mobileOwner.screenshot({ path: "/tmp/candid-owner-mobile.png" });
   ok(!(await mobileOwner.evaluate(() => document.documentElement.scrollWidth > document.documentElement.clientWidth)), "the owner app has no horizontal scroll at phone width");

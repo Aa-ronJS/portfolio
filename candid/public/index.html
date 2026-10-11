@@ -4,14 +4,104 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <title>Candid</title>
-<meta name="robots" content="noindex">
+<meta name="description" content="Paid, private, peer-checked feedback from your first customers. You pay them. Nobody publishes anything.">
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Figtree:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap">
 <link rel="stylesheet" href="/app.css">
+<style>
+.land { max-width: 1040px; margin: 0 auto; padding: 0 20px 72px }
+.land header { display: flex; align-items: center; justify-content: space-between; padding: 18px 0 }
+.hero { padding: 56px 0 40px; text-align: left; align-items: flex-start; display: grid; grid-template-columns: 1.2fr 1fr; gap: 40px; align-items: center }
+.hero h1 { font-size: clamp(30px, 4.6vw, 46px); line-height: 1.08; letter-spacing: -.025em }
+.hero .sub { font-size: 17px; color: var(--muted); max-width: 48ch; margin-top: 14px }
+.hero .cta { margin-top: 24px; display: flex; gap: 10px; flex-wrap: wrap; align-items: center }
+.mock { background: var(--surface); border: 1px solid var(--line); border-radius: 12px; box-shadow: var(--shadow-lg); padding: 14px; font-size: 13px }
+.mock .mt { display: flex; justify-content: space-between; align-items: center; padding: 0 2px 10px; border-bottom: 1px solid var(--line); margin-bottom: 8px }
+.mock table td { padding: 8px 6px } .mock th { padding: 6px }
+.sec { padding: 36px 0 0 }
+.sec h2 { font-size: 22px; letter-spacing: -.02em; margin-bottom: 16px }
+.three { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 14px }
+.three .panel .body { padding: 18px }
+.three .n { font-family: var(--mono); font-size: 12px; color: var(--accent-text); margin-bottom: 8px }
+.three h3 { font-size: 15px; margin-bottom: 6px }
+.three p { color: var(--muted); font-size: 13.5px }
+.rules { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 10px 24px; font-size: 14px }
+.rules div { display: flex; gap: 10px; align-items: flex-start }
+.rules .dot { width: 8px; height: 8px; border-radius: 999px; background: var(--accent); margin-top: 7px; flex: none }
+.price { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 12px }
+.price .v { font-size: 28px; font-weight: 600; letter-spacing: -.02em; margin-top: 4px }
+.signup { display: grid; grid-template-columns: 1fr 1.4fr auto; gap: 10px; align-items: end }
+@media (max-width: 760px) { .hero { grid-template-columns: 1fr; padding-top: 28px } .signup { grid-template-columns: 1fr } }
+footer { margin-top: 48px; padding-top: 18px; border-top: 1px solid var(--line); color: var(--faint); font-size: 12.5px; display: flex; justify-content: space-between; gap: 12px; flex-wrap: wrap }
+</style>
 </head>
 <body>
-<div class="app" id="app"></div>
-<div class="drawer-wrap" id="drawer"></div>
-<div class="toasts" id="toasts"></div>
-<script src="/app.js"></script>
+<div class="land">
+  <header><div class="brand" style="padding:0"><span class="mark">C</span>Candid</div><a class="btn ghost" href="/app">Sign in</a></header>
+
+  <section class="hero">
+    <div>
+      <h1>Find out what your first customers really think. Pay them for it.</h1>
+      <p class="sub">Candid runs a private review period: you write a brief, send personal links to the people you recruit, and they tell you the truth for $20 each. Peers check every review. Nothing is ever published.</p>
+      <div class="cta"><a class="btn primary lg" href="#start">Get early access</a><span class="sm muted">No subscription. $24 a seat.</span></div>
+    </div>
+    <div class="mock" aria-hidden="true">
+      <div class="mt"><span class="strong">Issues</span><span class="chip warn">Settlement</span></div>
+      <table><thead><tr><th>Category</th><th>Issue</th><th class="r">Score</th><th class="r">Price</th></tr></thead><tbody>
+        <tr><td><span class="chip info plain">inaccuracy</span></td><td class="muted">The website promises 48 hours…</td><td class="r num">74</td><td class="r num">$20</td></tr>
+        <tr><td><span class="chip info plain">missing step</span></td><td class="muted">Booking asks for a flat number…</td><td class="r num">62</td><td class="r num">$20</td></tr>
+        <tr><td><span class="chip info plain">pricing</span></td><td class="muted">The pay link in the return email…</td><td class="r num">55</td><td class="r num">$20</td></tr>
+        <tr><td><span class="chip info plain">suggestion</span></td><td class="muted">There is no loyalty program…</td><td class="r num">22</td><td class="r faint">not listed</td></tr>
+      </tbody></table>
+    </div>
+  </section>
+
+  <section class="sec"><h2>How a period runs</h2><div class="three">
+    <div class="panel"><div class="body"><div class="n">01</div><h3>Write the brief</h3><p>Seven questions. They become the review form, the eligibility check and the scoring rubric. The brief freezes when the period opens.</p></div></div>
+    <div class="panel"><div class="body"><div class="n">02</div><h3>Send the links</h3><p>Fund 3 to 50 seats, get one personal link per seat, send each to someone you recruited. They accept on their phone and write as they use your product.</p></div></div>
+    <div class="panel"><div class="body"><div class="n">03</div><h3>Read, then unlock</h3><p>Reviews arrive together when the open stage ends. Issues are listed as teasers and priced by peer score. Unlock the ones worth fixing.</p></div></div>
+  </div></section>
+
+  <section class="sec"><h2>Why it stays honest</h2><div class="rules">
+    <div><span class="dot"></span><span>Reviewers are pseudonymous to you. Kind-to-your-face does not pay here.</span></div>
+    <div><span class="dot"></span><span>Every review is rated blind by three peers from the same period.</span></div>
+    <div><span class="dot"></span><span>Flags are triaged by AI and decided by a person. Nothing is binned by a machine.</span></div>
+    <div><span class="dot"></span><span>Reviewers are paid for the submission, never for whether you adopt it.</span></div>
+    <div><span class="dot"></span><span>You pay before you read. Nobody can take an idea and not pay for it.</span></div>
+    <div><span class="dot"></span><span>Reviewers declare whether they knew you. Too many friends and you are told.</span></div>
+  </div></section>
+
+  <section class="sec"><h2>What it costs</h2><div class="price">
+    <div class="tile"><div class="k">A seat</div><div class="v">$24</div><div class="s">$20 to the reviewer, 20% to Candid. Unused seats refund.</div></div>
+    <div class="tile"><div class="k">An issue</div><div class="v">$10 to $30</div><div class="s">Priced by the peer score. Below the bottom tier is never listed.</div></div>
+    <div class="tile"><div class="k">Subscription</div><div class="v">None</div><div class="s">Credits, prepaid. Run a period when you have something to test.</div></div>
+  </div></section>
+
+  <section class="sec" id="start"><div class="panel"><div class="body stack">
+    <h2 style="margin:0">Get early access</h2>
+    <p class="muted sm">Candid is running as a private pilot. Leave your email and what you make, and your account is opened by hand.</p>
+    <form class="signup" id="lead">
+      <div class="field"><label for="email">Email</label><input type="email" id="email" required autocomplete="email"></div>
+      <div class="field"><label for="note">What you make</label><input type="text" id="note" placeholder="e.g. laundry pickup in Melbourne's inner north"></div>
+      <div class="field"><button class="btn primary lg" type="submit">Request access</button></div>
+    </form>
+    <p class="sm" id="leadmsg"></p>
+  </div></div></section>
+
+  <footer><span>Candid · paid, private, peer-checked feedback</span><span>Got an invite link? Open it from the message you were sent.</span></footer>
+</div>
+<script>
+'use strict';
+const qs = new URLSearchParams(location.search), via = qs.get('via') || '', source = qs.get('s') || (via ? 'invite' : 'ad');
+document.getElementById('lead').addEventListener('submit', async (ev) => {
+  ev.preventDefault();
+  const msg = document.getElementById('leadmsg'), btn = ev.target.querySelector('button'); btn.disabled = true; msg.textContent = '';
+  try {
+    const r = await fetch('/api/lead', { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify({ email: document.getElementById('email').value, note: document.getElementById('note').value, via, source }) });
+    const j = await r.json().catch(() => ({}));
+    if (!j.ok) throw new Error(j.error || 'Try again');
+    msg.textContent = 'Got it. You will hear back by email.'; msg.style.color = 'var(--good)'; ev.target.reset();
+  } catch (e) { msg.textContent = e.message; msg.style.color = 'var(--bad)'; btn.disabled = false; }
+});
+</script>
 </body>
 </html>

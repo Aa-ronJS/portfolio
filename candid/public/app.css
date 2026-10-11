@@ -68,6 +68,7 @@ p { margin: 0 } a { color: var(--accent-text) }
 
 .btn { font: inherit; font-weight: 500; font-size: 13.5px; padding: 7px 12px; border-radius: 7px; border: 1px solid var(--line-strong); background: var(--surface); color: var(--ink); cursor: pointer; display: inline-flex; align-items: center; gap: 6px; white-space: nowrap }
 .btn:hover { background: var(--hover) }
+a.btn { text-decoration: none }
 .btn.primary { background: var(--accent); color: var(--accent-ink); border-color: var(--accent) }
 .btn.primary:hover { filter: brightness(1.05) }
 .btn.danger { color: var(--bad); border-color: var(--bad) }

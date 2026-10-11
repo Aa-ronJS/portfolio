@@ -176,6 +176,19 @@ ok(b.business.period.state === "closed" && b.business.credits.locked === 0 && b.
 r = await call(reviewer, "GET", "/api/reviewer?token=" + t2[0]);
 ok(r.view.me.payout === "released", "the lone reviewer's fee is released without ever rating anyone");
 
+// ---- a lead from the landing page, attributed to the business whose reviewer sent them
+const lead = (await import("../api/lead.js")).default;
+const L = (body, hdr) => call(lead, "POST", "/api/lead", body, hdr);
+let l = await L({ email: "not an email", via: id });
+ok(l.status === 400, "a lead needs a real email");
+l = await L({ email: "Maker@Example.com", note: "a bike repair van", via: id, source: "paid" }, { cookie: "" });
+ok(l.status === 200, "a lead is taken without any sign-in");
+l = await L({ email: "maker@example.com", via: id, source: "paid" }, { cookie: "" });
+const gotLeads = await call(lead, "GET", "/api/lead");
+ok(gotLeads.status === 200 && gotLeads.leads.length === 1 && gotLeads.leads[0].viaName === "Loop Laundry" && gotLeads.leads[0].source === "paid", "the owner sees one lead, de-duplicated, attributed to Loop Laundry's reviewer flow");
+const anon = await call(lead, "GET", "/api/lead", null, { cookie: "" });
+ok(anon.status === 401, "and nobody else can read the list");
+
 // ---- concurrency guard
 const S = await import("../api/_store.js");
 let clash = null;

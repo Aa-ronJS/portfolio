@@ -8,7 +8,7 @@ const FLAG_REASONS = ['untruthful', 'unfairly positive', 'unfairly negative', 'n
 const PLACES = [['Neighbourhood Facebook groups', 'Say it is paid and private'], ['Local subreddit or forum', 'Message a mod first'], ['Your waitlist and past enquiries', 'Best strangers you have'], ['Building and strata noticeboards', 'Ask the manager'], ['Cafe pinboards', 'Poster with a QR code']];
 const QUESTIONS = [['product', 'What is it, in one sentence?'], ['audience', 'Who is it for, and who is it not for?'], ['job', 'What will a reviewer do, how long does it take, and what do they get free?'], ['wants', 'The three things you most want to know', 'One per line. Each becomes a section of the review form.'], ['known', 'What you already know is weak', 'One per line. Reviewers are not paid to repeat these.'], ['wontChange', 'What you will not change', 'Feedback on it is marked off-brief.'], ['eligibility', 'What must a reviewer have or be?']];
 
-const A = { auth: null, biz: [], id: null, d: null, page: 'overview', side: false, drawer: null, wizard: null, busy: null, seats: 5, meta: {} };
+const A = { auth: null, biz: [], id: null, d: null, page: 'overview', side: false, drawer: null, wizard: null, busy: null, seats: 5, meta: {}, leads: null };
 const $ = (s) => document.querySelector(s);
 const esc = (s) => String(s ?? '').replace(/[&<>"]/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
 const money = (n) => (n < 0 ? '−' : '') + '$' + Math.abs(Number(n)).toFixed(0);
@@ -30,7 +30,7 @@ async function act(body, okMsg) {
   try { const j = await api('/api/business', { id: A.id, ...body }); A.d = j; if (okMsg) toast(typeof okMsg === 'function' ? okMsg(j) : okMsg); render(); return j; }
   catch (e) { toast(e.message, true); render(); return null; }
 }
-async function loadList() { const j = await api('/api/business?list=1'); A.biz = j.businesses; A.meta = j.meta || {}; }
+async function loadList() { const j = await api('/api/business?list=1'); A.biz = j.businesses; A.meta = j.meta || {}; api('/api/lead').then((l) => { A.leads = l.leads; render(); }).catch(() => {}); }
 async function loadBiz(id) { const j = await api('/api/business?id=' + encodeURIComponent(id)); A.id = id; A.d = j; store.set('candid-biz', id); }
 async function boot() {
   try { A.auth = await api('/api/auth'); } catch (e) { A.auth = { loggedIn: false, configured: false }; }
@@ -48,20 +48,20 @@ function navFor() {
   const b = bv(), a = av(); if (!b) return [];
   const ready = b.bugs.filter((x) => x.scores && x.tier && !x.unlocked).length;
   return [['overview', 'Overview'], ['period', 'Review period'], ['reviews', 'Reviews', b.reviews.length], ['issues', 'Issues', ready], ['credits', 'Credits'], ['brief', 'Brief'], ['activity', 'Activity'],
-    ['_', 'Platform'], ['queue', 'Queue', a.flags.filter((f) => f.state === 'queued').length], ['payouts', 'Payouts', a.payouts.filter((p) => p.state === 'released').length], ['reviewers', 'Reviewers'], ['plog', 'Everything']];
+    ['_', 'Platform'], ['queue', 'Queue', a.flags.filter((f) => f.state === 'queued').length], ['payouts', 'Payouts', a.payouts.filter((p) => p.state === 'released').length], ['reviewers', 'Reviewers'], ['leads', 'Leads', A.leads ? A.leads.length : 0], ['plog', 'Everything']];
 }
 function render() {
   const app = $('#app');
   if (!A.auth || !A.auth.loggedIn) { app.className = 'login'; app.innerHTML = loginView(); renderDrawer(); return; }
   app.className = 'app';
   const nav = navFor(); if (nav.length && !nav.some((n) => n[0] === A.page)) A.page = 'overview';
-  const titles = { overview: 'Overview', period: 'Review period', reviews: 'Reviews', issues: 'Issues', credits: 'Credits', brief: 'Brief', activity: 'Activity', queue: 'Queue', payouts: 'Payouts', reviewers: 'Reviewers', plog: 'Everything' };
+  const titles = { overview: 'Overview', period: 'Review period', reviews: 'Reviews', issues: 'Issues', credits: 'Credits', brief: 'Brief', activity: 'Activity', queue: 'Queue', payouts: 'Payouts', reviewers: 'Reviewers', leads: 'Leads', plog: 'Everything' };
   app.innerHTML = `<aside class="side${A.side ? ' open' : ''}" id="side"><div class="brand"><span class="mark">C</span>Candid</div>
     <div class="ws"><select id="wsel" data-act="switch" aria-label="Business">${A.biz.map((b) => `<option value="${b.id}" ${b.id === A.id ? 'selected' : ''}>${esc(b.name)}</option>`).join('')}<option value="__new">+ New business</option></select></div>
     <nav class="nav">${nav.map(([k, l, c]) => k === '_' ? `<div class="grp">${l}</div>` : `<button data-act="page" data-v="${k}" aria-current="${A.page === k ? 'page' : 'false'}">${l}${c ? `<span class="count">${c}</span>` : ''}</button>`).join('')}</nav>
     <div class="foot xs faint">${A.meta.ai ? 'AI · Claude' : 'AI · built-in'}${bv() ? ` · period ${bv().periodNo || '—'}` : ''}<br>${btn('logout', 'Sign out', '', 'btn ghost sm')}</div></aside>
     ${A.side ? '<div class="scrim" data-act="side"></div>' : ''}
-    <div class="main"><div class="topbar"><div class="title">${btn('side', '☰', 'aria-label="Menu"', 'btn menu-btn')}<h1>${bv() ? titles[A.page] : 'Candid'}</h1>${bv() && bv().period && !['brief', 'queue', 'payouts', 'reviewers', 'plog'].includes(A.page) ? stateChip() : ''}</div><div class="row">${bv() ? `<span class="sm muted">${esc(bv().name)}</span>` : ''}</div></div>
+    <div class="main"><div class="topbar"><div class="title">${btn('side', '☰', 'aria-label="Menu"', 'btn menu-btn')}<h1>${bv() ? titles[A.page] : 'Candid'}</h1>${bv() && bv().period && !['brief', 'queue', 'payouts', 'reviewers', 'leads', 'plog'].includes(A.page) ? stateChip() : ''}</div><div class="row">${bv() ? `<span class="sm muted">${esc(bv().name)}</span>` : ''}</div></div>
     <div class="content">${A.busy ? `<div class="empty"><span class="spin"></span>&nbsp; ${esc(A.busy)}</div>` : page()}</div></div>`;
   renderDrawer();
 }
@@ -80,7 +80,7 @@ const logRows = (rows) => rows.length ? rows.map((e) => `<div class="lgrow"><spa
 
 function page() {
   if (!bv()) return `<div class="panel"><div class="hero"><h1>Add your first business</h1><div class="field" style="width:min(360px,100%)"><input type="text" id="newname" placeholder="Business name"></div>${btn('create', 'Create', '', 'btn primary')}</div></div>`;
-  return ({ overview, period, reviews, issues, credits, brief: briefPage, activity, queue, payouts, reviewers, plog })[A.page]();
+  return ({ overview, period, reviews, issues, credits, brief: briefPage, activity, queue, payouts, reviewers, leads, plog })[A.page]();
 }
 
 // ---------- business pages ----------
@@ -186,6 +186,11 @@ function reviewers() {
     <p class="xs faint">Reputation = (60 × 5 + Σ usefulness) ÷ (5 + n). Emails, PayIDs and links are visible here only. Copy a link to resend it to someone who lost theirs.</p>`;
 }
 const plog = () => `<div class="panel"><div class="body tight">${logRows(av().log.slice().reverse())}</div></div>`;
+function leads() {
+  const rows = A.leads || [];
+  const src = { invite: 'Invite page', submitted: 'After submitting', paid: 'After payout', ad: 'Landing page' };
+  return `<p class="sm muted">People who asked for an account on the landing page. "Via" is the business whose reviewer flow brought them.</p><div class="panel"><div class="body tight scroll"><table><thead><tr><th>When</th><th>Email</th><th>What they make</th><th>Came from</th><th>Via</th></tr></thead><tbody>${rows.map((l) => `<tr><td class="num faint">${fmt(l.at)}</td><td class="strong">${esc(l.email)}</td><td>${esc(l.note) || '<span class="faint">—</span>'}</td><td>${chip(src[l.source] || 'Landing page', l.source && l.source !== 'ad' ? 'accent' : '', true)}</td><td class="sm">${esc(l.viaName) || '<span class="faint">—</span>'}</td></tr>`).join('') || '<tr><td colspan="5" class="empty">No leads yet</td></tr>'}</tbody></table></div></div>`;
+}
 
 // ---------- drawer ----------
 function renderDrawer() {
