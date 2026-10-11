@@ -378,14 +378,32 @@ def thumbnail(cfg, ep, final, llm=None):
 
 
 def _wrap(draw, text, font, width):
-    words, lines, cur = text.split(), [], ""
+    """Wrap to the width, then balance: of every split into the same
+    number of lines, take the one whose longest line is shortest, so a
+    two-line title reads '3 MINUTES / A DAY', not '3 MINUTES A / DAY'."""
+    words = text.split()
+
+    def w_of(ws):
+        return draw.textbbox((0, 0), " ".join(ws), font=font)[2]
+
+    lines, cur = [], []
     for w in words:
-        trial = (cur + " " + w).strip()
-        if cur and draw.textbbox((0, 0), trial, font=font)[2] > width:
+        if cur and w_of(cur + [w]) > width:
             lines.append(cur)
-            cur = w
+            cur = [w]
         else:
-            cur = trial
+            cur.append(w)
     if cur:
         lines.append(cur)
-    return lines
+    n = len(lines)
+    if n == 1 or len(words) > 12:
+        return [" ".join(l) for l in lines]
+    best, best_cost = lines, max(w_of(l) for l in lines)
+    import itertools
+    for cuts in itertools.combinations(range(1, len(words)), n - 1):
+        bounds = (0,) + cuts + (len(words),)
+        cand = [words[a:b] for a, b in zip(bounds, bounds[1:])]
+        widths = [w_of(l) for l in cand]
+        if max(widths) <= width and max(widths) < best_cost:
+            best, best_cost = cand, max(widths)
+    return [" ".join(l) for l in best]

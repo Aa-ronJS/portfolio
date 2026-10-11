@@ -1,0 +1,435 @@
+{
+  "title": "The Single Dad Workout Science Says Still Counts",
+  "alternate_titles": [
+    "Three Minutes a Day: Fitness for Dads With No Time",
+    "You Don't Need the Gym. You Need Twelve Minutes.",
+    "What the Research Says About Getting Fit as a Single Dad",
+    "The Dad Who Can't Get to the Gym"
+  ],
+  "thumbnail_text": "3 MINUTES A DAY",
+  "summary": "Two and a half million men in the US are raising kids on their own, and almost none of them have an hour for the gym. This video takes the three findings that matter most for a man with no time and broken sleep — short bursts that count, the smallest amount of lifting that works, and why sleep is quietly a diet — and fits them into a school week.",
+  "mood": "upbeat",
+  "tags": [
+    "single dad fitness",
+    "dad workout",
+    "no time to exercise",
+    "exercise snacks",
+    "minimal dose training",
+    "sleep and weight",
+    "fitness for busy dads",
+    "home workout dad",
+    "health for men over 30",
+    "dad strength"
+  ],
+  "words": 1017,
+  "scores": {
+    "hook": 4,
+    "through_line": 5,
+    "concreteness": 5,
+    "support": 5,
+    "spoken": 5,
+    "pacing": 4,
+    "payoff": 4,
+    "visuals": 4
+  },
+  "sections": [
+    {
+      "heading": "The Hour You Don't Have",
+      "sentences": [
+        {
+          "text": "There are about two and a half million single fathers in the United States, running a house on their own.",
+          "visual": "father cooking dinner with child",
+          "alt_visual": "dad helping kid with homework",
+          "callout": "2.5 million"
+        },
+        {
+          "text": "Ask any one of them when he last had a free hour, and watch him laugh.",
+          "visual": "tired dad on couch at night",
+          "alt_visual": "man rubbing eyes kitchen",
+          "callout": ""
+        },
+        {
+          "text": "Every fitness plan he has ever been handed starts with that hour.",
+          "visual": "gym treadmill row empty",
+          "alt_visual": "man checking watch gym",
+          "callout": ""
+        },
+        {
+          "text": "Five mornings a week, an hour each, before the kids are up.",
+          "visual": "alarm clock early morning",
+          "alt_visual": "man lacing shoes dawn",
+          "callout": ""
+        },
+        {
+          "text": "So he doesn't start, and then he feels bad about not starting, and the years go by.",
+          "visual": "father watching kids play from bench",
+          "alt_visual": "dad pushing swing park",
+          "callout": ""
+        },
+        {
+          "text": "This video is about the research that says the hour was never the point.",
+          "visual": "stopwatch close up",
+          "alt_visual": "kitchen timer close up",
+          "callout": ""
+        },
+        {
+          "text": "Three findings, one week, and a plan that survives a sick kid on a Tuesday.",
+          "visual": "calendar on fridge",
+          "alt_visual": "weekly planner close up",
+          "callout": ""
+        }
+      ],
+      "narration": "There are about two and a half million single fathers in the United States, running a house on their own. Ask any one of them when he last had a free hour, and watch him laugh. Every fitness plan he has ever been handed starts with that hour. Five mornings a week, an hour each, before the kids are up. So he doesn't start, and then he feels bad about not starting, and the years go by. This video is about the research that says the hour was never the point. Three findings, one week, and a plan that survives a sick kid on a Tuesday."
+    },
+    {
+      "heading": "The Number on the Poster",
+      "sentences": [
+        {
+          "text": "The official target is the one you have seen on a poster at the doctor's.",
+          "visual": "health poster clinic wall",
+          "alt_visual": "doctor office waiting room",
+          "callout": ""
+        },
+        {
+          "text": "The World Health Organization says adults should get a hundred and fifty to three hundred minutes of moderate activity a week, or seventy-five to a hundred and fifty minutes of vigorous activity, plus something that strengthens muscle on two or more days.",
+          "visual": "people jogging city park",
+          "alt_visual": "man cycling to work",
+          "callout": "150 minutes a week"
+        },
+        {
+          "text": "That is the standard, and it is a good one.",
+          "visual": "people jogging city park",
+          "alt_visual": "man cycling to work",
+          "callout": ""
+        },
+        {
+          "text": "But read it again and notice what it does not say.",
+          "visual": "man reading phone kitchen",
+          "alt_visual": "close up reading document",
+          "callout": ""
+        },
+        {
+          "text": "It does not say gym, it does not say morning, and it does not say an hour at a time.",
+          "visual": "man carrying groceries up stairs",
+          "alt_visual": "dad carrying toddler on shoulders",
+          "callout": ""
+        },
+        {
+          "text": "A hundred and fifty minutes is twenty-one minutes a day, and the guideline counts a brisk walk to school drop-off.",
+          "visual": "father walking child to school",
+          "alt_visual": "dad and kid walking footpath",
+          "callout": "21 minutes a day"
+        },
+        {
+          "text": "And vigorous activity counts at half the time, which is where the first finding comes in.",
+          "visual": "man running up stairs",
+          "alt_visual": "stairs close up feet running",
+          "callout": ""
+        }
+      ],
+      "narration": "The official target is the one you have seen on a poster at the doctor's. The World Health Organization says adults should get a hundred and fifty to three hundred minutes of moderate activity a week, or seventy-five to a hundred and fifty minutes of vigorous activity, plus something that strengthens muscle on two or more days. That is the standard, and it is a good one. But read it again and notice what it does not say. It does not say gym, it does not say morning, and it does not say an hour at a time. A hundred and fifty minutes is twenty-one minutes a day, and the guideline counts a brisk walk to school drop-off. And vigorous activity counts at half the time, which is where the first finding comes in."
+    },
+    {
+      "heading": "Three Minutes That Count",
+      "sentences": [
+        {
+          "text": "In twenty twenty-two a team led by Emmanuel Stamatakis published a study in Nature Medicine on twenty-five thousand people who said they did no exercise at all.",
+          "visual": "wrist activity tracker close up",
+          "alt_visual": "smartwatch on wrist walking",
+          "callout": "25,000 non-exercisers"
+        },
+        {
+          "text": "They wore movement trackers for a week, and the researchers looked for short bursts of hard effort inside ordinary life.",
+          "visual": "man carrying boxes up stairs",
+          "alt_visual": "person running for bus",
+          "callout": ""
+        },
+        {
+          "text": "Running for a bus, carrying shopping up the stairs, chasing a kid across a park.",
+          "visual": "father chasing child in park",
+          "alt_visual": "dad running with kids grass",
+          "callout": ""
+        },
+        {
+          "text": "Then they followed those people for about seven years.",
+          "visual": "calendar pages turning",
+          "alt_visual": "seasons changing park",
+          "callout": ""
+        },
+        {
+          "text": "People who managed about three of those bursts a day, each lasting one or two minutes, had roughly forty percent lower risk of dying over that period than people who did none.",
+          "visual": "man sprinting up stairs",
+          "alt_visual": "father piggyback running",
+          "callout": "40% lower risk"
+        },
+        {
+          "text": "Three bursts, about a minute each, no gym, no kit, no plan.",
+          "visual": "dad doing burpees living room",
+          "alt_visual": "man jumping jacks lounge room",
+          "callout": ""
+        },
+        {
+          "text": "This is observational research, so it shows a pattern, not a proof, and the people in it were in their sixties on average.",
+          "visual": "older man walking briskly",
+          "alt_visual": "scientist reading data",
+          "callout": ""
+        },
+        {
+          "text": "But the pattern was steady: more bursts, lower risk, in a near straight line.",
+          "visual": "graph line rising on screen",
+          "alt_visual": "data chart close up",
+          "callout": ""
+        },
+        {
+          "text": "For a man whose day is already full of stairs and small children, that is not a workout he has to find time for.",
+          "visual": "dad carrying child up stairs",
+          "alt_visual": "father lifting toddler high",
+          "callout": ""
+        },
+        {
+          "text": "It is the day he already has, done harder.",
+          "visual": "dad carrying child up stairs",
+          "alt_visual": "father lifting toddler high",
+          "callout": ""
+        }
+      ],
+      "narration": "In twenty twenty-two a team led by Emmanuel Stamatakis published a study in Nature Medicine on twenty-five thousand people who said they did no exercise at all. They wore movement trackers for a week, and the researchers looked for short bursts of hard effort inside ordinary life. Running for a bus, carrying shopping up the stairs, chasing a kid across a park. Then they followed those people for about seven years. People who managed about three of those bursts a day, each lasting one or two minutes, had roughly forty percent lower risk of dying over that period than people who did none. Three bursts, about a minute each, no gym, no kit, no plan. This is observational research, so it shows a pattern, not a proof, and the people in it were in their sixties on average. But the pattern was steady: more bursts, lower risk, in a near straight line. For a man whose day is already full of stairs and small children, that is not a workout he has to find time for. It is the day he already has, done harder."
+    },
+    {
+      "heading": "The Smallest Lift That Works",
+      "sentences": [
+        {
+          "text": "Bursts cover the heart.",
+          "visual": "heart rate monitor screen",
+          "alt_visual": "man hand on chest breathing",
+          "callout": ""
+        },
+        {
+          "text": "Muscle is the other half, and it is the half men lose first as they age.",
+          "visual": "man flexing arm mirror",
+          "alt_visual": "older man lifting dumbbell",
+          "callout": ""
+        },
+        {
+          "text": "In twenty twenty-one, a review in the journal Sports Medicine called No Time to Lift asked how little strength training you can do and still get stronger.",
+          "visual": "man doing push ups living room",
+          "alt_visual": "dad push ups with kid on back",
+          "callout": ""
+        },
+        {
+          "text": "Their answer: around four hard sets per muscle group per week, in a range of about six to fifteen repetitions, with the weekly total mattering more than how many days you spread it over.",
+          "visual": "man doing squats kitchen",
+          "alt_visual": "dad lifting kettlebell garage",
+          "callout": "4 sets a week"
+        },
+        {
+          "text": "Big movements that use several joints at once, push, pull, squat, and at least one that presses with the legs.",
+          "visual": "man doing lunges backyard",
+          "alt_visual": "father squatting holding child",
+          "callout": ""
+        },
+        {
+          "text": "Four sets is not a session.",
+          "visual": "stopwatch close up",
+          "alt_visual": "kitchen timer close up",
+          "callout": ""
+        },
+        {
+          "text": "It is two sets of push-ups on Tuesday while the pasta boils and two more on Saturday with a toddler on your back.",
+          "visual": "dad push ups with kid on back",
+          "alt_visual": "father exercising with son floor",
+          "callout": ""
+        },
+        {
+          "text": "A child is a load that grows about a kilogram every few months, which is, frankly, a progressive overload program with a built-in timer.",
+          "visual": "father lifting child overhead",
+          "alt_visual": "dad carrying toddler on shoulders",
+          "callout": ""
+        }
+      ],
+      "narration": "Bursts cover the heart. Muscle is the other half, and it is the half men lose first as they age. In twenty twenty-one, a review in the journal Sports Medicine called No Time to Lift asked how little strength training you can do and still get stronger. Their answer: around four hard sets per muscle group per week, in a range of about six to fifteen repetitions, with the weekly total mattering more than how many days you spread it over. Big movements that use several joints at once, push, pull, squat, and at least one that presses with the legs. Four sets is not a session. It is two sets of push-ups on Tuesday while the pasta boils and two more on Saturday with a toddler on your back. A child is a load that grows about a kilogram every few months, which is, frankly, a progressive overload program with a built-in timer."
+    },
+    {
+      "heading": "Sleep Is the Diet",
+      "sentences": [
+        {
+          "text": "Now the finding that single dads need most and like least.",
+          "visual": "man awake in bed night",
+          "alt_visual": "father checking on sleeping child",
+          "callout": ""
+        },
+        {
+          "text": "In twenty twenty-two, researchers at the Mayo Clinic kept twelve healthy adults in a lab for three weeks and let them eat whatever they wanted.",
+          "visual": "hospital research ward bed",
+          "alt_visual": "scientist in lab coat clipboard",
+          "callout": ""
+        },
+        {
+          "text": "For two of those weeks, half the time they got nine hours in bed and half the time they got four.",
+          "visual": "alarm clock 4am",
+          "alt_visual": "bedside clock night",
+          "callout": ""
+        },
+        {
+          "text": "On four hours, the same people ate about three hundred more calories a day without being told to.",
+          "visual": "man eating snacks late night fridge",
+          "alt_visual": "hand reaching into fridge night",
+          "callout": "+308 calories a day"
+        },
+        {
+          "text": "In two weeks they gained about half a kilogram, and the fat they gained was the deep kind around the organs, up about eleven percent.",
+          "visual": "man pinching belly fat",
+          "alt_visual": "bathroom scale feet",
+          "callout": "+11% visceral fat"
+        },
+        {
+          "text": "Twelve people is a small study, and a lab is not a house with a teething baby in it.",
+          "visual": "baby crying crib night",
+          "alt_visual": "father holding baby night",
+          "callout": ""
+        },
+        {
+          "text": "But it matches what bigger reviews find: short sleep makes people eat more the next day, and reach for the wrong things.",
+          "visual": "takeaway food bag table",
+          "alt_visual": "chips and soda on desk",
+          "callout": ""
+        },
+        {
+          "text": "So for a dad who sleeps six hours on a good night, the most effective diet might not be a diet.",
+          "visual": "man sleeping peacefully",
+          "alt_visual": "dark bedroom phone face down",
+          "callout": ""
+        },
+        {
+          "text": "It might be the bedtime that moves half an hour earlier, phone in the kitchen, same every night the kids are home.",
+          "visual": "phone charging on kitchen counter night",
+          "alt_visual": "man turning off bedroom lamp",
+          "callout": ""
+        }
+      ],
+      "narration": "Now the finding that single dads need most and like least. In twenty twenty-two, researchers at the Mayo Clinic kept twelve healthy adults in a lab for three weeks and let them eat whatever they wanted. For two of those weeks, half the time they got nine hours in bed and half the time they got four. On four hours, the same people ate about three hundred more calories a day without being told to. In two weeks they gained about half a kilogram, and the fat they gained was the deep kind around the organs, up about eleven percent. Twelve people is a small study, and a lab is not a house with a teething baby in it. But it matches what bigger reviews find: short sleep makes people eat more the next day, and reach for the wrong things. So for a dad who sleeps six hours on a good night, the most effective diet might not be a diet. It might be the bedtime that moves half an hour earlier, phone in the kitchen, same every night the kids are home."
+    },
+    {
+      "heading": "A Week That Survives",
+      "sentences": [
+        {
+          "text": "Put the three together and a week looks like this.",
+          "visual": "weekly planner on fridge",
+          "alt_visual": "hand writing on calendar",
+          "callout": ""
+        },
+        {
+          "text": "Every day, three hard minutes hidden in the day you already have: take the stairs at a run, carry the shopping in one trip, race the kids to the car.",
+          "visual": "father racing kids to car",
+          "alt_visual": "dad and kids running driveway",
+          "callout": "3 hard minutes"
+        },
+        {
+          "text": "Twice a week, two or three sets each of a push, a pull and a squat, in the kitchen, in the time it takes rice to cook.",
+          "visual": "man doing squats kitchen",
+          "alt_visual": "man push ups living room",
+          "callout": "2 x 10 minutes"
+        },
+        {
+          "text": "A pull can be a towel over a door, a backpack full of books, or a chin-up bar in a doorway that costs less than a takeaway.",
+          "visual": "doorway pull up bar home",
+          "alt_visual": "man rowing with resistance band",
+          "callout": ""
+        },
+        {
+          "text": "And a bedtime you defend like a meeting, because it is the one thing on this list that does the most while you do nothing.",
+          "visual": "man setting alarm bedside",
+          "alt_visual": "dark bedroom phone face down",
+          "callout": ""
+        },
+        {
+          "text": "On custody weeks when the kids are with their mum, that is when the longer sessions can happen, if you want them.",
+          "visual": "man running trail alone morning",
+          "alt_visual": "man at gym rack",
+          "callout": ""
+        },
+        {
+          "text": "On the weeks they are home, the short version is not the fallback.",
+          "visual": "dad and kids doing jumping jacks",
+          "alt_visual": "father exercising with children lounge",
+          "callout": ""
+        },
+        {
+          "text": "It is the plan.",
+          "visual": "dad and kids doing jumping jacks",
+          "alt_visual": "father exercising with children lounge",
+          "callout": ""
+        }
+      ],
+      "narration": "Put the three together and a week looks like this. Every day, three hard minutes hidden in the day you already have: take the stairs at a run, carry the shopping in one trip, race the kids to the car. Twice a week, two or three sets each of a push, a pull and a squat, in the kitchen, in the time it takes rice to cook. A pull can be a towel over a door, a backpack full of books, or a chin-up bar in a doorway that costs less than a takeaway. And a bedtime you defend like a meeting, because it is the one thing on this list that does the most while you do nothing. On custody weeks when the kids are with their mum, that is when the longer sessions can happen, if you want them. On the weeks they are home, the short version is not the fallback. It is the plan."
+    },
+    {
+      "heading": "The Hour Was Never the Point",
+      "sentences": [
+        {
+          "text": "None of this is medical advice, and if you have a heart condition or you have not moved hard in years, talk to a doctor before you start sprinting up stairs.",
+          "visual": "doctor talking with patient",
+          "alt_visual": "stethoscope on desk",
+          "callout": ""
+        },
+        {
+          "text": "But the evidence is unusually kind to men with no time.",
+          "visual": "father and son high five",
+          "alt_visual": "dad hugging daughter smiling",
+          "callout": ""
+        },
+        {
+          "text": "The biggest returns come from the first few minutes, the first few sets, and the first extra half hour of sleep.",
+          "visual": "sunrise over suburban street",
+          "alt_visual": "morning light kitchen window",
+          "callout": ""
+        },
+        {
+          "text": "The dad who does the small version every week beats the dad who is waiting for the hour.",
+          "visual": "father carrying child on shoulders sunset",
+          "alt_visual": "dad walking with kids sunset",
+          "callout": ""
+        },
+        {
+          "text": "And the kids are not in the way of the training.",
+          "visual": "father piggyback running",
+          "alt_visual": "dad playing chase with kids",
+          "callout": ""
+        },
+        {
+          "text": "They are the training.",
+          "visual": "father piggyback running",
+          "alt_visual": "dad playing chase with kids",
+          "callout": ""
+        }
+      ],
+      "narration": "None of this is medical advice, and if you have a heart condition or you have not moved hard in years, talk to a doctor before you start sprinting up stairs. But the evidence is unusually kind to men with no time. The biggest returns come from the first few minutes, the first few sets, and the first extra half hour of sleep. The dad who does the small version every week beats the dad who is waiting for the hour. And the kids are not in the way of the training. They are the training."
+    }
+  ],
+  "sources": [
+    {
+      "title": "US Census Bureau — National Single Parent Day (CPS 2023: 2.5M father-only households)",
+      "url": "https://www.census.gov/newsroom/stories/single-parent-day.html"
+    },
+    {
+      "title": "World Health Organization — Physical activity (adult guideline)",
+      "url": "https://www.who.int/initiatives/behealthy/physical-activity"
+    },
+    {
+      "title": "Stamatakis et al. 2022, Nature Medicine — vigorous intermittent lifestyle physical activity and mortality (UK Biobank summary)",
+      "url": "https://www.ukbiobank.ac.uk/publications/association-of-wearable-device-measured-vigorous-intermittent-lifestyle-physical-activity-with-mortality/"
+    },
+    {
+      "title": "Iversen, Norum, Schoenfeld, Fimland 2021, Sports Medicine — No Time to Lift? Designing time-efficient training programs",
+      "url": "https://pubmed.ncbi.nlm.nih.gov/34822137/"
+    },
+    {
+      "title": "Covassin et al. 2022, JACC — Effects of experimental sleep restriction on energy intake, energy expenditure, and visceral obesity",
+      "url": "https://pmc.ncbi.nlm.nih.gov/articles/PMC9187217/"
+    },
+    {
+      "title": "Al Khatib et al. 2017, Eur J Clin Nutr — meta-analysis: partial sleep deprivation and energy intake",
+      "url": "https://pmc.ncbi.nlm.nih.gov/articles/PMC5445008"
+    }
+  ]
+}

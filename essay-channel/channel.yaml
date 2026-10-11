@@ -1,14 +1,23 @@
 # essay-channel — the channel's brief. Everything the machine decides, it
 # decides from this file. Edit it, commit, and the next run follows.
 
-name: Untitled Essays
+name: Dad Strength
 # The brief the topic picker and script writer work from. Be specific:
 # who watches, what they come for, what the channel never does.
 niche: >
-  Ten-minute explainers on how ordinary things work — the engineering,
-  economics and history behind objects and systems people use every day
-  without thinking about them. Curious adults; plain language; always
-  concrete; never clickbait, never outrage.
+  Health and fitness for single dads — men raising kids largely on their
+  own, short on time, sleep and money, who want to be strong, healthy
+  and around for a long time. Every video takes one real constraint of
+  that life (no gym hours, broken sleep, cooking for kids, custody
+  weeks, the mental load) and shows what the evidence says actually
+  works inside it: minimal-dose training, sleep and food that fit a
+  school night, movement with the kids rather than instead of them,
+  mental health without jargon. Plain, warm, specific; talks to him like
+  a mate who read the studies, never like a drill sergeant or a
+  supplement ad. Never shames, never sells, never promises a body in
+  thirty days. Cites real research and says plainly when a finding is
+  small or uncertain. Not medical advice; when something needs a
+  doctor, says so.
 language: en
 format: landscape          # landscape (1920x1080) or portrait (1080x1920)
 target_minutes: 8          # narration length the script aims for
@@ -66,8 +75,8 @@ publish:
   slots:
     days: [tue, thu, sat]  # one video per slot, in production order
     at: "17:00"
-  category: 27             # YouTube: 27 Education, 28 Science & Technology, 24 Entertainment
-  tags: [explainer, documentary, how it works]
+  category: 26             # YouTube: 26 Howto & Style, 27 Education, 17 Sports
+  tags: [single dad, dad fitness, fitness for dads, health for men, busy dad workout]
   description: |
     {summary}
 
@@ -77,7 +86,8 @@ publish:
     Sources
     {sources}
 
-    Narration, research and editing are automated; sources are linked above.
+    Not medical advice. Narration, research and editing are automated;
+    the research is linked above so you can check every claim.
 
 review: false              # true: stop after the video is made and wait for
                            # `channel.py approve <slug>` before uploading
