@@ -1,18 +1,24 @@
 # essay-channel
 
-A YouTube channel that runs itself. Give it a brief in `channel.yaml`
-and, on a schedule, it picks a topic, researches it on the web, writes
-a narration script, voices it, cuts stock footage to the narration with
-captions and chapter headings, lays music under it, uploads to YouTube
-and books it into the next release slot. Every step is logged into the
-repo, every claim in a script traces to a source in the description,
-and nothing is ever uploaded twice.
+A YouTube channel that runs itself, and holds itself to a standard.
+Give it a brief in `channel.yaml` and, on a schedule, it picks a topic
+(learning from how earlier videos were watched), researches it on the
+web and goes back for what the outline is missing, writes a narration
+script through draft, critique and revision, voices it and checks the
+voice said the names right, chooses footage for every sentence by
+looking at the candidates, cuts it with motion, dissolves, callouts
+and headings over a ducked music bed, watches the result and scores
+it, and uploads to YouTube into the next release slot — unless the
+review says a person should look first. Every step is logged into the
+repo, every claim traces to a source in the description, and nothing
+is ever uploaded twice.
 
 ```
-brief ─► topic ─► research ─► script ─► voice ─► b-roll ─► music ─► cut ─► YouTube
-         Claude   Claude +    Claude    Eleven   Pexels /  music/   ffmpeg  scheduled
-                  web search            Labs /   Pixabay   Jamendo          private
-                                        OpenAI                             upload
+brief ─► topic ─► research ─► outline ─► script ─► voice ─► footage ─► music ─► cut ─► review ─► YouTube
+         Claude   Claude +    gaps go    draft,    Eleven   Pexels /   music/   ffmpeg  Claude    scheduled,
+         + stats  web search  back out   critique, Labs /   Pixabay,   Jamendo          watches   captions,
+                                         revise,   OpenAI   picked by                   it        chapters
+                                         package   + whisper eye
 ```
 
 ## Try it with nothing set up
@@ -41,7 +47,7 @@ a cent.
 
    | key | for | where to get it |
    |---|---|---|
-   | `ANTHROPIC_API_KEY` | topics, research, script | console.anthropic.com |
+   | `ANTHROPIC_API_KEY` | topics, research, outline, script, footage choice, review | console.anthropic.com |
    | `ELEVENLABS_API_KEY` | narration (default provider) | elevenlabs.io → profile → API keys |
    | `OPENAI_API_KEY` | narration if `voice.provider: openai` | platform.openai.com |
    | `PEXELS_API_KEY` | stock footage (free) | pexels.com/api |
@@ -60,7 +66,8 @@ a cent.
 
    It opens the consent page, catches the redirect, and prints the
    three values to add as secrets: `YT_CLIENT_ID`, `YT_CLIENT_SECRET`,
-   `YT_REFRESH_TOKEN`. Custom thumbnails need a phone-verified channel
+   `YT_REFRESH_TOKEN`. The sign-in asks for upload, read, caption and
+   analytics access (the caption track and `learn` need the last two). Custom thumbnails need a phone-verified channel
    (YouTube Studio → Settings → Channel → Feature eligibility);
    without it the upload still works and YouTube picks a frame.
 
@@ -88,14 +95,20 @@ time if the file exists, so a run that dies resumes where it stopped and
 
 | stage | writes | what happens |
 |---|---|---|
-| topic | `topic.json` | the next title from `topics.queue`, else Claude proposes one that is not in the ledger or `topics.avoid` |
+| topic | `topic.json` | the next title from `topics.queue`, else Claude proposes one that is not in the ledger or `topics.avoid`, told how earlier videos were watched (`learn`) |
 | research | `research.md`, `research.json` | one web-searching turn: facts with source URLs, misconceptions, what could not be confirmed, the sources list |
-| script | `script.json` | sections with a heading, spoken narration (split into sentences), 3–5 literal footage queries; title, summary, mood, tags, the sources used. Validated against a schema |
-| voice | `voice/vo.wav`, `timeline.json` | narration per section (ElevenLabs returns character timestamps) or per sentence (OpenAI), concatenated at −16 LUFS, with the start of every sentence |
-| broll | `broll/plan.json` | footage per section from its queries, cut every `clip_seconds`, cached in `cache/`, never the same clip twice while fresh ones remain; a dry query becomes a plain heading card |
+| outline | `outline.json` | the through-line, the hook, the payoff, each section's job and facts — and the gaps, which go straight back to the researcher and are folded into the notes |
+| script | `draft.json`, `critique.json`, `script.json` | a draft, then critique against a fixed rubric (hook, through-line, concreteness, support, spoken, pacing, payoff, visuals) and a revision that must answer it, for `quality.passes` rounds; any sentence the critic calls unsupported is cut; then a packaging pass picks the title from five candidates. Every sentence carries a literal footage query, an alternative, and an optional on-screen callout |
+| voice | `voice/vo.wav`, `timeline.json` | narration per section (ElevenLabs, with character timestamps and the neighbouring text for continuity) or per sentence (OpenAI), at −16 LUFS, with the start of every sentence; with faster-whisper installed the audio is read back and a mangled name is respelled phonetically and re-recorded |
+| broll | `broll/plan.json` | shots from sentences (a shot holds while sentences share a visual, splits at `shot_max`, joins under `shot_min`); for each shot up to five candidate clips, then photographs, then a card; Claude looks at the candidates' frames and picks the one that shows what is said; clips cached in `cache/`, none reused while fresh ones remain |
 | music | `music/music.json` | a local track matching the mood, else Jamendo; credit kept for the description |
-| assemble | `final.mp4`, `captions.ass`, `thumbnail.jpg` | ffmpeg: clips scaled and cropped to frame, captions and section headings burned in (libass), music ducked under the voice (sidechain), x264 1080p; a thumbnail from the first scene with the thumbnail text |
-| publish | `publish.json`, `ledger.json` | resumable upload as private with `publishAt` = next free slot; title, chapters, sources and credits in the description; a marker tag on the video so a lost ledger cannot cause a re-upload |
+| assemble | `final.mp4`, `captions.ass`, `captions.srt`, `thumbnail.jpg` | ffmpeg: every shot scaled to fill with a slow push or Ken Burns, hard cuts inside a section and a dissolve between, fade up under the title and down under the end card, lower-third headings, accent callouts, captions burned or kept as a track, a light grade, music ducked under the voice; a thumbnail from a frame Claude chose, with the thumbnail text and an accent bar |
+| quality | `quality.json` | Claude sees one frame per shot with the sentence heard over it, rates every match and the whole, and says publish or hold; with the script's critique scores, anything under `quality.min_score` holds the episode for a person |
+| publish | `publish.json`, `ledger.json` | resumable upload as private with `publishAt` = next free slot; title, chapters, sources and credits in the description; the caption track and thumbnail set; a marker tag on the video so a lost ledger cannot cause a re-upload |
+
+`channel.py learn` pulls views and average-percentage-watched for every
+published video into the ledger (YouTube Analytics); `run` does it
+before picking a topic, so the channel leans toward what holds people.
 
 The committed record is the text: topic, research, script, plan, the
 publish record and the ledger. Media stays out of git (the Action keeps
@@ -103,9 +116,13 @@ each `final.mp4` as a build artifact for a fortnight).
 
 ## Keeping a hand on it
 
-- `review: true` in `channel.yaml` stops every episode after the cut.
-  Watch `final.mp4`, then `channel.py approve <slug>`; the next run
-  uploads it. The scheduled run keeps making the next episode meanwhile.
+- The review holds anything under `quality.min_score` (script critique,
+  footage match, or the reviewer's overall) or that the reviewer says to
+  hold. `channel.py status` shows why; watch `final.mp4`, then
+  `channel.py approve <slug>` (or `redo <slug> script` / `broll` to
+  remake the weak part). The scheduled run keeps making the next episode
+  meanwhile; a held one never blocks the queue.
+- `review: true` in `channel.yaml` holds every episode regardless.
 - `topics.queue` lets you set the titles; `topics.avoid` rules
   subjects out; `topics.generate: false` stops it inventing any.
 - `channel.py run --topic "..."` makes one specific episode.
@@ -124,8 +141,11 @@ each `final.mp4` as a build artifact for a fortnight).
   content" targets mass-produced, repetitive channels. A channel that
   says something specific per episode, with real sources, is the kind
   this is built to be; a hundred near-identical uploads a week is not.
-- **Cost per episode** (rough, 8 minutes): Claude research + script a
-  few dollars at Opus pricing; ElevenLabs about 9k characters (the free
-  tier covers one episode a month, the Starter tier about three);
-  Pexels, Pixabay and Jamendo are free; YouTube's API quota allows
-  six uploads a day.
+- **Cost per episode** (rough, 8 minutes): about ten Claude calls at
+  Opus pricing — two research turns, outline, draft, two critiques and
+  revisions, packaging, a vision pick per section, the review — call it
+  five to fifteen dollars depending on how long the research runs;
+  ElevenLabs about 9k characters (the free tier covers one episode a
+  month, the Starter tier about three); Pexels, Pixabay and Jamendo are
+  free; YouTube's API quota allows six uploads a day. `quality.passes:
+  1` and `vision_pick: false` roughly halve the Claude spend.

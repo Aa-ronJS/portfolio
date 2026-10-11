@@ -26,7 +26,10 @@ import zoneinfo
 
 CRED_FILE = os.path.expanduser("~/.config/essay-channel/youtube.json")
 SCOPES = ("https://www.googleapis.com/auth/youtube.upload "
-          "https://www.googleapis.com/auth/youtube.readonly")
+          "https://www.googleapis.com/auth/youtube.readonly "
+          "https://www.googleapis.com/auth/youtube.force-ssl "
+          "https://www.googleapis.com/auth/yt-analytics.readonly")
+ANALYTICS = "https://youtubeanalytics.googleapis.com/v2/reports"
 AUTH_URL = "https://accounts.google.com/o/oauth2/v2/auth"
 TOKEN_URL = "https://oauth2.googleapis.com/token"
 API = "https://www.googleapis.com/youtube/v3"
@@ -100,11 +103,11 @@ def build_metadata(cfg, ep, script, tl, music, broll):
             chapters.append("%s %s" % (_mmss(sec["start"]), sec["heading"]))
     sources = ["%s — %s" % (s["title"], s["url"]) for s in script.get("sources", [])]
     credits = []
+    if plan_credit := _footage_credits(broll):
+        credits.append(plan_credit)
     if music and music.get("credit"):
         credits.append(music["credit"])
-    site = FOOTAGE_SITES.get((broll or {}).get("provider"))
-    if site:
-        credits.append("Footage from %s." % site)
+
     description = pub["description"].format(
         summary=script["summary"].strip(), title=title,
         chapters="\n".join(chapters), sources="\n".join(sources) or "(none)",
@@ -122,6 +125,18 @@ def build_metadata(cfg, ep, script, tl, music, broll):
             "description": description.strip()[:DESCRIPTION_MAX],
             "tags": tags, "category": str(pub["category"]),
             "language": cfg["language"], "chapters": chapters}
+
+
+def _footage_credits(broll):
+    site = FOOTAGE_SITES.get((broll or {}).get("provider"))
+    if not site:
+        return ""
+    names = sorted({c["credit"] for c in (broll.get("credits") or {}).values()
+                    if c.get("credit")})
+    line = "Footage from %s" % site
+    if names:
+        line += ": " + ", ".join(names[:25])
+    return line + "."
 
 
 def _mmss(t):
@@ -425,6 +440,42 @@ class YouTube:
             raise ApiError(e.code, e.read().decode(errors="replace"), session) from None
         except (urllib.error.URLError, socket.timeout, ConnectionError, TimeoutError):
             return None, sent
+
+    def upload_captions(self, video_id, srt, language="en", name=""):
+        """A real caption track (searchable, toggleable), not pixels."""
+        with open(srt, "rb") as f:
+            data = f.read()
+        boundary = "essay_channel_boundary"
+        meta = json.dumps({"snippet": {"videoId": video_id, "language": language,
+                                       "name": name, "isDraft": False}}).encode()
+        body = (b"--" + boundary.encode() + b"\r\n"
+                b"Content-Type: application/json; charset=UTF-8\r\n\r\n" + meta +
+                b"\r\n--" + boundary.encode() + b"\r\n"
+                b"Content-Type: application/octet-stream\r\n\r\n" + data +
+                b"\r\n--" + boundary.encode() + b"--\r\n")
+        self.call("POST", self.upload_url.replace("/videos", "/captions"),
+                  {"uploadType": "multipart", "part": "snippet"}, raw=body,
+                  headers={"Content-Type": "multipart/related; boundary=" + boundary,
+                           "Content-Length": str(len(body))})
+
+    def analytics(self, video_ids, start="2020-01-01"):
+        """Lifetime views and retention per video, from YouTube Analytics."""
+        out = {}
+        today = dt.date.today().isoformat()
+        for i in range(0, len(video_ids), 200):
+            ids = video_ids[i:i + 200]
+            d, _ = self.call("GET", ANALYTICS, {
+                "ids": "channel==MINE", "startDate": start, "endDate": today,
+                "metrics": "views,averageViewPercentage,averageViewDuration,likes",
+                "dimensions": "video", "filters": "video==" + ",".join(ids)})
+            cols = [c["name"] for c in d.get("columnHeaders", [])]
+            for row in d.get("rows", []):
+                rec = dict(zip(cols, row))
+                out[rec["video"]] = {"views": int(rec.get("views", 0)),
+                                     "avg_view_pct": round(float(rec.get("averageViewPercentage", 0)), 1),
+                                     "avg_view_seconds": round(float(rec.get("averageViewDuration", 0)), 1),
+                                     "likes": int(rec.get("likes", 0))}
+        return out
 
     def set_thumbnail(self, video_id, jpg):
         with open(jpg, "rb") as f:

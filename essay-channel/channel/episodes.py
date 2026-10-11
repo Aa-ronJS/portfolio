@@ -13,8 +13,8 @@ import os
 import re
 import unicodedata
 
-STAGES = ["topic", "research", "script", "voice", "broll", "music",
-          "assemble", "publish"]
+STAGES = ["topic", "research", "outline", "script", "voice", "broll", "music",
+          "assemble", "quality", "publish"]
 
 
 def slugify(title, limit=48):
@@ -57,11 +57,13 @@ class Episode:
     OUTPUTS = {
         "topic": "topic.json",
         "research": "research.json",
+        "outline": "outline.json",
         "script": "script.json",
         "voice": os.path.join("voice", "timeline.json"),
         "broll": os.path.join("broll", "plan.json"),
         "music": os.path.join("music", "music.json"),
         "assemble": "final.mp4",
+        "quality": "quality.json",
         "publish": "publish.json",
     }
 

@@ -38,8 +38,27 @@ music:
   gain_db: -16             # music level under the voice
   duck_db: -10             # extra reduction while the voice is speaking
 
-captions: true             # burn sentence captions into the video
-title_cards: true          # show each section's heading for a few seconds
+quality:
+  passes: 2                # critique-and-revise rounds on every script
+  searches: 12             # web searches the research turn may make
+  follow_up_research: true # the outline's gaps go back to the researcher
+  vision_pick: true        # Claude looks at candidate frames and picks each shot
+  review: true             # Claude watches the finished cut before upload
+  min_score: 3.5           # hold for a person when any review score is below this (0 = never)
+  pronunciation_check: auto  # auto | on | off — needs faster-whisper; names the
+                           # voice mangles are respelled and re-recorded
+
+look:
+  accent: "F5C542"         # callouts and the thumbnail bar, hex RGB
+  captions: auto           # auto (burn on portrait, upload a track on landscape) | burn | upload | both | none
+  title_card: true         # the title over the first shot, fading up from black
+  end_card: true           # channel name + "Sources in the description" at the end
+  end_card_text: ""        # defaults to the channel name
+  lower_thirds: true       # each section's heading for a few seconds
+  transitions: true        # dissolve between sections (hard cuts inside)
+  motion: true             # a slow push or pull on every shot
+  shot_min: 2.5            # seconds; shorter shots join the one before
+  shot_max: 8              # seconds; longer shots split on a sentence
 
 publish:
   enabled: true

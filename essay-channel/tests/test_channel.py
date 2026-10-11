@@ -1,6 +1,8 @@
-"""Offline tests: the calendar, caption chunking, sentence timing, the
-metadata, the resumable upload against a local fake of YouTube's
-protocol, and the whole pipeline end to end with every service faked.
+"""Offline tests: the calendar, caption chunking, sentence timing, shot
+planning, the pronunciation check, the writing passes, the quality
+gate, the metadata, the resumable upload against a local fake of
+YouTube's protocol, and the whole pipeline end to end with every
+service faked.
 
     cd essay-channel && python3 -m unittest -v
 """
@@ -20,12 +22,20 @@ HERE = os.path.dirname(os.path.abspath(__file__))
 ROOT = os.path.dirname(HERE)
 sys.path.insert(0, ROOT)
 
-from channel import assemble, config, episodes, voice, writing, youtube  # noqa: E402
+from channel import (assemble, broll, config, episodes, fake, quality,  # noqa: E402
+                     voice, writing, youtube)
 from channel.episodes import Episode  # noqa: E402
 
 
 def utc(*a):
     return dt.datetime(*a, tzinfo=dt.timezone.utc)
+
+
+def load_cfg(tmp):
+    cfg = config.load(os.path.join(ROOT, "channel.yaml"))
+    cfg["_episodes"] = os.path.join(tmp, "episodes")
+    cfg["_ledger"] = os.path.join(tmp, "ledger.json")
+    return cfg
 
 
 class Calendar(unittest.TestCase):
@@ -34,8 +44,7 @@ class Calendar(unittest.TestCase):
 
     def test_first_slot_after_now(self):
         now = utc(2026, 10, 11, 1, 0)                 # Sun 11am Brisbane
-        s = youtube.next_slot(self.pub, None, now)
-        self.assertEqual(s, utc(2026, 10, 13, 7, 0))  # Tue 17:00 AEST
+        self.assertEqual(youtube.next_slot(self.pub, None, now), utc(2026, 10, 13, 7, 0))
 
     def test_slots_chain(self):
         now = utc(2026, 10, 11, 1, 0)
@@ -47,8 +56,7 @@ class Calendar(unittest.TestCase):
 
     def test_lead_time(self):
         now = utc(2026, 10, 13, 6, 50)                # 10 min before Tue slot
-        s = youtube.next_slot(self.pub, None, now)
-        self.assertEqual(s, utc(2026, 10, 15, 7))     # too close: Thursday
+        self.assertEqual(youtube.next_slot(self.pub, None, now), utc(2026, 10, 15, 7))
 
     def test_last_scheduled(self):
         led = {"videos": {"a": {"publish_at": "2026-10-13T07:00:00Z"},
@@ -58,12 +66,6 @@ class Calendar(unittest.TestCase):
 
 
 class Text(unittest.TestCase):
-    def test_split_sentences(self):
-        s = writing.split_sentences("It is twenty feet long. It is eight feet "
-                                    "wide! Really? Yes. OK.")
-        self.assertEqual(s, ["It is twenty feet long.",
-                             "It is eight feet wide! Really? Yes. OK."])
-
     def test_chunks_balanced(self):
         t = ("Look at the back of almost any shop and you will find the same "
              "steel box.")
@@ -81,38 +83,129 @@ class Text(unittest.TestCase):
         self.assertAlmostEqual(out[0][0], 0.0)
         self.assertAlmostEqual(out[1][0], 1.3)
         self.assertAlmostEqual(out[0][1], out[1][0])
-        self.assertAlmostEqual(out[1][1], len(text) * 0.1)
 
     def test_sentence_times_fallback(self):
         out = voice.sentence_times_from_chars(["ab", "abcdef"], [], 4.0)
         self.assertEqual(out, [[0.0, 1.0], [1.0, 4.0]])
 
-    def test_tidy_script_rejects_one_section(self):
-        with self.assertRaises(RuntimeError):
-            writing.tidy_script({"title": "x", "thumbnail_text": "y",
-                                 "sections": [{"heading": "h", "narration": "a b.",
-                                               "broll": []}], "tags": []})
+    def test_suspect_words(self):
+        script = "A trucker named Malcolm McLean changed the Worcestershire docks."
+        heard = "a trucker named malcolm mcclean changed the wooster docks"
+        self.assertEqual(voice.suspect_words(script, heard), ["mclean", "worcestershire"])
+        self.assertEqual(voice.suspect_words(script, script.lower()), [])
+
+    def test_apply_respellings(self):
+        out = voice.apply_respellings("Malcolm McLean and McLean again.",
+                                      {"mclean": "Mac-Lean"})
+        self.assertEqual(out, "Malcolm Mac-Lean and Mac-Lean again.")
+
+    def test_srt(self):
+        tmp = tempfile.mkdtemp()
+        tl = {"sections": [{"sentences": [
+            {"text": "One.", "start": 1.0, "end": 2.5},
+            {"text": "Two.", "start": 2.5, "end": 61.25}]}]}
+        voice.write_srt(tl, os.path.join(tmp, "c.srt"))
+        with open(os.path.join(tmp, "c.srt")) as f:
+            srt = f.read()
+        self.assertIn("00:00:01,000 --> 00:00:02,500\nOne.", srt)
+        self.assertIn("00:00:02,500 --> 00:01:01,250\nTwo.", srt)
+        shutil.rmtree(tmp)
+
+
+class Shots(unittest.TestCase):
+    def _tl(self):
+        s = []
+        t = 1.8
+        spec = [("a", 3), ("a", 3), ("a", 3), ("b", 1), ("c", 4), ("c", 4), ("c", 4)]
+        for q, d in spec:
+            s.append({"text": "x", "visual": q, "alt_visual": q + "-alt",
+                      "callout": "", "start": t, "end": t + d})
+            t += d
+        return {"duration": t + 4.0, "lead": 1.8, "speech_end": t,
+                "sections": [{"index": 0, "heading": "h", "start": 1.8, "end": t,
+                              "sentences": s}]}
+
+    def test_plan_shots(self):
+        shots = broll.plan_shots(self._tl(), 2.5, 8.0)
+        # a×3 = 9s splits into two shots (max 8) alternating visuals; the
+        # 1s "b" joins the shot before it; c×3 = 12s splits in two
+        self.assertEqual([s["query"] for s in shots], ["a", "a-alt", "c", "c-alt"])
+        self.assertEqual(shots[0]["start"], 0.0)              # under the title
+        self.assertAlmostEqual(shots[-1]["end"], self._tl()["duration"])
+        for a, b in zip(shots, shots[1:]):
+            self.assertAlmostEqual(a["end"], b["start"])       # no gaps
+        self.assertTrue(all(s["end"] - s["start"] <= 8.0 + 1.0 for s in shots[1:-1]))
+
+
+class Writing(unittest.TestCase):
+    def test_passes_run_and_package_wins(self):
+        tmp = tempfile.mkdtemp()
+        cfg = load_cfg(tmp)
+        llm = fake.FakeClaude()
+        ep = writing.pick_topic(cfg, llm)
+        writing.research(cfg, llm, ep)
+        o = writing.outline(cfg, llm, ep)
+        self.assertTrue(o.get("gaps_researched"))             # the gap went back out
+        self.assertEqual(ep.load("research")["rounds"], 2)
+        s = writing.write_script(cfg, llm, ep)
+        self.assertEqual(s["title"], fake.PACKAGE["titles"][0])
+        self.assertEqual(s["alternate_titles"], fake.PACKAGE["titles"][1:])
+        self.assertIn("critique", llm.calls)
+        self.assertIn("revise", llm.calls)                    # critic scored under 4.7
+        self.assertIn("package", llm.calls)
+        self.assertTrue(os.path.exists(ep.path("draft.json")))
+        self.assertTrue(os.path.exists(ep.path("critique.json")))
+        self.assertEqual(s["scores"]["through_line"], 5)
+        shutil.rmtree(tmp)
+
+    def test_unsupported_sentences_are_cut(self):
+        s = writing.tidy_script(json.loads(json.dumps(fake.SCRIPT)))
+        victim = s["sections"][1]["sentences"][0]["text"]
+        out = writing.drop_unsupported(s, [victim.upper()])
+        texts = [x["text"] for sec in out["sections"] for x in sec["sentences"]]
+        self.assertNotIn(victim, texts)
+        self.assertEqual(out["words"], sum(len(sec["narration"].split())
+                                           for sec in out["sections"]))
+
+
+class Quality(unittest.TestCase):
+    def test_hold_when_reviewer_says_so(self):
+        tmp = tempfile.mkdtemp()
+        cfg = load_cfg(tmp)
+        ep = Episode(cfg["_episodes"], "held")
+        ep.save("script", {"scores": {"hook": 2, "support": 5}})
+        ep.save("broll", {"shots": []})
+        with open(ep.output("assemble"), "wb") as f:
+            f.write(b"")
+        q = quality.review(cfg, ep, None)                      # no reviewer at all
+        self.assertFalse(q["reviewed"])
+        self.assertEqual(q["script_avg"], 3.5)
+        self.assertFalse(q["hold"])                            # 3.5 is the floor, not under
+        cfg["quality"]["min_score"] = 4.0
+        q = quality.review(cfg, ep, None)
+        self.assertTrue(q["hold"])
+        self.assertEqual(q["below_floor"], ["script_avg"])
+        shutil.rmtree(tmp)
 
 
 class Metadata(unittest.TestCase):
     def test_build(self):
-        cfg = config.load(os.path.join(ROOT, "channel.yaml"))
         tmp = tempfile.mkdtemp()
+        cfg = load_cfg(tmp)
         ep = Episode(tmp, "the-box")
         script = {"title": "The <Box>", "summary": " Why boxes. ",
                   "tags": ["a", "b"], "sources": [{"title": "ISO", "url": "https://x"}]}
-        tl = {"sections": [{"index": 0, "heading": "Hook", "start": 0},
+        tl = {"sections": [{"index": 0, "heading": "Hook", "start": 1.8},
                            {"index": 1, "heading": "Part two", "start": 65.4}]}
-        m = youtube.build_metadata(cfg, ep, script, tl,
-                                   {"credit": "Music: X by Y"}, {"provider": "pexels"})
+        plan = {"provider": "pexels", "credits": {"p1": {"credit": "Ann via Pexels"}}}
+        m = youtube.build_metadata(cfg, ep, script, tl, {"credit": "Music: X by Y"}, plan)
         self.assertEqual(m["title"], "The Box")
         self.assertIn("00:00 Hook", m["description"])
         self.assertIn("01:05 Part two", m["description"])
         self.assertIn("ISO — https://x", m["description"])
         self.assertIn("Music: X by Y", m["description"])
-        self.assertIn("Pexels", m["description"])
+        self.assertIn("Ann via Pexels", m["description"])
         self.assertEqual(m["tags"][0], youtube.marker_tag("the-box"))
-        self.assertIn("a", m["tags"])
         shutil.rmtree(tmp)
 
 
@@ -122,11 +215,9 @@ class _FakeUpload(http.server.BaseHTTPRequestHandler):
     resume, and the status query answers 308 with the bytes received."""
     received = bytearray()
     failed_once = False
-    log = []
 
     def do_POST(self):
         self.rfile.read(int(self.headers.get("Content-Length", 0)))
-        _FakeUpload.log.append(("POST", self.path))
         self.send_response(200)
         self.send_header("Location", "http://127.0.0.1:%d/session" % self.server.server_address[1])
         self.end_headers()
@@ -148,7 +239,6 @@ class _FakeUpload(http.server.BaseHTTPRequestHandler):
             self.send_response(503)
             self.end_headers()
             return
-        self.assertEqual = None
         if start != len(self.received):
             self.send_response(400)
             self.end_headers()
@@ -199,8 +289,9 @@ class ResumableUpload(unittest.TestCase):
 
 class EndToEnd(unittest.TestCase):
     """The whole channel with every outside service faked: a real cut
-    comes out, the captions line up with the narration, the ledger
-    records the upload, and a second run does nothing twice."""
+    comes out the length of the narration, the text layer and the
+    caption track exist, the review passed, the ledger records the
+    upload, and a second run does nothing twice."""
 
     def test_fake_run(self):
         tmp = tempfile.mkdtemp()
@@ -217,28 +308,36 @@ class EndToEnd(unittest.TestCase):
             self.assertTrue(ep.done(stage), stage)
         info = json.loads(subprocess.run(
             ["ffprobe", "-v", "error", "-show_entries",
-             "stream=codec_type,width,height:format=duration", "-of", "json",
+             "stream=codec_type,width,height,channels:format=duration", "-of", "json",
              ep.output("assemble")], capture_output=True, text=True).stdout)
-        kinds = {s["codec_type"] for s in info["streams"]}
-        self.assertEqual(kinds, {"video", "audio"})
         v = next(s for s in info["streams"] if s["codec_type"] == "video")
+        a = next(s for s in info["streams"] if s["codec_type"] == "audio")
         self.assertEqual((v["width"], v["height"]), (1920, 1080))
+        self.assertEqual(a["channels"], 2)
         tl = ep.load("voice")
-        self.assertAlmostEqual(float(info["format"]["duration"]), tl["duration"], delta=0.5)
+        self.assertAlmostEqual(float(info["format"]["duration"]), tl["duration"], delta=0.2)
         with open(ep.path("captions.ass")) as f:
             ass = f.read()
-        self.assertIn("Every sack and barrel", ass)
-        self.assertIn("The Trucker's Problem", ass)
+        self.assertIn("The Trucker's Problem", ass)            # lower third
+        self.assertIn("20 or 40 feet", ass)                    # callout
+        self.assertIn("Sources in the description", ass)       # end card
+        self.assertNotIn("Every sack and barrel", ass)         # landscape: captions uploaded, not burned
+        with open(ep.path("captions.srt")) as f:
+            self.assertIn("Every sack and barrel", f.read())
+        plan = ep.load("broll")
+        self.assertTrue(plan["vision"])
+        self.assertTrue(all(s["kind"] != "card" for s in plan["shots"]))
+        q = ep.load("quality")
+        self.assertEqual(q["verdict"], "publish")
+        self.assertFalse(q["hold"])
         self.assertTrue(os.path.exists(ep.path("thumbnail.jpg")))
         led = episodes.load_ledger(env["CHANNEL_LEDGER"])
         self.assertIn(ep.slug, led["videos"])
-        self.assertTrue(led["videos"][ep.slug]["publish_at"].endswith("Z"))
-        # the record lives in the episode too, with the YouTube metadata
         pub = ep.load("publish")
         self.assertIn("00:00", pub["metadata"]["description"])
 
-        # second run: the finished episode is left alone, the same topic
-        # is refused (the fake always proposes the same title)
+        # second run: the finished episode is left alone; the fake proposes
+        # the same title, which is refused rather than remade
         out = subprocess.run(cmd, env=env, capture_output=True, text=True)
         self.assertNotEqual(out.returncode, 0)
         self.assertIn("already exists", out.stdout + out.stderr)

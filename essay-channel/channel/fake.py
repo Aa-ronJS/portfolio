@@ -1,7 +1,8 @@
 """Offline stand-ins for every outside service, so the whole pipeline
-runs end to end on a laptop or in CI with no keys: a canned topic and
-script, a beep-track voice, test-pattern footage, a synthesised music
-bed and a YouTube that only pretends. CHANNEL_FAKE=1 switches them in.
+runs end to end on a laptop or in CI with no keys: a canned outline,
+script and critique, a beep-track voice, test-pattern footage and
+photographs, a synthesised music bed and a YouTube that only pretends.
+CHANNEL_FAKE=1 switches them in.
 """
 
 import json
@@ -10,39 +11,77 @@ import random
 
 from . import media
 
+
+def _s(text, visual, alt, callout=""):
+    return {"text": text, "visual": visual, "alt_visual": alt, "callout": callout}
+
+
 SCRIPT = {
-    "title": "Why Shipping Containers Are All the Same Size",
-    "thumbnail_text": "One Box Rules",
-    "summary": "Almost everything you own has crossed an ocean in a steel box "
-               "of exactly the same dimensions. This is the story of how one "
-               "trucker's idea became the world's measuring stick.",
+    "title": "Why Every Shipping Container Is the Same Size",
     "mood": "curious",
     "sections": [
-        {"heading": "One Box Rules", "broll": ["cargo ship at port", "shipping containers stacked"],
-         "narration": "Look at the back of almost any shop and you will find the "
-                      "same steel box. It is twenty feet long, or forty. It is "
-                      "eight feet wide. It has been the same since nineteen "
-                      "sixty eight."},
-        {"heading": "The Trucker's Problem", "broll": ["truck on highway", "dock workers"],
-         "narration": "Before the box, loading a ship took a week. Every sack "
-                      "and barrel was lifted by hand. A trucker named Malcolm "
-                      "McLean thought the truck body itself should go on the "
-                      "ship, and in nineteen fifty six it did."},
-        {"heading": "Agreeing on a Number", "broll": ["crane lifting container", "measuring tape"],
-         "narration": "A box only works if every crane, truck and ship agrees "
-                      "on its size. That argument took a decade. The result "
-                      "was a standard so plain that nobody thinks about it. "
-                      "Which is exactly the point."},
+        {"heading": "One Box Rules", "sentences": [
+            _s("Look at the back of almost any shop and you will find the same steel box.",
+               "shipping container close up", "loading dock boxes"),
+            _s("It is twenty feet long, or forty.", "shipping container close up",
+               "cargo containers stacked", "20 or 40 feet"),
+            _s("It is eight feet wide.", "shipping container close up", "cargo containers stacked"),
+            _s("It has been the same since nineteen sixty eight.", "old cargo port photo",
+               "vintage harbour", "1968")]},
+        {"heading": "The Trucker's Problem", "sentences": [
+            _s("Before the box, loading a ship took a week.", "dock workers loading sacks",
+               "old harbour cranes"),
+            _s("Every sack and barrel was lifted by hand.", "dock workers loading sacks",
+               "men carrying cargo"),
+            _s("A trucker named Malcolm McLean thought the truck body itself should go on the ship, and in nineteen fifty six it did.",
+               "truck on highway", "cargo truck at port", "Malcolm McLean")]},
+        {"heading": "Agreeing on a Number", "sentences": [
+            _s("A box only works if every crane, truck and ship agrees on its size.",
+               "crane lifting container", "port crane"),
+            _s("That argument took a decade.", "men in meeting", "handshake close up"),
+            _s("The result was a standard so plain that nobody thinks about it.",
+               "cargo ship at sea", "containers on ship"),
+            _s("Which is exactly the point.", "cargo ship at sea", "containers on ship")]},
     ],
-    "tags": ["shipping containers", "logistics", "how it works"],
     "sources": [{"title": "ISO 668 — Series 1 freight containers",
                  "url": "https://www.iso.org/standard/76912.html"}],
 }
 
+OUTLINE = {
+    "through_line": "Why did the world settle on one box?",
+    "hook": "The same steel box is behind every shop.",
+    "payoff": "The dullest standard is the most powerful one.",
+    "sections": [{"heading": s["heading"], "job": "explain", "facts": ["ISO 668"]}
+                 for s in SCRIPT["sections"]],
+    "gaps": ["What year was ISO 668 first published?"],
+}
+
+CRITIQUE = {
+    "scores": {"hook": 4, "through_line": 5, "concreteness": 4, "support": 5,
+               "spoken": 5, "pacing": 4, "payoff": 4, "visuals": 4},
+    "notes": "Tight. The hook could name the box's size sooner.",
+    "unsupported": [],
+    "top_edits": ["Name the size in sentence two."],
+}
+
+PACKAGE = {
+    "titles": ["Why Every Shipping Container Is the Same Size",
+               "The Box That Measures the World"],
+    "thumbnail_text": "One Box Rules",
+    "summary": "Almost everything you own has crossed an ocean in a steel box of "
+               "exactly the same dimensions. This is how one trucker's idea became "
+               "the world's measuring stick.",
+    "tags": ["shipping containers", "logistics", "how it works"],
+}
+
 
 class FakeClaude:
+    """Answers every schema the channel uses with canned data; records
+    which calls were made so tests can check the passes ran."""
+
     def __init__(self, *a, **k):
         self.calls = []
+        self.usage = {"input": 0, "output": 0, "calls": 0}
 
     def research(self, system, prompt, **k):
         self.calls.append("research")
@@ -52,11 +91,42 @@ class FakeClaude:
                         "title": "ISO 668"}]
 
     def json(self, system, prompt, schema, **k):
-        self.calls.append("json")
-        if "search_terms" in json.dumps(schema):
+        props = set(schema.get("properties", {}))
+        if "search_terms" in props:
+            self.calls.append("topic")
             return {"title": SCRIPT["title"], "angle": "How one box standardised trade.",
                     "why": "Everyone has seen one.", "search_terms": ["ISO 668", "McLean"]}
-        return json.loads(json.dumps(SCRIPT))
+        if "through_line" in props:
+            self.calls.append("outline")
+            return json.loads(json.dumps(OUTLINE))
+        if "scores" in props:
+            self.calls.append("critique")
+            return json.loads(json.dumps(CRITIQUE))
+        if "titles" in props:
+            self.calls.append("package")
+            return json.loads(json.dumps(PACKAGE))
+        if "respellings" in props:
+            self.calls.append("respell")
+            return {"respellings": []}
+        if "mood" in props:
+            self.calls.append("revise" if "CRITIQUE" in prompt else "draft")
+            return json.loads(json.dumps(SCRIPT))
+        raise AssertionError("fake has no answer for schema %s" % sorted(props))
+
+    def vision_json(self, system, prompt, images, schema, **k):
+        props = set(schema.get("properties", {}))
+        if "picks" in props:
+            self.calls.append("pick")
+            n = len({lab.split(",")[0] for lab, _ in images})
+            return {"picks": [{"shot": i, "candidate": 1, "score": 4} for i in range(n)]}
+        if "frame" in props:
+            self.calls.append("thumb")
+            return {"frame": 2 if len(images) > 1 else 1, "why": "clearest"}
+        if "verdict" in props:
+            self.calls.append("review")
+            return {"shots": [{"shot": i, "match": 4} for i in range(len(images))],
+                    "overall": 4, "issues": [], "verdict": "publish"}
+        raise AssertionError("fake has no answer for schema %s" % sorted(props))
 
 
 class FakeVoice:
@@ -67,7 +137,7 @@ class FakeVoice:
     def __init__(self, *a, **k):
         pass
 
-    def synth(self, text, out_mp3):
+    def synth(self, text, out_mp3, previous_text="", next_text=""):
         dur = max(0.6, 0.045 * len(text))
         freq = 180 + (hash(text) % 120)
         media.ffmpeg(["-f", "lavfi", "-i",
@@ -85,25 +155,36 @@ class FakeStock:
     def search(self, query, n=4):
         rng = random.Random(query)
         out = []
-        for i in range(2):
+        for i in range(3):
             cid = "fake-%s-%d" % (abs(hash(query)) % 10000, i)
-            out.append({"id": cid, "url": "fake://%s" % cid,
-                        "duration": rng.uniform(6, 14),
-                        "width": 1280, "height": 720,
-                        "credit": "test pattern", "page": ""})
+            out.append({"id": cid, "kind": "video", "url": "fake://%s" % cid,
+                        "thumb": "fake://thumb/%s" % cid,
+                        "duration": rng.uniform(4, 14), "credit": "test pattern",
+                        "page": ""})
         return out
+
+    def photos(self, query, n=4):
+        cid = "fake-photo-%s" % (abs(hash(query)) % 10000)
+        return [{"id": cid, "kind": "photo", "url": "fake://photo/%s" % cid,
+                 "thumb": "fake://thumb/%s" % cid, "duration": 0.0,
+                 "credit": "test still", "page": ""}]
 
 
 def fake_download(url, path, headers=None, timeout=0):
-    """Replaces media.download: a 'fake://' url becomes a test-pattern clip."""
+    """Replaces media.download: a 'fake://' url becomes a test-pattern clip
+    or a test-pattern still."""
     if os.path.exists(path):
         return path
     os.makedirs(os.path.dirname(path), exist_ok=True)
     seed = abs(hash(url)) % 1000
-    media.ffmpeg(["-f", "lavfi", "-i",
-                  "testsrc2=size=1280x720:rate=30:duration=10",
-                  "-vf", "hue=h=%d" % (seed % 360),
-                  "-c:v", "libx264", "-preset", "ultrafast", "-pix_fmt", "yuv420p", path])
+    if "/photo/" in url:
+        media.ffmpeg(["-f", "lavfi", "-i", "testsrc2=size=1600x900:rate=1:duration=1",
+                      "-vf", "hue=h=%d" % (seed % 360), "-frames:v", "1", "-q:v", "3", path])
+    else:
+        media.ffmpeg(["-f", "lavfi", "-i",
+                      "testsrc2=size=1280x720:rate=30:duration=10",
+                      "-vf", "hue=h=%d" % (seed % 360),
+                      "-c:v", "libx264", "-preset", "ultrafast", "-pix_fmt", "yuv420p", path])
     return path
 
 
@@ -132,6 +213,13 @@ class FakeYouTube:
 
     def set_thumbnail(self, video_id, jpg):
         pass
+
+    def upload_captions(self, video_id, srt, language="en", name=""):
+        pass
+
+    def analytics(self, ids, start=None):
+        return {i: {"views": 1200, "avg_view_pct": 48.5, "avg_view_seconds": 210.0,
+                    "likes": 40} for i in ids}
 
     def video_status(self, ids):
         return {i: {"privacy": "private", "publish_at": None, "title": ""} for i in ids}

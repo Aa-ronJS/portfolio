@@ -38,8 +38,13 @@ DEFAULTS = {
     "broll": {"provider": "pexels", "clip_seconds": 7, "min_clip_seconds": 4},
     "music": {"folder": "music", "jamendo": False, "gain_db": -16,
               "duck_db": -10},
-    "captions": True,
-    "title_cards": True,
+    "quality": {"passes": 2, "searches": 12, "follow_up_research": True,
+                "vision_pick": True, "review": True, "min_score": 3.5,
+                "pronunciation_check": "auto"},
+    "look": {"accent": "F5C542", "captions": "auto", "title_card": True,
+             "end_card": True, "end_card_text": "", "transitions": True,
+             "motion": True, "shot_min": 2.5, "shot_max": 8.0,
+             "lower_thirds": True},
     "publish": {"enabled": True, "timezone": "UTC",
                 "slots": {"days": DAYS, "at": "17:00"},
                 "category": 27, "tags": [],
@@ -68,6 +73,14 @@ def load(path=CONFIG):
     hh, mm = str(pub["slots"]["at"]).split(":")
     pub["slots"]["_hm"] = (int(hh), int(mm))
     cfg["music"]["folder"] = os.path.join(ROOT, cfg["music"]["folder"])
+    look = cfg["look"]
+    look["accent"] = str(look["accent"]).lstrip("#")
+    if look["captions"] == "auto":
+        look["captions"] = "burn" if cfg["format"] == "portrait" else "upload"
+    if look["captions"] not in ("burn", "upload", "none", "both"):
+        raise SystemExit("channel.yaml: look.captions must be auto, burn, upload, both or none")
+    if not look["end_card_text"]:
+        look["end_card_text"] = cfg["name"]
     cfg["_root"] = ROOT
     cfg["_episodes"] = os.environ.get("CHANNEL_EPISODES", EPISODES)
     cfg["_ledger"] = os.environ.get("CHANNEL_LEDGER", LEDGER)

@@ -14,9 +14,13 @@ Four independent things live here:
 
 - **`essay-channel/`** — a YouTube channel that runs itself: one brief
   in `channel.yaml`, and a scheduled GitHub Action researches a topic
-  (Claude + web search), writes the script, voices it (ElevenLabs or
-  OpenAI), cuts stock footage (Pexels/Pixabay) with captions and
-  music, and uploads to YouTube into the next release slot. Start with
+  (Claude + web search, a second pass for the outline's gaps), writes
+  the script through draft/critique/revise, voices it (ElevenLabs or
+  OpenAI, whisper read-back for names), picks stock footage per
+  sentence by looking at candidate frames (Pexels/Pixabay), cuts it
+  with motion, dissolves and callouts over ducked music, reviews the
+  result and holds weak episodes, and uploads to YouTube into the
+  next release slot with chapters and a caption track. Start with
   `essay-channel/README.md`; `python3 channel.py --fake run` makes a
   whole episode offline, `python3 -m unittest` is the test suite. The
   stages are files in `episodes/<slug>/`: the text record is committed,

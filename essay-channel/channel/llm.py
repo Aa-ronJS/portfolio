@@ -1,12 +1,13 @@
 """The one place the channel talks to Claude.
 
-Two calls: `research` (a web-searching turn that returns notes plus the
-sources it read) and `json` (a structured answer that validates against
-a schema). Both stream, both opt into the server-side refusal fallback,
-and both refuse to return a half answer: a truncated or refused response
-is an error, never a script.
+Three calls: `research` (a web-searching turn that returns notes plus
+the sources it read), `json` (a structured answer that validates against
+a schema) and `vision_json` (the same, with images). All stream, all opt
+into the server-side refusal fallback, and none returns a half answer:
+a truncated or refused response is an error, never a script.
 """
 
+import base64
 import json
 
 import anthropic
@@ -25,12 +26,19 @@ class Claude:
         self.model = model
         self.effort = effort
         self.client = client or anthropic.Anthropic()
+        self.usage = {"input": 0, "output": 0, "calls": 0}
 
     def _stream(self, **kw):
         with self.client.beta.messages.stream(
                 model=self.model, betas=[FALLBACK_BETA], fallbacks="default",
                 **kw) as stream:
-            return stream.get_final_message()
+            msg = stream.get_final_message()
+        u = getattr(msg, "usage", None)
+        if u:
+            self.usage["input"] += getattr(u, "input_tokens", 0) or 0
+            self.usage["output"] += getattr(u, "output_tokens", 0) or 0
+        self.usage["calls"] += 1
+        return msg
 
     def _check(self, msg):
         if msg.stop_reason == "refusal":
@@ -40,6 +48,13 @@ class Claude:
                 else ""))
         if msg.stop_reason == "max_tokens":
             raise LLMError("response was cut off at max_tokens; raise it")
+
+    @staticmethod
+    def _system(system):
+        # the system prompt is the same across every pass of an episode:
+        # cache it so the critique and revision reuse the prefix
+        return [{"type": "text", "text": system,
+                 "cache_control": {"type": "ephemeral"}}]
 
     # ------------------------------------------------------------ research
     def research(self, system, prompt, max_searches=12, max_tokens=32000):
@@ -51,7 +66,7 @@ class Claude:
                  dict(WEB_FETCH, max_uses=max_searches)]
         sources, text = [], []
         for _ in range(8):            # pause_turn restarts, bounded
-            msg = self._stream(max_tokens=max_tokens, system=system,
+            msg = self._stream(max_tokens=max_tokens, system=self._system(system),
                                messages=messages, tools=tools,
                                output_config={"effort": self.effort})
             self._check(msg)
@@ -85,9 +100,30 @@ class Claude:
 
     # ------------------------------------------------------------ structured
     def json(self, system, prompt, schema, max_tokens=32000):
+        return self._structured(system, [{"type": "text", "text": prompt}],
+                                schema, max_tokens)
+
+    def vision_json(self, system, prompt, images, schema, max_tokens=8000):
+        """`images` is a list of (label, source) where source is a URL
+        string or PNG/JPEG bytes. Each image is preceded by its label."""
+        content = []
+        for label, src in images:
+            content.append({"type": "text", "text": label})
+            if isinstance(src, (bytes, bytearray)):
+                media = "image/png" if bytes(src[:4]) == b"\x89PNG" else "image/jpeg"
+                content.append({"type": "image", "source": {
+                    "type": "base64", "media_type": media,
+                    "data": base64.standard_b64encode(bytes(src)).decode()}})
+            else:
+                content.append({"type": "image",
+                                "source": {"type": "url", "url": src}})
+        content.append({"type": "text", "text": prompt})
+        return self._structured(system, content, schema, max_tokens)
+
+    def _structured(self, system, content, schema, max_tokens):
         msg = self._stream(
-            max_tokens=max_tokens, system=system,
-            messages=[{"role": "user", "content": prompt}],
+            max_tokens=max_tokens, system=self._system(system),
+            messages=[{"role": "user", "content": content}],
             output_config={"effort": self.effort,
                            "format": {"type": "json_schema", "schema": schema}})
         self._check(msg)

@@ -54,6 +54,7 @@ jobs:
         run: |
           sudo apt-get update -qq && sudo apt-get install -y -qq ffmpeg fonts-dejavu-core
           pip install -q -r requirements.txt
+          pip install -q faster-whisper      # the pronunciation check reads the voice back
 
       - name: Offline tests
         run: python3 -m unittest -v
@@ -71,11 +72,13 @@ jobs:
             echo "no ANTHROPIC_API_KEY / YT_REFRESH_TOKEN secrets (or this is a PR): tests only"
           fi
 
-      - name: Cache stock footage and music between runs
+      - name: Cache stock footage, music and the whisper model between runs
         if: steps.keys.outputs.live == 'true'
         uses: actions/cache@v4
         with:
-          path: essay-channel/cache
+          path: |
+            essay-channel/cache
+            ~/.cache/huggingface
           key: essay-channel-cache-${{ github.run_id }}
           restore-keys: essay-channel-cache-
 
