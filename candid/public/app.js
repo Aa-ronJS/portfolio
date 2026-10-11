@@ -77,7 +77,7 @@ const scoreCell = (s) => s ? `<span class="score"><span class="bar"><i style="wi
 const flagChip = (f) => chip(f.state === 'decided' ? (f.decision === 'breach' ? 'Breach' : f.decision === 'clear' ? 'Cleared' : 'Low quality') : f.state === 'cleared' ? 'Cleared' : 'Flag open', f.state === 'decided' && f.decision === 'breach' ? 'bad' : f.state === 'queued' || f.state === 'triage' ? 'warn' : 'good');
 const who = (r, big) => `<span class="row" style="gap:10px;flex-wrap:nowrap">${r.photo && A.id ? `<img class="face${big ? ' big' : ''}" src="/api/photo?b=${encodeURIComponent(A.id)}&r=${encodeURIComponent(r.id)}" alt="">` : `<span class="face${big ? ' big' : ''} blank">${esc((r.pseudonym || '?')[0])}</span>`}<span><span class="strong">${esc(r.pseudonym)}</span>${r.state || r.company ? `<div class="xs muted">${[r.company, r.state].filter(Boolean).map(esc).join(' · ')}${r.role ? ' · ' + esc(r.role) : ''}</div>` : ''}</span></span>`;
 const statusBtns = (kind, id, cur) => ['will use', 'will not use', 'already doing'].map((s) => btn('status', s, `data-kind="${kind}" data-target="${id}" data-v="${s}"`, 'btn sm' + (cur === s ? ' on' : ''))).join('');
-const DISCLOSURE = 'Received the product free and was paid $20 for this review through Candid.';
+const DISCLOSURE = 'Took part in a paid product study through Candid.';
 const quoteText = (r, text) => `\u201c${text}\u201d \u2014 ${[r.pseudonym, r.company, r.state].filter(Boolean).join(', ')}. ${DISCLOSURE}`;
 const logRows = (rows) => rows.length ? rows.map((e) => `<div class="lgrow"><span class="d">${fmt(e.at)}</span><span><span class="e">${esc(e.event)}</span> <span class="t">${esc(e.detail)}</span></span></div>`).join('') : '<div class="empty">Nothing yet</div>';
 
@@ -230,7 +230,7 @@ document.addEventListener('click', async (ev) => {
   if (act === 'side') { A.side = !A.side; return rerender(); }
   if (act === 'open') { A.drawer = { kind: el.dataset.kind, id: target }; return rerender(); }
   if (act === 'close') { A.drawer = null; return rerender(); }
-  if (act === 'copy' || act === 'quote') { const t = el.dataset.text; try { await navigator.clipboard.writeText(t); toast(act === 'quote' ? 'Quote copied, with the paid-review line' : 'Copied'); } catch (e) { toast('Select and copy it by hand', true); } return; }
+  if (act === 'copy' || act === 'quote') { const t = el.dataset.text; try { await navigator.clipboard.writeText(t); toast(act === 'quote' ? 'Quote copied, with the paid-study line' : 'Copied'); } catch (e) { toast('Select and copy it by hand', true); } return; }
   if (act === 'newPeriod') return act_({ action: 'newPeriod' }, 'Period created');
   if (act === 'fund') { A.seats = Math.max(3, Math.min(50, Number(($('#seats') || {}).value) || 5)); return act_({ action: 'fund', seats: A.seats }, (j) => `${money(j.business.period.cost)} locked`); }
   if (act === 'recruit') return act_({ action: 'recruit' }, 'Invite links ready');

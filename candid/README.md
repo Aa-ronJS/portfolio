@@ -6,7 +6,7 @@ Each reviewer uses the product, writes a review against the brief with
 their name, state and photo on it (and their business for B2B), reports
 process issues anonymously, and blind-rates three peers. Reviewers are anonymous to
 each other, never to the business. A review is private unless the
-reviewer agrees it may be quoted; a quote carries the paid-review
+reviewer agrees it may be quoted; a quote carries the paid-study
 disclosure. Issues are listed as teasers and unlocked with credit,
 priced by the peer score. Claude triages flags; a person decides; a flag
 undecided for seven days releases the payout.

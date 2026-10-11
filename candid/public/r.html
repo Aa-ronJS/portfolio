@@ -107,7 +107,7 @@ function reviewForm(v) {
     <div class="row"><input type="checkbox" id="received" ${d.received ? 'checked' : ''}><label for="received" style="margin:0">I have received the free product or job</label></div>
     ${b.wants.map((q, i) => `<div class="field"><label for="sec${i}">${esc(q)}</label><textarea id="sec${i}" rows="4">${esc(d.sections[i] || '')}</textarea></div>`).join('')}
     ${['What did you try to do?', 'Where did you stop, if anywhere?', 'What would you pay for this?'].map((q, i) => `<div class="field"><label for="clo${i}">${esc(q)}</label><input type="text" id="clo${i}" value="${esc(d.closing[i] || '')}"></div>`).join('')}
-    <div class="row" style="align-items:flex-start"><input type="checkbox" id="consent" ${d.consent ? 'checked' : ''} style="margin-top:4px"><label for="consent" style="margin:0;color:var(--ink);font-weight:400">${esc(v.business)} may quote this review publicly with my name, state and photo. It will carry a line saying I was paid for it.</label></div>
+    <div class="row" style="align-items:flex-start"><input type="checkbox" id="consent" ${d.consent ? 'checked' : ''} style="margin-top:4px"><label for="consent" style="margin:0;color:var(--ink);font-weight:400">${esc(v.business)} may quote this review publicly with my name, state and photo. It will say I took part in a paid product study.</label></div>
     ${!v.me.photo ? `<div class="row"><input type="file" id="photo2" accept="image/*" capture="user" style="width:auto"><span class="sm muted" id="photohelp">Add a photo</span></div>` : ''}
     <div class="sticky-save"><span class="sm muted">${money(FEE)} after you also rate three peers</span>${btn('submit', 'Submit review', '', 'btn primary')}</div></div></div>`;
 }

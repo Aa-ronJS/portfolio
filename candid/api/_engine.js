@@ -16,7 +16,7 @@ export const FLAG_REASONS = ["untruthful", "unfairly positive", "unfairly negati
 export const STATES = ["draft", "funded", "recruiting", "open", "rating", "settlement", "closed"];
 export const STATUSES = ["will use", "will not use", "already doing"];
 export const AU_STATES = ["NSW", "VIC", "QLD", "SA", "WA", "TAS", "ACT", "NT"];
-export const DISCLOSURE = "Received the product free and was paid $20 for this review through Candid.";
+export const DISCLOSURE = "Took part in a paid product study through Candid.";
 const DAY = 86400000;
 export const SUBMIT_DAYS = 14, RATING_DAYS = 7, FLAG_DAYS = 7, HOLD_DAYS = 30;
 
