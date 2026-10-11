@@ -59,7 +59,7 @@ async function signIn(email) { const s = await call(auth, "POST", "/api/auth", {
 
 // ---- sign in
 let a = await call(auth, "GET", "/api/auth");
-ok(a.configured === true && a.loggedIn === false && a.ai === true && a.email === true && a.stripe === true, "server is configured; Claude, Resend and Stripe stubbed in");
+ok(a.configured === true && a.loggedIn === false && a.ai === true && a.mailer === true && a.stripe === true, "server is configured; Claude, Resend and Stripe stubbed in");
 a = await call(auth, "POST", "/api/auth", { action: "start", email: "not-an-email" });
 ok(a.status === 400, "a bad email is refused");
 a = await call(auth, "POST", "/api/auth", { action: "start", email: "aaron@example.com" });

@@ -27,7 +27,7 @@ async function bucket(name, max) {
 
 export default async function handler(req, res) {
   await ensureSchema();
-  if (req.method === "GET") { const s = owner(req); return send(res, 200, { ok: true, loggedIn: !!s, email: s ? s.email : "", admin: !!(s && s.admin), configured: configured() && dbConfigured(), ai: aiOn(), stripe: stripeOn(), email: emailOn() }); }
+  if (req.method === "GET") { const s = owner(req); return send(res, 200, { ok: true, loggedIn: !!s, email: s ? s.email : "", admin: !!(s && s.admin), configured: configured() && dbConfigured(), ai: aiOn(), stripe: stripeOn(), mailer: emailOn() }); }
   if (req.method !== "POST") return send(res, 405, { ok: false, error: "POST" });
   let b; try { b = await readJson(req, 4000); } catch (e) { return send(res, 400, { ok: false, error: e.message }); }
   if (b.action === "logout") { setSessionCookie(res, "", true); return send(res, 200, { ok: true }); }

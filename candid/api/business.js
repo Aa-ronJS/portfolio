@@ -14,7 +14,7 @@ import { emailOn } from "./_email.js";
 export function views(id, state, tokens, session) {
   const b = E.businessView(state, tokens);
   b.reviewers.forEach((r) => { if (r.token) r.link = APP_URL() + "r/" + r.token; });
-  const out = { ok: true, id, business: b, meta: { ai: aiOn(), stripe: stripeOn(), email: emailOn(), packs: PACKS, appUrl: APP_URL(), admin: !!session.admin } };
+  const out = { ok: true, id, business: b, meta: { ai: aiOn(), stripe: stripeOn(), mailer: emailOn(), packs: PACKS, appUrl: APP_URL(), admin: !!session.admin } };
   if (session.admin) { const a = E.adminView(state); a.reviewers.forEach((r) => { if (tokens[r.id] && state.period && r.seat !== "released") r.link = APP_URL() + "r/" + tokens[r.id]; }); out.admin = a; }
   return out;
 }
@@ -38,7 +38,7 @@ export default async function handler(req, res) {
   try {
     if (req.method === "GET") {
       const u = new URL(req.url, "http://x");
-      if (u.searchParams.get("list")) return send(res, 200, { ok: true, businesses: await S.listBusinesses(session.acct, false), meta: { ai: aiOn(), stripe: stripeOn(), email: emailOn(), packs: PACKS, appUrl: APP_URL(), admin: !!session.admin, email_: session.email } });
+      if (u.searchParams.get("list")) return send(res, 200, { ok: true, businesses: await S.listBusinesses(session.acct, false), meta: { ai: aiOn(), stripe: stripeOn(), mailer: emailOn(), packs: PACKS, appUrl: APP_URL(), admin: !!session.admin } });
       const id = u.searchParams.get("id") || "";
       const b = await S.readBusiness(id, now); if (!S.canSee(session, b)) return send(res, 404, { ok: false, error: "No such business" });
       return send(res, 200, views(id, b.state, await S.tokensFor(id), session));
