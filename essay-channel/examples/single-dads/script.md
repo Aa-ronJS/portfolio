@@ -1,12 +1,12 @@
-# The Single Dad Workout Science Says Still Counts
+# The Workout Hidden in a Single Dad's Day
 
 *Two and a half million men in the US are raising kids on their own, and almost none of them have an hour for the gym. This video takes the three findings that matter most for a man with no time and broken sleep — short bursts that count, the smallest amount of lifting that works, and why sleep is quietly a diet — and fits them into a school week.*
 
-Alternate titles the packaging pass considered: Three Minutes a Day: Fitness for Dads With No Time; You Don't Need the Gym. You Need Twelve Minutes.; What the Research Says About Getting Fit as a Single Dad; The Dad Who Can't Get to the Gym
+Alternate titles the council ranked next: No Gym, No Hour: What Actually Works for Single Dads; Fit Without Finding Time: A Single Dad's Week; What 25,000 People Who Never Exercise Taught Scientists; You Don't Need an Hour. The Research Says 3 Minutes.
 
-Thumbnail text: **3 MINUTES A DAY** · mood: upbeat · 1017 words (about 6.8 minutes at 150 wpm)
+Thumbnail text: **3 MINUTES A DAY** · mood: upbeat · 1023 words (about 6.8 minutes at 150 wpm)
 
-Critic's scores (last round): hook 4, through_line 5, concreteness 5, support 5, spoken 5, pacing 4, payoff 4, visuals 4
+Council scores after the edits (see council-review.md): retention 5, packaging 5, audience 5, evidence 5, brand_policy 5
 
 ---
 
@@ -27,7 +27,7 @@ Five mornings a week, an hour each, before the kids are up.
 So he doesn't start, and then he feels bad about not starting, and the years go by.
   *(shot: father watching kids play from bench)*
 
-This video is about the research that says the hour was never the point.
+The research says the hour was never the point, and it says it three times over: in short bursts, in the smallest amount of lifting that works, and in bed.
   *(shot: stopwatch close up)*
 
 Three findings, one week, and a plan that survives a sick kid on a Tuesday.
@@ -38,8 +38,11 @@ Three findings, one week, and a plan that survives a sick kid on a Tuesday.
 The official target is the one you have seen on a poster at the doctor's.
   *(shot: health poster clinic wall)*
 
-The World Health Organization says adults should get a hundred and fifty to three hundred minutes of moderate activity a week, or seventy-five to a hundred and fifty minutes of vigorous activity, plus something that strengthens muscle on two or more days.
+The World Health Organization says adults should get a hundred and fifty to three hundred minutes of moderate activity a week, or half that if it is vigorous.
   *(shot: people jogging city park; ON SCREEN: 150 minutes a week)*
+
+Plus something that strengthens muscle on two or more days.
+  *(shot: man doing push ups living room)*
 
 That is the standard, and it is a good one.
   *(shot: people jogging city park)*
@@ -93,7 +96,7 @@ It is the day he already has, done harder.
 Bursts cover the heart.
   *(shot: heart rate monitor screen)*
 
-Muscle is the other half, and it is the half men lose first as they age.
+Muscle is the other half, and muscle that is not used is muscle that goes.
   *(shot: man flexing arm mirror)*
 
 In twenty twenty-one, a review in the journal Sports Medicine called No Time to Lift asked how little strength training you can do and still get stronger.
@@ -111,7 +114,7 @@ Four sets is not a session.
 It is two sets of push-ups on Tuesday while the pasta boils and two more on Saturday with a toddler on your back.
   *(shot: dad push ups with kid on back)*
 
-A child is a load that grows about a kilogram every few months, which is, frankly, a progressive overload program with a built-in timer.
+A child is a load that gets heavier every few months, which is, frankly, a progressive overload program with a built-in timer.
   *(shot: father lifting child overhead)*
 
 ## 5. Sleep Is the Diet
@@ -160,7 +163,7 @@ A pull can be a towel over a door, a backpack full of books, or a chin-up bar in
 And a bedtime you defend like a meeting, because it is the one thing on this list that does the most while you do nothing.
   *(shot: man setting alarm bedside)*
 
-On custody weeks when the kids are with their mum, that is when the longer sessions can happen, if you want them.
+On the weeks the kids are away, that is when the longer sessions can happen, if you want them.
   *(shot: man running trail alone morning)*
 
 On the weeks they are home, the short version is not the fallback.

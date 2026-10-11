@@ -1,10 +1,10 @@
 {
-  "title": "The Single Dad Workout Science Says Still Counts",
+  "title": "The Workout Hidden in a Single Dad's Day",
   "alternate_titles": [
-    "Three Minutes a Day: Fitness for Dads With No Time",
-    "You Don't Need the Gym. You Need Twelve Minutes.",
-    "What the Research Says About Getting Fit as a Single Dad",
-    "The Dad Who Can't Get to the Gym"
+    "No Gym, No Hour: What Actually Works for Single Dads",
+    "Fit Without Finding Time: A Single Dad's Week",
+    "What 25,000 People Who Never Exercise Taught Scientists",
+    "You Don't Need an Hour. The Research Says 3 Minutes."
   ],
   "thumbnail_text": "3 MINUTES A DAY",
   "summary": "Two and a half million men in the US are raising kids on their own, and almost none of them have an hour for the gym. This video takes the three findings that matter most for a man with no time and broken sleep — short bursts that count, the smallest amount of lifting that works, and why sleep is quietly a diet — and fits them into a school week.",
@@ -21,16 +21,13 @@
     "health for men over 30",
     "dad strength"
   ],
-  "words": 1017,
+  "words": 1023,
   "scores": {
-    "hook": 4,
-    "through_line": 5,
-    "concreteness": 5,
-    "support": 5,
-    "spoken": 5,
-    "pacing": 4,
-    "payoff": 4,
-    "visuals": 4
+    "retention": 5,
+    "packaging": 5,
+    "audience": 5,
+    "evidence": 5,
+    "brand_policy": 5
   },
   "sections": [
     {
@@ -67,7 +64,7 @@
           "callout": ""
         },
         {
-          "text": "This video is about the research that says the hour was never the point.",
+          "text": "The research says the hour was never the point, and it says it three times over: in short bursts, in the smallest amount of lifting that works, and in bed.",
           "visual": "stopwatch close up",
           "alt_visual": "kitchen timer close up",
           "callout": ""
@@ -79,7 +76,7 @@
           "callout": ""
         }
       ],
-      "narration": "There are about two and a half million single fathers in the United States, running a house on their own. Ask any one of them when he last had a free hour, and watch him laugh. Every fitness plan he has ever been handed starts with that hour. Five mornings a week, an hour each, before the kids are up. So he doesn't start, and then he feels bad about not starting, and the years go by. This video is about the research that says the hour was never the point. Three findings, one week, and a plan that survives a sick kid on a Tuesday."
+      "narration": "There are about two and a half million single fathers in the United States, running a house on their own. Ask any one of them when he last had a free hour, and watch him laugh. Every fitness plan he has ever been handed starts with that hour. Five mornings a week, an hour each, before the kids are up. So he doesn't start, and then he feels bad about not starting, and the years go by. The research says the hour was never the point, and it says it three times over: in short bursts, in the smallest amount of lifting that works, and in bed. Three findings, one week, and a plan that survives a sick kid on a Tuesday."
     },
     {
       "heading": "The Number on the Poster",
@@ -91,10 +88,16 @@
           "callout": ""
         },
         {
-          "text": "The World Health Organization says adults should get a hundred and fifty to three hundred minutes of moderate activity a week, or seventy-five to a hundred and fifty minutes of vigorous activity, plus something that strengthens muscle on two or more days.",
+          "text": "The World Health Organization says adults should get a hundred and fifty to three hundred minutes of moderate activity a week, or half that if it is vigorous.",
           "visual": "people jogging city park",
           "alt_visual": "man cycling to work",
           "callout": "150 minutes a week"
+        },
+        {
+          "text": "Plus something that strengthens muscle on two or more days.",
+          "visual": "man doing push ups living room",
+          "alt_visual": "dad lifting kettlebell garage",
+          "callout": ""
         },
         {
           "text": "That is the standard, and it is a good one.",
@@ -127,7 +130,7 @@
           "callout": ""
         }
       ],
-      "narration": "The official target is the one you have seen on a poster at the doctor's. The World Health Organization says adults should get a hundred and fifty to three hundred minutes of moderate activity a week, or seventy-five to a hundred and fifty minutes of vigorous activity, plus something that strengthens muscle on two or more days. That is the standard, and it is a good one. But read it again and notice what it does not say. It does not say gym, it does not say morning, and it does not say an hour at a time. A hundred and fifty minutes is twenty-one minutes a day, and the guideline counts a brisk walk to school drop-off. And vigorous activity counts at half the time, which is where the first finding comes in."
+      "narration": "The official target is the one you have seen on a poster at the doctor's. The World Health Organization says adults should get a hundred and fifty to three hundred minutes of moderate activity a week, or half that if it is vigorous. Plus something that strengthens muscle on two or more days. That is the standard, and it is a good one. But read it again and notice what it does not say. It does not say gym, it does not say morning, and it does not say an hour at a time. A hundred and fifty minutes is twenty-one minutes a day, and the guideline counts a brisk walk to school drop-off. And vigorous activity counts at half the time, which is where the first finding comes in."
     },
     {
       "heading": "Three Minutes That Count",
@@ -205,7 +208,7 @@
           "callout": ""
         },
         {
-          "text": "Muscle is the other half, and it is the half men lose first as they age.",
+          "text": "Muscle is the other half, and muscle that is not used is muscle that goes.",
           "visual": "man flexing arm mirror",
           "alt_visual": "older man lifting dumbbell",
           "callout": ""
@@ -241,13 +244,13 @@
           "callout": ""
         },
         {
-          "text": "A child is a load that grows about a kilogram every few months, which is, frankly, a progressive overload program with a built-in timer.",
+          "text": "A child is a load that gets heavier every few months, which is, frankly, a progressive overload program with a built-in timer.",
           "visual": "father lifting child overhead",
           "alt_visual": "dad carrying toddler on shoulders",
           "callout": ""
         }
       ],
-      "narration": "Bursts cover the heart. Muscle is the other half, and it is the half men lose first as they age. In twenty twenty-one, a review in the journal Sports Medicine called No Time to Lift asked how little strength training you can do and still get stronger. Their answer: around four hard sets per muscle group per week, in a range of about six to fifteen repetitions, with the weekly total mattering more than how many days you spread it over. Big movements that use several joints at once, push, pull, squat, and at least one that presses with the legs. Four sets is not a session. It is two sets of push-ups on Tuesday while the pasta boils and two more on Saturday with a toddler on your back. A child is a load that grows about a kilogram every few months, which is, frankly, a progressive overload program with a built-in timer."
+      "narration": "Bursts cover the heart. Muscle is the other half, and muscle that is not used is muscle that goes. In twenty twenty-one, a review in the journal Sports Medicine called No Time to Lift asked how little strength training you can do and still get stronger. Their answer: around four hard sets per muscle group per week, in a range of about six to fifteen repetitions, with the weekly total mattering more than how many days you spread it over. Big movements that use several joints at once, push, pull, squat, and at least one that presses with the legs. Four sets is not a session. It is two sets of push-ups on Tuesday while the pasta boils and two more on Saturday with a toddler on your back. A child is a load that gets heavier every few months, which is, frankly, a progressive overload program with a built-in timer."
     },
     {
       "heading": "Sleep Is the Diet",
@@ -343,7 +346,7 @@
           "callout": ""
         },
         {
-          "text": "On custody weeks when the kids are with their mum, that is when the longer sessions can happen, if you want them.",
+          "text": "On the weeks the kids are away, that is when the longer sessions can happen, if you want them.",
           "visual": "man running trail alone morning",
           "alt_visual": "man at gym rack",
           "callout": ""
@@ -361,7 +364,7 @@
           "callout": ""
         }
       ],
-      "narration": "Put the three together and a week looks like this. Every day, three hard minutes hidden in the day you already have: take the stairs at a run, carry the shopping in one trip, race the kids to the car. Twice a week, two or three sets each of a push, a pull and a squat, in the kitchen, in the time it takes rice to cook. A pull can be a towel over a door, a backpack full of books, or a chin-up bar in a doorway that costs less than a takeaway. And a bedtime you defend like a meeting, because it is the one thing on this list that does the most while you do nothing. On custody weeks when the kids are with their mum, that is when the longer sessions can happen, if you want them. On the weeks they are home, the short version is not the fallback. It is the plan."
+      "narration": "Put the three together and a week looks like this. Every day, three hard minutes hidden in the day you already have: take the stairs at a run, carry the shopping in one trip, race the kids to the car. Twice a week, two or three sets each of a push, a pull and a squat, in the kitchen, in the time it takes rice to cook. A pull can be a towel over a door, a backpack full of books, or a chin-up bar in a doorway that costs less than a takeaway. And a bedtime you defend like a meeting, because it is the one thing on this list that does the most while you do nothing. On the weeks the kids are away, that is when the longer sessions can happen, if you want them. On the weeks they are home, the short version is not the fallback. It is the plan."
     },
     {
       "heading": "The Hour Was Never the Point",
@@ -431,5 +434,30 @@
       "title": "Al Khatib et al. 2017, Eur J Clin Nutr — meta-analysis: partial sleep deprivation and energy intake",
       "url": "https://pmc.ncbi.nlm.nih.gov/articles/PMC5445008"
     }
-  ]
+  ],
+  "council": {
+    "script_rounds": [
+      {
+        "scores": {
+          "retention": 4,
+          "packaging": 3,
+          "audience": 4,
+          "evidence": 4,
+          "brand_policy": 4
+        },
+        "avg": 3.8,
+        "top_edits": [
+          "Cut the preamble sentence; replace with a one-line promise of the three findings.",
+          "Remove the two unsupported claims (muscle 'lost first'; 'a kilogram every few months').",
+          "Split the 45-word WHO sentence; 'with their mum' -> 'away'."
+        ]
+      }
+    ],
+    "package": {
+      "chosen_title": "The Workout Hidden in a Single Dad's Day",
+      "thumbnail_text": "3 MINUTES A DAY",
+      "why": "A concrete noun, a tension, the audience named, 41 characters; raises the question the video answers. The thumbnail adds the number the title lacks.",
+      "see": "council-review.md"
+    }
+  }
 }

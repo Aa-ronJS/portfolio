@@ -39,6 +39,7 @@ DEFAULTS = {
     "music": {"folder": "music", "jamendo": False, "gain_db": -16,
               "duck_db": -10},
     "quality": {"passes": 2, "searches": 12, "follow_up_research": True,
+                "subject_candidates": 8,
                 "vision_pick": True, "review": True, "min_score": 3.5,
                 "pronunciation_check": "auto"},
     "look": {"accent": "F5C542", "captions": "auto", "title_card": True,

@@ -95,10 +95,10 @@ time if the file exists, so a run that dies resumes where it stopped and
 
 | stage | writes | what happens |
 |---|---|---|
-| topic | `topic.json` | the next title from `topics.queue`, else Claude proposes one that is not in the ledger or `topics.avoid`, told how earlier videos were watched (`learn`) |
+| topic | `topic.json` | the next title from `topics.queue`, else a slate of eight candidates (told how earlier videos were watched, via `learn`) judged by the council: five seats score every candidate, the chair picks and says why; the also-rans are kept |
 | research | `research.md`, `research.json` | one web-searching turn: facts with source URLs, misconceptions, what could not be confirmed, the sources list |
 | outline | `outline.json` | the through-line, the hook, the payoff, each section's job and facts — and the gaps, which go straight back to the researcher and are folded into the notes |
-| script | `draft.json`, `critique.json`, `script.json` | a draft, then critique against a fixed rubric (hook, through-line, concreteness, support, spoken, pacing, payoff, visuals) and a revision that must answer it, for `quality.passes` rounds; any sentence the critic calls unsupported is cut; then a packaging pass picks the title from five candidates. Every sentence carries a literal footage query, an alternative, and an optional on-screen callout |
+| script | `draft.json`, `critique.json`, `script.json` | a draft, then the council judges it (retention, packaging, audience, evidence, brand/policy) and a revision must answer the chair's edits, for `quality.passes` rounds; any sentence the evidence seat calls unsupported is cut; then eight titles in prescribed shapes and four thumbnail texts go to the council, which picks the pair. Every sentence carries a literal footage query, an alternative, and an optional on-screen callout |
 | voice | `voice/vo.wav`, `timeline.json` | narration per section (ElevenLabs, with character timestamps and the neighbouring text for continuity) or per sentence (OpenAI), at −16 LUFS, with the start of every sentence; with faster-whisper installed the audio is read back and a mangled name is respelled phonetically and re-recorded |
 | broll | `broll/plan.json` | shots from sentences (a shot holds while sentences share a visual, splits at `shot_max`, joins under `shot_min`); for each shot up to five candidate clips, then photographs, then a card; Claude looks at the candidates' frames and picks the one that shows what is said; clips cached in `cache/`, none reused while fresh ones remain |
 | music | `music/music.json` | a local track matching the mood, else Jamendo; credit kept for the description |
@@ -113,6 +113,20 @@ before picking a topic, so the channel leans toward what holds people.
 The committed record is the text: topic, research, script, plan, the
 publish record and the ledger. Media stays out of git (the Action keeps
 each `final.mp4` as a build artifact for a fortnight).
+
+## The council
+
+Five fixed seats judge every subject, script, title and thumbnail text,
+in one structured call per decision: the retention editor, the
+packaging strategist, the viewer the brief describes, the scientist,
+and the brand-and-policy guard; a chair decides and names the one
+change that would raise the result most. The seats' wording is in
+`channel/prompts.py` (`SEATS`) and was set by the research and the
+first sitting in `examples/single-dads/council-review.md`, which also
+records the standing rules it produced (no first-person experience
+ever, numbers on thumbnails must be the finding not a promise, text
+must read at feed size, the calm register). Scores and reasons are
+kept in each episode's `topic.json`, `critique.json` and `script.json`.
 
 ## Keeping a hand on it
 

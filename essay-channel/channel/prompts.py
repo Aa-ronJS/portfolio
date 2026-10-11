@@ -460,3 +460,221 @@ RESPELL_SCHEMA = {
     "required": ["respellings"],
     "additionalProperties": False,
 }
+
+
+# ---------------------------------------------------------------- the council
+#
+# Five seats, five lenses, one chair. The same seats judge subjects,
+# titles, thumbnail text and scripts, so the channel's taste is one
+# thing, written down here. What each seat knows comes from the
+# research in examples/single-dads/council-review.md: YouTube's own
+# packaging guidance, the retention metrics (CTR, average view
+# duration, the 30-second intro mark), the Partner Program's
+# inauthentic-content and AI-persona rules, and what outperforms in
+# the channel's niche.
+
+SEATS = {
+    "retention": (
+        "THE RETENTION EDITOR. Judges whether people keep watching. The "
+        "first sentence must be a concrete, surprising, true detail; the "
+        "title's promise must be visibly kept inside 30 seconds; no "
+        "greeting, no 'in this video', no throat-clearing. Something must "
+        "change every 60-90 seconds (a new fact, a turn, a number on "
+        "screen). The ending lands and stops. Scores 5 only if a viewer "
+        "who clicked by accident would stay."),
+    "packaging": (
+        "THE PACKAGING STRATEGIST. Judges the title and thumbnail as one "
+        "unit seen at phone size in a feed. Title: under 55 characters, "
+        "the important words first, a specific noun and a tension or "
+        "question, no ALL CAPS, no exclamation marks, no 'you won't "
+        "believe'. Thumbnail text: at most four words, readable at "
+        "168x94 pixels, says something the title does NOT say, so the "
+        "two complete each other. A great package creates a question the "
+        "video answers; a bad one answers it in the title."),
+    "audience": (
+        "THE VIEWER. A single dad, mid-thirties to fifties, two kids, "
+        "custody weeks, up at six, asleep by eleven if lucky. Judges "
+        "whether this video respects him: is it doable on a school night "
+        "with no gym, does it talk to him like a mate who read the "
+        "studies rather than a drill sergeant or a supplement ad, is "
+        "there a single sentence that shames him, would he send it to "
+        "another dad. He has seen a thousand 'five tips' videos; "
+        "generic advice scores 2 at best."),
+    "evidence": (
+        "THE SCIENTIST. Judges whether every claim is true to its source "
+        "and sized honestly: effect sizes stated, small studies called "
+        "small, observational called observational, nothing a sports "
+        "physician or dietitian would wince at, 'not medical advice' "
+        "where a listener might act on it. A number without a source is "
+        "a failure; an overclaim is a worse one."),
+    "brand_policy": (
+        "THE BRAND AND POLICY GUARD. Judges fitness for a channel that "
+        "must earn trust and keep its YouTube Partner Program standing. "
+        "The narration is synthetic and the channel says so: the "
+        "narrator is never presented as a person, a doctor, a coach or "
+        "any expert; never says 'I tried', 'my kids', 'when I was' or "
+        "any first-person experience; speaks as 'the research', 'the "
+        "study', 'a dad who'. Every video must have its own argument, "
+        "not a template with the noun swapped. No fear, no shame, no "
+        "clickbait, no promise of a body by a date. Health claims that "
+        "could be read as diagnosis or treatment are out."),
+}
+
+
+def council_system(cfg):
+    seats = "\n\n".join("%s: %s" % (k.upper(), v) for k, v in SEATS.items())
+    return (system(cfg) + "\n\nYou are the channel's review council. You sit "
+            "in every seat in turn and then as the chair. Each seat scores "
+            "1-5 from its own lens only and gives one blunt sentence. The "
+            "chair decides, explains the decision in two sentences, and "
+            "names the single change that would raise the result most. "
+            "Be harsh: a 4 is good, a 5 is rare, a 3 means 'would not run "
+            "as is'.\n\nTHE SEATS\n\n" + seats)
+
+
+def topic_slate(cfg, done, avoid, performance=None, n=8):
+    return (topic(cfg, done, avoid, performance) +
+            "\n\nDo not propose one: propose %d candidates, as different "
+            "from each other as the brief allows — different constraints "
+            "of the viewer's life, different kinds of question (how, why, "
+            "which, what happens if), different emotional registers. Each "
+            "with a working title, angle, why, and search terms." % n)
+
+
+SLATE_SCHEMA = {
+    "type": "object",
+    "properties": {
+        "candidates": {"type": "array", "items": TOPIC_SCHEMA, "minItems": 1},
+    },
+    "required": ["candidates"],
+    "additionalProperties": False,
+}
+
+
+def council_subjects(cfg, candidates):
+    lines = ["%d. %s — %s (%s)" % (i, c["title"], c["angle"], c["why"])
+             for i, c in enumerate(candidates)]
+    return (
+        "Judge these candidate subjects for the channel's next video. "
+        "Which one, made well, would a demanding viewer in the brief "
+        "watch to the end and send to a friend? Weigh: a real question at "
+        "the centre; a constraint of the viewer's actual life; something "
+        "the research can actually say (specific, sourced, honest); "
+        "whether the title and thumbnail can promise it in ten words; "
+        "whether it is different from everything already made. Score "
+        "every candidate from every seat, rank them, and choose.\n\n"
+        "CANDIDATES\n%s" % "\n".join(lines))
+
+
+def _seat_scores():
+    return {
+        "type": "object",
+        "properties": {k: {"type": "integer", "minimum": 1, "maximum": 5}
+                       for k in SEATS},
+        "required": list(SEATS),
+        "additionalProperties": False,
+    }
+
+
+RANK_SCHEMA = {
+    "type": "object",
+    "properties": {
+        "ranking": {
+            "type": "array",
+            "items": {
+                "type": "object",
+                "properties": {
+                    "candidate": {"type": "integer"},
+                    "seats": _seat_scores(),
+                    "note": {"type": "string"},
+                },
+                "required": ["candidate", "seats", "note"],
+                "additionalProperties": False,
+            },
+        },
+        "chosen": {"type": "integer"},
+        "why": {"type": "string"},
+        "fix": {"type": "string"},
+    },
+    "required": ["ranking", "chosen", "why", "fix"],
+    "additionalProperties": False,
+}
+
+
+def council_script(cfg, script_json, notes):
+    return (
+        "Judge this script from every seat, then as the chair. Quote the "
+        "sentences you mean. List every factual sentence the notes do not "
+        "support, verbatim, in `unsupported` (the evidence seat's job; be "
+        "ruthless). The chair gives the three edits that would most "
+        "improve the video, in order, each specific enough to act on "
+        "without asking.\n\nSCRIPT\n%s\n\nRESEARCH NOTES (the only allowed "
+        "source of facts)\n%s" % (script_json, notes))
+
+
+COUNCIL_CRITIQUE_SCHEMA = {
+    "type": "object",
+    "properties": {
+        "scores": _seat_scores(),
+        "notes": {"type": "string"},
+        "unsupported": {"type": "array", "items": {"type": "string"}},
+        "top_edits": {"type": "array", "items": {"type": "string"}},
+    },
+    "required": ["scores", "notes", "unsupported", "top_edits"],
+    "additionalProperties": False,
+}
+
+
+def package_slate(cfg, script_json):
+    return (
+        "Package this finished script for YouTube. Write EIGHT title "
+        "candidates that differ in approach: a plain searchable one, one "
+        "built on the video's best number, one on the viewer's own "
+        "failure ('why you keep...'), one 'without'/'instead of' framing, "
+        "one that names the constraint ('with no time'), one question, "
+        "and two of your own. Each under 55 characters, important words "
+        "first, no ALL CAPS, no exclamation marks. Then FOUR thumbnail "
+        "texts of at most four words, each saying something a title does "
+        "not. Then a two-to-three sentence summary for the description, "
+        "and 8-12 tags a viewer would type.\n\nSCRIPT\n%s" % script_json)
+
+
+PACKAGE_SLATE_SCHEMA = {
+    "type": "object",
+    "properties": {
+        "titles": {"type": "array", "items": {"type": "string"}, "minItems": 1},
+        "thumbnail_texts": {"type": "array", "items": {"type": "string"}, "minItems": 1},
+        "summary": {"type": "string"},
+        "tags": {"type": "array", "items": {"type": "string"}},
+    },
+    "required": ["titles", "thumbnail_texts", "summary", "tags"],
+    "additionalProperties": False,
+}
+
+
+def council_package(cfg, script_summary, titles, texts):
+    return (
+        "Choose the package for this video. The title and the thumbnail "
+        "text are seen together at phone size; they must say different "
+        "things that complete each other and together raise the question "
+        "the video answers. Score every title from every seat and rank "
+        "them; then choose the thumbnail text that best pairs with the "
+        "chosen title (give its number in `thumbnail`).\n\n"
+        "THE VIDEO\n%s\n\nTITLES\n%s\n\nTHUMBNAIL TEXTS\n%s"
+        % (script_summary,
+           "\n".join("%d. %s" % (i, t) for i, t in enumerate(titles)),
+           "\n".join("%d. %s" % (i, t) for i, t in enumerate(texts))))
+
+
+PACKAGE_PICK_SCHEMA = {
+    "type": "object",
+    "properties": {
+        "ranking": RANK_SCHEMA["properties"]["ranking"],
+        "chosen": {"type": "integer"},
+        "thumbnail": {"type": "integer"},
+        "why": {"type": "string"},
+        "fix": {"type": "string"},
+    },
+    "required": ["ranking", "chosen", "thumbnail", "why", "fix"],
+    "additionalProperties": False,
+}

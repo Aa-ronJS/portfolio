@@ -56,9 +56,14 @@ OUTLINE = {
     "gaps": ["What year was ISO 668 first published?"],
 }
 
+def _seats(v):
+    return {"retention": v, "packaging": v, "audience": v, "evidence": v,
+            "brand_policy": v}
+
+
 CRITIQUE = {
-    "scores": {"hook": 4, "through_line": 5, "concreteness": 4, "support": 5,
-               "spoken": 5, "pacing": 4, "payoff": 4, "visuals": 4},
+    "scores": {"retention": 4, "packaging": 4, "audience": 5, "evidence": 5,
+               "brand_policy": 4},
     "notes": "Tight. The hook could name the box's size sooner.",
     "unsupported": [],
     "top_edits": ["Name the size in sentence two."],
@@ -67,7 +72,7 @@ CRITIQUE = {
 PACKAGE = {
     "titles": ["Why Every Shipping Container Is the Same Size",
                "The Box That Measures the World"],
-    "thumbnail_text": "One Box Rules",
+    "thumbnail_texts": ["One Box Rules", "8 Feet Wide"],
     "summary": "Almost everything you own has crossed an ocean in a steel box of "
                "exactly the same dimensions. This is how one trucker's idea became "
                "the world's measuring stick.",
@@ -92,17 +97,34 @@ class FakeClaude:
 
     def json(self, system, prompt, schema, **k):
         props = set(schema.get("properties", {}))
+        topic = {"title": SCRIPT["title"], "angle": "How one box standardised trade.",
+                 "why": "Everyone has seen one.", "search_terms": ["ISO 668", "McLean"]}
+        if "candidates" in props:
+            self.calls.append("slate")
+            other = dict(topic, title="Why Bridges Hum in the Wind")
+            return {"candidates": [other, topic, dict(topic, title="The Lost Art of the Hedge")]}
         if "search_terms" in props:
             self.calls.append("topic")
-            return {"title": SCRIPT["title"], "angle": "How one box standardised trade.",
-                    "why": "Everyone has seen one.", "search_terms": ["ISO 668", "McLean"]}
+            return topic
         if "through_line" in props:
             self.calls.append("outline")
             return json.loads(json.dumps(OUTLINE))
+        if "thumbnail" in props:                       # council: package pick
+            self.calls.append("council-package")
+            n = prompt.count("\n") and len([l for l in prompt.split("THUMBNAIL TEXTS")[0].split("TITLES")[-1].splitlines() if l[:1].isdigit()])
+            return {"ranking": [{"candidate": i, "seats": _seats(4 if i else 5), "note": "ok"}
+                                for i in range(max(1, n))],
+                    "chosen": 0, "thumbnail": 0, "why": "specific and short", "fix": "none"}
+        if "ranking" in props:                         # council: subjects
+            self.calls.append("council-subjects")
+            return {"ranking": [{"candidate": 1, "seats": _seats(5), "note": "a real question"},
+                                {"candidate": 0, "seats": _seats(3), "note": "vague"},
+                                {"candidate": 2, "seats": _seats(2), "note": "niche"}],
+                    "chosen": 1, "why": "everyone has seen one", "fix": "name the size early"}
         if "scores" in props:
             self.calls.append("critique")
             return json.loads(json.dumps(CRITIQUE))
-        if "titles" in props:
+        if "thumbnail_texts" in props:
             self.calls.append("package")
             return json.loads(json.dumps(PACKAGE))
         if "respellings" in props:

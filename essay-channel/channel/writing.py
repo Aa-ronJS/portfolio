@@ -5,7 +5,7 @@ can be read back against the critique that shaped it."""
 
 import json
 
-from . import prompts
+from . import council, prompts
 from .episodes import Episode, done_titles, slugify, write_json
 
 
@@ -27,8 +27,21 @@ def pick_topic(cfg, llm, title=None, performance=None):
         t["title"] = title
         t["chosen_by"] = "human"
     elif cfg["topics"]["generate"]:
-        t = llm.json(prompts.system(cfg), prompt, prompts.TOPIC_SCHEMA)
-        t["chosen_by"] = "model"
+        n = int(cfg["quality"].get("subject_candidates") or 8)
+        slate = llm.json(prompts.system(cfg),
+                         prompts.topic_slate(cfg, done, cfg["topics"]["avoid"],
+                                             performance, n),
+                         prompts.SLATE_SCHEMA)
+        cands = [c for c in slate["candidates"]
+                 if slugify(c["title"]) not in {slugify(d) for d in done}]
+        if not cands:
+            raise SystemExit("every proposed subject was already made")
+        verdict = council.choose_subject(llm, cfg, cands)
+        t = dict(cands[verdict["chosen"]])
+        t["chosen_by"] = "council"
+        t["council"] = {k: v for k, v in verdict.items() if k != "candidates"}
+        t["also_considered"] = [c["title"] for i, c in enumerate(cands)
+                                if i != verdict["chosen"]]
     else:
         raise SystemExit("topics.queue is empty and topics.generate is off: "
                          "nothing to make")
@@ -108,24 +121,30 @@ def write_script(cfg, llm, ep):
     write_json(ep.path("draft.json"), s)
     history = []
     for rnd in range(int(cfg["quality"]["passes"])):
-        c = llm.json(system, prompts.critique(cfg, _dump(s), notes),
-                     prompts.CRITIQUE_SCHEMA)
+        c = council.judge_script(llm, cfg, _dump(s), notes)
         history.append(c)
-        avg = sum(c["scores"].values()) / len(c["scores"])
-        if avg >= 4.7 and not c["unsupported"]:
+        if c["avg"] >= 4.7 and not c["unsupported"]:
             break
         s = tidy_script(llm.json(system, prompts.revise(cfg, _dump(s), _dump(c), notes),
                                  prompts.SCRIPT_SCHEMA))
         s = drop_unsupported(s, c["unsupported"])
     write_json(ep.path("critique.json"), {"rounds": history})
-    p = llm.json(system, prompts.package(cfg, _dump(s)), prompts.PACKAGE_SCHEMA)
-    titles = [" ".join(t.split()) for t in p["titles"] if t.strip()]
-    s["title"] = (titles[0] if titles else s["title"])[:100]
-    s["alternate_titles"] = titles[1:5]
-    s["thumbnail_text"] = " ".join(p["thumbnail_text"].split())[:40]
+    # packaging: a slate of titles and thumbnail texts, then the council picks
+    p = llm.json(system, prompts.package_slate(cfg, _dump(s)), prompts.PACKAGE_SLATE_SCHEMA)
+    titles = [" ".join(t.split())[:100] for t in p["titles"] if t.strip()] or [s["title"]]
+    texts = [" ".join(t.split())[:40] for t in p["thumbnail_texts"] if t.strip()] or [titles[0]]
     s["summary"] = " ".join(p["summary"].split())
+    pick = council.choose_package(llm, cfg, s["summary"], titles, texts)
+    s["title"] = titles[pick["chosen"]]
+    s["alternate_titles"] = [x["candidate"] for x in pick["ranking"]
+                             if x["candidate"] != pick["chosen"]]
+    s["alternate_titles"] = [titles[i] for i in s["alternate_titles"]][:5]
+    s["thumbnail_text"] = texts[pick["thumbnail"]]
     s["tags"] = [t.strip() for t in p.get("tags") or [] if t.strip()][:15]
     s["scores"] = history[-1]["scores"] if history else {}
+    s["council"] = {"package": {k: v for k, v in pick.items()},
+                    "script_rounds": [{"scores": h["scores"], "avg": h["avg"],
+                                       "top_edits": h["top_edits"]} for h in history]}
     ep.save("script", s)
     return s
 

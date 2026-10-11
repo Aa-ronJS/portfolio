@@ -348,21 +348,25 @@ def thumbnail(cfg, ep, final, llm=None):
     im = Image.open(cands[choice]).convert("RGB").resize(size)
     im = im.filter(ImageFilter.GaussianBlur(0.6))
     shade = Image.new("RGB", size, (0, 0, 0))
-    mask = Image.linear_gradient("L").resize(size).point(lambda v: int(v * 0.78))
+    mask = Image.linear_gradient("L").resize(size).point(lambda v: int(v * 0.82))
     im = Image.composite(shade, im, mask)
     draw = ImageDraw.Draw(im)
     text = (script.get("thumbnail_text") or script["title"]).upper()
     font_path = find_font()
-    fsize = int(size[1] * (0.11 if portrait else 0.17))
+    # Big enough to read at 168x94, the size a phone feed shows: start
+    # at a quarter of the frame height per line and shrink only until
+    # the text fits in two lines (three on portrait).
+    fsize = int(size[1] * (0.13 if portrait else 0.26))
+    max_lines = 3 if portrait else 2
     while fsize > 20:
         font = ImageFont.truetype(font_path, fsize) if font_path != "sans" \
             else ImageFont.load_default()
-        lines = _wrap(draw, text, font, size[0] * 0.86)
-        hgt = sum(draw.textbbox((0, 0), l, font=font)[3] for l in lines) * 1.15
-        if hgt < size[1] * 0.5 and all(
-                draw.textbbox((0, 0), l, font=font)[2] <= size[0] * 0.88 for l in lines):
+        lines = _wrap(draw, text, font, size[0] * 0.88)
+        hgt = sum(draw.textbbox((0, 0), l, font=font)[3] for l in lines) * 1.12
+        if len(lines) <= max_lines and hgt < size[1] * 0.6 and all(
+                draw.textbbox((0, 0), l, font=font)[2] <= size[0] * 0.9 for l in lines):
             break
-        fsize -= 6
+        fsize -= 4
     accent = tuple(int(cfg["look"]["accent"][i:i + 2], 16) for i in (0, 2, 4))
     y = size[1] - int(size[1] * 0.09) - hgt
     bar_y = int(y - size[1] * 0.025)
@@ -372,8 +376,8 @@ def thumbnail(cfg, ep, final, llm=None):
         bb = draw.textbbox((0, 0), l, font=font)
         x = int(size[0] * 0.07)
         draw.text((x, y), l, font=font, fill=(255, 255, 255),
-                  stroke_width=max(2, fsize // 14), stroke_fill=(0, 0, 0))
-        y += bb[3] * 1.15
+                  stroke_width=max(3, fsize // 11), stroke_fill=(0, 0, 0))
+        y += bb[3] * 1.12
     im.save(ep.path("thumbnail.jpg"), quality=90)
 
 

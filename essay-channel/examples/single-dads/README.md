@@ -11,7 +11,14 @@ What one episode from this channel looks like, for the brief now in
   The sources at the end are the ones every claim traces to.
 - `script.md` — the same script laid out to read: narration with the
   shot and callout for each sentence.
-- `thumbnail.jpg` — rendered through the real thumbnail code
+- `council-review.md` — the research pass and the five-seat review of
+  subjects (a ranked slate of ten), titles (ten candidates for this
+  episode), the script (seat by seat, with the chair's edits, which are
+  applied in the files here) and thumbnails (four variants, judged at
+  feed size).
+- `thumbnails/` — the four variants and a sheet showing each at full,
+  feed and medium size.
+- `thumbnail.jpg` — the chosen variant, rendered through the real thumbnail code
   (`channel/assemble.py`) from a stock frame, with the script's
   thumbnail text and the channel's accent bar. Photo: Kampus Production
   via Pexels (Pexels licence).

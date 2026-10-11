@@ -150,12 +150,29 @@ class Writing(unittest.TestCase):
         s = writing.write_script(cfg, llm, ep)
         self.assertEqual(s["title"], fake.PACKAGE["titles"][0])
         self.assertEqual(s["alternate_titles"], fake.PACKAGE["titles"][1:])
+        self.assertEqual(s["thumbnail_text"], fake.PACKAGE["thumbnail_texts"][0])
         self.assertIn("critique", llm.calls)
-        self.assertIn("revise", llm.calls)                    # critic scored under 4.7
+        self.assertIn("revise", llm.calls)                    # council scored under 4.7
         self.assertIn("package", llm.calls)
+        self.assertIn("council-package", llm.calls)
         self.assertTrue(os.path.exists(ep.path("draft.json")))
         self.assertTrue(os.path.exists(ep.path("critique.json")))
-        self.assertEqual(s["scores"]["through_line"], 5)
+        self.assertEqual(s["scores"]["evidence"], 5)
+        self.assertEqual(s["council"]["package"]["chosen"], 0)
+        self.assertEqual(len(s["council"]["script_rounds"]), 2)
+        shutil.rmtree(tmp)
+
+    def test_subject_is_chosen_by_council(self):
+        tmp = tempfile.mkdtemp()
+        cfg = load_cfg(tmp)
+        llm = fake.FakeClaude()
+        ep = writing.pick_topic(cfg, llm)
+        t = ep.load("topic")
+        self.assertEqual(t["chosen_by"], "council")
+        self.assertEqual(t["title"], fake.SCRIPT["title"])        # the council's pick, not the slate's first
+        self.assertEqual(t["council"]["chosen"], 1)
+        self.assertEqual(len(t["also_considered"]), 2)
+        self.assertEqual(llm.calls, ["slate", "council-subjects"])
         shutil.rmtree(tmp)
 
     def test_unsupported_sentences_are_cut(self):
@@ -336,11 +353,22 @@ class EndToEnd(unittest.TestCase):
         pub = ep.load("publish")
         self.assertIn("00:00", pub["metadata"]["description"])
 
-        # second run: the finished episode is left alone; the fake proposes
-        # the same title, which is refused rather than remade
+        # second run: the finished episode is left alone; the slate still
+        # holds the made subject, which is filtered out before the council
+        # sits, so a different subject is chosen and made
+        first = json.dumps(pub, sort_keys=True)
         out = subprocess.run(cmd, env=env, capture_output=True, text=True)
-        self.assertNotEqual(out.returncode, 0)
-        self.assertIn("already exists", out.stdout + out.stderr)
+        self.assertEqual(out.returncode, 0, out.stdout + out.stderr)
+        eps2 = episodes.list_episodes(env["CHANNEL_EPISODES"])
+        self.assertEqual(len(eps2), 2)
+        self.assertEqual(json.dumps(ep.load("publish"), sort_keys=True), first)
+        other = [e for e in eps2 if e.slug != ep.slug][0]
+        self.assertNotEqual(other.load("topic")["title"], ep.load("topic")["title"])
+        self.assertTrue(other.done("publish"))
+        led = episodes.load_ledger(env["CHANNEL_LEDGER"])
+        self.assertEqual(len(led["videos"]), 2)
+        # the two bookings take consecutive slots
+        self.assertLess(led["videos"][ep.slug]["publish_at"], led["videos"][other.slug]["publish_at"])
         shutil.rmtree(tmp)
 
 

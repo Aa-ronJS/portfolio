@@ -15,7 +15,8 @@ Four independent things live here:
 - **`essay-channel/`** — a YouTube channel that runs itself: one brief
   in `channel.yaml`, and a scheduled GitHub Action researches a topic
   (Claude + web search, a second pass for the outline's gaps), writes
-  the script through draft/critique/revise, voices it (ElevenLabs or
+  the script through draft, a five-seat review council and revision,
+  voices it (ElevenLabs or
   OpenAI, whisper read-back for names), picks stock footage per
   sentence by looking at candidate frames (Pexels/Pixabay), cuts it
   with motion, dissolves and callouts over ducked music, reviews the

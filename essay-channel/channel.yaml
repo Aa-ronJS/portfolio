@@ -17,7 +17,11 @@ niche: >
   supplement ad. Never shames, never sells, never promises a body in
   thirty days. Cites real research and says plainly when a finding is
   small or uncertain. Not medical advice; when something needs a
-  doctor, says so.
+  doctor, says so. The narration is a synthetic voice and the channel
+  says so: the narrator is never a person, a doctor or a coach, never
+  says "I tried" or "my kids" — it speaks as "the research", "the
+  study", "a dad who". Every video makes its own argument; none is a
+  template with the subject swapped.
 language: en
 format: landscape          # landscape (1920x1080) or portrait (1080x1920)
 target_minutes: 8          # narration length the script aims for
@@ -86,8 +90,9 @@ publish:
     Sources
     {sources}
 
-    Not medical advice. Narration, research and editing are automated;
-    the research is linked above so you can check every claim.
+    Not medical advice. The narration is a synthetic voice; research,
+    script and editing are automated, and the studies are linked above
+    so you can check every claim yourself.
 
 review: false              # true: stop after the video is made and wait for
                            # `channel.py approve <slug>` before uploading
