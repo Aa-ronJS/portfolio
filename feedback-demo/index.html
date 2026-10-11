@@ -1,468 +1,454 @@
-<title>Paid Feedback Demo</title>
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Serif:wght@500;600&family=IBM+Plex+Mono:wght@400;500&display=swap">
+<title>Candid</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Figtree:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap">
 <style>
-/* Layout: one 760px column, a sticky role bar, cards only for things that are objects (a review, a bug, a flag). Ledger feel: tabular figures, hairline rules, moss accent. */
+/* App shell: 232px sidebar + content column (max 1080). Tables open a right-hand drawer. One accent, semantic colours for state only. */
 :root {
-  --bg: #f6f5f0;
-  --surface: #fffefb;
-  --ink: #1d211c;
-  --muted: #5f655b;
-  --line: #d9d8cf;
-  --accent: #3f6b4a;
-  --accent-ink: #ffffff;
-  --tint: #e8efe6;
-  --good: #2f7a3e;
-  --warn: #a86a12;
-  --bad: #b03a2e;
-  --good-bg: #e3f1e4;
-  --warn-bg: #f7ebd4;
-  --bad-bg: #f6dfdb;
-  --display: "IBM Plex Serif", Georgia, serif;
-  --body: "IBM Plex Sans", system-ui, sans-serif;
-  --mono: "IBM Plex Mono", ui-monospace, Menlo, monospace;
+  --bg: #f6f7f9; --surface: #ffffff; --raised: #ffffff; --ink: #111418; --muted: #667085; --faint: #98a2b3;
+  --line: #e4e7ec; --line-strong: #d0d5dd; --hover: #f2f4f7;
+  --accent: #0e7c66; --accent-ink: #ffffff; --accent-soft: #e3f3ee; --accent-text: #0b6b58;
+  --good: #137a3d; --good-bg: #e6f4ea; --warn: #9a5b00; --warn-bg: #fff3dd; --bad: #b42318; --bad-bg: #fde9e7; --info: #3b4c9a; --info-bg: #e9ecfb;
+  --shadow: 0 1px 2px rgba(16,24,40,.05); --shadow-lg: 0 20px 48px rgba(16,24,40,.18);
+  --ui: "Figtree", system-ui, -apple-system, "Segoe UI", sans-serif; --mono: "JetBrains Mono", ui-monospace, Menlo, monospace;
 }
 @media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) {
-  --bg: #171a16; --surface: #20241f; --ink: #ebeae2; --muted: #a3a89d; --line: #3a3f38;
-  --accent: #8cc49a; --accent-ink: #11190f; --tint: #263028;
-  --good: #8fd39b; --warn: #e2b36a; --bad: #ef9a8e;
-  --good-bg: #223627; --warn-bg: #3a2f1b; --bad-bg: #3e2522; color-scheme: dark } }
+  --bg: #0f1216; --surface: #161a20; --raised: #1b2027; --ink: #e9ecf1; --muted: #98a2b3; --faint: #667085;
+  --line: #262c35; --line-strong: #343b46; --hover: #1e242c;
+  --accent: #3cc8a8; --accent-ink: #06211b; --accent-soft: #15302a; --accent-text: #5fd6bb;
+  --good: #5fd08a; --good-bg: #16301f; --warn: #f0b35a; --warn-bg: #3a2a10; --bad: #f58a7e; --bad-bg: #3c1c19; --info: #9fb0ff; --info-bg: #1f2540;
+  --shadow: 0 1px 2px rgba(0,0,0,.4); --shadow-lg: 0 20px 48px rgba(0,0,0,.6); color-scheme: dark } }
 :root[data-theme="dark"] {
-  --bg: #171a16; --surface: #20241f; --ink: #ebeae2; --muted: #a3a89d; --line: #3a3f38;
-  --accent: #8cc49a; --accent-ink: #11190f; --tint: #263028;
-  --good: #8fd39b; --warn: #e2b36a; --bad: #ef9a8e;
-  --good-bg: #223627; --warn-bg: #3a2f1b; --bad-bg: #3e2522; color-scheme: dark }
+  --bg: #0f1216; --surface: #161a20; --raised: #1b2027; --ink: #e9ecf1; --muted: #98a2b3; --faint: #667085;
+  --line: #262c35; --line-strong: #343b46; --hover: #1e242c;
+  --accent: #3cc8a8; --accent-ink: #06211b; --accent-soft: #15302a; --accent-text: #5fd6bb;
+  --good: #5fd08a; --good-bg: #16301f; --warn: #f0b35a; --warn-bg: #3a2a10; --bad: #f58a7e; --bad-bg: #3c1c19; --info: #9fb0ff; --info-bg: #1f2540;
+  --shadow: 0 1px 2px rgba(0,0,0,.4); --shadow-lg: 0 20px 48px rgba(0,0,0,.6); color-scheme: dark }
 
 * { box-sizing: border-box }
-body { background: var(--bg); color: var(--ink); font: 15px/1.5 var(--body); margin: 0 }
-.wrap { max-width: 760px; margin: 0 auto; padding-inline: 16px; padding-block: 0 48px }
-h1, h2, h3 { font-family: var(--display); font-weight: 600; text-wrap: balance; margin: 0 }
-h1 { font-size: 22px } h2 { font-size: 19px; margin-top: 28px } h3 { font-size: 16px }
-p { margin: 0 } .muted { color: var(--muted) } .small { font-size: 13px }
-.num { font-family: var(--mono); font-variant-numeric: tabular-nums; font-size: 13.5px }
-a { color: var(--accent) }
+html, body { height: 100% }
+body { margin: 0; background: var(--bg); color: var(--ink); font: 14px/1.45 var(--ui); -webkit-font-smoothing: antialiased }
+h1, h2, h3 { margin: 0; font-weight: 600; letter-spacing: -.01em; text-wrap: balance }
+h1 { font-size: 20px } h2 { font-size: 15px } h3 { font-size: 14px }
+p { margin: 0 } a { color: var(--accent-text) }
+.muted { color: var(--muted) } .faint { color: var(--faint) } .sm { font-size: 12.5px } .xs { font-size: 11.5px }
+.num, .mono { font-family: var(--mono); font-variant-numeric: tabular-nums; font-size: 12.5px }
+.strong { font-weight: 600 }
+.app { display: grid; grid-template-columns: 232px 1fr; min-height: 100% }
+.main { min-width: 0 }
+.side { background: var(--surface); border-right: 1px solid var(--line); padding: 14px 12px; display: flex; flex-direction: column; gap: 4px; position: sticky; top: 0; height: 100vh }
+.brand { display: flex; align-items: center; gap: 9px; padding: 4px 8px 14px; font-weight: 700; font-size: 15px; letter-spacing: -.02em }
+.brand .mark { width: 22px; height: 22px; border-radius: 6px; background: var(--accent); display: grid; place-items: center; color: var(--accent-ink); font-size: 12px; font-weight: 700 }
+.ws { padding: 0 8px 12px; font-size: 12.5px; color: var(--muted); display: flex; align-items: center; gap: 8px }
+.ws b { color: var(--ink); font-weight: 600 }
+.nav { display: flex; flex-direction: column; gap: 2px }
+.nav button { display: flex; align-items: center; gap: 10px; width: 100%; text-align: left; padding: 7px 10px; border: 0; background: none; color: var(--muted); font: inherit; font-weight: 500; border-radius: 7px; cursor: pointer }
+.nav button:hover { background: var(--hover); color: var(--ink) }
+.nav button[aria-current="page"] { background: var(--accent-soft); color: var(--accent-text) }
+.nav .count { margin-left: auto; font-size: 11px; background: var(--hover); color: var(--muted); padding: 1px 7px; border-radius: 999px; font-family: var(--mono) }
+.nav button[aria-current="page"] .count { background: var(--surface) }
+.side .foot { margin-top: auto; padding: 8px }
+.topbar { display: flex; align-items: center; justify-content: space-between; gap: 12px; padding: 12px 28px; border-bottom: 1px solid var(--line); background: var(--surface); position: sticky; top: env(safe-area-inset-top, 0px); z-index: 5 }
+.topbar .title { display: flex; align-items: baseline; gap: 10px; min-width: 0 }
+.content { padding: 24px 28px 96px; max-width: 1080px; width: 100%; display: flex; flex-direction: column; gap: 20px; min-width: 0 }
+.btn.menu-btn { display: none }
+@media (max-width: 900px) {
+  .app { grid-template-columns: 1fr }
+  .side { position: fixed; inset: 0 auto 0 0; width: 260px; z-index: 20; transform: translateX(-100%); transition: transform .2s; box-shadow: var(--shadow-lg) }
+  .side.open { transform: none }
+  .scrim { position: fixed; inset: 0; background: rgba(0,0,0,.35); z-index: 19 }
+  .btn.menu-btn { display: inline-flex }
+  .topbar, .content { padding-inline: 16px }
+}
+@media (prefers-reduced-motion: reduce) { .side, .drawer { transition: none } }
 
-.top { position: sticky; top: env(safe-area-inset-top, 0px); background: var(--bg); border-bottom: 1px solid var(--line); z-index: 2; padding-block: 12px 0 }
-.top .row { display: flex; flex-wrap: wrap; gap: 8px 16px; align-items: baseline; justify-content: space-between }
-.chips { display: flex; flex-wrap: wrap; gap: 6px }
-.chip { font-size: 12.5px; padding: 2px 9px; border: 1px solid var(--line); border-radius: 999px; background: var(--surface); white-space: nowrap }
-.chip.state { background: var(--tint); border-color: transparent; font-weight: 500 }
-.tabs { display: flex; gap: 2px; margin-top: 10px; overflow-x: auto }
-.tab { background: none; border: 0; border-bottom: 2px solid transparent; padding: 8px 10px; font: inherit; font-weight: 500; color: var(--muted); cursor: pointer; white-space: nowrap }
-.tab[aria-selected="true"] { color: var(--ink); border-bottom-color: var(--accent) }
-.tab:focus-visible, button:focus-visible, input:focus-visible, textarea:focus-visible, select:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px }
+.account { position: relative }
+.avatar { width: 30px; height: 30px; border-radius: 999px; background: var(--accent-soft); color: var(--accent-text); display: grid; place-items: center; font-weight: 700; font-size: 12px; border: 1px solid var(--line); cursor: pointer }
+.pop { position: absolute; right: 0; top: 38px; width: 260px; background: var(--raised); border: 1px solid var(--line); border-radius: 10px; box-shadow: var(--shadow-lg); padding: 6px; z-index: 30 }
+.pop .lbl { font-size: 11px; text-transform: uppercase; letter-spacing: .06em; color: var(--faint); padding: 8px 10px 4px }
+.pop button { display: flex; width: 100%; align-items: center; gap: 10px; padding: 7px 10px; border: 0; background: none; font: inherit; color: var(--ink); border-radius: 7px; cursor: pointer; text-align: left }
+.pop button:hover { background: var(--hover) }
+.pop button[aria-current="true"] { background: var(--accent-soft); color: var(--accent-text) }
+.pop .dot { width: 22px; height: 22px; border-radius: 999px; display: grid; place-items: center; font-size: 10px; font-weight: 700; background: var(--hover); color: var(--muted); flex: none }
 
-main { display: flex; flex-direction: column; gap: 14px; padding-top: 18px }
-.lead { font-size: 16px; max-width: 62ch }
-.card { background: var(--surface); border: 1px solid var(--line); border-radius: 8px; padding: 14px 16px; min-width: 0 }
-.card + .card { margin-top: 0 }
-.card h3 { display: flex; flex-wrap: wrap; gap: 8px; align-items: baseline; justify-content: space-between }
-.stack { display: flex; flex-direction: column; gap: 10px }
-.grid2 { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 10px 20px }
-.kv { display: grid; grid-template-columns: max-content 1fr; gap: 4px 14px; font-size: 14px }
-.kv dt { color: var(--muted) } .kv dd { margin: 0; min-width: 0 }
-.bar { display: flex; flex-wrap: wrap; gap: 8px; align-items: center }
-hr { border: 0; border-top: 1px solid var(--line); margin: 6px 0 }
+.tiles { display: grid; grid-template-columns: repeat(auto-fit, minmax(170px, 1fr)); gap: 12px }
+.tile { background: var(--surface); border: 1px solid var(--line); border-radius: 10px; padding: 14px 16px; box-shadow: var(--shadow); min-width: 0 }
+.tile .k { font-size: 12px; color: var(--muted); font-weight: 500 }
+.tile .v { font-size: 24px; font-weight: 600; letter-spacing: -.02em; margin-top: 4px; font-variant-numeric: tabular-nums }
+.tile .s { font-size: 12px; color: var(--muted); margin-top: 2px }
+.panel { background: var(--surface); border: 1px solid var(--line); border-radius: 10px; box-shadow: var(--shadow); min-width: 0 }
+.panel .head { display: flex; align-items: center; justify-content: space-between; gap: 12px; padding: 12px 16px; border-bottom: 1px solid var(--line); flex-wrap: wrap }
+.panel .body { padding: 16px }
+.panel .body.tight { padding: 0 }
+.row { display: flex; align-items: center; gap: 8px; flex-wrap: wrap }
+.between { justify-content: space-between }
+.stack { display: flex; flex-direction: column; gap: 12px }
+.grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 16px }
 
-button.btn, .btn { font: inherit; font-weight: 500; font-size: 14px; padding: 7px 14px; border-radius: 6px; border: 1px solid var(--line); background: var(--surface); color: var(--ink); cursor: pointer }
+.btn { font: inherit; font-weight: 500; font-size: 13.5px; padding: 7px 12px; border-radius: 7px; border: 1px solid var(--line-strong); background: var(--surface); color: var(--ink); cursor: pointer; display: inline-flex; align-items: center; gap: 6px; white-space: nowrap }
+.btn:hover { background: var(--hover) }
 .btn.primary { background: var(--accent); color: var(--accent-ink); border-color: var(--accent) }
-.btn.quiet { background: none; border-color: transparent; color: var(--accent); padding-inline: 6px }
-.btn:disabled { opacity: .45; cursor: not-allowed }
-label { display: block; font-size: 13.5px; font-weight: 500; margin-bottom: 4px }
-input[type=text], textarea, select { width: 100%; font: inherit; font-size: 14px; padding: 8px 10px; border: 1px solid var(--line); border-radius: 6px; background: var(--bg); color: var(--ink) }
-textarea { min-height: 84px; resize: vertical }
-.field { min-width: 0 }
-.hint { font-size: 12.5px; color: var(--muted); margin-top: 3px }
+.btn.primary:hover { filter: brightness(1.05) }
+.btn.danger { color: var(--bad); border-color: var(--bad) }
+.btn.ghost { border-color: transparent; background: none; color: var(--accent-text) }
+.btn.sm { padding: 4px 9px; font-size: 12.5px }
+.btn:disabled { opacity: .45; cursor: not-allowed; filter: none }
+.btn.on { background: var(--accent-soft); border-color: var(--accent); color: var(--accent-text) }
+:is(button, input, select, textarea, [tabindex]):focus-visible { outline: 2px solid var(--accent); outline-offset: 2px }
 
-.pill { display: inline-block; font-size: 12px; font-weight: 500; padding: 1px 8px; border-radius: 999px; background: var(--tint); white-space: nowrap }
-.pill.good { background: var(--good-bg); color: var(--good) }
-.pill.warn { background: var(--warn-bg); color: var(--warn) }
-.pill.bad { background: var(--bad-bg); color: var(--bad) }
-.note { border-left: 3px solid var(--accent); padding: 6px 12px; background: var(--tint); border-radius: 0 6px 6px 0; font-size: 14px }
-.note.warn { border-color: var(--warn); background: var(--warn-bg) }
-.note.bad { border-color: var(--bad); background: var(--bad-bg) }
+.chip { display: inline-flex; align-items: center; gap: 5px; font-size: 12px; font-weight: 500; padding: 2px 8px; border-radius: 999px; background: var(--hover); color: var(--muted); white-space: nowrap }
+.chip::before { content: ""; width: 6px; height: 6px; border-radius: 999px; background: currentColor; opacity: .8 }
+.chip.good { background: var(--good-bg); color: var(--good) }
+.chip.warn { background: var(--warn-bg); color: var(--warn) }
+.chip.bad { background: var(--bad-bg); color: var(--bad) }
+.chip.info { background: var(--info-bg); color: var(--info) }
+.chip.accent { background: var(--accent-soft); color: var(--accent-text) }
+.chip.plain::before { display: none }
+
+.steps { display: flex; gap: 0; overflow-x: auto; padding: 4px 0 }
+.step { flex: 1; min-width: 86px; position: relative; padding-top: 14px; font-size: 12px; color: var(--faint); white-space: nowrap }
+.step::before { content: ""; position: absolute; left: 0; right: 0; top: 4px; height: 3px; background: var(--line) }
+.step.done::before { background: var(--accent) }
+.step.now::before { background: var(--accent); opacity: .5 }
+.step.done, .step.now { color: var(--ink) } .step.now { font-weight: 600 }
 
 table { border-collapse: collapse; width: 100%; font-size: 13.5px }
-th, td { text-align: left; padding: 6px 8px; border-bottom: 1px solid var(--line); vertical-align: top }
-th { font-weight: 500; color: var(--muted); font-size: 12.5px; letter-spacing: .02em; text-transform: uppercase }
-td.num, th.num { text-align: right }
+th { text-align: left; font-size: 11.5px; font-weight: 500; color: var(--muted); letter-spacing: .04em; text-transform: uppercase; padding: 9px 14px; border-bottom: 1px solid var(--line); white-space: nowrap }
+td { padding: 11px 14px; border-bottom: 1px solid var(--line); vertical-align: middle }
+tr:last-child td { border-bottom: 0 }
+tr.click { cursor: pointer } tr.click:hover td { background: var(--hover) }
+td.r, th.r { text-align: right } td.num { font-family: var(--mono); font-size: 12.5px }
 .scroll { overflow-x: auto }
-.bugs table { min-width: 560px }
-.review-text { white-space: pre-wrap; font-size: 14px }
-.q { font-weight: 500; font-size: 13.5px; margin-top: 8px }
-.q + .review-text { margin-top: 2px }
-.rating { display: grid; grid-template-columns: 1fr max-content; gap: 6px 12px; align-items: center; font-size: 13.5px }
-.score { font-family: var(--mono); font-size: 13px }
-.progress { font-size: 13px; color: var(--muted); letter-spacing: .04em; text-transform: uppercase }
-.log td:first-child { white-space: nowrap; color: var(--muted) }
-.thinking { color: var(--muted); font-style: italic }
-@media (prefers-reduced-motion: no-preference) { .card { transition: border-color .2s } }
+.bar { height: 6px; border-radius: 999px; background: var(--line); width: 72px; display: inline-block; vertical-align: middle; overflow: hidden }
+.bar i { display: block; height: 100%; background: var(--accent) }
+.score { display: inline-flex; align-items: center; gap: 8px; font-family: var(--mono); font-size: 12.5px }
+.empty { padding: 36px 16px; text-align: center; color: var(--muted); font-size: 13.5px }
+
+label { display: block; font-size: 12.5px; font-weight: 500; color: var(--muted); margin-bottom: 5px }
+input[type=text], textarea, select { width: 100%; font: inherit; font-size: 13.5px; padding: 8px 10px; border: 1px solid var(--line-strong); border-radius: 7px; background: var(--surface); color: var(--ink) }
+textarea { min-height: 72px; resize: vertical }
+select { appearance: auto }
+.field { min-width: 0 }
+.help { font-size: 12px; color: var(--faint); margin-top: 4px }
+.callout { padding: 10px 12px; border-radius: 8px; background: var(--warn-bg); color: var(--warn); font-size: 13px; font-weight: 500 }
+.callout.bad { background: var(--bad-bg); color: var(--bad) }
+.callout.info { background: var(--info-bg); color: var(--info) }
+.callout.good { background: var(--good-bg); color: var(--good) }
+.qa { display: grid; gap: 10px }
+.qa .q { font-size: 12px; color: var(--muted); font-weight: 500 }
+.qa .a { white-space: pre-wrap; font-size: 13.5px; margin-top: 2px }
+.kv { display: grid; grid-template-columns: max-content 1fr; gap: 6px 16px; font-size: 13.5px }
+.kv dt { color: var(--muted) } .kv dd { margin: 0; min-width: 0 }
+.list { display: flex; flex-direction: column }
+.list > div { display: flex; align-items: center; justify-content: space-between; gap: 12px; padding: 10px 16px; border-bottom: 1px solid var(--line); flex-wrap: wrap }
+.list > div:last-child { border-bottom: 0 }
+
+.drawer-wrap { position: fixed; inset: 0; z-index: 40; display: none }
+.drawer-wrap.open { display: block }
+.drawer-wrap .scrim2 { position: absolute; inset: 0; background: rgba(16,24,40,.4) }
+.drawer { position: absolute; top: 0; right: 0; bottom: 0; width: min(560px, 100%); background: var(--surface); box-shadow: var(--shadow-lg); display: flex; flex-direction: column; transform: translateX(0) }
+.drawer .dhead { padding: 14px 20px; border-bottom: 1px solid var(--line); display: flex; align-items: flex-start; justify-content: space-between; gap: 12px }
+.drawer .dbody { padding: 20px; overflow-y: auto; display: flex; flex-direction: column; gap: 16px; flex: 1 }
+.drawer .dfoot { padding: 12px 20px; border-top: 1px solid var(--line); display: flex; gap: 8px; flex-wrap: wrap; justify-content: space-between }
+.drawer .tiles { grid-template-columns: repeat(3, 1fr) }
+.dfoot .grp { display: flex; gap: 6px; align-items: center }
+.x { border: 0; background: none; font-size: 18px; color: var(--muted); cursor: pointer; line-height: 1; padding: 2px 6px; border-radius: 6px }
+.x:hover { background: var(--hover); color: var(--ink) }
+
+.toasts { position: fixed; left: 50%; bottom: calc(24px + env(safe-area-inset-bottom, 0px)); transform: translateX(-50%); display: flex; flex-direction: column; gap: 8px; z-index: 50; pointer-events: none }
+.toast { background: var(--ink); color: var(--bg); padding: 9px 14px; border-radius: 8px; font-size: 13px; font-weight: 500; box-shadow: var(--shadow-lg); animation: up .2s ease-out }
+@keyframes up { from { opacity: 0; transform: translateY(6px) } }
+.sandbox { position: fixed; right: 16px; bottom: calc(16px + env(safe-area-inset-bottom, 0px)); z-index: 30; background: var(--raised); border: 1px solid var(--line); border-radius: 999px; box-shadow: var(--shadow-lg); display: flex; align-items: center; gap: 2px; padding: 4px 6px 4px 12px; font-size: 12px }
+.sandbox .tag { color: var(--muted); font-weight: 600; letter-spacing: .04em; text-transform: uppercase; font-size: 10.5px; margin-right: 6px }
+.sandbox button { border: 0; background: none; font: inherit; font-size: 12.5px; font-weight: 500; color: var(--ink); padding: 5px 9px; border-radius: 999px; cursor: pointer }
+.sandbox button:hover { background: var(--hover) }
+.sandbox button:disabled { opacity: .4; cursor: default }
+.hero { padding: 28px 24px; text-align: center; display: flex; flex-direction: column; gap: 10px; align-items: center }
+.hero h1 { font-size: 22px }
+.rate { display: grid; grid-template-columns: 1fr auto; gap: 8px 12px; align-items: center; font-size: 13px }
+.rate select { width: auto; min-width: 90px }
+.ai { font-size: 12px; color: var(--muted); display: inline-flex; align-items: center; gap: 6px }
+.spin { width: 12px; height: 12px; border: 2px solid var(--line-strong); border-top-color: var(--accent); border-radius: 999px; animation: spin .8s linear infinite; display: inline-block }
+@keyframes spin { to { transform: rotate(360deg) } }
+.lgrow { display: grid; grid-template-columns: 56px 1fr; gap: 12px; padding: 9px 16px; border-bottom: 1px solid var(--line); font-size: 13px }
+.lgrow:last-child { border-bottom: 0 }
+.lgrow .d { color: var(--faint); font-family: var(--mono); font-size: 12px; padding-top: 1px }
+.lgrow .e { font-weight: 500 } .lgrow .t { color: var(--muted) }
+.wizard { max-width: 640px }
+.dots { display: flex; gap: 6px } .dots i { width: 22px; height: 3px; border-radius: 2px; background: var(--line) } .dots i.on { background: var(--accent) }
 </style>
 
-<div class="wrap">
-  <div class="top">
-    <div class="row">
-      <h1>Paid Feedback Demo</h1>
-      <div class="chips" id="chips"></div>
-    </div>
-    <div class="tabs" role="tablist" id="tabs"></div>
+<div class="app">
+  <aside class="side" id="side"></aside>
+  <div id="scrim" hidden class="scrim"></div>
+  <div class="main">
+    <div class="topbar" id="topbar"></div>
+    <div class="content" id="content"></div>
   </div>
-  <main id="main"></main>
 </div>
+<div class="drawer-wrap" id="drawer"></div>
+<div class="toasts" id="toasts"></div>
+<div class="sandbox" id="sandbox"></div>
 
 <script>
 'use strict';
-// ---------- constants from the spec ----------
 const FEE = 20, FEE_PCT = 0.2, SEATS = 5, PRIOR = 60, PRIOR_N = 5, PACK = 200;
-const TIERS = [
-  { min: 75, name: 'Strong', price: 30 },
-  { min: 50, name: 'Solid', price: 20 },
-  { min: 30, name: 'Weak', price: 10 },
-];
+const SEAT_COST = Math.round(FEE * (1 + FEE_PCT));
+const TIERS = [{ min: 75, name: 'Strong', price: 30 }, { min: 50, name: 'Solid', price: 20 }, { min: 30, name: 'Weak', price: 10 }];
 const CATEGORIES = ['missing step', 'wrong step', 'unnecessary step', 'inaccuracy', 'disagreement', 'suggestion', 'pricing', 'communication', 'policy'];
 const FLAG_REASONS = ['untruthful', 'unfairly positive', 'unfairly negative', 'not about this product', 'abusive', 'pasted from elsewhere'];
 const STATES = ['draft', 'funded', 'recruiting', 'open', 'rating', 'settlement', 'closed'];
+const STATE_LABEL = { draft: 'Draft', funded: 'Funded', recruiting: 'Recruiting', open: 'Open', rating: 'Peer rating', settlement: 'Settlement', closed: 'Closed' };
+const BUSINESS = 'Loop Laundry';
 
-// ---------- example content (marked as examples in the UI) ----------
-const EXAMPLE = {
-  business: 'Loop Laundry',
+const SEED = {
   brief: {
     product: 'Loop Laundry picks up your washing from your door, washes and folds it, and brings it back within 48 hours.',
-    audience: 'For people in the inner north who have no washing machine and hate laundromats. Not for dry cleaning, doonas or commercial loads.',
+    audience: 'People in the inner north with no washing machine. Not dry cleaning, doonas or commercial loads.',
     job: 'Book one pickup on the website, hand over a bag of up to 8 kg, get it back within 48 hours. About 15 minutes of your time. The first load is free.',
-    wants: [
-      'Booking: was it clear when we would arrive and what to leave out?',
-      'Handover: did anything about the bag, the label or the pickup confuse you?',
-      'Return and payment: was the return on time, and was paying clear?',
-    ],
-    known: ['The pickup window is 4 hours and we know that is too wide', 'No text message when the driver is close'],
-    wontChange: 'We will not do dry cleaning or same-day turnaround.',
+    wants: ['Booking: was it clear when we would arrive and what to leave out?', 'Handover: did anything about the bag, the label or the pickup confuse you?', 'Return and payment: was the return on time, and was paying clear?'],
+    known: ['Pickup window is 4 hours', 'No text when the driver is close'],
+    wontChange: 'No dry cleaning. No same-day.',
     eligibility: 'Lives in the inner north and has no washing machine at home.',
   },
   reviewers: [
     { id: 'r1', pseudonym: 'Quiet Heron', rep: null, knew: 'no', truth: 4,
-      review: [
-        'The booking page said "we will text you a window the night before" and the text came at 9:40pm with a 1pm to 5pm window. That was fine, but the page also asked for a flat number and there was no field for a gate code, so the driver rang me from the street.',
-        'The bag was the stripey one from the welcome email, easy. The label had my name but not a date, so when I had two bags on the second week I could not tell which was which.',
-        'Returned in 46 hours. Paying was a link in the return email, worked first go on my phone.',
-      ],
+      review: ['The booking page said "we will text you a window the night before" and the text came at 9:40pm with a 1pm to 5pm window. That was fine, but the page also asked for a flat number and there was no field for a gate code, so the driver rang me from the street.', 'The bag was the stripey one from the welcome email, easy. The label had my name but not a date, so when I had two bags on the second week I could not tell which was which.', 'Returned in 46 hours. Paying was a link in the return email, worked first go on my phone.'],
       closing: ['Book a pickup for Tuesday and get my washing back by Thursday.', 'Nowhere. Only slowed down by the gate code thing.', 'About $25 a load, maybe $30 if the window were 2 hours.'],
-      bugs: [{ title: 'No field for a gate code at booking', happened: 'Booking asks for a flat number but there is nowhere to put a gate or intercom code, so the driver had to call me from the street.', instead: 'Add an optional "how to get to the door" line to the booking form.', where: 'Booking' }],
-    },
+      bugs: [{ title: 'No field for a gate code at booking', happened: 'Booking asks for a flat number but there is nowhere to put a gate or intercom code, so the driver had to call me from the street.', instead: 'Add an optional "how to get to the door" line to the booking form.', where: 'Booking' }] },
     { id: 'r2', pseudonym: 'Amber Fox', rep: null, knew: 'yes', truth: 2,
       review: ['Everything was perfect, really easy to book!', 'Loved the bag, no confusion at all.', 'Came back fast and paying was simple. 10 out of 10, would recommend to anyone!'],
-      closing: ['Get my washing done.', 'Nowhere.', 'Whatever they charge.'],
-      bugs: [],
-    },
+      closing: ['Get my washing done.', 'Nowhere.', 'Whatever they charge.'], bugs: [] },
     { id: 'r3', pseudonym: 'Grey Otter', rep: { sum: 936, n: 12 }, knew: 'no', truth: 5,
-      review: [
-        'Booking took two minutes. The confirmation email said "2 business days" while the website says "48 hours". I booked on a Friday, so I expected Sunday and got Tuesday. Both are true statements and they do not agree.',
-        'The bag arrived flat-packed in my letterbox with no note, and I did not realise it was from you until the welcome email landed an hour later. A printed line on the bag would fix it.',
-        'Return was Tuesday 11am, so late by the website and on time by the email. The payment link worked but the amount was $0 because the first load is free, and it still asked for a card. I nearly closed it.',
-      ],
+      review: ['Booking took two minutes. The confirmation email said "2 business days" while the website says "48 hours". I booked on a Friday, so I expected Sunday and got Tuesday. Both are true statements and they do not agree.', 'The bag arrived flat-packed in my letterbox with no note, and I did not realise it was from you until the welcome email landed an hour later. A printed line on the bag would fix it.', 'Return was Tuesday 11am, so late by the website and on time by the email. The payment link worked but the amount was $0 because the first load is free, and it still asked for a card. I nearly closed it.'],
       closing: ['Hand over a bag on Friday and have clean clothes for Monday.', 'At the $0 payment screen that wanted a card.', '$22 a load. I would pay $5 more for a guaranteed weekday return.'],
-      bugs: [
-        { title: '48 hours on the site, 2 business days in the email', happened: 'The website promises 48 hours and the confirmation email says 2 business days. On a Friday booking those are two different days.', instead: 'Pick one promise and show the actual return day at booking time.', where: 'Booking' },
-        { title: 'Gate code has nowhere to go on the booking form', happened: 'There is a flat number field but no way to tell the driver the gate code.', instead: 'An optional access line on the form.', where: 'Booking' },
-      ],
-    },
+      bugs: [{ title: '48 hours on the site, 2 business days in the email', happened: 'The website promises 48 hours and the confirmation email says 2 business days. On a Friday booking those are two different days.', instead: 'Pick one promise and show the actual return day at booking time.', where: 'Booking' }, { title: 'Gate code has nowhere to go on the booking form', happened: 'There is a flat number field but no way to tell the driver the gate code.', instead: 'An optional access line on the form.', where: 'Booking' }] },
     { id: 'r4', pseudonym: 'Blue Wren', rep: null, knew: 'no', truth: 4,
-      review: [
-        'Clear enough. I would have liked to pick the window myself rather than be told one the night before, but the text arrived when it said it would.',
-        'The label was a sticker and it half peeled off in the rain. I wrote my name on the bag in marker to be safe.',
-        'Back in two days. The payment link in the return email went to a page that asked me to create an account before I could pay, which I did not expect for a one-off.',
-      ],
+      review: ['Clear enough. I would have liked to pick the window myself rather than be told one the night before, but the text arrived when it said it would.', 'The label was a sticker and it half peeled off in the rain. I wrote my name on the bag in marker to be safe.', 'Back in two days. The payment link in the return email went to a page that asked me to create an account before I could pay, which I did not expect for a one-off.'],
       closing: ['Try it once before committing to weekly.', 'At the create-an-account page before paying.', '$20 to $25 a load.'],
-      bugs: [{ title: 'Payment link demands an account first', happened: 'The pay link in the return email opens a sign-up page. I had to create an account and set a password before I could pay for a one-off load.', instead: 'Let a one-off customer pay as a guest and offer the account afterwards.', where: 'Return and payment' }],
-    },
+      bugs: [{ title: 'Payment link demands an account first', happened: 'The pay link in the return email opens a sign-up page. I had to create an account and set a password before I could pay for a one-off load.', instead: 'Let a one-off customer pay as a guest and offer the account afterwards.', where: 'Return and payment' }] },
     { id: 'r5', pseudonym: 'Red Kite', rep: null, knew: 'no', truth: 1,
       review: ['Great service, very easy to use.', 'Fast delivery and friendly staff.', 'Highly recommended for anyone looking for quality and value. Five stars.'],
       closing: ['Use the service.', 'Nowhere.', 'A fair price.'],
-      bugs: [{ title: 'Should have a loyalty program', happened: 'There is no loyalty program.', instead: 'Add a loyalty program with points.', where: 'General' }],
-    },
+      bugs: [{ title: 'Should have a loyalty program', happened: 'There is no loyalty program.', instead: 'Add a loyalty program with points.', where: 'General' }] },
   ],
 };
-const PLACES = [
-  ['Neighbourhood Facebook groups for the suburbs you serve', 'Most allow a paid-tester ask if you say it is paid and private.'],
-  ['Local subreddit or community forum', 'Check the sidebar rules; many want a mod message first.'],
-  ['Your own waitlist and past enquiries', 'People who nearly bought are the best strangers you have.'],
-  ['Building and strata noticeboards', 'Physical and paper; ask the manager.'],
-  ['Nearby cafes with a pinboard', 'A short poster with a QR code to the invite link.'],
-];
+const PLACES = [['Neighbourhood Facebook groups', 'Say it is paid and private'], ['Local subreddit or forum', 'Message a mod first'], ['Your waitlist and past enquiries', 'Best strangers you have'], ['Building and strata noticeboards', 'Ask the manager'], ['Cafe pinboards', 'Poster with a QR code']];
 
 // ---------- state ----------
-let S = null;
-const KEY = 'paid-feedback-demo-v1';
+let S = null, sampleFn = null, seeding = false, aiResolved = false, pendingTriage = [];
+const KEY = 'candid-demo-v2';
+let rng = Math.random;
+function mulberry(a) { return () => { a |= 0; a = a + 0x6D2B79F5 | 0; let t = Math.imul(a ^ a >>> 15, 1 | a); t = t + Math.imul(t ^ t >>> 7, 61 | t) ^ t; return ((t ^ t >>> 14) >>> 0) / 4294967296 } }
 function fresh() {
-  return {
-    role: 'business', reviewerTab: 'r1', day: 1, aiMode: 'unknown',
-    credits: { balance: 0, locked: 0, ledger: [] },
-    briefs: [], period: { state: 'draft', briefV: null, seats: SEATS, cost: 0 },
-    reviewers: EXAMPLE.reviewers.map(r => ({ id: r.id, pseudonym: r.pseudonym, rep: r.rep ? { ...r.rep } : { sum: 0, n: 0 }, knew: null, seat: 'none', received: false, strikes: 0, status: 'active', payout: null, payoutReason: '' })),
-    reviews: [], bugs: [], flags: [], assignments: {}, ratingsDone: {}, log: [], onboarding: null, pendingDup: null, busy: null,
-  };
+  return { role: 'business', who: 'r1', page: 'overview', day: 1, aiMode: null, periodNo: 1, history: [],
+    credits: { balance: 0, locked: 0, ledger: [] }, briefs: [], period: { state: 'draft', briefV: null, cost: 0 },
+    reviewers: SEED.reviewers.map(r => ({ id: r.id, pseudonym: r.pseudonym, rep: r.rep ? { ...r.rep } : { sum: 0, n: 0 }, knew: null, seat: 'none', received: false, strikes: 0, status: 'active', payout: null, payoutReason: '', inviteStep: 0 })),
+    reviews: [], bugs: [], flags: [], assignments: {}, ratingsDone: {}, log: [], drawer: null, wizard: null, pendingDup: null, busy: null, menu: false, side: false, logWho: 'all', bugForm: false };
 }
-function load() { try { const s = JSON.parse(localStorage.getItem(KEY)); return s && s.reviewers ? s : null } catch (e) { return null } }
+function load() { try { const s = JSON.parse(localStorage.getItem(KEY)); return s && s.periodNo ? s : null } catch (e) { return null } }
 function save() { try { localStorage.setItem(KEY, JSON.stringify(S)) } catch (e) {} }
-function reset() { S = fresh(); save(); render() }
-S = load() || fresh();
-if (S.busy) S.busy = null;
-
-const uid = () => Math.random().toString(36).slice(2, 8);
+const uid = () => rng().toString(36).slice(2, 8) + (seeding ? '' : Date.now().toString(36).slice(-2));
 const esc = s => String(s ?? '').replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
-const money = n => '$' + Number(n).toFixed(0);
+const money = n => (n < 0 ? '−' : '') + '$' + Math.abs(Number(n)).toFixed(0);
 const brief = () => S.briefs.find(b => b.v === S.period.briefV) || S.briefs[S.briefs.length - 1];
+const latestBrief = () => S.briefs[S.briefs.length - 1];
 const reviewer = id => S.reviewers.find(r => r.id === id);
 const repOf = r => Math.round((PRIOR * PRIOR_N + r.rep.sum) / (PRIOR_N + r.rep.n));
-const tierOf = score => TIERS.find(t => score >= t.min) || null;
-function log(event, detail, vis) { S.log.push({ day: S.day, event, detail, vis: vis || { business: true, reviewers: [] } }) }
+const tierOf = s => TIERS.find(t => s >= t.min) || null;
+const cur = arr => arr.filter(x => x.periodNo === S.periodNo);
+const clamp = n => Math.max(0, Math.min(100, Math.round(Number(n) || 0)));
+function log(event, detail, vis) { S.log.push({ day: S.day, event, detail, vis: vis || { business: true, reviewers: [] }, periodNo: S.periodNo }) }
 
-// ---------- AI: Claude via the sample capability when the viewer allows it, a built-in heuristic otherwise ----------
-let sampleFn = null;
+// ---------- AI (Claude via the viewer's account when allowed; deterministic heuristic otherwise) ----------
 (async () => {
-  await null; // let the rest of the script define itself first
+  await null;
   try { sampleFn = window.claude && window.claude.use ? await window.claude.use('sample') : null } catch (e) { sampleFn = null }
-  if (!sampleFn && S.aiMode === 'unknown') S.aiMode = 'heuristic';
-  if (sampleFn && S.aiMode !== 'declined') S.aiMode = 'claude';
-  renderChips();
+  aiResolved = true; if (S && !S.busy) renderTop();
 })();
 async function ai(prompt, fallback) {
-  if (sampleFn && S.aiMode === 'claude') {
-    try {
-      const out = await sampleFn.json(prompt, { modelTier: 'quick' });
-      if (out && typeof out === 'object') return { ...fallback(), ...out, by: 'claude' };
-    } catch (e) {
-      if (e && (e.code === 'not_granted' || e.code === 'sampling_disabled' || e.code === 'not_declared' || e.code === 'capability_disabled')) S.aiMode = 'declined';
-    }
+  if (!seeding && sampleFn && S.aiMode !== 'declined') {
+    try { const out = await sampleFn.json(prompt, { modelTier: 'quick' }); if (out && typeof out === 'object') return { ...fallback(), ...out, by: 'claude' } }
+    catch (e) { if (e && ['not_granted', 'sampling_disabled', 'not_declared', 'capability_disabled'].includes(e.code)) S.aiMode = 'declined' }
   }
   return { ...fallback(), by: 'heuristic' };
 }
-const words = s => (s.toLowerCase().match(/[a-z]{4,}/g) || []);
+const words = s => (String(s).toLowerCase().match(/[a-z]{4,}/g) || []);
 function specificity(text) {
-  const t = text.toLowerCase();
-  let n = 0;
-  n += (t.match(/\d/g) || []).length > 0 ? 2 : 0;
+  const t = text.toLowerCase(); let n = 0;
+  n += /\d/.test(t) ? 2 : 0;
   n += (t.match(/\b(when|because|then|but|so|while|nearly|until|said|asked)\b/g) || []).length;
   n += Math.min(3, Math.floor(text.length / 180));
   const generic = (t.match(/\b(great|perfect|loved|recommend\w*|amazing|easy|friendly|quality|value|stars)\b/g) || []).length;
   return Math.max(0, n - generic);
 }
 function hOnBrief(text, b) {
-  const want = new Set(b.wants.flatMap(words).filter(w => !['would', 'about', 'clear', 'anything', 'there', 'what', 'when', 'were'].includes(w)));
+  const stop = ['would', 'about', 'clear', 'anything', 'there', 'what', 'when', 'were'];
+  const want = new Set(b.wants.flatMap(words).filter(w => !stop.includes(w)));
   const hit = new Set(words(text).filter(w => want.has(w)));
   return Math.round(Math.min(95, 30 + (hit.size / Math.max(4, want.size)) * 160));
 }
-function hQuality(text) { return Math.round(Math.min(95, 20 + specificity(text) * 9)) }
+const hQuality = text => Math.round(Math.min(95, 20 + specificity(text) * 9));
 function hCategory(bug) {
   const t = (bug.title + ' ' + bug.happened).toLowerCase();
-  if (/pay|price|\$|charge|cost/.test(t)) return 'pricing';
-  if (/email|text|sms|call|message|note/.test(t)) return 'communication';
-  if (/says|promis|but the|not the same|different/.test(t)) return 'inaccuracy';
   if (/no field|nowhere|no way|missing|no option/.test(t)) return 'missing step';
+  if (/says|promis|not the same|different/.test(t)) return 'inaccuracy';
+  if (/pay|price|\$|charge|cost/.test(t)) return 'pricing';
+  if (/email|text|sms|message|note/.test(t)) return 'communication';
   if (/should|loyalty|program|offer/.test(t)) return 'suggestion';
   return 'wrong step';
 }
+function hTeaser(bug) {
+  const cut = bug.happened.split(/,| but | and | so | which |\. /)[0].trim();
+  return (cut.length > 72 ? cut.slice(0, 70).replace(/\s+\S*$/, '') : cut).replace(/\.$/, '') + '…';
+}
 function jaccard(a, b) { const A = new Set(words(a)), B = new Set(words(b)); let i = 0; A.forEach(w => { if (B.has(w)) i++ }); return i / Math.max(1, A.size + B.size - i) }
 function hTriage(flag, text, who) {
-  const spec = specificity(text);
-  if (flag.reason === 'pasted from elsewhere' && spec <= 1) return { verdict: 'breach', confidence: 0.82, reasoning: 'No detail that could only come from using this product; reads as boilerplate.' };
-  if (flag.reason === 'unfairly positive' && spec <= 2) return { verdict: 'unsure', confidence: 0.55, reasoning: 'Positive with no specifics' + (who.knew === 'yes' ? ', and the reviewer declared they knew the business.' : '.') };
-  if (spec >= 4) return { verdict: 'clear', confidence: 0.9, reasoning: 'Specific, checkable details that match other reviews in the period.' };
+  const sp = specificity(text);
+  if (flag.reason === 'pasted from elsewhere' && sp <= 1) return { verdict: 'breach', confidence: 0.82, reasoning: 'No detail that could only come from using this product. Reads as boilerplate.' };
+  if (flag.reason === 'unfairly positive' && sp <= 2) return { verdict: 'unsure', confidence: 0.55, reasoning: 'Positive with no specifics' + (who.knew === 'yes' ? '. Reviewer declared they knew the business.' : '.') };
+  if (sp >= 4) return { verdict: 'clear', confidence: 0.9, reasoning: 'Specific, checkable details consistent with other reviews in the period.' };
   return { verdict: 'unsure', confidence: 0.5, reasoning: 'Not enough detail to decide either way.' };
 }
-
 async function scoreReview(rv) {
-  const b = S.briefs.find(x => x.v === rv.briefV);
-  const text = rv.sections.join('\n') + '\n' + rv.closing.join('\n');
-  const prompt = `You score a private product review against a business brief. Reply with only JSON: {"onBrief": 0-100, "quality": 0-100, "flag": null or one of ${JSON.stringify(FLAG_REASONS)}}.
-onBrief = how directly it answers the three questions. quality = specific, reproducible, actionable, in the reviewer's own words. flag only if it is clearly boilerplate pasted from elsewhere or clearly not about this product.
-Brief questions: ${JSON.stringify(b.wants)}
-Known issues (not worth repeating): ${JSON.stringify(b.known)}
-Review:\n${text}`;
+  const b = S.briefs.find(x => x.v === rv.briefV); const text = rv.sections.join('\n') + '\n' + rv.closing.join('\n');
+  const prompt = `Score a private product review against a business brief. Reply with only JSON: {"onBrief": 0-100, "quality": 0-100, "flag": null or one of ${JSON.stringify(FLAG_REASONS)}}.\nonBrief = how directly it answers the questions. quality = specific, reproducible, actionable, in the reviewer's own words. flag only if clearly boilerplate pasted from elsewhere or clearly not about this product.\nQuestions: ${JSON.stringify(b.wants)}\nKnown issues: ${JSON.stringify(b.known)}\nReview:\n${text}`;
   const r = await ai(prompt, () => ({ onBrief: hOnBrief(text, b), quality: hQuality(text), flag: specificity(text) === 0 && !/\d/.test(text) && /recommend|five stars|quality/.test(text.toLowerCase()) ? 'pasted from elsewhere' : null }));
   rv.ai = { onBrief: clamp(r.onBrief), quality: clamp(r.quality), by: r.by };
   if (r.flag && FLAG_REASONS.includes(r.flag)) raiseFlag('review', rv.id, 'ai', r.flag);
 }
 async function scoreBug(bug) {
-  const b = S.briefs.find(x => x.v === bug.briefV);
-  const text = bug.title + '. ' + bug.happened + ' ' + bug.instead;
-  const prompt = `You categorise a process bug reported about a business and write a teaser. Reply with only JSON: {"category": one of ${JSON.stringify(CATEGORIES)}, "teaser": "one line, under 90 characters, says what area is affected but gives away no fix", "onBrief": 0-100, "quality": 0-100}.
-Brief questions: ${JSON.stringify(b.wants)}
-Will not change: ${JSON.stringify(b.wontChange)}
-Already known: ${JSON.stringify(b.known)}
-Bug: ${text}`;
-  const r = await ai(prompt, () => ({ category: hCategory(bug), teaser: bug.where + ': something a reviewer hit at this step', onBrief: hOnBrief(text, b), quality: hQuality(bug.happened + ' ' + bug.instead) }));
-  bug.ai = { category: CATEGORIES.includes(r.category) ? r.category : hCategory(bug), teaser: String(r.teaser).slice(0, 110), onBrief: clamp(r.onBrief), quality: clamp(r.quality), by: r.by };
+  const b = S.briefs.find(x => x.v === bug.briefV); const text = bug.title + '. ' + bug.happened + ' ' + bug.instead;
+  const prompt = `Categorise a process bug reported about a business and write a teaser. Reply with only JSON: {"category": one of ${JSON.stringify(CATEGORIES)}, "teaser": "one line under 80 characters naming the affected step, no fix", "onBrief": 0-100, "quality": 0-100}.\nQuestions: ${JSON.stringify(b.wants)}\nWill not change: ${JSON.stringify(b.wontChange)}\nKnown: ${JSON.stringify(b.known)}\nBug: ${text}`;
+  const r = await ai(prompt, () => ({ category: hCategory(bug), teaser: hTeaser(bug), onBrief: hOnBrief(text, b), quality: hQuality(bug.happened + ' ' + bug.instead) }));
+  bug.ai = { category: CATEGORIES.includes(r.category) ? r.category : hCategory(bug), teaser: String(r.teaser).slice(0, 100), onBrief: clamp(r.onBrief), quality: clamp(r.quality), by: r.by };
 }
 async function findDuplicate(bug) {
-  const others = S.bugs.filter(x => x.reviewerId !== bug.reviewerId && !x.dupOf);
-  const known = brief().known.map((k, i) => ({ id: 'known' + i, title: k }));
-  const cands = [...others.map(o => ({ id: o.id, title: o.title })), ...known];
+  const cands = [...cur(S.bugs).filter(x => x.reviewerId !== bug.reviewerId && !x.dupOf).map(o => ({ id: o.id, title: o.title })), ...brief().known.map((k, i) => ({ id: 'known' + i, title: k }))];
   if (!cands.length) return null;
-  const prompt = `Is this new process bug a duplicate of any existing one? Reply with only JSON: {"duplicateOf": "<id>" or null}.
-Existing: ${JSON.stringify(cands)}
-New: ${JSON.stringify({ title: bug.title, happened: bug.happened })}`;
+  const prompt = `Is this new process bug a duplicate of an existing one? Reply with only JSON: {"duplicateOf": "<id>" or null}.\nExisting: ${JSON.stringify(cands)}\nNew: ${JSON.stringify({ title: bug.title, happened: bug.happened })}`;
   const r = await ai(prompt, () => { const best = cands.map(c => ({ c, s: jaccard(c.title, bug.title + ' ' + bug.happened) })).sort((a, b) => b.s - a.s)[0]; return { duplicateOf: best && best.s >= 0.25 ? best.c.id : null } });
   return cands.find(c => c.id === r.duplicateOf) || null;
 }
 async function triage(flag) {
-  const target = flag.targetType === 'review' ? S.reviews.find(r => r.id === flag.targetId) : S.bugs.find(b => b.id === flag.targetId);
-  const text = flag.targetType === 'review' ? target.sections.join('\n') : target.title + '. ' + target.happened;
-  const who = reviewer(target.reviewerId);
-  const peers = S.reviews.filter(r => r.id !== target.id).map(r => r.sections.join(' ').slice(0, 400));
-  const prompt = `A submission was flagged as "${flag.reason}". Decide. Reply with only JSON: {"verdict": "clear"|"breach"|"unsure", "confidence": 0-1, "reasoning": "one sentence"}.
-breach = the flag is right and the terms were broken. clear = the flag is wrong. unsure = a person should look. Reviewer declared they knew the business before: ${who.knew}.
-Submission:\n${text}\n\nOther reviews from the same period, for comparison:\n${peers.join('\n---\n')}`;
+  const target = targetOf(flag); const text = flag.targetType === 'review' ? target.sections.join('\n') : target.title + '. ' + target.happened; const who = reviewer(target.reviewerId);
+  const peers = cur(S.reviews).filter(r => r.id !== target.id).map(r => r.sections.join(' ').slice(0, 400));
+  const prompt = `A submission was flagged as "${flag.reason}". Decide. Reply with only JSON: {"verdict": "clear"|"breach"|"unsure", "confidence": 0-1, "reasoning": "one sentence"}.\nbreach = the flag is right. clear = the flag is wrong. unsure = a person should look. Reviewer declared they knew the business: ${who.knew}.\nSubmission:\n${text}\n\nOther reviews from the same period:\n${peers.join('\n---\n')}`;
   const r = await ai(prompt, () => hTriage(flag, text, who));
   flag.ai = { verdict: ['clear', 'breach', 'unsure'].includes(r.verdict) ? r.verdict : 'unsure', confidence: Math.max(0, Math.min(1, Number(r.confidence) || 0)), reasoning: String(r.reasoning), by: r.by };
   if (flag.ai.verdict === 'clear' && flag.ai.confidence >= 0.8) {
     flag.state = 'cleared'; flag.decidedBy = 'AI'; flag.decidedDay = S.day;
-    log('Flag cleared by AI', `${flag.reason} on ${who.pseudonym}'s ${flag.targetType}, confidence ${Math.round(flag.ai.confidence * 100)}%`, { business: true, reviewers: [who.id] });
-    releaseIfNoFlags(who.id);
-    maybeClose();
+    log('Flag cleared', `${flag.reason} · ${who.pseudonym} · AI ${Math.round(flag.ai.confidence * 100)}%`, { business: true, reviewers: [who.id] });
+    releaseIfNoFlags(who.id); maybeClose();
   } else {
     flag.state = 'queued';
-    log('Flag sent to human queue', `${flag.reason} on ${who.pseudonym}'s ${flag.targetType}. AI: ${flag.ai.verdict} at ${Math.round(flag.ai.confidence * 100)}%`, { business: true, reviewers: [who.id] });
+    log('Flag queued for review', `${flag.reason} · ${who.pseudonym} · AI ${flag.ai.verdict} ${Math.round(flag.ai.confidence * 100)}%`, { business: true, reviewers: [who.id] });
   }
 }
-const clamp = n => Math.max(0, Math.min(100, Math.round(Number(n) || 0)));
+const targetOf = f => (f.targetType === 'review' ? S.reviews : S.bugs).find(x => x.id === f.targetId);
 
 // ---------- lifecycle ----------
-function buyPack() { S.credits.balance += PACK; S.credits.ledger.push({ day: S.day, what: 'Bought credit pack', amt: PACK }); log('Credits bought', money(PACK)); }
-function saveBrief(answers) {
-  const v = S.briefs.length + 1;
-  S.briefs.push({ v, ...answers, day: S.day });
+function buyPack() { S.credits.balance += PACK; S.credits.ledger.push({ day: S.day, what: 'Credit pack', amt: PACK }); log('Credits purchased', money(PACK)); }
+function saveBrief(a) {
+  const v = S.briefs.length + 1; S.briefs.push({ v, ...a, day: S.day });
   if (S.period.state === 'draft') S.period.briefV = v;
-  log('Brief version created', `v${v}` + (S.period.state === 'draft' ? '' : ' (applies to the next period; the open period keeps v' + S.period.briefV + ')'));
-  S.onboarding = null;
+  log('Brief saved', `v${v}` + (S.period.state === 'draft' || S.period.state === 'closed' ? '' : ` · period keeps v${S.period.briefV}`));
 }
 function fundPeriod() {
-  const cost = Math.round(SEATS * FEE * (1 + FEE_PCT));
-  if (S.credits.balance < cost) return;
+  const cost = SEATS * SEAT_COST; if (S.credits.balance < cost) return false;
   S.credits.balance -= cost; S.credits.locked += cost; S.period.cost = cost; S.period.state = 'funded';
-  S.credits.ledger.push({ day: S.day, what: `Locked for ${SEATS} seats + ${FEE_PCT * 100}% fee`, amt: -cost });
-  log('Period funded', `${SEATS} seats, ${money(cost)} locked against brief v${S.period.briefV}`);
+  S.credits.ledger.push({ day: S.day, what: `Period ${S.periodNo} · ${SEATS} seats`, amt: -cost });
+  log('Period funded', `${SEATS} seats · ${money(cost)} locked · brief v${S.period.briefV}`); return true;
 }
-function openRecruiting() { S.period.state = 'recruiting'; S.reviewers.forEach(r => r.seat = 'invited'); log('Recruiting opened', `${SEATS} single-use invite links issued`); }
+function openRecruiting() { S.period.state = 'recruiting'; S.reviewers.forEach(r => { r.seat = 'invited'; r.inviteStep = 0 }); log('Recruiting opened', `${SEATS} invite links issued`); }
 function acceptSeat(id, knew) {
   const r = reviewer(id); r.seat = 'accepted'; r.knew = knew; r.acceptedDay = S.day;
   if (S.period.state === 'recruiting') { S.period.state = 'open'; S.period.openedDay = S.day; log('Period opened', 'first seat accepted'); }
-  log('Seat accepted', `${r.pseudonym}`, { business: true, reviewers: [id] });
+  log('Seat accepted', r.pseudonym, { business: true, reviewers: [id] });
 }
 async function submitReview(id, sections, closing) {
   const r = reviewer(id);
-  const rv = { id: uid(), reviewerId: id, sections, closing, briefV: S.period.briefV, day: S.day, ratings: [], scores: null };
+  const rv = { id: uid(), periodNo: S.periodNo, reviewerId: id, sections, closing, briefV: S.period.briefV, day: S.day, ratings: [], scores: null, status: null };
   S.reviews.push(rv); r.seat = 'submitted';
-  log('Review submitted', `${r.pseudonym}, scored against brief v${rv.briefV}`, { business: true, reviewers: [id] });
+  log('Review submitted', `${r.pseudonym} · brief v${rv.briefV}`, { business: true, reviewers: [id] });
   await scoreReview(rv);
-  const waiting = S.reviewers.some(x => x.seat === 'accepted' || x.seat === 'invited');
-  if (!waiting && S.period.state === 'open') startRating();
+  if (!S.reviewers.some(x => x.seat === 'accepted' || x.seat === 'invited') && S.period.state === 'open') startRating();
 }
 async function submitBug(id, data, dupOf) {
-  const bug = { id: uid(), reviewerId: id, ...data, briefV: S.period.briefV, day: S.day, dupOf: dupOf || null, confirmations: 0, ratings: [], unlocked: false, status: null };
+  const bug = { id: uid(), periodNo: S.periodNo, reviewerId: id, ...data, briefV: S.period.briefV, day: S.day, dupOf: dupOf || null, confirmations: 0, ratings: [], unlocked: false, status: null };
   S.bugs.push(bug);
-  if (dupOf) {
-    const orig = S.bugs.find(b => b.id === dupOf);
-    if (orig) orig.confirmations++;
-    log('Bug confirmed', `${reviewer(id).pseudonym} confirmed "${orig ? orig.title : dupOf}"`, { business: true, reviewers: [id] });
-  } else {
-    log('Bug submitted', `${reviewer(id).pseudonym}: "${bug.title}"`, { business: true, reviewers: [id] });
-    await scoreBug(bug);
-  }
+  if (dupOf) { const o = S.bugs.find(b => b.id === dupOf); if (o) o.confirmations++; log('Issue confirmed', `${reviewer(id).pseudonym} · "${o ? o.title : dupOf}"`, { business: true, reviewers: [id] }) }
+  else { log('Issue reported', `${reviewer(id).pseudonym} · "${bug.title}"`, { business: true, reviewers: [id] }); await scoreBug(bug) }
 }
-function endOpen() { S.reviewers.forEach(r => { if (r.seat === 'invited' || r.seat === 'accepted') { r.seat = 'released'; log('Seat released', r.pseudonym + ' (no submission by the deadline)', { business: true, reviewers: [r.id] }) } }); startRating(); }
+function endOpen() { S.reviewers.forEach(r => { if (r.seat === 'invited' || r.seat === 'accepted') { r.seat = 'released'; log('Seat released', `${r.pseudonym} · no submission`, { business: true, reviewers: [r.id] }) } }); startRating(); }
 function startRating() {
-  const submitters = S.reviewers.filter(r => r.seat === 'submitted').map(r => r.id);
-  S.reviews.forEach(rv => {
-    const pool = submitters.filter(x => x !== rv.reviewerId).sort(() => Math.random() - 0.5);
-    S.assignments[rv.id] = pool.slice(0, 3);
-  });
+  const subs = S.reviewers.filter(r => r.seat === 'submitted').map(r => r.id);
+  cur(S.reviews).forEach(rv => { const pool = subs.filter(x => x !== rv.reviewerId).sort(() => rng() - 0.5); S.assignments[rv.id] = pool.slice(0, 3) });
   S.period.state = 'rating'; S.period.ratingDay = S.day;
-  log('Peer rating started', `${S.reviews.length} reviews, 3 blind raters each, assigned at random`);
-  submitters.forEach(id => { if (!S.reviews.some(rv => S.assignments[rv.id].includes(id))) { S.ratingsDone[id] = true; reviewer(id).seat = 'rated'; } });
-  if (S.reviews.every(rv => S.assignments[rv.id].every(id => S.ratingsDone[id]))) settle();
+  log('Peer rating started', `${cur(S.reviews).length} reviews · 3 blind raters each`);
+  subs.forEach(id => { if (!cur(S.reviews).some(rv => S.assignments[rv.id].includes(id))) { S.ratingsDone[id] = true; reviewer(id).seat = 'rated' } });
+  if (cur(S.reviews).every(rv => S.assignments[rv.id].every(id => S.ratingsDone[id]))) settle();
 }
 function submitRatings(raterId, entries) {
   entries.forEach(e => {
     const rv = S.reviews.find(r => r.id === e.reviewId);
     rv.ratings.push({ raterId, truthful: e.truthful, fair: e.fair, matches: e.matches, useful: e.useful });
-    const rb = S.bugs.filter(b => b.reviewerId === rv.reviewerId && !b.dupOf);
-    rb.forEach(b => b.ratings.push({ raterId, useful: e.bugUseful ?? e.useful }));
+    cur(S.bugs).filter(b => b.reviewerId === rv.reviewerId && !b.dupOf).forEach(b => b.ratings.push({ raterId, useful: e.useful }));
     if (e.flag) raiseFlag('review', rv.id, raterId, e.flag);
   });
   S.ratingsDone[raterId] = true; reviewer(raterId).seat = 'rated';
-  log('Peer ratings given', `${reviewer(raterId).pseudonym} rated ${entries.length}`, { business: false, reviewers: [raterId] });
-  if (S.reviews.every(rv => S.assignments[rv.id].every(id => S.ratingsDone[id]))) settle();
+  log('Peer ratings submitted', `${reviewer(raterId).pseudonym} · ${entries.length}`, { business: false, reviewers: [raterId] });
+  if (cur(S.reviews).every(rv => S.assignments[rv.id].every(id => S.ratingsDone[id]))) settle();
 }
 function raiseFlag(targetType, targetId, source, reason) {
   if (S.flags.some(f => f.targetId === targetId && f.reason === reason && (f.state === 'triage' || f.state === 'queued'))) return;
-  const f = { id: uid(), targetType, targetId, source, reason, day: S.day, state: 'triage', reply: null, ai: null, decision: null };
+  const f = { id: uid(), periodNo: S.periodNo, targetType, targetId, source, reason, day: S.day, state: 'triage', reply: null, ai: null, decision: null };
   S.flags.push(f);
-  const who = reviewer((targetType === 'review' ? S.reviews : S.bugs).find(x => x.id === targetId).reviewerId);
-  log('Flag raised', `${reason} on ${who.pseudonym}'s ${targetType}, by ${source === 'ai' ? 'AI' : source === 'business' ? 'the business' : 'a peer'}`, { business: true, reviewers: [who.id] });
-  if (who.payout === 'pending') { who.payout = 'held'; who.payoutReason = 'a flag is open on your review'; }
-  triage(f).then(() => { save(); render() });
+  const who = reviewer(targetOf(f).reviewerId);
+  log('Flag raised', `${reason} · ${who.pseudonym} · by ${source === 'ai' ? 'AI' : source === 'business' ? 'business' : 'peer'}`, { business: true, reviewers: [who.id] });
+  if (who.payout === 'pending') { who.payout = 'held'; who.payoutReason = 'flag open' }
+  const p = triage(f); pendingTriage.push(p); if (!seeding) p.then(() => { save(); render() }); return p;
 }
-function peerWeight(raterId) { return 0.5 + repOf(reviewer(raterId)) / 200 }
-function peerScore(ratings) {
-  if (!ratings.length) return null;
-  let s = 0, w = 0; ratings.forEach(r => { const k = peerWeight(r.raterId); s += ((r.useful - 1) / 4) * 100 * k; w += k });
-  return Math.round(s / w);
-}
+const peerWeight = id => 0.5 + repOf(reviewer(id)) / 200;
+function peerScore(rs) { if (!rs.length) return null; let s = 0, w = 0; rs.forEach(r => { const k = peerWeight(r.raterId); s += ((r.useful - 1) / 4) * 100 * k; w += k }); return Math.round(s / w) }
 function computeScores(item) {
-  const peer = peerScore(item.ratings);
-  const quality = peer == null ? item.ai.quality : Math.round(0.6 * peer + 0.4 * item.ai.quality);
-  let usefulness = Math.round((item.ai.onBrief + quality) / 2);
-  const offBrief = item.ai.onBrief < 40;
-  if (offBrief) usefulness = Math.min(usefulness, 74);
+  const peer = peerScore(item.ratings); const quality = peer == null ? item.ai.quality : Math.round(0.6 * peer + 0.4 * item.ai.quality);
+  let usefulness = Math.round((item.ai.onBrief + quality) / 2); const offBrief = item.ai.onBrief < 40; if (offBrief) usefulness = Math.min(usefulness, 74);
   return { onBrief: item.ai.onBrief, quality, peer, usefulness, offBrief };
 }
 function settle() {
   S.period.state = 'settlement'; S.period.settleDay = S.day;
-  S.reviews.forEach(rv => { rv.scores = computeScores(rv); const r = reviewer(rv.reviewerId); r.rep.sum += rv.scores.usefulness; r.rep.n++; });
-  S.bugs.filter(b => !b.dupOf).forEach(b => { b.scores = computeScores(b); b.scores.usefulness = Math.min(100, b.scores.usefulness + b.confirmations * 5); b.tier = tierOf(b.scores.usefulness); });
+  cur(S.reviews).forEach(rv => { rv.scores = computeScores(rv); const r = reviewer(rv.reviewerId); r.rep.sum += rv.scores.usefulness; r.rep.n++ });
+  cur(S.bugs).filter(b => !b.dupOf).forEach(b => { b.scores = computeScores(b); b.scores.usefulness = Math.min(100, b.scores.usefulness + b.confirmations * 5); b.tier = tierOf(b.scores.usefulness) });
   S.reviewers.forEach(r => {
-    if (r.seat === 'rated') { r.payout = 'pending'; if (!releaseIfNoFlags(r.id)) { r.payout = 'held'; r.payoutReason = 'a flag is open on your review'; } }
-    else if (r.seat === 'submitted') { r.payout = 'held'; r.payoutReason = 'you have not rated your three peers yet'; }
+    if (r.seat === 'rated') { r.payout = 'pending'; if (!releaseIfNoFlags(r.id)) { r.payout = 'held'; r.payoutReason = 'flag open' } }
+    else if (r.seat === 'submitted') { r.payout = 'held'; r.payoutReason = 'peer ratings outstanding' }
   });
-  log('Settlement started', 'scores final, reputations updated, payouts released where no flag is open');
+  log('Settlement started', 'scores final · reputations updated');
   maybeClose();
 }
 function releaseIfNoFlags(id) {
-  const r = reviewer(id);
-  if (S.period.state !== 'settlement' && S.period.state !== 'closed') return;
-  if (r.seat !== 'rated') return;
-  const open = S.flags.some(f => f.state !== 'cleared' && f.state !== 'decided' && reviewer((f.targetType === 'review' ? S.reviews : S.bugs).find(x => x.id === f.targetId).reviewerId).id === id);
-  if (!open && r.payout !== 'forfeited') { r.payout = 'paid'; r.payoutReason = ''; log('Review fee paid', `${r.pseudonym}, ${money(FEE)} (manual payout in v1)`, { business: true, reviewers: [id] }); return true }
+  const r = reviewer(id); if (!['settlement', 'closed'].includes(S.period.state) || r.seat !== 'rated') return false;
+  const open = S.flags.some(f => (f.state === 'triage' || f.state === 'queued') && reviewer(targetOf(f).reviewerId).id === id);
+  if (!open && r.payout !== 'forfeited') { r.payout = 'paid'; r.payoutReason = ''; log('Review fee paid', `${r.pseudonym} · ${money(FEE)}`, { business: true, reviewers: [id] }); return true }
   return false;
 }
-function maybeClose() {
-  const open = S.flags.some(f => f.state === 'triage' || f.state === 'queued');
-  const held = S.reviewers.some(r => r.payout === 'held');
-  if (!open && !held) closePeriod();
-}
+function maybeClose() { if (!S.flags.some(f => f.state === 'triage' || f.state === 'queued') && !S.reviewers.some(r => r.payout === 'held')) closePeriod() }
 function closePeriod() {
   if (S.period.state === 'closed') return;
-  const unused = S.reviewers.filter(r => r.seat === 'released' || r.seat === 'invited').length;
-  const refund = Math.round(unused * FEE * (1 + FEE_PCT));
-  if (refund) { S.credits.balance += refund; S.credits.locked -= refund; S.credits.ledger.push({ day: S.day, what: `Refund for ${unused} unused seat${unused > 1 ? 's' : ''}`, amt: refund }) }
+  const unused = S.reviewers.filter(r => r.seat === 'released' || r.seat === 'invited').length; const refund = unused * SEAT_COST;
+  if (refund) { S.credits.balance += refund; S.credits.locked -= refund; S.credits.ledger.push({ day: S.day, what: `Refund · ${unused} unused seat${unused > 1 ? 's' : ''}`, amt: refund }) }
   const paid = S.reviewers.filter(r => r.payout === 'paid').length;
-  if (paid) { S.credits.ledger.push({ day: S.day, what: `${paid} review fee${paid > 1 ? 's' : ''} paid out, platform fee kept`, amt: -Math.min(S.credits.locked, Math.round(paid * FEE * (1 + FEE_PCT))) }); S.credits.locked = Math.max(0, S.credits.locked - Math.round(paid * FEE * (1 + FEE_PCT))); }
-  S.period.state = 'closed';
-  log('Period closed', unused ? `${unused} unused seat refunded to credits` : 'all seats used');
+  if (paid) { const out = Math.min(S.credits.locked, paid * SEAT_COST); S.credits.ledger.push({ day: S.day, what: `${paid} review fee${paid > 1 ? 's' : ''} paid out`, amt: -out }); S.credits.locked -= out }
+  S.period.state = 'closed'; log('Period closed', unused ? `${unused} seat refunded` : 'all seats used');
 }
 function decideFlag(fid, outcome) {
   const f = S.flags.find(x => x.id === fid); f.state = 'decided'; f.decision = outcome; f.decidedBy = 'operator'; f.decidedDay = S.day;
-  const target = (f.targetType === 'review' ? S.reviews : S.bugs).find(x => x.id === f.targetId);
-  const r = reviewer(target.reviewerId);
+  const r = reviewer(targetOf(f).reviewerId);
   if (outcome === 'breach') {
-    r.strikes++; r.rep.sum -= 25 * PRIOR_N; r.payout = 'forfeited'; r.payoutReason = 'breach: ' + f.reason;
-    if (r.strikes === 1) r.status = 'warned'; else if (r.strikes === 2) r.status = 'suspended'; else r.status = 'banned';
-    const seat = Math.round(FEE * (1 + FEE_PCT)); S.credits.balance += seat; S.credits.locked -= seat; S.credits.ledger.push({ day: S.day, what: `Forfeited seat returned (${r.pseudonym})`, amt: seat });
-    log('Breach decided', `${r.pseudonym}: ${f.reason}. Fee forfeited to the business, reputation down, account ${r.status}`, { business: true, reviewers: [r.id] });
-  } else {
-    log(outcome === 'clear' ? 'Flag cleared by a person' : 'Flag closed as low quality, not a breach', `${r.pseudonym}: ${f.reason}`, { business: true, reviewers: [r.id] });
-    releaseIfNoFlags(r.id);
-  }
+    r.strikes++; r.rep.sum -= 25 * PRIOR_N; r.payout = 'forfeited'; r.payoutReason = f.reason;
+    r.status = r.strikes === 1 ? 'warned' : r.strikes === 2 ? 'suspended' : 'banned';
+    S.credits.balance += SEAT_COST; S.credits.locked -= SEAT_COST; S.credits.ledger.push({ day: S.day, what: `Forfeited seat returned · ${r.pseudonym}`, amt: SEAT_COST });
+    log('Breach', `${r.pseudonym} · ${f.reason} · fee forfeited · account ${r.status}`, { business: true, reviewers: [r.id] });
+  } else { log(outcome === 'clear' ? 'Flag cleared' : 'Flag closed · low quality', `${r.pseudonym} · ${f.reason}`, { business: true, reviewers: [r.id] }); releaseIfNoFlags(r.id) }
   maybeClose();
 }
 function advance7() {
@@ -470,299 +456,367 @@ function advance7() {
   if (S.period.state === 'open') endOpen();
   else if (S.period.state === 'rating') settle();
   else if (S.period.state === 'settlement') {
-    S.flags.filter(f => f.state === 'queued' || f.state === 'triage').forEach(f => { f.state = 'cleared'; f.decidedBy = 'timeout'; f.decidedDay = S.day; log('Flag timed out', '7 days without a decision: payout released, flag kept for reputation only') });
+    S.flags.filter(f => f.state === 'queued' || f.state === 'triage').forEach(f => { f.state = 'cleared'; f.decidedBy = 'timeout'; f.decidedDay = S.day; log('Flag timed out', '7 days · payout released · kept for reputation only') });
     S.reviewers.filter(r => r.payout === 'held' && r.seat === 'rated').forEach(r => releaseIfNoFlags(r.id));
-    S.reviewers.filter(r => r.payout === 'held' && r.seat === 'submitted').forEach(r => { r.payout = 'forfeited'; r.payoutReason = 'did not rate peers within 30 days'; const seat = Math.round(FEE * (1 + FEE_PCT)); S.credits.balance += seat; S.credits.locked -= seat; S.credits.ledger.push({ day: S.day, what: `Forfeited seat returned (${r.pseudonym})`, amt: seat }); log('Fee forfeited', `${r.pseudonym} never rated peers; fee returned to the business`, { business: true, reviewers: [r.id] }) });
+    S.reviewers.filter(r => r.payout === 'held' && r.seat === 'submitted').forEach(r => { r.payout = 'forfeited'; r.payoutReason = 'peer ratings never submitted'; S.credits.balance += SEAT_COST; S.credits.locked -= SEAT_COST; S.credits.ledger.push({ day: S.day, what: `Forfeited seat returned · ${r.pseudonym}`, amt: SEAT_COST }); log('Fee forfeited', `${r.pseudonym} · never rated peers`, { business: true, reviewers: [r.id] }) });
     closePeriod();
   }
-  log('Clock advanced', `day ${S.day}`, { business: false, reviewers: [] });
 }
 function unlockBug(id) {
-  const b = S.bugs.find(x => x.id === id); const price = b.tier.price;
-  if (S.credits.balance < price) return;
-  S.credits.balance -= price; b.unlocked = true; b.unlockDay = S.day;
-  S.credits.ledger.push({ day: S.day, what: `Unlocked "${b.title}"`, amt: -price });
-  log('Bug unlocked', `"${b.title}" for ${money(price)}; ${reviewer(b.reviewerId).pseudonym} paid ${money(price * (1 - FEE_PCT))} (manual payout in v1)`, { business: true, reviewers: [b.reviewerId] });
+  const b = S.bugs.find(x => x.id === id); const price = b.tier.price; if (S.credits.balance < price) return false;
+  S.credits.balance -= price; b.unlocked = true; b.unlockDay = S.day; b.paidOut = Math.round(price * (1 - FEE_PCT));
+  S.credits.ledger.push({ day: S.day, what: `Unlock · ${b.title}`, amt: -price });
+  log('Issue unlocked', `"${b.title}" · ${money(price)} · ${reviewer(b.reviewerId).pseudonym} paid ${money(b.paidOut)}`, { business: true, reviewers: [b.reviewerId] }); return true;
 }
-function setStatus(kind, id, status) {
-  const item = (kind === 'review' ? S.reviews : S.bugs).find(x => x.id === id); item.status = status;
-  log('Status set', `${kind} by ${reviewer(item.reviewerId).pseudonym}: ${status}. Changes nothing about payment.`, { business: true, reviewers: [item.reviewerId] });
+function setStatus(kind, id, status) { const it = (kind === 'review' ? S.reviews : S.bugs).find(x => x.id === id); it.status = it.status === status ? null : status; log('Status set', `${kind} · ${reviewer(it.reviewerId).pseudonym} · ${it.status || 'cleared'}`, { business: true, reviewers: [it.reviewerId] }) }
+function newPeriod() {
+  S.history.push({ no: S.periodNo, reviews: cur(S.reviews).length, unlocked: cur(S.bugs).filter(b => b.unlocked).length, closedDay: S.day });
+  S.periodNo++; S.period = { state: 'draft', briefV: latestBrief().v, cost: 0 }; S.assignments = {}; S.ratingsDone = {};
+  S.reviewers.forEach(r => { r.seat = 'none'; r.knew = null; r.received = false; r.payout = null; r.payoutReason = ''; r.inviteStep = 0 });
+  log('Period created', `period ${S.periodNo} · brief v${S.period.briefV}`);
 }
 
-// ---------- auto-play the simulated reviewers ----------
-async function autoReviewer(id) {
-  const ex = EXAMPLE.reviewers.find(x => x.id === id); const r = reviewer(id);
+// ---------- simulated reviewers ----------
+async function simReviewer(id) {
+  const ex = SEED.reviewers.find(x => x.id === id); const r = reviewer(id);
+  if (r.status === 'banned' || r.status === 'suspended') return;
   if (r.seat === 'invited') acceptSeat(id, ex.knew);
-  if (r.seat === 'accepted') { r.received = true; await submitReview(id, ex.review, ex.closing); for (const bg of ex.bugs) { const bug = { ...bg }; const dup = await findDuplicate({ ...bug, reviewerId: id }); await submitBug(id, bug, dup && !dup.id.startsWith('known') ? dup.id : null) } }
+  if (r.seat === 'accepted') { r.received = true; await submitReview(id, ex.review, ex.closing); for (const bg of ex.bugs) { const dup = await findDuplicate({ ...bg, reviewerId: id }); await submitBug(id, { ...bg }, dup && !dup.id.startsWith('known') ? dup.id : null) } }
   if (S.period.state === 'rating' && r.seat === 'submitted' && !S.ratingsDone[id]) {
-    const mine = S.reviews.filter(rv => S.assignments[rv.id].includes(id));
-    const entries = mine.map(rv => {
-      const t = EXAMPLE.reviewers.find(x => x.id === rv.reviewerId).truth;
-      const useful = Math.max(1, Math.min(5, t + [0, 0, 1, -1][Math.floor(Math.random() * 4)]));
-      const first = S.assignments[rv.id][0] === id;
-      let flag = null;
+    const mine = cur(S.reviews).filter(rv => S.assignments[rv.id].includes(id));
+    submitRatings(id, mine.map(rv => {
+      const t = SEED.reviewers.find(x => x.id === rv.reviewerId).truth;
+      const useful = Math.max(1, Math.min(5, t + [0, 0, 1, -1][Math.floor(rng() * 4)]));
+      const first = S.assignments[rv.id][0] === id; let flag = null;
       if (first && t <= 2 && reviewer(rv.reviewerId).knew === 'yes') flag = 'unfairly positive';
       if (first && t <= 1) flag = 'pasted from elsewhere';
-      return { reviewId: rv.id, useful, truthful: t >= 2, fair: t >= 3, matches: t >= 3, flag };
-    });
-    submitRatings(id, entries);
+      return { reviewId: rv.id, useful, truthful: t >= 2, fair: t >= 3, matches: t >= 3 ? 'yes' : 'partly', flag };
+    }));
   }
 }
-async function autoAll() {
-  S.busy = 'Playing the other reviewers';
-  render();
-  const skip = S.role === 'reviewer' ? S.reviewerTab : null;
-  for (let pass = 0; pass < 2; pass++) for (const r of S.reviewers) if (r.id !== skip) await autoReviewer(r.id);
+async function simulate(skip) {
+  S.busy = 'Simulating reviewers'; render();
+  for (let pass = 0; pass < 2; pass++) { for (const r of S.reviewers) if (r.id !== skip) await simReviewer(r.id); await Promise.all(pendingTriage) }
   S.busy = null; save(); render();
 }
+async function seed() {
+  seeding = true; rng = mulberry(20261011); S = fresh();
+  saveBrief(JSON.parse(JSON.stringify(SEED.brief)));
+  buyPack(); buyPack(); S.day = 2; fundPeriod(); openRecruiting(); S.day = 3;
+  for (const r of S.reviewers) { await simReviewer(r.id); S.day += 2 }
+  await Promise.all(pendingTriage);
+  S.day = 16; for (const r of S.reviewers) await simReviewer(r.id);
+  await Promise.all(pendingTriage);
+  S.day = 17; S.page = 'overview'; S.role = 'business'; seeding = false; rng = Math.random;
+}
+
+// ---------- UI helpers ----------
+const $ = s => document.querySelector(s);
+const btn = (act, label, extra = '', cls = 'btn') => `<button class="${cls}" data-act="${act}" ${extra}>${label}</button>`;
+const chip = (label, kind = '', plain = false) => `<span class="chip ${kind}${plain ? ' plain' : ''}">${esc(label)}</span>`;
+const payoutChip = r => !r.payout ? chip('—', '', true) : chip(r.payout === 'paid' ? 'Paid' : r.payout === 'held' ? 'Held' : r.payout === 'forfeited' ? 'Forfeited' : 'Pending', r.payout === 'paid' ? 'good' : r.payout === 'forfeited' ? 'bad' : 'warn');
+const seatChip = r => ({ none: chip('No seat', '', true), invited: chip('Invited', 'info'), accepted: chip('In progress', 'warn'), submitted: chip('Submitted', 'accent'), rated: chip('Complete', 'good'), released: chip('Released', '', true) })[r.seat];
+const stateChip = () => chip(STATE_LABEL[S.period.state], { open: 'accent', rating: 'warn', settlement: 'warn', closed: 'good' }[S.period.state] || 'info');
+const scoreCell = s => s ? `<span class="score"><span class="bar"><i style="width:${s.usefulness}%"></i></span>${s.usefulness}</span>` : `<span class="faint sm">pending</span>`;
+const stepper = () => { const i = STATES.indexOf(S.period.state); return `<div class="steps">${STATES.map((s, j) => `<div class="step ${j < i ? 'done' : j === i ? 'now' : ''}">${STATE_LABEL[s]}</div>`).join('')}</div>` };
+function toast(msg) { const t = document.createElement('div'); t.className = 'toast'; t.textContent = msg; $('#toasts').appendChild(t); setTimeout(() => t.remove(), 2600) }
+const statusBtns = (kind, id, curS) => ['will use', 'will not use', 'already doing'].map(s => btn('status', s, `data-kind="${kind}" data-id="${id}" data-v="${s}"`, 'btn sm' + (curS === s ? ' on' : ''))).join('');
+const flagOf = id => S.flags.filter(f => f.targetId === id);
+const flagChip = f => chip(f.state === 'decided' ? (f.decision === 'breach' ? 'Breach' : f.decision === 'clear' ? 'Cleared' : 'Low quality') : f.state === 'cleared' ? 'Cleared' : 'Flag open', f.state === 'decided' && f.decision === 'breach' ? 'bad' : f.state === 'queued' || f.state === 'triage' ? 'warn' : 'good');
 
 // ---------- rendering ----------
-const $ = sel => document.querySelector(sel);
-function render() { renderChips(); renderTabs(); $('#main').innerHTML = S.busy ? `<p class="thinking">${esc(S.busy)}…</p>` : view(); save(); }
-function renderChips() {
-  const aiChip = S.aiMode === 'claude' ? 'AI: Claude, live' : S.aiMode === 'heuristic' || S.aiMode === 'declined' ? 'AI: built-in heuristic' : 'AI: checking';
-  $('#chips').innerHTML = `<span class="chip state">Period: ${esc(S.period.state)}</span><span class="chip">Day ${S.day}</span><span class="chip">Credits ${money(S.credits.balance)} free, ${money(S.credits.locked)} locked</span><span class="chip">${aiChip}</span>`;
+function render() { renderSide(); renderTop(); $('#content').innerHTML = S.busy ? `<div class="empty"><span class="spin"></span>&nbsp; ${esc(S.busy)}</div>` : page(); renderDrawer(); renderSandbox(); save() }
+function navFor() {
+  if (S.role === 'business') {
+    const q = cur(S.bugs).filter(b => !b.dupOf && b.scores && b.tier && !b.unlocked).length;
+    return [['overview', 'Overview'], ['period', 'Review period'], ['reviews', 'Reviews', cur(S.reviews).length], ['issues', 'Issues', q], ['credits', 'Credits'], ['brief', 'Brief'], ['activity', 'Activity']];
+  }
+  if (S.role === 'reviewer') { const r = reviewer(S.who); const iss = cur(S.bugs).filter(b => b.reviewerId === r.id).length; return [['home', 'Home'], ['review', 'Your review'], ['issues', 'Issues', iss], ['rate', 'Rate peers'], ['activity', 'Activity']] }
+  return [['queue', 'Queue', S.flags.filter(f => f.state === 'queued').length], ['reviewers', 'Reviewers'], ['activity', 'Activity']];
 }
-function renderTabs() {
-  const tabs = [['business', 'Business'], ['reviewer', 'Reviewer'], ['operator', 'Operator'], ['log', 'Audit log']];
-  $('#tabs').innerHTML = tabs.map(([k, l]) => `<button class="tab" role="tab" aria-selected="${S.role === k}" data-act="role" data-v="${k}">${l}</button>`).join('') + `<button class="tab" data-act="reset" title="Start over">Reset</button>`;
+function renderSide() {
+  const nav = navFor(); if (!nav.some(n => n[0] === S.page)) S.page = nav[0][0];
+  const ws = S.role === 'business' ? BUSINESS : S.role === 'reviewer' ? reviewer(S.who).pseudonym : 'Platform';
+  $('#side').className = 'side' + (S.side ? ' open' : '');
+  $('#scrim').hidden = !S.side;
+  $('#side').innerHTML = `<div class="brand"><span class="mark">C</span>Candid</div><div class="ws"><b>${esc(ws)}</b><span class="faint">·</span>${S.role === 'business' ? 'Business' : S.role === 'reviewer' ? 'Reviewer' : 'Admin'}</div>
+    <nav class="nav">${nav.map(([k, l, c]) => `<button data-act="page" data-v="${k}" aria-current="${S.page === k ? 'page' : 'false'}">${l}${c ? `<span class="count">${c}</span>` : ''}</button>`).join('')}</nav>
+    <div class="foot xs faint">Period ${S.periodNo} · Day ${S.day}</div>`;
 }
-function view() {
-  if (S.role === 'business') return businessView();
-  if (S.role === 'reviewer') return reviewerView();
-  if (S.role === 'operator') return operatorView();
-  return logView();
+function renderTop() {
+  const titles = { overview: 'Overview', period: 'Review period', reviews: 'Reviews', issues: 'Issues', credits: 'Credits', brief: 'Brief', activity: 'Activity', home: 'Home', review: 'Your review', rate: 'Rate peers', queue: 'Queue', reviewers: 'Reviewers' };
+  const initial = (S.role === 'business' ? BUSINESS : S.role === 'reviewer' ? reviewer(S.who).pseudonym : 'Platform')[0];
+  const aiLabel = S.aiMode === 'declined' ? 'AI · built-in' : !aiResolved ? 'AI · …' : sampleFn ? 'AI · Claude' : 'AI · built-in';
+  $('#topbar').innerHTML = `<div class="title">${btn('side', '☰', 'aria-label="Menu"', 'btn menu-btn')}<h1>${titles[S.page] || ''}</h1>${S.role === 'business' && S.page !== 'brief' ? stateChip() : ''}</div>
+    <div class="row"><span class="ai">${aiLabel}</span><div class="account"><button class="avatar" data-act="menu" aria-label="Account">${esc(initial)}</button>${S.menu ? `<div class="pop"><div class="lbl">View as</div>
+      <button data-act="viewas" data-role="business" aria-current="${S.role === 'business'}"><span class="dot">${esc(BUSINESS[0])}</span>${esc(BUSINESS)} <span class="faint sm">business</span></button>
+      ${S.reviewers.map(r => `<button data-act="viewas" data-role="reviewer" data-who="${r.id}" aria-current="${S.role === 'reviewer' && S.who === r.id}"><span class="dot">${esc(r.pseudonym[0])}</span>${esc(r.pseudonym)} <span class="faint sm">reviewer</span></button>`).join('')}
+      <button data-act="viewas" data-role="admin" aria-current="${S.role === 'admin'}"><span class="dot">P</span>Platform <span class="faint sm">admin</span></button></div>` : ''}</div></div>`;
 }
-const btn = (act, label, extra = '', cls = 'btn') => `<button class="${cls}" data-act="${act}" ${extra}>${label}</button>`;
-const payoutPill = r => !r.payout ? '' : `<span class="pill ${r.payout === 'paid' ? 'good' : r.payout === 'forfeited' ? 'bad' : 'warn'}">${r.payout}</span>`;
-const scoreLine = s => s ? `<span class="score">usefulness ${s.usefulness} · on-brief ${s.onBrief} · quality ${s.quality}${s.peer != null ? ' (peers ' + s.peer + ')' : ''}${s.offBrief ? ' · off-brief, capped' : ''}</span>` : `<span class="muted small">scored when peer rating ends</span>`;
-
-// Business
-function businessView() {
-  const parts = [];
-  parts.push(`<p class="lead">You are <strong>${esc(EXAMPLE.business)}</strong>, an example business. Everything below is the real mechanics: the brief freezes, credits are spent before text is shown, and no payment waits on you.</p>`);
-  if (S.onboarding) return parts.join('') + onboardingView();
-  if (!S.briefs.length) {
-    parts.push(`<div class="card stack"><h3>Start with the brief</h3><p>Seven questions, one at a time. The answers become the review form, the eligibility check, the scoring rubric and the known-issues list.</p><div class="bar">${btn('onboard', 'Answer the seven questions', '', 'btn primary')}</div></div>`);
-    return parts.join('');
-  }
-  const b = brief(), p = S.period;
-  parts.push(`<div class="card stack"><h3>Brief <span class="pill">v${b.v}${p.briefV && p.briefV !== S.briefs[S.briefs.length - 1].v ? ' in use · v' + S.briefs[S.briefs.length - 1].v + ' next period' : ''}</span></h3>
-    <dl class="kv"><dt>Product</dt><dd>${esc(b.product)}</dd><dt>Wants to know</dt><dd>${b.wants.map(esc).join('<br>')}</dd><dt>Already knows</dt><dd>${b.known.map(esc).join('<br>')}</dd><dt>Will not change</dt><dd>${esc(b.wontChange)}</dd><dt>Eligibility</dt><dd>${esc(b.eligibility)}</dd></dl>
-    <div class="bar">${btn('onboard', 'Edit brief')}${p.state !== 'draft' && p.state !== 'closed' ? '<span class="small muted">The open period keeps v' + p.briefV + '. An edit makes a new version for the next period.</span>' : ''}</div></div>`);
-  const cost = Math.round(SEATS * FEE * (1 + FEE_PCT));
-  parts.push(`<div class="card stack"><h3>Credits <span class="num">${money(S.credits.balance)} free · ${money(S.credits.locked)} locked</span></h3>
-    <div class="bar">${btn('buy', `Buy ${money(PACK)} pack`)}<span class="small muted">Prepaid. Unlocks and seat funding come from here. Nothing refunds to card.</span></div>
-    ${S.credits.ledger.length ? `<div class="scroll"><table><tr><th>Day</th><th>Entry</th><th class="num">Amount</th></tr>${S.credits.ledger.slice().reverse().map(l => `<tr><td class="num">${l.day}</td><td>${esc(l.what)}</td><td class="num">${l.amt < 0 ? '−' : ''}${money(Math.abs(l.amt))}</td></tr>`).join('')}</table></div>` : ''}</div>`);
-  const seatRows = S.reviewers.map(r => `<tr><td>${esc(r.pseudonym)} <span class="small muted">rep ${repOf(r)}</span></td><td>${esc(r.seat)}</td><td>${payoutPill(r)}</td></tr>`).join('');
-  let periodBody = '';
-  if (p.state === 'draft') periodBody = `<p>${SEATS} seats × ${money(FEE)} + ${FEE_PCT * 100}% platform fee = <span class="num">${money(cost)}</span>, locked until the period closes. Unused seats refund to credits.</p><div class="bar">${btn('fund', 'Fund period', S.credits.balance < cost ? 'disabled' : '', 'btn primary')}${S.credits.balance < cost ? '<span class="small muted">Buy a pack first.</span>' : ''}</div>`;
-  else if (p.state === 'funded') periodBody = `<p>${money(p.cost)} locked. Opening recruiting issues ${SEATS} single-use invite links.</p><div class="bar">${btn('recruit', 'Open recruiting', '', 'btn primary')}</div>`;
-  else {
-    const knew = S.reviewers.filter(r => r.knew === 'yes').length, declared = S.reviewers.filter(r => r.knew).length;
-    periodBody = `<div class="scroll"><table><tr><th>Seat</th><th>State</th><th>Payout</th></tr>${seatRows}</table></div>
-      ${declared ? `<p class="small">${knew} of ${declared} reviewers said they knew you before the invite.</p>` : ''}
-      ${declared && knew > declared / 2 ? `<div class="note warn">More than half your reviewers know you. Kind reviews score low on usefulness. Recruit from the places list below.</div>` : ''}
-      <div class="bar">${p.state === 'open' ? btn('endopen', 'End open early') : ''}${['open', 'rating', 'settlement'].includes(p.state) ? btn('advance', 'Advance 7 days') : ''}${['recruiting', 'open', 'rating'].includes(p.state) ? btn('autoall', 'Play the reviewers for me', '', 'btn primary') : ''}</div>`;
-  }
-  parts.push(`<div class="card stack"><h3>Review period <span class="pill">${esc(p.state)}</span></h3>${periodBody}</div>`);
-  if (p.state === 'funded' || p.state === 'recruiting') {
-    parts.push(`<div class="card stack"><h3>Recruit your ${SEATS}</h3><p class="small muted">Generated from the brief. Nothing is posted by the platform. Copy it and post it yourself.</p>
-      <div class="review-text">Paid, private feedback: ${esc(b.product)} We are looking for ${SEATS} people who ${esc(b.eligibility.replace(/\.$/, '').toLowerCase())}. ${esc(b.job)} You get the first load free and ${money(FEE)} for an honest written review that only we see. It is never published anywhere. Invite link: demo.example/invite/${uid()}</div>
-      <table><tr><th>Where to post</th><th>Note</th></tr>${PLACES.map(([a, c]) => `<tr><td>${esc(a)}</td><td class="small muted">${esc(c)}</td></tr>`).join('')}</table></div>`);
-  }
-  if (S.reviews.length) {
-    parts.push(`<h2>Reviews</h2>`);
-    S.reviews.forEach(rv => {
-      const r = reviewer(rv.reviewerId); const flags = S.flags.filter(f => f.targetId === rv.id);
-      parts.push(`<div class="card stack"><h3>${esc(r.pseudonym)} <span class="small muted">rep ${repOf(r)} · knew you: ${esc(r.knew)} · brief v${rv.briefV}</span></h3>
-        ${scoreLine(rv.scores)}
-        ${S.briefs.find(x => x.v === rv.briefV).wants.map((q, i) => `<p class="q">${esc(q)}</p><p class="review-text">${esc(rv.sections[i])}</p>`).join('')}
-        <p class="q">Tried to do · where they stopped · would pay</p><p class="review-text">${rv.closing.map(esc).join('\n')}</p>
-        ${flags.map(f => `<div class="note ${f.state === 'decided' && f.decision === 'breach' ? 'bad' : f.state === 'cleared' || f.state === 'decided' ? '' : 'warn'}">Flag: ${esc(f.reason)} (${f.source === 'business' ? 'you' : f.source === 'ai' ? 'AI' : 'a peer'}) · ${esc(f.state)}${f.decision ? ': ' + esc(f.decision) : ''}</div>`).join('')}
-        <div class="bar"><span class="small muted">Status:</span>${['will use', 'will not use', 'already doing'].map(s => btn('status', s, `data-kind="review" data-id="${rv.id}" data-v="${s}"`, 'btn' + (rv.status === s ? ' primary' : ''))).join('')}
-        ${!flags.some(f => f.source === 'business') ? `<select id="flag-${rv.id}" aria-label="Flag reason"><option value="">Flag…</option>${FLAG_REASONS.map(x => `<option>${x}</option>`).join('')}</select>${btn('flag', 'Flag', `data-id="${rv.id}"`)}` : ''}</div></div>`);
-    });
-  }
-  const bugs = S.bugs.filter(x => !x.dupOf);
-  if (bugs.length) {
-    parts.push(`<h2>Process bugs</h2><p class="small muted">Credit is spent before the text is shown. Price follows the peer score, not your opinion. ${p.state === 'open' || p.state === 'rating' ? 'Prices are set when peer rating ends.' : ''}</p>`);
-    const rows = bugs.slice().sort((a, b) => ((b.scores || b.ai || {}).usefulness || 0) - ((a.scores || a.ai || {}).usefulness || 0)).map(bg => {
-      const t = bg.tier, final = !!bg.scores;
-      const price = final ? (t ? money(t.price) : 'not listed') : 'pending';
-      return `<tr><td>${esc(bg.ai ? bg.ai.category : '…')}</td><td>${bg.unlocked ? `<strong>${esc(bg.title)}</strong><br><span class="small">${esc(bg.happened)}<br><em>Instead:</em> ${esc(bg.instead)}</span><div class="bar" style="margin-top:6px">${['will use', 'will not use', 'already doing'].map(s => btn('status', s, `data-kind="bug" data-id="${bg.id}" data-v="${s}"`, 'btn' + (bg.status === s ? ' primary' : ''))).join('')}</div>` : esc(bg.ai ? bg.ai.teaser : 'categorising…')}${bg.confirmations ? ` <span class="pill">+${bg.confirmations} confirmed</span>` : ''}</td>
-        <td class="num">${final ? bg.scores.usefulness + '<br><span class="small muted">' + bg.scores.onBrief + '/' + bg.scores.quality + '</span>' : (bg.ai ? '<span class="small muted">prov. ' + Math.round((bg.ai.onBrief + bg.ai.quality) / 2) + '</span>' : '')}</td>
-        <td class="num">${bg.unlocked ? '<span class="pill good">unlocked</span>' : price}</td>
-        <td>${!bg.unlocked && final && t ? btn('unlock', 'Unlock', `data-id="${bg.id}" ${S.credits.balance < t.price ? 'disabled' : ''}`, 'btn primary') : ''}</td></tr>`;
-    }).join('');
-    parts.push(`<div class="card bugs"><div class="scroll"><table><tr><th>Category</th><th>Teaser</th><th class="num">Score</th><th class="num">Price</th><th></th></tr>${rows}</table></div></div>`);
-  }
-  return parts.join('');
+function renderSandbox() {
+  const p = S.period.state; const r = S.role === 'reviewer' ? reviewer(S.who) : null;
+  const canSim = ['recruiting', 'open', 'rating'].includes(p);
+  $('#sandbox').innerHTML = `<span class="tag">Sandbox</span>${btn('simulate', 'Simulate reviewers', canSim ? '' : 'disabled')}${btn('advance', '+7 days', ['open', 'rating', 'settlement'].includes(p) ? '' : 'disabled')}${btn('reset', 'Reset')}`;
 }
-const QUESTIONS = [
-  ['product', 'What is it, in one sentence a stranger would understand?', 'e.g. We pick up your washing, wash and fold it, and bring it back in 48 hours.'],
-  ['audience', 'Who is it for, and who is it not for?', ''],
-  ['job', 'What will a reviewer actually do, how long does it take, and what do they get free?', ''],
-  ['wants', 'The three things you most want to know. One per line. Each becomes a section of the review form.', ''],
-  ['known', 'What you already know is weak, one per line. Reviewers are not paid to repeat these.', ''],
-  ['wontChange', 'What you will not change. Feedback on it is marked off-brief rather than wasted.', ''],
-  ['eligibility', 'What must a reviewer have or be?', ''],
-];
-function onboardingView() {
-  const o = S.onboarding, [key, q, hint] = QUESTIONS[o.step];
-  const val = o.answers[key];
-  const multi = Array.isArray(val);
-  return `<div class="card stack"><p class="progress">Brief · question ${o.step + 1} of ${QUESTIONS.length}</p><h3>${esc(q)}</h3>
-    <div class="field"><textarea id="ob-answer" aria-label="Answer">${esc(multi ? val.join('\n') : val)}</textarea>${hint ? `<p class="hint">${esc(hint)}</p>` : ''}<p class="hint">Prefilled with the example business. Change it if you like.</p></div>
-    <div class="bar">${o.step > 0 ? btn('ob-back', 'Back') : ''}${btn('ob-next', o.step === QUESTIONS.length - 1 ? (S.briefs.length ? 'Save as v' + (S.briefs.length + 1) : 'Save brief') : 'Next', '', 'btn primary')}${btn('ob-cancel', 'Cancel', '', 'btn quiet')}</div></div>`;
+function page() {
+  if (S.role === 'business') return ({ overview: bOverview, period: bPeriod, reviews: bReviews, issues: bIssues, credits: bCredits, brief: bBrief, activity: activity })[S.page]();
+  if (S.role === 'reviewer') return ({ home: rHome, review: rReview, issues: rIssues, rate: rRate, activity: activity })[S.page]();
+  return ({ queue: aQueue, reviewers: aReviewers, activity: activity })[S.page]();
 }
 
-// Reviewer
-function reviewerView() {
-  const r = reviewer(S.reviewerTab), ex = EXAMPLE.reviewers.find(x => x.id === r.id), p = S.period;
-  const parts = [`<div class="bar"><label for="who" style="margin:0">Act as</label><select id="who" data-act="who" style="width:auto">${S.reviewers.map(x => `<option value="${x.id}" ${x.id === r.id ? 'selected' : ''}>${esc(x.pseudonym)} (${x.seat})</option>`).join('')}</select>${['recruiting', 'open', 'rating'].includes(p.state) ? btn('autoall', 'Play the others for me') : ''}</div>`];
-  parts.push(`<div class="card stack"><h3>${esc(r.pseudonym)} <span class="small muted">reputation ${repOf(r)} · ${r.rep.n} scored · account ${esc(r.status)}</span></h3>
-    <p class="small muted">A pseudonym. The business never sees your name or payout details. Example reviewer; the prefilled text is editable.</p>
-    ${r.payout ? `<p>Payout: ${payoutPill(r)} ${r.payoutReason ? '<span class="small">' + esc(r.payoutReason) + '</span>' : ''}</p>` : ''}</div>`);
-  if (r.seat === 'none') { parts.push(`<div class="note">No invite yet. The business has to fund the period and open recruiting first.</div>`); return parts.join('') }
-  const b = brief();
+// Business pages
+function bOverview() {
+  const p = S.period; const subs = S.reviewers.filter(r => r.seat === 'submitted' || r.seat === 'rated').length;
+  const bugs = cur(S.bugs).filter(b => !b.dupOf); const ready = bugs.filter(b => b.scores && b.tier && !b.unlocked); const unmarked = cur(S.reviews).filter(r => r.scores && !r.status).length;
+  const todo = [];
+  if (p.state === 'draft' && !S.briefs.length) todo.push(['brief', 'Write the brief', 'Seven questions']);
+  if (p.state === 'draft' && S.briefs.length) todo.push(['period', 'Fund the period', `${SEATS} seats · ${money(SEATS * SEAT_COST)}`]);
+  if (p.state === 'funded') todo.push(['period', 'Open recruiting', `${SEATS} invite links`]);
+  if (p.state === 'recruiting') todo.push(['period', 'Share the invite links', 'Recruitment kit is ready']);
+  if (ready.length) todo.push(['issues', `${ready.length} issue${ready.length > 1 ? 's' : ''} ready to unlock`, `from ${money(Math.min(...ready.map(b => b.tier.price)))}`]);
+  if (unmarked) todo.push(['reviews', `${unmarked} review${unmarked > 1 ? 's' : ''} to mark`, 'will use · will not use · already doing']);
+  if (p.state === 'closed') todo.push(['period', 'Start the next period', `brief v${latestBrief().v}`]);
+  const recent = S.log.filter(e => e.vis.business).slice(-6).reverse();
+  return `<div class="tiles">
+      <div class="tile"><div class="k">Period ${S.periodNo}</div><div class="v">${STATE_LABEL[p.state]}</div><div class="s">Day ${S.day}${p.openedDay ? ` · opened day ${p.openedDay}` : ''}</div></div>
+      <div class="tile"><div class="k">Reviews</div><div class="v">${subs}<span class="muted" style="font-size:15px">/${SEATS}</span></div><div class="s">${cur(S.reviews).filter(r => r.scores).length} scored</div></div>
+      <div class="tile"><div class="k">Issues</div><div class="v">${bugs.length}</div><div class="s">${ready.length} to unlock · ${bugs.filter(b => b.unlocked).length} unlocked</div></div>
+      <div class="tile"><div class="k">Credits</div><div class="v">${money(S.credits.balance)}</div><div class="s">${money(S.credits.locked)} locked</div></div></div>
+    <div class="panel"><div class="body">${stepper()}</div></div>
+    <div class="grid">
+      <div class="panel"><div class="head"><h2>Needs you</h2></div><div class="body tight">${todo.length ? `<div class="list">${todo.map(([pg, t, s]) => `<div><div><div class="strong">${esc(t)}</div><div class="sm muted">${esc(s)}</div></div>${btn('page', 'Open', `data-v="${pg}"`, 'btn sm')}</div>`).join('')}</div>` : '<div class="empty">Nothing waiting on you</div>'}</div></div>
+      <div class="panel"><div class="head"><h2>Recent activity</h2>${btn('page', 'All', 'data-v="activity"', 'btn ghost sm')}</div><div class="body tight">${recent.map(e => `<div class="lgrow"><span class="d">d${e.day}</span><span><span class="e">${esc(e.event)}</span> <span class="t">${esc(e.detail)}</span></span></div>`).join('') || '<div class="empty">No activity yet</div>'}</div></div>
+    </div>`;
+}
+function bPeriod() {
+  const p = S.period, b = brief();
+  let action = '';
+  if (p.state === 'draft') action = S.briefs.length ? `<div class="row between"><div><div class="strong">${SEATS} seats · ${money(SEATS * SEAT_COST)}</div><div class="sm muted">${money(FEE)} per review + ${FEE_PCT * 100}% platform fee · locked until close · unused seats refunded</div></div>${btn('fund', 'Fund period', S.credits.balance < SEATS * SEAT_COST ? 'disabled' : '', 'btn primary')}</div>${S.credits.balance < SEATS * SEAT_COST ? `<div class="callout">Balance ${money(S.credits.balance)}. ${btn('page', 'Buy credits', 'data-v="credits"', 'btn sm')}</div>` : ''}` : `<div class="callout info">Write the brief first. ${btn('page', 'Brief', 'data-v="brief"', 'btn sm')}</div>`;
+  else if (p.state === 'funded') action = `<div class="row between"><div><div class="strong">${money(p.cost)} locked</div><div class="sm muted">Opening issues ${SEATS} single-use invite links</div></div>${btn('recruit', 'Open recruiting', '', 'btn primary')}</div>`;
+  else if (p.state === 'open') action = `<div class="row between"><div class="sm muted">Submission deadline 14 days after each acceptance</div>${btn('endopen', 'End open stage')}</div>`;
+  else if (p.state === 'rating') action = `<div class="sm muted">Peer rating closes when all ratings are in, or after 7 days</div>`;
+  else if (p.state === 'settlement') action = `<div class="sm muted">Payouts release as flags resolve. Undecided flags release after 7 days.</div>`;
+  else if (p.state === 'closed') action = `<div class="row between"><div class="sm muted">Closed day ${S.day}</div>${btn('newperiod', 'Start next period', '', 'btn primary')}</div>`;
+  const knew = S.reviewers.filter(r => r.knew === 'yes').length, declared = S.reviewers.filter(r => r.knew).length;
+  return `<div class="panel"><div class="body stack">${stepper()}${action}</div></div>
+    ${declared && knew > declared / 2 ? `<div class="callout">${knew} of ${declared} reviewers knew you before the invite. Kind reviews score low. Recruit from the kit below.</div>` : ''}
+    <div class="panel"><div class="head"><h2>Seats</h2><span class="sm muted">${declared ? `${knew} of ${declared} knew you` : `brief v${p.briefV || '—'}`}</span></div><div class="body tight scroll"><table><thead><tr><th>Reviewer</th><th>Status</th><th class="r">Reputation</th><th>Payout</th><th>Invite</th></tr></thead><tbody>
+      ${S.reviewers.map(r => `<tr><td class="strong">${esc(r.pseudonym)}</td><td>${seatChip(r)}</td><td class="r num">${repOf(r)}</td><td>${payoutChip(r)}</td><td class="num faint">${r.seat === 'invited' ? 'candid.app/i/' + r.id + 'k7' : '—'}</td></tr>`).join('')}</tbody></table></div></div>
+    ${['funded', 'recruiting', 'open'].includes(p.state) ? `<div class="panel"><div class="head"><h2>Recruitment kit</h2>${btn('copy', 'Copy post', '', 'btn sm')}</div><div class="body stack">
+      <p id="post">Paid, private feedback. ${esc(b.product)} Looking for ${SEATS} people who ${esc(b.eligibility.replace(/\.$/, '').toLowerCase())}. ${esc(b.job)} ${money(FEE)} for an honest written review that only we see. Never published. candid.app/i/${S.periodNo}x9</p>
+      <div class="scroll"><table><thead><tr><th>Where to post</th><th>Note</th></tr></thead><tbody>${PLACES.map(([a, n]) => `<tr><td>${esc(a)}</td><td class="muted">${esc(n)}</td></tr>`).join('')}</tbody></table></div></div></div>` : ''}`;
+}
+function bReviews() {
+  const rows = cur(S.reviews).slice().sort((a, b) => ((b.scores || {}).usefulness || 0) - ((a.scores || {}).usefulness || 0));
+  if (!rows.length) return `<div class="panel"><div class="empty">Reviews appear here as reviewers submit</div></div>`;
+  return `<div class="panel"><div class="body tight scroll"><table><thead><tr><th>Reviewer</th><th class="r">Rep</th><th>Usefulness</th><th>On brief</th><th>Quality</th><th>Flags</th><th>Status</th></tr></thead><tbody>
+    ${rows.map(rv => { const r = reviewer(rv.reviewerId), fl = flagOf(rv.id); return `<tr class="click" data-act="open" data-kind="review" data-id="${rv.id}"><td class="strong">${esc(r.pseudonym)}${r.knew === 'yes' ? ' <span class="faint xs">knew you</span>' : ''}</td><td class="r num">${repOf(r)}</td><td>${scoreCell(rv.scores)}</td><td class="num">${rv.scores ? rv.scores.onBrief : '—'}</td><td class="num">${rv.scores ? rv.scores.quality : '—'}</td><td>${fl.length ? fl.map(flagChip).join(' ') : '<span class="faint">—</span>'}</td><td>${rv.status ? chip(rv.status, 'accent', true) : '<span class="faint">—</span>'}</td></tr>` }).join('')}</tbody></table></div></div>`;
+}
+function bIssues() {
+  const bugs = cur(S.bugs).filter(b => !b.dupOf).slice().sort((a, b) => ((b.scores || {}).usefulness ?? ((b.ai ? (b.ai.onBrief + b.ai.quality) / 2 : 0))) - ((a.scores || {}).usefulness ?? ((a.ai ? (a.ai.onBrief + a.ai.quality) / 2 : 0))));
+  if (!bugs.length) return `<div class="panel"><div class="empty">Issues appear here as reviewers report them</div></div>`;
+  const ready = bugs.filter(b => b.scores && b.tier && !b.unlocked); const total = ready.reduce((s, b) => s + b.tier.price, 0);
+  return `<div class="row between"><span class="sm muted">Unlock spends credit before the text is shown. Price follows the peer score.</span>${ready.length > 1 ? btn('unlockall', `Unlock all · ${money(total)}`, S.credits.balance < total ? 'disabled' : '', 'btn sm') : ''}</div>
+    <div class="panel"><div class="body tight scroll"><table><thead><tr><th>Category</th><th>Issue</th><th>Usefulness</th><th class="r">Price</th><th></th></tr></thead><tbody>
+    ${bugs.map(b => { const final = !!b.scores; const price = b.unlocked ? chip('Unlocked', 'good') : !final ? '<span class="faint sm">pending</span>' : b.tier ? `<span class="num">${money(b.tier.price)}</span>` : '<span class="faint sm">not listed</span>';
+      return `<tr class="${b.unlocked ? 'click' : ''}" ${b.unlocked ? `data-act="open" data-kind="bug" data-id="${b.id}"` : ''}><td>${chip(b.ai ? b.ai.category : '…', 'info', true)}</td><td>${b.unlocked ? `<span class="strong">${esc(b.title)}</span>` : `<span class="muted">${esc(b.ai ? b.ai.teaser : 'Categorising…')}</span>`}${b.confirmations ? ` <span class="xs faint">+${b.confirmations} confirmed</span>` : ''}${b.status ? ' ' + chip(b.status, 'accent', true) : ''}</td><td>${final ? scoreCell(b.scores) : `<span class="faint sm">provisional ${b.ai ? Math.round((b.ai.onBrief + b.ai.quality) / 2) : '—'}</span>`}</td><td class="r">${price}</td><td class="r">${!b.unlocked && final && b.tier ? btn('unlock', 'Unlock', `data-id="${b.id}" ${S.credits.balance < b.tier.price ? 'disabled' : ''}`, 'btn sm primary') : ''}</td></tr>` }).join('')}</tbody></table></div></div>`;
+}
+function bCredits() {
+  return `<div class="tiles"><div class="tile"><div class="k">Available</div><div class="v">${money(S.credits.balance)}</div></div><div class="tile"><div class="k">Locked in period</div><div class="v">${money(S.credits.locked)}</div></div><div class="tile"><div class="k">Credit pack</div><div class="v">${money(PACK)}</div><div class="s" style="margin-top:6px">${btn('buy', 'Buy pack', '', 'btn sm primary')}</div></div></div>
+    <div class="panel"><div class="head"><h2>Ledger</h2><span class="sm muted">Expires 12 months after purchase</span></div><div class="body tight scroll"><table><thead><tr><th>Day</th><th>Entry</th><th class="r">Amount</th></tr></thead><tbody>${S.credits.ledger.slice().reverse().map(l => `<tr><td class="num faint">${l.day}</td><td>${esc(l.what)}</td><td class="r num">${money(l.amt)}</td></tr>`).join('') || '<tr><td colspan="3" class="empty">No entries</td></tr>'}</tbody></table></div></div>`;
+}
+const QUESTIONS = [['product', 'What is it, in one sentence?'], ['audience', 'Who is it for, and who is it not for?'], ['job', 'What will a reviewer do, how long does it take, and what do they get free?'], ['wants', 'The three things you most want to know', 'One per line. Each becomes a section of the review form.'], ['known', 'What you already know is weak', 'One per line. Reviewers are not paid to repeat these.'], ['wontChange', 'What you will not change', 'Feedback on it is marked off-brief.'], ['eligibility', 'What must a reviewer have or be?']];
+function bBrief() {
+  if (S.wizard) {
+    const w = S.wizard, [key, q, help] = QUESTIONS[w.step], val = w.answers[key];
+    return `<div class="panel wizard"><div class="body stack"><div class="row between"><span class="sm muted">${w.step + 1} of ${QUESTIONS.length}</span><div class="dots">${QUESTIONS.map((_, i) => `<i class="${i <= w.step ? 'on' : ''}"></i>`).join('')}</div></div><h2>${esc(q)}</h2>
+      <div class="field"><textarea id="wz" aria-label="Answer">${esc(Array.isArray(val) ? val.join('\n') : val)}</textarea>${help ? `<div class="help">${esc(help)}</div>` : ''}</div>
+      <div class="row between"><div>${w.step > 0 ? btn('wz-back', 'Back') : ''}</div><div class="row">${btn('wz-cancel', 'Cancel', '', 'btn ghost')}${btn('wz-next', w.step === QUESTIONS.length - 1 ? 'Save brief' : 'Continue', '', 'btn primary')}</div></div></div></div>`;
+  }
+  const b = latestBrief();
+  if (!b) return `<div class="panel"><div class="hero"><h1>Write your brief</h1><p class="muted">Seven questions. They become the review form, the eligibility check and the scoring rubric.</p>${btn('wz-start', 'Start', '', 'btn primary')}</div></div>`;
+  const inUse = S.period.briefV, active = S.period.state !== 'draft' && S.period.state !== 'closed';
+  return `<div class="panel"><div class="head"><div class="row"><h2>Brief</h2>${chip(`v${b.v}`, 'accent')}${active && inUse !== b.v ? chip(`period uses v${inUse}`, 'warn') : ''}</div>${btn('wz-start', 'Edit')}</div><div class="body">${active ? `<div class="callout info" style="margin-bottom:14px">Period ${S.periodNo} is scored against v${inUse}. Edits create a new version for the next period.</div>` : ''}
+    <dl class="kv"><dt>Product</dt><dd>${esc(b.product)}</dd><dt>Audience</dt><dd>${esc(b.audience)}</dd><dt>The job</dt><dd>${esc(b.job)}</dd><dt>Wants to know</dt><dd>${b.wants.map((w, i) => `${i + 1}. ${esc(w)}`).join('<br>')}</dd><dt>Known issues</dt><dd>${b.known.map(esc).join('<br>') || '—'}</dd><dt>Will not change</dt><dd>${esc(b.wontChange) || '—'}</dd><dt>Eligibility</dt><dd>${esc(b.eligibility)}</dd></dl></div></div>
+    ${S.briefs.length > 1 ? `<div class="panel"><div class="head"><h2>Versions</h2></div><div class="body tight"><div class="list">${S.briefs.slice().reverse().map(x => `<div><span>v${x.v} <span class="muted sm">· day ${x.day}</span></span>${x.v === inUse ? chip('in use', 'accent') : ''}</div>`).join('')}</div></div></div>` : ''}`;
+}
+function activity() {
+  const who = S.role === 'admin' ? S.logWho : S.role === 'business' ? 'business' : S.who;
+  const rows = S.log.filter(e => who === 'all' ? true : who === 'business' ? e.vis.business : e.vis.reviewers.includes(who)).slice().reverse();
+  return `${S.role === 'admin' ? `<div class="row"><select id="logwho" data-act="logwho" style="width:auto"><option value="all" ${who === 'all' ? 'selected' : ''}>Everything</option><option value="business" ${who === 'business' ? 'selected' : ''}>As ${esc(BUSINESS)}</option>${S.reviewers.map(r => `<option value="${r.id}" ${who === r.id ? 'selected' : ''}>As ${esc(r.pseudonym)}</option>`).join('')}</select></div>` : ''}
+    <div class="panel"><div class="body tight">${rows.map(e => `<div class="lgrow"><span class="d">d${e.day}</span><span><span class="e">${esc(e.event)}</span> <span class="t">${esc(e.detail)}</span></span></div>`).join('') || '<div class="empty">No activity</div>'}</div></div>`;
+}
+
+// Reviewer pages
+function rHome() {
+  const r = reviewer(S.who), p = S.period, rv = cur(S.reviews).find(x => x.reviewerId === r.id), b = brief();
+  if (r.seat === 'none') return `<div class="panel"><div class="hero"><h1>No open invitations</h1><p class="muted">Reputation ${repOf(r)} · ${r.rep.n} scored</p></div></div>`;
   if (r.seat === 'invited') {
     const st = r.inviteStep || 0;
-    if (st === 0) parts.push(`<div class="card stack"><h3>${esc(EXAMPLE.business)} would like your feedback</h3><dl class="kv"><dt>The job</dt><dd>${esc(b.job)}</dd><dt>You get</dt><dd>The first load free, and ${money(FEE)} for an honest written review plus three short peer ratings.</dd><dt>Who sees it</dt><dd>Only ${esc(EXAMPLE.business)}. It is never published.</dd></dl><div class="bar">${btn('inv-yes', 'Yes, I am in', '', 'btn primary')}${btn('inv-no', 'No thanks', '', 'btn quiet')}</div></div>`);
-    else if (st === 1) parts.push(`<div class="card stack"><h3>One check</h3><p>${esc(b.eligibility)} Is that you?</p><div class="bar">${btn('elig-yes', 'Yes', '', 'btn primary')}${btn('inv-no', 'No', '', 'btn quiet')}</div></div>`);
-    else parts.push(`<div class="card stack"><h3>Did you know ${esc(EXAMPLE.business)} before today?</h3><p class="small muted">Shown to the business only as a count across all reviewers.</p><div class="bar">${['yes', 'no', 'not sure'].map(v => btn('knew', v, `data-v="${v}"`, 'btn' + (ex.knew === v ? ' primary' : ''))).join('')}</div></div>`);
-    return parts.join('');
+    if (st === 0) return `<div class="panel wizard"><div class="body stack"><span class="sm muted">Invitation</span><h2>${esc(BUSINESS)} wants your feedback</h2><dl class="kv"><dt>The job</dt><dd>${esc(b.job)}</dd><dt>You get</dt><dd>${money(FEE)} for a written review and three short peer ratings</dd><dt>Who sees it</dt><dd>Only ${esc(BUSINESS)}. Never published.</dd></dl><div class="row">${btn('inv-yes', 'Accept', '', 'btn primary')}${btn('inv-no', 'Decline', '', 'btn ghost')}</div></div></div>`;
+    if (st === 1) return `<div class="panel wizard"><div class="body stack"><span class="sm muted">Eligibility</span><h2>${esc(b.eligibility)}</h2><div class="row">${btn('elig-yes', 'That is me', '', 'btn primary')}${btn('inv-no', 'Not me', '', 'btn ghost')}</div></div></div>`;
+    return `<div class="panel wizard"><div class="body stack"><span class="sm muted">One more</span><h2>Did you know ${esc(BUSINESS)} before today?</h2><div class="row">${['yes', 'no', 'not sure'].map(v => btn('knew', v[0].toUpperCase() + v.slice(1), `data-v="${v}"`)).join('')}</div></div></div>`;
   }
-  if (r.seat === 'released') { parts.push(`<div class="note warn">Your seat was released at the deadline with no submission.</div>`); return parts.join('') }
-  if (r.seat === 'accepted') {
-    parts.push(`<div class="card stack"><h3>Your review <span class="small muted">brief v${p.briefV}</span></h3>
-      <div class="bar"><input type="checkbox" id="received" ${r.received ? 'checked' : ''} data-act="received"><label for="received" style="margin:0">I have received the free product or job</label></div>
-      ${b.wants.map((q, i) => `<div class="field"><label for="sec${i}">${esc(q)}</label><textarea id="sec${i}">${esc(ex.review[i])}</textarea></div>`).join('')}
-      ${['What did you try to do?', 'Where did you stop, if anywhere?', 'What would you pay for this?'].map((q, i) => `<div class="field"><label for="clo${i}">${esc(q)}</label><input type="text" id="clo${i}" value="${esc(ex.closing[i])}"></div>`).join('')}
-      <p class="hint">Saved on every keystroke in the real thing. Pays ${money(FEE)} once you have also rated three peers.</p>
-      <div class="bar">${btn('submit-review', 'Submit review', '', 'btn primary')}</div></div>`);
-  }
-  if (r.seat === 'submitted' || r.seat === 'rated') {
-    const rv = S.reviews.find(x => x.reviewerId === r.id);
-    parts.push(`<div class="card stack"><h3>Your review <span class="pill good">submitted day ${rv.day}</span></h3>${scoreLine(rv.scores)}${rv.status ? `<p class="small">The business marked it: <strong>${esc(rv.status)}</strong>. That changes nothing about payment.</p>` : ''}
-      ${S.flags.filter(f => f.targetId === rv.id).map(f => `<div class="note ${f.state === 'decided' && f.decision === 'breach' ? 'bad' : 'warn'}">A flag is ${f.state === 'cleared' ? 'cleared' : f.state === 'decided' ? 'decided: ' + esc(f.decision) : 'open'}: ${esc(f.reason)}.${f.state === 'queued' && !f.reply ? ` You can reply once before a person decides.<div class="field" style="margin-top:6px"><textarea id="reply-${f.id}" placeholder="Your reply"></textarea></div><div class="bar">${btn('reply', 'Send reply', `data-id="${f.id}"`)}</div>` : f.reply ? ` Your reply: “${esc(f.reply)}”` : ''}</div>`).join('')}</div>`);
-  }
-  if (['accepted', 'submitted', 'rated'].includes(r.seat) && ['open', 'rating'].includes(p.state)) {
-    const mine = S.bugs.filter(x => x.reviewerId === r.id);
-    const published = [...b.known.map(k => ({ title: k, status: 'already known' })), ...S.bugs.filter(x => x.unlocked).map(x => ({ title: x.title, status: x.status || 'unlocked' }))];
-    parts.push(`<div class="card stack"><h3>Process bugs</h3><p class="small muted">Things that make no sense, are not done, or should be done differently. Paid on unlock, by peer score. Not software bugs.</p>
-      ${published.length ? `<p class="q">Already on the list, not paid again</p><ul class="small">${published.map(x => `<li>${esc(x.title)} <span class="muted">· ${esc(x.status)}</span></li>`).join('')}</ul>` : ''}
-      ${mine.length ? `<p class="q">Yours</p><ul class="small">${mine.map(x => `<li>${esc(x.title)}${x.dupOf ? ' <span class="muted">· confirmation of an existing bug, unpaid</span>' : x.unlocked ? ` <span class="pill good">unlocked, ${money(x.tier.price * (1 - FEE_PCT))} to you</span>` : x.scores ? (x.tier ? ` <span class="pill">${x.tier.name} · ${money(x.tier.price)}</span>` : ' <span class="pill bad">below the bottom tier, not listed</span>') : ' <span class="muted">· awaiting peer score</span>'}</li>`).join('')}</ul>` : ''}
-      ${S.pendingDup && S.pendingDup.reviewerId === r.id ? `<div class="note warn">Looks like it matches “${esc(S.pendingDup.match.title)}”. <div class="bar" style="margin-top:6px">${S.pendingDup.match.id.startsWith('known') ? '' : btn('dup-confirm', 'Attach as a confirmation')}${btn('dup-anyway', 'Submit anyway, it is different')}${btn('dup-cancel', 'Cancel', '', 'btn quiet')}</div></div>` : (p.state === 'open' && ex.bugs[mine.length] ? `
-      <div class="field"><label for="bug-title">Title</label><input type="text" id="bug-title" value="${esc(ex.bugs[mine.length].title)}"></div>
-      <div class="field"><label for="bug-happened">What happened</label><textarea id="bug-happened">${esc(ex.bugs[mine.length].happened)}</textarea></div>
-      <div class="field"><label for="bug-instead">What should happen instead</label><input type="text" id="bug-instead" value="${esc(ex.bugs[mine.length].instead)}"></div>
-      <div class="field"><label for="bug-where">Where in the journey</label><input type="text" id="bug-where" value="${esc(ex.bugs[mine.length].where)}"></div>
-      <div class="bar">${btn('submit-bug', 'Submit bug')}</div>` : p.state === 'open' ? '<p class="small muted">No more example bugs for this reviewer.</p>' : '')}</div>`);
-  }
-  if (p.state === 'rating' && r.seat === 'submitted') {
-    const mine = S.reviews.filter(rv => S.assignments[rv.id].includes(r.id));
-    parts.push(`<div class="card stack"><h3>Rate three peers <span class="small muted">blind, random, text only</span></h3><p class="small muted">Your fee releases after this. Your ratings are weighted by your reputation (${repOf(r)}).</p>
-      ${mine.map((rv, i) => `<hr><p class="review-text">${esc(rv.sections.join('\n\n'))}</p><div class="rating">
-        <span>Truthful as far as you can tell?</span><select id="rt-${rv.id}-truthful"><option>yes</option><option>no</option></select>
-        <span>Fair?</span><select id="rt-${rv.id}-fair"><option>yes</option><option>no</option></select>
-        <span>Matches your own experience?</span><select id="rt-${rv.id}-matches"><option>yes</option><option>no</option><option>partly</option></select>
-        <span>How useful, 1 to 5?</span><select id="rt-${rv.id}-useful">${[5, 4, 3, 2, 1].map(n => `<option ${n === 3 ? 'selected' : ''}>${n}</option>`).join('')}</select>
-        <span>Flag?</span><select id="rt-${rv.id}-flag"><option value="">no</option>${FLAG_REASONS.map(x => `<option>${x}</option>`).join('')}</select></div>`).join('')}
-      <div class="bar">${btn('submit-ratings', 'Submit ratings', '', 'btn primary')}</div></div>`);
-  }
-  if (r.seat === 'rated' && p.state === 'rating') parts.push(`<div class="note">Ratings in. Waiting for the other raters, or 7 days.</div>`);
-  return parts.join('');
+  if (r.seat === 'released') return `<div class="panel"><div class="hero"><h1>Seat released</h1><p class="muted">The deadline passed without a submission</p></div></div>`;
+  const mine = cur(S.reviews).filter(x => S.assignments[x.id] && S.assignments[x.id].includes(r.id));
+  const steps = [
+    ['review', 'Write your review', rv ? chip('Submitted', 'good') : chip('To do', 'warn')],
+    ['issues', 'Report issues', chip(`${cur(S.bugs).filter(x => x.reviewerId === r.id).length} reported`, '', true)],
+    ['rate', 'Rate three peers', p.state === 'rating' && !S.ratingsDone[r.id] ? chip(`${mine.length} waiting`, 'warn') : S.ratingsDone[r.id] ? chip('Done', 'good') : chip('After the open stage', '', true)],
+  ];
+  return `<div class="tiles"><div class="tile"><div class="k">Reputation</div><div class="v">${repOf(r)}</div><div class="s">${r.rep.n} scored</div></div><div class="tile"><div class="k">This period</div><div class="v">${money(FEE)}</div><div class="s">${r.payout ? r.payout + (r.payoutReason ? ' · ' + r.payoutReason : '') : 'after review + ratings'}</div></div><div class="tile"><div class="k">Issue payouts</div><div class="v">${money(cur(S.bugs).filter(x => x.reviewerId === r.id && x.unlocked).reduce((s, x) => s + x.paidOut, 0))}</div><div class="s">on unlock</div></div></div>
+    <div class="panel"><div class="body tight"><div class="list">${steps.map(([pg, t, c]) => `<div><span class="strong">${t}</span><span class="row">${c}${btn('page', 'Open', `data-v="${pg}"`, 'btn sm')}</span></div>`).join('')}</div></div></div>
+    ${rv && rv.scores ? `<div class="panel"><div class="head"><h2>Your score</h2>${scoreCell(rv.scores)}</div><div class="body"><dl class="kv"><dt>On brief</dt><dd class="num">${rv.scores.onBrief}</dd><dt>Quality</dt><dd class="num">${rv.scores.quality}</dd><dt>Peers</dt><dd class="num">${rv.scores.peer ?? '—'}</dd>${rv.status ? `<dt>Business</dt><dd>${esc(rv.status)}</dd>` : ''}</dl></div></div>` : ''}
+    ${flagOf(rv ? rv.id : '').map(f => `<div class="panel"><div class="head"><h2>Flag · ${esc(f.reason)}</h2>${flagChip(f)}</div><div class="body stack">${f.state === 'queued' && !f.reply ? `<div class="field"><label for="reply-${f.id}">Your reply (once)</label><textarea id="reply-${f.id}"></textarea></div><div>${btn('reply', 'Send', `data-id="${f.id}"`, 'btn primary sm')}</div>` : f.reply ? `<p class="sm">“${esc(f.reply)}”</p>` : `<p class="sm muted">${f.state === 'decided' ? 'Decided: ' + esc(f.decision) : 'Cleared'}</p>`}</div></div>`).join('')}`;
+}
+function rReview() {
+  const r = reviewer(S.who), ex = SEED.reviewers.find(x => x.id === r.id), b = brief(), rv = cur(S.reviews).find(x => x.reviewerId === r.id);
+  if (rv) return `<div class="panel"><div class="head"><h2>Submitted day ${rv.day}</h2>${scoreCell(rv.scores)}</div><div class="body qa">${b.wants.map((q, i) => `<div><div class="q">${esc(q)}</div><div class="a">${esc(rv.sections[i])}</div></div>`).join('')}<div><div class="q">Tried to do · stopped at · would pay</div><div class="a">${rv.closing.map(esc).join('\n')}</div></div></div></div>`;
+  if (r.seat !== 'accepted') return `<div class="panel"><div class="empty">Accept the invitation first</div></div>`;
+  return `<div class="panel wizard"><div class="head"><h2>Your review</h2><span class="sm muted">Draft restored</span></div><div class="body stack">
+    <div class="row"><input type="checkbox" id="received" ${r.received ? 'checked' : ''} data-act="received"><label for="received" style="margin:0">I have received the free product</label></div>
+    ${b.wants.map((q, i) => `<div class="field"><label for="sec${i}">${esc(q)}</label><textarea id="sec${i}">${esc(ex.review[i])}</textarea></div>`).join('')}
+    ${['What did you try to do?', 'Where did you stop, if anywhere?', 'What would you pay?'].map((q, i) => `<div class="field"><label for="clo${i}">${esc(q)}</label><input type="text" id="clo${i}" value="${esc(ex.closing[i])}"></div>`).join('')}
+    <div class="row between"><span class="sm muted">${money(FEE)} after peer ratings</span>${btn('submit-review', 'Submit review', '', 'btn primary')}</div></div></div>`;
+}
+function rIssues() {
+  const r = reviewer(S.who), ex = SEED.reviewers.find(x => x.id === r.id), b = brief(), p = S.period;
+  const mine = cur(S.bugs).filter(x => x.reviewerId === r.id);
+  const published = [...b.known.map(k => ({ title: k, status: 'known' })), ...S.bugs.filter(x => x.unlocked).map(x => ({ title: x.title, status: x.status || 'unlocked' }))];
+  const canReport = ['accepted', 'submitted', 'rated'].includes(r.seat) && p.state === 'open';
+  const next = ex.bugs[mine.length] || { title: '', happened: '', instead: '', where: '' };
+  return `<div class="row between"><span class="sm muted">Process issues, not software bugs. Paid on unlock by peer score.</span>${canReport && !S.bugForm ? btn('bugform', 'Report an issue', '', 'btn primary sm') : ''}</div>
+    ${S.pendingDup && S.pendingDup.reviewerId === r.id ? `<div class="panel"><div class="body stack"><div class="callout">Looks like “${esc(S.pendingDup.match.title)}”</div><div class="row">${S.pendingDup.match.id.startsWith('known') ? '' : btn('dup-confirm', 'Confirm that one instead')}${btn('dup-anyway', 'Mine is different', '', 'btn primary')}${btn('dup-cancel', 'Cancel', '', 'btn ghost')}</div></div></div>` : ''}
+    ${S.bugForm && canReport && !S.pendingDup ? `<div class="panel wizard"><div class="head"><h2>Report an issue</h2>${btn('bugform-close', '✕', 'aria-label="Close"', 'x')}</div><div class="body stack">
+      <div class="field"><label for="bug-title">Title</label><input type="text" id="bug-title" value="${esc(next.title)}"></div>
+      <div class="field"><label for="bug-happened">What happened</label><textarea id="bug-happened">${esc(next.happened)}</textarea></div>
+      <div class="field"><label for="bug-instead">What should happen instead</label><input type="text" id="bug-instead" value="${esc(next.instead)}"></div>
+      <div class="field"><label for="bug-where">Where in the journey</label><input type="text" id="bug-where" value="${esc(next.where)}"></div>
+      <div class="row between"><span></span>${btn('submit-bug', 'Submit', '', 'btn primary')}</div></div></div>` : ''}
+    <div class="panel"><div class="head"><h2>Yours</h2></div><div class="body tight">${mine.length ? `<div class="list">${mine.map(x => `<div><span>${esc(x.title)}</span>${x.dupOf ? chip('Confirmation', '', true) : x.unlocked ? chip(`Unlocked · ${money(x.paidOut)} to you`, 'good') : x.scores ? (x.tier ? chip(`${x.tier.name} · ${money(x.tier.price)}`, 'accent') : chip('Not listed', 'bad')) : chip('Awaiting peer score', 'warn')}</div>`).join('')}</div>` : '<div class="empty">Nothing reported yet</div>'}</div></div>
+    <div class="panel"><div class="head"><h2>Already on the list</h2><span class="sm muted">not paid again</span></div><div class="body tight"><div class="list">${published.map(x => `<div><span>${esc(x.title)}</span>${chip(x.status, '', true)}</div>`).join('') || '<div class="empty">Empty</div>'}</div></div></div>`;
+}
+function rRate() {
+  const r = reviewer(S.who), p = S.period;
+  if (p.state !== 'rating' && !S.ratingsDone[r.id]) return `<div class="panel"><div class="empty">Opens when the open stage ends</div></div>`;
+  if (S.ratingsDone[r.id]) return `<div class="panel"><div class="hero"><h1>Ratings submitted</h1><p class="muted">${p.state === 'rating' ? 'Waiting for the other raters, or 7 days' : 'Period settled'}</p></div></div>`;
+  const mine = cur(S.reviews).filter(rv => S.assignments[rv.id].includes(r.id));
+  return `<div class="row between"><span class="sm muted">Blind. Random. Text only. Your fee releases after this.</span></div>
+    ${mine.map((rv, i) => `<div class="panel"><div class="head"><h2>Review ${i + 1} of ${mine.length}</h2></div><div class="body stack"><div class="qa"><div class="a">${esc(rv.sections.join('\n\n'))}</div></div><div class="rate">
+      <span>Truthful as far as you can tell</span><select id="rt-${rv.id}-truthful"><option>yes</option><option>no</option></select>
+      <span>Fair</span><select id="rt-${rv.id}-fair"><option>yes</option><option>no</option></select>
+      <span>Matches your experience</span><select id="rt-${rv.id}-matches"><option>yes</option><option>partly</option><option>no</option></select>
+      <span>Useful, 1 to 5</span><select id="rt-${rv.id}-useful">${[5, 4, 3, 2, 1].map(n => `<option ${n === 3 ? 'selected' : ''}>${n}</option>`).join('')}</select>
+      <span>Flag</span><select id="rt-${rv.id}-flag"><option value="">none</option>${FLAG_REASONS.map(x => `<option>${x}</option>`).join('')}</select></div></div></div>`).join('')}
+    <div class="row between"><span></span>${btn('submit-ratings', 'Submit ratings', '', 'btn primary')}</div>`;
 }
 
-// Operator
-function operatorView() {
-  const queue = S.flags.filter(f => f.state === 'queued'), done = S.flags.filter(f => f.state !== 'queued');
-  const parts = [`<p class="lead">The human queue. AI triage sits beside each flag with its confidence. A flag undecided for 7 days releases the payout on its own.</p>`];
-  const row = f => {
-    const target = (f.targetType === 'review' ? S.reviews : S.bugs).find(x => x.id === f.targetId); const r = reviewer(target.reviewerId);
-    return `<div class="card stack"><h3>${esc(f.reason)} <span class="small muted">${esc(r.pseudonym)} · raised day ${f.day} by ${f.source === 'ai' ? 'AI' : f.source === 'business' ? 'business' : 'peer'} · knew business: ${esc(r.knew)} · strikes ${r.strikes}</span></h3>
-      <p class="review-text small">${esc(f.targetType === 'review' ? target.sections.join('\n') : target.title + '. ' + target.happened)}</p>
-      ${f.ai ? `<div class="note">AI (${f.ai.by}): <strong>${esc(f.ai.verdict)}</strong> at ${Math.round(f.ai.confidence * 100)}%. ${esc(f.ai.reasoning)}</div>` : '<p class="thinking">Triaging…</p>'}
-      ${f.reply ? `<p class="small">Reviewer's reply: “${esc(f.reply)}”</p>` : ''}
-      ${f.state === 'queued' ? `<div class="bar">${btn('decide', 'Clear', `data-id="${f.id}" data-v="clear"`)}${btn('decide', 'Low quality, not a breach', `data-id="${f.id}" data-v="low quality"`)}${btn('decide', 'Breach', `data-id="${f.id}" data-v="breach"`, 'btn')}<span class="small muted">Releases on day ${f.day + 7} if untouched.</span></div>` : `<p class="small">${esc(f.state)}${f.decision ? ': ' + esc(f.decision) : ''} by ${esc(f.decidedBy || '')} on day ${f.decidedDay || ''}</p>`}</div>`;
-  };
-  parts.push(`<h2>Open <span class="small muted">${queue.length}</span></h2>`, queue.length ? queue.map(row).join('') : '<p class="muted">Nothing waiting.</p>');
-  if (done.length) parts.push(`<h2>Decided</h2>`, done.map(row).join(''));
-  parts.push(`<h2>Reviewers</h2><div class="card"><div class="scroll"><table><tr><th>Pseudonym</th><th class="num">Reputation</th><th class="num">Scored</th><th>Account</th><th>Payout</th></tr>${S.reviewers.map(r => `<tr><td>${esc(r.pseudonym)}</td><td class="num">${repOf(r)}</td><td class="num">${r.rep.n}</td><td>${esc(r.status)}</td><td>${payoutPill(r)}</td></tr>`).join('')}</table></div><p class="hint">Reputation = (60 × 5 + sum of usefulness) ÷ (5 + count). A new reviewer sits at 60 and moves slowly.</p></div>`);
-  return parts.join('');
+// Admin pages
+function aQueue() {
+  const queue = S.flags.filter(f => f.state === 'queued'), done = S.flags.filter(f => f.state !== 'queued' && f.state !== 'triage');
+  const card = f => { const t = targetOf(f), r = reviewer(t.reviewerId); return `<div class="panel"><div class="head"><div class="row"><h2>${esc(f.reason)}</h2>${chip(r.pseudonym, '', true)}${chip(`by ${f.source === 'ai' ? 'AI' : f.source === 'business' ? 'business' : 'peer'}`, '', true)}${r.knew === 'yes' ? chip('knew business', 'warn') : ''}${r.strikes ? chip(`${r.strikes} strike`, 'bad') : ''}</div>${f.state === 'queued' ? `<span class="sm muted">auto-release day ${f.day + 7}</span>` : flagChip(f)}</div>
+    <div class="body stack"><div class="qa"><div class="a sm">${esc(f.targetType === 'review' ? t.sections.join('\n') : t.title + '. ' + t.happened)}</div></div>
+    ${f.ai ? `<div class="callout ${f.ai.verdict === 'breach' ? 'bad' : f.ai.verdict === 'clear' ? 'good' : 'info'}">AI · ${esc(f.ai.verdict)} · ${Math.round(f.ai.confidence * 100)}% · ${esc(f.ai.reasoning)}</div>` : `<span class="ai"><span class="spin"></span> triaging</span>`}
+    ${f.reply ? `<p class="sm">Reviewer: “${esc(f.reply)}”</p>` : ''}
+    ${f.state === 'queued' ? `<div class="row">${btn('decide', 'Clear', `data-id="${f.id}" data-v="clear"`)}${btn('decide', 'Low quality', `data-id="${f.id}" data-v="low quality"`)}${btn('decide', 'Breach', `data-id="${f.id}" data-v="breach"`, 'btn danger')}</div>` : `<span class="sm muted">${esc(f.decidedBy || '')} · day ${f.decidedDay || ''}</span>`}</div></div>` };
+  return `${queue.length ? queue.map(card).join('') : `<div class="panel"><div class="empty">Queue is empty</div></div>`}${done.length ? `<h2 class="muted" style="margin-top:8px">Decided</h2>${done.slice().reverse().map(card).join('')}` : ''}`;
+}
+function aReviewers() {
+  return `<div class="panel"><div class="body tight scroll"><table><thead><tr><th>Reviewer</th><th class="r">Reputation</th><th class="r">Scored</th><th>Account</th><th>Seat</th><th>Payout</th></tr></thead><tbody>${S.reviewers.map(r => `<tr><td class="strong">${esc(r.pseudonym)}</td><td class="r num">${repOf(r)}</td><td class="r num">${r.rep.n}</td><td>${chip(r.status, r.status === 'active' ? 'good' : r.status === 'warned' ? 'warn' : 'bad')}</td><td>${seatChip(r)}</td><td>${payoutChip(r)}</td></tr>`).join('')}</tbody></table></div></div>
+    <p class="xs faint">Reputation = (60 × 5 + Σ usefulness) ÷ (5 + n)</p>`;
 }
 
-// Audit log
-function logView() {
-  const who = S.logWho || 'operator';
-  const rows = S.log.filter(e => who === 'operator' ? true : who === 'business' ? e.vis.business : e.vis.reviewers.includes(who)).slice().reverse();
-  return `<p class="lead">Append-only. Each side sees the entries that concern it.</p>
-    <div class="bar"><label for="logwho" style="margin:0">See it as</label><select id="logwho" data-act="logwho" style="width:auto"><option value="operator" ${who === 'operator' ? 'selected' : ''}>Platform (everything)</option><option value="business" ${who === 'business' ? 'selected' : ''}>Business</option>${S.reviewers.map(r => `<option value="${r.id}" ${who === r.id ? 'selected' : ''}>${esc(r.pseudonym)}</option>`).join('')}</select></div>
-    <div class="card"><div class="scroll"><table class="log"><tr><th>Day</th><th>Event</th><th>Detail</th></tr>${rows.map(e => `<tr><td class="num">${e.day}</td><td>${esc(e.event)}</td><td>${esc(e.detail)}</td></tr>`).join('') || '<tr><td colspan="3" class="muted">Nothing yet.</td></tr>'}</table></div></div>`;
+// Drawer
+function renderDrawer() {
+  const d = S.drawer, el = $('#drawer'); el.className = 'drawer-wrap' + (d ? ' open' : ''); if (!d) { el.innerHTML = ''; return }
+  let head = '', body = '', foot = '';
+  if (d.kind === 'review') {
+    const rv = S.reviews.find(x => x.id === d.id), r = reviewer(rv.reviewerId), b = S.briefs.find(x => x.v === rv.briefV), fl = flagOf(rv.id);
+    head = `<div><h2>${esc(r.pseudonym)}</h2><div class="sm muted">Reputation ${repOf(r)} · knew you: ${esc(r.knew)} · brief v${rv.briefV} · day ${rv.day}</div></div>`;
+    body = `${rv.scores ? `<div class="tiles"><div class="tile"><div class="k">Usefulness</div><div class="v">${rv.scores.usefulness}</div></div><div class="tile"><div class="k">On brief</div><div class="v">${rv.scores.onBrief}</div></div><div class="tile"><div class="k">Quality</div><div class="v">${rv.scores.quality}</div><div class="s">peers ${rv.scores.peer ?? '—'}</div></div></div>` : `<div class="callout info">Scores arrive when peer rating ends</div>`}
+      ${fl.map(f => `<div class="callout ${f.state === 'decided' && f.decision === 'breach' ? 'bad' : f.state === 'queued' || f.state === 'triage' ? '' : 'good'}">${esc(f.reason)} · ${f.source === 'business' ? 'you' : f.source === 'ai' ? 'AI' : 'peer'} · ${esc(f.state === 'decided' ? f.decision : f.state)}</div>`).join('')}
+      <div class="qa">${b.wants.map((q, i) => `<div><div class="q">${esc(q)}</div><div class="a">${esc(rv.sections[i])}</div></div>`).join('')}<div><div class="q">Tried to do · stopped at · would pay</div><div class="a">${rv.closing.map(esc).join('\n')}</div></div></div>`;
+    foot = `<div class="grp">${statusBtns('review', rv.id, rv.status)}</div>${!fl.some(f => f.source === 'business') ? `<div class="grp"><select id="flag-${rv.id}" aria-label="Flag reason" style="width:auto;padding:5px 8px;font-size:12.5px"><option value="">Flag…</option>${FLAG_REASONS.map(x => `<option>${x}</option>`).join('')}</select>${btn('flag', 'Flag', `data-id="${rv.id}"`, 'btn sm')}</div>` : ''}`;
+  } else {
+    const bg = S.bugs.find(x => x.id === d.id), r = reviewer(bg.reviewerId);
+    head = `<div><h2>${esc(bg.title)}</h2><div class="sm muted">${esc(bg.ai.category)} · ${esc(r.pseudonym)} · unlocked day ${bg.unlockDay} · ${money(bg.tier.price)}</div></div>`;
+    body = `<div class="tiles"><div class="tile"><div class="k">Usefulness</div><div class="v">${bg.scores.usefulness}</div></div><div class="tile"><div class="k">On brief</div><div class="v">${bg.scores.onBrief}</div></div><div class="tile"><div class="k">Confirmed by</div><div class="v">${bg.confirmations}</div></div></div>
+      <div class="qa"><div><div class="q">Where</div><div class="a">${esc(bg.where)}</div></div><div><div class="q">What happened</div><div class="a">${esc(bg.happened)}</div></div><div><div class="q">Should happen instead</div><div class="a">${esc(bg.instead)}</div></div></div>`;
+    foot = `<div class="grp">${statusBtns('bug', bg.id, bg.status)}</div>`;
+  }
+  el.innerHTML = `<div class="scrim2" data-act="close"></div><div class="drawer" role="dialog" aria-modal="true"><div class="dhead">${head}<button class="x" data-act="close" aria-label="Close">✕</button></div><div class="dbody">${body}</div><div class="dfoot">${foot}</div></div>`;
 }
 
 // ---------- events ----------
 document.addEventListener('click', async ev => {
-  const el = ev.target.closest('[data-act]'); if (!el || el.tagName === 'SELECT' || el.type === 'checkbox') return;
-  const act = el.dataset.act, id = el.dataset.id, v = el.dataset.v;
-  const r = reviewer(S.reviewerTab);
+  const el = ev.target.closest('[data-act]'); if (!el || el.tagName === 'SELECT' || el.type === 'checkbox') { if (!ev.target.closest('.account') && S.menu) { S.menu = false; renderTop() } return }
+  const act = el.dataset.act, id = el.dataset.id, v = el.dataset.v; const r = S.role === 'reviewer' ? reviewer(S.who) : null;
   const run = async fn => { await fn(); save(); render() };
-  if (act === 'role') return run(() => { S.role = v });
-  if (act === 'reset') return reset();
-  if (act === 'buy') return run(buyPack);
-  if (act === 'fund') return run(fundPeriod);
-  if (act === 'recruit') return run(openRecruiting);
+  if (act !== 'menu' && act !== 'viewas' && S.menu) S.menu = false;
+  if (act === 'menu') { S.menu = !S.menu; return renderTop() }
+  if (act === 'viewas') return run(() => { S.role = el.dataset.role; if (el.dataset.who) S.who = el.dataset.who; S.menu = false; S.drawer = null; S.page = S.role === 'business' ? 'overview' : S.role === 'reviewer' ? 'home' : 'queue' });
+  if (act === 'page') return run(() => { S.page = v; S.side = false; S.drawer = null });
+  if (act === 'side') return run(() => { S.side = !S.side });
+  if (act === 'open') return run(() => { S.drawer = { kind: el.dataset.kind, id } });
+  if (act === 'close') return run(() => { S.drawer = null });
+  if (act === 'reset') { S = null; try { localStorage.removeItem(KEY) } catch (e) {} await seed(); return run(() => {}) }
+  if (act === 'simulate') return simulate(S.role === 'reviewer' ? S.who : null);
+  if (act === 'advance') return run(() => { advance7(); toast(`Day ${S.day}`) });
+  if (act === 'buy') return run(() => { buyPack(); toast(`${money(PACK)} added`) });
+  if (act === 'fund') return run(() => { if (fundPeriod()) toast(`${money(S.period.cost)} locked`) });
+  if (act === 'recruit') return run(() => { openRecruiting(); toast('Invite links ready') });
   if (act === 'endopen') return run(endOpen);
-  if (act === 'advance') return run(advance7);
-  if (act === 'autoall') return autoAll();
-  if (act === 'unlock') return run(() => unlockBug(id));
+  if (act === 'newperiod') return run(newPeriod);
+  if (act === 'copy') { const t = $('#post').textContent; try { await navigator.clipboard.writeText(t); toast('Copied') } catch (e) { const s = window.getSelection(), rg = document.createRange(); rg.selectNodeContents($('#post')); s.removeAllRanges(); s.addRange(rg) } return }
+  if (act === 'unlock') return run(() => { const b = S.bugs.find(x => x.id === id); if (unlockBug(id)) { toast(`Unlocked · ${money(b.tier.price)}`); S.drawer = { kind: 'bug', id } } });
+  if (act === 'unlockall') return run(() => { let n = 0; cur(S.bugs).filter(b => !b.dupOf && b.scores && b.tier && !b.unlocked).forEach(b => { if (unlockBug(b.id)) n++ }); toast(`${n} unlocked`) });
   if (act === 'status') return run(() => setStatus(el.dataset.kind, id, v));
-  if (act === 'flag') { const sel = $('#flag-' + id); if (!sel.value) return; return run(() => raiseFlag('review', id, 'business', sel.value)) }
-  if (act === 'decide') return run(() => decideFlag(id, v));
-  if (act === 'onboard') { const last = S.briefs[S.briefs.length - 1]; const a = last ? { product: last.product, audience: last.audience, job: last.job, wants: [...last.wants], known: [...last.known], wontChange: last.wontChange, eligibility: last.eligibility } : JSON.parse(JSON.stringify(EXAMPLE.brief)); return run(() => { S.onboarding = { step: 0, answers: a } }) }
-  if (act === 'ob-cancel') return run(() => { S.onboarding = null });
-  if (act === 'ob-back' || act === 'ob-next') {
-    const o = S.onboarding, key = QUESTIONS[o.step][0], raw = $('#ob-answer').value;
-    o.answers[key] = Array.isArray(o.answers[key]) ? raw.split('\n').map(s => s.trim()).filter(Boolean) : raw.trim();
-    if (act === 'ob-back') return run(() => { o.step-- });
-    if (o.step === QUESTIONS.length - 1) { if (o.answers.wants.length < 1 || !o.answers.product) return; return run(() => saveBrief(o.answers)) }
-    return run(() => { o.step++ });
+  if (act === 'flag') { const sel = $('#flag-' + id); if (!sel || !sel.value) return; return run(() => { raiseFlag('review', id, 'business', sel.value); toast('Flagged · triage started') }) }
+  if (act === 'decide') return run(() => { decideFlag(id, v); toast(v === 'breach' ? 'Breach recorded' : 'Flag closed') });
+  if (act === 'wz-start') { const last = latestBrief(); const a = last ? { product: last.product, audience: last.audience, job: last.job, wants: [...last.wants], known: [...last.known], wontChange: last.wontChange, eligibility: last.eligibility } : { product: '', audience: '', job: '', wants: [], known: [], wontChange: '', eligibility: '' }; return run(() => { S.wizard = { step: 0, answers: a } }) }
+  if (act === 'wz-cancel') return run(() => { S.wizard = null });
+  if (act === 'wz-back' || act === 'wz-next') {
+    const w = S.wizard, key = QUESTIONS[w.step][0], raw = $('#wz').value;
+    w.answers[key] = Array.isArray(w.answers[key]) ? raw.split('\n').map(s => s.trim()).filter(Boolean) : raw.trim();
+    if (act === 'wz-back') return run(() => { w.step-- });
+    if (w.step === QUESTIONS.length - 1) { if (!w.answers.product || w.answers.wants.length < 1 || !w.answers.eligibility) return toast('Product, questions and eligibility are required'); return run(() => { saveBrief(w.answers); S.wizard = null; toast(`Brief v${latestBrief().v} saved`) }) }
+    return run(() => { w.step++ });
   }
   if (act === 'inv-yes') return run(() => { r.inviteStep = 1 });
   if (act === 'elig-yes') return run(() => { r.inviteStep = 2 });
   if (act === 'inv-no') return run(() => { r.seat = 'released'; log('Invite declined', r.pseudonym, { business: true, reviewers: [r.id] }) });
-  if (act === 'knew') return run(() => acceptSeat(r.id, v));
+  if (act === 'knew') return run(() => { acceptSeat(r.id, v); toast('Seat accepted') });
   if (act === 'submit-review') {
     const b = brief(); const sections = b.wants.map((_, i) => $('#sec' + i).value.trim()); const closing = [0, 1, 2].map(i => $('#clo' + i).value.trim());
-    if (sections.some(s => !s)) return;
-    S.busy = 'Scoring against the brief'; render();
-    await submitReview(r.id, sections, closing); S.busy = null; return run(() => {});
+    if (sections.some(s => !s)) return toast('Every section needs an answer');
+    S.busy = 'Scoring against the brief'; render(); await submitReview(r.id, sections, closing); S.busy = null; S.page = 'home'; toast('Review submitted'); return run(() => {});
   }
+  if (act === 'bugform') return run(() => { S.bugForm = true });
+  if (act === 'bugform-close') return run(() => { S.bugForm = false });
   if (act === 'submit-bug') {
     const data = { title: $('#bug-title').value.trim(), happened: $('#bug-happened').value.trim(), instead: $('#bug-instead').value.trim(), where: $('#bug-where').value.trim() };
-    if (!data.title || !data.happened) return;
-    S.busy = 'Checking for duplicates'; render();
-    const dup = await findDuplicate({ ...data, reviewerId: r.id }); S.busy = null;
+    if (!data.title || !data.happened) return toast('Title and what happened are required');
+    S.busy = 'Checking for duplicates'; render(); const dup = await findDuplicate({ ...data, reviewerId: r.id }); S.busy = null;
     if (dup) return run(() => { S.pendingDup = { reviewerId: r.id, data, match: dup } });
-    S.busy = 'Categorising'; render(); await submitBug(r.id, data, null); S.busy = null; return run(() => {});
+    S.busy = 'Categorising'; render(); await submitBug(r.id, data, null); S.busy = null; S.bugForm = false; toast('Issue reported'); return run(() => {});
   }
-  if (act === 'dup-confirm') { const d = S.pendingDup; S.pendingDup = null; await submitBug(d.reviewerId, d.data, d.match.id); return run(() => {}) }
-  if (act === 'dup-anyway') { const d = S.pendingDup; S.pendingDup = null; S.busy = 'Categorising'; render(); await submitBug(d.reviewerId, d.data, null); S.busy = null; return run(() => {}) }
+  if (act === 'dup-confirm') { const d = S.pendingDup; S.pendingDup = null; S.bugForm = false; await submitBug(d.reviewerId, d.data, d.match.id); toast('Confirmation added'); return run(() => {}) }
+  if (act === 'dup-anyway') { const d = S.pendingDup; S.pendingDup = null; S.busy = 'Categorising'; render(); await submitBug(d.reviewerId, d.data, null); S.busy = null; S.bugForm = false; toast('Issue reported'); return run(() => {}) }
   if (act === 'dup-cancel') return run(() => { S.pendingDup = null });
   if (act === 'submit-ratings') {
-    const mine = S.reviews.filter(rv => S.assignments[rv.id].includes(r.id));
+    const mine = cur(S.reviews).filter(rv => S.assignments[rv.id].includes(r.id));
     const entries = mine.map(rv => ({ reviewId: rv.id, truthful: $(`#rt-${rv.id}-truthful`).value === 'yes', fair: $(`#rt-${rv.id}-fair`).value === 'yes', matches: $(`#rt-${rv.id}-matches`).value, useful: Number($(`#rt-${rv.id}-useful`).value), flag: $(`#rt-${rv.id}-flag`).value || null }));
-    return run(() => submitRatings(r.id, entries));
+    return run(() => { submitRatings(r.id, entries); toast('Ratings submitted') });
   }
-  if (act === 'reply') { const f = S.flags.find(x => x.id === id); const t = $('#reply-' + id).value.trim(); if (!t) return; return run(() => { f.reply = t; log('Reviewer replied to flag', `${r.pseudonym}: ${t}`, { business: false, reviewers: [r.id] }) }) }
+  if (act === 'reply') { const f = S.flags.find(x => x.id === id); const t = $('#reply-' + id).value.trim(); if (!t) return; return run(() => { f.reply = t; log('Reply to flag', `${r.pseudonym}: ${t}`, { business: false, reviewers: [r.id] }); toast('Reply sent') }) }
 });
 document.addEventListener('change', ev => {
   const el = ev.target; if (!el.dataset.act) return;
-  if (el.dataset.act === 'who') { S.reviewerTab = el.value; save(); render() }
   if (el.dataset.act === 'logwho') { S.logWho = el.value; save(); render() }
-  if (el.dataset.act === 'received') { reviewer(S.reviewerTab).received = el.checked; save() }
+  if (el.dataset.act === 'received') { reviewer(S.who).received = el.checked; save() }
 });
+document.addEventListener('keydown', ev => { if (ev.key === 'Escape' && (S.drawer || S.menu || S.side)) { S.drawer = null; S.menu = false; S.side = false; render() } });
+$('#scrim').addEventListener('click', () => { S.side = false; render() });
 
-render();
+(async () => { S = load(); if (!S) await seed(); S.busy = null; S.menu = false; S.side = false; render() })();
 </script>
