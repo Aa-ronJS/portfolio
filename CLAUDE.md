@@ -51,6 +51,11 @@ Three independent things live here:
   every button must still work with its word
   (`tests/apptest/pics.cjs`).
 
+- **`feedback-demo/`** — a one-file clickable demo of a paid, private,
+  peer-checked feedback platform (an idea under assessment, not a
+  product). No build step; open `index.html` directly. The spec it
+  implements lives in a Claude Doc, not in the repo.
+
 The portfolio site and the pipeline share nothing except
 `public/fonts/satoshi-var.woff2`, which the pipeline ships converted to
 TTF for captions.

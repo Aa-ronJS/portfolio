@@ -1,0 +1,768 @@
+<title>Paid Feedback Demo</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Serif:wght@500;600&family=IBM+Plex+Mono:wght@400;500&display=swap">
+<style>
+/* Layout: one 760px column, a sticky role bar, cards only for things that are objects (a review, a bug, a flag). Ledger feel: tabular figures, hairline rules, moss accent. */
+:root {
+  --bg: #f6f5f0;
+  --surface: #fffefb;
+  --ink: #1d211c;
+  --muted: #5f655b;
+  --line: #d9d8cf;
+  --accent: #3f6b4a;
+  --accent-ink: #ffffff;
+  --tint: #e8efe6;
+  --good: #2f7a3e;
+  --warn: #a86a12;
+  --bad: #b03a2e;
+  --good-bg: #e3f1e4;
+  --warn-bg: #f7ebd4;
+  --bad-bg: #f6dfdb;
+  --display: "IBM Plex Serif", Georgia, serif;
+  --body: "IBM Plex Sans", system-ui, sans-serif;
+  --mono: "IBM Plex Mono", ui-monospace, Menlo, monospace;
+}
+@media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) {
+  --bg: #171a16; --surface: #20241f; --ink: #ebeae2; --muted: #a3a89d; --line: #3a3f38;
+  --accent: #8cc49a; --accent-ink: #11190f; --tint: #263028;
+  --good: #8fd39b; --warn: #e2b36a; --bad: #ef9a8e;
+  --good-bg: #223627; --warn-bg: #3a2f1b; --bad-bg: #3e2522; color-scheme: dark } }
+:root[data-theme="dark"] {
+  --bg: #171a16; --surface: #20241f; --ink: #ebeae2; --muted: #a3a89d; --line: #3a3f38;
+  --accent: #8cc49a; --accent-ink: #11190f; --tint: #263028;
+  --good: #8fd39b; --warn: #e2b36a; --bad: #ef9a8e;
+  --good-bg: #223627; --warn-bg: #3a2f1b; --bad-bg: #3e2522; color-scheme: dark }
+
+* { box-sizing: border-box }
+body { background: var(--bg); color: var(--ink); font: 15px/1.5 var(--body); margin: 0 }
+.wrap { max-width: 760px; margin: 0 auto; padding-inline: 16px; padding-block: 0 48px }
+h1, h2, h3 { font-family: var(--display); font-weight: 600; text-wrap: balance; margin: 0 }
+h1 { font-size: 22px } h2 { font-size: 19px; margin-top: 28px } h3 { font-size: 16px }
+p { margin: 0 } .muted { color: var(--muted) } .small { font-size: 13px }
+.num { font-family: var(--mono); font-variant-numeric: tabular-nums; font-size: 13.5px }
+a { color: var(--accent) }
+
+.top { position: sticky; top: env(safe-area-inset-top, 0px); background: var(--bg); border-bottom: 1px solid var(--line); z-index: 2; padding-block: 12px 0 }
+.top .row { display: flex; flex-wrap: wrap; gap: 8px 16px; align-items: baseline; justify-content: space-between }
+.chips { display: flex; flex-wrap: wrap; gap: 6px }
+.chip { font-size: 12.5px; padding: 2px 9px; border: 1px solid var(--line); border-radius: 999px; background: var(--surface); white-space: nowrap }
+.chip.state { background: var(--tint); border-color: transparent; font-weight: 500 }
+.tabs { display: flex; gap: 2px; margin-top: 10px; overflow-x: auto }
+.tab { background: none; border: 0; border-bottom: 2px solid transparent; padding: 8px 10px; font: inherit; font-weight: 500; color: var(--muted); cursor: pointer; white-space: nowrap }
+.tab[aria-selected="true"] { color: var(--ink); border-bottom-color: var(--accent) }
+.tab:focus-visible, button:focus-visible, input:focus-visible, textarea:focus-visible, select:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px }
+
+main { display: flex; flex-direction: column; gap: 14px; padding-top: 18px }
+.lead { font-size: 16px; max-width: 62ch }
+.card { background: var(--surface); border: 1px solid var(--line); border-radius: 8px; padding: 14px 16px; min-width: 0 }
+.card + .card { margin-top: 0 }
+.card h3 { display: flex; flex-wrap: wrap; gap: 8px; align-items: baseline; justify-content: space-between }
+.stack { display: flex; flex-direction: column; gap: 10px }
+.grid2 { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 10px 20px }
+.kv { display: grid; grid-template-columns: max-content 1fr; gap: 4px 14px; font-size: 14px }
+.kv dt { color: var(--muted) } .kv dd { margin: 0; min-width: 0 }
+.bar { display: flex; flex-wrap: wrap; gap: 8px; align-items: center }
+hr { border: 0; border-top: 1px solid var(--line); margin: 6px 0 }
+
+button.btn, .btn { font: inherit; font-weight: 500; font-size: 14px; padding: 7px 14px; border-radius: 6px; border: 1px solid var(--line); background: var(--surface); color: var(--ink); cursor: pointer }
+.btn.primary { background: var(--accent); color: var(--accent-ink); border-color: var(--accent) }
+.btn.quiet { background: none; border-color: transparent; color: var(--accent); padding-inline: 6px }
+.btn:disabled { opacity: .45; cursor: not-allowed }
+label { display: block; font-size: 13.5px; font-weight: 500; margin-bottom: 4px }
+input[type=text], textarea, select { width: 100%; font: inherit; font-size: 14px; padding: 8px 10px; border: 1px solid var(--line); border-radius: 6px; background: var(--bg); color: var(--ink) }
+textarea { min-height: 84px; resize: vertical }
+.field { min-width: 0 }
+.hint { font-size: 12.5px; color: var(--muted); margin-top: 3px }
+
+.pill { display: inline-block; font-size: 12px; font-weight: 500; padding: 1px 8px; border-radius: 999px; background: var(--tint); white-space: nowrap }
+.pill.good { background: var(--good-bg); color: var(--good) }
+.pill.warn { background: var(--warn-bg); color: var(--warn) }
+.pill.bad { background: var(--bad-bg); color: var(--bad) }
+.note { border-left: 3px solid var(--accent); padding: 6px 12px; background: var(--tint); border-radius: 0 6px 6px 0; font-size: 14px }
+.note.warn { border-color: var(--warn); background: var(--warn-bg) }
+.note.bad { border-color: var(--bad); background: var(--bad-bg) }
+
+table { border-collapse: collapse; width: 100%; font-size: 13.5px }
+th, td { text-align: left; padding: 6px 8px; border-bottom: 1px solid var(--line); vertical-align: top }
+th { font-weight: 500; color: var(--muted); font-size: 12.5px; letter-spacing: .02em; text-transform: uppercase }
+td.num, th.num { text-align: right }
+.scroll { overflow-x: auto }
+.bugs table { min-width: 560px }
+.review-text { white-space: pre-wrap; font-size: 14px }
+.q { font-weight: 500; font-size: 13.5px; margin-top: 8px }
+.q + .review-text { margin-top: 2px }
+.rating { display: grid; grid-template-columns: 1fr max-content; gap: 6px 12px; align-items: center; font-size: 13.5px }
+.score { font-family: var(--mono); font-size: 13px }
+.progress { font-size: 13px; color: var(--muted); letter-spacing: .04em; text-transform: uppercase }
+.log td:first-child { white-space: nowrap; color: var(--muted) }
+.thinking { color: var(--muted); font-style: italic }
+@media (prefers-reduced-motion: no-preference) { .card { transition: border-color .2s } }
+</style>
+
+<div class="wrap">
+  <div class="top">
+    <div class="row">
+      <h1>Paid Feedback Demo</h1>
+      <div class="chips" id="chips"></div>
+    </div>
+    <div class="tabs" role="tablist" id="tabs"></div>
+  </div>
+  <main id="main"></main>
+</div>
+
+<script>
+'use strict';
+// ---------- constants from the spec ----------
+const FEE = 20, FEE_PCT = 0.2, SEATS = 5, PRIOR = 60, PRIOR_N = 5, PACK = 200;
+const TIERS = [
+  { min: 75, name: 'Strong', price: 30 },
+  { min: 50, name: 'Solid', price: 20 },
+  { min: 30, name: 'Weak', price: 10 },
+];
+const CATEGORIES = ['missing step', 'wrong step', 'unnecessary step', 'inaccuracy', 'disagreement', 'suggestion', 'pricing', 'communication', 'policy'];
+const FLAG_REASONS = ['untruthful', 'unfairly positive', 'unfairly negative', 'not about this product', 'abusive', 'pasted from elsewhere'];
+const STATES = ['draft', 'funded', 'recruiting', 'open', 'rating', 'settlement', 'closed'];
+
+// ---------- example content (marked as examples in the UI) ----------
+const EXAMPLE = {
+  business: 'Loop Laundry',
+  brief: {
+    product: 'Loop Laundry picks up your washing from your door, washes and folds it, and brings it back within 48 hours.',
+    audience: 'For people in the inner north who have no washing machine and hate laundromats. Not for dry cleaning, doonas or commercial loads.',
+    job: 'Book one pickup on the website, hand over a bag of up to 8 kg, get it back within 48 hours. About 15 minutes of your time. The first load is free.',
+    wants: [
+      'Booking: was it clear when we would arrive and what to leave out?',
+      'Handover: did anything about the bag, the label or the pickup confuse you?',
+      'Return and payment: was the return on time, and was paying clear?',
+    ],
+    known: ['The pickup window is 4 hours and we know that is too wide', 'No text message when the driver is close'],
+    wontChange: 'We will not do dry cleaning or same-day turnaround.',
+    eligibility: 'Lives in the inner north and has no washing machine at home.',
+  },
+  reviewers: [
+    { id: 'r1', pseudonym: 'Quiet Heron', rep: null, knew: 'no', truth: 4,
+      review: [
+        'The booking page said "we will text you a window the night before" and the text came at 9:40pm with a 1pm to 5pm window. That was fine, but the page also asked for a flat number and there was no field for a gate code, so the driver rang me from the street.',
+        'The bag was the stripey one from the welcome email, easy. The label had my name but not a date, so when I had two bags on the second week I could not tell which was which.',
+        'Returned in 46 hours. Paying was a link in the return email, worked first go on my phone.',
+      ],
+      closing: ['Book a pickup for Tuesday and get my washing back by Thursday.', 'Nowhere. Only slowed down by the gate code thing.', 'About $25 a load, maybe $30 if the window were 2 hours.'],
+      bugs: [{ title: 'No field for a gate code at booking', happened: 'Booking asks for a flat number but there is nowhere to put a gate or intercom code, so the driver had to call me from the street.', instead: 'Add an optional "how to get to the door" line to the booking form.', where: 'Booking' }],
+    },
+    { id: 'r2', pseudonym: 'Amber Fox', rep: null, knew: 'yes', truth: 2,
+      review: ['Everything was perfect, really easy to book!', 'Loved the bag, no confusion at all.', 'Came back fast and paying was simple. 10 out of 10, would recommend to anyone!'],
+      closing: ['Get my washing done.', 'Nowhere.', 'Whatever they charge.'],
+      bugs: [],
+    },
+    { id: 'r3', pseudonym: 'Grey Otter', rep: { sum: 936, n: 12 }, knew: 'no', truth: 5,
+      review: [
+        'Booking took two minutes. The confirmation email said "2 business days" while the website says "48 hours". I booked on a Friday, so I expected Sunday and got Tuesday. Both are true statements and they do not agree.',
+        'The bag arrived flat-packed in my letterbox with no note, and I did not realise it was from you until the welcome email landed an hour later. A printed line on the bag would fix it.',
+        'Return was Tuesday 11am, so late by the website and on time by the email. The payment link worked but the amount was $0 because the first load is free, and it still asked for a card. I nearly closed it.',
+      ],
+      closing: ['Hand over a bag on Friday and have clean clothes for Monday.', 'At the $0 payment screen that wanted a card.', '$22 a load. I would pay $5 more for a guaranteed weekday return.'],
+      bugs: [
+        { title: '48 hours on the site, 2 business days in the email', happened: 'The website promises 48 hours and the confirmation email says 2 business days. On a Friday booking those are two different days.', instead: 'Pick one promise and show the actual return day at booking time.', where: 'Booking' },
+        { title: 'Gate code has nowhere to go on the booking form', happened: 'There is a flat number field but no way to tell the driver the gate code.', instead: 'An optional access line on the form.', where: 'Booking' },
+      ],
+    },
+    { id: 'r4', pseudonym: 'Blue Wren', rep: null, knew: 'no', truth: 4,
+      review: [
+        'Clear enough. I would have liked to pick the window myself rather than be told one the night before, but the text arrived when it said it would.',
+        'The label was a sticker and it half peeled off in the rain. I wrote my name on the bag in marker to be safe.',
+        'Back in two days. The payment link in the return email went to a page that asked me to create an account before I could pay, which I did not expect for a one-off.',
+      ],
+      closing: ['Try it once before committing to weekly.', 'At the create-an-account page before paying.', '$20 to $25 a load.'],
+      bugs: [{ title: 'Payment link demands an account first', happened: 'The pay link in the return email opens a sign-up page. I had to create an account and set a password before I could pay for a one-off load.', instead: 'Let a one-off customer pay as a guest and offer the account afterwards.', where: 'Return and payment' }],
+    },
+    { id: 'r5', pseudonym: 'Red Kite', rep: null, knew: 'no', truth: 1,
+      review: ['Great service, very easy to use.', 'Fast delivery and friendly staff.', 'Highly recommended for anyone looking for quality and value. Five stars.'],
+      closing: ['Use the service.', 'Nowhere.', 'A fair price.'],
+      bugs: [{ title: 'Should have a loyalty program', happened: 'There is no loyalty program.', instead: 'Add a loyalty program with points.', where: 'General' }],
+    },
+  ],
+};
+const PLACES = [
+  ['Neighbourhood Facebook groups for the suburbs you serve', 'Most allow a paid-tester ask if you say it is paid and private.'],
+  ['Local subreddit or community forum', 'Check the sidebar rules; many want a mod message first.'],
+  ['Your own waitlist and past enquiries', 'People who nearly bought are the best strangers you have.'],
+  ['Building and strata noticeboards', 'Physical and paper; ask the manager.'],
+  ['Nearby cafes with a pinboard', 'A short poster with a QR code to the invite link.'],
+];
+
+// ---------- state ----------
+let S = null;
+const KEY = 'paid-feedback-demo-v1';
+function fresh() {
+  return {
+    role: 'business', reviewerTab: 'r1', day: 1, aiMode: 'unknown',
+    credits: { balance: 0, locked: 0, ledger: [] },
+    briefs: [], period: { state: 'draft', briefV: null, seats: SEATS, cost: 0 },
+    reviewers: EXAMPLE.reviewers.map(r => ({ id: r.id, pseudonym: r.pseudonym, rep: r.rep ? { ...r.rep } : { sum: 0, n: 0 }, knew: null, seat: 'none', received: false, strikes: 0, status: 'active', payout: null, payoutReason: '' })),
+    reviews: [], bugs: [], flags: [], assignments: {}, ratingsDone: {}, log: [], onboarding: null, pendingDup: null, busy: null,
+  };
+}
+function load() { try { const s = JSON.parse(localStorage.getItem(KEY)); return s && s.reviewers ? s : null } catch (e) { return null } }
+function save() { try { localStorage.setItem(KEY, JSON.stringify(S)) } catch (e) {} }
+function reset() { S = fresh(); save(); render() }
+S = load() || fresh();
+if (S.busy) S.busy = null;
+
+const uid = () => Math.random().toString(36).slice(2, 8);
+const esc = s => String(s ?? '').replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
+const money = n => '$' + Number(n).toFixed(0);
+const brief = () => S.briefs.find(b => b.v === S.period.briefV) || S.briefs[S.briefs.length - 1];
+const reviewer = id => S.reviewers.find(r => r.id === id);
+const repOf = r => Math.round((PRIOR * PRIOR_N + r.rep.sum) / (PRIOR_N + r.rep.n));
+const tierOf = score => TIERS.find(t => score >= t.min) || null;
+function log(event, detail, vis) { S.log.push({ day: S.day, event, detail, vis: vis || { business: true, reviewers: [] } }) }
+
+// ---------- AI: Claude via the sample capability when the viewer allows it, a built-in heuristic otherwise ----------
+let sampleFn = null;
+(async () => {
+  await null; // let the rest of the script define itself first
+  try { sampleFn = window.claude && window.claude.use ? await window.claude.use('sample') : null } catch (e) { sampleFn = null }
+  if (!sampleFn && S.aiMode === 'unknown') S.aiMode = 'heuristic';
+  if (sampleFn && S.aiMode !== 'declined') S.aiMode = 'claude';
+  renderChips();
+})();
+async function ai(prompt, fallback) {
+  if (sampleFn && S.aiMode === 'claude') {
+    try {
+      const out = await sampleFn.json(prompt, { modelTier: 'quick' });
+      if (out && typeof out === 'object') return { ...fallback(), ...out, by: 'claude' };
+    } catch (e) {
+      if (e && (e.code === 'not_granted' || e.code === 'sampling_disabled' || e.code === 'not_declared' || e.code === 'capability_disabled')) S.aiMode = 'declined';
+    }
+  }
+  return { ...fallback(), by: 'heuristic' };
+}
+const words = s => (s.toLowerCase().match(/[a-z]{4,}/g) || []);
+function specificity(text) {
+  const t = text.toLowerCase();
+  let n = 0;
+  n += (t.match(/\d/g) || []).length > 0 ? 2 : 0;
+  n += (t.match(/\b(when|because|then|but|so|while|nearly|until|said|asked)\b/g) || []).length;
+  n += Math.min(3, Math.floor(text.length / 180));
+  const generic = (t.match(/\b(great|perfect|loved|recommend\w*|amazing|easy|friendly|quality|value|stars)\b/g) || []).length;
+  return Math.max(0, n - generic);
+}
+function hOnBrief(text, b) {
+  const want = new Set(b.wants.flatMap(words).filter(w => !['would', 'about', 'clear', 'anything', 'there', 'what', 'when', 'were'].includes(w)));
+  const hit = new Set(words(text).filter(w => want.has(w)));
+  return Math.round(Math.min(95, 30 + (hit.size / Math.max(4, want.size)) * 160));
+}
+function hQuality(text) { return Math.round(Math.min(95, 20 + specificity(text) * 9)) }
+function hCategory(bug) {
+  const t = (bug.title + ' ' + bug.happened).toLowerCase();
+  if (/pay|price|\$|charge|cost/.test(t)) return 'pricing';
+  if (/email|text|sms|call|message|note/.test(t)) return 'communication';
+  if (/says|promis|but the|not the same|different/.test(t)) return 'inaccuracy';
+  if (/no field|nowhere|no way|missing|no option/.test(t)) return 'missing step';
+  if (/should|loyalty|program|offer/.test(t)) return 'suggestion';
+  return 'wrong step';
+}
+function jaccard(a, b) { const A = new Set(words(a)), B = new Set(words(b)); let i = 0; A.forEach(w => { if (B.has(w)) i++ }); return i / Math.max(1, A.size + B.size - i) }
+function hTriage(flag, text, who) {
+  const spec = specificity(text);
+  if (flag.reason === 'pasted from elsewhere' && spec <= 1) return { verdict: 'breach', confidence: 0.82, reasoning: 'No detail that could only come from using this product; reads as boilerplate.' };
+  if (flag.reason === 'unfairly positive' && spec <= 2) return { verdict: 'unsure', confidence: 0.55, reasoning: 'Positive with no specifics' + (who.knew === 'yes' ? ', and the reviewer declared they knew the business.' : '.') };
+  if (spec >= 4) return { verdict: 'clear', confidence: 0.9, reasoning: 'Specific, checkable details that match other reviews in the period.' };
+  return { verdict: 'unsure', confidence: 0.5, reasoning: 'Not enough detail to decide either way.' };
+}
+
+async function scoreReview(rv) {
+  const b = S.briefs.find(x => x.v === rv.briefV);
+  const text = rv.sections.join('\n') + '\n' + rv.closing.join('\n');
+  const prompt = `You score a private product review against a business brief. Reply with only JSON: {"onBrief": 0-100, "quality": 0-100, "flag": null or one of ${JSON.stringify(FLAG_REASONS)}}.
+onBrief = how directly it answers the three questions. quality = specific, reproducible, actionable, in the reviewer's own words. flag only if it is clearly boilerplate pasted from elsewhere or clearly not about this product.
+Brief questions: ${JSON.stringify(b.wants)}
+Known issues (not worth repeating): ${JSON.stringify(b.known)}
+Review:\n${text}`;
+  const r = await ai(prompt, () => ({ onBrief: hOnBrief(text, b), quality: hQuality(text), flag: specificity(text) === 0 && !/\d/.test(text) && /recommend|five stars|quality/.test(text.toLowerCase()) ? 'pasted from elsewhere' : null }));
+  rv.ai = { onBrief: clamp(r.onBrief), quality: clamp(r.quality), by: r.by };
+  if (r.flag && FLAG_REASONS.includes(r.flag)) raiseFlag('review', rv.id, 'ai', r.flag);
+}
+async function scoreBug(bug) {
+  const b = S.briefs.find(x => x.v === bug.briefV);
+  const text = bug.title + '. ' + bug.happened + ' ' + bug.instead;
+  const prompt = `You categorise a process bug reported about a business and write a teaser. Reply with only JSON: {"category": one of ${JSON.stringify(CATEGORIES)}, "teaser": "one line, under 90 characters, says what area is affected but gives away no fix", "onBrief": 0-100, "quality": 0-100}.
+Brief questions: ${JSON.stringify(b.wants)}
+Will not change: ${JSON.stringify(b.wontChange)}
+Already known: ${JSON.stringify(b.known)}
+Bug: ${text}`;
+  const r = await ai(prompt, () => ({ category: hCategory(bug), teaser: bug.where + ': something a reviewer hit at this step', onBrief: hOnBrief(text, b), quality: hQuality(bug.happened + ' ' + bug.instead) }));
+  bug.ai = { category: CATEGORIES.includes(r.category) ? r.category : hCategory(bug), teaser: String(r.teaser).slice(0, 110), onBrief: clamp(r.onBrief), quality: clamp(r.quality), by: r.by };
+}
+async function findDuplicate(bug) {
+  const others = S.bugs.filter(x => x.reviewerId !== bug.reviewerId && !x.dupOf);
+  const known = brief().known.map((k, i) => ({ id: 'known' + i, title: k }));
+  const cands = [...others.map(o => ({ id: o.id, title: o.title })), ...known];
+  if (!cands.length) return null;
+  const prompt = `Is this new process bug a duplicate of any existing one? Reply with only JSON: {"duplicateOf": "<id>" or null}.
+Existing: ${JSON.stringify(cands)}
+New: ${JSON.stringify({ title: bug.title, happened: bug.happened })}`;
+  const r = await ai(prompt, () => { const best = cands.map(c => ({ c, s: jaccard(c.title, bug.title + ' ' + bug.happened) })).sort((a, b) => b.s - a.s)[0]; return { duplicateOf: best && best.s >= 0.25 ? best.c.id : null } });
+  return cands.find(c => c.id === r.duplicateOf) || null;
+}
+async function triage(flag) {
+  const target = flag.targetType === 'review' ? S.reviews.find(r => r.id === flag.targetId) : S.bugs.find(b => b.id === flag.targetId);
+  const text = flag.targetType === 'review' ? target.sections.join('\n') : target.title + '. ' + target.happened;
+  const who = reviewer(target.reviewerId);
+  const peers = S.reviews.filter(r => r.id !== target.id).map(r => r.sections.join(' ').slice(0, 400));
+  const prompt = `A submission was flagged as "${flag.reason}". Decide. Reply with only JSON: {"verdict": "clear"|"breach"|"unsure", "confidence": 0-1, "reasoning": "one sentence"}.
+breach = the flag is right and the terms were broken. clear = the flag is wrong. unsure = a person should look. Reviewer declared they knew the business before: ${who.knew}.
+Submission:\n${text}\n\nOther reviews from the same period, for comparison:\n${peers.join('\n---\n')}`;
+  const r = await ai(prompt, () => hTriage(flag, text, who));
+  flag.ai = { verdict: ['clear', 'breach', 'unsure'].includes(r.verdict) ? r.verdict : 'unsure', confidence: Math.max(0, Math.min(1, Number(r.confidence) || 0)), reasoning: String(r.reasoning), by: r.by };
+  if (flag.ai.verdict === 'clear' && flag.ai.confidence >= 0.8) {
+    flag.state = 'cleared'; flag.decidedBy = 'AI'; flag.decidedDay = S.day;
+    log('Flag cleared by AI', `${flag.reason} on ${who.pseudonym}'s ${flag.targetType}, confidence ${Math.round(flag.ai.confidence * 100)}%`, { business: true, reviewers: [who.id] });
+    releaseIfNoFlags(who.id);
+    maybeClose();
+  } else {
+    flag.state = 'queued';
+    log('Flag sent to human queue', `${flag.reason} on ${who.pseudonym}'s ${flag.targetType}. AI: ${flag.ai.verdict} at ${Math.round(flag.ai.confidence * 100)}%`, { business: true, reviewers: [who.id] });
+  }
+}
+const clamp = n => Math.max(0, Math.min(100, Math.round(Number(n) || 0)));
+
+// ---------- lifecycle ----------
+function buyPack() { S.credits.balance += PACK; S.credits.ledger.push({ day: S.day, what: 'Bought credit pack', amt: PACK }); log('Credits bought', money(PACK)); }
+function saveBrief(answers) {
+  const v = S.briefs.length + 1;
+  S.briefs.push({ v, ...answers, day: S.day });
+  if (S.period.state === 'draft') S.period.briefV = v;
+  log('Brief version created', `v${v}` + (S.period.state === 'draft' ? '' : ' (applies to the next period; the open period keeps v' + S.period.briefV + ')'));
+  S.onboarding = null;
+}
+function fundPeriod() {
+  const cost = Math.round(SEATS * FEE * (1 + FEE_PCT));
+  if (S.credits.balance < cost) return;
+  S.credits.balance -= cost; S.credits.locked += cost; S.period.cost = cost; S.period.state = 'funded';
+  S.credits.ledger.push({ day: S.day, what: `Locked for ${SEATS} seats + ${FEE_PCT * 100}% fee`, amt: -cost });
+  log('Period funded', `${SEATS} seats, ${money(cost)} locked against brief v${S.period.briefV}`);
+}
+function openRecruiting() { S.period.state = 'recruiting'; S.reviewers.forEach(r => r.seat = 'invited'); log('Recruiting opened', `${SEATS} single-use invite links issued`); }
+function acceptSeat(id, knew) {
+  const r = reviewer(id); r.seat = 'accepted'; r.knew = knew; r.acceptedDay = S.day;
+  if (S.period.state === 'recruiting') { S.period.state = 'open'; S.period.openedDay = S.day; log('Period opened', 'first seat accepted'); }
+  log('Seat accepted', `${r.pseudonym}`, { business: true, reviewers: [id] });
+}
+async function submitReview(id, sections, closing) {
+  const r = reviewer(id);
+  const rv = { id: uid(), reviewerId: id, sections, closing, briefV: S.period.briefV, day: S.day, ratings: [], scores: null };
+  S.reviews.push(rv); r.seat = 'submitted';
+  log('Review submitted', `${r.pseudonym}, scored against brief v${rv.briefV}`, { business: true, reviewers: [id] });
+  await scoreReview(rv);
+  const waiting = S.reviewers.some(x => x.seat === 'accepted' || x.seat === 'invited');
+  if (!waiting && S.period.state === 'open') startRating();
+}
+async function submitBug(id, data, dupOf) {
+  const bug = { id: uid(), reviewerId: id, ...data, briefV: S.period.briefV, day: S.day, dupOf: dupOf || null, confirmations: 0, ratings: [], unlocked: false, status: null };
+  S.bugs.push(bug);
+  if (dupOf) {
+    const orig = S.bugs.find(b => b.id === dupOf);
+    if (orig) orig.confirmations++;
+    log('Bug confirmed', `${reviewer(id).pseudonym} confirmed "${orig ? orig.title : dupOf}"`, { business: true, reviewers: [id] });
+  } else {
+    log('Bug submitted', `${reviewer(id).pseudonym}: "${bug.title}"`, { business: true, reviewers: [id] });
+    await scoreBug(bug);
+  }
+}
+function endOpen() { S.reviewers.forEach(r => { if (r.seat === 'invited' || r.seat === 'accepted') { r.seat = 'released'; log('Seat released', r.pseudonym + ' (no submission by the deadline)', { business: true, reviewers: [r.id] }) } }); startRating(); }
+function startRating() {
+  const submitters = S.reviewers.filter(r => r.seat === 'submitted').map(r => r.id);
+  S.reviews.forEach(rv => {
+    const pool = submitters.filter(x => x !== rv.reviewerId).sort(() => Math.random() - 0.5);
+    S.assignments[rv.id] = pool.slice(0, 3);
+  });
+  S.period.state = 'rating'; S.period.ratingDay = S.day;
+  log('Peer rating started', `${S.reviews.length} reviews, 3 blind raters each, assigned at random`);
+  submitters.forEach(id => { if (!S.reviews.some(rv => S.assignments[rv.id].includes(id))) { S.ratingsDone[id] = true; reviewer(id).seat = 'rated'; } });
+  if (S.reviews.every(rv => S.assignments[rv.id].every(id => S.ratingsDone[id]))) settle();
+}
+function submitRatings(raterId, entries) {
+  entries.forEach(e => {
+    const rv = S.reviews.find(r => r.id === e.reviewId);
+    rv.ratings.push({ raterId, truthful: e.truthful, fair: e.fair, matches: e.matches, useful: e.useful });
+    const rb = S.bugs.filter(b => b.reviewerId === rv.reviewerId && !b.dupOf);
+    rb.forEach(b => b.ratings.push({ raterId, useful: e.bugUseful ?? e.useful }));
+    if (e.flag) raiseFlag('review', rv.id, raterId, e.flag);
+  });
+  S.ratingsDone[raterId] = true; reviewer(raterId).seat = 'rated';
+  log('Peer ratings given', `${reviewer(raterId).pseudonym} rated ${entries.length}`, { business: false, reviewers: [raterId] });
+  if (S.reviews.every(rv => S.assignments[rv.id].every(id => S.ratingsDone[id]))) settle();
+}
+function raiseFlag(targetType, targetId, source, reason) {
+  if (S.flags.some(f => f.targetId === targetId && f.reason === reason && (f.state === 'triage' || f.state === 'queued'))) return;
+  const f = { id: uid(), targetType, targetId, source, reason, day: S.day, state: 'triage', reply: null, ai: null, decision: null };
+  S.flags.push(f);
+  const who = reviewer((targetType === 'review' ? S.reviews : S.bugs).find(x => x.id === targetId).reviewerId);
+  log('Flag raised', `${reason} on ${who.pseudonym}'s ${targetType}, by ${source === 'ai' ? 'AI' : source === 'business' ? 'the business' : 'a peer'}`, { business: true, reviewers: [who.id] });
+  if (who.payout === 'pending') { who.payout = 'held'; who.payoutReason = 'a flag is open on your review'; }
+  triage(f).then(() => { save(); render() });
+}
+function peerWeight(raterId) { return 0.5 + repOf(reviewer(raterId)) / 200 }
+function peerScore(ratings) {
+  if (!ratings.length) return null;
+  let s = 0, w = 0; ratings.forEach(r => { const k = peerWeight(r.raterId); s += ((r.useful - 1) / 4) * 100 * k; w += k });
+  return Math.round(s / w);
+}
+function computeScores(item) {
+  const peer = peerScore(item.ratings);
+  const quality = peer == null ? item.ai.quality : Math.round(0.6 * peer + 0.4 * item.ai.quality);
+  let usefulness = Math.round((item.ai.onBrief + quality) / 2);
+  const offBrief = item.ai.onBrief < 40;
+  if (offBrief) usefulness = Math.min(usefulness, 74);
+  return { onBrief: item.ai.onBrief, quality, peer, usefulness, offBrief };
+}
+function settle() {
+  S.period.state = 'settlement'; S.period.settleDay = S.day;
+  S.reviews.forEach(rv => { rv.scores = computeScores(rv); const r = reviewer(rv.reviewerId); r.rep.sum += rv.scores.usefulness; r.rep.n++; });
+  S.bugs.filter(b => !b.dupOf).forEach(b => { b.scores = computeScores(b); b.scores.usefulness = Math.min(100, b.scores.usefulness + b.confirmations * 5); b.tier = tierOf(b.scores.usefulness); });
+  S.reviewers.forEach(r => {
+    if (r.seat === 'rated') { r.payout = 'pending'; if (!releaseIfNoFlags(r.id)) { r.payout = 'held'; r.payoutReason = 'a flag is open on your review'; } }
+    else if (r.seat === 'submitted') { r.payout = 'held'; r.payoutReason = 'you have not rated your three peers yet'; }
+  });
+  log('Settlement started', 'scores final, reputations updated, payouts released where no flag is open');
+  maybeClose();
+}
+function releaseIfNoFlags(id) {
+  const r = reviewer(id);
+  if (S.period.state !== 'settlement' && S.period.state !== 'closed') return;
+  if (r.seat !== 'rated') return;
+  const open = S.flags.some(f => f.state !== 'cleared' && f.state !== 'decided' && reviewer((f.targetType === 'review' ? S.reviews : S.bugs).find(x => x.id === f.targetId).reviewerId).id === id);
+  if (!open && r.payout !== 'forfeited') { r.payout = 'paid'; r.payoutReason = ''; log('Review fee paid', `${r.pseudonym}, ${money(FEE)} (manual payout in v1)`, { business: true, reviewers: [id] }); return true }
+  return false;
+}
+function maybeClose() {
+  const open = S.flags.some(f => f.state === 'triage' || f.state === 'queued');
+  const held = S.reviewers.some(r => r.payout === 'held');
+  if (!open && !held) closePeriod();
+}
+function closePeriod() {
+  if (S.period.state === 'closed') return;
+  const unused = S.reviewers.filter(r => r.seat === 'released' || r.seat === 'invited').length;
+  const refund = Math.round(unused * FEE * (1 + FEE_PCT));
+  if (refund) { S.credits.balance += refund; S.credits.locked -= refund; S.credits.ledger.push({ day: S.day, what: `Refund for ${unused} unused seat${unused > 1 ? 's' : ''}`, amt: refund }) }
+  const paid = S.reviewers.filter(r => r.payout === 'paid').length;
+  if (paid) { S.credits.ledger.push({ day: S.day, what: `${paid} review fee${paid > 1 ? 's' : ''} paid out, platform fee kept`, amt: -Math.min(S.credits.locked, Math.round(paid * FEE * (1 + FEE_PCT))) }); S.credits.locked = Math.max(0, S.credits.locked - Math.round(paid * FEE * (1 + FEE_PCT))); }
+  S.period.state = 'closed';
+  log('Period closed', unused ? `${unused} unused seat refunded to credits` : 'all seats used');
+}
+function decideFlag(fid, outcome) {
+  const f = S.flags.find(x => x.id === fid); f.state = 'decided'; f.decision = outcome; f.decidedBy = 'operator'; f.decidedDay = S.day;
+  const target = (f.targetType === 'review' ? S.reviews : S.bugs).find(x => x.id === f.targetId);
+  const r = reviewer(target.reviewerId);
+  if (outcome === 'breach') {
+    r.strikes++; r.rep.sum -= 25 * PRIOR_N; r.payout = 'forfeited'; r.payoutReason = 'breach: ' + f.reason;
+    if (r.strikes === 1) r.status = 'warned'; else if (r.strikes === 2) r.status = 'suspended'; else r.status = 'banned';
+    const seat = Math.round(FEE * (1 + FEE_PCT)); S.credits.balance += seat; S.credits.locked -= seat; S.credits.ledger.push({ day: S.day, what: `Forfeited seat returned (${r.pseudonym})`, amt: seat });
+    log('Breach decided', `${r.pseudonym}: ${f.reason}. Fee forfeited to the business, reputation down, account ${r.status}`, { business: true, reviewers: [r.id] });
+  } else {
+    log(outcome === 'clear' ? 'Flag cleared by a person' : 'Flag closed as low quality, not a breach', `${r.pseudonym}: ${f.reason}`, { business: true, reviewers: [r.id] });
+    releaseIfNoFlags(r.id);
+  }
+  maybeClose();
+}
+function advance7() {
+  S.day += 7;
+  if (S.period.state === 'open') endOpen();
+  else if (S.period.state === 'rating') settle();
+  else if (S.period.state === 'settlement') {
+    S.flags.filter(f => f.state === 'queued' || f.state === 'triage').forEach(f => { f.state = 'cleared'; f.decidedBy = 'timeout'; f.decidedDay = S.day; log('Flag timed out', '7 days without a decision: payout released, flag kept for reputation only') });
+    S.reviewers.filter(r => r.payout === 'held' && r.seat === 'rated').forEach(r => releaseIfNoFlags(r.id));
+    S.reviewers.filter(r => r.payout === 'held' && r.seat === 'submitted').forEach(r => { r.payout = 'forfeited'; r.payoutReason = 'did not rate peers within 30 days'; const seat = Math.round(FEE * (1 + FEE_PCT)); S.credits.balance += seat; S.credits.locked -= seat; S.credits.ledger.push({ day: S.day, what: `Forfeited seat returned (${r.pseudonym})`, amt: seat }); log('Fee forfeited', `${r.pseudonym} never rated peers; fee returned to the business`, { business: true, reviewers: [r.id] }) });
+    closePeriod();
+  }
+  log('Clock advanced', `day ${S.day}`, { business: false, reviewers: [] });
+}
+function unlockBug(id) {
+  const b = S.bugs.find(x => x.id === id); const price = b.tier.price;
+  if (S.credits.balance < price) return;
+  S.credits.balance -= price; b.unlocked = true; b.unlockDay = S.day;
+  S.credits.ledger.push({ day: S.day, what: `Unlocked "${b.title}"`, amt: -price });
+  log('Bug unlocked', `"${b.title}" for ${money(price)}; ${reviewer(b.reviewerId).pseudonym} paid ${money(price * (1 - FEE_PCT))} (manual payout in v1)`, { business: true, reviewers: [b.reviewerId] });
+}
+function setStatus(kind, id, status) {
+  const item = (kind === 'review' ? S.reviews : S.bugs).find(x => x.id === id); item.status = status;
+  log('Status set', `${kind} by ${reviewer(item.reviewerId).pseudonym}: ${status}. Changes nothing about payment.`, { business: true, reviewers: [item.reviewerId] });
+}
+
+// ---------- auto-play the simulated reviewers ----------
+async function autoReviewer(id) {
+  const ex = EXAMPLE.reviewers.find(x => x.id === id); const r = reviewer(id);
+  if (r.seat === 'invited') acceptSeat(id, ex.knew);
+  if (r.seat === 'accepted') { r.received = true; await submitReview(id, ex.review, ex.closing); for (const bg of ex.bugs) { const bug = { ...bg }; const dup = await findDuplicate({ ...bug, reviewerId: id }); await submitBug(id, bug, dup && !dup.id.startsWith('known') ? dup.id : null) } }
+  if (S.period.state === 'rating' && r.seat === 'submitted' && !S.ratingsDone[id]) {
+    const mine = S.reviews.filter(rv => S.assignments[rv.id].includes(id));
+    const entries = mine.map(rv => {
+      const t = EXAMPLE.reviewers.find(x => x.id === rv.reviewerId).truth;
+      const useful = Math.max(1, Math.min(5, t + [0, 0, 1, -1][Math.floor(Math.random() * 4)]));
+      const first = S.assignments[rv.id][0] === id;
+      let flag = null;
+      if (first && t <= 2 && reviewer(rv.reviewerId).knew === 'yes') flag = 'unfairly positive';
+      if (first && t <= 1) flag = 'pasted from elsewhere';
+      return { reviewId: rv.id, useful, truthful: t >= 2, fair: t >= 3, matches: t >= 3, flag };
+    });
+    submitRatings(id, entries);
+  }
+}
+async function autoAll() {
+  S.busy = 'Playing the other reviewers';
+  render();
+  const skip = S.role === 'reviewer' ? S.reviewerTab : null;
+  for (let pass = 0; pass < 2; pass++) for (const r of S.reviewers) if (r.id !== skip) await autoReviewer(r.id);
+  S.busy = null; save(); render();
+}
+
+// ---------- rendering ----------
+const $ = sel => document.querySelector(sel);
+function render() { renderChips(); renderTabs(); $('#main').innerHTML = S.busy ? `<p class="thinking">${esc(S.busy)}…</p>` : view(); save(); }
+function renderChips() {
+  const aiChip = S.aiMode === 'claude' ? 'AI: Claude, live' : S.aiMode === 'heuristic' || S.aiMode === 'declined' ? 'AI: built-in heuristic' : 'AI: checking';
+  $('#chips').innerHTML = `<span class="chip state">Period: ${esc(S.period.state)}</span><span class="chip">Day ${S.day}</span><span class="chip">Credits ${money(S.credits.balance)} free, ${money(S.credits.locked)} locked</span><span class="chip">${aiChip}</span>`;
+}
+function renderTabs() {
+  const tabs = [['business', 'Business'], ['reviewer', 'Reviewer'], ['operator', 'Operator'], ['log', 'Audit log']];
+  $('#tabs').innerHTML = tabs.map(([k, l]) => `<button class="tab" role="tab" aria-selected="${S.role === k}" data-act="role" data-v="${k}">${l}</button>`).join('') + `<button class="tab" data-act="reset" title="Start over">Reset</button>`;
+}
+function view() {
+  if (S.role === 'business') return businessView();
+  if (S.role === 'reviewer') return reviewerView();
+  if (S.role === 'operator') return operatorView();
+  return logView();
+}
+const btn = (act, label, extra = '', cls = 'btn') => `<button class="${cls}" data-act="${act}" ${extra}>${label}</button>`;
+const payoutPill = r => !r.payout ? '' : `<span class="pill ${r.payout === 'paid' ? 'good' : r.payout === 'forfeited' ? 'bad' : 'warn'}">${r.payout}</span>`;
+const scoreLine = s => s ? `<span class="score">usefulness ${s.usefulness} · on-brief ${s.onBrief} · quality ${s.quality}${s.peer != null ? ' (peers ' + s.peer + ')' : ''}${s.offBrief ? ' · off-brief, capped' : ''}</span>` : `<span class="muted small">scored when peer rating ends</span>`;
+
+// Business
+function businessView() {
+  const parts = [];
+  parts.push(`<p class="lead">You are <strong>${esc(EXAMPLE.business)}</strong>, an example business. Everything below is the real mechanics: the brief freezes, credits are spent before text is shown, and no payment waits on you.</p>`);
+  if (S.onboarding) return parts.join('') + onboardingView();
+  if (!S.briefs.length) {
+    parts.push(`<div class="card stack"><h3>Start with the brief</h3><p>Seven questions, one at a time. The answers become the review form, the eligibility check, the scoring rubric and the known-issues list.</p><div class="bar">${btn('onboard', 'Answer the seven questions', '', 'btn primary')}</div></div>`);
+    return parts.join('');
+  }
+  const b = brief(), p = S.period;
+  parts.push(`<div class="card stack"><h3>Brief <span class="pill">v${b.v}${p.briefV && p.briefV !== S.briefs[S.briefs.length - 1].v ? ' in use · v' + S.briefs[S.briefs.length - 1].v + ' next period' : ''}</span></h3>
+    <dl class="kv"><dt>Product</dt><dd>${esc(b.product)}</dd><dt>Wants to know</dt><dd>${b.wants.map(esc).join('<br>')}</dd><dt>Already knows</dt><dd>${b.known.map(esc).join('<br>')}</dd><dt>Will not change</dt><dd>${esc(b.wontChange)}</dd><dt>Eligibility</dt><dd>${esc(b.eligibility)}</dd></dl>
+    <div class="bar">${btn('onboard', 'Edit brief')}${p.state !== 'draft' && p.state !== 'closed' ? '<span class="small muted">The open period keeps v' + p.briefV + '. An edit makes a new version for the next period.</span>' : ''}</div></div>`);
+  const cost = Math.round(SEATS * FEE * (1 + FEE_PCT));
+  parts.push(`<div class="card stack"><h3>Credits <span class="num">${money(S.credits.balance)} free · ${money(S.credits.locked)} locked</span></h3>
+    <div class="bar">${btn('buy', `Buy ${money(PACK)} pack`)}<span class="small muted">Prepaid. Unlocks and seat funding come from here. Nothing refunds to card.</span></div>
+    ${S.credits.ledger.length ? `<div class="scroll"><table><tr><th>Day</th><th>Entry</th><th class="num">Amount</th></tr>${S.credits.ledger.slice().reverse().map(l => `<tr><td class="num">${l.day}</td><td>${esc(l.what)}</td><td class="num">${l.amt < 0 ? '−' : ''}${money(Math.abs(l.amt))}</td></tr>`).join('')}</table></div>` : ''}</div>`);
+  const seatRows = S.reviewers.map(r => `<tr><td>${esc(r.pseudonym)} <span class="small muted">rep ${repOf(r)}</span></td><td>${esc(r.seat)}</td><td>${payoutPill(r)}</td></tr>`).join('');
+  let periodBody = '';
+  if (p.state === 'draft') periodBody = `<p>${SEATS} seats × ${money(FEE)} + ${FEE_PCT * 100}% platform fee = <span class="num">${money(cost)}</span>, locked until the period closes. Unused seats refund to credits.</p><div class="bar">${btn('fund', 'Fund period', S.credits.balance < cost ? 'disabled' : '', 'btn primary')}${S.credits.balance < cost ? '<span class="small muted">Buy a pack first.</span>' : ''}</div>`;
+  else if (p.state === 'funded') periodBody = `<p>${money(p.cost)} locked. Opening recruiting issues ${SEATS} single-use invite links.</p><div class="bar">${btn('recruit', 'Open recruiting', '', 'btn primary')}</div>`;
+  else {
+    const knew = S.reviewers.filter(r => r.knew === 'yes').length, declared = S.reviewers.filter(r => r.knew).length;
+    periodBody = `<div class="scroll"><table><tr><th>Seat</th><th>State</th><th>Payout</th></tr>${seatRows}</table></div>
+      ${declared ? `<p class="small">${knew} of ${declared} reviewers said they knew you before the invite.</p>` : ''}
+      ${declared && knew > declared / 2 ? `<div class="note warn">More than half your reviewers know you. Kind reviews score low on usefulness. Recruit from the places list below.</div>` : ''}
+      <div class="bar">${p.state === 'open' ? btn('endopen', 'End open early') : ''}${['open', 'rating', 'settlement'].includes(p.state) ? btn('advance', 'Advance 7 days') : ''}${['recruiting', 'open', 'rating'].includes(p.state) ? btn('autoall', 'Play the reviewers for me', '', 'btn primary') : ''}</div>`;
+  }
+  parts.push(`<div class="card stack"><h3>Review period <span class="pill">${esc(p.state)}</span></h3>${periodBody}</div>`);
+  if (p.state === 'funded' || p.state === 'recruiting') {
+    parts.push(`<div class="card stack"><h3>Recruit your ${SEATS}</h3><p class="small muted">Generated from the brief. Nothing is posted by the platform. Copy it and post it yourself.</p>
+      <div class="review-text">Paid, private feedback: ${esc(b.product)} We are looking for ${SEATS} people who ${esc(b.eligibility.replace(/\.$/, '').toLowerCase())}. ${esc(b.job)} You get the first load free and ${money(FEE)} for an honest written review that only we see. It is never published anywhere. Invite link: demo.example/invite/${uid()}</div>
+      <table><tr><th>Where to post</th><th>Note</th></tr>${PLACES.map(([a, c]) => `<tr><td>${esc(a)}</td><td class="small muted">${esc(c)}</td></tr>`).join('')}</table></div>`);
+  }
+  if (S.reviews.length) {
+    parts.push(`<h2>Reviews</h2>`);
+    S.reviews.forEach(rv => {
+      const r = reviewer(rv.reviewerId); const flags = S.flags.filter(f => f.targetId === rv.id);
+      parts.push(`<div class="card stack"><h3>${esc(r.pseudonym)} <span class="small muted">rep ${repOf(r)} · knew you: ${esc(r.knew)} · brief v${rv.briefV}</span></h3>
+        ${scoreLine(rv.scores)}
+        ${S.briefs.find(x => x.v === rv.briefV).wants.map((q, i) => `<p class="q">${esc(q)}</p><p class="review-text">${esc(rv.sections[i])}</p>`).join('')}
+        <p class="q">Tried to do · where they stopped · would pay</p><p class="review-text">${rv.closing.map(esc).join('\n')}</p>
+        ${flags.map(f => `<div class="note ${f.state === 'decided' && f.decision === 'breach' ? 'bad' : f.state === 'cleared' || f.state === 'decided' ? '' : 'warn'}">Flag: ${esc(f.reason)} (${f.source === 'business' ? 'you' : f.source === 'ai' ? 'AI' : 'a peer'}) · ${esc(f.state)}${f.decision ? ': ' + esc(f.decision) : ''}</div>`).join('')}
+        <div class="bar"><span class="small muted">Status:</span>${['will use', 'will not use', 'already doing'].map(s => btn('status', s, `data-kind="review" data-id="${rv.id}" data-v="${s}"`, 'btn' + (rv.status === s ? ' primary' : ''))).join('')}
+        ${!flags.some(f => f.source === 'business') ? `<select id="flag-${rv.id}" aria-label="Flag reason"><option value="">Flag…</option>${FLAG_REASONS.map(x => `<option>${x}</option>`).join('')}</select>${btn('flag', 'Flag', `data-id="${rv.id}"`)}` : ''}</div></div>`);
+    });
+  }
+  const bugs = S.bugs.filter(x => !x.dupOf);
+  if (bugs.length) {
+    parts.push(`<h2>Process bugs</h2><p class="small muted">Credit is spent before the text is shown. Price follows the peer score, not your opinion. ${p.state === 'open' || p.state === 'rating' ? 'Prices are set when peer rating ends.' : ''}</p>`);
+    const rows = bugs.slice().sort((a, b) => ((b.scores || b.ai || {}).usefulness || 0) - ((a.scores || a.ai || {}).usefulness || 0)).map(bg => {
+      const t = bg.tier, final = !!bg.scores;
+      const price = final ? (t ? money(t.price) : 'not listed') : 'pending';
+      return `<tr><td>${esc(bg.ai ? bg.ai.category : '…')}</td><td>${bg.unlocked ? `<strong>${esc(bg.title)}</strong><br><span class="small">${esc(bg.happened)}<br><em>Instead:</em> ${esc(bg.instead)}</span><div class="bar" style="margin-top:6px">${['will use', 'will not use', 'already doing'].map(s => btn('status', s, `data-kind="bug" data-id="${bg.id}" data-v="${s}"`, 'btn' + (bg.status === s ? ' primary' : ''))).join('')}</div>` : esc(bg.ai ? bg.ai.teaser : 'categorising…')}${bg.confirmations ? ` <span class="pill">+${bg.confirmations} confirmed</span>` : ''}</td>
+        <td class="num">${final ? bg.scores.usefulness + '<br><span class="small muted">' + bg.scores.onBrief + '/' + bg.scores.quality + '</span>' : (bg.ai ? '<span class="small muted">prov. ' + Math.round((bg.ai.onBrief + bg.ai.quality) / 2) + '</span>' : '')}</td>
+        <td class="num">${bg.unlocked ? '<span class="pill good">unlocked</span>' : price}</td>
+        <td>${!bg.unlocked && final && t ? btn('unlock', 'Unlock', `data-id="${bg.id}" ${S.credits.balance < t.price ? 'disabled' : ''}`, 'btn primary') : ''}</td></tr>`;
+    }).join('');
+    parts.push(`<div class="card bugs"><div class="scroll"><table><tr><th>Category</th><th>Teaser</th><th class="num">Score</th><th class="num">Price</th><th></th></tr>${rows}</table></div></div>`);
+  }
+  return parts.join('');
+}
+const QUESTIONS = [
+  ['product', 'What is it, in one sentence a stranger would understand?', 'e.g. We pick up your washing, wash and fold it, and bring it back in 48 hours.'],
+  ['audience', 'Who is it for, and who is it not for?', ''],
+  ['job', 'What will a reviewer actually do, how long does it take, and what do they get free?', ''],
+  ['wants', 'The three things you most want to know. One per line. Each becomes a section of the review form.', ''],
+  ['known', 'What you already know is weak, one per line. Reviewers are not paid to repeat these.', ''],
+  ['wontChange', 'What you will not change. Feedback on it is marked off-brief rather than wasted.', ''],
+  ['eligibility', 'What must a reviewer have or be?', ''],
+];
+function onboardingView() {
+  const o = S.onboarding, [key, q, hint] = QUESTIONS[o.step];
+  const val = o.answers[key];
+  const multi = Array.isArray(val);
+  return `<div class="card stack"><p class="progress">Brief · question ${o.step + 1} of ${QUESTIONS.length}</p><h3>${esc(q)}</h3>
+    <div class="field"><textarea id="ob-answer" aria-label="Answer">${esc(multi ? val.join('\n') : val)}</textarea>${hint ? `<p class="hint">${esc(hint)}</p>` : ''}<p class="hint">Prefilled with the example business. Change it if you like.</p></div>
+    <div class="bar">${o.step > 0 ? btn('ob-back', 'Back') : ''}${btn('ob-next', o.step === QUESTIONS.length - 1 ? (S.briefs.length ? 'Save as v' + (S.briefs.length + 1) : 'Save brief') : 'Next', '', 'btn primary')}${btn('ob-cancel', 'Cancel', '', 'btn quiet')}</div></div>`;
+}
+
+// Reviewer
+function reviewerView() {
+  const r = reviewer(S.reviewerTab), ex = EXAMPLE.reviewers.find(x => x.id === r.id), p = S.period;
+  const parts = [`<div class="bar"><label for="who" style="margin:0">Act as</label><select id="who" data-act="who" style="width:auto">${S.reviewers.map(x => `<option value="${x.id}" ${x.id === r.id ? 'selected' : ''}>${esc(x.pseudonym)} (${x.seat})</option>`).join('')}</select>${['recruiting', 'open', 'rating'].includes(p.state) ? btn('autoall', 'Play the others for me') : ''}</div>`];
+  parts.push(`<div class="card stack"><h3>${esc(r.pseudonym)} <span class="small muted">reputation ${repOf(r)} · ${r.rep.n} scored · account ${esc(r.status)}</span></h3>
+    <p class="small muted">A pseudonym. The business never sees your name or payout details. Example reviewer; the prefilled text is editable.</p>
+    ${r.payout ? `<p>Payout: ${payoutPill(r)} ${r.payoutReason ? '<span class="small">' + esc(r.payoutReason) + '</span>' : ''}</p>` : ''}</div>`);
+  if (r.seat === 'none') { parts.push(`<div class="note">No invite yet. The business has to fund the period and open recruiting first.</div>`); return parts.join('') }
+  const b = brief();
+  if (r.seat === 'invited') {
+    const st = r.inviteStep || 0;
+    if (st === 0) parts.push(`<div class="card stack"><h3>${esc(EXAMPLE.business)} would like your feedback</h3><dl class="kv"><dt>The job</dt><dd>${esc(b.job)}</dd><dt>You get</dt><dd>The first load free, and ${money(FEE)} for an honest written review plus three short peer ratings.</dd><dt>Who sees it</dt><dd>Only ${esc(EXAMPLE.business)}. It is never published.</dd></dl><div class="bar">${btn('inv-yes', 'Yes, I am in', '', 'btn primary')}${btn('inv-no', 'No thanks', '', 'btn quiet')}</div></div>`);
+    else if (st === 1) parts.push(`<div class="card stack"><h3>One check</h3><p>${esc(b.eligibility)} Is that you?</p><div class="bar">${btn('elig-yes', 'Yes', '', 'btn primary')}${btn('inv-no', 'No', '', 'btn quiet')}</div></div>`);
+    else parts.push(`<div class="card stack"><h3>Did you know ${esc(EXAMPLE.business)} before today?</h3><p class="small muted">Shown to the business only as a count across all reviewers.</p><div class="bar">${['yes', 'no', 'not sure'].map(v => btn('knew', v, `data-v="${v}"`, 'btn' + (ex.knew === v ? ' primary' : ''))).join('')}</div></div>`);
+    return parts.join('');
+  }
+  if (r.seat === 'released') { parts.push(`<div class="note warn">Your seat was released at the deadline with no submission.</div>`); return parts.join('') }
+  if (r.seat === 'accepted') {
+    parts.push(`<div class="card stack"><h3>Your review <span class="small muted">brief v${p.briefV}</span></h3>
+      <div class="bar"><input type="checkbox" id="received" ${r.received ? 'checked' : ''} data-act="received"><label for="received" style="margin:0">I have received the free product or job</label></div>
+      ${b.wants.map((q, i) => `<div class="field"><label for="sec${i}">${esc(q)}</label><textarea id="sec${i}">${esc(ex.review[i])}</textarea></div>`).join('')}
+      ${['What did you try to do?', 'Where did you stop, if anywhere?', 'What would you pay for this?'].map((q, i) => `<div class="field"><label for="clo${i}">${esc(q)}</label><input type="text" id="clo${i}" value="${esc(ex.closing[i])}"></div>`).join('')}
+      <p class="hint">Saved on every keystroke in the real thing. Pays ${money(FEE)} once you have also rated three peers.</p>
+      <div class="bar">${btn('submit-review', 'Submit review', '', 'btn primary')}</div></div>`);
+  }
+  if (r.seat === 'submitted' || r.seat === 'rated') {
+    const rv = S.reviews.find(x => x.reviewerId === r.id);
+    parts.push(`<div class="card stack"><h3>Your review <span class="pill good">submitted day ${rv.day}</span></h3>${scoreLine(rv.scores)}${rv.status ? `<p class="small">The business marked it: <strong>${esc(rv.status)}</strong>. That changes nothing about payment.</p>` : ''}
+      ${S.flags.filter(f => f.targetId === rv.id).map(f => `<div class="note ${f.state === 'decided' && f.decision === 'breach' ? 'bad' : 'warn'}">A flag is ${f.state === 'cleared' ? 'cleared' : f.state === 'decided' ? 'decided: ' + esc(f.decision) : 'open'}: ${esc(f.reason)}.${f.state === 'queued' && !f.reply ? ` You can reply once before a person decides.<div class="field" style="margin-top:6px"><textarea id="reply-${f.id}" placeholder="Your reply"></textarea></div><div class="bar">${btn('reply', 'Send reply', `data-id="${f.id}"`)}</div>` : f.reply ? ` Your reply: “${esc(f.reply)}”` : ''}</div>`).join('')}</div>`);
+  }
+  if (['accepted', 'submitted', 'rated'].includes(r.seat) && ['open', 'rating'].includes(p.state)) {
+    const mine = S.bugs.filter(x => x.reviewerId === r.id);
+    const published = [...b.known.map(k => ({ title: k, status: 'already known' })), ...S.bugs.filter(x => x.unlocked).map(x => ({ title: x.title, status: x.status || 'unlocked' }))];
+    parts.push(`<div class="card stack"><h3>Process bugs</h3><p class="small muted">Things that make no sense, are not done, or should be done differently. Paid on unlock, by peer score. Not software bugs.</p>
+      ${published.length ? `<p class="q">Already on the list, not paid again</p><ul class="small">${published.map(x => `<li>${esc(x.title)} <span class="muted">· ${esc(x.status)}</span></li>`).join('')}</ul>` : ''}
+      ${mine.length ? `<p class="q">Yours</p><ul class="small">${mine.map(x => `<li>${esc(x.title)}${x.dupOf ? ' <span class="muted">· confirmation of an existing bug, unpaid</span>' : x.unlocked ? ` <span class="pill good">unlocked, ${money(x.tier.price * (1 - FEE_PCT))} to you</span>` : x.scores ? (x.tier ? ` <span class="pill">${x.tier.name} · ${money(x.tier.price)}</span>` : ' <span class="pill bad">below the bottom tier, not listed</span>') : ' <span class="muted">· awaiting peer score</span>'}</li>`).join('')}</ul>` : ''}
+      ${S.pendingDup && S.pendingDup.reviewerId === r.id ? `<div class="note warn">Looks like it matches “${esc(S.pendingDup.match.title)}”. <div class="bar" style="margin-top:6px">${S.pendingDup.match.id.startsWith('known') ? '' : btn('dup-confirm', 'Attach as a confirmation')}${btn('dup-anyway', 'Submit anyway, it is different')}${btn('dup-cancel', 'Cancel', '', 'btn quiet')}</div></div>` : (p.state === 'open' && ex.bugs[mine.length] ? `
+      <div class="field"><label for="bug-title">Title</label><input type="text" id="bug-title" value="${esc(ex.bugs[mine.length].title)}"></div>
+      <div class="field"><label for="bug-happened">What happened</label><textarea id="bug-happened">${esc(ex.bugs[mine.length].happened)}</textarea></div>
+      <div class="field"><label for="bug-instead">What should happen instead</label><input type="text" id="bug-instead" value="${esc(ex.bugs[mine.length].instead)}"></div>
+      <div class="field"><label for="bug-where">Where in the journey</label><input type="text" id="bug-where" value="${esc(ex.bugs[mine.length].where)}"></div>
+      <div class="bar">${btn('submit-bug', 'Submit bug')}</div>` : p.state === 'open' ? '<p class="small muted">No more example bugs for this reviewer.</p>' : '')}</div>`);
+  }
+  if (p.state === 'rating' && r.seat === 'submitted') {
+    const mine = S.reviews.filter(rv => S.assignments[rv.id].includes(r.id));
+    parts.push(`<div class="card stack"><h3>Rate three peers <span class="small muted">blind, random, text only</span></h3><p class="small muted">Your fee releases after this. Your ratings are weighted by your reputation (${repOf(r)}).</p>
+      ${mine.map((rv, i) => `<hr><p class="review-text">${esc(rv.sections.join('\n\n'))}</p><div class="rating">
+        <span>Truthful as far as you can tell?</span><select id="rt-${rv.id}-truthful"><option>yes</option><option>no</option></select>
+        <span>Fair?</span><select id="rt-${rv.id}-fair"><option>yes</option><option>no</option></select>
+        <span>Matches your own experience?</span><select id="rt-${rv.id}-matches"><option>yes</option><option>no</option><option>partly</option></select>
+        <span>How useful, 1 to 5?</span><select id="rt-${rv.id}-useful">${[5, 4, 3, 2, 1].map(n => `<option ${n === 3 ? 'selected' : ''}>${n}</option>`).join('')}</select>
+        <span>Flag?</span><select id="rt-${rv.id}-flag"><option value="">no</option>${FLAG_REASONS.map(x => `<option>${x}</option>`).join('')}</select></div>`).join('')}
+      <div class="bar">${btn('submit-ratings', 'Submit ratings', '', 'btn primary')}</div></div>`);
+  }
+  if (r.seat === 'rated' && p.state === 'rating') parts.push(`<div class="note">Ratings in. Waiting for the other raters, or 7 days.</div>`);
+  return parts.join('');
+}
+
+// Operator
+function operatorView() {
+  const queue = S.flags.filter(f => f.state === 'queued'), done = S.flags.filter(f => f.state !== 'queued');
+  const parts = [`<p class="lead">The human queue. AI triage sits beside each flag with its confidence. A flag undecided for 7 days releases the payout on its own.</p>`];
+  const row = f => {
+    const target = (f.targetType === 'review' ? S.reviews : S.bugs).find(x => x.id === f.targetId); const r = reviewer(target.reviewerId);
+    return `<div class="card stack"><h3>${esc(f.reason)} <span class="small muted">${esc(r.pseudonym)} · raised day ${f.day} by ${f.source === 'ai' ? 'AI' : f.source === 'business' ? 'business' : 'peer'} · knew business: ${esc(r.knew)} · strikes ${r.strikes}</span></h3>
+      <p class="review-text small">${esc(f.targetType === 'review' ? target.sections.join('\n') : target.title + '. ' + target.happened)}</p>
+      ${f.ai ? `<div class="note">AI (${f.ai.by}): <strong>${esc(f.ai.verdict)}</strong> at ${Math.round(f.ai.confidence * 100)}%. ${esc(f.ai.reasoning)}</div>` : '<p class="thinking">Triaging…</p>'}
+      ${f.reply ? `<p class="small">Reviewer's reply: “${esc(f.reply)}”</p>` : ''}
+      ${f.state === 'queued' ? `<div class="bar">${btn('decide', 'Clear', `data-id="${f.id}" data-v="clear"`)}${btn('decide', 'Low quality, not a breach', `data-id="${f.id}" data-v="low quality"`)}${btn('decide', 'Breach', `data-id="${f.id}" data-v="breach"`, 'btn')}<span class="small muted">Releases on day ${f.day + 7} if untouched.</span></div>` : `<p class="small">${esc(f.state)}${f.decision ? ': ' + esc(f.decision) : ''} by ${esc(f.decidedBy || '')} on day ${f.decidedDay || ''}</p>`}</div>`;
+  };
+  parts.push(`<h2>Open <span class="small muted">${queue.length}</span></h2>`, queue.length ? queue.map(row).join('') : '<p class="muted">Nothing waiting.</p>');
+  if (done.length) parts.push(`<h2>Decided</h2>`, done.map(row).join(''));
+  parts.push(`<h2>Reviewers</h2><div class="card"><div class="scroll"><table><tr><th>Pseudonym</th><th class="num">Reputation</th><th class="num">Scored</th><th>Account</th><th>Payout</th></tr>${S.reviewers.map(r => `<tr><td>${esc(r.pseudonym)}</td><td class="num">${repOf(r)}</td><td class="num">${r.rep.n}</td><td>${esc(r.status)}</td><td>${payoutPill(r)}</td></tr>`).join('')}</table></div><p class="hint">Reputation = (60 × 5 + sum of usefulness) ÷ (5 + count). A new reviewer sits at 60 and moves slowly.</p></div>`);
+  return parts.join('');
+}
+
+// Audit log
+function logView() {
+  const who = S.logWho || 'operator';
+  const rows = S.log.filter(e => who === 'operator' ? true : who === 'business' ? e.vis.business : e.vis.reviewers.includes(who)).slice().reverse();
+  return `<p class="lead">Append-only. Each side sees the entries that concern it.</p>
+    <div class="bar"><label for="logwho" style="margin:0">See it as</label><select id="logwho" data-act="logwho" style="width:auto"><option value="operator" ${who === 'operator' ? 'selected' : ''}>Platform (everything)</option><option value="business" ${who === 'business' ? 'selected' : ''}>Business</option>${S.reviewers.map(r => `<option value="${r.id}" ${who === r.id ? 'selected' : ''}>${esc(r.pseudonym)}</option>`).join('')}</select></div>
+    <div class="card"><div class="scroll"><table class="log"><tr><th>Day</th><th>Event</th><th>Detail</th></tr>${rows.map(e => `<tr><td class="num">${e.day}</td><td>${esc(e.event)}</td><td>${esc(e.detail)}</td></tr>`).join('') || '<tr><td colspan="3" class="muted">Nothing yet.</td></tr>'}</table></div></div>`;
+}
+
+// ---------- events ----------
+document.addEventListener('click', async ev => {
+  const el = ev.target.closest('[data-act]'); if (!el || el.tagName === 'SELECT' || el.type === 'checkbox') return;
+  const act = el.dataset.act, id = el.dataset.id, v = el.dataset.v;
+  const r = reviewer(S.reviewerTab);
+  const run = async fn => { await fn(); save(); render() };
+  if (act === 'role') return run(() => { S.role = v });
+  if (act === 'reset') return reset();
+  if (act === 'buy') return run(buyPack);
+  if (act === 'fund') return run(fundPeriod);
+  if (act === 'recruit') return run(openRecruiting);
+  if (act === 'endopen') return run(endOpen);
+  if (act === 'advance') return run(advance7);
+  if (act === 'autoall') return autoAll();
+  if (act === 'unlock') return run(() => unlockBug(id));
+  if (act === 'status') return run(() => setStatus(el.dataset.kind, id, v));
+  if (act === 'flag') { const sel = $('#flag-' + id); if (!sel.value) return; return run(() => raiseFlag('review', id, 'business', sel.value)) }
+  if (act === 'decide') return run(() => decideFlag(id, v));
+  if (act === 'onboard') { const last = S.briefs[S.briefs.length - 1]; const a = last ? { product: last.product, audience: last.audience, job: last.job, wants: [...last.wants], known: [...last.known], wontChange: last.wontChange, eligibility: last.eligibility } : JSON.parse(JSON.stringify(EXAMPLE.brief)); return run(() => { S.onboarding = { step: 0, answers: a } }) }
+  if (act === 'ob-cancel') return run(() => { S.onboarding = null });
+  if (act === 'ob-back' || act === 'ob-next') {
+    const o = S.onboarding, key = QUESTIONS[o.step][0], raw = $('#ob-answer').value;
+    o.answers[key] = Array.isArray(o.answers[key]) ? raw.split('\n').map(s => s.trim()).filter(Boolean) : raw.trim();
+    if (act === 'ob-back') return run(() => { o.step-- });
+    if (o.step === QUESTIONS.length - 1) { if (o.answers.wants.length < 1 || !o.answers.product) return; return run(() => saveBrief(o.answers)) }
+    return run(() => { o.step++ });
+  }
+  if (act === 'inv-yes') return run(() => { r.inviteStep = 1 });
+  if (act === 'elig-yes') return run(() => { r.inviteStep = 2 });
+  if (act === 'inv-no') return run(() => { r.seat = 'released'; log('Invite declined', r.pseudonym, { business: true, reviewers: [r.id] }) });
+  if (act === 'knew') return run(() => acceptSeat(r.id, v));
+  if (act === 'submit-review') {
+    const b = brief(); const sections = b.wants.map((_, i) => $('#sec' + i).value.trim()); const closing = [0, 1, 2].map(i => $('#clo' + i).value.trim());
+    if (sections.some(s => !s)) return;
+    S.busy = 'Scoring against the brief'; render();
+    await submitReview(r.id, sections, closing); S.busy = null; return run(() => {});
+  }
+  if (act === 'submit-bug') {
+    const data = { title: $('#bug-title').value.trim(), happened: $('#bug-happened').value.trim(), instead: $('#bug-instead').value.trim(), where: $('#bug-where').value.trim() };
+    if (!data.title || !data.happened) return;
+    S.busy = 'Checking for duplicates'; render();
+    const dup = await findDuplicate({ ...data, reviewerId: r.id }); S.busy = null;
+    if (dup) return run(() => { S.pendingDup = { reviewerId: r.id, data, match: dup } });
+    S.busy = 'Categorising'; render(); await submitBug(r.id, data, null); S.busy = null; return run(() => {});
+  }
+  if (act === 'dup-confirm') { const d = S.pendingDup; S.pendingDup = null; await submitBug(d.reviewerId, d.data, d.match.id); return run(() => {}) }
+  if (act === 'dup-anyway') { const d = S.pendingDup; S.pendingDup = null; S.busy = 'Categorising'; render(); await submitBug(d.reviewerId, d.data, null); S.busy = null; return run(() => {}) }
+  if (act === 'dup-cancel') return run(() => { S.pendingDup = null });
+  if (act === 'submit-ratings') {
+    const mine = S.reviews.filter(rv => S.assignments[rv.id].includes(r.id));
+    const entries = mine.map(rv => ({ reviewId: rv.id, truthful: $(`#rt-${rv.id}-truthful`).value === 'yes', fair: $(`#rt-${rv.id}-fair`).value === 'yes', matches: $(`#rt-${rv.id}-matches`).value, useful: Number($(`#rt-${rv.id}-useful`).value), flag: $(`#rt-${rv.id}-flag`).value || null }));
+    return run(() => submitRatings(r.id, entries));
+  }
+  if (act === 'reply') { const f = S.flags.find(x => x.id === id); const t = $('#reply-' + id).value.trim(); if (!t) return; return run(() => { f.reply = t; log('Reviewer replied to flag', `${r.pseudonym}: ${t}`, { business: false, reviewers: [r.id] }) }) }
+});
+document.addEventListener('change', ev => {
+  const el = ev.target; if (!el.dataset.act) return;
+  if (el.dataset.act === 'who') { S.reviewerTab = el.value; save(); render() }
+  if (el.dataset.act === 'logwho') { S.logWho = el.value; save(); render() }
+  if (el.dataset.act === 'received') { reviewer(S.reviewerTab).received = el.checked; save() }
+});
+
+render();
+</script>
