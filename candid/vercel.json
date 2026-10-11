@@ -26,6 +26,11 @@
       "maxDuration": 10,
       "memory": 256,
       "includeFiles": "db/**"
+    },
+    "api/photo.js": {
+      "maxDuration": 10,
+      "memory": 256,
+      "includeFiles": "db/**"
     }
   },
   "headers": [

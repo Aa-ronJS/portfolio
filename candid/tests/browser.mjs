@@ -27,6 +27,7 @@ try {
   ok(await owner.locator("#wsel option").count() >= 1, "the business is created and selected");
   await click(owner, '[data-act="wz-start"]');
   const answers = ["Loop Laundry picks up your washing, washes and folds it, and brings it back in 48 hours.", "Inner north, no washing machine.", "Book one pickup, hand over a bag of up to 8 kg, get it back within 48 hours. The first load is free.", "Booking: was it clear when we would arrive?\nHandover: did the bag or label confuse you?\nReturn and payment: on time, and was paying clear?", "Pickup window is 4 hours", "No dry cleaning.", "Lives in the inner north and has no washing machine."];
+  await owner.selectOption("#wz", "b2c"); await click(owner, '[data-act="wz-next"]'); await settle(owner);
   for (const a of answers) { await owner.fill("#wz", a); await click(owner, '[data-act="wz-next"]'); await settle(owner); }
   await owner.waitForSelector(".kv");
   ok((await owner.locator(".kv").textContent()).includes("Handover"), "the brief wizard saves all seven answers");
@@ -50,13 +51,14 @@ try {
     const ph = await page(400); phones[i] = ph;
     await ph.goto(links[i]); await ph.waitForSelector('[data-act="step"]');
     await click(ph, '[data-act="step"]'); await click(ph, '[data-act="step"]');
-    await ph.fill("#name", people[i][0]); await ph.fill("#email", people[i][1]); await ph.fill("#payid", people[i][2]); await ph.selectOption("#knew", people[i][3]);
+    await ph.fill("#name", people[i][0]); await ph.selectOption("#state", ["VIC", "NSW", "QLD"][i]); await ph.fill("#email", people[i][1]); await ph.fill("#payid", people[i][2]); await ph.selectOption("#knew", people[i][3]);
     await click(ph, '[data-act="accept"]'); await settle(ph); await ph.waitForSelector("#sec0");
   };
   const submitOn = async (i) => {
     const ph = phones[i];
     for (let k = 0; k < 3; k++) await ph.fill("#sec" + k, texts[i][k]);
     await ph.fill("#clo0", "Book a pickup"); await ph.fill("#clo1", "Nowhere"); await ph.fill("#clo2", "$25");
+    if (i === 0) await ph.check("#consent");
     await click(ph, '[data-act="submit"]'); await settle(ph); await ph.waitForSelector(".chip.good");
   };
   await acceptOn(0);
@@ -97,6 +99,14 @@ try {
   await click(owner, '[data-act="page"][data-v="issues"]'); await owner.waitForSelector('[data-act="unlock"]');
   await click(owner, '[data-act="unlock"]'); await settle(owner); await owner.waitForSelector(".drawer .qa");
   ok((await owner.locator(".drawer .qa").textContent()).includes("gate code"), "unlocking opens the full issue in the drawer");
+  await click(owner, '[data-act="close"].x');
+  await click(owner, '[data-act="page"][data-v="reviews"]'); await owner.waitForSelector("tr.click");
+  ok((await owner.locator("tr.click").first().textContent()).includes("VIC") || (await owner.locator("tbody").textContent()).includes("NSW"), "the reviews table shows names and states");
+  ok(await owner.locator(".chip").filter({ hasText: "quotable" }).count() === 1, "and which one may be quoted");
+  await click(owner, 'tr.click'); await owner.waitForSelector(".drawer");
+  const quoteBtns = await owner.locator('[data-act="quote"]').count();
+  const drawerHead = await owner.locator(".drawer .dhead").textContent();
+  ok((quoteBtns === 3) === /may be quoted/.test(drawerHead), "quote buttons appear exactly when the reviewer consented");
   await click(owner, '[data-act="status"][data-v="will use"]'); await settle(owner);
   await click(owner, '[data-act="close"].x');
   await click(owner, '[data-act="page"][data-v="payouts"]'); await owner.waitForSelector('[data-act="markPaid"]');

@@ -3,7 +3,7 @@
 //   GET  /api/reviewer?token=<t>              what this reviewer may see
 //   POST /api/reviewer { token, action, ... }  accept | decline | draft | received | submitReview | checkDup | submitBug | submitRatings | reply
 import { send, readJson } from "./_http.js";
-import { ensureSchema } from "./_db.js";
+import { ensureSchema, q } from "./_db.js";
 import * as S from "./_store.js";
 import * as E from "./_engine.js";
 import { ai } from "./_ai.js";
@@ -26,12 +26,21 @@ export default async function handler(req, res) {
   try {
     let token, body = {};
     if (req.method === "GET") token = new URL(req.url, "http://x").searchParams.get("token") || "";
-    else if (req.method === "POST") { body = await readJson(req); token = String(body.token || ""); }
+    else if (req.method === "POST") { body = await readJson(req, 600000); token = String(body.token || ""); }
     else return send(res, 405, { ok: false, error: "POST" });
     const who = await S.resolveToken(token); if (!who) return send(res, 404, { ok: false, error: "This link is not valid" });
     if (req.method === "GET") {
       const b = await S.readBusiness(who.businessId, now); if (!b) return send(res, 404, { ok: false, error: "This link is not valid" });
       return send(res, 200, { ok: true, view: E.reviewerView(b.state, who.reviewerId), via: who.businessId });
+    }
+    if (body.action === "photo") {
+      const m = /^data:(image\/(?:jpeg|png|webp));base64,([A-Za-z0-9+/=]+)$/.exec(String(body.data || ""));
+      if (!m || m[2].length > 400000) return send(res, 400, { ok: false, error: "A JPEG, PNG or WebP under 300 KB" });
+      const { state } = await S.withBusiness(who.businessId, now, async (s) => {
+        E.markPhoto(s, now, who.reviewerId, true);
+        await q("insert into photo (business_id, reviewer_id, type, data) values ($1,$2,$3,$4) on conflict (business_id, reviewer_id) do update set type=excluded.type, data=excluded.data, updated_at=now()", [who.businessId, who.reviewerId, m[1], m[2]]);
+      });
+      return send(res, 200, { ok: true, view: E.reviewerView(state, who.reviewerId), via: who.businessId });
     }
     const fn = actions[body.action]; if (!fn) return send(res, 400, { ok: false, error: "Unknown action" });
     if (body.action === "checkDup") {

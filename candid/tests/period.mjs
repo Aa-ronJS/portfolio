@@ -33,7 +33,8 @@ async function call(fn, method, url, body, hdr = {}) {
   req.method = method; req.url = url; req.headers = { "content-type": "application/json", cookie, "x-real-ip": "1.2.3.4", ...hdr };
   const r = res(); await fn(req, r);
   if (r.headers["set-cookie"]) cookie = r.headers["set-cookie"].split(";")[0];
-  return { status: r.statusCode, ...(r.body ? JSON.parse(r.body) : {}) };
+  let j = {}; try { j = r.body ? JSON.parse(r.body) : {}; } catch (e) { j = { raw: r.body }; }
+  return { status: r.statusCode, ...j };
 }
 const B = (body) => call(business, "POST", "/api/business", body);
 const R = (body) => call(reviewer, "POST", "/api/reviewer", body);
@@ -75,15 +76,27 @@ ok(r.status === 404, "a made-up token is refused");
 r = await call(reviewer, "GET", "/api/reviewer?token=" + tokens[0]);
 ok(r.status === 200 && r.view.me.seat === "invited" && r.view.brief.v === 1 && !r.view.me.contact, "a real token shows the invitation");
 r = await R({ token: tokens[0], action: "accept", knew: "no", eligible: true, name: "Dana", email: "dana@example.com", payid: "0400000001" });
-ok(r.status === 200 && r.view.me.seat === "accepted" && r.view.period.state === "open", "accepting the first seat opens the period");
+ok(r.status === 400 && /state/i.test(r.error), "a seat needs a state: " + r.error);
+r = await R({ token: tokens[0], action: "accept", knew: "no", eligible: true, name: "Dana Reyes", state: "vic", email: "dana@example.com", payid: "0400000001" });
+ok(r.status === 200 && r.view.me.seat === "accepted" && r.view.period.state === "open" && r.view.me.name === "Dana Reyes" && r.view.me.state === "VIC", "accepting the first seat opens the period; name and state are kept");
+r = await R({ token: tokens[0], action: "photo", data: "data:text/plain;base64,aGk=" });
+ok(r.status === 400, "a photo must be an image");
+r = await R({ token: tokens[0], action: "photo", data: "data:image/jpeg;base64," + Buffer.from("not really a jpeg but fine for storage").toString("base64") });
+ok(r.status === 200 && r.view.me.photo === true, "a photo is stored and flagged");
 const people = [["no", "Dana", "dana@example.com"], ["yes", "Friend", "friend@example.com"], ["no", "Otto", "otto@example.com"], ["no", "Wren", "wren@example.com"], ["no", "Kite", "kite@example.com"]];
-r = await R({ token: tokens[1], action: "accept", knew: "no", eligible: true, name: "Dana again", email: "dana@example.com", payid: "x" });
+r = await R({ token: tokens[1], action: "accept", knew: "no", eligible: true, name: "Dana again", state: "VIC", email: "dana@example.com", payid: "x" });
 ok(r.status === 400 && /already holds/.test(r.error), "the same email cannot take a second seat in one period");
-for (let i = 1; i < 5; i++) await R({ token: tokens[i], action: "accept", knew: people[i][0], eligible: true, name: people[i][1], email: people[i][2], payid: "0400000" + i });
-r = await R({ token: tokens[0], action: "accept", knew: "no", eligible: true, name: "Dana", email: "dana@example.com", payid: "x" });
+for (let i = 1; i < 5; i++) await R({ token: tokens[i], action: "accept", knew: people[i][0], eligible: true, name: people[i][1], state: "NSW", email: people[i][2], payid: "0400000" + i });
+r = await R({ token: tokens[0], action: "accept", knew: "no", eligible: true, name: "Dana", state: "VIC", email: "dana@example.com", payid: "x" });
 ok(r.status === 400 && /used/.test(r.error), "a link cannot be accepted twice");
 b = await call(business, "GET", "/api/business?id=" + id);
-ok(b.business.reviewers.every((x) => x.seat === "accepted" && !x.link && !("contact" in x)), "the business sees five seats taken and no names, emails or payout details");
+ok(b.business.reviewers.every((x) => x.seat === "accepted" && !x.link && !("contact" in x) && x.name && x.state), "the business sees five seats taken with names and states, and no emails or payout details");
+ok(b.business.reviewers[0].photo === true && b.business.reviewers[1].photo === false, "and which of them added a photo");
+const photo = (await import("../api/photo.js")).default;
+let ph = await call(photo, "GET", "/api/photo?b=" + id + "&r=" + b.business.reviewers[0].id);
+ok(ph.status === 200, "the owner can fetch the photo");
+ph = await call(photo, "GET", "/api/photo?b=" + id + "&r=" + b.business.reviewers[0].id, null, { cookie: "" });
+ok(ph.status === 401, "nobody else can");
 ok(b.admin.reviewers.every((x) => /\/r\//.test(x.link)), "the operator can still copy every current link to resend it");
 
 
@@ -95,8 +108,8 @@ r = await call(reviewer, "GET", "/api/reviewer?token=" + tokens[0]);
 ok(r.view.me.draft && r.view.me.draft.sections[0] === "half written", "a draft survives a reload");
 r = await R({ token: tokens[0], action: "submitReview", sections: ["too short", "x", "y"], closing: CLOSING });
 ok(r.status === 400, "a review with empty sections is refused");
-r = await R({ token: tokens[0], action: "submitReview", sections: GOOD, closing: CLOSING });
-ok(r.status === 200 && r.view.review && r.view.me.seat === "submitted" && !r.view.me.draft, "a full review is accepted and the draft is cleared");
+r = await R({ token: tokens[0], action: "submitReview", sections: GOOD, closing: CLOSING, consent: true });
+ok(r.status === 200 && r.view.review && r.view.me.seat === "submitted" && !r.view.me.draft && r.view.review.consent === true, "a full review is accepted with consent to quote, and the draft is cleared");
 b = await call(business, "GET", "/api/business?id=" + id);
 ok(b.business.reviews.length === 0 && b.business.reviewCount === 1, "while the open stage runs the business sees a count, not the text");
 r = await R({ token: tokens[0], action: "submitBug", title: "No field for a gate code at booking", happened: "Booking asks for a flat number but there is nowhere to put a gate code, so the driver called from the street.", instead: "An optional access line.", where: "Booking" });
@@ -116,6 +129,8 @@ ok(r.view.period.state === "rating" && r.view.flags.length === 1 && r.view.flags
 b = await call(business, "GET", "/api/business?id=" + id);
 ok(b.business.bugs.length === 3 && b.business.bugs.every((x) => !x.unlocked && !("happened" in x) && x.teaser), "the business sees three teasers and no issue text");
 ok(b.business.reviews.length === 5 && b.business.reviews.every((x) => x.sections.length === 3), "the five reviews are revealed together now that the open stage has ended");
+ok(b.business.reviews.filter((x) => x.consent).length === 1, "one of them may be quoted; the rest stay private");
+ok(E.quote({ reviewers: { [b.business.reviewers[0].id]: { profile: { name: "Dana Reyes", state: "VIC", company: "" } } } }, { reviewerId: b.business.reviewers[0].id }, "Great") === "\u201cGreat\u201d \u2014 Dana Reyes, VIC. " + E.DISCLOSURE, "a quote carries name, state and the paid-review line");
 ok(b.business.bugs.find((x) => x.id === gateId).confirmations === 1, "the gate code issue carries one confirmation");
 
 // ---- peer rating
@@ -162,9 +177,9 @@ ok(b.business.period.no === 2 && b.business.period.briefV === 2 && b.business.hi
 // ---- the clock
 b = await B({ id, action: "credits", amount: 200 }); b = await B({ id, action: "fund", seats: 3 }); b = await B({ id, action: "recruit" });
 const t2 = b.business.reviewers.map((x) => x.link.split("/r/")[1]);
-r = await R({ token: t2[0], action: "accept", knew: "no", eligible: true, name: "Dana", email: "dana@example.com", payid: "0400000001" });
-ok(r.view.me.rep > 60 && r.view.me.pseudonym === (await call(reviewer, "GET", "/api/reviewer?token=" + tokens[0])).view.me.pseudonym, "a returning reviewer (same email) keeps their reputation and pseudonym");
-await R({ token: t2[1], action: "accept", knew: "no", eligible: true, name: "Otto", email: "otto@example.com", payid: "0400000003" });
+r = await R({ token: t2[0], action: "accept", knew: "no", eligible: true, name: "Dana Reyes", state: "VIC", email: "dana@example.com", payid: "0400000001" });
+ok(r.view.me.rep > 60 && r.view.me.photo === true, "a returning reviewer (same email) keeps their reputation and photo");
+await R({ token: t2[1], action: "accept", knew: "no", eligible: true, name: "Otto", state: "SA", email: "otto@example.com", payid: "0400000003" });
 await R({ token: t2[0], action: "submitReview", sections: GOOD, closing: CLOSING });
 day(15);
 b = await call(business, "GET", "/api/business?id=" + id);

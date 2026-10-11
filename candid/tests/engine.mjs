@@ -8,7 +8,7 @@ const s = E.newState("Loop", t);
 E.saveBrief(s, t, { product: "Pickup laundry", job: "Book one pickup", wants: ["Booking: was it clear when we would arrive?"], eligibility: "Inner north" });
 E.addCredits(s, t, 500); E.newPeriod(s, t); E.fund(s, t, 4);
 const ids = E.openRecruiting(s, t, () => 0.42);
-ids.forEach((id, i) => E.accept(s, t, id, { knew: "no", eligible: true, email: `p${i}@x.co`, payid: "04" }));
+ids.forEach((id, i) => E.accept(s, t, id, { knew: "no", eligible: true, name: "Person " + i, state: "VIC", email: `p${i}@x.co`, payid: "04" }));
 const text = ["The booking page said we would get a text the night before and it came at 9:40pm with a window, but there was no field for a gate code so the driver rang from the street."];
 for (const id of ids) await E.submitReview(s, t, id, { sections: text, closing: [] }, ai);
 ok(s.period.state === "rating" && Object.values(s.assignments).every((a) => a.length === 3), "four submissions: rating starts, three raters each");

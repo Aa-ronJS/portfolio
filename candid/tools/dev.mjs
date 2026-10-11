@@ -18,7 +18,7 @@ if (!process.env.DATABASE_URL) {
   const db = new PGlite(process.env.PGLITE_DIR || undefined);
   globalThis.__candidDb = { query: (t, p = []) => db.query(t, p), exec: (s) => db.exec(s) };
 }
-const handlers = { auth: (await import("../api/auth.js")).default, business: (await import("../api/business.js")).default, reviewer: (await import("../api/reviewer.js")).default, lead: (await import("../api/lead.js")).default };
+const handlers = { auth: (await import("../api/auth.js")).default, business: (await import("../api/business.js")).default, reviewer: (await import("../api/reviewer.js")).default, lead: (await import("../api/lead.js")).default, photo: (await import("../api/photo.js")).default };
 const types = { ".html": "text/html; charset=utf-8", ".js": "text/javascript; charset=utf-8", ".css": "text/css; charset=utf-8", ".png": "image/png", ".svg": "image/svg+xml" };
 
 createServer(async (req, res) => {

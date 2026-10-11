@@ -2,11 +2,14 @@
 
 Paid, private, peer-checked feedback. A business writes a brief, prepays
 credits, and sends personal invite links to the people it has recruited.
-Each reviewer uses the product, writes a review against the brief,
-reports process issues, and blind-rates three peers. Reviews are private
-to the business and never published. Issues are listed as teasers and
-unlocked with credit, priced by the peer score. Claude triages flags; a
-person decides; a flag undecided for seven days releases the payout.
+Each reviewer uses the product, writes a review against the brief with
+their name, state and photo on it (and their business for B2B), reports
+process issues, and blind-rates three peers. Reviewers are anonymous to
+each other, never to the business. A review is private unless the
+reviewer agrees it may be quoted; a quote carries the paid-review
+disclosure. Issues are listed as teasers and unlocked with credit,
+priced by the peer score. Claude triages flags; a person decides; a flag
+undecided for seven days releases the payout.
 
 One Vercel project, no build step. The rules live in `api/_engine.js`
 and are the whole product; everything else is plumbing and screens.
@@ -21,10 +24,11 @@ api/auth.js                          one passcode, a signed cookie
 api/business.js                      the owner's reads and actions, one business at a time
 api/reviewer.js                      the reviewer's reads and actions, by invite token
 api/lead.js                          early-access requests from the landing page, attributed to the business they came through
+api/photo.js                         a reviewer's photo, for the signed-in owner only
 api/_engine.js                       the rules: brief, period, seats, scoring, flags, settlement, the clock
 api/_ai.js                           Claude (structured outputs) with a heuristic fallback
 api/_store.js, _db.js                one JSON document per business, saved under a version check
-db/*.sql                             four tables
+db/*.sql                             five tables
 tools/dev.mjs                        a local server on pglite, no accounts needed
 tests/engine.mjs                     the rules alone: balanced assignment, late ratings during settlement
 tests/period.mjs                     a whole period through the real handlers on real Postgres (pglite)
@@ -68,8 +72,10 @@ triage; without it the built-in heuristics do, and the app says so.
    20% platform fee), open recruiting.
 4. Copy the recruitment post and the invite links. Each link is one seat
    and is used once. Send each person their own link.
-5. Reviewers accept on their phone, give a PayID, declare whether they
-   knew you, write the review (saved as they type), report issues.
+5. Reviewers accept on their phone with their name, state and a photo
+   (and their business for B2B), give a PayID, declare whether they
+   knew you, write the review (saved as they type), choose whether you
+   may quote it, and report issues.
 6. When everyone has submitted, or you end the open stage, peer rating
    starts. Tell reviewers to open their link again. It closes when all
    ratings are in or after seven days.

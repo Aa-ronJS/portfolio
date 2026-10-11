@@ -19,7 +19,8 @@
 const FEE = 20;
 const FLAG_REASONS = ['untruthful', 'unfairly positive', 'unfairly negative', 'not about this product', 'abusive', 'pasted from elsewhere'];
 const token = (location.pathname.match(/\/r\/([A-Za-z0-9_-]+)/) || [])[1] || new URLSearchParams(location.search).get('token') || '';
-const V = { view: null, via: '', error: null, busy: null, step: 0, bugForm: false, dup: null, saving: '' };
+const V = { view: null, via: '', error: null, busy: null, step: 0, bugForm: false, dup: null, saving: '', photoData: null };
+const AU_STATES = ['NSW', 'VIC', 'QLD', 'SA', 'WA', 'TAS', 'ACT', 'NT'];
 const $ = (s) => document.querySelector(s);
 const esc = (s) => String(s ?? '').replace(/[&<>"]/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
 const money = (n) => '$' + Number(n).toFixed(0);
@@ -41,7 +42,7 @@ async function act(body, msg) { V.busy = 'Saving'; render(); try { const j = awa
 
 // ---------- draft autosave ----------
 let saveTimer = null, lastSent = '';
-function readForm() { const b = V.view.brief; return { sections: b.wants.map((_, i) => ($('#sec' + i) || {}).value || ''), closing: [0, 1, 2].map((i) => ($('#clo' + i) || {}).value || ''), received: !!($('#received') || {}).checked, at: Date.now() }; }
+function readForm() { const b = V.view.brief; return { sections: b.wants.map((_, i) => ($('#sec' + i) || {}).value || ''), closing: [0, 1, 2].map((i) => ($('#clo' + i) || {}).value || ''), received: !!($('#received') || {}).checked, consent: !!($('#consent') || {}).checked, at: Date.now() }; }
 function queueSave() {
   const d = readForm(); store.set(DK, d); V.saving = 'Saving…'; const el = $('#savestate'); if (el) el.textContent = V.saving;
   clearTimeout(saveTimer); saveTimer = setTimeout(async () => { const s = JSON.stringify({ s: d.sections, c: d.closing, r: d.received }); if (s === lastSent) { if ($('#savestate')) $('#savestate').textContent = 'Saved'; return; }
@@ -53,7 +54,7 @@ function draftFor() { const server = V.view.me.draft, local = store.get(DK); if 
 const promo = (s, title, line) => `<div class="panel promo"><div class="body" style="display:flex;justify-content:space-between;gap:12px;align-items:center;flex-wrap:wrap"><div><div class="strong">${title}</div><div class="sm muted">${line}</div></div><a class="btn sm" href="/?via=${encodeURIComponent(V.via)}&s=${s}">See how it works</a></div></div>`;
 const PROMO = {
   invite: () => promo('invite', 'Make something yourself?', 'Candid runs this for any business: paid, private, peer-checked feedback.'),
-  submitted: () => promo('submitted', 'Want this for your own thing?', 'Five honest strangers, paid by you, read only by you.'),
+  submitted: () => promo('submitted', 'Want this for your own thing?', 'Five honest strangers with their names on it, paid by you.'),
   paid: () => promo('paid', 'You just got paid for being honest.', 'Businesses pay for exactly this. Run a period for yours.'),
 };
 // ---------- views ----------
@@ -86,12 +87,16 @@ function body(v) {
 }
 function invite(v) {
   const b = v.brief, st = V.step;
-  if (st === 0) return `<div class="panel"><div class="body stack"><span class="sm muted">Invitation</span><h2>${esc(v.business)} wants your feedback</h2><dl class="kv"><dt>The job</dt><dd>${esc(b.job)}</dd><dt>You get</dt><dd>${money(FEE)} for a written review and three short peer ratings, paid by PayID</dd><dt>Who sees it</dt><dd>Only ${esc(v.business)}. Never published. They see a pseudonym, not your name.</dd></dl><div class="row">${btn('step', 'Accept', 'data-v="1"', 'btn primary lg')}${btn('decline', 'Decline', '', 'btn ghost')}</div></div></div>` + PROMO.invite();
+  if (st === 0) return `<div class="panel"><div class="body stack"><span class="sm muted">Invitation</span><h2>${esc(v.business)} wants your feedback</h2><dl class="kv"><dt>The job</dt><dd>${esc(b.job)}</dd><dt>You get</dt><dd>${money(FEE)} for a written review and three short peer ratings, paid by PayID</dd><dt>Who sees it</dt><dd>${esc(v.business)}, with your name, state and photo. Other reviewers never see who you are. It is quoted publicly only if you say so.</dd></dl><div class="row">${btn('step', 'Accept', 'data-v="1"', 'btn primary lg')}${btn('decline', 'Decline', '', 'btn ghost')}</div></div></div>` + PROMO.invite();
   if (st === 1) return `<div class="panel"><div class="body stack"><span class="sm muted">One check</span><h2>${esc(b.eligibility)}</h2><p class="muted">Is that you?</p><div class="row">${btn('step', 'Yes, that is me', 'data-v="2"', 'btn primary lg')}${btn('decline', 'No', '', 'btn ghost')}</div></div></div>`;
-  return `<div class="panel"><div class="body stack"><span class="sm muted">Last step</span><h2>Where to pay you</h2>
-    <div class="field"><label for="name">Your name</label><input type="text" id="name" autocomplete="name"></div>
-    <div class="field"><label for="email">Email</label><input type="email" id="email" autocomplete="email"><div class="help">So you can get this link back if you lose it.</div></div>
-    <div class="field"><label for="payid">PayID (mobile number or email)</label><input type="text" id="payid" autocomplete="tel"></div>
+  const b2b = b.kind === 'b2b';
+  return `<div class="panel"><div class="body stack"><span class="sm muted">Last step</span><h2>Who you are, and where to pay you</h2>
+    <div class="field"><label for="name">Your name</label><input type="text" id="name" autocomplete="name"><div class="help">${esc(v.business)} sees your name, state and photo on the review.</div></div>
+    <div class="row" style="align-items:flex-start"><div class="field" style="flex:1"><label for="state">State</label><select id="state"><option value="">Choose</option>${AU_STATES.map((x) => `<option>${x}</option>`).join('')}</select></div>
+    <div class="field" style="flex:2;min-width:160px"><label for="photo">Photo</label><input type="file" id="photo" accept="image/*" capture="user"><div class="help" id="photohelp">A face, so the review is clearly yours.</div></div></div>
+    ${b2b ? `<div class="field"><label for="company">Your business</label><input type="text" id="company" autocomplete="organization"></div><div class="field"><label for="role">Your role</label><input type="text" id="role" autocomplete="organization-title"></div>` : ''}
+    <div class="field"><label for="email">Email</label><input type="email" id="email" autocomplete="email"><div class="help">Platform only. So you can get this link back if you lose it.</div></div>
+    <div class="field"><label for="payid">PayID (mobile number or email)</label><input type="text" id="payid" autocomplete="tel"><div class="help">Platform only. The business never sees it.</div></div>
     <div class="field"><label for="knew">Did you know ${esc(v.business)} before today?</label><select id="knew"><option value="">Choose</option><option value="no">No</option><option value="yes">Yes</option><option value="not sure">Not sure</option></select><div class="help">${esc(v.business)} only ever sees a count across all reviewers.</div></div>
     <div class="row">${btn('accept', 'Take the seat', '', 'btn primary lg')}</div></div></div>`;
 }
@@ -102,6 +107,8 @@ function reviewForm(v) {
     <div class="row"><input type="checkbox" id="received" ${d.received ? 'checked' : ''}><label for="received" style="margin:0">I have received the free product or job</label></div>
     ${b.wants.map((q, i) => `<div class="field"><label for="sec${i}">${esc(q)}</label><textarea id="sec${i}" rows="4">${esc(d.sections[i] || '')}</textarea></div>`).join('')}
     ${['What did you try to do?', 'Where did you stop, if anywhere?', 'What would you pay for this?'].map((q, i) => `<div class="field"><label for="clo${i}">${esc(q)}</label><input type="text" id="clo${i}" value="${esc(d.closing[i] || '')}"></div>`).join('')}
+    <div class="row" style="align-items:flex-start"><input type="checkbox" id="consent" ${d.consent ? 'checked' : ''} style="margin-top:4px"><label for="consent" style="margin:0;color:var(--ink);font-weight:400">${esc(v.business)} may quote this review publicly with my name, state and photo. It will carry a line saying I was paid for it.</label></div>
+    ${!v.me.photo ? `<div class="row"><input type="file" id="photo2" accept="image/*" capture="user" style="width:auto"><span class="sm muted" id="photohelp">Add a photo</span></div>` : ''}
     <div class="sticky-save"><span class="sm muted">${money(FEE)} after you also rate three peers</span>${btn('submit', 'Submit review', '', 'btn primary')}</div></div></div>`;
 }
 function issuesPanel(v) {
@@ -135,13 +142,28 @@ const history = (v) => v.review ? `<div class="panel"><div class="head"><h2>Your
 
 // ---------- events ----------
 document.addEventListener('input', (ev) => { if (/^(sec\d|clo\d)$/.test(ev.target.id)) queueSave(); });
-document.addEventListener('change', (ev) => { if (ev.target.id === 'received') queueSave(); });
+document.addEventListener('change', (ev) => { if (ev.target.id === 'received' || ev.target.id === 'consent') queueSave(); if (ev.target.id === 'photo' || ev.target.id === 'photo2') pickPhoto(ev.target); });
+// Resize on the phone to a 320px JPEG so a 4 MB camera shot becomes ~25 KB.
+function pickPhoto(input) {
+  const f = input.files && input.files[0]; if (!f) return; const help = $('#photohelp');
+  const img = new Image(); const url = URL.createObjectURL(f);
+  img.onload = async () => {
+    const side = 320, c = document.createElement('canvas'); const r = Math.max(side / img.width, side / img.height); const w = Math.round(img.width * r), h = Math.round(img.height * r);
+    c.width = side; c.height = side; c.getContext('2d').drawImage(img, (side - w) / 2, (side - h) / 2, w, h); URL.revokeObjectURL(url);
+    V.photoData = c.toDataURL('image/jpeg', 0.82); if (help) help.textContent = 'Photo ready';
+    if (V.view && V.view.me.seat !== 'invited') { try { const j = await api({ action: 'photo', data: V.photoData }); V.view = j.view; V.photoData = null; toast('Photo added'); render(); } catch (e) { toast(e.message, true); } }
+  };
+  img.onerror = () => { if (help) help.textContent = 'That file is not an image'; };
+  img.src = url;
+}
 document.addEventListener('click', async (ev) => {
   const el = ev.target.closest('[data-act]'); if (!el) return; const act = el.dataset.act, id = el.dataset.id;
   if (act === 'step') { V.step = Number(el.dataset.v); return render(); }
   if (act === 'decline') return act_({ action: 'decline' });
-  if (act === 'accept') { const knew = $('#knew').value; if (!knew) return toast('Say whether you knew the business', true); return act_({ action: 'accept', eligible: true, knew, name: $('#name').value, email: $('#email').value, payid: $('#payid').value }, 'Seat taken'); }
-  if (act === 'submit') { const d = readForm(); if (d.sections.some((s) => s.trim().length < 20)) return toast('Every section needs a real answer', true); store.del(DK); await act_({ action: 'submitReview', sections: d.sections, closing: d.closing }, 'Review submitted'); return; }
+  if (act === 'accept') { const knew = $('#knew').value; if (!knew) return toast('Say whether you knew the business', true);
+    await act_({ action: 'accept', eligible: true, knew, name: $('#name').value, state: $('#state').value, company: ($('#company') || {}).value || '', role: ($('#role') || {}).value || '', email: $('#email').value, payid: $('#payid').value }, 'Seat taken');
+    if (V.view && V.view.me.seat === 'accepted' && V.photoData) { try { const j = await api({ action: 'photo', data: V.photoData }); V.view = j.view; V.photoData = null; render(); } catch (e) {} } return; }
+  if (act === 'submit') { const d = readForm(); if (d.sections.some((s) => s.trim().length < 20)) return toast('Every section needs a real answer', true); store.del(DK); await act_({ action: 'submitReview', sections: d.sections, closing: d.closing, consent: d.consent }, 'Review submitted'); return; }
   if (act === 'bugform') { V.bugForm = true; V.dup = null; return render(); }
   if (act === 'bugform-close') { V.bugForm = false; V.dup = null; return render(); }
   if (act === 'bug-submit') {

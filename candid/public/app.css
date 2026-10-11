@@ -136,6 +136,8 @@ select { appearance: auto }
 .drawer .dfoot { padding: 12px 20px; border-top: 1px solid var(--line); display: flex; gap: 8px; flex-wrap: wrap; justify-content: space-between }
 .drawer .tiles { grid-template-columns: repeat(3, 1fr) }
 .grp { display: flex; gap: 6px; align-items: center; flex-wrap: wrap }
+.face { width: 28px; height: 28px; border-radius: 999px; object-fit: cover; flex: none; background: var(--hover); display: inline-grid; place-items: center; font-weight: 600; font-size: 12px; color: var(--muted) }
+.face.big { width: 44px; height: 44px; font-size: 16px }
 .x { border: 0; background: none; font-size: 18px; color: var(--muted); cursor: pointer; line-height: 1; padding: 2px 6px; border-radius: 6px }
 .x:hover { background: var(--hover); color: var(--ink) }
 

@@ -15,11 +15,11 @@ export const CATEGORIES = ["missing step", "wrong step", "unnecessary step", "in
 export const FLAG_REASONS = ["untruthful", "unfairly positive", "unfairly negative", "not about this product", "abusive", "pasted from elsewhere"];
 export const STATES = ["draft", "funded", "recruiting", "open", "rating", "settlement", "closed"];
 export const STATUSES = ["will use", "will not use", "already doing"];
+export const AU_STATES = ["NSW", "VIC", "QLD", "SA", "WA", "TAS", "ACT", "NT"];
+export const DISCLOSURE = "Received the product free and was paid $20 for this review through Candid.";
 const DAY = 86400000;
 export const SUBMIT_DAYS = 14, RATING_DAYS = 7, FLAG_DAYS = 7, HOLD_DAYS = 30;
 
-const ADJ = ["Quiet", "Amber", "Grey", "Blue", "Red", "Green", "Silver", "Golden", "Little", "Swift", "Pale", "Dusky", "Bright", "Still", "Wild", "Early"];
-const BIRD = ["Heron", "Fox", "Otter", "Wren", "Kite", "Finch", "Plover", "Swift", "Robin", "Magpie", "Ibis", "Kestrel", "Lark", "Teal", "Curlew", "Martin"];
 
 export class EngineError extends Error { constructor(msg, status = 400) { super(msg); this.status = status; } }
 const fail = (m, s) => { throw new EngineError(m, s); };
@@ -42,19 +42,18 @@ export const latestBrief = (s) => s.briefs[s.briefs.length - 1] || null;
 export const repOf = (r) => Math.round((PRIOR * PRIOR_N + r.rep.sum) / (PRIOR_N + r.rep.n));
 export const tierOf = (score) => TIERS.find((t) => score >= t.min) || null;
 export const cur = (s, arr) => arr.filter((x) => s.period && x.periodNo === s.period.no);
-export const seated = (s) => Object.values(s.reviewers).filter((r) => s.period && r.periodNo === s.period.no);
+// JSONB keeps keys in its own order, not insertion order, so every list of reviewers is sorted here.
+export const allReviewers = (s) => Object.values(s.reviewers).sort((a, b) => (a.invitedAt - b.invitedAt) || (a.id < b.id ? -1 : 1));
+export const seated = (s) => allReviewers(s).filter((r) => s.period && r.periodNo === s.period.no);
 const targetOf = (s, f) => (f.targetType === "review" ? s.reviews : s.bugs).find((x) => x.id === f.targetId);
 function log(s, now, event, detail, vis) { s.log.push({ at: now, event, detail, vis: vis || { business: true, reviewers: [] }, periodNo: s.period ? s.period.no : 0 }); }
 function uid(rng) { return Math.floor((rng || Math.random)() * 2176782336).toString(36).padStart(6, "0") + Math.floor(Math.random() * 1296).toString(36).padStart(2, "0"); }
-function pseudonym(s, rng) {
-  const used = new Set(Object.values(s.reviewers).map((r) => r.pseudonym));
-  for (let i = 0; i < 400; i++) { const p = ADJ[Math.floor((rng || Math.random)() * ADJ.length)] + " " + BIRD[Math.floor((rng || Math.random)() * BIRD.length)]; if (!used.has(p)) return p; }
-  return "Reviewer " + (used.size + 1);
-}
+// Reviewers are named to the business (name, state, photo, and their business for B2B) and anonymous only to
+// each other: peer rating shows text alone. Until a seat is accepted it is just "Seat n".
 
 // ---------- business actions ----------
 export function saveBrief(s, now, a) {
-  const b = { v: s.briefs.length + 1, product: clean(a.product, 400), audience: clean(a.audience, 400), job: clean(a.job, 600), wants: lines(a.wants, 200, 5),
+  const b = { v: s.briefs.length + 1, kind: a.kind === "b2b" ? "b2b" : "b2c", product: clean(a.product, 400), audience: clean(a.audience, 400), job: clean(a.job, 600), wants: lines(a.wants, 200, 5),
     known: lines(a.known, 200, 12), wontChange: clean(a.wontChange, 400), eligibility: clean(a.eligibility, 300), at: now };
   if (!b.product || !b.job || b.wants.length < 1 || !b.eligibility) fail("The brief needs a product, the job, at least one question and an eligibility rule");
   s.briefs.push(b);
@@ -91,8 +90,8 @@ export function openRecruiting(s, now, rng) {
   const ids = [];
   for (let i = 0; i < s.period.seats; i++) {
     const id = uid(rng);
-    s.reviewers[id] = { id, periodNo: s.period.no, pseudonym: pseudonym(s, rng), seat: "invited", knew: null, rep: { sum: 0, n: 0 }, strikes: 0, status: "active",
-      payout: null, payoutReason: "", received: false, draft: null, contact: null, invitedAt: now };
+    s.reviewers[id] = { id, periodNo: s.period.no, pseudonym: `Seat ${i + 1}`, seat: "invited", knew: null, rep: { sum: 0, n: 0 }, strikes: 0, status: "active",
+      payout: null, payoutReason: "", received: false, draft: null, contact: null, profile: null, invitedAt: now };
     ids.push(id);
   }
   s.period.state = "recruiting"; s.period.at.recruiting = now;
@@ -132,13 +131,17 @@ export function accept(s, now, id, a) {
   const email = clean(a.email, 120).toLowerCase(); if (!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(email)) fail("A real email address is needed for the payout");
   const payid = clean(a.payid, 120); if (!payid) fail("A PayID (phone or email) is needed for the payout");
   if (a.eligible !== true) fail("The eligibility check must be confirmed");
+  const name = clean(a.name, 80); if (name.length < 2) fail("Your name is needed; the business sees who wrote the review");
+  const state = String(a.state || "").toUpperCase(); if (!AU_STATES.includes(state)) fail("Choose your state");
+  const company = clean(a.company, 120), role = clean(a.role, 80);
+  if (brief(s).kind === "b2b" && !company) fail("Your business name is needed for this review");
   // A returning reviewer (same email in this business) carries their reputation and strikes over.
   const same = Object.values(s.reviewers).find((x) => x.id !== id && x.periodNo === s.period.no && x.contact && x.contact.email === email && x.seat !== "released");
   if (same) fail("That email already holds a seat in this period");
   const prior = Object.values(s.reviewers).filter((x) => x.id !== id && x.contact && x.contact.email === email).sort((a, b) => (b.acceptedAt || 0) - (a.acceptedAt || 0))[0];
-  if (prior) { r.rep = { ...prior.rep }; r.strikes = prior.strikes; r.status = prior.status; r.pseudonym = prior.pseudonym; }
+  if (prior) { r.rep = { ...prior.rep }; r.strikes = prior.strikes; r.status = prior.status; }
   if (r.status === "banned" || r.status === "suspended") fail("This account cannot take part");
-  r.seat = "accepted"; r.knew = knew; r.acceptedAt = now; r.contact = { name: clean(a.name, 80), email, payid };
+  r.seat = "accepted"; r.knew = knew; r.acceptedAt = now; r.contact = { email, payid }; r.profile = { name, state, company, role, photo: !!(prior && prior.profile && prior.profile.photo) }; r.pseudonym = name;
   if (s.period.state === "recruiting") { s.period.state = "open"; s.period.at.opened = now; log(s, now, "Period opened", "first seat accepted"); }
   log(s, now, "Seat accepted", r.pseudonym, { business: true, reviewers: [id] });
 }
@@ -159,7 +162,7 @@ export async function submitReview(s, now, id, d, ai, rng) {
   const sections = (Array.isArray(d.sections) ? d.sections : []).map((x) => clean(x, 4000));
   const closing = (Array.isArray(d.closing) ? d.closing : []).map((x) => clean(x, 500));
   if (sections.length !== b.wants.length || sections.some((x) => x.length < 20)) fail("Every section needs an answer of at least 20 characters");
-  const rv = { id: uid(rng), periodNo: s.period.no, reviewerId: id, sections, closing, briefV: s.period.briefV, at: now, ratings: [], scores: null, status: null };
+  const rv = { id: uid(rng), periodNo: s.period.no, reviewerId: id, sections, closing, briefV: s.period.briefV, at: now, ratings: [], scores: null, status: null, consent: d.consent === true };
   const scored = await ai.scoreReview({ sections, closing }, b);
   rv.ai = { onBrief: clamp(scored.onBrief), quality: clamp(scored.quality), by: scored.by };
   s.reviews.push(rv); r.seat = "submitted"; r.submittedAt = now; r.draft = null;
@@ -199,6 +202,7 @@ export async function submitBug(s, now, id, d, dupOf, ai, rng) {
   return bug;
 }
 export function markReceived(s, now, id, v) { const r = s.reviewers[id]; if (!r) fail("Not found", 404); r.received = !!v; }
+export function markPhoto(s, now, id, has) { const r = s.reviewers[id]; if (!r || !r.profile) fail("Accept the invitation first"); r.profile.photo = !!has; }
 export function startRating(s, now, rng) {
   // Balanced and blind: shuffle the submitters once, then each review is rated by the next three in the ring.
   // Every rater gets exactly three (fewer only when fewer than four people submitted) and never their own.
@@ -350,7 +354,9 @@ export function tick(s, now, rng) {
 }
 
 // ---------- views: what each party is allowed to see ----------
-const pub = (r) => ({ id: r.id, pseudonym: r.pseudonym, seat: r.seat, knew: r.knew, rep: repOf(r), scored: r.rep.n, status: r.status, strikes: r.strikes, payout: r.payout, payoutReason: r.payoutReason, received: r.received, acceptedAt: r.acceptedAt || null, submittedAt: r.submittedAt || null });
+const pub = (r) => ({ id: r.id, pseudonym: r.pseudonym, name: r.profile ? r.profile.name : "", state: r.profile ? r.profile.state : "", company: r.profile ? r.profile.company : "", role: r.profile ? r.profile.role : "", photo: !!(r.profile && r.profile.photo),
+  seat: r.seat, knew: r.knew, rep: repOf(r), scored: r.rep.n, status: r.status, strikes: r.strikes, payout: r.payout, payoutReason: r.payoutReason, received: r.received, acceptedAt: r.acceptedAt || null, submittedAt: r.submittedAt || null });
+export const quote = (s, rv, text) => { const r = s.reviewers[rv.reviewerId]; const who = [r.profile.name, r.profile.company, r.profile.state].filter(Boolean).join(", "); return `“${text}” — ${who}. ${DISCLOSURE}`; };
 export function businessView(s, tokens) {
   const p = s.period;
   return {
@@ -370,8 +376,8 @@ export function reviewerView(s, id) {
   const b = s.briefs.find((x) => x.v === (p ? p.briefV : 0)) || latestBrief(s);
   return {
     business: s.name, me: { ...pub(r), contact: r.contact, draft: r.draft, current: own }, period: p ? { no: p.no, state: p.state, at: p.at, seats: p.seats } : null,
-    brief: b ? { v: b.v, product: b.product, job: b.job, wants: b.wants, known: b.known, eligibility: b.eligibility } : null,
-    review: rv ? { id: rv.id, sections: rv.sections, closing: rv.closing, at: rv.at, scores: rv.scores, status: rv.status, briefV: rv.briefV } : null,
+    brief: b ? { v: b.v, kind: b.kind || "b2c", product: b.product, job: b.job, wants: b.wants, known: b.known, eligibility: b.eligibility } : null,
+    review: rv ? { id: rv.id, sections: rv.sections, closing: rv.closing, at: rv.at, scores: rv.scores, status: rv.status, briefV: rv.briefV, consent: !!rv.consent } : null,
     bugs: s.bugs.filter((x) => x.reviewerId === id).map((x) => ({ id: x.id, title: x.title, dupOf: x.dupOf, scores: x.scores, tier: x.tier, unlocked: x.unlocked, paidOut: x.paidOut, payout: x.payout, status: x.status, at: x.at })),
     published: [...(b ? b.known : []).map((t) => ({ title: t, status: "known" })), ...s.bugs.filter((x) => x.unlocked).map((x) => ({ title: x.title, status: x.status || "unlocked" }))],
     toRate: mine, ratingsDone: !!s.ratingsDone[id],
@@ -382,8 +388,8 @@ export function reviewerView(s, id) {
 export function adminView(s) {
   const flags = s.flags.map((f) => { const t = targetOf(s, f); const r = s.reviewers[t.reviewerId]; return { ...f, text: f.targetType === "review" ? t.sections.join("\n") : t.title + ". " + t.happened, reviewer: pub(r), periodNo: f.periodNo }; });
   const payouts = [
-    ...Object.values(s.reviewers).filter((r) => r.payout === "released" || r.payout === "paid").map((r) => ({ kind: "review", id: r.id, pseudonym: r.pseudonym, amount: FEE, payid: r.contact && r.contact.payid, email: r.contact && r.contact.email, state: r.payout, at: r.paidAt || r.releasedAt, periodNo: r.periodNo })),
+    ...allReviewers(s).filter((r) => r.payout === "released" || r.payout === "paid").map((r) => ({ kind: "review", id: r.id, pseudonym: r.pseudonym, amount: FEE, payid: r.contact && r.contact.payid, email: r.contact && r.contact.email, state: r.payout, at: r.paidAt || r.releasedAt, periodNo: r.periodNo })),
     ...s.bugs.filter((b) => b.payout === "released" || b.payout === "paid").map((b) => ({ kind: "bug", id: b.id, pseudonym: s.reviewers[b.reviewerId].pseudonym, amount: b.paidOut, payid: s.reviewers[b.reviewerId].contact && s.reviewers[b.reviewerId].contact.payid, email: s.reviewers[b.reviewerId].contact && s.reviewers[b.reviewerId].contact.email, state: b.payout, at: b.paidAt || b.unlockedAt, periodNo: b.periodNo, title: b.title })),
   ];
-  return { name: s.name, flags, payouts, reviewers: Object.values(s.reviewers).map((r) => ({ ...pub(r), email: r.contact && r.contact.email })), log: s.log.slice(-300), periodNo: s.periodNo, period: s.period };
+  return { name: s.name, flags, payouts, reviewers: allReviewers(s).map((r) => ({ ...pub(r), email: r.contact && r.contact.email })), log: s.log.slice(-300), periodNo: s.periodNo, period: s.period };
 }
