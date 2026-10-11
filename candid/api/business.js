@@ -11,9 +11,11 @@ import { ai, aiOn } from "./_ai.js";
 
 const APP_URL = () => String(process.env.APP_URL || "").replace(/\/?$/, "/");
 function views(id, state, tokens) {
-  const b = E.businessView(state, tokens);
+  const b = E.businessView(state, tokens), a = E.adminView(state);
   b.reviewers.forEach((r) => { if (r.token) r.link = APP_URL() + "r/" + r.token; });
-  return { ok: true, id, business: b, admin: E.adminView(state), meta: { ai: aiOn(), appUrl: APP_URL() } };
+  // The operator can resend any current reviewer's link; the business side only ever sees unaccepted ones.
+  a.reviewers.forEach((r) => { if (tokens[r.id] && state.period && r.seat !== "released") r.link = APP_URL() + "r/" + tokens[r.id]; });
+  return { ok: true, id, business: b, admin: a, meta: { ai: aiOn(), appUrl: APP_URL() } };
 }
 
 const actions = {

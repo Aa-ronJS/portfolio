@@ -77,11 +77,15 @@ ok(r.status === 200 && r.view.me.seat === "invited" && r.view.brief.v === 1 && !
 r = await R({ token: tokens[0], action: "accept", knew: "no", eligible: true, name: "Dana", email: "dana@example.com", payid: "0400000001" });
 ok(r.status === 200 && r.view.me.seat === "accepted" && r.view.period.state === "open", "accepting the first seat opens the period");
 const people = [["no", "Dana", "dana@example.com"], ["yes", "Friend", "friend@example.com"], ["no", "Otto", "otto@example.com"], ["no", "Wren", "wren@example.com"], ["no", "Kite", "kite@example.com"]];
+r = await R({ token: tokens[1], action: "accept", knew: "no", eligible: true, name: "Dana again", email: "dana@example.com", payid: "x" });
+ok(r.status === 400 && /already holds/.test(r.error), "the same email cannot take a second seat in one period");
 for (let i = 1; i < 5; i++) await R({ token: tokens[i], action: "accept", knew: people[i][0], eligible: true, name: people[i][1], email: people[i][2], payid: "0400000" + i });
 r = await R({ token: tokens[0], action: "accept", knew: "no", eligible: true, name: "Dana", email: "dana@example.com", payid: "x" });
 ok(r.status === 400 && /used/.test(r.error), "a link cannot be accepted twice");
 b = await call(business, "GET", "/api/business?id=" + id);
 ok(b.business.reviewers.every((x) => x.seat === "accepted" && !x.link && !("contact" in x)), "the business sees five seats taken and no names, emails or payout details");
+ok(b.admin.reviewers.every((x) => /\/r\//.test(x.link)), "the operator can still copy every current link to resend it");
+
 
 // ---- reviews, drafts, issues
 const GOOD = ["The booking page said we will text you a window the night before and the text came at 9:40pm with a 1pm to 5pm window, but there was no field for a gate code so the driver rang from the street.", "The bag was the stripey one from the welcome email. The label had my name but not a date, so with two bags I could not tell which was which.", "Returned in 46 hours. Paying was a link in the return email, worked first go."];
@@ -93,6 +97,8 @@ r = await R({ token: tokens[0], action: "submitReview", sections: ["too short", 
 ok(r.status === 400, "a review with empty sections is refused");
 r = await R({ token: tokens[0], action: "submitReview", sections: GOOD, closing: CLOSING });
 ok(r.status === 200 && r.view.review && r.view.me.seat === "submitted" && !r.view.me.draft, "a full review is accepted and the draft is cleared");
+b = await call(business, "GET", "/api/business?id=" + id);
+ok(b.business.reviews.length === 0 && b.business.reviewCount === 1, "while the open stage runs the business sees a count, not the text");
 r = await R({ token: tokens[0], action: "submitBug", title: "No field for a gate code at booking", happened: "Booking asks for a flat number but there is nowhere to put a gate code, so the driver called from the street.", instead: "An optional access line.", where: "Booking" });
 const gateId = r.view.bugs[0].id;
 ok(r.status === 200 && r.view.bugs.length === 1, "an issue is reported");
@@ -109,6 +115,7 @@ r = await R({ token: tokens[4], action: "submitReview", sections: ["Great servic
 ok(r.view.period.state === "rating" && r.view.flags.length === 1 && r.view.flags[0].reason === "pasted from elsewhere" && r.view.flags[0].state === "queued", "the fifth submission starts peer rating; the boilerplate one is flagged by AI and queued, not binned");
 b = await call(business, "GET", "/api/business?id=" + id);
 ok(b.business.bugs.length === 3 && b.business.bugs.every((x) => !x.unlocked && !("happened" in x) && x.teaser), "the business sees three teasers and no issue text");
+ok(b.business.reviews.length === 5 && b.business.reviews.every((x) => x.sections.length === 3), "the five reviews are revealed together now that the open stage has ended");
 ok(b.business.bugs.find((x) => x.id === gateId).confirmations === 1, "the gate code issue carries one confirmation");
 
 // ---- peer rating

@@ -133,7 +133,9 @@ export function accept(s, now, id, a) {
   const payid = clean(a.payid, 120); if (!payid) fail("A PayID (phone or email) is needed for the payout");
   if (a.eligible !== true) fail("The eligibility check must be confirmed");
   // A returning reviewer (same email in this business) carries their reputation and strikes over.
-  const prior = Object.values(s.reviewers).find((x) => x.id !== id && x.contact && x.contact.email === email);
+  const same = Object.values(s.reviewers).find((x) => x.id !== id && x.periodNo === s.period.no && x.contact && x.contact.email === email && x.seat !== "released");
+  if (same) fail("That email already holds a seat in this period");
+  const prior = Object.values(s.reviewers).filter((x) => x.id !== id && x.contact && x.contact.email === email).sort((a, b) => (b.acceptedAt || 0) - (a.acceptedAt || 0))[0];
   if (prior) { r.rep = { ...prior.rep }; r.strikes = prior.strikes; r.status = prior.status; r.pseudonym = prior.pseudonym; }
   if (r.status === "banned" || r.status === "suspended") fail("This account cannot take part");
   r.seat = "accepted"; r.knew = knew; r.acceptedAt = now; r.contact = { name: clean(a.name, 80), email, payid };
@@ -147,7 +149,7 @@ export function decline(s, now, id) {
 }
 export function saveDraft(s, now, id, d) {
   const r = s.reviewers[id]; if (!r || r.seat !== "accepted") fail("No open review to draft");
-  r.draft = { sections: lines(d.sections, 4000, 8).length ? (Array.isArray(d.sections) ? d.sections : []).map((x) => clean(x, 4000)) : [], closing: (Array.isArray(d.closing) ? d.closing : []).map((x) => clean(x, 500)), received: !!d.received, at: now };
+  r.draft = { sections: (Array.isArray(d.sections) ? d.sections : []).slice(0, 8).map((x) => clean(x, 4000)), closing: (Array.isArray(d.closing) ? d.closing : []).slice(0, 3).map((x) => clean(x, 500)), received: !!d.received, at: now };
 }
 export async function submitReview(s, now, id, d, ai, rng) {
   const r = s.reviewers[id]; if (!r) fail("Not found", 404);
@@ -210,8 +212,9 @@ export function startRating(s, now, rng) {
 }
 export async function submitRatings(s, now, id, entries, ai, rng) {
   const r = s.reviewers[id]; if (!r) fail("Not found", 404);
-  if (s.period.state !== "rating") fail("Peer rating is not open");
+  if (s.period.state !== "rating" && s.period.state !== "settlement") fail("Peer rating is not open");
   if (r.seat !== "submitted") fail("Nothing to rate");
+  const late = s.period.state === "settlement";
   const mine = cur(s, s.reviews).filter((rv) => s.assignments[rv.id].includes(id));
   const byId = new Map((Array.isArray(entries) ? entries : []).map((e) => [String(e.reviewId), e]));
   for (const rv of mine) {
@@ -221,8 +224,9 @@ export async function submitRatings(s, now, id, entries, ai, rng) {
     cur(s, s.bugs).filter((b) => b.reviewerId === rv.reviewerId && !b.dupOf).forEach((b) => b.ratings.push({ raterId: id, useful }));
   }
   s.ratingsDone[id] = true; r.seat = "rated";
-  log(s, now, "Peer ratings submitted", `${r.pseudonym} · ${mine.length}`, { business: false, reviewers: [id] });
+  log(s, now, "Peer ratings submitted", `${r.pseudonym} · ${mine.length}${late ? " · late, scores unchanged" : ""}`, { business: false, reviewers: [id] });
   for (const rv of mine) { const e = byId.get(rv.id); if (e.flag && FLAG_REASONS.includes(e.flag)) await raiseFlag(s, now, "review", rv.id, id, e.flag, ai, rng); }
+  if (late) { r.payout = "pending"; if (!releaseIfNoFlags(s, now, id)) { r.payout = "held"; r.payoutReason = "flag open"; } maybeClose(s, now); return; }
   if (cur(s, s.reviews).every((rv) => s.assignments[rv.id].every((x) => s.ratingsDone[x]))) settle(s, now);
 }
 export function reply(s, now, id, flagId, text) {
@@ -240,7 +244,7 @@ export async function raiseFlag(s, now, targetType, targetId, source, reason, ai
   const target = (targetType === "review" ? s.reviews : s.bugs).find((x) => x.id === targetId); if (!target) fail("Not found", 404);
   const who = s.reviewers[target.reviewerId];
   if (source === "business" && s.flags.some((f) => f.targetId === targetId && f.source === "business")) fail("Already flagged");
-  const f = { id: uid(rng), periodNo: s.period.no, targetType, targetId, source, reason, at: now, state: "triage", reply: null, ai: null, decision: null };
+  const f = { id: uid(rng), periodNo: target.periodNo, targetType, targetId, source, reason, at: now, state: "triage", reply: null, ai: null, decision: null };
   s.flags.push(f);
   log(s, now, "Flag raised", `${reason} · ${who.pseudonym} · by ${source === "ai" ? "AI" : source === "business" ? "business" : "peer"}`, { business: true, reviewers: [who.id] });
   if (who.payout === "pending") { who.payout = "held"; who.payoutReason = "flag open"; }
@@ -352,7 +356,8 @@ export function businessView(s, tokens) {
   return {
     name: s.name, credits: s.credits, briefs: s.briefs, periodNo: s.periodNo, period: p, history: s.history,
     reviewers: seated(s).map((r) => ({ ...pub(r), token: r.seat === "invited" ? (tokens || {})[r.id] || null : null })),
-    reviews: cur(s, s.reviews).map((rv) => ({ ...rv, flags: s.flags.filter((f) => f.targetId === rv.id).map(({ id, reason, source, state, decision, at }) => ({ id, reason, source, state, decision, at })) })),
+    reviewCount: cur(s, s.reviews).length,
+    reviews: (p && ["recruiting", "open"].includes(p.state) ? [] : cur(s, s.reviews)).map((rv) => ({ ...rv, flags: s.flags.filter((f) => f.targetId === rv.id).map(({ id, reason, source, state, decision, at }) => ({ id, reason, source, state, decision, at })) })),
     bugs: cur(s, s.bugs).filter((b) => !b.dupOf).map((b) => b.unlocked ? b : { id: b.id, category: b.ai && b.ai.category, teaser: b.ai && b.ai.teaser, provisional: b.ai ? Math.round((b.ai.onBrief + b.ai.quality) / 2) : null, scores: b.scores, tier: b.tier, confirmations: b.confirmations, unlocked: false, reviewerId: b.reviewerId, at: b.at }),
     log: s.log.filter((e) => e.vis.business).slice(-300),
   };
@@ -361,7 +366,7 @@ export function reviewerView(s, id) {
   const r = s.reviewers[id]; if (!r) return null;
   const p = s.period; const own = p && r.periodNo === p.no;
   const rv = s.reviews.find((x) => x.reviewerId === id && x.periodNo === r.periodNo) || null;
-  const mine = own && p.state === "rating" && r.seat === "submitted" ? cur(s, s.reviews).filter((x) => s.assignments[x.id] && s.assignments[x.id].includes(id)).map((x) => ({ id: x.id, sections: x.sections })) : [];
+  const mine = own && (p.state === "rating" || p.state === "settlement") && r.seat === "submitted" ? cur(s, s.reviews).filter((x) => s.assignments[x.id] && s.assignments[x.id].includes(id)).map((x) => ({ id: x.id, sections: x.sections })) : [];
   const b = s.briefs.find((x) => x.v === (p ? p.briefV : 0)) || latestBrief(s);
   return {
     business: s.name, me: { ...pub(r), contact: r.contact, draft: r.draft, current: own }, period: p ? { no: p.no, state: p.state, at: p.at, seats: p.seats } : null,
