@@ -8,7 +8,7 @@ let chromium; try { ({ chromium } = await import("playwright")); } catch { conso
 if (!exe && !process.env.PLAYWRIGHT_BROWSERS_PATH) { console.log("SKIP browser test: no Chromium"); process.exit(0); }
 
 const PORT = 3177;
-const server = spawn(process.execPath, ["tools/dev.mjs"], { env: { ...process.env, PORT: String(PORT), OWNER_PASSCODE: "browser-passcode", ANTHROPIC_API_KEY: "" }, stdio: ["ignore", "pipe", "inherit"] });
+const server = spawn(process.execPath, ["tools/dev.mjs"], { env: { ...process.env, PORT: String(PORT), ADMIN_EMAILS: "owner@example.com", ANTHROPIC_API_KEY: "", RESEND_API_KEY: "", STRIPE_SECRET_KEY: "" }, stdio: ["ignore", "pipe", "ignore"] });
 await new Promise((r) => server.stdout.on("data", (d) => { if (/Candid on/.test(String(d))) r(); }));
 let fails = 0; const ok = (c, m) => { console.log((c ? "PASS " : "FAIL ") + m); if (!c) fails++; };
 const base = `http://localhost:${PORT}`;
@@ -19,10 +19,13 @@ const click = async (p, sel) => { await p.click(sel); await p.waitForTimeout(150
 const settle = (p) => p.waitForFunction(() => !document.querySelector(".spin"));
 try {
   const owner = await page();
-  await owner.goto(base + "/app"); await owner.waitForSelector("#pass");
-  await owner.fill("#pass", "wrong"); await click(owner, '[data-act="login"]'); await owner.waitForSelector("#loginerr:not(:empty)");
-  ok(true, "a wrong passcode shows an error on the sign-in card");
-  await owner.fill("#pass", "browser-passcode"); await click(owner, '[data-act="login"]'); await owner.waitForSelector("#newname");
+  await owner.goto(base + "/app?signup=1"); await owner.waitForSelector("#email");
+  await owner.fill("#email", "owner@example.com"); await click(owner, '[data-act="start"]'); await owner.waitForSelector("#code");
+  ok((await owner.inputValue("#code")).length === 6, "without an email provider the dev server fills the code in");
+  await owner.fill("#code", "000000"); await click(owner, '[data-act="check"]'); await owner.waitForSelector("#loginerr:not(:empty)");
+  ok(true, "a wrong code shows an error on the sign-in card");
+  await click(owner, '[data-act="login-back"]'); await owner.waitForSelector("#email"); await click(owner, '[data-act="start"]'); await owner.waitForSelector("#code");
+  await click(owner, '[data-act="check"]'); await owner.waitForSelector("#newname");
   await owner.fill("#newname", "Loop Laundry"); await click(owner, '[data-act="create"]'); await owner.waitForSelector('[data-act="wz-start"]');
   ok(await owner.locator("#wsel option").count() >= 1, "the business is created and selected");
   await click(owner, '[data-act="wz-start"]');
@@ -31,8 +34,8 @@ try {
   for (const a of answers) { await owner.fill("#wz", a); await click(owner, '[data-act="wz-next"]'); await settle(owner); }
   await owner.waitForSelector(".kv");
   ok((await owner.locator(".kv").textContent()).includes("Handover"), "the brief wizard saves all seven answers");
-  await click(owner, '[data-act="page"][data-v="credits"]'); await owner.fill("#camt", "300"); await click(owner, '[data-act="credits"]'); await settle(owner);
-  ok((await owner.locator(".tile .v").first().textContent()).trim() === "$300", "credits are added");
+  await click(owner, '[data-act="page"][data-v="credits"]'); await owner.waitForSelector("#camt"); await owner.fill("#camt", "300"); await click(owner, '[data-act="credits"]'); await settle(owner);
+  ok((await owner.locator(".tile .v").first().textContent()).trim() === "$300", "an admin adds credits by hand (Stripe is off in this run)");
   await click(owner, '[data-act="page"][data-v="period"]'); await click(owner, '[data-act="newPeriod"]'); await settle(owner);
   await owner.fill("#seats", "3"); await click(owner, '[data-act="fund"]'); await settle(owner);
   await click(owner, '[data-act="recruit"]'); await settle(owner);
@@ -113,15 +116,15 @@ try {
   const n = await owner.locator('[data-act="markPaid"]').count();
   ok(n === 4, "four payouts are released: three review fees and one issue share (" + n + ")");
   await click(owner, '[data-act="markPaid"]'); await settle(owner);
-  ok(await owner.locator(".chip.good").filter({ hasText: "Paid" }).count() >= 1, "marking one paid shows it paid");
+  ok(await owner.locator('[data-act="markPaid"]').count() === 3, "marking one paid removes it from the list");
   await click(owner, '[data-act="page"][data-v="overview"]'); await owner.waitForSelector(".tiles");
   ok((await owner.locator(".topbar .chip").textContent()).includes("Closed"), "the period is closed");
   await owner.screenshot({ path: "/tmp/candid-owner-overview.png" });
   await phones[1].reload(); await phones[1].waitForSelector(".tile");
   const feeTile = await phones[1].locator(".tile").filter({ hasText: "Review fee" }).textContent();
   ok(/released|paid/.test(feeTile), "the flagged-then-cleared reviewer sees their fee released (" + feeTile.trim().replace(/\s+/g, " ") + ")");
-  const mobileOwner = await page(400); await mobileOwner.goto(base + "/app"); await mobileOwner.waitForSelector("#pass");
-  await mobileOwner.fill("#pass", "browser-passcode"); await click(mobileOwner, '[data-act="login"]'); await mobileOwner.waitForSelector(".tiles");
+  const mobileOwner = await page(400); await mobileOwner.goto(base + "/app"); await mobileOwner.waitForSelector("#email");
+  await mobileOwner.fill("#email", "owner@example.com"); await click(mobileOwner, '[data-act="start"]'); await mobileOwner.waitForSelector("#code"); await click(mobileOwner, '[data-act="check"]'); await mobileOwner.waitForSelector(".tiles");
   await mobileOwner.screenshot({ path: "/tmp/candid-owner-mobile.png" });
   ok(!(await mobileOwner.evaluate(() => document.documentElement.scrollWidth > document.documentElement.clientWidth)), "the owner app has no horizontal scroll at phone width");
 } catch (e) { ok(false, "browser run threw: " + e.message); }

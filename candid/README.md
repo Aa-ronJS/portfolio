@@ -13,20 +13,22 @@ decides, and a flag left seven days releases the payout.
 One Vercel project, no build step. The rules are in `api/_engine.js`.
 
 ```
-public/index.html                    the landing page: what it is, how a period runs, price, early-access form
+public/index.html, terms.html, privacy.html   the landing page and the two documents it links to
 public/app.html, app.js, app.css     the owner's app at /app: sign in, businesses, the period, reviews, issues,
                                      credits, brief, and the platform pages (queue, payouts, reviewers, leads)
 public/r.html                        the reviewer's page at /r/<token>, with promo cards after the invitation,
                                      after submitting and after payout, linking to /?via=<business>
-api/auth.js                          one passcode, a signed cookie
+api/auth.js                          email and six-digit code; an email is an account; admins from ADMIN_EMAILS
 api/business.js                      the owner's reads and actions, one business at a time
 api/reviewer.js                      the reviewer's reads and actions, by invite token
-api/lead.js                          early-access requests from the landing page, attributed to the business they came through
+api/admin.js                         the platform: queued flags, released payouts, accounts, across all businesses
+api/checkout.js, stripe-webhook.js   credits by card through Stripe Checkout, credited once
 api/photo.js                         a reviewer's photo, for the signed-in owner only
+api/_email.js                        Resend, with the six email templates
 api/_engine.js                       the rules: brief, period, seats, scoring, flags, settlement, the clock
 api/_ai.js                           Claude (structured outputs) with a heuristic fallback
 api/_store.js, _db.js                one JSON document per business, saved under a version check
-db/*.sql                             five tables
+db/*.sql                             the tables
 tools/dev.mjs                        a local server on pglite, no accounts needed
 tests/engine.mjs                     the rules alone: balanced assignment, late ratings during settlement
 tests/period.mjs                     a whole period through the real handlers on real Postgres (pglite)
@@ -38,7 +40,7 @@ tests/browser.mjs                    both pages in Chromium against the dev serv
 ```
 npm install
 npm test                 # engine.mjs, period.mjs, and browser.mjs when Playwright and Chromium are present
-node tools/dev.mjs       # http://localhost:3123 (landing), /app (owner, passcode local-passcode), data in memory
+node tools/dev.mjs       # http://localhost:3123 (landing), /app (sign in with any email; the code is filled in), data in memory
 ```
 
 Set `ANTHROPIC_API_KEY` to have Claude score, categorise, deduplicate and
@@ -53,9 +55,11 @@ triage; without it the built-in heuristics do, and the app says so.
    | Variable | What |
    | --- | --- |
    | `DATABASE_URL` | the pooled Postgres URL |
-   | `OWNER_PASSCODE` | your sign-in, 8+ characters |
    | `SESSION_SECRET` | any long random string |
-   | `APP_URL` | the deployed address with a trailing slash, used in invite links |
+   | `ADMIN_EMAILS` | your email; comma-separated for more admins. Admins see the platform pages. |
+   | `APP_URL` | the deployed address with a trailing slash, used in invite links and emails |
+   | `RESEND_API_KEY`, `RESEND_FROM` | sign-in codes and reviewer emails. Without them nobody can sign in on production. |
+   | `STRIPE_SECRET_KEY`, `STRIPE_WEBHOOK_SECRET` | credits by card. The webhook endpoint is `/api/stripe-webhook`, events `checkout.session.completed` and `checkout.session.async_payment_succeeded`. |
    | `ANTHROPIC_API_KEY` | optional; Claude on, heuristics off |
 
 3. `npx vercel --prod`. The schema applies itself on the first request.
@@ -63,9 +67,10 @@ triage; without it the built-in heuristics do, and the app says so.
 
 ## Running a pilot
 
-1. Sign in, create the business, answer the seven brief questions.
-2. Credits: add the amount you want to spend. Card payments are not
-   connected yet; the ledger records it.
+1. Sign in with your email, create the business, answer the seven brief
+   questions.
+2. Credits: buy a pack by card. An admin can also record a bank transfer
+   under Credits.
 3. Review period: start one, fund it (seats × $24: $20 to the reviewer,
    20% platform fee), open recruiting.
 4. Copy the recruitment post and the invite links. Each link is one seat
@@ -78,10 +83,12 @@ triage; without it the built-in heuristics do, and the app says so.
    starts. Tell reviewers to open their link again. It closes when all
    ratings are in or after seven days.
 7. Settlement: scores are final and fees are released unless a flag is
-   open. Queue: decide each flag. Payouts: pay by PayID, mark paid.
-   Issues: unlock the ones you want.
+   open. Reviewers are emailed when rating opens and when a fee is
+   released. Admin queue: decide each flag. Admin payouts: pay by PayID,
+   mark paid. Issues: unlock the ones you want.
 8. Next period starts on the latest brief. Reviewers who return with the
    same email keep their reputation.
 
-Not included yet: card payments, automated payouts, email sending, a
-reviewer marketplace, more than one owner account.
+Not included yet: automated payouts (PayID transfers are made by hand
+from the Payouts page), GST handling on Stripe (set up Stripe Tax if the
+business is registered), a reviewer marketplace.

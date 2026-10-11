@@ -42,7 +42,7 @@ footer { margin-top: 48px; padding-top: 18px; border-top: 1px solid var(--line);
     <div>
       <h1>Paid feedback from your first customers.</h1>
       <p class="sub">Write a brief. Send personal links to people you recruit. Each one uses your product, writes a review under their own name for $20, and three other reviewers check it. Private unless the reviewer agrees to be quoted.</p>
-      <div class="cta"><a class="btn primary lg" href="#start">Get early access</a><span class="sm muted">No subscription. $24 a seat.</span></div>
+      <div class="cta"><a class="btn primary lg" id="cta1" href="/app?signup=1">Create an account</a><span class="sm muted">No subscription. $24 a seat.</span></div>
     </div>
     <div class="mock" aria-hidden="true">
       <div class="mt"><span class="strong">Issues</span><span class="chip warn">Settlement</span></div>
@@ -77,32 +77,14 @@ footer { margin-top: 48px; padding-top: 18px; border-top: 1px solid var(--line);
     <div class="tile"><div class="k">Subscription</div><div class="v">None</div><div class="s">Prepaid credits. Run a period when you need one.</div></div>
   </div></section>
 
-  <section class="sec" id="start"><div class="panel"><div class="body stack">
-    <h2 style="margin:0">Get early access</h2>
-    <p class="muted sm">Candid is in a private pilot. Leave your email and we will set up your account.</p>
-    <form class="signup" id="lead">
-      <div class="field"><label for="email">Email</label><input type="email" id="email" required autocomplete="email"></div>
-      <div class="field"><label for="note">What you make</label><input type="text" id="note" placeholder="e.g. laundry pickup in Melbourne's inner north"></div>
-      <div class="field"><button class="btn primary lg" type="submit">Request access</button></div>
-    </form>
-    <p class="sm" id="leadmsg"></p>
-  </div></div></section>
+  <section class="sec" id="start"><div class="panel"><div class="body stack"><h2 style="margin:0">Start a review period</h2><p class="muted sm">Sign in with an email address. Prepay credits by card, write the brief, send the links.</p><div class="row"><a class="btn primary lg" id="cta2" href="/app?signup=1">Create an account</a><a class="btn ghost" href="/app">Sign in</a></div></div></div></section>
 
-  <footer><span>Candid · paid, private, peer-checked feedback</span><span>Have an invite link? Open it from the message it came in.</span></footer>
+  <footer><span>Candid · <a href="/terms">Terms</a> · <a href="/privacy">Privacy</a></span><span>Have an invite link? Open it from the message it came in.</span></footer>
 </div>
 <script>
 'use strict';
-const qs = new URLSearchParams(location.search), via = qs.get('via') || '', source = qs.get('s') || (via ? 'invite' : 'ad');
-document.getElementById('lead').addEventListener('submit', async (ev) => {
-  ev.preventDefault();
-  const msg = document.getElementById('leadmsg'), btn = ev.target.querySelector('button'); btn.disabled = true; msg.textContent = '';
-  try {
-    const r = await fetch('/api/lead', { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify({ email: document.getElementById('email').value, note: document.getElementById('note').value, via, source }) });
-    const j = await r.json().catch(() => ({}));
-    if (!j.ok) throw new Error(j.error || 'Try again');
-    msg.textContent = 'Thanks. We will email you.'; msg.style.color = 'var(--good)'; ev.target.reset();
-  } catch (e) { msg.textContent = e.message; msg.style.color = 'var(--bad)'; btn.disabled = false; }
-});
+const qs = new URLSearchParams(location.search), via = qs.get('via') || '', source = qs.get('s') || '';
+if (via || source) ['cta1', 'cta2'].forEach((id) => { const a = document.getElementById(id); a.href = '/app?signup=1&via=' + encodeURIComponent(via) + '&s=' + encodeURIComponent(source); });
 </script>
 </body>
 </html>

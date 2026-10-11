@@ -46,6 +46,7 @@ export const cur = (s, arr) => arr.filter((x) => s.period && x.periodNo === s.pe
 export const allReviewers = (s) => Object.values(s.reviewers).sort((a, b) => (a.invitedAt - b.invitedAt) || (a.id < b.id ? -1 : 1));
 export const seated = (s) => allReviewers(s).filter((r) => s.period && r.periodNo === s.period.no);
 const targetOf = (s, f) => (f.targetType === "review" ? s.reviews : s.bugs).find((x) => x.id === f.targetId);
+const queue = (s, m) => { (s.outbox = s.outbox || []).push(m); };
 function log(s, now, event, detail, vis) { s.log.push({ at: now, event, detail, vis: vis || { business: true, reviewers: [] }, periodNo: s.period ? s.period.no : 0 }); }
 function uid(rng) { return Math.floor((rng || Math.random)() * 2176782336).toString(36).padStart(6, "0") + Math.floor(Math.random() * 1296).toString(36).padStart(2, "0"); }
 // Reviewers are named to the business (name, state, photo, and their business for B2B). Peer rating shows text only.
@@ -119,6 +120,7 @@ export function unlock(s, now, id) {
   s.credits.balance -= b.tier.price; b.unlocked = true; b.unlockedAt = now; b.paidOut = Math.round(b.tier.price * (1 - FEE_PCT)); b.payout = "released";
   s.credits.ledger.push({ at: now, what: `Unlock · ${b.title}`, amt: -b.tier.price });
   log(s, now, "Issue unlocked", `"${b.title}" · $${b.tier.price} · reporter owed $${b.paidOut}`, { business: true, reviewers: [b.reviewerId] });
+  queue(s, { kind: "feeReleased", reviewerId: b.reviewerId, amount: b.paidOut });
   return b;
 }
 
@@ -211,6 +213,7 @@ export function startRating(s, now, rng) {
   cur(s, s.reviews).forEach((rv) => { const i = subs.indexOf(rv.reviewerId); s.assignments[rv.id] = i < 0 ? [] : [1, 2, 3].filter((k) => k < n).map((k) => subs[(i + k) % n]); });
   s.period.state = "rating"; s.period.at.rating = now;
   log(s, now, "Peer rating started", `${cur(s, s.reviews).length} reviews · up to 3 blind raters each`);
+  subs.forEach((id) => { if (cur(s, s.reviews).some((rv) => s.assignments[rv.id].includes(id))) queue(s, { kind: "ratingOpen", reviewerId: id }); });
   subs.forEach((id) => { if (!cur(s, s.reviews).some((rv) => s.assignments[rv.id].includes(id))) { s.ratingsDone[id] = true; s.reviewers[id].seat = "rated"; } });
   if (cur(s, s.reviews).every((rv) => s.assignments[rv.id].every((id) => s.ratingsDone[id]))) settle(s, now);
 }
@@ -252,6 +255,7 @@ export async function raiseFlag(s, now, targetType, targetId, source, reason, ai
   s.flags.push(f);
   log(s, now, "Flag raised", `${reason} · ${who.pseudonym} · by ${source === "ai" ? "AI" : source === "business" ? "business" : "peer"}`, { business: true, reviewers: [who.id] });
   if (who.payout === "pending") { who.payout = "held"; who.payoutReason = "flag open"; }
+  queue(s, { kind: "flagRaised", reviewerId: who.id, reason });
   const text = targetType === "review" ? target.sections.join("\n") : target.title + ". " + target.happened;
   const peers = cur(s, s.reviews).filter((x) => x.id !== target.id).map((x) => x.sections.join(" ").slice(0, 400));
   const v = await ai.triage({ reason, text, knew: who.knew, peers });
@@ -284,6 +288,7 @@ export function settle(s, now) {
     else if (r.seat === "submitted") { r.payout = "held"; r.payoutReason = "peer ratings outstanding"; r.heldAt = now; }
   });
   log(s, now, "Settlement started", "scores final · reputations updated");
+  queue(s, { kind: "settled", owner: true, periodNo: s.period.no });
   maybeClose(s, now);
 }
 function releaseIfNoFlags(s, now, id) {
@@ -293,6 +298,7 @@ function releaseIfNoFlags(s, now, id) {
   if (open || r.payout === "forfeited" || r.payout === "paid") return r.payout === "paid";
   r.payout = "released"; r.payoutReason = ""; r.releasedAt = now;
   log(s, now, "Review fee released", `${r.pseudonym} · $${FEE}`, { business: true, reviewers: [id] });
+  queue(s, { kind: "feeReleased", reviewerId: id, amount: FEE });
   return true;
 }
 function maybeClose(s, now) {

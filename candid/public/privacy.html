@@ -1,0 +1,41 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Candid privacy</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Figtree:wght@400;500;600;700&display=swap">
+<link rel="stylesheet" href="/app.css">
+<style>.doc { max-width: 680px; margin: 0 auto; padding: 24px 20px 64px } .doc h1 { font-size: 24px; margin: 18px 0 } .doc h2 { font-size: 16px; margin: 24px 0 8px } .doc p, .doc li { font-size: 14.5px; margin-bottom: 8px }</style>
+</head>
+<body>
+<div class="doc">
+<a class="brand" href="/" style="padding:0;text-decoration:none;color:inherit"><span class="mark">C</span>Candid</a>
+<h1>Privacy</h1>
+<p>Last updated 12 October 2026.</p>
+
+<h2>What is stored</h2>
+<ul>
+<li><strong>Businesses:</strong> the account email, the business name, the brief, credits and the ledger, reviews and issues received, and an activity log.</li>
+<li><strong>Reviewers:</strong> name, state, photo, business name and role if given, email, PayID, the reviews and issues you submit, your peer ratings, and your reputation score.</li>
+<li><strong>Payments:</strong> Stripe processes cards. Candid stores the Stripe session id and the amount, not card details.</li>
+</ul>
+
+<h2>Who sees what</h2>
+<ul>
+<li>The business sees your name, state, photo and review. It does not see your email or PayID, and it does not see who reported an issue.</li>
+<li>Other reviewers see review text only, with no name.</li>
+<li>Candid's operators see everything, to decide flags and make payouts.</li>
+<li>Review and issue text is sent to Anthropic's Claude to score, categorise and triage it. It is not used to train models.</li>
+<li>Email is sent through Resend. Nothing is sold or shared for advertising.</li>
+</ul>
+
+<h2>Keeping and deleting</h2>
+<ul>
+<li>A business keeps read access to its periods. A reviewer can ask for their account to be closed; entries are anonymised, not deleted, because the business paid for them.</li>
+<li>Data is hosted on Vercel and a Postgres provider. Ask at the address on the landing page for a copy of what is held about you.</li>
+</ul>
+<p><a href="/terms">Terms</a></p>
+</div>
+</body>
+</html>

@@ -8,7 +8,7 @@ const FLAG_REASONS = ['untruthful', 'unfairly positive', 'unfairly negative', 'n
 const PLACES = [['Neighbourhood Facebook groups', 'Mention it is paid'], ['Local subreddit or forum', 'Message a mod first'], ['Your waitlist and past enquiries', 'People who already asked'], ['Building and strata noticeboards', 'Ask the manager'], ['Cafe pinboards', 'Poster with a QR code']];
 const QUESTIONS = [['kind', 'Who buys it?', 'B2B reviewers also give their business name and role.'], ['product', 'What is it, in one sentence?'], ['audience', 'Who is it for, and who is it not for?'], ['job', 'What will a reviewer do, how long does it take, and what do they get free?'], ['wants', 'The three things you most want to know', 'One per line. Each becomes a section of the review form.'], ['known', 'Known problems', 'One per line. Reviewers are not paid for repeating these.'], ['wontChange', 'What you will not change', 'Feedback on it is marked off-brief.'], ['eligibility', 'Who qualifies as a reviewer?']];
 
-const A = { auth: null, biz: [], id: null, d: null, page: 'overview', side: false, drawer: null, wizard: null, busy: null, seats: 5, meta: {}, leads: null };
+const A = { auth: null, biz: [], id: null, d: null, page: 'overview', side: false, drawer: null, wizard: null, busy: null, seats: 5, meta: {}, adm: null, login: { step: 'email', email: '', devCode: '' } };
 const $ = (s) => document.querySelector(s);
 const esc = (s) => String(s ?? '').replace(/[&<>"]/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
 const money = (n) => (n < 0 ? '−' : '') + '$' + Math.abs(Number(n)).toFixed(0);
@@ -30,44 +30,54 @@ async function act(body, okMsg) {
   try { const j = await api('/api/business', { id: A.id, ...body }); A.d = j; if (okMsg) toast(typeof okMsg === 'function' ? okMsg(j) : okMsg); render(); return j; }
   catch (e) { toast(e.message, true); render(); return null; }
 }
-async function loadList() { const j = await api('/api/business?list=1'); A.biz = j.businesses; A.meta = j.meta || {}; api('/api/lead').then((l) => { A.leads = l.leads; render(); }).catch(() => {}); }
+async function loadList() { const j = await api('/api/business?list=1'); A.biz = j.businesses; A.meta = j.meta || {}; }
+async function loadAdmin() { if (!A.auth || !A.auth.admin) return; try { A.adm = await api('/api/admin'); } catch (e) { toast(e.message, true); } }
 async function loadBiz(id) { const j = await api('/api/business?id=' + encodeURIComponent(id)); A.id = id; A.d = j; store.set('candid-biz', id); }
 async function boot() {
   try { A.auth = await api('/api/auth'); } catch (e) { A.auth = { loggedIn: false, configured: false }; }
+  const qs = new URLSearchParams(location.search);
   if (A.auth.loggedIn) {
     await loadList();
-    const want = store.get('candid-biz'); const first = A.biz.find((b) => b.id === want) || A.biz[0];
+    const want = qs.get('b') || store.get('candid-biz'); const first = A.biz.find((b) => b.id === want) || A.biz[0];
     if (first) await loadBiz(first.id);
-  }
+    if (qs.get('paid') && qs.get('session_id') && first) {
+      try { const j = await api('/api/checkout', { action: 'confirm', id: first.id, session_id: qs.get('session_id') }); A.d = j; toast(j.credited ? 'Credits added' : j.paid ? 'Already credited' : 'Payment not completed', !j.paid); A.page = 'credits'; } catch (e) { toast(e.message, true); }
+      history.replaceState(null, '', '/app');
+    }
+    loadAdmin().then(render);
+  } else if (qs.get('signup')) { A.login.signup = true; A.login.via = qs.get('via') || ''; A.login.source = qs.get('s') || ''; }
   render();
 }
 
 // ---------- shell ----------
 const bv = () => A.d && A.d.business, av = () => A.d && A.d.admin;
 function navFor() {
-  const b = bv(), a = av(); if (!b) return [];
+  const b = bv(); if (!b) return [];
   const ready = b.bugs.filter((x) => x.scores && x.tier && !x.unlocked).length;
-  return [['overview', 'Overview'], ['period', 'Review period'], ['reviews', 'Reviews', b.reviews.length], ['issues', 'Issues', ready], ['credits', 'Credits'], ['brief', 'Brief'], ['activity', 'Activity'],
-    ['_', 'Platform'], ['queue', 'Queue', a.flags.filter((f) => f.state === 'queued').length], ['payouts', 'Payouts', a.payouts.filter((p) => p.state === 'released').length], ['reviewers', 'Reviewers'], ['leads', 'Leads', A.leads ? A.leads.length : 0], ['plog', 'Everything']];
+  const nav = [['overview', 'Overview'], ['period', 'Review period'], ['reviews', 'Reviews', b.reviews.length], ['issues', 'Issues', ready], ['credits', 'Credits'], ['brief', 'Brief'], ['activity', 'Activity']];
+  if (A.auth && A.auth.admin) nav.push(['_', 'Platform'], ['queue', 'Queue', A.adm ? A.adm.flags.length : 0], ['payouts', 'Payouts', A.adm ? A.adm.payouts.length : 0], ['reviewers', 'Reviewers'], ['accounts', 'Accounts', A.adm ? A.adm.accounts.length : 0], ['plog', 'Everything']);
+  return nav;
 }
 function render() {
   const app = $('#app');
   if (!A.auth || !A.auth.loggedIn) { app.className = 'login'; app.innerHTML = loginView(); renderDrawer(); return; }
   app.className = 'app';
   const nav = navFor(); if (nav.length && !nav.some((n) => n[0] === A.page)) A.page = 'overview';
-  const titles = { overview: 'Overview', period: 'Review period', reviews: 'Reviews', issues: 'Issues', credits: 'Credits', brief: 'Brief', activity: 'Activity', queue: 'Queue', payouts: 'Payouts', reviewers: 'Reviewers', leads: 'Leads', plog: 'Everything' };
+  const titles = { overview: 'Overview', period: 'Review period', reviews: 'Reviews', issues: 'Issues', credits: 'Credits', brief: 'Brief', activity: 'Activity', queue: 'Queue', payouts: 'Payouts', reviewers: 'Reviewers', accounts: 'Accounts', plog: 'Everything' };
   app.innerHTML = `<aside class="side${A.side ? ' open' : ''}" id="side"><div class="brand"><span class="mark">C</span>Candid</div>
     <div class="ws"><select id="wsel" data-act="switch" aria-label="Business">${A.biz.map((b) => `<option value="${b.id}" ${b.id === A.id ? 'selected' : ''}>${esc(b.name)}</option>`).join('')}<option value="__new">+ New business</option></select></div>
     <nav class="nav">${nav.map(([k, l, c]) => k === '_' ? `<div class="grp">${l}</div>` : `<button data-act="page" data-v="${k}" aria-current="${A.page === k ? 'page' : 'false'}">${l}${c ? `<span class="count">${c}</span>` : ''}</button>`).join('')}</nav>
-    <div class="foot xs faint">${A.meta.ai ? 'AI · Claude' : 'AI · built-in'}${bv() ? ` · period ${bv().periodNo || '—'}` : ''}<br>${btn('logout', 'Sign out', '', 'btn ghost sm')}</div></aside>
+    <div class="foot xs faint">${esc(A.auth.email || '')}${A.auth.admin ? ' · admin' : ''}<br>${A.meta.ai ? 'AI · Claude' : 'AI · built-in'}<br>${btn('logout', 'Sign out', '', 'btn ghost sm')}</div></aside>
     ${A.side ? '<div class="scrim" data-act="side"></div>' : ''}
-    <div class="main"><div class="topbar"><div class="title">${btn('side', '☰', 'aria-label="Menu"', 'btn menu-btn')}<h1>${bv() ? titles[A.page] : 'Candid'}</h1>${bv() && bv().period && !['brief', 'queue', 'payouts', 'reviewers', 'leads', 'plog'].includes(A.page) ? stateChip() : ''}</div><div class="row">${bv() ? `<span class="sm muted">${esc(bv().name)}</span>` : ''}</div></div>
+    <div class="main"><div class="topbar"><div class="title">${btn('side', '☰', 'aria-label="Menu"', 'btn menu-btn')}<h1>${bv() ? titles[A.page] : 'Candid'}</h1>${bv() && bv().period && !['brief', 'queue', 'payouts', 'reviewers', 'accounts', 'plog'].includes(A.page) ? stateChip() : ''}</div><div class="row">${bv() ? `<span class="sm muted">${esc(bv().name)}</span>` : ''}</div></div>
     <div class="content">${A.busy ? `<div class="empty"><span class="spin"></span>&nbsp; ${esc(A.busy)}</div>` : page()}</div></div>`;
   renderDrawer();
 }
 function loginView() {
-  if (A.auth && A.auth.configured === false) return `<div class="panel"><div class="body stack"><h2>Candid is not set up yet</h2><p class="sm muted">Set <span class="code">OWNER_PASSCODE</span>, <span class="code">SESSION_SECRET</span> and <span class="code">DATABASE_URL</span> in Vercel, then redeploy.</p></div></div>`;
-  return `<div class="panel"><div class="body stack"><div class="brand" style="padding:0 0 6px"><span class="mark">C</span>Candid</div><div class="field"><label for="pass">Passcode</label><input type="password" id="pass" autocomplete="current-password"></div><div>${btn('login', 'Sign in', '', 'btn primary')}</div><p id="loginerr" class="sm" style="color:var(--bad)"></p></div></div>`;
+  if (A.auth && A.auth.configured === false) return `<div class="panel"><div class="body stack"><h2>Candid is not set up yet</h2><p class="sm muted">Set <span class="code">SESSION_SECRET</span> and <span class="code">DATABASE_URL</span> in Vercel, then redeploy.</p></div></div>`;
+  const l = A.login;
+  if (l.step === 'code') return `<div class="panel"><div class="body stack"><div class="brand" style="padding:0 0 6px"><span class="mark">C</span>Candid</div><p class="sm muted">A six-digit code was sent to <strong>${esc(l.email)}</strong>.${l.devCode ? ' (No email provider here, so it is filled in.)' : ''}</p><div class="field"><label for="code">Code</label><input type="text" id="code" inputmode="numeric" autocomplete="one-time-code" maxlength="6" value="${esc(l.devCode)}"></div><div class="row">${btn('check', 'Sign in', '', 'btn primary')}${btn('login-back', 'Different email', '', 'btn ghost')}</div><p id="loginerr" class="sm" style="color:var(--bad)"></p></div></div>`;
+  return `<div class="panel"><div class="body stack"><div class="brand" style="padding:0 0 6px"><span class="mark">C</span>Candid</div><h2>${l.signup ? 'Create your account' : 'Sign in'}</h2><div class="field"><label for="email">Email</label><input type="email" id="email" autocomplete="email" value="${esc(l.email)}"></div><div>${btn('start', l.signup ? 'Send me a code' : 'Send code', '', 'btn primary')}</div><p id="loginerr" class="sm" style="color:var(--bad)"></p><p class="xs faint">An email address is an account. By continuing you accept the <a href="/terms">terms</a> and <a href="/privacy">privacy</a> notice.</p></div></div>`;
 }
 const stateChip = () => { const p = bv().period; return chip(STATE_LABEL[p.state], { open: 'accent', rating: 'warn', settlement: 'warn', closed: 'good' }[p.state] || 'info'); };
 const stepper = () => { const p = bv().period; const i = p ? STATES.indexOf(p.state) : -1; return `<div class="steps">${STATES.map((s, j) => `<div class="step ${j < i ? 'done' : j === i ? 'now' : ''}">${STATE_LABEL[s]}</div>`).join('')}</div>`; };
@@ -83,7 +93,7 @@ const logRows = (rows) => rows.length ? rows.map((e) => `<div class="lgrow"><spa
 
 function page() {
   if (!bv()) return `<div class="panel"><div class="hero"><h1>Add your first business</h1><div class="field" style="width:min(360px,100%)"><input type="text" id="newname" placeholder="Business name"></div>${btn('create', 'Create', '', 'btn primary')}</div></div>`;
-  return ({ overview, period, reviews, issues, credits, brief: briefPage, activity, queue, payouts, reviewers, leads, plog })[A.page]();
+  return ({ overview, period, reviews, issues, credits, brief: briefPage, activity, queue, payouts, reviewers, accounts, plog })[A.page]();
 }
 
 // ---------- business pages ----------
@@ -149,7 +159,8 @@ function issues() {
 function credits() {
   const c = bv().credits;
   return `<div class="tiles"><div class="tile"><div class="k">Available</div><div class="v">${money(c.balance)}</div></div><div class="tile"><div class="k">Locked in period</div><div class="v">${money(c.locked)}</div></div></div>
-    <div class="panel"><div class="head"><h2>Add credits</h2></div><div class="body"><div class="row"><div class="field"><label for="camt">Amount</label><input type="number" id="camt" min="1" value="200" style="width:120px"></div><div class="field" style="flex:1;min-width:160px"><label for="cnote">Note</label><input type="text" id="cnote" placeholder="e.g. bank transfer 12 Oct"></div><div class="field"><label>&nbsp;</label>${btn('credits', 'Add', '', 'btn primary')}</div></div><p class="help">Card payments are not connected yet. Record prepaid amounts here.</p></div></div>
+    <div class="panel"><div class="head"><h2>Buy credits</h2><span class="sm muted">AUD, by card</span></div><div class="body">${A.meta.stripe ? `<div class="row">${(A.meta.packs || [100, 250, 500, 1000]).map((p) => btn('pack', money(p), `data-v="${p}"`, 'btn lg')).join('')}</div><p class="help">Card payments through Stripe. Credits appear here when the payment completes.</p>` : `<p class="sm muted">Card payments are not set up on this server yet.</p>`}</div></div>
+    ${A.auth.admin ? `<div class="panel"><div class="head"><h2>Add credits manually</h2><span class="chip warn plain">admin</span></div><div class="body"><div class="row"><div class="field"><label for="camt">Amount</label><input type="number" id="camt" min="1" value="200" style="width:120px"></div><div class="field" style="flex:1;min-width:160px"><label for="cnote">Note</label><input type="text" id="cnote" placeholder="e.g. bank transfer 12 Oct"></div><div class="field"><label>&nbsp;</label>${btn('credits', 'Add', '', 'btn primary')}</div></div></div></div>` : ''}
     <div class="panel"><div class="head"><h2>Ledger</h2></div><div class="body tight scroll"><table><thead><tr><th>When</th><th>Entry</th><th class="r">Amount</th></tr></thead><tbody>${c.ledger.slice().reverse().map((l) => `<tr><td class="num faint">${fmt(l.at)}</td><td>${esc(l.what)}</td><td class="r num">${money(l.amt)}</td></tr>`).join('') || '<tr><td colspan="3" class="empty">No entries</td></tr>'}</tbody></table></div></div>`;
 }
 function briefPage() {
@@ -170,29 +181,33 @@ const activity = () => `<div class="panel"><div class="body tight">${logRows(bv(
 
 // ---------- platform pages ----------
 function queue() {
-  const a = av(); const open = a.flags.filter((f) => f.state === 'queued'), done = a.flags.filter((f) => f.state !== 'queued' && f.state !== 'triage');
-  const card = (f) => `<div class="panel"><div class="head"><div class="row"><h2>${esc(f.reason)}</h2>${chip(f.reviewer.pseudonym, '', true)}${chip(`by ${f.source === 'ai' ? 'AI' : f.source === 'business' ? 'business' : 'peer'}`, '', true)}${f.reviewer.knew === 'yes' ? chip('knew business', 'warn') : ''}${f.reviewer.strikes ? chip(`${f.reviewer.strikes} strike`, 'bad') : ''}</div>${f.state === 'queued' ? `<span class="sm muted">auto-release ${fmt(f.at + 7 * 86400000)}</span>` : flagChip(f)}</div>
+  if (!A.adm) return `<div class="panel"><div class="empty"><span class="spin"></span></div></div>`;
+  const open = A.adm.flags, done = (av() ? av().flags : []).filter((f) => f.state !== 'queued' && f.state !== 'triage');
+  const card = (f) => `<div class="panel"><div class="head"><div class="row"><h2>${esc(f.reason)}</h2>${f.business ? chip(f.business, 'accent', true) : ''}${chip(f.reviewer.pseudonym, '', true)}${chip(`by ${f.source === 'ai' ? 'AI' : f.source === 'business' ? 'business' : 'peer'}`, '', true)}${f.reviewer.knew === 'yes' ? chip('knew business', 'warn') : ''}${f.reviewer.strikes ? chip(`${f.reviewer.strikes} strike`, 'bad') : ''}</div>${f.state === 'queued' ? `<span class="sm muted">auto-release ${fmt(f.at + 7 * 86400000)}</span>` : flagChip(f)}</div>
     <div class="body stack"><div class="qa"><div class="a sm">${esc(f.text)}</div></div>
     ${f.ai ? `<div class="callout ${f.ai.verdict === 'breach' ? 'bad' : f.ai.verdict === 'clear' ? 'good' : 'info'}">AI${f.ai.by === 'heuristic' ? ' (built-in)' : ''} · ${esc(f.ai.verdict)} · ${Math.round(f.ai.confidence * 100)}% · ${esc(f.ai.reasoning)}</div>` : ''}
     ${f.reply ? `<p class="sm">Reviewer: “${esc(f.reply)}”</p>` : ''}
-    ${f.state === 'queued' ? `<div class="row">${btn('decide', 'Clear', `data-target="${f.id}" data-v="clear"`)}${btn('decide', 'Low quality', `data-target="${f.id}" data-v="low quality"`)}${btn('decide', 'Breach', `data-target="${f.id}" data-v="breach"`, 'btn danger')}</div>` : `<span class="sm muted">${esc(f.decidedBy || '')} · ${fmt(f.decidedAt)}</span>`}</div></div>`;
-  return `${open.length ? open.map(card).join('') : `<div class="panel"><div class="empty">Queue is empty</div></div>`}${done.length ? `<h2 class="muted" style="margin-top:8px">Decided</h2>${done.slice().reverse().map(card).join('')}` : ''}`;
+    ${f.state === 'queued' ? `<div class="row">${btn('decide', 'Clear', `data-biz="${f.businessId}" data-target="${f.id}" data-v="clear"`)}${btn('decide', 'Low quality', `data-biz="${f.businessId}" data-target="${f.id}" data-v="low quality"`)}${btn('decide', 'Breach', `data-biz="${f.businessId}" data-target="${f.id}" data-v="breach"`, 'btn danger')}</div>` : `<span class="sm muted">${esc(f.decidedBy || '')} · ${fmt(f.decidedAt)}</span>`}</div></div>`;
+  return `${open.length ? open.map(card).join('') : `<div class="panel"><div class="empty">Queue is empty</div></div>`}${done.length ? `<h2 class="muted" style="margin-top:8px">Decided for ${esc(bv().name)}</h2>${done.slice().reverse().map(card).join('')}` : ''}`;
 }
 function payouts() {
-  const rows = av().payouts.slice().sort((a, b) => (a.state === 'released' ? 0 : 1) - (b.state === 'released' ? 0 : 1) || b.at - a.at);
-  if (!rows.length) return `<div class="panel"><div class="empty">Payouts appear here as fees release</div></div>`;
-  return `<p class="sm muted">Pay by PayID, then mark as paid.</p><div class="panel"><div class="body tight scroll"><table><thead><tr><th>Reviewer</th><th>For</th><th>PayID</th><th class="r">Amount</th><th>State</th><th></th></tr></thead><tbody>
-    ${rows.map((p) => `<tr><td class="strong">${esc(p.pseudonym)}</td><td>${p.kind === 'review' ? 'Review fee' : 'Issue · ' + esc(p.title)}<div class="xs faint">period ${p.periodNo} · ${fmt(p.at)}</div></td><td><span class="row"><span class="code">${esc(p.payid || '')}</span>${p.payid ? btn('copy', 'Copy', `data-text="${esc(p.payid)}"`, 'btn sm') : ''}</span></td><td class="r num">${money(p.amount)}</td><td>${chip(p.state === 'paid' ? 'Paid' : 'Released', p.state === 'paid' ? 'good' : 'accent')}</td><td class="r">${p.state === 'released' ? btn('markPaid', 'Mark paid', `data-kind="${p.kind}" data-target="${p.id}"`, 'btn sm primary') : ''}</td></tr>`).join('')}</tbody></table></div></div>`;
+  if (!A.adm) return `<div class="panel"><div class="empty"><span class="spin"></span></div></div>`;
+  const rows = A.adm.payouts.slice().sort((a, b) => b.at - a.at);
+  if (!rows.length) return `<div class="panel"><div class="empty">Nothing to pay</div></div>`;
+  return `<p class="sm muted">Pay by PayID, then mark as paid.</p><div class="panel"><div class="body tight scroll"><table><thead><tr><th>Reviewer</th><th>Business</th><th>For</th><th>PayID</th><th class="r">Amount</th><th></th></tr></thead><tbody>
+    ${rows.map((p) => `<tr><td class="strong">${esc(p.pseudonym)}</td><td class="sm">${esc(p.business)}</td><td>${p.kind === 'review' ? 'Review fee' : 'Issue · ' + esc(p.title)}<div class="xs faint">period ${p.periodNo} · ${fmt(p.at)}</div></td><td><span class="row"><span class="code">${esc(p.payid || '')}</span>${p.payid ? btn('copy', 'Copy', `data-text="${esc(p.payid)}"`, 'btn sm') : ''}</span></td><td class="r num">${money(p.amount)}</td><td class="r">${btn('markPaid', 'Mark paid', `data-biz="${p.businessId}" data-kind="${p.kind}" data-target="${p.id}"`, 'btn sm primary')}</td></tr>`).join('')}</tbody></table></div></div>`;
 }
 function reviewers() {
+  if (!av()) return `<div class="panel"><div class="empty">Admins only</div></div>`;
   return `<div class="panel"><div class="body tight scroll"><table><thead><tr><th>Pseudonym</th><th>Email</th><th class="r">Rep</th><th class="r">Scored</th><th>Account</th><th>Seat</th><th>Payout</th><th>Link</th></tr></thead><tbody>${av().reviewers.slice().reverse().map((r) => `<tr><td>${who(r)}</td><td class="sm">${esc(r.email || '—')}</td><td class="r num">${r.rep}</td><td class="r num">${r.scored}</td><td>${chip(r.status, r.status === 'active' ? 'good' : r.status === 'warned' ? 'warn' : 'bad')}</td><td>${seatChip(r)}</td><td>${payoutChip(r)}</td><td>${r.link ? btn('copy', 'Copy link', `data-text="${esc(r.link)}"`, 'btn sm') : '<span class="faint">—</span>'}</td></tr>`).join('') || '<tr><td colspan="8" class="empty">No reviewers yet</td></tr>'}</tbody></table></div></div>
     <p class="xs faint">Reputation = (60 × 5 + Σ usefulness) ÷ (5 + n). Emails, PayIDs and links are only shown here. Copy a link to resend it.</p>`;
 }
 const plog = () => `<div class="panel"><div class="body tight">${logRows(av().log.slice().reverse())}</div></div>`;
-function leads() {
-  const rows = A.leads || [];
+function accounts() {
+  if (!A.adm) return `<div class="panel"><div class="empty"><span class="spin"></span></div></div>`;
   const src = { invite: 'Invite page', submitted: 'After submitting', paid: 'After payout', ad: 'Landing page' };
-  return `<p class="sm muted">Access requests from the landing page. Via shows which business's reviewers sent them.</p><div class="panel"><div class="body tight scroll"><table><thead><tr><th>When</th><th>Email</th><th>What they make</th><th>Came from</th><th>Via</th></tr></thead><tbody>${rows.map((l) => `<tr><td class="num faint">${fmt(l.at)}</td><td class="strong">${esc(l.email)}</td><td>${esc(l.note) || '<span class="faint">—</span>'}</td><td>${chip(src[l.source] || 'Landing page', l.source && l.source !== 'ad' ? 'accent' : '', true)}</td><td class="sm">${esc(l.viaName) || '<span class="faint">—</span>'}</td></tr>`).join('') || '<tr><td colspan="5" class="empty">No leads yet</td></tr>'}</tbody></table></div></div>`;
+  return `<div class="panel"><div class="body tight scroll"><table><thead><tr><th>Signed up</th><th>Email</th><th class="r">Businesses</th><th>Came from</th><th>Via</th><th>Last seen</th></tr></thead><tbody>${A.adm.accounts.map((a) => `<tr><td class="num faint">${fmt(a.at)}</td><td class="strong">${esc(a.email)}</td><td class="r num">${a.businesses}</td><td>${a.source ? chip(src[a.source] || a.source, a.source !== 'ad' ? 'accent' : '', true) : '<span class="faint">—</span>'}</td><td class="sm">${esc(a.viaName) || '<span class="faint">—</span>'}</td><td class="num faint">${fmt(a.seen)}</td></tr>`).join('') || '<tr><td colspan="6" class="empty">No accounts</td></tr>'}</tbody></table></div></div>
+    <h2 class="muted" style="margin-top:8px">Businesses</h2><div class="panel"><div class="body tight scroll"><table><thead><tr><th>Business</th><th>Owner</th><th>Period</th><th></th></tr></thead><tbody>${A.adm.businesses.map((b) => `<tr><td class="strong">${esc(b.name)}</td><td class="sm">${esc(b.email)}</td><td>${b.periodNo ? `${b.periodNo} · ${esc(b.periodState || '')}` : '<span class="faint">—</span>'}</td><td class="r">${btn('switch-to', 'Open', `data-v="${b.id}"`, 'btn sm')}</td></tr>`).join('')}</tbody></table></div></div>`;
 }
 
 // ---------- drawer ----------
@@ -223,10 +238,14 @@ document.addEventListener('click', async (ev) => {
   const el = ev.target.closest('[data-act]'); if (!el || el.tagName === 'SELECT') return;
   const act = el.dataset.act, target = el.dataset.target, v = el.dataset.v;
   const rerender = () => render();
-  if (act === 'login') { try { await api('/api/auth', { action: 'login', passcode: $('#pass').value }); await boot(); } catch (e) { $('#loginerr').textContent = e.message; } return; }
-  if (act === 'logout') { await api('/api/auth', { action: 'logout' }).catch(() => {}); A.auth = { loggedIn: false, configured: true }; A.d = null; A.id = null; return rerender(); }
+  if (act === 'start') { const email = $('#email').value.trim(); try { const j = await api('/api/auth', { action: 'start', email, via: A.login.via || '', source: A.login.source || '' }); A.login.email = email; A.login.step = 'code'; A.login.devCode = j.devCode || ''; render(); } catch (e) { $('#loginerr').textContent = e.message; } return; }
+  if (act === 'check') { try { await api('/api/auth', { action: 'check', email: A.login.email, code: $('#code').value }); A.login = { step: 'email', email: '', devCode: '' }; await boot(); } catch (e) { $('#loginerr').textContent = e.message; } return; }
+  if (act === 'login-back') { A.login.step = 'email'; return rerender(); }
+  if (act === 'logout') { await api('/api/auth', { action: 'logout' }).catch(() => {}); A.auth = { loggedIn: false, configured: true }; A.d = null; A.id = null; A.adm = null; return rerender(); }
+  if (act === 'pack') { try { const j = await api('/api/checkout', { id: A.id, pack: Number(v) }); location.href = j.url; } catch (e) { toast(e.message, true); } return; }
+  if (act === 'switch-to') { try { await loadBiz(v); A.page = 'overview'; } catch (e) { toast(e.message, true); } return rerender(); }
   if (act === 'create') { const name = ($('#newname') || {}).value || prompt('Business name'); if (!name) return; try { const j = await api('/api/business', { action: 'create', name }); await loadList(); await loadBiz(j.id); A.page = 'brief'; toast('Created'); } catch (e) { toast(e.message, true); } return rerender(); }
-  if (act === 'page') { A.page = v; A.side = false; A.drawer = null; return rerender(); }
+  if (act === 'page') { A.page = v; A.side = false; A.drawer = null; if (['queue', 'payouts', 'accounts'].includes(v)) loadAdmin().then(render); return rerender(); }
   if (act === 'side') { A.side = !A.side; return rerender(); }
   if (act === 'open') { A.drawer = { kind: el.dataset.kind, id: target }; return rerender(); }
   if (act === 'close') { A.drawer = null; return rerender(); }
@@ -235,13 +254,13 @@ document.addEventListener('click', async (ev) => {
   if (act === 'fund') { A.seats = Math.max(3, Math.min(50, Number(($('#seats') || {}).value) || 5)); return act_({ action: 'fund', seats: A.seats }, (j) => `${money(j.business.period.cost)} locked`); }
   if (act === 'recruit') return act_({ action: 'recruit' }, 'Invite links ready');
   if (act === 'endOpen') return act_({ action: 'endOpen' }, 'Open stage ended');
-  if (act === 'credits') return act_({ action: 'credits', amount: Number(($('#camt') || {}).value), note: ($('#cnote') || {}).value }, 'Credits added');
+  if (act === 'credits') return adm_({ id: A.id, action: 'credits', amount: Number(($('#camt') || {}).value), note: ($('#cnote') || {}).value }, 'Credits added');
   if (act === 'unlock') return act_({ action: 'unlock', target }, (j) => { A.drawer = { kind: 'bug', id: target }; return 'Unlocked'; });
   if (act === 'unlockAll') return act_({ action: 'unlockAll' }, (j) => `${j.result} unlocked`);
   if (act === 'status') return act_({ action: 'status', kind: el.dataset.kind, target, status: v });
   if (act === 'flag') { const sel = $('#flag-' + target); if (!sel || !sel.value) return; return act_({ action: 'flag', target, reason: sel.value }, 'Flagged'); }
-  if (act === 'decide') return act_({ action: 'decide', target, outcome: v }, v === 'breach' ? 'Breach recorded' : 'Flag closed');
-  if (act === 'markPaid') return act_({ action: 'markPaid', kind: el.dataset.kind, target }, 'Marked paid');
+  if (act === 'decide') return adm_({ id: el.dataset.biz, action: 'decide', target, outcome: v }, v === 'breach' ? 'Breach recorded' : 'Flag closed');
+  if (act === 'markPaid') return adm_({ id: el.dataset.biz, action: 'markPaid', kind: el.dataset.kind, target }, 'Marked paid');
   if (act === 'wz-start') { const last = bv().briefs[bv().briefs.length - 1]; A.wizard = { step: 0, answers: last ? { kind: last.kind || 'b2c', product: last.product, audience: last.audience, job: last.job, wants: [...last.wants], known: [...last.known], wontChange: last.wontChange, eligibility: last.eligibility } : { kind: 'b2c', product: '', audience: '', job: '', wants: [], known: [], wontChange: '', eligibility: '' } }; return rerender(); }
   if (act === 'wz-cancel') { A.wizard = null; return rerender(); }
   if (act === 'wz-back' || act === 'wz-next') {
@@ -252,12 +271,13 @@ document.addEventListener('click', async (ev) => {
     w.step++; return rerender();
   }
 });
-async function act_(body, msg) { A.busy = 'Saving'; render(); const j = await act(body, msg); A.busy = null; render(); return j; }
+async function act_(body, msg) { A.busy = 'Saving'; render(); const j = await act(body, msg); A.busy = null; await loadAdmin(); render(); return j; }
+async function adm_(body, msg) { A.busy = 'Saving'; render(); try { A.adm = await api('/api/admin', body); if (body.id === A.id) await loadBiz(A.id); if (msg) toast(msg); } catch (e) { toast(e.message, true); } A.busy = null; render(); }
 document.addEventListener('change', async (ev) => {
   const el = ev.target; if (el.dataset.act !== 'switch') return;
   if (el.value === '__new') { const name = prompt('Business name'); if (name) { try { const j = await api('/api/business', { action: 'create', name }); await loadList(); await loadBiz(j.id); A.page = 'brief'; } catch (e) { toast(e.message, true); } } return render(); }
   try { await loadBiz(el.value); A.page = 'overview'; } catch (e) { toast(e.message, true); } render();
 });
-document.addEventListener('keydown', (ev) => { if (ev.key === 'Escape' && (A.drawer || A.side)) { A.drawer = null; A.side = false; render(); } if (ev.key === 'Enter' && ev.target.id === 'pass') $('[data-act="login"]').click(); });
+document.addEventListener('keydown', (ev) => { if (ev.key === 'Escape' && (A.drawer || A.side)) { A.drawer = null; A.side = false; render(); } if (ev.key === 'Enter' && ev.target.id === 'email') $('[data-act="start"]').click(); if (ev.key === 'Enter' && ev.target.id === 'code') $('[data-act="check"]').click(); });
 document.addEventListener('visibilitychange', () => { if (!document.hidden && A.id && !A.wizard) loadBiz(A.id).then(render).catch(() => {}); });
 boot();

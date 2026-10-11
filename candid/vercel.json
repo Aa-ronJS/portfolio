@@ -22,13 +22,23 @@
       "memory": 256,
       "includeFiles": "db/**"
     },
-    "api/lead.js": {
+    "api/photo.js": {
       "maxDuration": 10,
       "memory": 256,
       "includeFiles": "db/**"
     },
-    "api/photo.js": {
-      "maxDuration": 10,
+    "api/admin.js": {
+      "maxDuration": 30,
+      "memory": 512,
+      "includeFiles": "db/**"
+    },
+    "api/checkout.js": {
+      "maxDuration": 15,
+      "memory": 256,
+      "includeFiles": "db/**"
+    },
+    "api/stripe-webhook.js": {
+      "maxDuration": 15,
       "memory": 256,
       "includeFiles": "db/**"
     }
