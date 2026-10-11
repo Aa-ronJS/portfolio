@@ -398,6 +398,20 @@ THUMB_SCHEMA = {
 }
 
 
+def pick_thumbnail_layout(n):
+    return (
+        "These %d images are finished thumbnail candidates for the same "
+        "video, shown at full size. Choose the one a demanding viewer "
+        "would click in a phone feed: the subject reads instantly, the "
+        "text is legible when the image is the size of a postage stamp, "
+        "the colours pop against YouTube's white and dark backgrounds, "
+        "and nothing looks like a template or a stock photo with words on "
+        "it. Prefer a lifted subject on a colour field over a photo with "
+        "a gradient unless the cut-out is visibly flawed (a halo, a "
+        "missing limb, a floating object). Answer the image number "
+        "(1-%d)." % (n, n))
+
+
 def review(shots):
     lines = ["Shot %d — narration: \"%s\"" % (i, t) for i, t in enumerate(shots)]
     return (

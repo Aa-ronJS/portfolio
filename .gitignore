@@ -14,6 +14,7 @@ essay-channel/episodes/*/work/
 essay-channel/episodes/*/*.mp4
 essay-channel/episodes/*/*.ass
 essay-channel/episodes/*/thumbnail.jpg
+essay-channel/episodes/*/thumbnails/
 essay-channel/music/*
 !essay-channel/music/README.md
 

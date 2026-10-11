@@ -309,105 +309,85 @@ def _esc(s):
 # ---------------------------------------------------------------- thumbnail
 
 def thumbnail(cfg, ep, final, llm=None):
-    from PIL import Image, ImageDraw, ImageFilter, ImageFont
+    """Candidates are the stock photographs fetched for the purpose plus
+    frames from the first footage shots; Claude picks the frame, both
+    layouts are rendered (cut-out on a colour field, and the washed
+    photo), and Claude picks the layout. Everything rendered is kept in
+    thumbnails/ so a person can swap in an alternate."""
+    from PIL import Image
+    from . import thumb
     script = ep.load("script")
     plan = ep.load("broll")
     portrait = cfg["format"] == "portrait"
     size = (720, 1280) if portrait else (1280, 720)
     work = ep.path("work")
+    out_dir = ep.path("thumbnails")
     os.makedirs(work, exist_ok=True)
-    # candidate frames: the middle of the first few footage shots
+    os.makedirs(out_dir, exist_ok=True)
     cands = []
+    for c in plan.get("thumbnail_candidates") or []:
+        p = os.path.join(cfg["_root"], c["file"])
+        if os.path.exists(p):
+            cands.append(p)
     for s in plan["shots"]:
-        if s["kind"] != "card" and len(cands) < 4:
+        if s["kind"] != "card" and len(cands) < 6:
             t = s["start"] + min(1.5, s["duration"] / 2)
             if s is plan["shots"][0]:
                 t = max(t, plan["shots"][0]["duration"] * 0.75)   # past the title fade
-            png = os.path.join(work, "thumb%d.png" % len(cands))
-            media.ffmpeg(["-ss", "%.3f" % t, "-i", final, "-frames:v", "1",
-                          "-vf", "scale=%d:%d" % size, png])
+            png = os.path.join(work, "frame%d.png" % len(cands))
+            media.ffmpeg(["-ss", "%.3f" % t, "-i", final, "-frames:v", "1", png])
             cands.append(png)
     if not cands:
-        png = os.path.join(work, "thumb0.png")
-        media.ffmpeg(["-ss", "1.0", "-i", final, "-frames:v", "1",
-                      "-vf", "scale=%d:%d" % size, png])
+        png = os.path.join(work, "frame0.png")
+        media.ffmpeg(["-ss", "1.0", "-i", final, "-frames:v", "1", png])
         cands = [png]
+    record = {"candidates": len(cands), "frame": 0, "layout": None, "chosen": None}
     choice = 0
     if llm is not None and len(cands) > 1:
         try:
             images = []
             for i, p in enumerate(cands, 1):
-                with open(p, "rb") as f:
+                im = Image.open(p).convert("RGB")
+                im.thumbnail((640, 640))
+                tmp = os.path.join(work, "cand%d.jpg" % i)
+                im.save(tmp, quality=80)
+                with open(tmp, "rb") as f:
                     images.append(("Frame %d" % i, f.read()))
             r = llm.vision_json(prompts.system(cfg), prompts.pick_thumbnail(len(cands)),
                                 images, prompts.THUMB_SCHEMA)
             if 1 <= int(r.get("frame", 1)) <= len(cands):
                 choice = int(r["frame"]) - 1
+                record["frame_why"] = r.get("why", "")
         except Exception as e:
-            print("thumbnail: vision pick failed (%s); using the first frame" % e)
-    im = Image.open(cands[choice]).convert("RGB").resize(size)
-    im = im.filter(ImageFilter.GaussianBlur(0.6))
-    shade = Image.new("RGB", size, (0, 0, 0))
-    mask = Image.linear_gradient("L").resize(size).point(lambda v: int(v * 0.82))
-    im = Image.composite(shade, im, mask)
-    draw = ImageDraw.Draw(im)
-    text = (script.get("thumbnail_text") or script["title"]).upper()
-    font_path = find_font()
-    # Big enough to read at 168x94, the size a phone feed shows: start
-    # at a quarter of the frame height per line and shrink only until
-    # the text fits in two lines (three on portrait).
-    fsize = int(size[1] * (0.13 if portrait else 0.26))
-    max_lines = 3 if portrait else 2
-    while fsize > 20:
-        font = ImageFont.truetype(font_path, fsize) if font_path != "sans" \
-            else ImageFont.load_default()
-        lines = _wrap(draw, text, font, size[0] * 0.88)
-        hgt = sum(draw.textbbox((0, 0), l, font=font)[3] for l in lines) * 1.12
-        if len(lines) <= max_lines and hgt < size[1] * 0.6 and all(
-                draw.textbbox((0, 0), l, font=font)[2] <= size[0] * 0.9 for l in lines):
-            break
-        fsize -= 4
-    accent = tuple(int(cfg["look"]["accent"][i:i + 2], 16) for i in (0, 2, 4))
-    y = size[1] - int(size[1] * 0.09) - hgt
-    bar_y = int(y - size[1] * 0.025)
-    draw.rectangle([int(size[0] * 0.07), bar_y, int(size[0] * 0.07) + int(size[0] * 0.12),
-                    bar_y + max(6, size[1] // 90)], fill=accent)
-    for l in lines:
-        bb = draw.textbbox((0, 0), l, font=font)
-        x = int(size[0] * 0.07)
-        draw.text((x, y), l, font=font, fill=(255, 255, 255),
-                  stroke_width=max(3, fsize // 11), stroke_fill=(0, 0, 0))
-        y += bb[3] * 1.12
-    im.save(ep.path("thumbnail.jpg"), quality=90)
+            print("thumbnail: frame pick failed (%s); using the first" % e)
+    record["frame"] = choice
+    text = script.get("thumbnail_text") or script["title"]
+    seed = int(hashlib_sha1(ep.slug), 16)
+    layouts = thumb.render(cands[choice], text, cfg["look"]["accent"], size, seed, out_dir)
+    pick = 0
+    if llm is not None and len(layouts) > 1:
+        try:
+            images = []
+            for i, (name, p) in enumerate(layouts, 1):
+                with open(p, "rb") as f:
+                    images.append(("Image %d" % i, f.read()))
+            r = llm.vision_json(prompts.system(cfg), prompts.pick_thumbnail_layout(len(layouts)),
+                                images, prompts.THUMB_SCHEMA)
+            if 1 <= int(r.get("frame", 1)) <= len(layouts):
+                pick = int(r["frame"]) - 1
+                record["layout_why"] = r.get("why", "")
+        except Exception as e:
+            print("thumbnail: layout pick failed (%s); using %s" % (e, layouts[0][0]))
+    name, path = layouts[pick]
+    shutil.copy(path, ep.path("thumbnail.jpg"))
+    thumb.feed_sheet([p for _, p in layouts], os.path.join(out_dir, "feed-size-sheet.jpg"))
+    record.update(layout=name, chosen=os.path.relpath(path, ep.dir),
+                  layouts=[n for n, _ in layouts], text=text)
+    from .episodes import write_json
+    write_json(ep.path("thumbnail.json"), record)
+    return ep.path("thumbnail.jpg")
 
 
-def _wrap(draw, text, font, width):
-    """Wrap to the width, then balance: of every split into the same
-    number of lines, take the one whose longest line is shortest, so a
-    two-line title reads '3 MINUTES / A DAY', not '3 MINUTES A / DAY'."""
-    words = text.split()
-
-    def w_of(ws):
-        return draw.textbbox((0, 0), " ".join(ws), font=font)[2]
-
-    lines, cur = [], []
-    for w in words:
-        if cur and w_of(cur + [w]) > width:
-            lines.append(cur)
-            cur = [w]
-        else:
-            cur.append(w)
-    if cur:
-        lines.append(cur)
-    n = len(lines)
-    if n == 1 or len(words) > 12:
-        return [" ".join(l) for l in lines]
-    best, best_cost = lines, max(w_of(l) for l in lines)
-    import itertools
-    for cuts in itertools.combinations(range(1, len(words)), n - 1):
-        bounds = (0,) + cuts + (len(words),)
-        cand = [words[a:b] for a, b in zip(bounds, bounds[1:])]
-        widths = [w_of(l) for l in cand]
-        if max(widths) <= width and max(widths) < best_cost:
-            best, best_cost = cand, max(widths)
-    return [" ".join(l) for l in best]
+def hashlib_sha1(s):
+    import hashlib
+    return hashlib.sha1(s.encode()).hexdigest()[:8]

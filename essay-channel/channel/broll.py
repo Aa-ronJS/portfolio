@@ -229,9 +229,32 @@ def plan_broll(cfg, ep, provider, llm=None):
                 credits[cand["id"]] = {"credit": cand["credit"], "page": cand["page"]}
                 break
             s["motion"] = _motion(rng, s["kind"])
+    # photographs for the thumbnail: sharper than a video frame, and a
+    # person doing the thing is what the thumbnail wants
+    thumb_cands = []
+    if hasattr(provider, "photos"):
+        seen = set()
+        for s in shots[:4]:
+            for q in (s["query"], s["alt"]):
+                if len(thumb_cands) >= 4 or not q:
+                    break
+                try:
+                    hits = provider.photos(q, n=4)
+                except Exception as e:
+                    print("broll: thumbnail photo search %r failed: %s" % (q, e))
+                    hits = []
+                for h in hits:
+                    if h["id"] in seen or len(thumb_cands) >= 4:
+                        continue
+                    path = _fetch(h, cache)
+                    if path:
+                        seen.add(h["id"])
+                        credits[h["id"]] = {"credit": h["credit"], "page": h["page"]}
+                        thumb_cands.append({"id": h["id"], "query": q,
+                                            "file": os.path.relpath(path, cfg["_root"])})
     plan = {"shots": [_clean(s) for s in shots], "credits": credits,
             "provider": provider.name, "picks": picks,
-            "vision": bool(vision)}
+            "vision": bool(vision), "thumbnail_candidates": thumb_cands}
     ep.save("broll", plan)
     return ep.load("broll")
 

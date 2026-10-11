@@ -259,12 +259,20 @@ at full size and at the feed size (168×94):
 | C | THE KIDS ARE THE GYM | as A | repeats the title's idea; the two should complete each other |
 | D | 40% LOWER RISK | dad and toddler on a bike | rejected by the evidence and brand seats: an observational finding as a four-word promise |
 
-**The packaging seat's one finding that changed the product:** at
-168×94 the text on every variant was marginal. The thumbnail code now
-sets text at about a quarter of the frame height per line, capped at
-two lines, with a heavier stroke — the re-rendered A is the one in
-`thumbnail.jpg`. Rule of thumb now in the code's comment: if it cannot
-be read at 168×94, it is decoration.
+**The packaging seat's findings that changed the product.** First, at
+168×94 the text on every variant was marginal; text is now about a
+quarter of the frame height per line, two lines, heavy stroke. Second,
+and the one the owner called out: a photo with a dark gradient and
+white words is the look of every automated channel. The thumbnails
+that win in this niche lift the subject off the background onto a
+bold colour field with an outline, use condensed type with one word in
+the accent colour, and keep a face doing the thing. The compositor
+(`channel/thumb.py`) now does exactly that — rembg lifts the subject,
+five deep colour fields rotate per episode, Anton for the type, the
+number or last word in accent — and renders the washed photo as a
+fallback; Claude picks between the two. `thumbnails/` holds every
+variant with a feed-size sheet; `thumbnail.jpg` is A on the navy
+field.
 
 ---
 

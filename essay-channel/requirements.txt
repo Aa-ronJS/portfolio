@@ -2,5 +2,7 @@ anthropic>=1.13
 pyyaml
 pillow
 # plus ffmpeg (with libass, libx264) on your PATH
-# optional, for word-accurate captions with a voice provider that has no timestamps:
+# optional, for the pronunciation check (reads the voice back):
 # faster-whisper
+# optional, for thumbnails with the subject lifted onto a colour field:
+# rembg[cpu]

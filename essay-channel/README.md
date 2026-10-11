@@ -50,7 +50,7 @@ a cent.
    | `ANTHROPIC_API_KEY` | topics, research, outline, script, footage choice, review | console.anthropic.com |
    | `ELEVENLABS_API_KEY` | narration (default provider) | elevenlabs.io → profile → API keys |
    | `OPENAI_API_KEY` | narration if `voice.provider: openai` | platform.openai.com |
-   | `PEXELS_API_KEY` | stock footage (free) | pexels.com/api |
+   | `PEXELS_API_KEY` | stock footage and thumbnail photographs (free) | pexels.com/api |
    | `PIXABAY_API_KEY` | footage if `broll.provider: pixabay` (free) | pixabay.com/api/docs |
    | `JAMENDO_CLIENT_ID` | CC music if `music.jamendo: true` (free) | devportal.jamendo.com |
 
@@ -73,6 +73,9 @@ a cent.
 
 4. **Music.** Drop tracks into `music/` (see `music/README.md`) or set
    `music.jamendo: true`. With neither, videos go out narration-only.
+   For thumbnails with the subject lifted onto a colour field, `pip
+   install "rembg[cpu]"` (the Action does); without it the washed-photo
+   layout is used.
 
 5. **Schedule.** `.github/workflows/essay-channel.yml` runs Mon/Wed/Fri
    and makes one episode per run; with the secrets missing it only runs
@@ -102,7 +105,7 @@ time if the file exists, so a run that dies resumes where it stopped and
 | voice | `voice/vo.wav`, `timeline.json` | narration per section (ElevenLabs, with character timestamps and the neighbouring text for continuity) or per sentence (OpenAI), at −16 LUFS, with the start of every sentence; with faster-whisper installed the audio is read back and a mangled name is respelled phonetically and re-recorded |
 | broll | `broll/plan.json` | shots from sentences (a shot holds while sentences share a visual, splits at `shot_max`, joins under `shot_min`); for each shot up to five candidate clips, then photographs, then a card; Claude looks at the candidates' frames and picks the one that shows what is said; clips cached in `cache/`, none reused while fresh ones remain |
 | music | `music/music.json` | a local track matching the mood, else Jamendo; credit kept for the description |
-| assemble | `final.mp4`, `captions.ass`, `captions.srt`, `thumbnail.jpg` | ffmpeg: every shot scaled to fill with a slow push or Ken Burns, hard cuts inside a section and a dissolve between, fade up under the title and down under the end card, lower-third headings, accent callouts, captions burned or kept as a track, a light grade, music ducked under the voice; a thumbnail from a frame Claude chose, with the thumbnail text and an accent bar |
+| assemble | `final.mp4`, `captions.ass`, `captions.srt`, `thumbnail.jpg` | ffmpeg: every shot scaled to fill with a slow push or Ken Burns, hard cuts inside a section and a dissolve between, fade up under the title and down under the end card, lower-third headings, accent callouts, captions burned or kept as a track, a light grade, music ducked under the voice; the thumbnail: stock photographs fetched for the purpose plus frames from the first shots, Claude picks the frame, two layouts are rendered (the subject lifted off its background with rembg onto a deep colour field with a white outline, and the washed photo as fallback), condensed type with one accent word sized to read at 168×94, and Claude picks the layout; every candidate is kept in `thumbnails/` |
 | quality | `quality.json` | Claude sees one frame per shot with the sentence heard over it, rates every match and the whole, and says publish or hold; with the script's critique scores, anything under `quality.min_score` holds the episode for a person |
 | publish | `publish.json`, `ledger.json` | resumable upload as private with `publishAt` = next free slot; title, chapters, sources and credits in the description; the caption track and thumbnail set; a marker tag on the video so a lost ledger cannot cause a re-upload |
 

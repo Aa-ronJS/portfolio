@@ -16,12 +16,11 @@ What one episode from this channel looks like, for the brief now in
   episode), the script (seat by seat, with the chair's edits, which are
   applied in the files here) and thumbnails (four variants, judged at
   feed size).
-- `thumbnails/` — the four variants and a sheet showing each at full,
-  feed and medium size.
-- `thumbnail.jpg` — the chosen variant, rendered through the real thumbnail code
-  (`channel/assemble.py`) from a stock frame, with the script's
-  thumbnail text and the channel's accent bar. Photo: Kampus Production
-  via Pexels (Pexels licence).
+- `thumbnails/` — three photos × two layouts from the real compositor
+  (`channel/thumb.py`): the subject lifted onto a colour field, and the
+  washed photo; plus a sheet showing each at full, feed and medium size.
+- `thumbnail.jpg` — the chosen one (A, cut-out, navy). Photos: Kampus
+  Production and Ketut Subiyanto via Pexels (Pexels licence).
 
 How it was made: this example was written in a Claude Code session,
 not by a scheduled run, because the session had no API keys. The
