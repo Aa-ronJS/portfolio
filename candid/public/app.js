@@ -127,7 +127,7 @@ function period() {
     ${recruiting ? `<div class="panel"><div class="head"><h2>Recruitment kit</h2>${btn('copy', 'Copy post', `data-text="${esc(post(latest, p))}"`, 'btn sm')}</div><div class="body stack"><p id="post">${esc(post(latest, p))}</p>
       <div class="scroll"><table><thead><tr><th>Where to post</th><th>Note</th></tr></thead><tbody>${PLACES.map(([a, n]) => `<tr><td>${esc(a)}</td><td class="muted">${esc(n)}</td></tr>`).join('')}</tbody></table></div></div></div>` : ''}`;
 }
-const post = (b, p) => `Paid, private feedback. ${b.product} Looking for ${p.seats} people who ${b.eligibility.replace(/\.$/, '').toLowerCase()}. ${b.job} ${money(FEE)} for an honest written review that only we see. Never published. Reply and I will send you a personal link.`;
+const post = (b, p) => `Paid, private feedback. ${b.product} Looking for ${p.seats} people who ${b.eligibility.replace(/\.$/, '').toLowerCase()}. ${b.job} ${money(FEE)} for an honest written review with your name on it, read by us and quoted only if you say so. Reply and I will send you a personal link.`;
 function reviews() {
   const rows = bv().reviews.slice().sort((a, b) => ((b.scores || {}).usefulness || 0) - ((a.scores || {}).usefulness || 0));
   const p = bv().period;
