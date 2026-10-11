@@ -4,7 +4,7 @@ Paid, private, peer-checked feedback. A business writes a brief, prepays
 credits, and sends personal invite links to the people it has recruited.
 Each reviewer uses the product, writes a review against the brief with
 their name, state and photo on it (and their business for B2B), reports
-process issues, and blind-rates three peers. Reviewers are anonymous to
+process issues anonymously, and blind-rates three peers. Reviewers are anonymous to
 each other, never to the business. A review is private unless the
 reviewer agrees it may be quoted; a quote carries the paid-review
 disclosure. Issues are listed as teasers and unlocked with credit,

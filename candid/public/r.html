@@ -114,7 +114,7 @@ function reviewForm(v) {
 function issuesPanel(v) {
   const can = ['accepted', 'submitted', 'rated'].includes(v.me.seat) && v.period.state === 'open';
   return `<div class="panel"><div class="head"><h2>Issues</h2>${can ? btn('bugform', 'Report an issue', '', 'btn sm primary') : ''}</div><div class="body tight">
-    <p class="sm muted" style="padding:10px 16px 0">Things that make no sense, are not done, or should be done differently. Paid when the business unlocks them, by peer score.</p>
+    <p class="sm muted" style="padding:10px 16px 0">Things that make no sense, are not done, or should be done differently. Anonymous: the business never sees who reported one. Paid when it unlocks them, by peer score.</p>
     ${v.bugs.length ? `<div class="list">${v.bugs.map((x) => `<div><span>${esc(x.title)}</span>${x.dupOf ? chip('Confirmation', '', true) : x.unlocked ? chip(`Unlocked · ${money(x.paidOut)} to you${x.payout === 'paid' ? ' · paid' : ''}`, 'good') : x.scores ? (x.tier ? chip(`${x.tier.name} · ${money(x.tier.price)}`, 'accent') : chip('Not listed', 'bad')) : chip('Awaiting peer score', 'warn')}</div>`).join('')}</div>` : '<div class="empty">Nothing reported yet</div>'}
     ${v.published.length ? `<div class="head" style="border-top:1px solid var(--line)"><h3 class="muted">Already on the list</h3><span class="xs muted">not paid again</span></div><div class="list">${v.published.map((x) => `<div><span class="sm">${esc(x.title)}</span>${chip(x.status, '', true)}</div>`).join('')}</div>` : ''}</div></div>`;
 }

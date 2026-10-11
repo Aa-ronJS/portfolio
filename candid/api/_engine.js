@@ -109,7 +109,7 @@ export function setStatus(s, now, kind, id, status) {
   const it = (kind === "review" ? s.reviews : s.bugs).find((x) => x.id === id); if (!it) fail("Not found", 404);
   if (kind === "bug" && !it.unlocked) fail("Unlock it first");
   it.status = it.status === status ? null : status;
-  log(s, now, "Status set", `${kind} · ${s.reviewers[it.reviewerId].pseudonym} · ${it.status || "cleared"}`, { business: true, reviewers: [it.reviewerId] });
+  log(s, now, "Status set", kind === "review" ? `review · ${s.reviewers[it.reviewerId].pseudonym} · ${it.status || "cleared"}` : `issue · "${it.title}" · ${it.status || "cleared"}`, { business: true, reviewers: [it.reviewerId] });
 }
 export function unlock(s, now, id) {
   const b = s.bugs.find((x) => x.id === id); if (!b) fail("Not found", 404);
@@ -118,7 +118,7 @@ export function unlock(s, now, id) {
   if (s.credits.balance < b.tier.price) fail(`Needs $${b.tier.price} in credits`);
   s.credits.balance -= b.tier.price; b.unlocked = true; b.unlockedAt = now; b.paidOut = Math.round(b.tier.price * (1 - FEE_PCT)); b.payout = "released";
   s.credits.ledger.push({ at: now, what: `Unlock · ${b.title}`, amt: -b.tier.price });
-  log(s, now, "Issue unlocked", `"${b.title}" · $${b.tier.price} · ${s.reviewers[b.reviewerId].pseudonym} owed $${b.paidOut}`, { business: true, reviewers: [b.reviewerId] });
+  log(s, now, "Issue unlocked", `"${b.title}" · $${b.tier.price} · reporter owed $${b.paidOut}`, { business: true, reviewers: [b.reviewerId] });
   return b;
 }
 
@@ -192,13 +192,13 @@ export async function submitBug(s, now, id, d, dupOf, ai, rng) {
     const o = s.bugs.find((x) => x.id === dupOf);
     if (!o || o.dupOf || o.reviewerId === id) fail("That is not an issue you can confirm");
     bug.dupOf = o.id; o.confirmations += 1; s.bugs.push(bug);
-    log(s, now, "Issue confirmed", `${r.pseudonym} · "${o.title}"`, { business: true, reviewers: [id] });
+    log(s, now, "Issue confirmed", `"${o.title}" · ${o.confirmations} confirmation${o.confirmations > 1 ? "s" : ""}`, { business: true, reviewers: [id] });
     return bug;
   }
   const scored = await ai.scoreBug(bug, brief(s));
   bug.ai = { category: CATEGORIES.includes(scored.category) ? scored.category : "wrong step", teaser: clean(scored.teaser, 110), onBrief: clamp(scored.onBrief), quality: clamp(scored.quality), by: scored.by };
   s.bugs.push(bug);
-  log(s, now, "Issue reported", `${r.pseudonym} · "${bug.title}"`, { business: true, reviewers: [id] });
+  log(s, now, "Issue reported", `"${bug.title}"`, { business: true, reviewers: [id] });
   return bug;
 }
 export function markReceived(s, now, id, v) { const r = s.reviewers[id]; if (!r) fail("Not found", 404); r.received = !!v; }
@@ -331,7 +331,7 @@ export function decide(s, now, flagId, outcome) {
 export function markPaid(s, now, kind, id) {
   if (kind === "review") { const r = s.reviewers[id]; if (!r) fail("Not found", 404); if (r.payout !== "released") fail("Nothing released to pay"); r.payout = "paid"; r.paidAt = now; log(s, now, "Review fee paid", `${r.pseudonym} · $${FEE}`, { business: true, reviewers: [id] }); return; }
   const b = s.bugs.find((x) => x.id === id); if (!b) fail("Not found", 404); if (b.payout !== "released") fail("Nothing released to pay"); b.payout = "paid"; b.paidAt = now;
-  log(s, now, "Issue payout paid", `"${b.title}" · $${b.paidOut} · ${s.reviewers[b.reviewerId].pseudonym}`, { business: true, reviewers: [b.reviewerId] });
+  log(s, now, "Issue payout paid", `"${b.title}" · $${b.paidOut}`, { business: false, reviewers: [b.reviewerId] });
 }
 
 // The clock. Runs before every read and write: deadlines move the period on without anyone pressing anything.
@@ -364,7 +364,8 @@ export function businessView(s, tokens) {
     reviewers: seated(s).map((r) => ({ ...pub(r), token: r.seat === "invited" ? (tokens || {})[r.id] || null : null })),
     reviewCount: cur(s, s.reviews).length,
     reviews: (p && ["recruiting", "open"].includes(p.state) ? [] : cur(s, s.reviews)).map((rv) => ({ ...rv, flags: s.flags.filter((f) => f.targetId === rv.id).map(({ id, reason, source, state, decision, at }) => ({ id, reason, source, state, decision, at })) })),
-    bugs: cur(s, s.bugs).filter((b) => !b.dupOf).map((b) => b.unlocked ? b : { id: b.id, category: b.ai && b.ai.category, teaser: b.ai && b.ai.teaser, provisional: b.ai ? Math.round((b.ai.onBrief + b.ai.quality) / 2) : null, scores: b.scores, tier: b.tier, confirmations: b.confirmations, unlocked: false, reviewerId: b.reviewerId, at: b.at }),
+    // Issues are anonymous to the business. The platform knows who reported one, for the payout; the business never does.
+    bugs: cur(s, s.bugs).filter((b) => !b.dupOf).map((b) => { const { reviewerId, ratings, payout, paidOut, ...open } = b; return b.unlocked ? open : { id: b.id, category: b.ai && b.ai.category, teaser: b.ai && b.ai.teaser, provisional: b.ai ? Math.round((b.ai.onBrief + b.ai.quality) / 2) : null, scores: b.scores, tier: b.tier, confirmations: b.confirmations, unlocked: false, at: b.at }; }),
     log: s.log.filter((e) => e.vis.business).slice(-300),
   };
 }
