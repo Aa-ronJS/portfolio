@@ -7,7 +7,7 @@ global.performance={ now:()=>Date.now() }; global.requestAnimationFrame=()=>{};
 const Stub=function(){ return { setPixelRatio(){}, setSize(){}, render(){}, shadowMap:{}, domElement:el(), info:{render:{calls:0,triangles:0}} }; };
 global.window={ innerWidth:1200, innerHeight:800, matchMedia:()=>({matches:false}), devicePixelRatio:1, addEventListener(){}, THREE:Object.assign({},T0,{WebGLRenderer:Stub}) };
 const [test, seedArg]=process.argv.slice(2); const seed=+(seedArg||4444);
-const path=require('path'); const html=require('fs').readFileSync(path.join(__dirname,'..','index.html'),'utf8'); const scripts=[...html.matchAll(/<script>\n([\s\S]*?)<\/script>/g)].map(m=>m[1]); let src=scripts.find(x=>x.indexOf('"use strict"')>=0).replace(/var seed = \(function\(\)\{[^\n]*?SEED0 = seed;/, 'var seed = '+seed+'; var SEED0=seed;');
+const path=require('path'); const html=require('fs').readFileSync(path.join(__dirname,'..','index.html'),'utf8').replace(/\r\n/g,'\n'); const scripts=[...html.matchAll(/<script>\n([\s\S]*?)<\/script>/g)].map(m=>m[1]); let src=scripts.find(x=>x.indexOf('"use strict"')>=0).replace(/var seed = \(function\(\)\{[^\n]*?SEED0 = seed;/, 'var seed = '+seed+'; var SEED0=seed;');
 src=src.replace('window.__sim = {', 'window.__sim = {attempt:attempt, giveNew:giveNew, homUpdate:homUpdate, record:record, effRes:effRes, addItem:addItem, setTime:function(t){time=t;}, getTime:function(){return time;}, socialPull:socialPull, kill:kill, ');
 eval(src);
 const S=window.__sim, mine=()=>S.homs().filter(h=>h.band===0);
@@ -106,5 +106,84 @@ if (test==='recog'){
   out.traineeDead=h.dead; out.traineeThought=h.thought; out.count=p&&p.count; out.days=p&&Object.keys(p.days).length; out.unprompted=p&&p.unprompted; out.firstDay=firstDay&&+firstDay.toFixed(2); out.recognisedDay=recogDay&&+recogDay.toFixed(2);
   out.PASS = !!recogDay && Object.keys(p.days).length>=2 && (p.unprompted||0)>=1 && (recogDay-firstDay)>=1;
   out.note = recogDay? 'recognised' : 'not yet recognised (needs an unprompted performance)';
+}
+if (test==='every'){
+  // Every verb, with every body part and a wide range of held things, against every kind of target.
+  // Each attempt must change something physical in the world. "Nothing happens" is a failure.
+  const h=mine()[0]; S.setFocus(null); const home={x:h.x,y:h.y};
+  const others=S.homs().filter(o=>o!==h && o.band===0 && o.age>8);
+  const reset=()=>{ Object.assign(h,{hp:1,hunger:0.5,thirst:0.5,cold:0.3,fear:0.2,social:0.4,sick:0.1,energy:0.6,asleep:false,inTree:null,task:null,frustration:0,coat:null,tuck:null,wear:null,wetT:0,boredom:0.3,dead:false,fur:0.5,aversion:{}}); h.hold=[null,null]; };
+  const findTile=(tt)=>{ for(let r=1;r<70;r++) for(let a=0;a<36;a++){ const x=home.x+Math.cos(a/36*6.283)*r, y=home.y+Math.sin(a/36*6.283)*r; if (S.T(x,y)===tt) return {x:Math.floor(x)+0.5,y:Math.floor(y)+0.5}; } return null; };
+  const makers=[];
+  Object.keys(S.IT).forEach(cls=>{ if (cls==='water') return; makers.push({name:'item:'+cls, mk:()=>{ h.x=home.x; h.y=home.y; return {k:'item',ref:S.addItem(cls,h.x+0.6,h.y,cls==='carcass'?1:2,cls==='carcass'?{meat:6,bones:2,hides:1}:(cls==='gourdW'?{water:3}:{}))}; }}); });
+  ['bush','nutTree','figTree','tree','roots','mound','burrow','vine','outcrop'].forEach(ty=>makers.push({name:'source:'+ty, mk:()=>{ const s=S.sources.find(s=>s.type===ty); if(!s) return null; s.stock=Math.max(s.stock,3); s.rodents=2; s.loose=0; s.collapsed=false; h.x=s.x+0.8; h.y=s.y; return {k:'source',ref:s}; }}));
+  makers.push({name:'fire', mk:()=>{ h.x=home.x; h.y=home.y; return {k:'fire',ref:S.addFire(h.x+0.8,h.y,2)}; }});
+  makers.push({name:'water', mk:()=>{ const w=S.nearWater(home.x,home.y,40); h.x=w.x; h.y=w.y; return {k:'water',x:w.x,y:w.y}; }});
+  [['grass',3],['sand',2],['rock',5],['wood',4]].forEach(([n,tt])=>{ const p=findTile(tt); if (p) makers.push({name:'ground:'+n, mk:()=>{ h.x=p.x; h.y=p.y; const s0=S.spotAt(p.x,p.y,1.2); if (s0) S.spots.splice(S.spots.indexOf(s0),1); return {k:'ground',x:p.x,y:p.y}; }}); });
+  const g0=findTile(3);
+  [['hole',{depth:0.6}],['basin',{depth:0.7,stones:5,water:4}],['pile',{stones:4}],['damp',{damp:0.8}],['puddle',{water:1,rock:true}]].forEach(([n,f])=>makers.push({name:'spot:'+n, mk:()=>{ h.x=g0.x; h.y=g0.y; S.spots.length=0; const s=S.makeSpot(g0.x+0.5,g0.y); Object.assign(s,f); return {k:'spot',ref:s}; }}));
+  ['antelope','hyena','leopard','croc'].forEach(k=>makers.push({name:'animal:'+k, mk:()=>{ const a=S.creatures().find(c=>c.kind===k); if(!a) return null; a.dead=false; a.hp=2; a.state='idle'; a.cool=0; a.noticed=undefined; a.wary=5; a.bold=0.5; a.t=0; h.x=a.x+1; h.y=a.y; return {k:'animal',ref:a}; }}));
+  makers.push({name:'hominin', mk:()=>{ const o=others[0]; o.dead=false; o.hp=1; o.fear=0.2; o.social=0.4; o.energy=0.6; o.task=null; o.copyOf=null; o.bonds[h.id]=0.4; o.anger[h.id]=0.1; o.rank=0.5; o.coat=null; o.wetT=0; o.boredom=0.3; h.x=o.x+0.8; h.y=o.y; return {k:'hom',ref:o}; }});
+  makers.push({name:'self', mk:()=>{ h.x=home.x; h.y=home.y; return {k:'self'}; }});
+  const heldList=[null,'stone','stick','flake','berry','leaves','water','gourd','gourdHalf','spear','bone','soil','mud','hide','brand','nut','cord','tinder','meat','ember','shard','bark','grubs'];
+  let total=0; const fails=[];
+  for (const M of makers) for (const held of heldList){
+    const pre=new Set(S.items); const probe=M.mk(); if (!probe) continue; const verbs=S.compVerbs(probe); for (let i=S.items.length-1;i>=0;i--) if (!pre.has(S.items[i])) S.items.splice(i,1);
+    const ins = held ? [held,'hands'] : ['hands','teeth','feet','body'];
+    for (const v of verbs) for (const ik of ins){
+      const itemsBefore=new Set(S.items), firesBefore=S.fires.length;
+      reset(); const t=M.mk(); if (!t) continue;
+      if (held){ if (held==='water') S.giveNew(h,'water',1,{vessel:'hands',life:6,units:1}); else S.giveNew(h,held,1,held==='brand'?{burn:1}:{}); }
+      const learn=(v==='sniff'); const before=S.fp(h,t,!learn); let r;
+      try { r=S.attempt(h,v,ik,t); } catch(e){ fails.push(M.name+' | '+held+' | '+v+' '+ik+' | THREW '+e.message); continue; }
+      const after=S.fp(h,t,!learn); total++;
+      if (process.env.SAMPLE && Math.random()<0.0025) (out.sample=out.sample||[]).push(M.name+' | held '+held+' | '+v+' with '+ik+' => '+(r&&r.msg));
+      if (!r || !r.effect || r.learnOnly || before===after || /nothing (much )?happens/i.test(r.msg||'')) fails.push(M.name+' | held '+held+' | '+v+' with '+ik+' | '+(r&&r.effect)+' | '+(r&&r.msg));
+      for (let i=S.items.length-1;i>=0;i--) if (!itemsBefore.has(S.items[i])) S.items.splice(i,1);
+      S.fires.length=Math.min(S.fires.length,firesBefore);
+    }
+  }
+  out.attempts=total; out.failures=fails.length; out.examples=fails.slice(0,30); out.groups=Object.entries(fails.reduce((m,f)=>{ const p=f.split(" | "); const k=p[0]+" | "+p[2].split(" with ")[0]; m[k]=(m[k]||0)+1; return m; },{})).sort((a,b)=>b[1]-a[1]).slice(0,60);
+  out.PASS = total>3000 && fails.length===0;
+}
+if (test==='water'){
+  const h=mine()[0]; S.setFocus(h); const others=S.homs().filter(o=>o!==h);
+  const run=(sec)=>{ for(let i=0;i<sec*20;i++){ S.setRaining(false); others.forEach(o=>{ o.thirst=0.05; o.hunger=0.1; }); h.thirst=0.1; h.hunger=0.1; h.boredom=0; S.update(0.05); } };
+  h.hp=1; h.hold=[null,null];
+  const w=S.nearWater(h.x,h.y,40); h.x=w.x; h.y=w.y; let r;
+  for (let i=0;i<30 && !(h.hold[0]&&h.hold[0].cls==='water');i++){ h.hold=[null,null]; r=S.attempt(h,'grab','hands',{k:'water',x:w.x,y:w.y}); }
+  out.scoop=h.hold[0]&&h.hold[0].cls; out.scoopMsg=r.msg;
+  run(8); out.spilledWithin8s=!h.hold.some(i=>i&&i.cls==='water');
+  let g=null; for (let r2=3;r2<14&&!g;r2++) for (let a=0;a<24;a++){ const x=w.x+Math.cos(a/24*6.283)*r2, y=w.y+Math.sin(a/24*6.283)*r2; if (S.T(x,y)===3 && !S.spotAt(x,y,2)){ g={x:Math.floor(x)+0.5,y:Math.floor(y)+0.5}; break; } }
+  const G={k:'ground',x:g.x,y:g.y}; h.x=g.x; h.y=g.y; h.hold=[null,null];
+  S.giveNew(h,'water',1,{vessel:'hands',life:6,units:1}); r=S.attempt(h,'put','water',G); out.putOnDirt=r.msg;
+  h.hold=[null,null]; S.giveNew(h,'stone',1); let hits=0;
+  while (hits<30){ hits++; S.attempt(h,'hit','stone',G); const s=S.spotAt(g.x,g.y,1); if (s && s.depth>=0.5) break; }
+  const s=S.spotAt(g.x,g.y,1); out.hitsToHole=hits; out.kindAfterDig=S.spotKind(s);
+  h.hold=[null,null]; for (let k=0;k<2;k++){ S.giveNew(h,'water',1,{vessel:'hands',life:6,units:1}); S.attempt(h,'put','water',G); }
+  out.holeWater=+s.water.toFixed(2); run(60); out.holeWaterAfter60s=+s.water.toFixed(2);
+  for (let k=0;k<4;k++){ h.hold=[null,null]; S.giveNew(h,'stone',1); r=S.attempt(h,'put','stone',{k:'spot',ref:s}); } out.lineMsg=r.msg; out.kindAfterStones=S.spotKind(s);
+  for (let k=0;k<3;k++){ h.hold=[null,null]; S.giveNew(h,'water',1,{vessel:'hands',life:6,units:1}); r=S.attempt(h,'put','water',{k:'spot',ref:s}); } out.fillMsg=r.msg; out.basinWater=+s.water.toFixed(2); run(60); out.basinWaterAfter60s=+s.water.toFixed(2);
+  h.thirst=0.8; r=S.attempt(h,'drink','teeth',{k:'spot',ref:s}); out.drinkEffect=r.effect; out.thirstAfterDrink=+h.thirst.toFixed(2);
+  h.x=w.x; h.y=w.y; for (let i=0;i<30 && !(h.hold[0]&&h.hold[0].vessel==='leaves');i++){ h.hold=[null,null]; S.giveNew(h,'leaves',1); S.attempt(h,'grab','hands',{k:'water',x:w.x,y:w.y}); }
+  out.leafCup=h.hold[0]&&h.hold[0].vessel; run(12); out.leafStillHoldsAfter12s=!!(h.hold[0]&&h.hold[0].cls==='water');
+  let p2=null; for (let r3=4;r3<20&&!p2;r3++) for (let a=0;a<24;a++){ const x=g.x+Math.cos(a/24*6.283)*r3, y=g.y+Math.sin(a/24*6.283)*r3; if (S.T(x,y)===3 && !S.spotAt(x,y,2)){ p2={x:Math.floor(x)+0.5,y:Math.floor(y)+0.5}; break; } }
+  const kinds=[]; for (let k=0;k<6;k++){ h.hold=[null,null]; S.giveNew(h,'stone',1); S.attempt(h,'put','stone',{k:'ground',x:p2.x,y:p2.y}); kinds.push(S.spotKind(S.spotAt(p2.x,p2.y,1))); } out.stoneKinds=kinds.join(',');
+  out.PASS = out.scoop==='water' && out.spilledWithin8s && /seeps/.test(out.putOnDirt) && out.hitsToHole<=8 && out.holeWaterAfter60s<out.holeWater && out.kindAfterStones==='basin' && out.basinWaterAfter60s>=1.5 && out.drinkEffect==='drink-drinkStore' && out.leafCup==='leaves' && out.leafStillHoldsAfter12s && kinds[2]==='pile' && kinds[5]==='ring';
+}
+if (test==='tutorial'){
+  // Plays lesson one the way a player would: grab berries, put them down, repeat, then release and wait.
+  S.startTutorial(0); const tt=S.tut, tutor=tt.tutor; S.gotoStep(1); S.setFocus(tutor); S.tutTick(); out.stepAfterFocus=tt.step;
+  let spot=null; for (let r=1;r<6&&!spot;r++) for (let a=0;a<16;a++){ const x=tutor.x+Math.cos(a/16*6.283)*r, y=tutor.y+Math.sin(a/16*6.283)*r; if (S.T(x,y)===3||S.T(x,y)===4){ spot={x:x,y:y}; break; } }
+  const t0=S.getTime(); let ticks=0;
+  while (tt.step<5 && S.getTime()-t0<120*3){ S.update(0.05); ticks++; if (ticks%5===0) S.tutTick(); if (tutor.dead) break;
+    if (!tutor.task){ if (tutor.hold.some(i=>i&&i.cls==='berry')) S.setTask(tutor,'attempt',{k:'ground',x:spot.x,y:spot.y},'player',{av:'put',ai:'berry'});
+      else { const b=S.sources.filter(s=>s.type==='bush'&&s.stock>=1).sort((a,c)=>Math.hypot(a.x-tutor.x,a.y-tutor.y)-Math.hypot(c.x-tutor.x,c.y-tutor.y))[0]; S.setTask(tutor,'attempt',{k:'source',ref:b},'player',{av:'grab',ai:'hands'}); } } }
+  out.secondsToTeach=Math.round(S.getTime()-t0); out.storesByTutor=S.stats.stores[tutor.id]||0; out.natural=Math.round(S.tutNat(tutor)*100); out.stepReached=tt.step;
+  S.setFocus(null); const t1=S.getTime();
+  while (tt.step<6 && S.getTime()-t1<120*6){ S.update(0.05); ticks++; if (ticks%5===0) S.tutTick(); }
+  const p=S.patterns['store|berry|ground']; out.daysToHabitAfterRelease=+((S.getTime()-t1)/120).toFixed(2); out.finalStep=tt.step; out.unprompted=p&&p.unprompted; out.tutorDead=tutor.dead;
+  out.tutorLog=S.chronicle.filter(c=>c.text.indexOf(tutor.name)>=0).slice(0,6).map(c=>c.t.toFixed(2)+" "+c.text); out.thirst=+tutor.thirst.toFixed(2); out.hunger=+tutor.hunger.toFixed(2);
+  out.PASS = out.stepAfterFocus===2 && out.stepReached>=5 && tt.step===6;
 }
 console.log(test, JSON.stringify(out));

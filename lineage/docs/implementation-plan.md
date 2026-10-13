@@ -8,7 +8,7 @@ This plan closes the gaps found in the audit of the 3D sandbox, in an order wher
 - The browser build stays the testbed for Phases 0 to 6, because it runs on a phone and changes ship in minutes. The engine move to Godot comes after the behaviour model is proven.
 - Effort is given in focused build sessions with Claude, roughly two to four hours each.
 
-**Status (Oct 13, 2026):** Phases 0 to 4 are done, plus a composable verb + target + instrument action system. Phase 5 is next.
+**Status (Oct 14, 2026):** Phases 0 to 4 are done, plus a composable verb + target + instrument action system. Part of Phase 6 has been pulled forward: every action now has an effect through a property-based fallback, and the ground and water can be worked (holes, stone arrangements, basins, mud, carried water), with tests. Part of Phase 8 too: a title screen, a two-lesson tutorial and readability cues (Teaching bar, popups, pointers). Phase 5 is next.
 
 ## Phase 0: Verification baseline
 

@@ -1,7 +1,7 @@
 // Runs every scenario test on several world seeds and prints a summary.
 const { execFileSync } = require('child_process');
 const path = require('path');
-const tests = ['refuse','interrupt','theft','recog','engine','explore','soak'];
+const tests = ['refuse','interrupt','theft','recog','engine','explore','soak','every','water','tutorial'];
 const seeds = process.argv.slice(2).length ? process.argv.slice(2) : ['222','777','4444'];
 let fails = 0;
 for (const t of tests) for (const sd of seeds) {

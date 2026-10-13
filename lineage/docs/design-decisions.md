@@ -33,6 +33,15 @@ A record of every design decision made so far, in the order they were reached, w
 - **The game recognises patterns, it doesn't contain behaviours:** it logs what individuals actually do, compares it with what their drives predicted, and promotes recurring deviations that pay off into recognised behaviours. "Storing berries instead of eating them" exists only because someone did it enough times.
 - **Generalisation:** learning one thing makes related things easier. An expert berry storer has a lower resistance to "pick up and put down" in general, so trying it with stones and sticks comes more easily.
 
+- **No dead ends (14 Oct 2026):** every combination has an effect. "Nothing happens" is not an outcome. When the specific rules come up empty, a fallback layer decides what happens instead from the things' properties: soft things squash, light things get knocked aside, plants drop leaves, termites swarm, animals react. Sniffing is the one action whose effect is knowledge rather than a change in the world.
+- **Water and ground are materials:** water in a hand lasts seconds, in a leaf longer, in a gourd bowl longest. It soaks into dirt, sinks into sand and pools on rock. Hitting the ground digs a hole; stones put in one place form a pile, a ring, or the lining of a hole; a stone-lined or mud-sealed hole holds water and fills when it rains.
+- **A habit includes the setup:** a band that has learnt to store berries also goes and picks them to store when it isn't hungry, not only when berries happen to be in hand.
+
+## Teaching it (14 Oct 2026)
+
+- **Tutorial, not manual:** the game opens on a title screen. Lesson one teaches storing berries, the example in this document, from grab to recognised habit. Lesson two builds a water store. The student is kept alive and in a middle band of hunger during the lessons, so they are about teaching, not survival.
+- **Show the learning:** a Teaching bar shows how natural the last thing you asked feels to the focused hominin, with a line at 50% where they may start doing it unprompted, and how many of the band find it natural. Popups show results, refusals, watchers learning, and hominins acting on a habit by themselves.
+
 ## Food, storage and the world pushing back
 
 - **Food is the first resource:** berries, figs, nuts, roots, termites, fish, small animals, carcasses. Big game needs cooperation.
