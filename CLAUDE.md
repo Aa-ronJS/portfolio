@@ -1,5 +1,12 @@
 # portfolio — repo map for Claude sessions
 
+**How to read Aaron's questions:** this repo is not Aaron. It is one
+place his work happens to live. When he asks a question or sets a task,
+answer it in general unless he says it is about this repo, and do not
+read his history, skills or habits off what is committed here. He uses
+Claude for far more than what is in this folder, and what is here is
+not a portfolio of him.
+
 Three independent things live here:
 
 - **`public/`** — Aaron's portfolio site (one HTML file, no build step),
