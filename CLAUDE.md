@@ -51,11 +51,11 @@ Four independent things live here:
   every button must still work with its word
   (`tests/apptest/pics.cjs`).
 
-- **`clan-saga/`** — a plan (no code yet) for a Claude-driven game mod:
-  a clan's oral history from Ancestors: The Humankind Odyssey through to
-  Homo sapiens, where the player invents fire, pottery and the wheel by
-  describing how. Built on Aaron's Windows PC, not here. Start with
-  `clan-saga/README.md`.
+- **`clan-saga/`**: a playable browser game (Node, no build, no
+  dependencies): guide one clan from forest apes to the wheel, inventing by
+  describing how, with Claude Code headless as the judge and storyteller.
+  Start with `clan-saga/README.md`; rules in `public/sim.js`, balance test
+  `node tests/balance.js`. Runs on Aaron's Windows PC (`Play Clan Saga.cmd`).
 
 The portfolio site and the pipeline share nothing except
 `public/fonts/satoshi-var.woff2`, which the pipeline ships converted to
