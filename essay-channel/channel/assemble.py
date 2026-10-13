@@ -14,8 +14,9 @@ import shutil
 
 from . import media, prompts, voice
 
+ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 FONT_DIRS = ["/usr/share/fonts/truetype/dejavu", "/usr/share/fonts/dejavu",
-             "/Library/Fonts", "C:/Windows/Fonts"]
+             "/Library/Fonts", "C:/Windows/Fonts", os.path.join(ROOT, "fonts")]
 CARD_BG = "0x15171c"
 FPS = 30
 XF = 0.5                 # dissolve length between sections
@@ -182,7 +183,12 @@ def _card(out, text, dur, W, H, accent):
 
 
 def find_font(bold=True):
-    names = ["DejaVuSans-Bold.ttf", "DejaVuSans.ttf"] if bold else ["DejaVuSans.ttf"]
+    """A sans for cards: the system DejaVu where it exists (Linux, the
+    Action), Arial on Windows and macOS, else the bundled Anton so a
+    fresh machine still renders."""
+    names = (["DejaVuSans-Bold.ttf", "DejaVuSans.ttf", "arialbd.ttf", "Arial Bold.ttf",
+              "Anton-Regular.ttf"] if bold else
+             ["DejaVuSans.ttf", "arial.ttf", "Arial.ttf", "Anton-Regular.ttf"])
     for d in FONT_DIRS:
         for n in names:
             p = os.path.join(d, n)
