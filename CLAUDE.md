@@ -1,6 +1,6 @@
 # portfolio — repo map for Claude sessions
 
-Three independent things live here:
+Four independent things live here:
 
 - **`public/`** — Aaron's portfolio site (one HTML file, no build step),
   deployed to https://aaronsteele.vercel.app via `npx vercel deploy
@@ -50,6 +50,11 @@ Three independent things live here:
   in hand, red when money is overdue. If `pics.js` fails to load,
   every button must still work with its word
   (`tests/apptest/pics.cjs`).
+
+- **`lineage/`** — Lineage, a 3D hominin evolution sandbox prototype
+  (browser, three.js bundled in `lineage/lib/`, no build step; `npm test`
+  runs the scenario tests). Start with `lineage/README.md`, then
+  `lineage/docs/`. Nothing else in the repo depends on it.
 
 The portfolio site and the pipeline share nothing except
 `public/fonts/satoshi-var.woff2`, which the pipeline ships converted to

@@ -1,0 +1,425 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Lineage: Stage 1 design questionnaire</title>
+<style>
+:root{
+  --paper:#E4E2DA; --sheet:#F2F1EC; --ink:#23261D; --muted:#5E6152; --rule:#C9C6BA;
+  --ochre:#9A6416; --ochre-soft:#E9D9BC; --done:#3F6B3A;
+}
+*{box-sizing:border-box}
+html{scroll-behavior:smooth}
+body{margin:0;background:var(--paper);color:var(--ink);font:16px/1.55 system-ui,-apple-system,"Segoe UI",sans-serif}
+h1,h2{font-family:"Iowan Old Style","Palatino Linotype",Palatino,Georgia,serif;font-weight:600;letter-spacing:-0.01em}
+.layout{display:flex;flex-wrap:wrap;gap:32px;max-width:1240px;margin:0 auto;padding:32px 20px 80px}
+nav{flex:1 1 240px;max-width:280px}
+nav .inner{position:sticky;top:20px;display:flex;flex-direction:column;gap:14px}
+main{flex:999 1 560px;min-width:0;display:flex;flex-direction:column;gap:28px}
+header h1{font-size:40px;line-height:1.1;margin:0 0 10px}
+header p{margin:0;max-width:62ch;color:var(--muted)}
+.toolbar{display:flex;flex-wrap:wrap;gap:8px}
+button,.filebtn{font:inherit;font-size:14px;padding:10px 14px;min-height:44px;border-radius:4px;border:1px solid var(--ink);background:var(--sheet);color:var(--ink);cursor:pointer}
+button.primary{background:var(--ink);color:var(--sheet)}
+button:hover,.filebtn:hover{background:var(--ochre-soft)}
+button.primary:hover{background:#3a3e30}
+button:focus-visible,textarea:focus-visible,a:focus-visible,.filebtn:focus-within{outline:3px solid var(--ochre);outline-offset:2px}
+.filebtn input{position:absolute;width:1px;height:1px;opacity:0}
+.status{font-size:13px;color:var(--muted);min-height:20px}
+.progress{font-size:14px}
+.bar{height:6px;background:var(--rule);border-radius:3px;overflow:hidden;margin-top:6px}
+.bar span{display:block;height:100%;background:var(--ochre)}
+nav ol{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:2px}
+nav a{display:flex;justify-content:space-between;gap:8px;padding:6px 8px;border-radius:4px;color:var(--ink);text-decoration:none;font-size:14px}
+nav a:hover{background:var(--sheet)}
+nav a .count{color:var(--muted);font-variant-numeric:tabular-nums;white-space:nowrap}
+nav a.complete .count{color:var(--done);font-weight:600}
+section.part{background:var(--sheet);border:1px solid var(--rule);border-radius:6px;padding:24px 24px 8px}
+section.part h2{font-size:26px;margin:0 0 4px}
+section.part > p{margin:0 0 18px;color:var(--muted);max-width:62ch}
+.q{display:grid;grid-template-columns:52px minmax(0,1fr);gap:4px 12px;padding:16px 0;border-top:1px solid var(--rule)}
+.q .num{font-variant-numeric:tabular-nums;color:var(--ochre);font-weight:600;padding-top:1px}
+.q label{font-weight:500}
+.q textarea{grid-column:2;width:100%;min-height:64px;resize:vertical;font:inherit;font-size:15px;line-height:1.5;padding:10px 12px;border:1px solid var(--rule);border-radius:4px;background:#fff;color:var(--ink)}
+.q textarea:focus{border-color:var(--ochre)}
+.q.answered .num{color:var(--done)}
+footer{color:var(--muted);font-size:13px}
+@media (max-width:700px){nav{max-width:none} nav .inner{position:static} .q{grid-template-columns:1fr} .q textarea{grid-column:1}}
+@media (prefers-reduced-motion:reduce){html{scroll-behavior:auto}}
+@media print{nav,.toolbar,.status{display:none} body{background:#fff} section.part{break-inside:avoid-page;border:none} .q textarea{border:none;min-height:0}}
+</style>
+</head>
+<body>
+<div class="layout">
+<nav aria-label="Parts">
+<div class="inner">
+<div class="progress"><span id="totalCount">0 of 0 answered</span><div class="bar"><span id="totalBar" style="width:0%"></span></div></div>
+<ol id="navList"></ol>
+</div>
+</nav>
+<main>
+<header>
+<h1>Lineage: Stage 1 design questionnaire</h1>
+<p>Answer in any order, though earlier parts shape later ones. Short answers are fine, and "don't know yet" is a useful answer. Your answers save in this browser as you type. Use "Save filled copy" to keep a portable file you can reopen anywhere.</p>
+</header>
+<div class="toolbar">
+<button class="primary" id="saveCopy" type="button">Save filled copy</button>
+<button id="exportMd" type="button">Export answers for Claude</button>
+<button id="exportJson" type="button">Export backup</button>
+<label class="filebtn">Import backup<input type="file" id="importFile" accept=".json,application/json"></label>
+</div>
+<div class="status" id="status" role="status" aria-live="polite"></div>
+<div id="parts"></div>
+<footer>Print or save as PDF from your browser's print menu if you want a paper version.</footer>
+</main>
+</div>
+
+<script id="saved-answers" type="application/json">{}</script>
+<script>
+(function(){
+"use strict";
+var PARTS = [
+["Vision and identity","These answers set every trade-off later in the build.",[
+"In one sentence, what is this game?",
+"What should a player feel after a great run? (awe, ownership, tension, curiosity, loss)",
+"Simulator first or game first? When realism and fun conflict, which wins, and is there a line realism never crosses?",
+"How scientifically grounded should it be? (strict, plausible, loosely inspired)",
+"Is the real human story referenced in-game (real species names, fossil overlay) or kept hidden?",
+"Working title: keep \"Lineage\" or explore others?",
+"Three existing games it should be compared to, and what you take from each",
+"What is this game explicitly NOT? (list anything you want ruled out)",
+"Tone: serious documentary, grounded drama, light-hearted, or mixed?",
+"Is violence between hominins shown graphically, abstracted, or avoided?",
+"What is the single most important system to get right in Stage 1?"]],
+["Player, audience and feel","Who plays decides complexity, pacing and how much the game explains itself.",[
+"Who is the core player? (RTS veterans, sim and colony fans, science enthusiasts, casual)",
+"How complex can it be on day one before it loses them? (Dwarf Fortress deep vs Age of Empires readable)",
+"How much should the game explain its systems? (full numbers, hints only, discover by playing)",
+"Target length of one full Stage 1 run, in real hours",
+"Target length of a typical sitting, in minutes",
+"Single-player only for Stage 1, or any multiplayer?",
+"Should a run be pausable at any moment, or does real-time pressure matter?",
+"Tutorial approach: guided first run, separate tutorial, or none?",
+"How punishing should failure be? (extinction wipes the run, rewind allowed, save anywhere)",
+"Platforms for Stage 1 (PC only, Mac, Linux, Steam Deck, console later)",
+"Input: mouse and keyboard only, or controller support needed?"]],
+["Stage 1 scope boundaries","This part decides what ships first and what waits.",[
+"Where does Stage 1 end? (first permanent settlement, a fixed date, a population size, player choice)",
+"What happens when a player reaches the end of Stage 1? (extrapolated present-day report, continue in sandbox, wait for Stage 2)",
+"Is Goal mode in Stage 1, or sandbox only at first?",
+"Is species switching in Stage 1?",
+"Is taming and domestication in Stage 1, or later?",
+"Are buildings in Stage 1? If yes, which kinds at most? (windbreaks, hearths, shelters, caches)",
+"Is fire in Stage 1?",
+"Maximum number of hominin species alive at once in Stage 1",
+"Must-have features for a first public release (list)",
+"Nice-to-have features that can slip (list)",
+"Features you are happy to cut entirely from Stage 1 (list)",
+"Is a playable prototype for yourself the first goal, or a public demo?"]],
+["Time, pacing and session structure","Time is the hardest design problem: real-time play has to coexist with millions of years.",[
+"How much in-game time passes per real minute of live play? (a day, a season, a year)",
+"Do individuals visibly age, give birth and die during live play?",
+"How long is one live-play stretch before a skip is typical? (one season, one generation, player decides)",
+"Who triggers deep-time skips: player only, climate events, or both?",
+"Can the player skip at any time, or only at safe moments?",
+"Are there day and night cycles with gameplay effects?",
+"Are there seasons (wet and dry) with gameplay effects?",
+"Should the pace speed up as culture develops (shorter skips later)?",
+"How many skips do you expect in a full Stage 1 run? (rough number)",
+"What should a player do in the first 10 minutes of a new run?",
+"What keeps the middle of a run from feeling repetitive?"]],
+["World, map and climate","The world is the main source of pressure, so its shape drives everything else.",[
+"Real Earth geography (Africa, then beyond) or a fictional, procedurally generated world?",
+"If real Earth: how much of it is playable in Stage 1? (East Africa only, all of Africa, the Old World)",
+"If procedural: does every seed give a different continent layout?",
+"Map scale: how long to walk a band across the playable area, in real minutes?",
+"One continuous seamless map, or regions loaded separately?",
+"Climate: follow real paleoclimate closely, loosely, or fully random per seed?",
+"Which biomes must exist in Stage 1? (forest, woodland, savanna, lakeshore, coast, desert, mountain, cold)",
+"Does terrain change visibly over time? (lakes shrink, forests retreat, rivers move, volcanoes)",
+"Can the player's actions change the landscape? (fire clearing, overhunting, trails, camps)",
+"Fog of war: explored areas stay visible, or fade if not watched?",
+"Are there one-off disasters? (volcanic eruptions, megadroughts, floods)"]],
+["Units, bands and control","This defines what the player actually clicks on.",[
+"Is every on-screen unit one individual, always?",
+"Typical band size, and the maximum number of units on screen at once",
+"How many bands can a player run at once before it becomes unmanageable?",
+"Direct control of individuals (click a unit, give an order) or orders to groups only?",
+"Do units have autonomy? Can they ignore orders when hungry, scared or loyal to a leader?",
+"Do individuals have names, personalities and memories, or are they anonymous?",
+"Are there leaders or special individuals? How do they emerge?",
+"Can the player follow a single individual through life (a hero or protagonist view)?",
+"Roles: assigned by the player, emergent from skills, or both?",
+"Do children need care, and does that tie up adults?",
+"How do births work? (periodic, driven by food surplus, pair bonds, player has no say)",
+"Can the player split and merge bands freely? Any cost?"]],
+["Exposure system (genes, skill, culture)","The core loop: every action trains skill, spreads culture and, over generations, shifts genes.",[
+"How many gene axes in Stage 1? (a short core list, or a large open set) List any you consider essential",
+"How visible are gene values to the player? (exact numbers, bands like low and high, only through appearance)",
+"How fast should skill grow from practice? (noticeable within one session, or slow)",
+"Does skill decay when unused? How fast?",
+"How does culture pass on? (children only, anyone watching, deliberate teaching)",
+"Can culture be lost entirely if the last practitioner dies?",
+"How visible is selection to the player? (live stats, only in skip summaries, hidden)",
+"Should mutations be shown as they appear in individual births?",
+"How strong should trade-offs be? Should a specialist build be clearly fragile?",
+"Should the player be able to influence mate choice or breeding directly?",
+"How should outcomes be graded? (success, partial, harm, death, or more steps)",
+"Can sexual selection create traits for display only (ornaments, colouring)?",
+"How should disease work? (individual illness, epidemics, immunity evolving)"]],
+["Interaction engine (verbs and properties)","This decides how open \"try anything\" really is.",[
+"How does the player issue unusual actions? (context menu of verbs, drag item onto target, free combination)",
+"List the verbs you consider essential for Stage 1",
+"List the object properties you consider essential (toxicity, hardness, flammability, temperament)",
+"Can units combine two objects? (stone on stone, stick and stone) How deep can combinations go in Stage 1?",
+"How are discoveries announced? (named and celebrated, quiet log entry, unnamed until it spreads)",
+"Can the player name discoveries, behaviours and their species?",
+"Where is the line on plausibility? Give an example of something a player should never be able to do",
+"Should failed attempts teach anything? (skill gain from failure, avoidance learned)",
+"Do objects degrade or get used up? (tools break, carcasses rot, fire burns out)",
+"Can units carry items? How many, and does carrying slow them?"]],
+["Survival, resources and economy","This sets the moment-to-moment pressure on the player.",[
+"Which needs does each individual track? (hunger, thirst, temperature, fatigue, safety, social)",
+"Are resources held by the band (shared pool) or carried by individuals?",
+"List the resource types for Stage 1",
+"Can food be stored? Does it spoil?",
+"What sets the population cap? (food, territory, shelter, a fixed number)",
+"Is there trade or exchange between bands? Between species?",
+"Is there any concept of ownership or territory the game enforces?",
+"How harsh is starvation? (slow weakening, sudden deaths, band breaks up)",
+"Should the economy show numbers (income and spend per day) or be felt through unit condition?",
+"Do resources regenerate? At what rate relative to a generation?"]],
+["Combat and conflict","This decides how much the game plays like a classic RTS in a fight.",[
+"How central is combat? (frequent, occasional, rare and decisive)",
+"Micro-managed fights (control each unit) or stance-based (set behaviour and watch)?",
+"What decides a fight? (individual stats, numbers, morale, terrain, surprise)",
+"Is morale and fleeing a major system?",
+"Do injuries persist? (limping, scars, permanent disability)",
+"Is there ranged combat in Stage 1? (thrown stones, sticks)",
+"Can bands take captives or adopt individuals from other groups?",
+"Hominin vs hominin conflict: how common early on, and should it escalate over time?",
+"Can the player ambush, raid camps or steal food from rivals?",
+"Should combat drive evolution directly? (fighting raises throwing and cooperation pressure)"]],
+["Animals, ecology and domestication","The living world is both the threat and the opportunity.",[
+"Real extinct animals of the period (sabre-toothed cats, giant hyenas, deinotheres) or invented creatures?",
+"How many animal species in Stage 1? (rough number)",
+"Do animals evolve with the same gene system as hominins, or a simpler one?",
+"Do animal populations crash and recover with hunting and climate?",
+"How hard is taming? (anything possible with enough time, or limited by temperament)",
+"Can tamed animals fight, carry, guard, or provide food?",
+"Can rivals steal, kill or turn your animals?",
+"How detailed are plants? (food sources only, or growing, spreading, burnable vegetation)",
+"Should predators learn and adapt within a session, or only across skips?",
+"Can animals be driven extinct by the player? Is that a consequence you want?"]],
+["Rival species and AI","Rival AI is the biggest build cost and the main source of challenge.",[
+"Do rival species start at the beginning, or only appear by branching from your lineage and others?",
+"Should rival AI play to win (be the last branch too) or just survive?",
+"How smart should the AI be at exploiting your dependencies? (adjustable by difficulty?)",
+"Should the AI cheat (see through fog, get bonuses) at higher difficulties, or never?",
+"Can you communicate or negotiate with other species? (peace, trade, tolerance)",
+"Should AI species have distinct personalities? (aggressive, cautious, opportunistic)",
+"How often should the player meet rivals in Stage 1?",
+"Should the AI learn from the player across runs, or only within a run?",
+"Can a rival species become an ally?"]],
+["Speciation, interbreeding and species switching","These rules decide what counts as \"your lineage\" and how branches form.",[
+"What triggers a new species? (isolation time, genetic distance, player confirmation)",
+"Is the player told when their own population is about to split? Can they prevent it?",
+"Can different species interbreed? Where is the cutoff?",
+"Do hybrids carry traits from both sides, and can they be fertile?",
+"When your lineage splits, does the player keep both branches, choose one, or hand one to the AI?",
+"Switching: any time, after a cooldown, at a cost, or only at skips?",
+"Can the player switch to any species, or only hominins? (could you play the hyenas?)",
+"Who names new species: the game, the player, or both?",
+"Should the run keep a family tree of named individuals, or only species-level history?"]],
+["Deep-time skips","Skips are where evolution happens at scale, so they need to feel earned, not like a loading screen.",[
+"Can the player set the length of a skip, or is it fixed or event-based?",
+"During a skip, does the player set any standing orders? (stay put, follow water, avoid rivals)",
+"Should the player watch the skip happen (time-lapse) or jump straight to the summary?",
+"What must the return summary show? (body changes, deaths, discoveries, rivals, map changes)",
+"Can a skip end early if something major happens? (extinction risk, rival contact)",
+"After a skip, where does the camera land? (same band, the strongest band, player chooses)",
+"Can a lineage go extinct during a skip, with no chance to react?"]],
+["Goal mode, sandbox and scoring","This decides what winning means and what pulls players back for another run.",[
+"In Goal mode, is \"last branch\" checked only at the very end, or can it be won early?",
+"Is a partial win (survived but rivals remain) a real outcome or a loss?",
+"What does the player see on winning? (generated history, family tree, present-day report)",
+"Should there be a score? What should it reward most?",
+"Achievements: wanted? Examples of ones you'd love to see",
+"Meta-progression between runs: unlocks, archive only, or nothing?",
+"Should runs be shareable? (seed codes, lineage cards, replays)",
+"Any challenge modes you already have in mind? (start as a robust specialist, endless ice age)",
+"Difficulty settings: which levers matter most to you?"]],
+["Art, audio and presentation","Art style decides cost, team and how the procedural bodies can work.",[
+"2D, 2.5D, or full 3D?",
+"Art style: stylised low-poly, painterly, realistic, pixel art, other? Reference images or games",
+"Camera: top-down, angled RTS, free rotation, close follow?",
+"How close should the camera zoom? (faces readable, or always a distance)",
+"Should bodies morph visibly with genes (proportions, hair, skin) as shown in the concept sheets?",
+"Do hominins vocalise? Should a proto-language emerge audibly over time?",
+"Music: ambient, adaptive to events, minimal, or none?",
+"Narration or in-game chronicle text? Written by the game or by AI?",
+"UI style: keep the \"Ochre and Obsidian\" mockup direction, or change?",
+"Will you commission art, use asset packs, AI-assisted tools, or build it yourself?"]],
+["Technical and production","This shapes how the build is organised and who does what.",[
+"Engine: confirm Godot 4, or another preference?",
+"Your own coding experience and preferred language (GDScript, C#, Rust, C++)",
+"Who builds it? (you plus Claude Code, a hired team, agents at scale, mix)",
+"Hours per week you can commit",
+"Minimum PC spec you want to support",
+"Must runs be deterministic (same seed gives the same history)?",
+"Save system: save anywhere, autosave only, ironman option?",
+"Modding support: important from the start, later, or never?",
+"Should any part use live AI models (narration, species naming, the present-day report)? Online required or offline only?",
+"Version control and project management tools you already use"]],
+["Business and release","These answers decide how much polish Stage 1 needs and when.",[
+"Is this a commercial product, a passion project, or both?",
+"Target release model: Steam Early Access, full release, free demo first?",
+"Target price point",
+"Budget available for art, audio, hiring or tools",
+"Target date for a first playable build and for a public release",
+"Will you build in public (devlogs, Discord, wishlists) from early on?",
+"Funding: self-funded, publisher, crowdfunding, grants?",
+"Does this tie into your short-form video pipeline for marketing?",
+"What would make Stage 1 a success for you? (sales, wishlists, reviews, personal satisfaction)"]]
+];
+
+var STORE_KEY = "lineage-stage1-answers-v1";
+var answers = {};
+var statusEl = document.getElementById("status");
+var partsEl = document.getElementById("parts");
+var navEl = document.getElementById("navList");
+
+function setStatus(msg){ statusEl.textContent = msg; }
+
+function loadInitial(){
+  var embedded = {};
+  try { embedded = JSON.parse(document.getElementById("saved-answers").textContent || "{}") || {}; } catch(e){ embedded = {}; }
+  var stored = {};
+  try { var raw = window.localStorage.getItem(STORE_KEY); if (raw) stored = JSON.parse(raw) || {}; } catch(e){ stored = {}; }
+  var merged = {};
+  Object.keys(embedded).forEach(function(k){ merged[k] = embedded[k]; });
+  Object.keys(stored).forEach(function(k){ if (stored[k] && stored[k].trim()) merged[k] = stored[k]; });
+  return merged;
+}
+
+function persist(){
+  try { window.localStorage.setItem(STORE_KEY, JSON.stringify(answers)); setStatus("Saved in this browser."); }
+  catch(e){ setStatus("This browser can't autosave here. Use \"Save filled copy\" to keep your answers."); }
+}
+
+function autoGrow(t){ t.style.height = "auto"; t.style.height = (t.scrollHeight + 2) + "px"; }
+
+function render(){
+  partsEl.innerHTML = ""; navEl.innerHTML = "";
+  PARTS.forEach(function(part, pi){
+    var pNum = pi + 1;
+    var sec = document.createElement("section");
+    sec.className = "part"; sec.id = "part-" + pNum;
+    var h = document.createElement("h2"); h.textContent = "Part " + pNum + ": " + part[0]; sec.appendChild(h);
+    var p = document.createElement("p"); p.textContent = part[1]; sec.appendChild(p);
+    part[2].forEach(function(q, qi){
+      var id = pNum + "." + (qi + 1);
+      var wrap = document.createElement("div"); wrap.className = "q"; wrap.dataset.id = id;
+      var num = document.createElement("span"); num.className = "num"; num.textContent = id;
+      var lab = document.createElement("label"); lab.htmlFor = "q-" + id; lab.textContent = q;
+      var ta = document.createElement("textarea"); ta.id = "q-" + id; ta.value = answers[id] || "";
+      ta.addEventListener("input", function(){
+        answers[id] = ta.value; autoGrow(ta); updateProgress(); persist();
+      });
+      wrap.appendChild(num); wrap.appendChild(lab); wrap.appendChild(ta);
+      sec.appendChild(wrap);
+    });
+    partsEl.appendChild(sec);
+    var li = document.createElement("li");
+    var a = document.createElement("a"); a.href = "#part-" + pNum; a.id = "nav-" + pNum;
+    var t = document.createElement("span"); t.textContent = pNum + ". " + part[0];
+    var c = document.createElement("span"); c.className = "count";
+    a.appendChild(t); a.appendChild(c); li.appendChild(a); navEl.appendChild(li);
+  });
+  Array.prototype.forEach.call(document.querySelectorAll("textarea"), autoGrow);
+  updateProgress();
+}
+
+function updateProgress(){
+  var total = 0, done = 0;
+  PARTS.forEach(function(part, pi){
+    var pNum = pi + 1, pd = 0;
+    part[2].forEach(function(q, qi){
+      var id = pNum + "." + (qi + 1);
+      var has = !!(answers[id] && answers[id].trim());
+      if (has) pd++;
+      var el = document.querySelector('.q[data-id="' + id + '"]');
+      if (el) el.classList.toggle("answered", has);
+    });
+    total += part[2].length; done += pd;
+    var a = document.getElementById("nav-" + pNum);
+    if (a){ a.querySelector(".count").textContent = pd + "/" + part[2].length; a.classList.toggle("complete", pd === part[2].length); }
+  });
+  document.getElementById("totalCount").textContent = done + " of " + total + " answered";
+  document.getElementById("totalBar").style.width = (total ? Math.round(done / total * 100) : 0) + "%";
+}
+
+function download(name, text, type){
+  try {
+    var blob = new Blob([text], {type: type});
+    var url = URL.createObjectURL(blob);
+    var a = document.createElement("a"); a.href = url; a.download = name;
+    document.body.appendChild(a); a.click(); document.body.removeChild(a);
+    setTimeout(function(){ URL.revokeObjectURL(url); }, 1000);
+    setStatus("Downloaded " + name + ".");
+  } catch(e){ setStatus("Download failed in this browser. Open the file in Chrome, Edge, Firefox or Safari."); }
+}
+
+function stamp(){ var d = new Date(); return d.getFullYear() + "-" + String(d.getMonth()+1).padStart(2,"0") + "-" + String(d.getDate()).padStart(2,"0"); }
+
+document.getElementById("saveCopy").addEventListener("click", function(){
+  var clone = document.documentElement.cloneNode(true);
+  clone.querySelector("#parts").innerHTML = "";
+  clone.querySelector("#navList").innerHTML = "";
+  clone.querySelector("#status").textContent = "";
+  clone.querySelector("#saved-answers").textContent = JSON.stringify(answers).replace(/</g, "\\u003c");
+  download("lineage-questionnaire-filled-" + stamp() + ".html", "<!doctype html>\n" + clone.outerHTML, "text/html");
+});
+
+document.getElementById("exportMd").addEventListener("click", function(){
+  var out = "# Lineage: Stage 1 design questionnaire answers\n\n";
+  PARTS.forEach(function(part, pi){
+    var pNum = pi + 1;
+    out += "## Part " + pNum + ": " + part[0] + "\n\n";
+    part[2].forEach(function(q, qi){
+      var id = pNum + "." + (qi + 1);
+      var ans = (answers[id] || "").trim();
+      out += "**" + id + " " + q + "**\n\n" + (ans ? ans : "_Not answered_") + "\n\n";
+    });
+  });
+  download("lineage-answers-" + stamp() + ".md", out, "text/markdown");
+});
+
+document.getElementById("exportJson").addEventListener("click", function(){
+  download("lineage-answers-backup-" + stamp() + ".json", JSON.stringify(answers, null, 2), "application/json");
+});
+
+document.getElementById("importFile").addEventListener("change", function(e){
+  var f = e.target.files && e.target.files[0]; if (!f) return;
+  var r = new FileReader();
+  r.onload = function(){
+    try {
+      var data = JSON.parse(r.result);
+      if (!data || typeof data !== "object" || Array.isArray(data)) throw new Error("bad");
+      answers = {};
+      Object.keys(data).forEach(function(k){ if (typeof data[k] === "string") answers[k] = data[k]; });
+      render(); persist(); setStatus("Imported " + f.name + ".");
+    } catch(err){ setStatus("That file isn't a questionnaire backup. Choose a .json file made with \"Export backup\"."); }
+    e.target.value = "";
+  };
+  r.onerror = function(){ setStatus("Couldn't read that file."); };
+  r.readAsText(f);
+});
+
+answers = loadInitial();
+render();
+})();
+</script>
+</body>
+</html>

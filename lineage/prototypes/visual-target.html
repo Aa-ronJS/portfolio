@@ -1,0 +1,563 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Lineage: visual target</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@600;700&family=IBM+Plex+Sans:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+:root{
+  box-sizing:border-box;
+  padding-top:env(safe-area-inset-top,0px);
+  padding-bottom:env(safe-area-inset-bottom,0px);
+  --panel:rgba(18,16,12,0.84); --panel-line:rgba(237,230,214,0.16);
+  --text:#EDE6D6; --muted:#BDB3A0; --accent:#E0A23B; --accent-ink:#1A1406;
+}
+@media (prefers-color-scheme: dark){ :root:not([data-theme="light"]){ --panel:rgba(14,12,9,0.86); } }
+:root[data-theme="dark"]{ --panel:rgba(14,12,9,0.86); }
+html{scroll-padding-top:env(safe-area-inset-top,0px)}
+html,body{height:100%;margin:0;background:#1b1712;overflow:hidden}
+body{font-family:"IBM Plex Sans",system-ui,-apple-system,"Segoe UI",sans-serif;color:var(--text)}
+#app{position:relative;width:100%;height:100%}
+canvas{display:block;width:100%;height:100%;touch-action:none}
+.brand{position:absolute;top:calc(14px + env(safe-area-inset-top,0px));left:16px;pointer-events:none;text-shadow:0 1px 8px rgba(0,0,0,0.5)}
+.brand b{display:block;font-family:"Barlow Condensed","Arial Narrow",sans-serif;font-size:30px;letter-spacing:3px;line-height:1}
+.brand span{font-size:13px;color:#efe4cc}
+.panel{position:absolute;left:12px;bottom:calc(12px + env(safe-area-inset-bottom,0px));width:min(360px,calc(100% - 24px));max-height:58%;overflow-y:auto;background:var(--panel);border:1px solid var(--panel-line);border-radius:10px;padding:14px;backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px);display:flex;flex-direction:column;gap:12px}
+.tabs{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:6px}
+button{font:inherit;font-size:14px;min-height:44px;border-radius:6px;border:1px solid var(--panel-line);background:rgba(255,255,255,0.04);color:var(--text);cursor:pointer}
+button.on{background:var(--accent);border-color:var(--accent);color:var(--accent-ink);font-weight:600}
+button:focus-visible,input:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+.row{display:flex;flex-direction:column;gap:4px}
+.row label{display:flex;justify-content:space-between;font-size:13px;color:var(--muted)}
+.row label output{color:var(--text);font-variant-numeric:tabular-nums}
+input[type=range]{width:100%;accent-color:var(--accent);min-height:28px}
+.presets{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:6px}
+.presets button{font-size:13px;min-height:40px}
+.sect{font-family:"Barlow Condensed","Arial Narrow",sans-serif;font-size:17px;letter-spacing:1px;margin:2px 0 -4px}
+.checks{display:flex;gap:16px;flex-wrap:wrap;font-size:14px}
+.checks label{display:flex;gap:6px;align-items:center;min-height:32px}
+.hint{font-size:12px;color:var(--muted)}
+.stack{display:flex;flex-direction:column;gap:12px}
+.hidden{display:none !important}
+#loading{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;font-family:"Barlow Condensed",sans-serif;font-size:22px;letter-spacing:3px;color:#efe4cc;background:#1b1712}
+</style>
+</head>
+<body>
+<div id="app">
+<div id="loading">GENERATING THE RIFT</div>
+<div class="brand"><b>LINEAGE</b><span id="sub">Lakeshore, 3.4 million years ago</span></div>
+<div class="panel" id="panel">
+<div class="tabs" role="tablist">
+<button id="tabLand" class="on" role="tab" aria-selected="true">Landscape</button>
+<button id="tabChar" role="tab" aria-selected="false">Character</button>
+</div>
+<div class="row"><label for="tod">Time of day <output id="todOut">Late afternoon</output></label><input id="tod" type="range" min="0.06" max="0.94" step="0.005" value="0.72"></div>
+<div id="landCtl" class="hint">Drag to orbit, scroll or pinch to zoom. Two species share this shore: a gracile walking band by the carcass and a robust group further along.</div>
+<div id="charCtl" class="stack hidden">
+<div class="sect">Body plan</div>
+<div class="presets" id="presets"></div>
+<div class="sect">Gene values</div>
+<div id="sliders" style="display:flex;flex-direction:column;gap:10px"></div>
+<div class="checks">
+<label><input type="checkbox" id="cloak"> Hide cloak</label>
+<label><input type="checkbox" id="crest"> Skull crest</label>
+<label><input type="checkbox" id="walk" checked> Walk cycle</label>
+</div>
+<div class="hint">Every slider is a gene value. In the game these come from selection, not sliders.</div>
+</div>
+</div>
+</div>
+
+<script src="../lib/three.min.js"></script>
+<script>
+(function(){
+"use strict";
+if (!window.THREE){ document.getElementById("loading").textContent = "3D LIBRARY FAILED TO LOAD"; return; }
+var T = THREE;
+
+/* ---------- noise and terrain ---------- */
+function hash(x,z){ var s = Math.sin(x*127.1 + z*311.7) * 43758.5453; return s - Math.floor(s); }
+function vnoise(x,z){
+  var xi=Math.floor(x), zi=Math.floor(z), xf=x-xi, zf=z-zi;
+  var u=xf*xf*(3-2*xf), v=zf*zf*(3-2*zf);
+  var a=hash(xi,zi), b=hash(xi+1,zi), c=hash(xi,zi+1), d=hash(xi+1,zi+1);
+  return a+(b-a)*u+(c-a)*v+(a-b-c+d)*u*v;
+}
+function fbm(x,z,o){ var s=0,a=0.5,f=1,n=0; for(var i=0;i<o;i++){ s+=a*vnoise(x*f,z*f); n+=a; a*=0.5; f*=2.03; } return s/n; }
+function sm(e0,e1,x){ var t=Math.min(1,Math.max(0,(x-e0)/(e1-e0))); return t*t*(3-2*t); }
+var LAKE = {x:-30, z:40};
+function lakeDist(x,z){ return Math.hypot((x-LAKE.x)/1.3, z-LAKE.z); }
+function H(x,z){
+  var h = (fbm(x*0.012+11.3, z*0.012-4.1, 5)-0.5)*11 + 3.2;
+  h += (fbm(x*0.08, z*0.08, 3)-0.5)*0.9;
+  h -= 10.5*sm(82, 22, lakeDist(x,z));
+  var esc = sm(-70, -150, z + (fbm(x*0.018, 7.3, 3)-0.5)*50);
+  h += esc*48 + esc*(fbm(x*0.05, z*0.05, 4)-0.5)*16;
+  h += sm(140, 280, Math.abs(x))*24 + sm(150, 300, z)*18;
+  return h;
+}
+function slopeAt(x,z){ var e=1.2; var dx=H(x+e,z)-H(x-e,z), dz=H(x,z+e)-H(x,z-e); return Math.hypot(dx,dz)/(2*e); }
+
+/* ---------- renderer, scene, camera ---------- */
+var app = document.getElementById("app");
+var renderer = new T.WebGLRenderer({antialias:true, powerPreference:"high-performance"});
+renderer.setPixelRatio(Math.min(window.devicePixelRatio||1, 2));
+renderer.outputEncoding = T.sRGBEncoding;
+renderer.toneMapping = T.ACESFilmicToneMapping;
+renderer.toneMappingExposure = 1.05;
+renderer.shadowMap.enabled = true;
+renderer.shadowMap.type = T.PCFSoftShadowMap;
+app.insertBefore(renderer.domElement, app.firstChild);
+
+var scene = new T.Scene();
+var camera = new T.PerspectiveCamera(42, 1, 0.1, 2000);
+scene.fog = new T.Fog(0xe8c8a0, 140, 560);
+
+/* sky dome */
+var skyU = { top:{value:new T.Color()}, hor:{value:new T.Color()}, sunCol:{value:new T.Color()}, sunDir:{value:new T.Vector3()} };
+var sky = new T.Mesh(new T.SphereGeometry(1200, 32, 16), new T.ShaderMaterial({
+  side:T.BackSide, depthWrite:false, fog:false, uniforms:skyU,
+  vertexShader:"varying vec3 vP; void main(){ vP = normalize(position); gl_Position = projectionMatrix*modelViewMatrix*vec4(position,1.0); }",
+  fragmentShader:"uniform vec3 top; uniform vec3 hor; uniform vec3 sunCol; uniform vec3 sunDir; varying vec3 vP; void main(){ float h = max(vP.y,0.0); vec3 c = mix(hor, top, pow(h,0.55)); float s = max(dot(normalize(vP), normalize(sunDir)),0.0); c += sunCol*pow(s,600.0)*2.5 + sunCol*pow(s,8.0)*0.35; if(vP.y<0.0) c = hor*0.9; gl_FragColor = vec4(c,1.0); }"
+}));
+scene.add(sky);
+
+var hemi = new T.HemisphereLight(0xbcd4f0, 0x6b5a3a, 0.7); scene.add(hemi);
+var sun = new T.DirectionalLight(0xffd9a8, 2.6);
+sun.castShadow = true;
+sun.shadow.mapSize.set(2048, 2048);
+sun.shadow.camera.left = -60; sun.shadow.camera.right = 60; sun.shadow.camera.top = 60; sun.shadow.camera.bottom = -60;
+sun.shadow.camera.near = 1; sun.shadow.camera.far = 500;
+sun.shadow.bias = -0.0006; sun.shadow.normalBias = 0.04;
+scene.add(sun); scene.add(sun.target);
+
+/* ---------- terrain mesh ---------- */
+var SIZE = 640, SEG = 230;
+var tg = new T.PlaneGeometry(SIZE, SIZE, SEG, SEG); tg.rotateX(-Math.PI/2);
+var tp = tg.attributes.position;
+for (var i=0;i<tp.count;i++){ tp.setY(i, H(tp.getX(i), tp.getZ(i))); }
+tg = tg.toNonIndexed(); tg.computeVertexNormals();
+var pos = tg.attributes.position, nor = tg.attributes.normal;
+var cols = new Float32Array(pos.count*3);
+var C = function(h){ return new T.Color(h); };
+var P = { sandWet:C(0x7d6b47), sand:C(0xc9ad74), shore:C(0x6e7a36), wood:C(0x55642e), grassA:C(0xb59a52), grassB:C(0x9c8c46), rock:C(0x8c7660), rockR:C(0x9c6a48), cliff:C(0x6f5c4a) };
+var tmp = new T.Color();
+for (var f=0; f<pos.count; f+=3){
+  var cx=(pos.getX(f)+pos.getX(f+1)+pos.getX(f+2))/3, cy=(pos.getY(f)+pos.getY(f+1)+pos.getY(f+2))/3, cz=(pos.getZ(f)+pos.getZ(f+1)+pos.getZ(f+2))/3;
+  var ny=(nor.getY(f)+nor.getY(f+1)+nor.getY(f+2))/3;
+  var ld = lakeDist(cx,cz), n = fbm(cx*0.04, cz*0.04, 3);
+  if (cy < -0.2) tmp.copy(P.sandWet);
+  else if (cy < 0.7) tmp.copy(P.sand);
+  else if (ny < 0.72) tmp.copy(cy > 22 ? P.rockR : P.cliff).lerp(P.rock, n*0.6);
+  else if (ny < 0.86) tmp.copy(P.rock).lerp(P.grassB, 0.35);
+  else if (cy < 1.6) tmp.copy(P.shore);
+  else if (ld < 100 && n > 0.47) tmp.copy(P.wood).lerp(P.shore, (n-0.47)*1.5);
+  else tmp.copy(P.grassA).lerp(P.grassB, n);
+  var j = 0.94 + hash(cx*3.1, cz*7.7)*0.12; tmp.multiplyScalar(j);
+  for (var k=0;k<3;k++){ cols[(f+k)*3]=tmp.r; cols[(f+k)*3+1]=tmp.g; cols[(f+k)*3+2]=tmp.b; }
+}
+tg.setAttribute("color", new T.BufferAttribute(cols, 3));
+var terrain = new T.Mesh(tg, new T.MeshStandardMaterial({vertexColors:true, flatShading:true, roughness:1, metalness:0}));
+terrain.receiveShadow = true; scene.add(terrain);
+
+/* ---------- water ---------- */
+var wg = new T.PlaneGeometry(SIZE, SIZE, 70, 70); wg.rotateX(-Math.PI/2);
+var water = new T.Mesh(wg, new T.MeshStandardMaterial({color:0x2a6a72, roughness:0.08, metalness:0.25, transparent:true, opacity:0.86, flatShading:true}));
+water.receiveShadow = true; scene.add(water);
+var wbase = Float32Array.from(wg.attributes.position.array);
+
+/* ---------- focus point on the shore ---------- */
+var ang = 0.55, dir = new T.Vector2(Math.cos(ang), Math.sin(ang)), focus = new T.Vector3();
+for (var d=10; d<200; d+=0.5){ var fx=LAKE.x+dir.x*d*1.3, fz=LAKE.z+dir.y*d; if (H(fx,fz) > 0.9){ focus.set(fx + dir.x*9, 0, fz + dir.y*9); break; } }
+focus.y = H(focus.x, focus.z);
+var side = new T.Vector2(-dir.y, dir.x);
+function onGround(x,z){ return new T.Vector3(x, H(x,z), z); }
+
+/* ---------- instanced vegetation ---------- */
+var rnd = (function(seed){ return function(){ seed = (seed*16807) % 2147483647; return (seed-1)/2147483646; }; })(9137);
+var dummy = new T.Object3D();
+function nearFocus(x,z,r){ return Math.hypot(x-focus.x, z-focus.z) < r; }
+
+var acacia = [], round = [], rocks = [];
+for (var t=0; t<9000 && (acacia.length<110 || round.length<170); t++){
+  var x = (rnd()-0.5)*560, z = (rnd()-0.5)*560, h = H(x,z), s = slopeAt(x,z);
+  if (h < 0.9 || s > 0.5 || nearFocus(x,z,14)) continue;
+  var ld = lakeDist(x,z), mask = fbm(x*0.03+50, z*0.03, 3);
+  if (ld < 105 && h < 6 && mask > 0.5 && round.length < 170) round.push([x,h,z]);
+  else if (h > 1.8 && h < 16 && mask < 0.55 && rnd() < 0.5 && acacia.length < 110) acacia.push([x,h,z]);
+}
+for (var r=0; r<4000 && rocks.length<150; r++){
+  var x2=(rnd()-0.5)*560, z2=(rnd()-0.5)*560, h2=H(x2,z2), s2=slopeAt(x2,z2);
+  if (h2 < 0.3 || nearFocus(x2,z2,8)) continue;
+  if (s2 > 0.45 || rnd() < 0.08) rocks.push([x2,h2,z2]);
+}
+
+var trunkMat = new T.MeshStandardMaterial({color:0x4a3624, flatShading:true, roughness:1});
+var leafMat = new T.MeshStandardMaterial({flatShading:true, roughness:0.95});
+var trunkGeo = new T.CylinderGeometry(0.16, 0.32, 1, 6); trunkGeo.translate(0, 0.5, 0);
+var canopyGeo = new T.IcosahedronGeometry(1, 1);
+
+var trunks = new T.InstancedMesh(trunkGeo, trunkMat, acacia.length*3 + round.length);
+var canopies = new T.InstancedMesh(canopyGeo, leafMat, acacia.length*3 + round.length*3);
+var ti=0, ci=0, lc = new T.Color();
+acacia.forEach(function(p){
+  var ht = 3.5 + rnd()*3, ry = rnd()*Math.PI*2;
+  dummy.position.set(p[0], p[1]-0.2, p[2]); dummy.rotation.set(0, ry, 0.05); dummy.scale.set(1, ht, 1); dummy.updateMatrix(); trunks.setMatrixAt(ti++, dummy.matrix);
+  for (var b=-1; b<=1; b+=2){
+    dummy.position.set(p[0]+Math.cos(ry)*b*0.9, p[1]+ht*0.75, p[2]+Math.sin(ry)*b*0.9); dummy.rotation.set(b*0.5, ry, b*0.35); dummy.scale.set(0.14, ht*0.35, 0.14); dummy.updateMatrix(); trunks.setMatrixAt(ti++, dummy.matrix);
+  }
+  for (var c=0; c<3; c++){
+    var w = 2.8 + rnd()*1.6;
+    dummy.position.set(p[0]+(rnd()-0.5)*2.6, p[1]+ht+0.1+c*0.25, p[2]+(rnd()-0.5)*2.6);
+    dummy.rotation.set(0, rnd()*6, 0); dummy.scale.set(w, 0.55+rnd()*0.2, w*0.85); dummy.updateMatrix(); canopies.setMatrixAt(ci, dummy.matrix);
+    lc.setHSL(0.2 + rnd()*0.04, 0.35, 0.22 + rnd()*0.07); canopies.setColorAt(ci++, lc);
+  }
+});
+round.forEach(function(p){
+  var ht = 2 + rnd()*1.6;
+  dummy.position.set(p[0], p[1]-0.2, p[2]); dummy.rotation.set(0, rnd()*6, 0); dummy.scale.set(1.2, ht, 1.2); dummy.updateMatrix(); trunks.setMatrixAt(ti++, dummy.matrix);
+  for (var c=0; c<3; c++){
+    var w = 2 + rnd()*1.4;
+    dummy.position.set(p[0]+(rnd()-0.5)*2.4, p[1]+ht+1.2+rnd()*1.2, p[2]+(rnd()-0.5)*2.4);
+    dummy.rotation.set(rnd(), rnd()*6, rnd()); dummy.scale.set(w, w*0.85, w); dummy.updateMatrix(); canopies.setMatrixAt(ci, dummy.matrix);
+    lc.setHSL(0.24 + rnd()*0.05, 0.38, 0.17 + rnd()*0.07); canopies.setColorAt(ci++, lc);
+  }
+});
+trunks.count = ti; canopies.count = ci;
+[trunks, canopies].forEach(function(m){ m.castShadow = true; m.receiveShadow = true; m.instanceMatrix.needsUpdate = true; scene.add(m); });
+if (canopies.instanceColor) canopies.instanceColor.needsUpdate = true;
+
+var rockMesh = new T.InstancedMesh(new T.DodecahedronGeometry(1, 0), new T.MeshStandardMaterial({flatShading:true, roughness:0.95}), rocks.length);
+rocks.forEach(function(p, i){
+  var s = 0.4 + rnd()*1.8;
+  dummy.position.set(p[0], p[1]+s*0.2, p[2]); dummy.rotation.set(rnd()*3, rnd()*3, rnd()*3); dummy.scale.set(s, s*(0.5+rnd()*0.4), s*(0.8+rnd()*0.4)); dummy.updateMatrix(); rockMesh.setMatrixAt(i, dummy.matrix);
+  lc.setHSL(0.07 + rnd()*0.03, 0.18, 0.32 + rnd()*0.12); rockMesh.setColorAt(i, lc);
+});
+rockMesh.castShadow = true; rockMesh.receiveShadow = true; scene.add(rockMesh);
+
+/* grass with wind */
+var timeU = {value:0};
+var grassGeo = new T.ConeGeometry(0.07, 0.7, 3); grassGeo.translate(0, 0.35, 0);
+var grassMat = new T.MeshStandardMaterial({flatShading:true, roughness:1});
+grassMat.onBeforeCompile = function(sh){
+  sh.uniforms.uTime = timeU;
+  sh.vertexShader = "uniform float uTime;\n" + sh.vertexShader.replace("#include <begin_vertex>",
+    "#include <begin_vertex>\n#ifdef USE_INSTANCING\nvec4 ip = instanceMatrix[3];\nfloat sw = sin(uTime*1.7 + ip.x*0.35 + ip.z*0.27) * 0.16 * position.y;\ntransformed.x += sw; transformed.z += sw*0.5;\n#endif\n");
+};
+var GN = 11000, grass = new T.InstancedMesh(grassGeo, grassMat, GN), gi = 0;
+for (var g=0; g<60000 && gi<GN; g++){
+  var gx = focus.x + (rnd()-0.5)*200, gz = focus.z + (rnd()-0.5)*200, gh = H(gx,gz);
+  if (gh < 0.5 || slopeAt(gx,gz) > 0.55) continue;
+  if (fbm(gx*0.09, gz*0.09, 2) < 0.38) continue;
+  var gs = 0.6 + rnd()*0.9;
+  dummy.position.set(gx, gh-0.05, gz); dummy.rotation.set((rnd()-0.5)*0.4, rnd()*6, (rnd()-0.5)*0.4); dummy.scale.set(gs, gs*(0.8+rnd()*0.8), gs); dummy.updateMatrix(); grass.setMatrixAt(gi, dummy.matrix);
+  lc.setHSL(0.11 + rnd()*0.06, 0.45, 0.38 + rnd()*0.14); if (gh < 1.6) lc.setHSL(0.2 + rnd()*0.05, 0.4, 0.28 + rnd()*0.1);
+  grass.setColorAt(gi++, lc);
+}
+grass.count = gi; grass.receiveShadow = true; scene.add(grass);
+
+/* ---------- hominin builder (gene-driven) ---------- */
+var PRESETS = {
+  "Woodland Ape":      {height:1.25, legs:0.40, arms:0.78, mass:1.05, hair:1.0,  brain:0.25, face:1.0, lean:0.42, skin:0.25, cloak:false, crest:false},
+  "Gracile Walker":    {height:1.15, legs:0.47, arms:0.62, mass:0.95, hair:0.85, brain:0.32, face:0.8, lean:0.08, skin:0.35, cloak:false, crest:false},
+  "Robust Sedge Eater":{height:1.30, legs:0.45, arms:0.60, mass:1.35, hair:0.95, brain:0.34, face:0.95,lean:0.10, skin:0.2,  cloak:false, crest:true},
+  "Toolmaker":         {height:1.72, legs:0.53, arms:0.46, mass:1.0,  hair:0.12, brain:0.62, face:0.35, lean:0.02, skin:0.3, cloak:false, crest:false},
+  "Cold-Adapted":      {height:1.62, legs:0.48, arms:0.44, mass:1.32, hair:0.3,  brain:0.8,  face:0.45, lean:0.02, skin:0.62, cloak:true,  crest:false},
+  "Endurance Runner":  {height:1.80, legs:0.57, arms:0.44, mass:0.86, hair:0.05, brain:0.7,  face:0.25, lean:0.0, skin:0.12, cloak:false, crest:false}
+};
+var SKIN = [new T.Color(0x3e2618), new T.Color(0x6e4a2e), new T.Color(0x9a6e48), new T.Color(0xc49a74)];
+var HAIR = new T.Color(0x2e2014);
+function skinCol(v){ var t=Math.min(0.999,Math.max(0,v))*(SKIN.length-1), i=Math.floor(t); return SKIN[i].clone().lerp(SKIN[i+1], t-i); }
+
+var GEO = {
+  cyl: new T.CylinderGeometry(1, 0.8, 1, 7),
+  sph: new T.SphereGeometry(1, 9, 7),
+  box: new T.BoxGeometry(1, 1, 1),
+  cap: new T.SphereGeometry(1, 9, 6, 0, Math.PI*2, 0, Math.PI*0.55),
+  cloak: new T.CylinderGeometry(1, 1.25, 1, 9, 1, true)
+};
+GEO.cylDown = GEO.cyl.clone(); GEO.cylDown.translate(0, -0.5, 0);
+GEO.cylUp = GEO.cyl.clone(); GEO.cylUp.translate(0, 0.5, 0);
+
+function mesh(geo, mat, sx, sy, sz){ var m = new T.Mesh(geo, mat); m.scale.set(sx, sy, sz); m.castShadow = true; m.receiveShadow = true; return m; }
+
+function makeHominin(p){
+  var Hh = p.height, w = p.mass;
+  var skin = skinCol(p.skin);
+  var body = skin.clone().lerp(HAIR, Math.pow(p.hair, 0.8));
+  var mSkin = new T.MeshStandardMaterial({color:skin, flatShading:true, roughness:0.75});
+  var mBody = new T.MeshStandardMaterial({color:body, flatShading:true, roughness:0.95});
+  var mDark = new T.MeshStandardMaterial({color:skin.clone().multiplyScalar(0.6), flatShading:true, roughness:0.8});
+  var mHair = new T.MeshStandardMaterial({color:HAIR, flatShading:true, roughness:1});
+  var mEye = new T.MeshStandardMaterial({color:0x120c08, roughness:0.3});
+  var mHide = new T.MeshStandardMaterial({color:0x8a6a44, flatShading:true, roughness:1, side:T.DoubleSide});
+
+  var root = new T.Group();
+  var legLen = Hh*p.legs, torsoLen = Hh*0.31, headR = Hh*0.072*(0.82 + p.brain*0.55), neck = Hh*0.035, armLen = Hh*p.arms;
+  var hips = new T.Group(); hips.position.y = legLen*0.97; root.add(hips);
+  hips.add(mesh(GEO.sph, mBody, Hh*0.11*w, Hh*0.08, Hh*0.08*w));
+  var rig = {legs:[], knees:[], arms:[], elbows:[], root:root, hips:hips};
+
+  [-1,1].forEach(function(sd){
+    var hp = new T.Group(); hp.position.set(sd*Hh*0.065*w, 0, 0); hips.add(hp);
+    var th = mesh(GEO.cylDown, mBody, Hh*0.05*w, legLen*0.5, Hh*0.055*w); hp.add(th);
+    var kn = new T.Group(); kn.position.y = -legLen*0.5; hp.add(kn);
+    kn.add(mesh(GEO.cylDown, mBody, Hh*0.036*w, legLen*0.5, Hh*0.04*w));
+    var ft = mesh(GEO.box, mDark, Hh*0.055, Hh*0.03, Hh*0.13*(1.1 - p.lean*0.3)); ft.position.set(0, -legLen*0.5 + Hh*0.012, Hh*0.035); kn.add(ft);
+    rig.legs.push(hp); rig.knees.push(kn);
+  });
+
+  var spine = new T.Group(); spine.rotation.x = p.lean; hips.add(spine);
+  var shoulderW = Hh*(0.105 + 0.025*(1-p.lean))*w;
+  var torso = mesh(GEO.cylUp, mBody, shoulderW, torsoLen, shoulderW*0.62); torso.position.y = Hh*0.02; spine.add(torso);
+  var chest = mesh(GEO.sph, mBody, shoulderW*0.95, torsoLen*0.36, shoulderW*0.62); chest.position.y = torsoLen*0.72; spine.add(chest);
+  if (p.cloak){ var ck = mesh(GEO.cloak, mHide, shoulderW*1.12, torsoLen*0.62, shoulderW*0.82); ck.position.y = torsoLen*0.68; spine.add(ck); }
+
+  [-1,1].forEach(function(sd){
+    var sp = new T.Group(); sp.position.set(sd*shoulderW*1.02, torsoLen*0.86, 0); sp.rotation.z = sd*0.1; spine.add(sp);
+    sp.add(mesh(GEO.sph, mBody, Hh*0.045*w, Hh*0.045, Hh*0.045*w));
+    sp.add(mesh(GEO.cylDown, mBody, Hh*0.034*w, armLen*0.5, Hh*0.036*w));
+    var el = new T.Group(); el.position.y = -armLen*0.5; el.rotation.x = -0.15 - p.lean*0.3; sp.add(el);
+    el.add(mesh(GEO.cylDown, p.hair > 0.5 ? mBody : mSkin, Hh*0.028*w, armLen*0.48, Hh*0.03*w));
+    var hd = mesh(GEO.sph, mDark, Hh*0.03, Hh*0.045, Hh*0.022); hd.position.y = -armLen*0.5; el.add(hd);
+    if (p.cloak){ var sl = mesh(GEO.cyl, mHide, Hh*0.05*w, armLen*0.22, Hh*0.05*w); sl.position.y = -armLen*0.08; sp.add(sl); }
+    rig.arms.push(sp); rig.elbows.push(el);
+  });
+
+  var nk = mesh(GEO.cyl, mBody, Hh*0.035*w, neck*2.2, Hh*0.035*w); nk.position.set(0, torsoLen + neck*0.6, -Hh*0.01); spine.add(nk);
+  var head = new T.Group(); head.position.set(0, torsoLen + neck + headR*0.75, Hh*0.01 + p.lean*headR*0.6); head.rotation.x = -p.lean*0.85; spine.add(head);
+  var cran = mesh(GEO.sph, p.hair > 0.35 ? mBody : mSkin, headR, headR*(0.92 + p.brain*0.18), headR*(1.02 + p.brain*0.12)); cran.position.set(0, headR*0.12, -headR*0.08); head.add(cran);
+  var cap = mesh(GEO.cap, mHair, headR*1.05, headR*(0.98 + p.brain*0.18), headR*(1.08 + p.brain*0.12)); cap.position.set(0, headR*0.14, -headR*0.12); cap.rotation.x = -0.25; head.add(cap);
+  var fz = headR*(0.48 + 0.42*p.face);
+  var muz = mesh(GEO.sph, mSkin, headR*(0.62 + p.mass*0.08), headR*0.56, headR*(0.42 + 0.3*p.face)); muz.position.set(0, -headR*0.38, fz); head.add(muz);
+  var brow = mesh(GEO.sph, mDark, headR*0.86, headR*(0.13 + 0.1*p.face), headR*0.3); brow.position.set(0, headR*0.1, headR*(0.62 + 0.28*p.face)); head.add(brow);
+  [-1,1].forEach(function(sd){ var e = mesh(GEO.sph, mEye, headR*0.09, headR*0.07, headR*0.06); e.position.set(sd*headR*0.32, -headR*0.04, headR*(0.78 + 0.3*p.face)); head.add(e); });
+  var nose = mesh(GEO.sph, mDark, headR*0.16, headR*0.12, headR*0.14); nose.position.set(0, -headR*0.26, fz + headR*(0.36 + 0.24*p.face)); head.add(nose);
+  var jaw = mesh(GEO.box, mSkin, headR*(0.95 + 0.4*(p.crest?1:0)), headR*(0.3 + 0.2*(p.crest?1:0)), headR*(0.5 + 0.3*p.face)); jaw.position.set(0, -headR*0.72, fz*0.85); head.add(jaw);
+  [-1,1].forEach(function(sd){ var ear = mesh(GEO.sph, mSkin, headR*0.08, headR*0.18, headR*0.12); ear.position.set(sd*headR*0.98, -headR*0.05, -headR*0.05); head.add(ear); });
+  if (p.crest){ var cr = mesh(GEO.box, mHair, headR*0.12, headR*0.28, headR*1.3); cr.position.set(0, headR*1.0, -headR*0.15); head.add(cr); }
+  if (p.hair < 0.4){ var beard = mesh(GEO.sph, mHair, headR*0.62, headR*0.36, headR*0.4); beard.position.set(0, -headR*0.82, fz*0.8); if (p.skin > 0.5) head.add(beard); }
+
+  rig.head = head; rig.spine = spine; rig.baseLean = p.lean;
+  rig.phase = Math.random()*10;
+  return rig;
+}
+
+function animate(rig, t, walking, speed){
+  var ph = t*speed + rig.phase;
+  if (walking){
+    var s = Math.sin(ph);
+    rig.legs[0].rotation.x = s*0.55; rig.legs[1].rotation.x = -s*0.55;
+    rig.knees[0].rotation.x = Math.max(0, Math.sin(ph - 1.4))*0.9; rig.knees[1].rotation.x = Math.max(0, Math.sin(ph + Math.PI - 1.4))*0.9;
+    rig.arms[0].rotation.x = -s*0.42; rig.arms[1].rotation.x = s*0.42;
+    rig.hips.position.y = rig.hipsY + Math.abs(Math.cos(ph))*rig.hipsY*0.035;
+    rig.spine.rotation.z = Math.sin(ph)*0.04;
+  } else {
+    var b = Math.sin(t*1.2 + rig.phase);
+    rig.legs[0].rotation.x = rig.legs[1].rotation.x = 0; rig.knees[0].rotation.x = rig.knees[1].rotation.x = 0.05;
+    rig.arms[0].rotation.x = b*0.04; rig.arms[1].rotation.x = -b*0.04;
+    rig.hips.position.y = rig.hipsY;
+    rig.spine.rotation.x = rig.baseLean + b*0.015;
+    rig.head.rotation.y = Math.sin(t*0.35 + rig.phase)*0.5;
+  }
+}
+
+function placeRig(rig, x, z, yaw, scale){
+  rig.root.position.copy(onGround(x,z)); rig.root.rotation.y = yaw; if (scale) rig.root.scale.setScalar(scale);
+  rig.hipsY = rig.hips.position.y; scene.add(rig.root);
+}
+
+/* band of gracile walkers around a carcass */
+var band = [];
+var carcass = new T.Group();
+var cm = new T.MeshStandardMaterial({color:0x7a3424, flatShading:true, roughness:0.8});
+var bm = new T.MeshStandardMaterial({color:0xd8c8a4, flatShading:true, roughness:0.9});
+var cbody = mesh(GEO.sph, cm, 0.55, 0.28, 0.85); cbody.position.y = 0.2; carcass.add(cbody);
+for (var rb=0; rb<4; rb++){ var rib = mesh(GEO.box, bm, 0.05, 0.25, 0.05); rib.position.set(-0.2 + rb*0.13, 0.42, 0.1); rib.rotation.z = 0.4; carcass.add(rib); }
+var cleg = mesh(GEO.cyl, bm, 0.05, 0.7, 0.05); cleg.position.set(0.3, 0.2, 0.6); cleg.rotation.z = 1.2; carcass.add(cleg);
+carcass.position.copy(onGround(focus.x, focus.z)); scene.add(carcass);
+
+var gp = PRESETS["Gracile Walker"];
+[[1.4,0.4,1],[ -1.3,0.8,1],[0.3,-1.6,1],[-0.6,1.7,0.68],[2.6,-1.2,1.05],[-2.4,-1.4,0.95]].forEach(function(o, i){
+  var p = Object.assign({}, gp, {skin:gp.skin + (i%3)*0.06, mass:gp.mass + (i%2)*0.06});
+  var rig = makeHominin(p);
+  var x = focus.x + o[0], z = focus.z + o[1];
+  placeRig(rig, x, z, Math.atan2(focus.x - x, focus.z - z), o[2]);
+  band.push(rig);
+});
+var walker = makeHominin(Object.assign({}, gp, {height:1.2})); placeRig(walker, focus.x+6, focus.z, 0, 1); walker.walking = true;
+
+/* robust group further along the shore */
+var robust = [];
+var rp = PRESETS["Robust Sedge Eater"];
+for (var ri=0; ri<4; ri++){
+  var rx = focus.x + side.x*16 + (rnd()-0.5)*5, rz = focus.z + side.y*16 + (rnd()-0.5)*5;
+  var rr = makeHominin(Object.assign({}, rp, {skin:rp.skin + rnd()*0.1})); placeRig(rr, rx, rz, rnd()*6, ri===3 ? 0.7 : 1); robust.push(rr);
+}
+
+/* impala herd */
+function makeImpala(){
+  var g = new T.Group();
+  var mb = new T.MeshStandardMaterial({color:0xb27840, flatShading:true, roughness:0.9});
+  var mw = new T.MeshStandardMaterial({color:0xeee2c8, flatShading:true, roughness:0.9});
+  var md = new T.MeshStandardMaterial({color:0x2a1c10, flatShading:true, roughness:0.9});
+  var b = mesh(GEO.sph, mb, 0.32, 0.3, 0.62); b.position.y = 0.92; g.add(b);
+  var belly = mesh(GEO.sph, mw, 0.26, 0.18, 0.5); belly.position.y = 0.8; g.add(belly);
+  [[-0.14,0.38],[0.14,0.38],[-0.14,-0.38],[0.14,-0.38]].forEach(function(l){ var lg = mesh(GEO.cylDown, mb, 0.035, 0.8, 0.035); lg.position.set(l[0], 0.85, l[1]); g.add(lg); });
+  var neckG = new T.Group(); neckG.position.set(0, 1.08, 0.5); g.add(neckG);
+  var nkm = mesh(GEO.cylUp, mb, 0.08, 0.45, 0.08); nkm.rotation.x = 0.5; neckG.add(nkm);
+  var hd = mesh(GEO.sph, mb, 0.1, 0.11, 0.2); hd.position.set(0, 0.42, 0.3); neckG.add(hd);
+  var snout = mesh(GEO.sph, md, 0.05, 0.05, 0.06); snout.position.set(0, 0.38, 0.47); neckG.add(snout);
+  [-1,1].forEach(function(sd){ var hn = mesh(GEO.cylUp, md, 0.018, 0.42, 0.018); hn.position.set(sd*0.06, 0.5, 0.24); hn.rotation.set(-0.5, 0, sd*0.25); neckG.add(hn); });
+  g.userData.neck = neckG; g.userData.phase = rnd()*10;
+  return g;
+}
+var herd = [];
+for (var hi=0; hi<10; hi++){
+  var hx = focus.x - side.x*26 + dir.x*22 + (rnd()-0.5)*14, hz = focus.z - side.y*26 + dir.y*22 + (rnd()-0.5)*14;
+  if (H(hx,hz) < 0.6) continue;
+  var im = makeImpala(); im.position.copy(onGround(hx,hz)); im.rotation.y = rnd()*6; scene.add(im); herd.push(im);
+}
+
+/* ---------- hero character (character mode) ---------- */
+var heroPos = onGround(focus.x - side.x*7 - dir.x*3, focus.z - side.y*7 - dir.y*3);
+var heroParams = Object.assign({}, PRESETS["Toolmaker"]);
+var hero = null;
+var plinth = mesh(new T.CylinderGeometry(1.3, 1.6, 0.5, 9), new T.MeshStandardMaterial({color:0x8a7660, flatShading:true, roughness:1}), 1, 1, 1);
+plinth.position.copy(heroPos).add(new T.Vector3(0, -0.12, 0)); scene.add(plinth);
+function rebuildHero(){
+  if (hero) scene.remove(hero.root);
+  hero = makeHominin(heroParams);
+  hero.root.position.copy(heroPos).add(new T.Vector3(0, 0.13, 0)); hero.root.rotation.y = Math.atan2(focus.x - heroPos.x, focus.z - heroPos.z);
+  hero.hipsY = hero.hips.position.y; scene.add(hero.root);
+}
+rebuildHero();
+
+/* ---------- lighting by time of day ---------- */
+var todNames = [[0.14,"Dawn"],[0.3,"Morning"],[0.62,"Midday"],[0.78,"Late afternoon"],[0.88,"Golden hour"],[1,"Dusk"]];
+function setTime(t){
+  var el = Math.sin(Math.PI*t), az = (t-0.5)*Math.PI*1.1 + 0.8;
+  var dirV = new T.Vector3(Math.cos(az)*Math.cos(el*1.15), Math.max(0.04, Math.sin(el*1.15)), Math.sin(az)*Math.cos(el*1.15)).normalize();
+  var warm = 1 - Math.pow(el, 0.7);
+  skyU.top.value.set(0x2c3e66).lerp(new T.Color(0x3a74bc), el);
+  skyU.hor.value.set(0xf2a865).lerp(new T.Color(0xcfe0ee), Math.pow(el, 1.4));
+  skyU.sunCol.value.set(0xffb46a).lerp(new T.Color(0xfff2dc), el);
+  skyU.sunDir.value.copy(dirV);
+  sun.color.copy(skyU.sunCol.value); sun.intensity = 0.8 + 2.4*Math.pow(el, 0.6);
+  hemi.color.set(0x9ab0d0).lerp(new T.Color(0xc4d8ee), el); hemi.groundColor.set(0x5a4a30); hemi.intensity = 0.35 + 0.45*el;
+  scene.fog.color.copy(skyU.hor.value).lerp(new T.Color(0xd9b48a), warm*0.3);
+  renderer.toneMappingExposure = 0.85 + 0.3*el;
+  sun.userData.dir = dirV;
+  for (var i=0;i<todNames.length;i++){ if (t <= todNames[i][0]){ document.getElementById("todOut").textContent = todNames[i][1]; break; } }
+}
+
+/* ---------- camera controls ---------- */
+var cam = {target:new T.Vector3(), radius:34, theta:0, phi:1.12, goal:null};
+var landView = {target:focus.clone().add(new T.Vector3(0,1.2,0)), radius:30, theta:Math.atan2(dir.x, dir.y)+0.45, phi:1.18, min:5, max:260};
+var charView = {target:heroPos.clone().add(new T.Vector3(0,1.0,0)), radius:3.9, theta:Math.atan2(focus.x-heroPos.x, focus.z-heroPos.z), phi:1.42, min:1.6, max:10};
+var view = landView;
+function applyView(v){ cam.target.copy(v.target); cam.radius = v.radius; cam.theta = v.theta; cam.phi = v.phi; }
+applyView(landView);
+var lastInput = 0, pointers = {}, pinch = 0;
+var cv = renderer.domElement;
+cv.addEventListener("pointerdown", function(e){ cv.setPointerCapture(e.pointerId); pointers[e.pointerId] = {x:e.clientX, y:e.clientY}; lastInput = performance.now(); });
+cv.addEventListener("pointermove", function(e){
+  if (!pointers[e.pointerId]) return;
+  var ids = Object.keys(pointers);
+  if (ids.length === 1){
+    var dx = e.clientX - pointers[e.pointerId].x, dy = e.clientY - pointers[e.pointerId].y;
+    cam.theta -= dx*0.005; cam.phi = Math.min(view===charView?1.6:1.48, Math.max(0.2, cam.phi - dy*0.004));
+  } else if (ids.length === 2){
+    var o = pointers[ids[0] == e.pointerId ? ids[1] : ids[0]];
+    var dist = Math.hypot(e.clientX - o.x, e.clientY - o.y);
+    if (pinch) cam.radius = Math.min(view.max, Math.max(view.min, cam.radius * pinch / dist));
+    pinch = dist;
+  }
+  pointers[e.pointerId] = {x:e.clientX, y:e.clientY}; lastInput = performance.now();
+});
+function up(e){ delete pointers[e.pointerId]; pinch = 0; }
+cv.addEventListener("pointerup", up); cv.addEventListener("pointercancel", up);
+cv.addEventListener("wheel", function(e){ e.preventDefault(); cam.radius = Math.min(view.max, Math.max(view.min, cam.radius*(1 + e.deltaY*0.0012))); lastInput = performance.now(); }, {passive:false});
+
+/* ---------- UI ---------- */
+var tod = document.getElementById("tod");
+tod.addEventListener("input", function(){ setTime(parseFloat(tod.value)); });
+setTime(parseFloat(tod.value));
+var tabLand = document.getElementById("tabLand"), tabChar = document.getElementById("tabChar");
+function setMode(m){
+  view = m === "char" ? charView : landView; applyView(view);
+  tabLand.classList.toggle("on", m !== "char"); tabChar.classList.toggle("on", m === "char");
+  tabLand.setAttribute("aria-selected", m !== "char"); tabChar.setAttribute("aria-selected", m === "char");
+  document.getElementById("landCtl").classList.toggle("hidden", m === "char");
+  document.getElementById("charCtl").classList.toggle("hidden", m !== "char");
+  document.getElementById("sub").textContent = m === "char" ? "Gene-driven character model" : "Lakeshore, 3.4 million years ago";
+}
+tabLand.addEventListener("click", function(){ setMode("land"); });
+tabChar.addEventListener("click", function(){ setMode("char"); });
+
+var SL = [["height","Height","m",1.0,1.95,0.01],["legs","Leg length","",0.36,0.6,0.005],["arms","Arm length","",0.4,0.82,0.005],["mass","Body mass","",0.8,1.45,0.01],["hair","Body hair","",0,1,0.01],["brain","Brain size","",0,1,0.01],["face","Face projection","",0,1,0.01],["lean","Forward lean","",0,0.5,0.005],["skin","Skin tone","",0,1,0.01]];
+var sliders = document.getElementById("sliders"), inputs = {};
+SL.forEach(function(s){
+  var row = document.createElement("div"); row.className = "row";
+  var lab = document.createElement("label"); lab.htmlFor = "s_" + s[0]; lab.textContent = s[1];
+  var out = document.createElement("output"); lab.appendChild(out);
+  var inp = document.createElement("input"); inp.type = "range"; inp.id = "s_" + s[0]; inp.min = s[3]; inp.max = s[4]; inp.step = s[5];
+  inp.addEventListener("input", function(){ heroParams[s[0]] = parseFloat(inp.value); out.textContent = fmt(s, inp.value); markPreset(null); rebuildHero(); });
+  row.appendChild(lab); row.appendChild(inp); sliders.appendChild(row); inputs[s[0]] = {inp:inp, out:out, s:s};
+});
+function fmt(s, v){ v = parseFloat(v); return s[0]==="height" ? v.toFixed(2) + " m" : Math.round((v - s[3])/(s[4]-s[3])*100) + "%"; }
+function syncSliders(){ Object.keys(inputs).forEach(function(k){ inputs[k].inp.value = heroParams[k]; inputs[k].out.textContent = fmt(inputs[k].s, heroParams[k]); }); document.getElementById("cloak").checked = !!heroParams.cloak; document.getElementById("crest").checked = !!heroParams.crest; }
+var presetsEl = document.getElementById("presets"), presetBtns = {};
+Object.keys(PRESETS).forEach(function(name){
+  var b = document.createElement("button"); b.textContent = name;
+  b.addEventListener("click", function(){ heroParams = Object.assign({}, PRESETS[name]); syncSliders(); markPreset(name); rebuildHero(); });
+  presetsEl.appendChild(b); presetBtns[name] = b;
+});
+function markPreset(n){ Object.keys(presetBtns).forEach(function(k){ presetBtns[k].classList.toggle("on", k === n); }); }
+markPreset("Toolmaker"); syncSliders();
+document.getElementById("cloak").addEventListener("change", function(e){ heroParams.cloak = e.target.checked; markPreset(null); rebuildHero(); });
+document.getElementById("crest").addEventListener("change", function(e){ heroParams.crest = e.target.checked; markPreset(null); rebuildHero(); });
+var walkCb = document.getElementById("walk");
+
+/* ---------- resize and loop ---------- */
+function resize(){ var w = app.clientWidth, h = app.clientHeight; renderer.setSize(w, h, false); camera.aspect = w/h; camera.updateProjectionMatrix(); }
+window.addEventListener("resize", resize); resize();
+
+var clock = new T.Clock(), wArr = wg.attributes.position.array, frame = 0;
+function loop(){
+  requestAnimationFrame(loop);
+  var t = clock.getElapsedTime(); timeU.value = t; frame++;
+  if (performance.now() - lastInput > 5000) cam.theta += view === charView ? 0.0035 : 0.0008;
+  var sp = Math.sin(cam.phi);
+  camera.position.set(cam.target.x + cam.radius*sp*Math.sin(cam.theta), cam.target.y + cam.radius*Math.cos(cam.phi), cam.target.z + cam.radius*sp*Math.cos(cam.theta));
+  var gy = H(camera.position.x, camera.position.z) + 0.8; if (camera.position.y < gy) camera.position.y = gy;
+  camera.lookAt(cam.target);
+  sky.position.copy(camera.position);
+
+  var dv = sun.userData.dir; sun.target.position.copy(cam.target); sun.position.copy(cam.target).addScaledVector(dv, 200);
+  var sc = view === charView ? 12 : Math.min(90, Math.max(40, cam.radius*1.4));
+  if (sun.shadow.camera.right !== sc){ sun.shadow.camera.left = -sc; sun.shadow.camera.right = sc; sun.shadow.camera.top = sc; sun.shadow.camera.bottom = -sc; sun.shadow.camera.updateProjectionMatrix(); }
+
+  if (frame % 2 === 0){
+    for (var i=0; i<wArr.length; i+=3){ var x = wbase[i], z = wbase[i+2]; wArr[i+1] = Math.sin(x*0.15 + t*0.9)*0.06 + Math.cos(z*0.2 + t*0.7)*0.05; }
+    wg.attributes.position.needsUpdate = true; wg.computeVertexNormals();
+  }
+
+  band.forEach(function(r){ animate(r, t, false, 0); });
+  robust.forEach(function(r){ animate(r, t, false, 0); });
+  var wa = t*0.18, wx = focus.x + Math.cos(wa)*6, wz = focus.z + Math.sin(wa)*6;
+  walker.root.position.set(wx, H(wx,wz), wz); walker.root.rotation.y = Math.atan2(-Math.sin(wa), Math.cos(wa));
+  animate(walker, t, true, 5.2);
+  if (hero) animate(hero, t, walkCb.checked, 4.6);
+  herd.forEach(function(im){ var n = im.userData.neck; n.rotation.x = 0.4 + Math.max(0, Math.sin(t*0.6 + im.userData.phase))*0.9; });
+
+  renderer.render(scene, camera);
+}
+document.getElementById("loading").remove();
+loop();
+})();
+</script>
+</body>
+</html>

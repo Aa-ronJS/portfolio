@@ -1,0 +1,1142 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Lineage: sandbox</title>
+<link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@600;700&family=IBM+Plex+Sans:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+:root{
+  box-sizing:border-box;
+  padding-top:env(safe-area-inset-top,0px);
+  padding-bottom:env(safe-area-inset-bottom,0px);
+  --bg:#14120e; --panel:rgba(20,18,14,0.92); --line:rgba(237,230,214,0.16); --text:#EDE6D6; --muted:#B8AE9A;
+  --accent:#E0A23B; --accent-ink:#1A1406; --good:#8FCB7A; --bad:#F08A6C; --teal:#7FD0C6;
+}
+@media (prefers-color-scheme: light){ :root:not([data-theme="dark"]){ --panel:rgba(20,18,14,0.92); } }
+:root[data-theme="light"]{ --panel:rgba(20,18,14,0.92); }
+:root[data-theme="dark"]{ --panel:rgba(20,18,14,0.92); }
+*,*::before,*::after{box-sizing:inherit}
+html{scroll-padding-top:env(safe-area-inset-top,0px)}
+html,body{height:100%;margin:0;background:var(--bg);color:var(--text);font-family:"IBM Plex Sans",system-ui,-apple-system,"Segoe UI",sans-serif;overflow:hidden}
+#app{position:relative;width:100%;height:100%}
+canvas{display:block;width:100%;height:100%;touch-action:none}
+button{font:inherit;color:var(--text);background:rgba(255,255,255,0.05);border:1px solid var(--line);border-radius:6px;min-height:40px;padding:0 12px;cursor:pointer}
+button.on{background:var(--accent);color:var(--accent-ink);border-color:var(--accent);font-weight:600}
+button:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+.top{position:absolute;top:calc(8px + env(safe-area-inset-top,0px));left:8px;right:8px;display:flex;flex-wrap:wrap;gap:6px;align-items:center;pointer-events:none}
+.top > *{pointer-events:auto}
+.chip{background:var(--panel);border:1px solid var(--line);border-radius:6px;padding:6px 10px;font-size:13px;min-height:40px;display:flex;align-items:center;gap:8px}
+.chip b{font-family:"Barlow Condensed","Arial Narrow",sans-serif;font-size:17px;letter-spacing:1px}
+.grow{flex:1}
+.card{position:absolute;left:8px;bottom:calc(8px + env(safe-area-inset-bottom,0px));width:min(380px,calc(100% - 16px));background:var(--panel);border:1px solid var(--line);border-radius:10px;padding:12px;display:flex;flex-direction:column;gap:8px;max-height:46%;overflow-y:auto}
+.card h2{margin:0;font-family:"Barlow Condensed","Arial Narrow",sans-serif;font-size:22px;letter-spacing:1px}
+.sub{font-size:12px;color:var(--muted)}
+.bars{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:4px 12px}
+.bar{display:flex;flex-direction:column;gap:2px;font-size:11px;color:var(--muted)}
+.bar i{display:block;height:5px;border-radius:3px;background:rgba(255,255,255,0.1);overflow:hidden}
+.bar i span{display:block;height:100%}
+.thought{font-size:13px;line-height:1.4}
+.row{display:flex;gap:6px;flex-wrap:wrap}
+.menu{position:absolute;left:50%;transform:translateX(-50%);bottom:calc(8px + env(safe-area-inset-bottom,0px));width:min(420px,calc(100% - 16px));background:var(--panel);border:1px solid var(--accent);border-radius:10px;padding:10px;display:flex;flex-direction:column;gap:6px;max-height:60%;overflow-y:auto;z-index:5}
+.menu h3{margin:0 0 2px;font-family:"Barlow Condensed","Arial Narrow",sans-serif;font-size:19px;letter-spacing:1px}
+.menu button{text-align:left;min-height:44px}
+.side{position:absolute;right:8px;top:calc(60px + env(safe-area-inset-top,0px));width:min(360px,calc(100% - 16px));max-height:calc(100% - 140px);overflow-y:auto;background:var(--panel);border:1px solid var(--line);border-radius:10px;padding:12px;display:flex;flex-direction:column;gap:8px;z-index:4}
+.side h3{margin:0;font-family:"Barlow Condensed","Arial Narrow",sans-serif;font-size:20px;letter-spacing:1px}
+.entry{font-size:13px;line-height:1.4;border-top:1px solid var(--line);padding-top:6px}
+.entry .t{color:var(--muted);font-size:11px}
+.entry.disc{color:#F3D9A6}
+.entry.death{color:var(--bad)}
+.entry.birth{color:var(--good)}
+.toast{position:absolute;left:50%;transform:translateX(-50%);top:calc(64px + env(safe-area-inset-top,0px));background:#2a2114;border:1px solid var(--accent);color:#F3D9A6;border-radius:8px;padding:10px 14px;font-size:14px;max-width:calc(100% - 24px);z-index:6;pointer-events:none}
+.hidden{display:none !important}
+.help{font-size:13px;line-height:1.5}
+.help p{margin:0 0 8px}
+</style>
+</head>
+<body>
+<div id="app">
+<canvas id="cv" aria-label="Simulation world"></canvas>
+<div class="top">
+<div class="chip"><b id="clock">DAY 1</b><span id="season" class="sub"></span></div>
+<div class="row">
+<button id="sp0" aria-label="Pause">II</button>
+<button id="sp1" class="on">1×</button>
+<button id="sp3">3×</button>
+<button id="sp8">8×</button>
+</div>
+<div class="grow"></div>
+<button id="bLog">Chronicle</button>
+<button id="bBeh">Behaviours</button>
+<button id="bHelp">How to play</button>
+</div>
+<div class="card hidden" id="card">
+<div style="display:flex;justify-content:space-between;align-items:baseline;gap:8px"><h2 id="cName"></h2><span class="sub" id="cMeta"></span></div>
+<div class="thought" id="cThought"></div>
+<div class="bars" id="cBars"></div>
+<div class="sub" id="cHold"></div>
+<div class="sub" id="cTask"></div>
+<div class="row"><button id="bFollow" class="on">Camera follows</button><button id="bRelease">Release</button></div>
+</div>
+<div class="menu hidden" id="menu"></div>
+<div class="side hidden" id="side"></div>
+<div class="toast hidden" id="toast"></div>
+</div>
+
+<script>
+(function(){
+"use strict";
+/* ================= utilities ================= */
+var seed = (Date.now() % 100000) + 7;
+function rnd(){ seed = (seed * 16807) % 2147483647; return (seed - 1) / 2147483646; }
+function rr(a,b){ return a + rnd()*(b-a); }
+function pick(a){ return a[Math.floor(rnd()*a.length)]; }
+function clamp(v,a,b){ return v<a?a:(v>b?b:v); }
+function dist(a,b){ return Math.hypot(a.x-b.x, a.y-b.y); }
+function gauss(){ return (rnd()+rnd()+rnd()-1.5)/1.5; }
+var nid = 1;
+function hash2(x,y){ var s=Math.sin(x*127.1+y*311.7)*43758.5453; return s-Math.floor(s); }
+function vn(x,y){ var xi=Math.floor(x),yi=Math.floor(y),xf=x-xi,yf=y-yi,u=xf*xf*(3-2*xf),v=yf*yf*(3-2*yf);
+  var a=hash2(xi,yi),b=hash2(xi+1,yi),c=hash2(xi,yi+1),d=hash2(xi+1,yi+1); return a+(b-a)*u+(c-a)*v+(a-b-c+d)*u*v; }
+function fbm(x,y,o){ var s=0,a=0.5,f=1,n=0; for(var i=0;i<o;i++){ s+=a*vn(x*f,y*f); n+=a; a*=0.5; f*=2; } return s/n; }
+
+/* ================= world ================= */
+var W = 130, H = 90;
+var DEEP=0, SHALLOW=1, SAND=2, GRASS=3, WOOD=4, ROCK=5, BURNT=6;
+var tiles = new Uint8Array(W*H), dryness = new Float32Array(W*H), fireT = new Float32Array(W*H), burntT = new Float32Array(W*H);
+var off = seed*0.001;
+var LX = W*0.42, LY = H*0.55;
+for (var y=0;y<H;y++) for (var x=0;x<W;x++){
+  var h = fbm(x*0.05+off, y*0.05-off, 5);
+  var ld = Math.hypot((x-LX)/1.3, y-LY);
+  h -= 0.35*Math.max(0, 1 - ld/22);
+  var pd = Math.hypot(x-W*0.82, y-H*0.25); h -= 0.25*Math.max(0, 1 - pd/7);
+  h += Math.max(0, (8 - y))/8*0.25;
+  var t;
+  if (h < 0.24) t = DEEP; else if (h < 0.29) t = SHALLOW; else if (h < 0.32) t = SAND;
+  else if (h > 0.72) t = ROCK;
+  else t = (fbm(x*0.09+40, y*0.09, 3) > 0.53 && h < 0.6) ? WOOD : GRASS;
+  tiles[y*W+x] = t;
+}
+function T(x,y){ x=Math.floor(x); y=Math.floor(y); if (x<0||y<0||x>=W||y>=H) return ROCK; return tiles[y*W+x]; }
+function walkable(x,y){ var t=T(x,y); return t!==DEEP && t!==ROCK; }
+function isWater(x,y){ var t=T(x,y); return t===DEEP||t===SHALLOW; }
+function nearWater(x,y,r){ var best=null,bd=1e9; for (var dy=-r;dy<=r;dy++) for (var dx=-r;dx<=r;dx++){ var tx=x+dx, ty=y+dy, t=T(tx,ty), d=dx*dx+dy*dy; if (d>=bd) continue; if (t===SHALLOW){ bd=d; best={x:Math.floor(tx)+0.5,y:Math.floor(ty)+0.5}; } else if (t===DEEP){ var nb=[[1,0],[-1,0],[0,1],[0,-1]]; for (var k=0;k<4;k++){ if (walkable(tx+nb[k][0],ty+nb[k][1])){ bd=d; best={x:Math.floor(tx+nb[k][0])+0.5,y:Math.floor(ty+nb[k][1])+0.5}; break; } } } } return best; }
+
+/* ================= item definitions (properties only) ================= */
+var IT = {
+ berry:   {n:"berries", food:1, cal:15,  perish:0.5, stack:8, small:1, sweet:1, cat:"food", col:"#b33a3a"},
+ fig:     {n:"figs", food:1, cal:16,  perish:0.6, stack:6, small:1, sweet:1, ferment:1, cat:"food", col:"#7a3a5a"},
+ nut:     {n:"nuts", food:1, cal:16, perish:0.03, stack:8, small:1, shell:0.55, hard:0.5, cat:"food", col:"#8a5a2a"},
+ tuber:   {n:"tubers", food:1, cal:14, perish:0.06, stack:4, cook:1, cat:"food", col:"#b08a5a"},
+ kernel:  {n:"nut kernels", food:1, cal:16, perish:0.1, stack:8, small:1, cat:"food", col:"#d8b070"},
+ mushB:   {n:"brown mushrooms", food:1, cal:6, perish:0.4, stack:6, small:1, cat:"food", col:"#a07850"},
+ mushR:   {n:"red mushrooms", food:1, cal:6, perish:0.4, stack:6, small:1, toxic:0.85, cat:"food", col:"#d03030"},
+ fish:    {n:"fish", food:1, cal:22, perish:1.2, stack:2, cook:1, cat:"food", col:"#7c9aa8"},
+ meat:    {n:"meat", food:1, cal:26, perish:1.4, stack:3, cook:1, cat:"food", col:"#9a2a1e", smell:1},
+ rodent:  {n:"small animal", food:1, cal:14, perish:1.2, stack:2, cook:1, cat:"food", col:"#7a6450", smell:1},
+ bone:    {n:"bone", hard:0.6, mass:0.4, marrow:1, cat:"animal", col:"#e8e0cc", long:0.5},
+ hide:    {n:"hide", warm:1, fuel:0.2, mass:0.4, cat:"animal", col:"#a88a5c", cover:1},
+ stone:   {n:"stone", hard:0.85, mass:0.8, brittle:1, cat:"stone", col:"#8f8a80"},
+ flake:   {n:"sharp flake", hard:0.85, mass:0.15, sharp:1, cat:"stone", col:"#c8c4b8"},
+ stick:   {n:"stick", hard:0.3, mass:0.3, long:1, fuel:1, cat:"wood", col:"#7a5a34"},
+ spear:   {n:"pointed stick", hard:0.35, mass:0.35, long:1.2, pointed:1, fuel:1, cat:"wood", col:"#8a6a3a"},
+ leaves:  {n:"leaves", fuel:0.6, mass:0.05, cover:1, stack:4, cat:"plant", col:"#4f7a30"},
+ gourd:   {n:"gourd", hollow:1, mass:0.3, cat:"plant", col:"#c9b04a"},
+ gourdW:  {n:"gourd of water", hollow:1, water:3, mass:0.6, cat:"plant", col:"#6ab0c0"},
+ brand:   {n:"burning stick", hard:0.3, long:1, burning:1, mass:0.3, cat:"fire", col:"#ff9a3a"},
+ carcass: {n:"carcass", mass:3, carcass:1, smell:1, cat:"animal", col:"#7a3424", big:1}
+};
+function cat(c){ return IT[c] ? IT[c].cat : c; }
+
+/* ================= entities ================= */
+var items = [], sources = [], creatures = [], fires = [], projectiles = [];
+var time = 0, DAY = 120; // seconds per day at 1x
+function day(){ return time/DAY; }
+function hourOf(){ return (day()%1)*24; }
+function isNight(){ var h=hourOf(); return h<5.5||h>19.5; }
+function seasonOf(){ return (Math.floor(day()/6)%2)===0 ? "wet" : "dry"; }
+var raining = false, rainT = 0;
+
+function addItem(cls,x,y,count,opt){ var it={id:nid++,cls:cls,x:x,y:y,count:count||1,fresh:1,wet:0,cooked:false,dried:false,fermented:false,covered:false,burn:0,band:-1,storedKey:null,heldBy:null,hard:false}; if(opt) for (var k in opt) it[k]=opt[k]; items.push(it); return it; }
+function removeItem(it){ var i=items.indexOf(it); if(i>=0) items.splice(i,1); }
+function addSource(type,x,y,o){ var s={id:nid++,type:type,x:x,y:y,stock:0,max:0,regrow:0,tree:false}; for (var k in o) s[k]=o[k]; sources.push(s); return s; }
+function addFire(x,y,fuel){ var f={id:nid++,x:x,y:y,fuel:fuel||1}; fires.push(f); return f; }
+
+function randomTile(pred, tries){ for (var i=0;i<(tries||500);i++){ var x=rnd()*W, y=rnd()*H; if (pred(T(x,y),x,y)) return {x:Math.floor(x)+0.5,y:Math.floor(y)+0.5}; } return null; }
+
+function populate(){
+  var p, i;
+  for (i=0;i<110;i++){ p=randomTile(function(t){return t===GRASS||t===WOOD;}); if(p) addSource("bush",p.x,p.y,{stock:6,max:8,regrow:5}); }
+  for (i=0;i<22;i++){ p=randomTile(function(t,x,y){return (t===GRASS||t===WOOD);}); if(p) addSource("nutTree",p.x,p.y,{tree:true,stock:0,max:10,regrow:4}); }
+  for (i=0;i<18;i++){ p=randomTile(function(t,x,y){return (t===WOOD||t===GRASS) && nearWater(x,y,5);}); if(p) addSource("figTree",p.x,p.y,{tree:true,stock:3,max:8,regrow:3}); }
+  for (i=0;i<60;i++){ p=randomTile(function(t){return t===WOOD;}); if(p) addSource("tree",p.x,p.y,{tree:true,stock:4,max:4,regrow:2}); }
+  for (i=0;i<55;i++){ p=randomTile(function(t){return t===GRASS||t===WOOD;}); if(p) addSource("roots",p.x,p.y,{stock:4,max:5,regrow:1.6}); }
+  for (i=0;i<14;i++){ p=randomTile(function(t){return t===GRASS;}); if(p) addSource("mound",p.x,p.y,{stock:20,max:20,regrow:6}); }
+  for (i=0;i<14;i++){ p=randomTile(function(t){return t===GRASS||t===SAND;}); if(p) addSource("burrow",p.x,p.y,{stock:2,max:2,regrow:0.6}); }
+  for (i=0;i<9;i++){ p=randomTile(function(t,x,y){return (t===SAND||t===GRASS) && nearWater(x,y,3);}); if(p) addSource("vine",p.x,p.y,{stock:2,max:3,regrow:0.5}); }
+  for (i=0;i<10;i++){ p=randomTile(function(t,x,y){return t!==ROCK && t!==DEEP && t!==SHALLOW && (T(x+2,y)===ROCK||T(x-2,y)===ROCK||T(x,y+2)===ROCK||T(x,y-2)===ROCK);},3000); if(p) addSource("outcrop",p.x,p.y,{stock:99,max:99,regrow:0}); }
+  for (i=0;i<90;i++){ p=randomTile(function(t){return t===GRASS||t===SAND||t===WOOD;}); if(p) addItem("stone",p.x+rr(-0.3,0.3),p.y+rr(-0.3,0.3)); }
+  for (i=0;i<120;i++){ p=randomTile(function(t){return t===WOOD;}); if(p) addItem("stick",p.x+rr(-0.3,0.3),p.y+rr(-0.3,0.3)); }
+}
+populate();
+
+/* ================= genes and names ================= */
+var SYL = ["ka","ru","mo","ta","ni","bo","sa","lu","ga","re","po","di","ha","ze","ko","ma","vi","nu","ti","ya"];
+function mkName(){ var n=pick(SYL)+pick(SYL)+(rnd()<0.4?pick(SYL):""); return n.charAt(0).toUpperCase()+n.slice(1); }
+var GENES = ["size","strength","speed","impulse","curiosity","aggression","sociability","attention","bite","detox","coldTol","hair"];
+function baseGenes(robust){ var g={}; GENES.forEach(function(k){ g[k]=clamp(0.5+gauss()*0.12,0.05,0.95); }); if (robust){ g.size+=0.1; g.bite=0.85; g.strength+=0.12; g.curiosity-=0.12; } return g; }
+function childGenes(a,b){ var g={}; GENES.forEach(function(k){ g[k]=clamp((a[k]+b[k])/2 + gauss()*0.06, 0.02, 0.98); }); return g; }
+
+/* ================= creatures ================= */
+var PLAYER_BAND = 0;
+var bands = [{id:0,name:"Your band",col:"#E0A23B"},{id:1,name:"Robust group",col:"#4FB3A9"}];
+function mkHom(band,x,y,sex,age,genes){
+  var h={id:nid++,kind:"hom",name:mkName(),band:band,sex:sex,age:age,genes:genes,x:x,y:y,vx:0,vy:0,
+    hp:1,hunger:rr(0.2,0.5),thirst:rr(0.1,0.4),energy:rr(0.6,1),fear:0,social:rr(0.2,0.5),boredom:0,mate:0,cold:0,sick:0,drunk:0,
+    preg:0,lastBirth:-10,rank:rnd(),bonds:{},hold:[null,null],task:null,res:{},skill:{},aversion:{},inTree:null,asleep:false,wear:null,
+    thought:"",mother:null,interest:0,lastThink:0,dead:false,lastAct:null,anger:{},tired:0};
+  creatures.push(h); return h;
+}
+function mkAnimal(kind,x,y,o){ var a={id:nid++,kind:kind,x:x,y:y,vx:0,vy:0,hp:1,target:null,state:"idle",t:0,dead:false}; for (var k in o) a[k]=o[k]; creatures.push(a); return a; }
+function homs(){ return creatures.filter(function(c){ return c.kind==="hom" && !c.dead; }); }
+function stage(h){ return h.age<1.2?"infant":(h.age<6?"juvenile":(h.age<26?"adult":"elder")); }
+
+var start = randomTile(function(t,x,y){ return t===GRASS && nearWater(x,y,6) && x>10 && x<W-10 && y>10 && y<H-10; }, 5000) || {x:W/2,y:H/2};
+for (var b=0;b<10;b++){ var sx=b<3?"m":(b<7?"f":(rnd()<0.5?"m":"f")); var ag=b<7?rr(8,18):rr(2,5); mkHom(0,start.x+rr(-3,3),start.y+rr(-3,3),sx,ag,baseGenes(false)); }
+var rstart = randomTile(function(t,x,y){ return t===GRASS && nearWater(x,y,6) && Math.hypot(x-start.x,y-start.y)>40; }, 8000) || randomTile(function(t,x,y){ return t===GRASS && Math.hypot(x-start.x,y-start.y)>30; }, 5000) || {x:10,y:10};
+for (b=0;b<6;b++){ mkHom(1,rstart.x+rr(-3,3),rstart.y+rr(-3,3),b<3?"m":"f",b<5?rr(8,16):3,baseGenes(true)); }
+creatures.filter(function(c){return c.kind==="hom";}).forEach(function(a){ creatures.forEach(function(c){ if(c.kind==="hom" && c!==a && c.band===a.band) a.bonds[c.id]=rr(0.2,0.5); }); });
+function herdAt(){ return randomTile(function(t,x,y){ return t===GRASS && Math.hypot(x-start.x,y-start.y)>15; },3000); }
+var hp0 = herdAt(); for (b=0;b<14;b++) mkAnimal("antelope",hp0.x+rr(-4,4),hp0.y+rr(-4,4),{wary:5,speed:3.2,hp:1});
+var hy = randomTile(function(t,x,y){ return t===GRASS && Math.hypot(x-start.x,y-start.y)>30; },3000); for (b=0;b<3;b++) mkAnimal("hyena",hy.x+rr(-2,2),hy.y+rr(-2,2),{bold:0.55,speed:2.6,hp:1,hunger:0.3});
+var lp = randomTile(function(t){ return t===WOOD; },3000) || hy; mkAnimal("leopard",lp.x,lp.y,{bold:0.6,speed:3,hp:1.4,hunger:0.3,home:{x:lp.x,y:lp.y}});
+for (b=0;b<3;b++){ var cp=randomTile(function(t,x,y){ return t===DEEP && (T(x+2,y)===SHALLOW||T(x-2,y)===SHALLOW||T(x,y+2)===SHALLOW); },5000); if(cp) mkAnimal("croc",cp.x,cp.y,{hp:2,cool:0}); }
+sources.filter(function(s){return s.type==="burrow";}).forEach(function(s){ s.rodents=2; });
+
+/* ================= culture: patterns ================= */
+var patterns = {};
+var chronicle = [];
+function logE(text, cls){ chronicle.unshift({t:day(), text:text, cls:cls||""}); if (chronicle.length>250) chronicle.pop(); if (sideMode==="log") renderSide(); }
+function toast(text){ var el=document.getElementById("toast"); el.textContent=text; el.classList.remove("hidden"); clearTimeout(toast.t); toast.t=setTimeout(function(){ el.classList.add("hidden"); }, 4200); }
+
+function resGet(h,k){ var v=h.res[k]; if (v===undefined){ v = 1 - (k.indexOf("|")<0 ? h.genes.curiosity*0.35 : h.genes.curiosity*0.1); } return v; }
+function keyParts(verb, held, tgt){ return [verb+"|"+held+"|"+tgt, verb+"|"+cat(held)+"|"+cat(tgt), verb]; }
+function effRes(h, verb, held, tgt){ var k=keyParts(verb,held,tgt); return 0.6*resGet(h,k[0]) + 0.25*resGet(h,k[1]) + 0.15*resGet(h,k[2]); }
+function reinforce(h, verb, held, tgt, amt){ var k=keyParts(verb,held,tgt); h.res[k[0]]=Math.max(0.02,resGet(h,k[0])-amt); h.res[k[1]]=Math.max(0.02,resGet(h,k[1])-amt*0.5); h.res[k[2]]=Math.max(0.02,resGet(h,k[2])-amt*0.3); }
+function skillUp(h, verb, amt){ h.skill[verb]=clamp((h.skill[verb]||0)+amt,0,1); }
+function sk(h,verb){ return h.skill[verb]||0; }
+
+var EFFECT_NAMES = {
+  store:"Storing {h} instead of eating them", cover:"Covering stored food with {h}", crack:"Cracking {t} with {h}", flake:"Knapping {t} into sharp flakes",
+  marrow:"Smashing bones for marrow", butcher:"Butchering carcasses with {h}", sharpen:"Sharpening sticks with {h}", termites:"Fishing for termites with {h}",
+  rodentProbe:"Probing burrows with {h}", digStick:"Digging up roots with {h}", digRoots:"Digging roots by hand", digRodent:"Digging out small animals", spearFish:"Spearing fish with {h}", grabFish:"Grabbing fish by hand", shake:"Shaking nuts down with {h}",
+  hitAnimal:"Hunting with {h}", scare:"Driving off predators with {h}", cook:"Cooking {h} in the fire", harden:"Fire-hardening {h}", feed:"Feeding the fire with {h}",
+  takeFire:"Carrying fire", ignite:"Starting fires with a burning stick", wildfire:"Setting the grass alight", fill:"Carrying water in gourds", drinkGourd:"Drinking from gourds away from water",
+  wear:"Wearing hides for warmth", climbSleep:"Sleeping in trees", share:"Sharing {h}", groom:"Grooming", mob:"Mobbing predators together", dry:"Drying {h} on rocks",
+  eatToxic:"Eating {h}", avoid:"Avoiding {h}", lead:"Following a leader", copy:"Copying another", dig:"Digging for termites by hand", bury:"Burying food", stack:"Piling {h}"
+};
+function patName(p){ var n = EFFECT_NAMES[p.effect] || (p.verb+" "+p.held+" "+p.tgt); if (p.held==="none") n=n.replace(" with {h}","").replace("{h}","food"); return n.replace("{h}", IT[p.held]?IT[p.held].n:p.held).replace("{t}", IT[p.tgt]?IT[p.tgt].n:p.tgt); }
+
+function predictedVerb(h){
+  var held = h.hold[0];
+  if (h.fear>0.55) return "flee";
+  if (held && IT[held.cls].food && !IT[held.cls].shell && h.hunger>0.35 && !(h.aversion[held.cls]>0.5)) return "eat";
+  if (h.thirst>0.7) return "drink";
+  if (isNight() && h.energy<0.4) return "sleep";
+  if (h.hunger>0.55) return "forage";
+  return "idle";
+}
+
+function record(h, verb, held, tgt, effect, payoff, forced, x, y){
+  var key = effect+"|"+held+"|"+tgt;
+  var p = patterns[key];
+  if (!p){ p = patterns[key] = {key:key, verb:verb, held:held, tgt:tgt, effect:effect, count:0, dev:0, payoff:0, prac:{}, recognized:false, x:x, y:y, threat:0, night:0, bands:{}}; }
+  p.count++; p.payoff += payoff; p.prac[h.id]=true; p.bands[h.band]=(p.bands[h.band]||0)+1;
+  p.x = p.x*0.8 + x*0.2; p.y = p.y*0.8 + y*0.2;
+  var pv = h.predicted || "idle";
+  if (forced || (pv!==verb && pv!=="idle")) p.dev++;
+  if (nearestThreat(h,8)) p.threat++;
+  if (isNight()) p.night++;
+  var amt = (forced?0.07:0.05) * (0.6 + h.genes.attention*0.8);
+  reinforce(h, verb, held, tgt, amt);
+  skillUp(h, verb, 0.03);
+  creatures.forEach(function(o){
+    if (o===h || o.kind!=="hom" || o.dead || o.asleep || dist(o,h)>7) return;
+    var bond = (o.bonds[h.id]||0), young = stage(o)==="juvenile" ? 2 : 1, status = h.rank>o.rank ? 1.3 : 1;
+    reinforce(o, verb, held, tgt, amt*0.35*(0.5+bond)*young*status*(payoff>0?1.3:0.8));
+  });
+  if (forced) p.forced=(p.forced||0)+1;
+  if (!p.recognized && p.count>=3 && ((p.forced||0)>=2 || p.payoff>=1.5 || p.dev>=3) && p.payoff>-3){
+    p.recognized = true; p.name = patName(p);
+    var dupe = Object.keys(patterns).some(function(k2){ var q=patterns[k2]; return q!==p && q.recognized && q.name===p.name && q.bands[h.band]; });
+    if (dupe) return;
+    var who = p.bands[PLAYER_BAND] ? "Your band" : "The robust group";
+    logE("New behaviour: "+p.name+" ("+who+")", "disc"); if (p.bands[PLAYER_BAND]) toast("New behaviour recognised: "+p.name);
+  }
+  if (sideMode==="beh") renderSide();
+}
+
+/* ================= helpers for AI ================= */
+function nearestThreat(h, r){ var best=null, bd=r; creatures.forEach(function(c){ if(c.dead) return; if ((c.kind==="hyena"||c.kind==="leopard") && c.state!=="flee"){ var d=dist(c,h); if(d<bd){bd=d;best=c;} } if (c.kind==="hom" && h.anger && c.band!==h.band && (h.anger[c.id]||0)>0.5){ var d2=dist(c,h); if(d2<bd){bd=d2;best=c;} } }); return best; }
+function nearestItem(h, pred, r){ var best=null, bd=r||25; for (var i=0;i<items.length;i++){ var it=items[i]; if (it.heldBy) continue; if (h.bad && h.bad[it.id]>time) continue; if (!pred(it)) continue; var d=dist(it,h); if (it.covered) d*=3; if (d<bd){bd=d;best=it;} } return best; }
+function nearestSource(h, pred, r){ var best=null, bd=r||30; sources.forEach(function(s){ if(!pred(s)) return; if (h.bad && h.bad[s.id]>time) return; var d=dist(s,h); if(d<bd){bd=d;best=s;} }); return best; }
+function nearestFire(h,r){ var best=null,bd=r||30; fires.forEach(function(f){ var d=dist(f,h); if(d<bd){bd=d;best=f;} }); return best; }
+function bandCentre(band){ var x=0,y=0,n=0; creatures.forEach(function(c){ if(c.kind==="hom"&&!c.dead&&c.band===band){x+=c.x;y+=c.y;n++;} }); return n?{x:x/n,y:y/n}:null; }
+function holding(h, pred){ for (var i=0;i<2;i++) if (h.hold[i] && pred(h.hold[i])) return h.hold[i]; return null; }
+function freeHand(h){ return h.hold[0]===null ? 0 : (h.hold[1]===null ? 1 : -1); }
+function heldCls(h){ return h.hold[0] ? h.hold[0].cls : "none"; }
+function takeItem(h, it, n){
+  var def = IT[it.cls], stackMax = def.stack||1;
+  for (var i=0;i<2;i++){ var s=h.hold[i]; if (s && s.cls===it.cls && s.count<stackMax && s.cooked===it.cooked && s.dried===it.dried){ var m=Math.min(n||it.count, stackMax-s.count, it.count); s.count+=m; it.count-=m; s.fresh=Math.min(s.fresh,it.fresh); if(it.count<=0) removeItem(it); return true; } }
+  var fh = freeHand(h); if (fh<0) return false;
+  var take = Math.min(n||it.count, stackMax, it.count);
+  if (take>=it.count){ removeItem(it); it.heldBy=h.id; h.hold[fh]=it; }
+  else { it.count-=take; var c={}; for (var k in it) c[k]=it[k]; c.id=nid++; c.count=take; c.heldBy=h.id; h.hold[fh]=c; }
+  if (h.hold[0]===null && h.hold[1]){ h.hold[0]=h.hold[1]; h.hold[1]=null; }
+  return true;
+}
+function giveNew(h, cls, n, opt){ var it={id:nid++,cls:cls,x:h.x,y:h.y,count:n||1,fresh:1,wet:0,cooked:false,dried:false,fermented:false,covered:false,burn:0,band:-1,storedKey:null,heldBy:null}; if(opt) for(var k in opt) it[k]=opt[k]; items.push(it); if(!takeItem(h,it)){ it.x=h.x+rr(-0.4,0.4); it.y=h.y+rr(-0.4,0.4); } }
+function dropHeld(h, slot, x, y){ var it=h.hold[slot]; if(!it) return null; h.hold[slot]=null; if (slot===0 && h.hold[1]){ h.hold[0]=h.hold[1]; h.hold[1]=null; } it.heldBy=null; it.x=(x===undefined?h.x:x)+rr(-0.25,0.25); it.y=(y===undefined?h.y:y)+rr(-0.25,0.25);
+  var merge=null; items.forEach(function(o){ if(!merge && o.cls===it.cls && !o.heldBy && dist(o,it)<0.5 && o.cooked===it.cooked && o.dried===it.dried && o.count<(IT[it.cls].stack||1)*3) merge=o; });
+  if (merge && IT[it.cls].stack){ merge.count+=it.count; merge.fresh=Math.min(merge.fresh,it.fresh); return merge; }
+  items.push(it); return it; }
+function consumeHeld(h, slot, n){ var it=h.hold[slot]; it.count-=(n||1); if (it.count<=0){ h.hold[slot]=null; if(slot===0&&h.hold[1]){h.hold[0]=h.hold[1];h.hold[1]=null;} } }
+
+/* ================= verbs: rules from properties ================= */
+// target descriptor: {k:"item"|"source"|"hom"|"animal"|"fire"|"water"|"ground"|"self", ref, x, y}
+function tgtName(t){
+  if (t.k==="item") return IT[t.ref.cls].n + (t.ref.count>1?" ("+t.ref.count+")":"") + (t.ref.cooked?", cooked":"") + (t.ref.covered?", covered":"");
+  if (t.k==="source") return ({bush:"berry bush",nutTree:"nut tree",figTree:"fig tree",tree:"tree",mound:"termite mound",burrow:"burrow",vine:"gourd vine",outcrop:"rock outcrop",roots:"wild roots"})[t.ref.type];
+  if (t.k==="hom") return t.ref.name + (t.ref.band!==PLAYER_BAND?" (robust)":"");
+  if (t.k==="animal") return t.ref.kind;
+  if (t.k==="fire") return "fire"; if (t.k==="water") return "water"; if (t.k==="self") return "yourself"; return "here";
+}
+function tgtCls(t){ if (t.k==="item") return t.ref.cls; if (t.k==="source") return t.ref.type; if (t.k==="animal") return t.ref.kind; if (t.k==="hom") return "hominin"; return t.k; }
+
+function options(h, t){
+  var o = [], held = h.hold[0], hd = held?IT[held.cls]:null, hn = held?IT[held.cls].n:"";
+  function add(v,label){ o.push({v:v,label:label}); }
+  if (t.k==="ground"){ add("move","Walk here"); if (held){ add("place","Put down "+hn+" here"); } if (held && hd.burning) add("place","Touch the burning stick to the ground"); }
+  if (t.k==="water"){ add("drink","Drink"); add("fish", held&&hd.pointed?"Spear a fish with the "+hn:"Try to grab a fish"); if (held&&hd.hollow&&!hd.water) add("fill","Fill the gourd"); if (held) add("place","Drop "+hn+" in the water"); add("move","Wade here"); }
+  if (t.k==="self"){ if (held && hd.food) add("eat","Eat the "+hn); if (held && hd.water) add("drinkGourd","Drink from the gourd"); if (held && hd.warm) add("wear","Wear the hide"); if (h.wear) add("unwear","Take off the hide"); if (held) add("drop","Drop "+hn); if (h.hold[1]) add("swap","Swap hands"); }
+  if (t.k==="item"){
+    var it=t.ref, d=IT[it.cls];
+    add("pick","Pick up "+d.n);
+    if (d.food && !d.shell) add("eat","Eat the "+d.n+" here");
+    if (held){
+      add("strike","Hit the "+d.n+" with the "+hn);
+      if (hd.sharp) add("cut","Cut the "+d.n+" with the "+hn);
+      add("place","Put the "+hn+" on the "+d.n);
+      if (hd.long) add("probe","Poke the "+d.n+" with the "+hn);
+    }
+  }
+  if (t.k==="source"){
+    var s=t.ref, ty=s.type;
+    if (ty==="bush") add("gather","Pick berries ("+s.stock+")");
+    if (ty==="figTree") add("gather","Pick figs ("+s.stock+")");
+    if (ty==="nutTree") add("gather","Gather fallen nuts");
+    if (ty==="vine") add("gather","Pick a gourd ("+s.stock+")");
+    if (ty==="outcrop") add("gather","Pick up a stone");
+    if (s.tree||ty==="bush"){ add("breakStick","Break off a stick"); add("leaves","Strip leaves"); }
+    if (s.tree) add("climb", h.inTree===s?"Climb down":"Climb the tree");
+    if (ty==="mound"){ add("dig","Dig into the mound by hand"); if (held) add("probe","Poke the "+hn+" into the mound"); }
+    if (ty==="roots"){ add("dig","Dig up roots by hand ("+Math.floor(s.stock)+")"); if (held) add("probe","Dig with the "+hn); }
+    if (ty==="burrow"){ add("dig","Dig at the burrow"); if (held) add("probe","Poke the "+hn+" into the burrow"); }
+    if (held) add("strike","Hit the "+tgtName(t)+" with the "+hn);
+    if (held) add("place","Put the "+hn+" by the "+tgtName(t));
+  }
+  if (t.k==="fire"){ if (held) add("place","Put the "+hn+" in the fire"); add("takeFire","Pull out a burning stick"); add("warm","Sit by the fire"); }
+  if (t.k==="animal"){ var a=t.ref; if (held) add("throw","Throw the "+hn+" at the "+a.kind); add("attack", held?"Attack with the "+hn:"Attack with bare hands"); add("threaten","Threaten and display"); add("move","Approach"); }
+  if (t.k==="hom"){
+    var oh=t.ref;
+    if (oh.band===PLAYER_BAND) add("focus","Take control of "+oh.name);
+    add("groom","Groom "+oh.name);
+    if (held && hd.food) add("share","Share the "+hn);
+    if (held) add("give","Hand over the "+hn);
+    if (oh.band===PLAYER_BAND){ add("lead","Lead: make "+oh.name+" follow you"); add("copy","Show "+oh.name+" what you do next"); }
+    add("threaten","Threaten "+oh.name); add("attack","Attack "+oh.name);
+    if (held) add("throw","Throw the "+hn+" at "+oh.name);
+  }
+  return o;
+}
+
+function stillValid(t){ if (!t) return false; if (t.k==="item") return items.indexOf(t.ref)>=0; if (t.k==="hom"||t.k==="animal") return !t.ref.dead; if (t.k==="fire") return fires.indexOf(t.ref)>=0; return true; }
+function tpos(t){ return (t.k==="item"||t.k==="source"||t.k==="hom"||t.k==="animal"||t.k==="fire") ? {x:t.ref.x,y:t.ref.y} : {x:t.x,y:t.y}; }
+
+function hurt(c, amt, by){ c.hp -= amt; if (c.kind==="hom"){ c.fear=Math.min(1,c.fear+0.4); if (by && by.kind==="hom") c.anger[by.id]=Math.min(1,(c.anger[by.id]||0)+0.6); } if (c.hp<=0) kill(c, by); }
+function kill(c, by){
+  if (c.dead) return; c.dead = true;
+  if (c.kind==="hom"){
+    var cause = by ? (by.kind==="hom" ? "killed by "+by.name : "killed by a "+by.kind) : (c.hunger>=1?"starved":(c.thirst>=1?"died of thirst":(c.sick>0.6?"died of sickness":"died")));
+    logE(c.name+" ("+(c.band===PLAYER_BAND?"yours":"robust")+") "+cause+".", "death");
+    c.hold.forEach(function(s,i){ if(s) dropHeld(c,0); });
+    if (c===focus){ focus=null; updateCard(); toast(c.name+" is dead. Tap another of your band to take control."); }
+    creatures.forEach(function(o){ if (o.kind==="hom" && !o.dead && (o.bonds[c.id]||0)>0.5){ o.fear=Math.min(1,o.fear+0.3); } });
+  } else if (c.kind==="antelope"){ addItem("carcass", c.x, c.y, 1, {meat:6, bones:2, hides:1}); logE("An antelope was brought down"+(by&&by.kind==="hom"?" by "+by.name+"'s group":"")+".", "disc"); }
+  else if (c.kind==="hyena"||c.kind==="leopard"){ logE("A "+c.kind+" was killed"+(by&&by.kind==="hom"?" by "+by.name:"")+".", "disc"); addItem("carcass", c.x, c.y, 1, {meat:3, bones:2, hides:1}); }
+}
+
+function doVerb(h, verb, t, forced){
+  var held=h.hold[0], hd=held?IT[held.cls]:null, hc=held?held.cls:"none", tc=tgtCls(t), p=tpos(t);
+  var res = {effect:null, payoff:0, msg:null};
+  var s = 0.3 + sk(h,verb)*0.7;
+  switch(verb){
+  case "move": return res;
+  case "pick":
+    if (!takeItem(h, t.ref)){ res.msg="Hands are full."; return res; }
+    var picked=h.hold[0];
+    if (t.ref.storedBy!==undefined && t.ref.band!==-1 && t.ref.band!==h.band){ res.effect="steal"; }
+    if (picked && picked.band===h.band && picked.storer && picked.storer!==h.id){ var st=creatures.find(function(c){return c.id===picked.storer;}); if (st && !st.dead && dist(st,h)<9){ st.anger[h.id]=Math.min(1,(st.anger[h.id]||0)+0.5); res.msg=st.name+" saw that."; } }
+    return res;
+  case "gather":
+    var sr=t.ref;
+    if (sr.type==="nutTree"){ var fallen = nearestItem(h,function(i){return i.cls==="nut";},3); if (fallen){ takeItem(h,fallen); } else { res.msg="No nuts on the ground. The tree has "+sr.stock+" up high."; } return res; }
+    if (sr.type==="outcrop"){ giveNew(h,"stone",1); return res; }
+    if (sr.stock<=0){ res.msg="Nothing left to pick."; return res; }
+    var cls = sr.type==="bush"?"berry":(sr.type==="figTree"?"fig":"gourd"); var n = Math.min(sr.stock, sr.type==="vine"?1:2+Math.floor(s*2));
+    sr.stock-=n; giveNew(h, cls, n); return res;
+  case "breakStick": var srt=t.ref; if (srt.type==="bush" || (srt.stock||0)>0 || rnd()<0.5){ if(srt.tree) srt.stock=Math.max(0,(srt.stock||0)-1); giveNew(h,"stick",1); } else res.msg="No good branches left."; return res;
+  case "leaves": giveNew(h,"leaves",2); return res;
+  case "climb":
+    if (h.inTree===t.ref){ h.inTree=null; return res; } h.inTree=t.ref; h.x=t.ref.x; h.y=t.ref.y;
+    if (isNight()){ res.effect="climbSleep"; res.payoff=0.5; h.asleep=true; }
+    else if (h.fear>0.4){ res.effect="climbFlee"; res.payoff=0.5; }
+    return res;
+  case "eat":
+    var food = t.k==="self" ? held : t.ref; if (!food){ return res; }
+    var fd = IT[food.cls];
+    if (fd.shell && h.genes.bite<0.75){ hurt(h,0.03); res.msg="The shell is too hard to bite."; res.effect="biteFail"; return res; }
+    var cal = fd.cal*(food.cooked?1.5:1)*(food.fermented?0.8:1)*(0.4+food.fresh*0.6);
+    h.hunger = Math.max(0, h.hunger - cal/100);
+    if (food.storer!==undefined && food.storedKey && patterns[food.storedKey]){ patterns[food.storedKey].payoff += (h.hunger>0.4?cal/12:cal/40); }
+    if (fd.toxic && !food.cooked){ if (rnd() < fd.toxic*(1-h.genes.detox*0.6)){ h.sick=Math.min(1,h.sick+0.55); res.effect="sick"; logE(h.name+" became sick after eating "+fd.n+".", "death");
+        creatures.forEach(function(o){ if(o.kind==="hom"&&!o.dead&&dist(o,h)<8){ o.aversion[food.cls]=Math.min(1,(o.aversion[food.cls]||0)+(o===h?0.7:0.35)*(stage(o)==="juvenile"?1.5:1)); } });
+        checkAvoid(food.cls); } }
+    if (food.fresh<0.25 && !food.dried && !food.cooked){ if (rnd()<0.5){ h.sick=Math.min(1,h.sick+0.25); res.msg=h.name+" ate rotten food and feels ill."; } }
+    if (food.fermented){ h.drunk=Math.min(1,h.drunk+0.5); res.effect="drunk"; res.msg=h.name+" is unsteady after the fermented fruit."; }
+    if (t.k==="self") consumeHeld(h,0,1); else { food.count--; if (food.count<=0) removeItem(food); }
+    return res;
+  case "drink":
+    h.thirst=Math.max(0,h.thirst-0.5);
+    if (T(h.x,h.y)===SHALLOW || T(h.x,h.y)===DEEP){ creatures.forEach(function(c){ if(c.kind==="croc"&&!c.dead&&dist(c,h)<4&&c.cool<=0&&rnd()<0.12){ c.cool=8; hurt(h,0.6,c); res.msg="A crocodile lunged from the water!"; } }); }
+    return res;
+  case "drinkGourd": if (held && hd.water){ h.thirst=Math.max(0,h.thirst-0.45); held.water=(held.water===undefined?hd.water:held.water)-1; if (held.water<=0){ held.cls="gourd"; delete held.water; } res.effect="drinkGourd"; res.payoff = nearWater(h.x,h.y,4)?0.1:1.2; } return res;
+  case "fill": if (held && hd.hollow){ held.cls="gourdW"; held.water=3; res.effect="fill"; res.payoff=0.4; } return res;
+  case "fish":
+    var pointed = held && hd.pointed, chance = (pointed?0.32:0.08)*(0.5+s) * (T(p.x,p.y)===SHALLOW?1:0.6);
+    if (rnd()<chance){ giveNew(h,"fish",1); res.payoff=2.2; res.effect = pointed?"spearFish":"grabFish"; } else res.msg="Missed.";
+    creatures.forEach(function(c){ if(c.kind==="croc"&&!c.dead&&dist(c,h)<5&&c.cool<=0&&rnd()<0.12){ c.cool=8; hurt(h,0.5,c); res.msg="A crocodile attacked!"; } });
+    return res;
+  case "dig":
+    if (t.ref.type==="roots"){ if (t.ref.stock>=1 && rnd()<0.38+s*0.2){ t.ref.stock--; giveNew(h,"tuber",1); res.effect="digRoots"; res.payoff=0.6; } else res.msg="The ground is hard. Nothing yet."; return res; }
+    if (t.ref.type==="mound"){ if (rnd()<0.25 && t.ref.stock>0){ t.ref.stock--; h.hunger=Math.max(0,h.hunger-0.05); res.effect="dig"; res.payoff=0.3; } else { hurt(h,0.02); res.msg="Bitten by soldier termites."; } }
+    else { if (t.ref.rodents>0 && rnd()<0.12+s*0.1){ t.ref.rodents--; giveNew(h,"rodent",1); res.effect="digRodent"; res.payoff=1.2; } else res.msg="It escaped deeper."; }
+    return res;
+  case "probe":
+    if (!held){ return res; }
+    if (t.k==="source" && t.ref.type==="mound" && hd.long){ if (t.ref.stock>0 && rnd()<0.45+s*0.4){ var g=1+Math.floor(s*2); t.ref.stock-=g; h.hunger=Math.max(0,h.hunger-0.05*g); res.effect="termites"; res.payoff=0.5*g; } else res.msg="Nothing came out on the stick."; return res; }
+    if (t.k==="source" && t.ref.type==="roots" && hd.long){ if (t.ref.stock>=1 && rnd()<0.5+s*0.35+(hd.pointed?0.1:0)){ t.ref.stock--; giveNew(h,"tuber",1); res.effect="digStick"; res.payoff=1.2; } else res.msg="Prising at the soil."; return res; }
+    if (t.k==="source" && t.ref.type==="burrow" && hd.long){ if (t.ref.rodents>0 && rnd()<0.2+s*0.3+(hd.pointed?0.15:0)){ t.ref.rodents--; giveNew(h,"rodent",1); res.effect="rodentProbe"; res.payoff=1.4; } else res.msg="Something scrabbled away inside."; return res; }
+    if (t.k==="item" && IT[t.ref.cls].carcass && hd.long){ res.msg="Poking it does little."; return res; }
+    res.msg="Nothing happens."; return res;
+  case "strike":
+    if (!held) return res;
+    if (t.k==="item"){
+      var ti=t.ref, td=IT[ti.cls];
+      if (td.shell && (hd.hard||0)>=td.shell){ if (rnd()<0.55+s*0.4){ ti.count--; if(ti.count<=0) removeItem(ti); addItem("kernel",ti.x+rr(-0.2,0.2),ti.y+rr(-0.2,0.2),1); res.effect="crack"; res.payoff=1.6; } else { res.msg="Glanced off the shell."; if(rnd()<0.1) hurt(h,0.03); } return res; }
+      if (td.brittle && hd.hard>=0.8){ if (rnd()<0.18+s*0.45){ addItem("flake",ti.x+rr(-0.3,0.3),ti.y+rr(-0.3,0.3),1); if (rnd()<0.25){ removeItem(ti); } res.effect="flake"; res.payoff=0.9; } else { res.msg="Sparks of grit, no edge yet."; if (rnd()<0.08) hurt(h,0.04); } return res; }
+      if (td.marrow && hd.hard>=0.6){ if (rnd()<0.5+s*0.4){ removeItem(ti); h.hunger=Math.max(0,h.hunger-0.2); res.effect="marrow"; res.payoff=2; } else res.msg="The bone holds."; return res; }
+      if (td.carcass){ var cutting = hd.sharp?1:0.35; if (rnd()<cutting*(0.5+s*0.5)){ butcher(h,ti); res.effect="butcher"; res.payoff=hd.sharp?2:1; } else res.msg="Tearing at the hide."; return res; }
+      if (ti.cls==="stick" && hd.sharp){ ti.cls="spear"; res.effect="sharpen"; res.payoff=0.8; return res; }
+      res.msg="Nothing much happens."; return res;
+    }
+    if (t.k==="source" && t.ref.type==="nutTree" && hd.long){ var drop=Math.min(t.ref.stock, 2+Math.floor(s*3)); if (drop>0){ t.ref.stock-=drop; for (var di=0;di<drop;di++) addItem("nut",t.ref.x+rr(-1,1),t.ref.y+rr(-1,1),1); res.effect="shake"; res.payoff=1.2; } else res.msg="No nuts left up there."; return res; }
+    if (t.k==="source" && t.ref.type==="figTree" && hd.long){ var dr=Math.min(t.ref.stock,2); t.ref.stock-=dr; for (var fi=0;fi<dr;fi++) addItem("fig",t.ref.x+rr(-1,1),t.ref.y+rr(-1,1),1); if(dr) {res.effect="shake"; res.payoff=0.6;} return res; }
+    if (t.k==="source" && t.ref.type==="mound" && hd.hard>0.7){ if (t.ref.stock>0){ t.ref.stock-=2; h.hunger=Math.max(0,h.hunger-0.06); res.effect="dig"; res.payoff=0.4; } return res; }
+    res.msg="Nothing happens."; return res;
+  case "cut":
+    if (!held||!hd.sharp) return res;
+    if (IT[t.ref.cls].carcass){ butcher(h,t.ref,true); res.effect="butcher"; res.payoff=2.2; return res; }
+    if (t.ref.cls==="stick"){ t.ref.cls="spear"; res.effect="sharpen"; res.payoff=0.8; return res; }
+    res.msg="Nothing to cut."; return res;
+  case "place":
+    if (!held) return res;
+    if (t.k==="fire"){
+      var f=t.ref;
+      if (hd.food && hd.cook){ held.cooked=true; held.fresh=1; res.effect="cook"; res.payoff=1.5; return res; }
+      if (hd.food){ held.dried=true; res.effect="cook"; res.payoff=0.3; return res; }
+      if (held.cls==="stick"||held.cls==="spear"){ if (rnd()<0.5 && !held.hard){ held.hard=true; held.cls="spear"; res.effect="harden"; res.payoff=0.8; return res; } }
+      if (hd.fuel){ f.fuel=Math.min(3, f.fuel+hd.fuel*0.6); consumeHeld(h,0,1); res.effect="feed"; res.payoff=0.4; return res; }
+      res.msg="That won't burn."; return res;
+    }
+    if (hd.burning){
+      var fuelNear = items.filter(function(i){ return !i.heldBy && IT[i.cls].fuel && dist(i,{x:p.x,y:p.y})<1.2; });
+      if (fuelNear.length){ var fu=0; fuelNear.forEach(function(i){ fu+=IT[i.cls].fuel*i.count; removeItem(i); }); addFire(p.x,p.y,Math.min(3,0.6+fu*0.3)); consumeHeld(h,0,1); res.effect="ignite"; res.payoff=1.5; logE(h.name+" started a fire.", "disc"); return res; }
+      var tt=T(p.x,p.y); if ((tt===GRASS||tt===WOOD) && dryness[Math.floor(p.y)*W+Math.floor(p.x)]>0.4){ fireT[Math.floor(p.y)*W+Math.floor(p.x)]=1; res.effect="wildfire"; res.payoff=-0.5; logE("The grass caught fire where "+h.name+" touched it!", "death"); consumeHeld(h,0,1); return res; }
+    }
+    if (t.k==="water"){ if (hd.burning){ consumeHeld(h,0,1); res.msg="Hiss. The fire went out."; return res; } var dw=dropHeld(h,0,p.x,p.y); if (dw && !IT[dw.cls].food) {} return res; }
+    var dropped = dropHeld(h,0,p.x,p.y);
+    if (!dropped) return res;
+    if (IT[dropped.cls].cover){ var cov=0; items.forEach(function(i){ if (i!==dropped && IT[i.cls].food && !i.heldBy && dist(i,dropped)<1.0){ i.covered=true; cov++; } }); if (cov){ res.effect="cover"; res.payoff=0.6; } return res; }
+    if (IT[dropped.cls].food){
+      var onRock = T(p.x,p.y)===SAND || (t.k==="source" && t.ref.type==="outcrop");
+      dropped.band=h.band; dropped.storer=h.id;
+      if (h.hunger>0.25 || forced){ res.effect="store"; dropped.storedKey="store|"+dropped.cls+"|"+tc; res.payoff=0; }
+      if (onRock && seasonOf()==="dry"){ dropped.drying=true; }
+      return res;
+    }
+    if (dropped.cls==="stone" || dropped.cls==="stick"){ var same=items.filter(function(i){return i!==dropped && i.cls===dropped.cls && !i.heldBy && dist(i,dropped)<1.2;}).length; if (same>=2 && forced){ res.effect="stack"; res.payoff=0.1; } }
+    return res;
+  case "takeFire":
+    var fireR=t.ref; if (freeHand(h)<0){ res.msg="Hands are full."; return res; }
+    var fearFire = 0.6 - sk(h,"takeFire")*0.5 - h.genes.curiosity*0.2;
+    if (rnd()<fearFire){ hurt(h,0.05); h.fear=Math.min(1,h.fear+0.3); res.msg=h.name+" flinched from the flames and got burned."; return res; }
+    giveNew(h,"brand",1,{burn:1}); fireR.fuel-=0.2; res.effect="takeFire"; res.payoff=0.6; return res;
+  case "warm": h.cold=Math.max(0,h.cold-0.4); return res;
+  case "wear": if (held && hd.warm){ h.wear=held; h.hold[0]=null; if(h.hold[1]){h.hold[0]=h.hold[1];h.hold[1]=null;} res.effect="wear"; res.payoff=isNight()?1:0.3; } return res;
+  case "unwear": if (h.wear && freeHand(h)>=0){ var w=h.wear; h.wear=null; h.hold[freeHand(h)]=w; } return res;
+  case "drop": dropHeld(h,0); return res;
+  case "swap": var tmp=h.hold[0]; h.hold[0]=h.hold[1]; h.hold[1]=tmp; return res;
+  case "throw":
+    if (!held) return res;
+    var proj=held; h.hold[0]=null; if(h.hold[1]){h.hold[0]=h.hold[1];h.hold[1]=null;}
+    var acc = 0.35 + s*0.5 + h.genes.strength*0.1 - Math.min(0.4, dist(h,p)/25);
+    var hit = rnd()<acc;
+    projectiles.push({x:h.x,y:h.y,tx:p.x+(hit?0:rr(-2,2)),ty:p.y+(hit?0:rr(-2,2)),item:proj,t:0,from:h,hitT:hit?t:null});
+    res.effect = (t.k==="animal" && (t.ref.kind==="hyena"||t.ref.kind==="leopard"||t.ref.kind==="croc")) ? "scare" : (t.k==="animal"?"hitAnimal":(t.k==="hom"?"fight":"throwAt"));
+    res.payoff = hit ? 0.8 : 0;
+    return res;
+  case "attack":
+    var dmg = (0.08 + h.genes.strength*0.12 + (held?(hd.pointed?0.22:(hd.hard||0)*0.15):0)) * (0.6+s*0.6);
+    var tg=t.ref;
+    if (t.k==="animal"){ hurt(tg, dmg/(tg.kind==="antelope"?1:1.4), h); tg.lastHitBy=h; tg.t=0;
+      if (tg.kind==="hyena"||tg.kind==="leopard"){ var allies = homs().filter(function(o){return o.band===h.band && dist(o,tg)<5;}).length; if (allies>=3){ tg.state="flee"; tg.bold=Math.max(0.1,tg.bold-0.08); res.effect="mob"; res.payoff=1.5; } else { res.effect="scare"; res.payoff=0.3; if (rnd()<0.5) hurt(h,0.15,tg); } }
+      else { res.effect="hitAnimal"; res.payoff=tg.dead?3:0.3; }
+      return res; }
+    if (t.k==="hom"){ hurt(tg,dmg,h); if (!tg.dead && rnd()<0.6) hurt(h,dmg*0.8*(tg.genes.strength+0.5),tg); res.effect="fight"; res.payoff=-0.2; return res; }
+    return res;
+  case "threaten":
+    var tgt=t.ref;
+    if (t.k==="animal"){ var n2=homs().filter(function(o){return o.band===h.band && dist(o,tgt)<6;}).length; var power = n2*0.2 + h.genes.size*0.3 + (held&&hd.burning?0.6:0) + (held&&hd.long?0.15:0);
+      if (power > (tgt.bold||0.3)){ tgt.state="flee"; tgt.t=0; if (tgt.bold) tgt.bold=Math.max(0.1,tgt.bold-0.04); res.effect=(n2>=3?"mob":"scare"); res.payoff=1; } else { res.msg="The "+tgt.kind+" stood its ground."; } return res; }
+    if (t.k==="hom"){ if (h.rank + h.genes.size*0.3 > tgt.rank + tgt.genes.size*0.3 || rnd()<0.3){ tgt.fear=Math.min(1,tgt.fear+0.5); tgt.task=null; tgt.rank=Math.max(0,tgt.rank-0.03); h.rank=Math.min(1,h.rank+0.03); res.msg=tgt.name+" backed off."; } else { tgt.anger[h.id]=Math.min(1,(tgt.anger[h.id]||0)+0.2); res.msg=tgt.name+" stood their ground."; } return res; }
+    return res;
+  case "groom": var gt=t.ref; h.bonds[gt.id]=Math.min(1,(h.bonds[gt.id]||0)+0.08); gt.bonds[h.id]=Math.min(1,(gt.bonds[h.id]||0)+0.1); gt.social=Math.max(0,gt.social-0.3); h.social=Math.max(0,h.social-0.3); gt.anger[h.id]=Math.max(0,(gt.anger[h.id]||0)-0.3); res.effect="groom"; res.payoff=0.4; return res;
+  case "share": case "give":
+    var rc=t.ref; if (!held) return res; var g2=h.hold[0];
+    if (rc.hold[0]===null || rc.hold[1]===null){ h.hold[0]=null; if(h.hold[1]){h.hold[0]=h.hold[1];h.hold[1]=null;} g2.heldBy=rc.id; rc.hold[rc.hold[0]===null?0:1]=g2; if(rc.hold[0]===null){rc.hold[0]=rc.hold[1];rc.hold[1]=null;} }
+    rc.bonds[h.id]=Math.min(1,(rc.bonds[h.id]||0)+(IT[g2.cls].food?0.15:0.08)); h.bonds[rc.id]=Math.min(1,(h.bonds[rc.id]||0)+0.05); rc.anger[h.id]=0;
+    if (rc.band!==h.band){ creatures.forEach(function(o){ if(o.kind==="hom"&&o.band===rc.band){ o.anger[h.id]=Math.max(0,(o.anger[h.id]||0)-0.3); } }); }
+    res.effect = IT[g2.cls].food ? "share" : "give"; res.payoff=0.5; return res;
+  case "lead":
+    var fl=t.ref; var willing = (fl.bonds[h.id]||0)*0.8 + 0.2 - fl.genes.aggression*0.2 - (fl.rank>h.rank?0.15:0);
+    if (rnd()<willing+0.25){ fl.task={verb:"follow",t:{k:"hom",ref:h},src:"ask",interest:20+fl.genes.attention*30}; res.msg=fl.name+" is following you."; res.effect="lead"; res.payoff=0.2; }
+    else res.msg=fl.name+" ignored you.";
+    return res;
+  case "copy":
+    var cp=t.ref; cp.copyOf = {who:h, until: time+40}; res.msg=cp.name+" is watching you closely."; return res;
+  case "focus": setFocus(t.ref); return res;
+  }
+  return res;
+}
+
+function butcher(h, c, sharp){
+  if (c.meat>0){ c.meat--; giveNew(h,"meat",1); }
+  else if (c.bones>0){ c.bones--; giveNew(h,"bone",1); }
+  else if (c.hides>0 && sharp){ c.hides--; giveNew(h,"hide",1); }
+  if ((c.meat||0)<=0 && (c.bones||0)<=0 && ((c.hides||0)<=0 || !sharp)) removeItem(c);
+}
+function checkAvoid(cls){ var n=homs().filter(function(o){return (o.aversion[cls]||0)>0.5;}); var key="avoid|"+cls+"|food"; if (n.length>=3 && !patterns[key]){ patterns[key]={key:key,verb:"avoid",held:cls,tgt:"food",effect:"avoid",count:n.length,dev:n.length,payoff:2,prac:{},recognized:true,x:0,y:0,threat:0,night:0,bands:{}}; n.forEach(function(o){patterns[key].prac[o.id]=true; patterns[key].bands[o.band]=1;}); patterns[key].name=patName(patterns[key]); logE("New behaviour: "+patterns[key].name, "disc"); if (patterns[key].bands[PLAYER_BAND]) toast("New behaviour recognised: "+patterns[key].name); } }
+
+
+/* ================= pathfinding (BFS on tiles) ================= */
+var bfsPrev = new Int32Array(W*H), bfsMark = new Int32Array(W*H), bfsStamp = 0, bfsQ = new Int32Array(W*H);
+function findPath(sx, sy, tx, ty, near){
+  sx=Math.floor(sx); sy=Math.floor(sy); tx=Math.floor(tx); ty=Math.floor(ty);
+  bfsStamp++; var head=0, tail=0, s0=sy*W+sx; bfsQ[tail++]=s0; bfsMark[s0]=bfsStamp; bfsPrev[s0]=-1; var found=-1;
+  while (head<tail){
+    var c=bfsQ[head++], cx=c%W, cy=(c-cx)/W;
+    if (Math.abs(cx-tx)<=near && Math.abs(cy-ty)<=near){ found=c; break; }
+    for (var k=0;k<4;k++){ var nx=cx+(k===0?1:k===1?-1:0), ny=cy+(k===2?1:k===3?-1:0); if (nx<0||ny<0||nx>=W||ny>=H) continue; var n=ny*W+nx; if (bfsMark[n]===bfsStamp) continue; var t=tiles[n]; if (t===DEEP||t===ROCK) continue; bfsMark[n]=bfsStamp; bfsPrev[n]=c; bfsQ[tail++]=n; }
+  }
+  if (found<0) return null;
+  var path=[]; for (var q=found; q!==-1 && q!==s0; q=bfsPrev[q]) path.push({x:q%W+0.5, y:Math.floor(q/W)+0.5});
+  path.reverse(); var out=[]; for (var i=0;i<path.length;i++) if (i%2===1 || i===path.length-1) out.push(path[i]); return out;
+}
+
+/* ================= tasks and movement ================= */
+function setTask(h, verb, t, src, extra){ h.task={verb:verb,t:t,src:src,interest:(src==="player"?999:(20+h.genes.attention*25)),started:time,prog:0}; if (extra) for (var k in extra) h.task[k]=extra[k]; if (h.inTree && verb!=="climb") { h.inTree=null; } h.asleep=false; }
+
+var ACT_TIME = {gather:1.2,eat:0.8,drink:1.2,strike:1.1,cut:1.4,probe:1.5,dig:1.8,fish:1.6,place:0.5,pick:0.4,breakStick:1.2,leaves:0.8,climb:1,groom:2.5,share:0.5,give:0.4,throw:0.4,attack:0.6,threaten:0.8,takeFire:1,warm:3,fill:1,drinkGourd:0.8,wear:1,unwear:0.6,drop:0.2,swap:0.1,lead:0.6,copy:0.4,focus:0,move:0};
+function reach(verb){ return ({throw:9,threaten:3.5,attack:1.1,move:0.4,fish:1.6,drink:1.5,fill:1.5})[verb] || 1.1; }
+
+function stepTask(h, dt){
+  var tk=h.task; if (!tk) return;
+  if (tk.verb==="follow"){ var lead=tk.t.ref; if (lead.dead){ h.task=null; return; } if (dist(h,lead)>2.2) moveTo(h,lead.x,lead.y,dt); else { h.vx=h.vy=0; } tk.interest-=dt; if (tk.interest<=0){ h.task=null; h.thought="Lost interest in following."; } return; }
+  if (!stillValid(tk.t)){ h.task=null; return; }
+  var p=tpos(tk.t), d=Math.hypot(p.x-h.x,p.y-h.y), r=reach(tk.verb);
+  if (tk.t.k==="water"){ var wp = d>r ? nearWater(p.x,p.y,0) : null; }
+  if (d>r){
+    if (d>2.5){
+      if (!tk.path || (tk.t.k==="hom"||tk.t.k==="animal") && (!tk.pathT || Math.hypot(tk.pathT.x-p.x,tk.pathT.y-p.y)>3)){
+        if (time - (tk.lastPath||-9) > 0.5){ tk.lastPath=time; tk.path=findPath(h.x,h.y,p.x,p.y,(tk.t.k==="water"||tk.t.k==="source")?1:0); tk.pathT={x:p.x,y:p.y};
+          if (!tk.path){ if (tk.t.ref) { h.bad=h.bad||{}; h.bad[tk.t.ref.id]=time+DAY*0.5; } if (h===focus) h.thought="Can't find a way there."; h.task=null; return; } }
+      }
+      if (tk.path && tk.path.length){ var wp=tk.path[0]; if (Math.hypot(wp.x-h.x,wp.y-h.y)<0.5) tk.path.shift(); if (tk.path.length) moveTo(h,tk.path[0].x,tk.path[0].y,dt); else moveTo(h,p.x,p.y,dt); }
+      else moveTo(h,p.x,p.y,dt);
+    } else moveTo(h,p.x,p.y,dt);
+    if (tk.src!=="player"){ tk.interest-=dt*0.3; if (tk.interest<=0){ h.task=null; } } return; }
+  h.vx=h.vy=0;
+  tk.prog += dt;
+  if (tk.prog < (ACT_TIME[tk.verb]||1)) return;
+  if (tk.src!=="player" && ["gather","pick","dig","fish","breakStick","leaves"].indexOf(tk.verb)>=0 && freeHand(h)<0){ var slot = (h.hold[1] && !IT[h.hold[1].cls].food) ? 1 : (!IT[h.hold[0].cls].food ? 0 : 1); var dropped=h.hold[slot]; if (dropped && !(tk.verb==="pick" && tk.t.ref && tk.t.ref.cls===dropped.cls)){ h.hold[slot]=null; if (slot===0){ h.hold[0]=h.hold[1]; h.hold[1]=null; } dropped.heldBy=null; dropped.x=h.x+rr(-0.3,0.3); dropped.y=h.y+rr(-0.3,0.3); items.push(dropped); } }
+  var held=h.hold[0], hc=held?held.cls:"none", tc=tgtCls(tk.t);
+  h.predicted = predictedVerb(h);
+  var r2 = doVerb(h, tk.verb, tk.t, tk.src==="player");
+  h.lastAct = {verb:tk.verb, held:hc, tgt:tc, t:time};
+  if (r2.msg && h===focus) h.thought=r2.msg;
+  if (tk.src==="explore" && r2.effect) h.boredom=Math.max(0,h.boredom-0.3);
+  if (r2.effect && tk.src!=="drive" && ["steal","biteFail","sick","drunk","climbFlee","throwAt","fight","give"].indexOf(r2.effect)<0) record(h, tk.verb, hc, tc, r2.effect, r2.payoff, tk.src==="player", h.x, h.y);
+  if (r2.effect==="fight" && tk.t.k==="hom"){ }
+  creatures.forEach(function(o){ if (o.copyOf && o.copyOf.who===h && time<o.copyOf.until && o!==h){ var t2=cloneTarget(tk.t, o); if (t2 && tk.verb!=="move"){ var needs=hc; o.copyOf=null; setTask(o, tk.verb, t2, "ask", {needCls: needs!=="none"?needs:null}); o.thought="Trying what "+h.name+" did."; } } });
+  if (tk.verb==="move" || tk.src!=="player" || ["gather","strike","probe","dig","fish","cut","groom","breakStick","leaves"].indexOf(tk.verb)<0) h.task=null;
+  else { tk.prog=0; if (tk.verb==="gather" && tk.t.k==="source" && tk.t.ref.stock<=0) h.task=null; if (freeHand(h)<0 && ["gather","breakStick","leaves"].indexOf(tk.verb)>=0 && !(h.hold[0]&&h.hold[0].count<(IT[h.hold[0].cls].stack||1))) h.task=null; if (["strike","cut"].indexOf(tk.verb)>=0 && !stillValid(tk.t)) h.task=null; }
+}
+function cloneTarget(t, o){
+  if (t.k==="item"){ var it=nearestItem(o,function(i){return i.cls===t.ref.cls;},12); return it?{k:"item",ref:it}:null; }
+  if (t.k==="source"){ var s=nearestSource(o,function(s){return s.type===t.ref.type;},20); return s?{k:"source",ref:s}:null; }
+  return t;
+}
+
+function moveTo(h, tx, ty, dt){
+  var sp = (h.kind==="hom" ? (1.6 + h.genes.speed*1.4) * (stage(h)==="juvenile"?0.85:1) * (h.hp<0.5?0.7:1) * (h.drunk>0.2?0.7:1) : (h.speed||2)) ;
+  if (h.state==="flee" || (h.kind==="hom" && h.fear>0.6)) sp*=1.4;
+  var dx=tx-h.x, dy=ty-h.y, d=Math.hypot(dx,dy); if (d<0.01) return;
+  if (h.drunk>0.2){ dx+=rr(-0.8,0.8)*d*0.3; dy+=rr(-0.8,0.8)*d*0.3; }
+  var nx=h.x+dx/d*sp*dt, ny=h.y+dy/d*sp*dt;
+  if (!walkable(nx,ny) && h.kind!=="croc"){ var ax=h.x+(-dy/d)*sp*dt, ay=h.y+(dx/d)*sp*dt; if (walkable(ax,ay)){ nx=ax; ny=ay; } else { nx=h.x; ny=h.y; } }
+  if (h.kind==="croc" && !isWater(nx,ny)) return;
+  h.x=clamp(nx,0.5,W-0.5); h.y=clamp(ny,0.5,H-0.5); h.vx=dx/d; h.vy=dy/d;
+  if (h.inTree) h.inTree=null;
+}
+
+/* ================= autonomous hominin brain ================= */
+function think(h){
+  var st=stage(h), held=h.hold[0], hd=held?IT[held.cls]:null, cands=[];
+  function c(u,verb,t,src,label,extra){ if (t) cands.push({u:u,verb:verb,t:t,src:src||"drive",label:label,extra:extra}); }
+  var threat = nearestThreat(h, 7); if (threat && !threat.hunting && threat.kind!=="hom" && dist(threat,h)>3 && h.fear<0.3) threat=null;
+  if (threat){
+    var tree = nearestSource(h,function(s){return s.tree;},5);
+    var allies = homs().filter(function(o){return o.band===h.band && dist(o,h)<6;}).length;
+    var mobRes = effRes(h,"threaten","none",threat.kind||"hominin");
+    if (threat.kind!=="hom" && allies>=3 && h.genes.aggression>0.35 && st==="adult") c(1.2*(1-mobRes*0.6)+h.genes.aggression*0.3,"threaten",{k:"animal",ref:threat},"drive","Mob the "+threat.kind);
+    if (held && (hd.mass||0)>0.1 && threat.kind!=="hom" && effRes(h,"throw",held.cls,threat.kind)<0.65) c(1.3,"throw",{k:"animal",ref:threat},"habit","Throw the "+hd.n);
+    if (held && hd.burning && threat.kind!=="hom") c(1.5,"threaten",{k:"animal",ref:threat},"habit","Wave fire at it");
+    if (h.inTree && threat.kind!=="leopard") c(1.6,"stay",{k:"self"},"drive","Stay up the tree");
+    else if (tree && threat.kind!=="leopard") c(1.1*h.fear+0.4,"climb",{k:"source",ref:tree},"drive","Escape up a tree");
+    var away={x:h.x+(h.x-threat.x)*2, y:h.y+(h.y-threat.y)*2}; c(0.9*h.fear+0.3,"move",{k:"ground",x:clamp(away.x,1,W-1),y:clamp(away.y,1,H-1)},"drive","Run");
+  }
+  if (h.copyOf && time<h.copyOf.until){ var lead=h.copyOf.who; if (!lead.dead && dist(h,lead)>3) c(0.9,"move",{k:"ground",x:lead.x,y:lead.y},"ask","Watch "+lead.name); }
+  if (held && hd.food && !hd.shell && !(h.aversion[held.cls]>0.5)) c(h.hunger*1.25 - 0.05,"eat",{k:"self"},"drive","Eat the "+hd.n);
+  if (held && hd.water && h.thirst>0.35) c(h.thirst*1.1,"drinkGourd",{k:"self"},"drive","Drink from the gourd");
+  if (h.hunger>0.3){
+    var food = nearestItem(h,function(i){ var d=IT[i.cls]; if(!d.food) return false; if (h.aversion[i.cls]>0.5) return false; if (d.shell && h.genes.bite<0.75) return false; if (i.band!==-1 && i.band!==h.band) return h.hunger>0.6 || h.genes.aggression>0.6; if (i.storer && i.storer!==h.id && i.band===h.band) return h.hunger>0.55; return true; },22);
+    if (food) c(h.hunger*1.1 - dist(food,h)*0.01 + (food.storer&&food.storer!==h.id?-0.15:0),"pick",{k:"item",ref:food},"drive","Grab the "+IT[food.cls].n);
+    var bush = nearestSource(h,function(s){return (s.type==="bush"||s.type==="figTree") && s.stock>0 && !(h.aversion[s.type==="bush"?"berry":"fig"]>0.5);},28);
+    if (bush) c(h.hunger*1.0 - dist(bush,h)*0.012,"gather",{k:"source",ref:bush},"drive","Pick "+(bush.type==="bush"?"berries":"figs"));
+    else { var far = nearestSource(h,function(s){return (s.type==="bush"||s.type==="figTree") && s.stock>1;},90); if (far) c(h.hunger*0.8,"gather",{k:"source",ref:far},"drive","Search further for food"); }
+    var rt = nearestSource(h,function(s){return s.type==="roots"&&s.stock>=1;},18); if (rt){ if (held && hd.long && effRes(h,"probe",held.cls,"roots")<0.6) c(h.hunger*1.1,"probe",{k:"source",ref:rt},"habit","Dig roots with the "+hd.n); else c(h.hunger*0.75-dist(rt,h)*0.01,"dig",{k:"source",ref:rt},"drive","Dig for roots"); }
+    var mound = nearestSource(h,function(s){return s.type==="mound"&&s.stock>3;},20);
+    if (mound && held && hd.long && effRes(h,"probe",held.cls,"mound")<0.6) c(h.hunger*1.15,"probe",{k:"source",ref:mound},"habit","Fish for termites");
+    var nut = nearestItem(h,function(i){return i.cls==="nut";},16);
+    if (nut && held && hd.hard>=0.55 && effRes(h,"strike",held.cls,"nut")<0.6) c(h.hunger*1.2,"strike",{k:"item",ref:nut},"habit","Crack a nut");
+    var carc = nearestItem(h,function(i){return i.cls==="carcass";},25);
+    if (carc && !nearestThreat(carc,5)) c(h.hunger*1.2 - dist(carc,h)*0.01,(held&&hd.sharp)?"cut":"strike",{k:"item",ref:carc},"drive","Get at the carcass");
+    if (h.hunger>0.5 && held && hd.pointed){ var wt=nearWater(h.x,h.y,6); if (wt && effRes(h,"fish",held.cls,"water")<0.6) c(h.hunger*1.1,"fish",{k:"water",x:wt.x,y:wt.y},"habit","Spear fish"); }
+  }
+  if (h.thirst>0.3){ var w=nearWater(h.x,h.y,14) || nearWaterScan(h); if (w) c(h.thirst*1.15,"drink",{k:"water",x:w.x,y:w.y},"drive","Drink"); }
+  if (isNight() || h.energy<0.25){
+    var sleepRes = effRes(h,"climb","none","tree"), tr=nearestSource(h,function(s){return s.tree;},10);
+    var fire = nearestFire(h,12);
+    if (fire) c(0.7+h.cold*0.5,"warm",{k:"fire",ref:fire},"drive","Sleep by the fire");
+    else if (h.inTree) c(0.9,"sleep",null,"drive","Sleep in the branches");
+    else if (tr && sleepRes<0.6) c(0.75,"climb",{k:"source",ref:tr},"habit","Sleep up the tree");
+    else c((1-h.energy)*0.8+0.2,"sleep",null,"drive","Sleep");
+  }
+  if (h.cold>0.4 && h.wear===null && held && hd.warm && effRes(h,"wear",held.cls,"self")<0.65) c(h.cold,"wear",{k:"self"},"habit","Put on the hide");
+  if (h.social>0.5){ var friend=null,bf=0; creatures.forEach(function(o){ if(o.kind==="hom"&&!o.dead&&o!==h&&o.band===h.band&&dist(o,h)<10){ var v=(h.bonds[o.id]||0)+rnd()*0.2; if(v>bf){bf=v;friend=o;} } }); if (friend) c(h.social*0.7,"groom",{k:"hom",ref:friend},"drive","Groom "+friend.name); }
+  Object.keys(h.anger).forEach(function(id){ var a=h.anger[id]; if (a>0.6 && st==="adult"){ var o=creatures.find(function(c2){return c2.id==id;}); if (o && !o.dead && dist(o,h)<8) c(a*h.genes.aggression*1.4,"attack",{k:"hom",ref:o},"drive","Attack "+o.name); } h.anger[id]=a*0.995; });
+  if (st==="adult" && h.sex==="m" && h.genes.aggression>0.55 && rnd()<0.02){ var rival=homs().find(function(o){ return o!==h && o.sex==="m" && stage(o)==="adult" && dist(o,h)<5 && o.rank>h.rank; }); if (rival) c(0.6+h.genes.aggression*0.4,"threaten",{k:"hom",ref:rival},"drive","Challenge "+rival.name); }
+  var thief = homs().find(function(o){ return o.band===h.band && o!==h && dist(o,h)<5 && o.hold[0] && IT[o.hold[0].cls].food && h.hunger>0.7 && o.rank<h.rank; });
+  if (thief && h.genes.aggression>0.5) c(h.hunger*0.9,"threaten",{k:"hom",ref:thief},"drive","Take food from "+thief.name);
+  var cen = bandCentre(h.band); if (cen && Math.hypot(cen.x-h.x,cen.y-h.y)>9) c(0.45,"move",{k:"ground",x:cen.x+rr(-2,2),y:cen.y+rr(-2,2)},"drive","Rejoin the band");
+  if (st!=="infant"){
+    Object.keys(patterns).forEach(function(k){
+      var p=patterns[k]; if (!p.recognized || !p.bands[h.band]) return;
+      var r = effRes(h,p.verb,p.held,p.tgt); if (r>0.5) return;
+      var u = 0.55*(1-r);
+      if (p.effect==="store"){ if (held && held.cls===p.held && h.hunger<0.35){ var spot={k:"ground",x:p.x+rr(-0.5,0.5),y:p.y+rr(-0.5,0.5)}; c(u+0.25,"place",spot,"habit","Store the "+IT[p.held].n); } }
+      else if (p.effect==="cover"){ if (held && held.cls===p.held){ var pile=nearestItem(h,function(i){return IT[i.cls].food && i.band===h.band && !i.covered;},10); if (pile) c(u+0.2,"place",{k:"item",ref:pile},"habit","Cover the stored food"); } else if (!held){ var pile2=nearestItem(h,function(i){return IT[i.cls].food && i.band===h.band && !i.covered;},10); var srcL=nearestSource(h,function(s){return s.tree||s.type==="bush";},8); if (pile2&&srcL) c(u*0.7,"leaves",{k:"source",ref:srcL},"habit","Get leaves for cover"); } }
+      else if (p.effect==="flake" && !holding(h,function(i){return i.cls==="flake";}) && h.boredom>0.3){ var st2=nearestItem(h,function(i){return i.cls==="stone";},8); if (held && held.cls==="stone" && st2) c(u*h.boredom+0.1,"strike",{k:"item",ref:st2},"habit","Knap a flake"); else if (!held && st2) c(u*0.5,"pick",{k:"item",ref:st2},"habit","Pick up a stone"); }
+      else if (p.effect==="sharpen" && held && held.cls==="flake"){ var stk=nearestItem(h,function(i){return i.cls==="stick";},8); if (stk) c(u*0.8,"cut",{k:"item",ref:stk},"habit","Sharpen a stick"); }
+      else if (p.effect==="feed"){ var f2=nearestFire(h,10); if (f2 && f2.fuel<1.2){ if (held && IT[held.cls].fuel && !IT[held.cls].burning) c(u+0.3,"place",{k:"fire",ref:f2},"habit","Feed the fire"); else if (!held){ var sk2=nearestItem(h,function(i){return i.cls==="stick";},12); if (sk2) c(u+0.15,"pick",{k:"item",ref:sk2},"habit","Fetch fuel"); } } }
+      else if (p.effect==="cook"){ var f3=nearestFire(h,12); if (f3 && held && IT[held.cls].cook && !held.cooked) c(u+0.4,"place",{k:"fire",ref:f3},"habit","Cook the "+IT[held.cls].n); }
+      else if ((p.effect==="termites"||p.effect==="rodentProbe"||p.effect==="shake") && !held && h.hunger>0.3){ var stk2=nearestItem(h,function(i){return i.cls==="stick"||i.cls==="spear";},10); if (stk2) c(u*0.6,"pick",{k:"item",ref:stk2},"habit","Pick up a stick for "+p.name.toLowerCase()); }
+      else if (p.effect==="crack" && !held && h.hunger>0.3 && nearestItem(h,function(i){return i.cls==="nut";},14)){ var stn=nearestItem(h,function(i){return i.cls==="stone";},12); if (stn) c(u*0.7,"pick",{k:"item",ref:stn},"habit","Find a hammerstone"); }
+      else if (p.effect==="shake" && held && IT[held.cls].long && h.hunger>0.35){ var nt=nearestSource(h,function(s){return s.type==="nutTree"&&s.stock>1;},20); if (nt) c(u+h.hunger*0.5,"strike",{k:"source",ref:nt},"habit","Knock nuts down"); }
+      else if (p.effect==="fill" && held && held.cls==="gourd"){ var wt2=nearWater(h.x,h.y,8); if (wt2) c(u,"fill",{k:"water",x:wt2.x,y:wt2.y},"habit","Fill the gourd"); }
+      else if (p.effect==="share" && held && IT[held.cls].food && h.hunger<0.3){ var needy=homs().find(function(o){return o.band===h.band&&o!==h&&o.hunger>0.6&&dist(o,h)<8;}); if (needy) c(u+0.2,"share",{k:"hom",ref:needy},"habit","Share with "+needy.name); }
+    });
+  }
+  if (h.boredom>0.35 && st!=="infant" && h.hunger<0.5 && h.thirst<0.5){
+    var curious = h.genes.curiosity*(st==="juvenile"?1.5:0.9)*h.boredom*0.8;
+    if (!held){ var toy=nearestItem(h,function(i){ return !IT[i.cls].food && !IT[i.cls].carcass; },6); if (toy) c(curious*0.7,"pick",{k:"item",ref:toy},"explore","Pick up the "+IT[toy.cls].n+" to play with it"); }
+    else {
+      var objs=[]; items.forEach(function(i){ if(!i.heldBy && dist(i,h)<6) objs.push({k:"item",ref:i}); }); sources.forEach(function(s2){ if(dist(s2,h)<6) objs.push({k:"source",ref:s2}); }); fires.forEach(function(f){ if(dist(f,h)<6) objs.push({k:"fire",ref:f}); });
+      var wn=nearWater(h.x,h.y,4); if (wn) objs.push({k:"water",x:wn.x,y:wn.y});
+      for (var tries=0; tries<3 && objs.length; tries++){ var tt=pick(objs), ops=options(h,tt).filter(function(o){return ["strike","probe","place","cut","throw","takeFire","fill","fish"].indexOf(o.v)>=0;}); if (ops.length){ var op=pick(ops); var rs=effRes(h,op.v,held.cls,tgtCls(tt)); c(curious*(1.25-rs)+0.15,op.v,tt,"explore","Fiddle: "+op.label.charAt(0).toLowerCase()+op.label.slice(1)); break; } }
+    }
+    if (st==="juvenile"){ var pal=homs().find(function(o){return o!==h&&o.band===h.band&&stage(o)==="juvenile"&&dist(o,h)<10;}); if (pal) c(h.boredom*0.6,"move",{k:"ground",x:pal.x+rr(-1,1),y:pal.y+rr(-1,1)},"drive","Play with "+pal.name); }
+  }
+  if (st==="adult" && h.mate>0.7 && !h.preg){ var mate=homs().find(function(o){ return o.band===h.band && o.sex!==h.sex && stage(o)==="adult" && (h.bonds[o.id]||0)>0.35 && dist(o,h)<10 && !(o.sex==="f"&&o.preg); }); if (mate) c(h.mate*0.65,"mate",{k:"hom",ref:mate},"drive","Slip away with "+mate.name); }
+  c(0.15,"move",{k:"ground",x:clamp(h.x+rr(-4,4),1,W-1),y:clamp(h.y+rr(-4,4),1,H-1)},"drive","Wander");
+  cands.sort(function(a,b){return b.u-a.u;});
+  return cands[0];
+}
+function nearWaterScan(h){ var best=null,bd=1e9; for (var i=0;i<200;i++){ var x=h.x+rr(-30,30), y=h.y+rr(-30,30); if (T(x,y)===SHALLOW){ var d=Math.hypot(x-h.x,y-h.y); if(d<bd){bd=d;best={x:Math.floor(x)+0.5,y:Math.floor(y)+0.5};} } } return best; }
+
+function homUpdate(h, dt){
+  var dd = dt/DAY, st=stage(h);
+  h.age += dd;
+  h.hunger = clamp(h.hunger + dd*(0.34 + h.genes.size*0.16) * (st==="juvenile"?0.8:1), 0, 1.05);
+  h.thirst = clamp(h.thirst + dd*(1.1 + (seasonOf()==="dry"?0.4:0)), 0, 1.05);
+  h.energy = clamp(h.energy + (h.asleep ? dd*3 : -dd*0.9), 0, 1);
+  h.social = clamp(h.social + dd*0.6*h.genes.sociability*2, 0, 1);
+  h.boredom = clamp(h.boredom + dd*(h.task&&h.task.src!=="drive"?0.2:1.6)*(1.2-h.genes.attention), 0, 1);
+  if (st==="adult") h.mate = clamp(h.mate + dd*0.5, 0, 1);
+  var warmth = (h.wear?0.6:0) + (nearestFire(h,3)?0.8:0) + h.genes.coldTol*0.3 + h.genes.hair*0.3;
+  h.cold = clamp(h.cold + dd*((isNight()?1.4:-1.5) + (raining?0.8:0) - warmth*1.4), 0, 1);
+  h.fear = Math.max(0, h.fear - dt*0.15);
+  var th = nearestThreat(h, (isNight()?6:4) + (1-h.genes.aggression)*2); if (th && (th.hunting || th.kind==="hom" || dist(th,h)<2.5)) h.fear = Math.min(1, h.fear + dt*0.35*(th.kind==="leopard"?1.5:1));
+  h.sick = Math.max(0, h.sick - dd*0.6*(0.5+h.genes.detox));
+  h.drunk = Math.max(0, h.drunk - dd*3);
+  if (h.hunger>=1) h.hp -= dd*0.2; if (h.thirst>=1) h.hp -= dd*0.8; if (h.sick>0.5) h.hp -= dd*h.sick*0.5; if (h.cold>0.95) h.hp -= dd*0.2;
+  if (h.hunger<0.5 && h.thirst<0.5 && h.sick<0.2) h.hp = Math.min(1, h.hp + dd*0.4);
+  if (h.age > 24 + h.genes.size*4 + rnd()*0 && rnd()<dd*0.6) { h.hp -= 0.4; }
+  if (h.hp<=0){ kill(h); return; }
+  if (h.preg>0){ h.preg -= dd; if (h.preg<=0){ birth(h); } }
+  if (st==="infant"){ var m=creatures.find(function(c){return c.id===h.mother;}); if (m && !m.dead){ h.x=m.x+0.35; h.y=m.y+0.2; h.hunger=Math.max(0,h.hunger-dd*1.2); h.thirst=Math.max(0,h.thirst-dd*1.2); return; } }
+  if (h.asleep){ if ((!isNight() && h.energy>0.6) || h.fear>0.5 || h.hunger>0.85){ h.asleep=false; } else { if (h.inTree===null) leopardBait(h); return; } }
+  if (h===focus){ focusUpdate(h, dt); return; }
+  if (h.task && h.task.src==="ask"){ h.task.interest -= dt; if (h.task.interest<=0 || urgent(h)>0.85){ h.thought="Got bored and wandered off."; h.task=null; } }
+  if (time - h.lastThink > 0.6 + rnd()*0.4){
+    h.lastThink = time;
+    var best = think(h);
+    if (best){
+      if (best.verb==="sleep"){ h.task=null; h.asleep=true; h.thought="Sleeping."; return; }
+      if (best.verb==="stay"){ h.task=null; h.thought=best.label+"."; return; }
+      if (best.verb==="mate"){ var o=best.t.ref; if (dist(o,h)<1.5){ var f=h.sex==="f"?h:o; if (!f.preg && rnd()<0.35 && time-f.lastBirth*DAY>DAY*3) { f.preg=2; } h.mate=0; o.mate=0; h.bonds[o.id]=Math.min(1,(h.bonds[o.id]||0)+0.1); o.bonds[h.id]=Math.min(1,(o.bonds[h.id]||0)+0.1); h.thought="Slipped away with "+o.name+"."; } else { setTask(h,"move",{k:"ground",x:o.x,y:o.y},"drive"); } return; }
+      var cur = h.task, cu = cur ? (cur.src==="ask"?0.75:(cur.u||0.3)) : -1;
+      if (!cur || best.u > cu + 0.12){ setTask(h, best.verb, best.t, best.src); h.task.u=best.u; h.thought = best.label+"."; if (best.extra) for (var k in best.extra) h.task[k]=best.extra[k]; }
+    }
+  }
+  stepTask(h, dt);
+}
+function urgent(h){ return Math.max(h.hunger, h.thirst, h.fear, isNight()?1-h.energy:0); }
+function leopardBait(h){ }
+
+/* focused individual: obeys, but drives interrupt */
+function focusUpdate(h, dt){
+  var tk=h.task;
+  if (tk && tk.src==="player"){
+    var pv = predictedVerb(h), held=h.hold[0];
+    var conflict = pv!=="idle" && pv!==tk.verb && pv!=="forage";
+    if (conflict){
+      var urg = pv==="eat" ? h.hunger : (pv==="flee" ? h.fear : (pv==="drink" ? h.thirst : 1-h.energy));
+      var hc=held?held.cls:"none", r = effRes(h, tk.verb, hc, tgtCls(tk.t));
+      var pr = Math.max(0, urg-0.35) * 1.6 * r * (1.25 - h.genes.impulse) * dt;
+      if (rnd() < pr){
+        if (pv==="eat" && held){ doVerb(h,"eat",{k:"self"},false); h.thought=h.name+" ate the "+IT[held.cls].n+" instead!"; toast(h.thought); }
+        else if (pv==="flee"){ var th=nearestThreat(h,10); if (th) setTask(h,"move",{k:"ground",x:clamp(h.x+(h.x-th.x)*2,1,W-1),y:clamp(h.y+(h.y-th.y)*2,1,H-1)},"drive"); h.thought=h.name+" panicked and ran!"; toast(h.thought); return; }
+        else if (pv==="drink"){ h.thought=h.name+" is desperate for water."; }
+        else if (pv==="sleep"){ h.task=null; h.asleep=true; h.thought=h.name+" fell asleep."; toast(h.thought); return; }
+      }
+    }
+    var social = homs().find(function(o){ return o!==h && o.band===h.band && dist(o,h)<2 && o.task && o.task.verb==="threaten" && o.task.t.ref===h; });
+    if (social && rnd()<dt*0.5){ h.thought=social.name+" is challenging "+h.name+"!"; }
+    stepTask(h, dt); return;
+  }
+  h.boredom = Math.min(1, h.boredom + dt/DAY*2);
+  if (h.boredom>0.75 || urgent(h)>0.8){
+    if (time - h.lastThink > 1){ h.lastThink=time; var best=think(h); if (best && best.verb!=="sleep" && best.verb!=="mate" && best.u>0.5){ setTask(h,best.verb,best.t,best.src); h.thought=h.name+" decided to "+best.label.toLowerCase()+"."; } else if (best && best.verb==="sleep"){ h.asleep=true; h.thought=h.name+" dozed off."; } }
+  }
+  stepTask(h, dt);
+}
+
+function birth(m){
+  var dad=homs().filter(function(o){return o.band===m.band&&o.sex==="m"&&stage(o)==="adult";}).sort(function(a,b){return (m.bonds[b.id]||0)-(m.bonds[a.id]||0);})[0] || m;
+  var kid = mkHom(m.band, m.x, m.y, rnd()<0.5?"m":"f", 0, childGenes(m.genes, dad.genes));
+  kid.mother=m.id; kid.hunger=0.2; kid.bonds[m.id]=0.9; m.bonds[kid.id]=0.9;
+  Object.keys(m.res).forEach(function(k){ kid.res[k]=Math.min(1, m.res[k]*0.5+0.5); });
+  Object.keys(m.aversion).forEach(function(k){ kid.aversion[k]=m.aversion[k]*0.8; });
+  m.lastBirth=day(); m.preg=0;
+  logE(m.name+" gave birth to "+kid.name+" ("+(m.band===PLAYER_BAND?"yours":"robust")+").", "birth");
+}
+
+/* ================= animals ================= */
+function animalUpdate(a, dt){
+  if (a.kind==="antelope"){
+    var th=null, td=a.wary; creatures.forEach(function(c){ if (c.dead||c===a) return; if (c.kind==="hom"||c.kind==="hyena"||c.kind==="leopard"){ var d=dist(c,a); if (d<td){td=d;th=c;} } });
+    var near = creatures.filter(function(c){ return !c.dead && c.kind==="hom" && dist(c,a)<a.wary; });
+    if (th){
+      var ax=0, ay=0; near.forEach(function(c){ var d=Math.max(0.5,dist(c,a)); ax+=(a.x-c.x)/d; ay+=(a.y-c.y)/d; });
+      if (!near.length){ ax=a.x-th.x; ay=a.y-th.y; }
+      var spread = near.length>=2 ? Math.hypot(ax,ay)/near.length : 1;
+      var trapped = near.length>=3 && spread<0.45;
+      a.state="flee"; var sp = trapped ? a.speed*0.35 : a.speed;
+      var n=Math.hypot(ax,ay)||1, nx=a.x+ax/n*sp*dt*2, ny=a.y+ay/n*sp*dt*2;
+      if (walkable(nx,ny)){ a.x=clamp(nx,1,W-1); a.y=clamp(ny,1,H-1); } else { a.speed*=0.995; a.x+=rr(-0.2,0.2); a.y+=rr(-0.2,0.2); a.cornered=true; }
+      if (a.lastHitBy && a.lastHitBy.kind==="hom") a.wary=Math.min(14,a.wary+dt*0.15);
+    } else { a.state="graze"; a.speed=Math.min(3.2,a.speed+dt*0.01); if (rnd()<dt*0.3){ a.gx=clamp(a.x+rr(-3,3),1,W-1); a.gy=clamp(a.y+rr(-3,3),1,H-1); } if (a.gx && walkable(a.gx,a.gy)) moveTo(a,a.gx,a.gy,dt*0.3); a.wary=Math.max(5,a.wary-dt*0.002); }
+    return;
+  }
+  if (a.kind==="hyena"){
+    a.hunger = Math.min(1,(a.hunger||0)+dt/DAY*0.6);
+    if (a.state==="flee"){ a.t+=dt; var home=homs()[0]; if (home) moveTo(a, a.x+(a.x-home.x), a.y+(a.y-home.y), dt); if (a.t>8){ a.state="idle"; a.t=0; } return; }
+    var fireN = nearestFire(a,5); if (fireN){ a.state="flee"; a.t=0; return; }
+    var carc = nearestItem(a,function(i){return i.cls==="carcass"||(IT[i.cls].smell&&!i.covered);},25);
+    if (carc && a.hunger>0.2){ if (dist(a,carc)>0.8) moveTo(a,carc.x,carc.y,dt); else { a.t+=dt; if (a.t>2){ a.t=0; if (carc.cls==="carcass"){ carc.meat=(carc.meat||0)-1; if(carc.meat<=0&&(carc.bones||0)<=0) removeItem(carc); else if (carc.meat<=0) carc.meat=0; } else { carc.count--; if(carc.count<=0) removeItem(carc);} a.hunger=Math.max(0,a.hunger-0.3); } }
+      var guards = homs().filter(function(o){return dist(o,a)<4;}); guards.forEach(function(o){ if (rnd()<dt*0.2*a.bold) { hurt(o,0.1,a); } }); return; }
+    if ((isNight()||a.hunger>0.7)){
+      var prey=null,pd=20; homs().forEach(function(o){ if (o.inTree||o.asleep&&nearestFire(o,4)) return; var d=dist(o,a); var guard=homs().filter(function(q){return q.band===o.band&&dist(q,o)<5;}).length; var weak=(stage(o)!=="adult"||o.hp<0.5)?0.6:1; if (guard>=3) return; var score=d*weak*(guard>=2?2:1); if (score<pd){pd=score;prey=o;} });
+      a.hunting=false;
+      if (prey && a.bold>0.45 && a.hunger>0.5){ a.hunting=true; if (dist(a,prey)>0.9) moveTo(a,prey.x,prey.y,dt); else if (rnd()<dt*0.6){ hurt(prey,0.12,a); if (prey.dead){ a.hunger=0; a.bold=Math.min(0.95,a.bold+0.05); } } return; }
+      var ant=null, ad=18; creatures.forEach(function(c){ if (c.kind==="antelope"&&!c.dead){ var d=dist(c,a); if(d<ad){ad=d;ant=c;} } }); if (ant){ moveTo(a,ant.x,ant.y,dt*1.1); if (dist(a,ant)<0.9 && rnd()<dt*0.4) hurt(ant,0.25,a); return; }
+    }
+    a.hunting=false;
+    var bc=bandCentre(PLAYER_BAND); if (bc && Math.hypot(bc.x-a.x,bc.y-a.y)<10){ a.gx=clamp(a.x+(a.x-bc.x),1,W-1); a.gy=clamp(a.y+(a.y-bc.y),1,H-1); }
+    else if (rnd()<dt*0.2){ a.gx=clamp(a.x+rr(-6,6),1,W-1); a.gy=clamp(a.y+rr(-6,6),1,H-1); } if (a.gx) moveTo(a,a.gx,a.gy,dt*0.4);
+    return;
+  }
+  if (a.kind==="leopard"){
+    a.hunger=Math.min(1,(a.hunger||0)+dt/DAY*0.5);
+    if (a.state==="flee"){ a.t+=dt; moveTo(a,a.home.x,a.home.y,dt); if (a.t>10){a.state="idle";a.t=0;} return; }
+    if (nearestFire(a,6)){ a.state="flee"; a.t=0; a.bold=Math.max(0.2,a.bold-0.01); return; }
+    if (isNight() && a.hunger>0.6){
+      var prey2=null,pd2=26; homs().forEach(function(o){ if (o.inTree) return; var d=dist(o,a); var group=homs().filter(function(q){return q.band===o.band&&dist(q,o)<4;}).length; if (group>=4) return; if (group>=2) d*=2; if (d<pd2){pd2=d;prey2=o;} });
+      a.hunting=false;
+      if (prey2 && a.hunger>0.6){ a.hunting=true; if (dist(a,prey2)>0.8) moveTo(a,prey2.x,prey2.y,dt); else if (rnd()<dt*0.8){ hurt(prey2,0.45,a); prey2.asleep=false; if (prey2.dead){ a.hunger=0; a.state="flee"; a.t=0; } } return; }
+      var ant2=null, ad2=20; creatures.forEach(function(c){ if (c.kind==="antelope"&&!c.dead){ var d=dist(c,a); if(d<ad2){ad2=d;ant2=c;} } }); if (ant2){ moveTo(a,ant2.x,ant2.y,dt*1.2); if (dist(a,ant2)<0.9 && rnd()<dt*0.6){ hurt(ant2,0.5,a); if (ant2.dead) a.hunger=0; } return; }
+    }
+    if (dist(a,a.home)>6) moveTo(a,a.home.x,a.home.y,dt*0.5); else if (rnd()<dt*0.1){ a.gx=a.home.x+rr(-5,5); a.gy=a.home.y+rr(-5,5); } if (a.gx) moveTo(a,a.gx,a.gy,dt*0.3);
+    return;
+  }
+  if (a.kind==="croc"){ a.cool=Math.max(0,a.cool-dt); if (rnd()<dt*0.1){ a.gx=a.x+rr(-3,3); a.gy=a.y+rr(-3,3); } if (a.gx) moveTo(a,a.gx,a.gy,dt*0.2); return; }
+}
+
+/* ================= world update ================= */
+function worldUpdate(dt){
+  var dd=dt/DAY, season=seasonOf();
+  if (rnd()<dt*(season==="wet"?0.004:0.0012)) { raining=true; rainT=rr(15,50); }
+  if (raining){ rainT-=dt; if (rainT<=0) raining=false; }
+  sources.forEach(function(s){
+    var grow = s.regrow*dd;
+    if (s.type==="bush" && season==="wet") s.stock=Math.min(s.max, s.stock+grow);
+    else if (s.type==="bush") s.stock=Math.min(s.max*0.5, s.stock+grow*0.35);
+    if (s.type==="figTree"){ s.stock=Math.min(s.max,s.stock+grow*0.8); if (s.stock>=s.max-0.5 && rnd()<dt*0.02){ s.stock--; addItem("fig",s.x+rr(-1.5,1.5),s.y+rr(-1.5,1.5),1,{fresh:0.7}); } }
+    if (s.type==="nutTree" && season==="dry"){ s.stock=Math.min(s.max,s.stock+grow); if (s.stock>4 && rnd()<dt*0.015){ s.stock--; addItem("nut",s.x+rr(-1.5,1.5),s.y+rr(-1.5,1.5),1); } }
+    if (s.type==="tree") s.stock=Math.min(s.max,s.stock+grow*0.3);
+    if (s.type==="mound") s.stock=Math.min(s.max,s.stock+grow);
+    if (s.type==="vine"||s.type==="roots") s.stock=Math.min(s.max,s.stock+grow);
+    if (s.type==="burrow") s.rodents=Math.min(2,(s.rodents||0)+dd*0.6);
+    s.stock = Math.floor(s.stock*100)/100;
+  });
+  if (raining && rnd()<dt*0.05){ var p=randomTile(function(t){return t===WOOD;},50); if(p) addItem(rnd()<0.35?"mushR":"mushB",p.x+rr(-0.4,0.4),p.y+rr(-0.4,0.4),1+Math.floor(rnd()*2)); }
+  for (var i=items.length-1;i>=0;i--){
+    var it=items[i], d=IT[it.cls];
+    if (raining && !it.covered && T(it.x,it.y)!==ROCK) it.wet=Math.min(1,it.wet+dt*0.05); else it.wet=Math.max(0,it.wet-dt*0.01);
+    if (d.perish){ var rate=d.perish*dd*(it.cooked?0.4:1)*(it.dried?0.1:1)*(1+it.wet*1.5)*(seasonOf()==="dry"?0.9:1.1); it.fresh-=rate; }
+    if (it.drying){ it.dryT=(it.dryT||0)+dd; if (it.dryT>1 && !it.wet){ it.dried=true; it.drying=false; logE("Some "+d.n+" left on hot ground dried out and stopped rotting.", "disc"); } }
+    if (d.ferment && it.fresh<0.45 && it.fresh>0.15 && !it.fermented){ it.fermented=true; }
+    if (d.food && !it.covered && it.band>=0 && rnd()<dt*0.004){ it.count--; if (it.count<=0){ items.splice(i,1); continue; } }
+    if (it.fresh<=0){ if (it.storedKey && patterns[it.storedKey]) patterns[it.storedKey].payoff-=0.5; items.splice(i,1); continue; }
+    if (it.cls==="carcass" && it.fresh<=0.01) items.splice(i,1);
+  }
+  creatures.forEach(function(h){ if (h.kind!=="hom"||h.dead) return; h.hold.forEach(function(s,ix){ if (s && IT[s.cls].perish){ s.fresh-=IT[s.cls].perish*dd*(s.cooked?0.4:1); if (s.fresh<=0){ h.hold[ix]=null; } } if (s && s.cls==="brand"){ s.burn-=dd*6; if (raining) s.burn-=dd*20; if (s.burn<=0){ h.hold[ix]=null; if (h===focus) h.thought="The burning stick went out."; } } }); if (!h.hold[0]&&h.hold[1]){h.hold[0]=h.hold[1];h.hold[1]=null;} });
+  for (var f=fires.length-1;f>=0;f--){ var fr=fires[f]; fr.fuel-=dd*(raining?6:1.8); if (fr.fuel<=0){ fires.splice(f,1); continue; } items.forEach(function(it){ if (!it.heldBy && dist(it,fr)<0.7 && IT[it.cls].food && IT[it.cls].cook && !it.cooked){ it.cookT=(it.cookT||0)+dd; if (it.cookT>0.05){ it.cooked=true; it.fresh=1; } } }); }
+  var lightningChance = season==="dry" ? 0.0009 : 0.0002;
+  if (raining && season==="dry" && rnd()<dt*0.004) lightningChance=1;
+  if (rnd()<dt*lightningChance){ var lt=randomTile(function(t,x,y){ return t===GRASS && dryness[Math.floor(y)*W+Math.floor(x)]>0.6; },100); if (lt){ fireT[Math.floor(lt.y)*W+Math.floor(lt.x)]=1; logE("Lightning set the grass alight.", "death"); } }
+  if (rnd() < dt*0.5) fireStep();
+}
+var dirtyTiles = [];
+function fireStep(){
+  var season=seasonOf();
+  for (var i=0;i<W*H;i++){
+    var t=tiles[i];
+    if (t===GRASS||t===WOOD) dryness[i]=clamp(dryness[i] + (season==="dry"?0.004:-0.01) - (raining?0.03:0), 0, 1);
+    if (t===BURNT){ burntT[i]+=0.004*(season==="wet"?3:1); if (burntT[i]>1){ tiles[i]=GRASS; burntT[i]=0; dryness[i]=0; dirtyTiles.push(i); } }
+  }
+  var burning=[]; for (i=0;i<W*H;i++) if (fireT[i]>0) burning.push(i);
+  burning.forEach(function(i){
+    fireT[i]-= raining?0.6:0.12;
+    var x=i%W, y=Math.floor(i/W);
+    [[1,0],[-1,0],[0,1],[0,-1]].forEach(function(d){ var nx=x+d[0], ny=y+d[1]; if (nx<0||ny<0||nx>=W||ny>=H) return; var j=ny*W+nx, tt=tiles[j]; if ((tt===GRASS||tt===WOOD) && fireT[j]<=0 && dryness[j]>0.35 && rnd()<dryness[j]*0.55 && !raining) fireT[j]=1; });
+    if (fireT[i]<=0){ fireT[i]=0; tiles[i]=BURNT; burntT[i]=0; dryness[i]=0; dirtyTiles.push(i);
+      if (rnd()<0.08) addFire(x+0.5,y+0.5,0.35);
+      creatures.forEach(function(c){ if (!c.dead && Math.floor(c.x)===x && Math.floor(c.y)===y){ if (c.kind==="hom"){ hurt(c,0.35); c.fear=1; } else if (c.kind==="antelope"||c.kind==="hyena"){ hurt(c,0.5); } } });
+      items.forEach(function(it){ if (Math.floor(it.x)===x && Math.floor(it.y)===y){ if (IT[it.cls].cook){ it.cooked=true; } else if (IT[it.cls].fuel && !it.heldBy) it.count=0; } });
+      if (rnd()<0.025){ addItem("rodent",x+0.5,y+0.5,1,{cooked:true}); }
+      sources.forEach(function(s){ if (Math.floor(s.x)===x && Math.floor(s.y)===y && s.type==="burrow" && s.rodents>0){ s.rodents=0; addItem("rodent",s.x,s.y,1,{cooked:true}); } });
+    }
+  });
+  for (i=items.length-1;i>=0;i--) if (items[i].count<=0) items.splice(i,1);
+}
+for (var di=0; di<W*H; di++) dryness[di]=0.1;
+
+/* ================= projectiles ================= */
+function projUpdate(dt){
+  for (var i=projectiles.length-1;i>=0;i--){
+    var p=projectiles[i]; p.t+=dt*3; var d=Math.hypot(p.tx-p.x,p.ty-p.y);
+    if (p.t>=1){
+      var it=p.item; it.heldBy=null; it.x=p.tx; it.y=p.ty; if (!isWater(it.x,it.y)) items.push(it);
+      if (p.hitT && stillValid(p.hitT)){
+        var tgt=p.hitT.ref, d2=IT[it.cls], dmg=0.12*(d2.mass||0.3)*3*(d2.pointed?(it.hard?2.4:1.8):1)*(0.7+p.from.genes.strength*0.6);
+        if (p.hitT.k==="animal"){ hurt(tgt,dmg/(tgt.kind==="antelope"?0.8:1.5),p.from); tgt.lastHitBy=p.from; if (tgt.kind==="hyena"||tgt.kind==="leopard"){ tgt.state="flee"; tgt.t=0; tgt.bold=Math.max(0.1,tgt.bold-(d2.burning?0.15:0.05)); } if (d2.burning && it.burn>0){ var tx=Math.floor(it.x), ty=Math.floor(it.y); if (dryness[ty*W+tx]>0.4) fireT[ty*W+tx]=1; } }
+        if (p.hitT.k==="hom"){ hurt(tgt,dmg*0.7,p.from); }
+      }
+      projectiles.splice(i,1);
+    }
+  }
+}
+
+/* ================= main update ================= */
+var focus = null, follow = true, speed = 1;
+function update(dt){
+  time += dt;
+  worldUpdate(dt);
+  for (var i=0;i<creatures.length;i++){ var c=creatures[i]; if (c.dead) continue; if (c.kind==="hom") homUpdate(c,dt); else animalUpdate(c,dt); }
+  projUpdate(dt);
+  if (Math.floor(time*10)%50===0) creatures = creatures.filter(function(c){ return !c.dead || (time - (c.deadT||(c.deadT=time)))<1; });
+  if (homs().filter(function(c){return c.band===PLAYER_BAND;}).length===0 && !update.over){ update.over=true; logE("Your band is extinct.", "death"); toast("Your band is extinct. Reload the page for a new world."); }
+}
+
+/* ================= rendering ================= */
+var cv=document.getElementById("cv"), ctx=cv.getContext("2d");
+var TS=22, cam={x:start.x, y:start.y, z:1.4}, vw=0, vh=0, dpr=1;
+var terrain=document.createElement("canvas"); terrain.width=W*TS; terrain.height=H*TS; var tctx=terrain.getContext("2d");
+var TCOL = ["#1f4f58","#2e6b72","#c9b07a","#8f8a4a","#5f6f34","#7c6a58","#3a3226"];
+function drawTile(x,y){ var t=tiles[y*W+x], c=TCOL[t]; var n=hash2(x*1.7,y*2.3); tctx.fillStyle=c; tctx.fillRect(x*TS,y*TS,TS,TS); tctx.fillStyle="rgba(0,0,0,"+(n*0.12)+")"; tctx.fillRect(x*TS,y*TS,TS,TS);
+  if (t===GRASS){ tctx.strokeStyle="rgba(190,170,90,0.35)"; tctx.lineWidth=1; for (var k=0;k<3;k++){ var gx=x*TS+hash2(x+k,y)*TS, gy=y*TS+hash2(x,y+k)*TS; tctx.beginPath(); tctx.moveTo(gx,gy); tctx.lineTo(gx+1,gy-4); tctx.stroke(); } }
+  if (t===ROCK){ tctx.fillStyle="rgba(255,255,255,0.06)"; tctx.fillRect(x*TS+3,y*TS+3,TS*0.5,TS*0.3); }
+  if (t===SHALLOW){ tctx.fillStyle="rgba(200,230,230,0.06)"; tctx.fillRect(x*TS,y*TS+TS*0.5,TS,2); } }
+for (var ty=0;ty<H;ty++) for (var tx=0;tx<W;tx++) drawTile(tx,ty);
+
+function resize(){ dpr=Math.min(window.devicePixelRatio||1,2); vw=cv.clientWidth; vh=cv.clientHeight; cv.width=Math.floor(vw*dpr); cv.height=Math.floor(vh*dpr); }
+window.addEventListener("resize", resize); resize();
+function w2s(x,y){ return {x:(x-cam.x)*TS*cam.z+vw/2, y:(y-cam.y)*TS*cam.z+vh/2}; }
+function s2w(x,y){ return {x:(x-vw/2)/(TS*cam.z)+cam.x, y:(y-vh/2)/(TS*cam.z)+cam.y}; }
+
+function drawItem(it, s){
+  var d=IT[it.cls], z=cam.z, r=TS*z;
+  ctx.save(); ctx.translate(s.x,s.y);
+  if (it.covered){ ctx.fillStyle="#4f7a30"; ctx.beginPath(); ctx.ellipse(0,0,r*0.32,r*0.22,0,0,7); ctx.fill(); ctx.restore(); return; }
+  if (d.carcass){ ctx.fillStyle="#7a3424"; ctx.beginPath(); ctx.ellipse(0,0,r*0.55,r*0.3,0.3,0,7); ctx.fill(); ctx.strokeStyle="#e8e0cc"; ctx.lineWidth=2*z; for (var k=-1;k<=1;k++){ ctx.beginPath(); ctx.moveTo(k*r*0.15,-r*0.15); ctx.lineTo(k*r*0.18,r*0.12); ctx.stroke(); } ctx.restore(); return; }
+  if (d.long){ ctx.strokeStyle=it.cls==="brand"?"#ffb060":(it.hard?"#3a2a18":d.col); ctx.lineWidth=(it.cls==="bone"?3:2.5)*z; ctx.beginPath(); ctx.moveTo(-r*0.35,r*0.15); ctx.lineTo(r*0.35,-r*0.15); ctx.stroke(); if (d.pointed){ ctx.fillStyle="#d8c8a0"; ctx.beginPath(); ctx.arc(r*0.35,-r*0.15,1.5*z,0,7); ctx.fill(); } if (it.cls==="brand"){ ctx.fillStyle="#ffcf6a"; ctx.beginPath(); ctx.arc(r*0.35,-r*0.15,3*z+Math.sin(time*20)*z,0,7); ctx.fill(); } ctx.restore(); return; }
+  var n=Math.min(it.count,6);
+  for (var i=0;i<n;i++){ var ox=(hash2(it.id,i)-0.5)*r*0.4, oy=(hash2(i,it.id)-0.5)*r*0.4; ctx.fillStyle=it.cooked?"#6a3a1a":(it.dried?"#5a2a2a":(it.fresh<0.3?"#4a3a2a":d.col));
+    if (it.cls==="stone"||it.cls==="flake"){ ctx.beginPath(); ctx.moveTo(ox-3*z,oy); ctx.lineTo(ox,oy-3*z); ctx.lineTo(ox+3.5*z,oy+1*z); ctx.lineTo(ox,oy+3*z); ctx.closePath(); ctx.fill(); if (d.sharp){ ctx.strokeStyle="#fff"; ctx.lineWidth=0.8*z; ctx.stroke(); } }
+    else if (it.cls==="leaves"||it.cls==="hide"){ ctx.beginPath(); ctx.ellipse(ox,oy,4.5*z,3*z,hash2(i,3)*3,0,7); ctx.fill(); }
+    else if (it.cls==="gourd"||it.cls==="gourdW"){ ctx.beginPath(); ctx.ellipse(ox,oy,3.5*z,4.5*z,0.4,0,7); ctx.fill(); }
+    else if (it.cls==="fish"||it.cls==="meat"||it.cls==="rodent"){ ctx.beginPath(); ctx.ellipse(ox,oy,4.5*z,2.5*z,0.3,0,7); ctx.fill(); }
+    else { ctx.beginPath(); ctx.arc(ox,oy,(d.small?1.8:2.6)*z,0,7); ctx.fill(); } }
+  if (it.wet>0.5){ ctx.fillStyle="rgba(120,180,220,0.5)"; ctx.beginPath(); ctx.arc(r*0.25,-r*0.25,1.5*z,0,7); ctx.fill(); }
+  ctx.restore();
+}
+function drawSource(s, sp){
+  var z=cam.z, r=TS*z;
+  if (s.type==="bush"){ ctx.fillStyle="#3e5a26"; ctx.beginPath(); ctx.arc(sp.x,sp.y,r*0.42,0,7); ctx.fill(); ctx.fillStyle="#4e6e2e"; ctx.beginPath(); ctx.arc(sp.x-r*0.1,sp.y-r*0.1,r*0.25,0,7); ctx.fill(); ctx.fillStyle="#c03838"; for (var i=0;i<Math.floor(s.stock);i++){ ctx.beginPath(); ctx.arc(sp.x+Math.cos(i*2.1)*r*0.25,sp.y+Math.sin(i*2.1)*r*0.25,1.8*z,0,7); ctx.fill(); } return; }
+  if (s.type==="mound"){ ctx.fillStyle="#9a7448"; ctx.beginPath(); ctx.moveTo(sp.x-r*0.4,sp.y+r*0.3); ctx.lineTo(sp.x-r*0.1,sp.y-r*0.6); ctx.lineTo(sp.x+r*0.1,sp.y-r*0.7); ctx.lineTo(sp.x+r*0.4,sp.y+r*0.3); ctx.closePath(); ctx.fill(); return; }
+  if (s.type==="roots"){ ctx.strokeStyle="#6a7a34"; ctx.lineWidth=1.5*z; for (var q=0;q<4;q++){ ctx.beginPath(); ctx.moveTo(sp.x+(q-1.5)*r*0.12,sp.y+r*0.15); ctx.lineTo(sp.x+(q-1.5)*r*0.2,sp.y-r*0.25); ctx.stroke(); } if (s.stock>=1){ ctx.fillStyle="#8a6a3a"; ctx.beginPath(); ctx.arc(sp.x,sp.y+r*0.18,2*z,0,7); ctx.fill(); } return; }
+  if (s.type==="burrow"){ ctx.fillStyle="#2a2016"; ctx.beginPath(); ctx.ellipse(sp.x,sp.y,r*0.2,r*0.12,0,0,7); ctx.fill(); return; }
+  if (s.type==="vine"){ ctx.strokeStyle="#5a7a2a"; ctx.lineWidth=2*z; ctx.beginPath(); ctx.moveTo(sp.x-r*0.5,sp.y); ctx.quadraticCurveTo(sp.x,sp.y-r*0.5,sp.x+r*0.5,sp.y+r*0.1); ctx.stroke(); ctx.fillStyle="#c9b04a"; for (var g=0;g<Math.floor(s.stock);g++){ ctx.beginPath(); ctx.ellipse(sp.x-r*0.2+g*r*0.25,sp.y,3*z,4*z,0,0,7); ctx.fill(); } return; }
+  if (s.type==="outcrop"){ ctx.fillStyle="#6f6458"; ctx.beginPath(); ctx.ellipse(sp.x,sp.y,r*0.6,r*0.42,0.2,0,7); ctx.fill(); ctx.fillStyle="#8f8476"; ctx.beginPath(); ctx.ellipse(sp.x-r*0.15,sp.y-r*0.1,r*0.3,r*0.2,0.2,0,7); ctx.fill(); return; }
+}
+function drawTreeCanopy(s, sp){
+  var z=cam.z, r=TS*z, big = s.type==="figTree"?1.25:(s.type==="nutTree"?1.05:0.95);
+  ctx.fillStyle="rgba(0,0,0,0.25)"; ctx.beginPath(); ctx.ellipse(sp.x+r*0.3,sp.y+r*0.4,r*big,r*big*0.7,0,0,7); ctx.fill();
+  ctx.fillStyle = s.type==="figTree"?"rgba(52,82,40,0.92)":(s.type==="nutTree"?"rgba(70,86,38,0.92)":"rgba(44,70,34,0.92)");
+  ctx.beginPath(); ctx.arc(sp.x,sp.y,r*big,0,7); ctx.fill();
+  ctx.fillStyle="rgba(255,255,255,0.06)"; ctx.beginPath(); ctx.arc(sp.x-r*0.3,sp.y-r*0.3,r*big*0.5,0,7); ctx.fill();
+  if (s.type==="figTree"){ ctx.fillStyle="#7a3a5a"; for (var i=0;i<Math.floor(s.stock);i++){ ctx.beginPath(); ctx.arc(sp.x+Math.cos(i*1.7)*r*0.6,sp.y+Math.sin(i*1.7)*r*0.6,2*z,0,7); ctx.fill(); } }
+  if (s.type==="nutTree"){ ctx.fillStyle="#a07040"; for (var j=0;j<Math.floor(s.stock);j++){ ctx.beginPath(); ctx.arc(sp.x+Math.cos(j*1.3)*r*0.55,sp.y+Math.sin(j*1.3)*r*0.55,1.8*z,0,7); ctx.fill(); } }
+}
+function drawHom(h, s){
+  var z=cam.z, sz=(0.85+h.genes.size*0.5)*(stage(h)==="juvenile"?0.7:(stage(h)==="infant"?0.45:1))*TS*z*0.32;
+  var robust = h.band===1, skin = robust?"#4a3828":"#7a5432", hair = robust?"#2e2216":"#3a2818";
+  ctx.save(); ctx.translate(s.x,s.y);
+  if (h.asleep){ ctx.globalAlpha=0.8; }
+  ctx.fillStyle="rgba(0,0,0,0.3)"; ctx.beginPath(); ctx.ellipse(0,sz*0.9,sz*0.9,sz*0.35,0,0,7); ctx.fill();
+  if (h===focus){ ctx.strokeStyle="#E0A23B"; ctx.lineWidth=2.5; ctx.beginPath(); ctx.ellipse(0,sz*0.9,sz*1.6,sz*0.7,0,0,7); ctx.stroke(); }
+  else { ctx.strokeStyle=bands[h.band].col; ctx.globalAlpha=0.6; ctx.lineWidth=1.2; ctx.beginPath(); ctx.ellipse(0,sz*0.9,sz*1.1,sz*0.45,0,0,7); ctx.stroke(); ctx.globalAlpha=h.asleep?0.8:1; }
+  var bob = (Math.abs(h.vx)+Math.abs(h.vy))>0 ? Math.sin(time*12+h.id)*sz*0.08 : 0;
+  ctx.fillStyle = h.wear ? "#a88a5c" : (h.genes.hair>0.4?hair:skin);
+  ctx.beginPath(); ctx.ellipse(0,bob,sz*0.62,sz*0.85,0,0,7); ctx.fill();
+  ctx.fillStyle=skin; ctx.beginPath(); ctx.arc(h.vx*sz*0.15, -sz*0.95+bob, sz*(robust?0.5:0.45), 0, 7); ctx.fill();
+  if (robust){ ctx.fillStyle="#1a120a"; ctx.fillRect(-sz*0.06,-sz*1.42+bob,sz*0.12,sz*0.3); }
+  if (h.sick>0.4){ ctx.fillStyle="#9acd5a"; ctx.beginPath(); ctx.arc(sz*0.6,-sz*1.3,2*z,0,7); ctx.fill(); }
+  if (h.drunk>0.2){ ctx.fillStyle="#d070d0"; ctx.beginPath(); ctx.arc(-sz*0.6,-sz*1.3,2*z,0,7); ctx.fill(); }
+  if (h.asleep){ ctx.fillStyle="#cfe0ff"; ctx.font=(9*z)+"px sans-serif"; ctx.fillText("z", sz*0.5, -sz*1.2); }
+  if (h.hold[0]){ ctx.save(); ctx.translate(sz*0.8, 0); drawItem(Object.assign({}, h.hold[0], {covered:false}), {x:0,y:0}); ctx.restore(); }
+  if (h.hp<0.6){ ctx.fillStyle="#1a1712"; ctx.fillRect(-sz,-sz*1.8,sz*2,3); ctx.fillStyle=h.hp<0.3?"#D9583B":"#E0A23B"; ctx.fillRect(-sz,-sz*1.8,sz*2*h.hp,3); }
+  if (h===focus || cam.z>1.6){ ctx.fillStyle=h===focus?"#F3D9A6":"rgba(237,230,214,0.75)"; ctx.font=(h===focus?"600 ":"")+Math.round(10*Math.min(z,1.6))+"px IBM Plex Sans, sans-serif"; ctx.textAlign="center"; ctx.fillText(h.name, 0, -sz*1.9); }
+  ctx.restore();
+}
+function drawAnimal(a, s){
+  var z=cam.z, r=TS*z; ctx.save(); ctx.translate(s.x,s.y);
+  ctx.fillStyle="rgba(0,0,0,0.3)"; ctx.beginPath(); ctx.ellipse(0,r*0.3,r*0.5,r*0.15,0,0,7); ctx.fill();
+  var dir = a.vx<0?-1:1; ctx.scale(dir,1);
+  if (a.kind==="antelope"){ ctx.fillStyle="#b27840"; ctx.beginPath(); ctx.ellipse(0,0,r*0.42,r*0.2,0,0,7); ctx.fill(); ctx.fillStyle="#eee2c8"; ctx.beginPath(); ctx.ellipse(0,r*0.08,r*0.3,r*0.08,0,0,7); ctx.fill(); ctx.fillStyle="#a06c34"; ctx.beginPath(); ctx.ellipse(r*0.42,-r*0.18,r*0.13,r*0.09,0.4,0,7); ctx.fill(); ctx.strokeStyle="#2a1d10"; ctx.lineWidth=1.5*z; ctx.beginPath(); ctx.moveTo(r*0.45,-r*0.25); ctx.lineTo(r*0.4,-r*0.45); ctx.stroke(); }
+  if (a.kind==="hyena"){ ctx.fillStyle="#8f7a4e"; ctx.beginPath(); ctx.ellipse(0,0,r*0.42,r*0.2,0.1,0,7); ctx.fill(); ctx.fillStyle="#3b2f1a"; for (var i=0;i<4;i++){ ctx.beginPath(); ctx.arc(-r*0.2+i*r*0.12,-r*0.03,1.6*z,0,7); ctx.fill(); } ctx.fillStyle="#6e5c38"; ctx.beginPath(); ctx.ellipse(r*0.42,-r*0.08,r*0.16,r*0.11,0,0,7); ctx.fill(); }
+  if (a.kind==="leopard"){ var vis = isNight()?0.75:0.95; ctx.globalAlpha=vis; ctx.fillStyle="#c49a54"; ctx.beginPath(); ctx.ellipse(0,0,r*0.5,r*0.19,0,0,7); ctx.fill(); ctx.fillStyle="#3a2814"; for (var j=0;j<6;j++){ ctx.beginPath(); ctx.arc(-r*0.3+j*r*0.11,(j%2?-1:1)*r*0.05,1.6*z,0,7); ctx.fill(); } ctx.fillStyle="#b08848"; ctx.beginPath(); ctx.arc(r*0.48,-r*0.08,r*0.14,0,7); ctx.fill(); ctx.strokeStyle="#c49a54"; ctx.lineWidth=2*z; ctx.beginPath(); ctx.moveTo(-r*0.48,0); ctx.quadraticCurveTo(-r*0.8,-r*0.1,-r*0.75,-r*0.35); ctx.stroke(); }
+  if (a.kind==="croc"){ ctx.fillStyle="rgba(58,72,44,0.85)"; ctx.beginPath(); ctx.ellipse(0,0,r*0.7,r*0.14,0,0,7); ctx.fill(); ctx.fillStyle="#f0e090"; ctx.beginPath(); ctx.arc(r*0.35,-r*0.08,1.5*z,0,7); ctx.fill(); }
+  if (a.hp<1 && a.kind!=="croc"){ ctx.scale(dir,1); ctx.fillStyle="#1a1712"; ctx.fillRect(-r*0.4,-r*0.5,r*0.8,3); ctx.fillStyle="#D9583B"; ctx.fillRect(-r*0.4,-r*0.5,r*0.8*Math.max(0,a.hp/(a.kind==="leopard"?1.4:1)),3); }
+  ctx.restore();
+}
+
+var light=document.createElement("canvas"), lctx=light.getContext("2d");
+function render(){
+  if (light.width!==cv.width||light.height!==cv.height){ light.width=cv.width; light.height=cv.height; }
+  while (dirtyTiles.length){ var i=dirtyTiles.pop(); drawTile(i%W, Math.floor(i/W)); }
+  ctx.setTransform(dpr,0,0,dpr,0,0);
+  ctx.fillStyle="#1f4f58"; ctx.fillRect(0,0,vw,vh);
+  var tl=w2s(0,0); ctx.imageSmoothingEnabled=true; ctx.drawImage(terrain, tl.x, tl.y, W*TS*cam.z, H*TS*cam.z);
+  var a=s2w(0,0), b=s2w(vw,vh);
+  function vis(o,m){ return o.x>a.x-m && o.x<b.x+m && o.y>a.y-m && o.y<b.y+m; }
+  ctx.fillStyle="rgba(255,120,30,0.85)";
+  for (var y=Math.max(0,Math.floor(a.y));y<Math.min(H,Math.ceil(b.y));y++) for (var x=Math.max(0,Math.floor(a.x));x<Math.min(W,Math.ceil(b.x));x++){ var fi=fireT[y*W+x]; if (fi>0){ var s=w2s(x,y); ctx.fillStyle="rgba(255,"+Math.floor(90+Math.random()*90)+",30,"+(0.5+fi*0.4)+")"; ctx.fillRect(s.x,s.y,TS*cam.z,TS*cam.z); } }
+  sources.forEach(function(s){ if (!s.tree && vis(s,2)) drawSource(s, w2s(s.x,s.y)); });
+  items.forEach(function(it){ if (vis(it,1)) drawItem(it, w2s(it.x,it.y)); });
+  fires.forEach(function(f){ if (!vis(f,2)) return; var s=w2s(f.x,f.y), z=cam.z, r=TS*z; ctx.fillStyle="#3a2a1a"; ctx.beginPath(); ctx.arc(s.x,s.y,r*0.38,0,7); ctx.fill(); var fl=Math.min(1.2,f.fuel); for (var k=0;k<3;k++){ ctx.fillStyle=k===0?"#E0A23B":(k===1?"#ff7a2a":"#fff0a0"); ctx.beginPath(); ctx.ellipse(s.x+(k-1)*r*0.08, s.y-r*0.1*fl, r*(0.22-k*0.05)*fl, r*(0.38-k*0.08)*fl*(1+Math.sin(time*14+k)*0.12), 0,0,7); ctx.fill(); } });
+  creatures.forEach(function(c){ if (c.dead || !vis(c,2)) return; if (c.kind==="hom"){ if (!c.inTree) drawHom(c, w2s(c.x,c.y)); } else drawAnimal(c, w2s(c.x,c.y)); });
+  sources.forEach(function(s){ if (s.tree && vis(s,3)) drawTreeCanopy(s, w2s(s.x,s.y)); });
+  creatures.forEach(function(c){ if (!c.dead && c.kind==="hom" && c.inTree && vis(c,2)){ var s=w2s(c.x,c.y-0.2); drawHom(c,s); } });
+  projectiles.forEach(function(p){ var x=p.x+(p.tx-p.x)*p.t, y=p.y+(p.ty-p.y)*p.t - Math.sin(p.t*Math.PI)*1.2; drawItem(p.item, w2s(x,y)); });
+  if (focus && focus.task && focus.task.t){ var tp=tpos(focus.task.t), s1=w2s(focus.x,focus.y), s2=w2s(tp.x,tp.y); ctx.strokeStyle="rgba(224,162,59,0.7)"; ctx.setLineDash([5,5]); ctx.lineWidth=1.5; ctx.beginPath(); ctx.moveTo(s1.x,s1.y); ctx.lineTo(s2.x,s2.y); ctx.stroke(); ctx.setLineDash([]); }
+  if (raining){ ctx.strokeStyle="rgba(190,210,230,0.35)"; ctx.lineWidth=1; ctx.beginPath(); for (var r=0;r<120;r++){ var rx=Math.random()*vw, ry=Math.random()*vh; ctx.moveTo(rx,ry); ctx.lineTo(rx-3,ry+10); } ctx.stroke(); }
+  var hr=hourOf(), dark = hr<5 ? 0.62 : (hr<7 ? 0.62*(7-hr)/2 : (hr<18 ? 0 : (hr<20 ? 0.62*(hr-18)/2 : 0.62)));
+  if (raining) dark = Math.max(dark, 0.18);
+  if (dark>0.01){
+    lctx.setTransform(1,0,0,1,0,0); lctx.globalCompositeOperation="source-over"; lctx.clearRect(0,0,light.width,light.height); lctx.fillStyle="rgba(8,12,30,"+dark+")"; lctx.fillRect(0,0,light.width,light.height);
+    lctx.globalCompositeOperation="destination-out";
+    function hole(wx,wy,rad,str){ var s=w2s(wx,wy); var g=lctx.createRadialGradient(s.x*dpr,s.y*dpr,0,s.x*dpr,s.y*dpr,rad*TS*cam.z*dpr); g.addColorStop(0,"rgba(0,0,0,"+str+")"); g.addColorStop(1,"rgba(0,0,0,0)"); lctx.fillStyle=g; lctx.beginPath(); lctx.arc(s.x*dpr,s.y*dpr,rad*TS*cam.z*dpr,0,7); lctx.fill(); }
+    fires.forEach(function(f){ hole(f.x,f.y,4+f.fuel*2,0.95); });
+    creatures.forEach(function(c){ if (!c.dead && c.kind==="hom") c.hold.forEach(function(s2){ if (s2 && s2.cls==="brand") hole(c.x,c.y,3,0.9); }); });
+    if (focus) hole(focus.x,focus.y,2.2,0.35);
+    ctx.setTransform(1,0,0,1,0,0); ctx.drawImage(light,0,0); ctx.setTransform(dpr,0,0,dpr,0,0);
+    fires.forEach(function(f){ var s=w2s(f.x,f.y); var g=ctx.createRadialGradient(s.x,s.y,0,s.x,s.y,TS*cam.z*4); g.addColorStop(0,"rgba(255,170,80,0.18)"); g.addColorStop(1,"rgba(255,170,80,0)"); ctx.fillStyle=g; ctx.fillRect(s.x-TS*cam.z*4,s.y-TS*cam.z*4,TS*cam.z*8,TS*cam.z*8); });
+  }
+}
+
+/* ================= UI ================= */
+function setFocus(h){ if (focus && focus.task && focus.task.src==="player") focus.task=null; focus=h; if (h){ h.task=null; h.asleep=false; h.boredom=Math.max(0,h.boredom-0.3); h.thought="Waiting for you."; follow=true; document.getElementById("bFollow").classList.add("on"); } updateCard(); }
+var card=document.getElementById("card");
+function barHTML(label, v, col){ return '<div class="bar">'+label+'<i><span style="width:'+Math.round(clamp(v,0,1)*100)+'%;background:'+col+'"></span></i></div>'; }
+function updateCard(){
+  if (!focus){ card.classList.add("hidden"); return; }
+  card.classList.remove("hidden");
+  var h=focus;
+  document.getElementById("cName").textContent=h.name;
+  document.getElementById("cMeta").textContent=(h.sex==="m"?"Male":"Female")+", "+stage(h)+", age "+Math.floor(h.age)+(h.preg>0?", pregnant":"");
+  document.getElementById("cThought").textContent=h.thought||"";
+  document.getElementById("cBars").innerHTML = barHTML("Hunger",h.hunger,"#E0A23B")+barHTML("Thirst",h.thirst,"#6FB7C8")+barHTML("Energy",h.energy,"#8FCB7A")+barHTML("Fear",h.fear,"#F08A6C")+barHTML("Boredom",h.boredom,"#C9A0DC")+barHTML("Health",h.hp,"#D8CFBE")+barHTML("Cold",h.cold,"#9ab0d0")+barHTML("Social need",h.social,"#B8AE9A");
+  var hs=h.hold.filter(Boolean).map(function(i){ return (i.count>1?i.count+" ":"")+IT[i.cls].n+(i.cooked?" (cooked)":"")+(i.dried?" (dried)":"")+(i.fresh<0.3?" (going off)":""); });
+  document.getElementById("cHold").textContent="Holding: "+(hs.length?hs.join(", "):"nothing")+(h.wear?". Wearing a hide.":"");
+  var t=h.task; document.getElementById("cTask").textContent = h.asleep ? "Asleep." : (t ? "Doing: "+(t.verb==="move"?"walking":t.verb)+(t.t?" → "+tgtName(t.t):"") : "Idle. Boredom rises while you give no orders.");
+}
+var menu=document.getElementById("menu");
+function openMenu(t, sx, sy){
+  if (!focus){ return; }
+  var ops=options(focus,t);
+  var html='<h3>'+focus.name+': '+tgtName(t)+'</h3>';
+  ops.forEach(function(o,i){ html+='<button data-i="'+i+'">'+o.label+'</button>'; });
+  html+='<button data-i="x">Cancel</button>';
+  menu.innerHTML=html; menu.classList.remove("hidden");
+  Array.prototype.forEach.call(menu.querySelectorAll("button"), function(b){ b.addEventListener("click", function(){ var i=b.getAttribute("data-i"); menu.classList.add("hidden"); if (i==="x") return; var o=ops[+i];
+    if (o.v==="focus"){ setFocus(t.ref); return; }
+    if (o.v==="eat"||o.v==="drinkGourd"||o.v==="wear"||o.v==="drop"||o.v==="swap"||o.v==="unwear"){ if (t.k==="self"){ focus.predicted=predictedVerb(focus); var hc=focus.hold[0]?focus.hold[0].cls:"none"; var r=doVerb(focus,o.v,t,true); if (r.effect) record(focus,o.v,hc,"self",r.effect,r.payoff,true,focus.x,focus.y); if (r.msg) focus.thought=r.msg; updateCard(); return; } }
+    setTask(focus, o.v, t, "player"); focus.thought="Going to "+o.label.charAt(0).toLowerCase()+o.label.slice(1)+"."; focus.boredom=Math.max(0,focus.boredom-0.15); updateCard(); }); });
+}
+function hitTest(wx, wy){
+  var best=null, bd=0.9/Math.max(0.6,cam.z)+0.35;
+  creatures.forEach(function(c){ if (c.dead) return; var d=Math.hypot(c.x-wx,(c.y-(c.inTree?0.2:0))-wy); if (d<bd){ bd=d; best=c.kind==="hom"?{k:"hom",ref:c}:{k:"animal",ref:c}; } });
+  if (best) return best;
+  bd=0.55; fires.forEach(function(f){ var d=Math.hypot(f.x-wx,f.y-wy); if (d<bd){bd=d;best={k:"fire",ref:f};} }); if (best) return best;
+  bd=0.5; items.forEach(function(it){ if (it.heldBy) return; var d=Math.hypot(it.x-wx,it.y-wy); if (d<bd){bd=d;best={k:"item",ref:it};} }); if (best) return best;
+  bd=1.1; sources.forEach(function(s){ var d=Math.hypot(s.x-wx,s.y-wy); var rad=s.tree?1.1:0.6; if (d<rad && d<bd){bd=d;best={k:"source",ref:s};} }); if (best) return best;
+  if (isWater(wx,wy)) return {k:"water",x:wx,y:wy};
+  return {k:"ground",x:wx,y:wy};
+}
+var pointers={}, dragging=false, downAt=null, pinchD=0;
+cv.addEventListener("pointerdown", function(e){ cv.setPointerCapture(e.pointerId); pointers[e.pointerId]={x:e.clientX,y:e.clientY}; downAt={x:e.clientX,y:e.clientY,t:performance.now()}; dragging=false; });
+cv.addEventListener("pointermove", function(e){
+  if (!pointers[e.pointerId]) return; var ids=Object.keys(pointers);
+  if (ids.length===1){ var dx=e.clientX-pointers[e.pointerId].x, dy=e.clientY-pointers[e.pointerId].y; if (downAt && Math.hypot(e.clientX-downAt.x,e.clientY-downAt.y)>8) dragging=true; if (dragging){ cam.x-=dx/(TS*cam.z); cam.y-=dy/(TS*cam.z); follow=false; document.getElementById("bFollow").classList.remove("on"); } }
+  else if (ids.length===2){ dragging=true; var o=pointers[ids[0]==e.pointerId?ids[1]:ids[0]]; var d=Math.hypot(e.clientX-o.x,e.clientY-o.y); if (pinchD) cam.z=clamp(cam.z*d/pinchD,0.5,4); pinchD=d; }
+  pointers[e.pointerId]={x:e.clientX,y:e.clientY};
+});
+function up(e){ var was=pointers[e.pointerId]; delete pointers[e.pointerId]; if (Object.keys(pointers).length<2) pinchD=0; if (!dragging && was && downAt && Object.keys(pointers).length===0){ var r=cv.getBoundingClientRect(); var w=s2w(e.clientX-r.left,e.clientY-r.top); tap(w.x,w.y,e.clientX,e.clientY); } }
+cv.addEventListener("pointerup", up); cv.addEventListener("pointercancel", function(e){ delete pointers[e.pointerId]; pinchD=0; });
+cv.addEventListener("wheel", function(e){ e.preventDefault(); cam.z=clamp(cam.z*(1-e.deltaY*0.0015),0.5,4); }, {passive:false});
+function tap(wx,wy,sx,sy){
+  menu.classList.add("hidden");
+  var t=hitTest(wx,wy);
+  if (!focus){ if (t.k==="hom" && t.ref.band===PLAYER_BAND){ setFocus(t.ref); } else toast("Tap one of your band (gold rings) to take control."); return; }
+  if (t.k==="hom" && t.ref===focus){ openMenu({k:"self"}); return; }
+  if (t.k==="ground"){ setTask(focus,"move",t,"player"); focus.thought="Walking."; return; }
+  openMenu(t,sx,sy);
+}
+document.getElementById("bFollow").addEventListener("click", function(){ follow=!follow; this.classList.toggle("on",follow); });
+document.getElementById("bRelease").addEventListener("click", function(){ setFocus(null); });
+["sp0","sp1","sp3","sp8"].forEach(function(id){ document.getElementById(id).addEventListener("click", function(){ speed=({sp0:0,sp1:1,sp3:3,sp8:8})[id]; ["sp0","sp1","sp3","sp8"].forEach(function(j){ document.getElementById(j).classList.toggle("on", j===id); }); }); });
+var side=document.getElementById("side"), sideMode=null;
+function renderSide(){
+  if (!sideMode){ side.classList.add("hidden"); return; } side.classList.remove("hidden");
+  var html="";
+  if (sideMode==="log"){ html='<h3>Chronicle</h3>'; if (!chronicle.length) html+='<div class="entry">Nothing has happened yet.</div>'; chronicle.slice(0,120).forEach(function(c){ html+='<div class="entry '+c.cls+'"><div class="t">Day '+(Math.floor(c.t)+1)+'</div>'+escapeHTML(c.text)+'</div>'; }); }
+  if (sideMode==="beh"){ html='<h3>Recognised behaviours</h3>'; var seen={}; var list=Object.keys(patterns).map(function(k){return patterns[k];}).filter(function(p){ if (!p.recognized || seen[p.name]) return false; seen[p.name]=true; return true; });
+    if (!list.length) html+='<div class="entry">None yet. Make someone do something their instincts wouldn\'t, a few times over, and the game will notice.</div>';
+    list.forEach(function(p){ var mine=homs().filter(function(h){return h.band===PLAYER_BAND;}); var habit=mine.filter(function(h){ return effRes(h,p.verb,p.held,p.tgt)<0.5; }).length; var avg=mine.length?mine.reduce(function(s,h){return s+effRes(h,p.verb,p.held,p.tgt);},0)/mine.length:1;
+      html+='<div class="entry"><b>'+escapeHTML(p.name)+'</b><br><span class="t">Done '+p.count+' times. Habit in '+habit+' of your band. Average resistance '+Math.round(avg*100)+'%.'+(p.bands[1]?' Robust group knows it too.':'')+' Payoff '+(p.payoff>0?'+':'')+p.payoff.toFixed(1)+'</span></div>'; });
+    var cand=Object.keys(patterns).map(function(k){return patterns[k];}).filter(function(p){return !p.recognized && p.count>0;});
+    if (cand.length){ html+='<div class="entry t">Emerging: '+cand.map(function(p){return escapeHTML(patName(p))+' ('+p.count+')';}).join(", ")+'</div>'; } }
+  if (sideMode==="help"){ html='<h3>How to play</h3><div class="help"><p>Tap a gold-ringed hominin to take control. Tap the ground to walk, tap anything else to see what you can try with it. Tap your hominin to eat, drink, drop or wear what they hold.</p><p>Nothing is scripted. Every object has physical properties, and anything those properties allow can be tried. Your hominin still has instincts: if they are hungry and holding food, they may eat it instead of doing what you asked. The more often someone does something against instinct, the easier it gets, and anyone watching learns a little too.</p><p>Do something unusual three or more times and the game will recognise it as a behaviour. Others in the band may then start doing it on their own.</p><p>You can only steer one individual at a time. Others will help briefly if you lead them or show them, then get bored. The world reacts: food rots, rain soaks, rivals steal, predators learn, seasons turn, and fire spreads.</p><p>Drag to pan, pinch or scroll to zoom.</p></div>'; }
+  side.innerHTML=html;
+}
+function escapeHTML(s){ return String(s).replace(/[&<>"]/g,function(c){return {"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c];}); }
+function toggleSide(m){ sideMode = sideMode===m ? null : m; ["bLog","bBeh","bHelp"].forEach(function(id){ document.getElementById(id).classList.remove("on"); }); if (sideMode) document.getElementById({log:"bLog",beh:"bBeh",help:"bHelp"}[sideMode]).classList.add("on"); renderSide(); }
+document.getElementById("bLog").addEventListener("click", function(){ toggleSide("log"); });
+document.getElementById("bBeh").addEventListener("click", function(){ toggleSide("beh"); });
+document.getElementById("bHelp").addEventListener("click", function(){ toggleSide("help"); });
+
+/* ================= loop ================= */
+var last=performance.now(), uiT=0;
+function frame(now){
+  var dt=Math.min(0.1,(now-last)/1000); last=now;
+  var steps=Math.max(0,speed);
+  for (var i=0;i<steps;i++) update(dt);
+  if (follow && focus){ cam.x+=(focus.x-cam.x)*0.12; cam.y+=(focus.y-cam.y)*0.12; }
+  render();
+  uiT+=dt; if (uiT>0.25){ uiT=0; updateCard(); var d=Math.floor(day())+1, hr=Math.floor(hourOf()); document.getElementById("clock").textContent="DAY "+d; document.getElementById("season").textContent=(seasonOf()==="wet"?"Wet season":"Dry season")+", "+(hr<10?"0":"")+hr+":00"+(raining?", raining":"")+(isNight()?", night":""); if (sideMode==="beh" && Math.random()<0.1) renderSide(); }
+  requestAnimationFrame(frame);
+}
+time = DAY*0.3;
+logE("Your band wakes by the lake. Ten individuals, no tools, no traditions.", "");
+toggleSide("help");
+requestAnimationFrame(frame);
+window.__sim = {update:update, homs:homs, patterns:patterns, items:items, creatures:function(){return creatures;}, setFocus:setFocus, setTask:setTask, doVerb:doVerb, options:options, chronicle:chronicle, fires:fires, sources:sources, IT:IT, T:T, getFocus:function(){return focus;}, tap:tap, hitTest:hitTest, nearWater:nearWater};
+})();
+</script>
+</body>
+</html>
