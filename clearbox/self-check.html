@@ -1,0 +1,298 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>AI Exposure Self-Check</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,400..800&family=IBM+Plex+Mono:wght@400;500&family=Manrope:wght@400;600;700&display=swap">
+<style>
+  /* Layout: single dark column, one amber accent; a ten-question self-check that
+     scores in the browser and ends on a booking call. Same family as Clear Box. */
+  :root {
+    --bg: oklch(0.16 0.018 255);
+    --bg-2: oklch(0.20 0.021 255);
+    --fg: oklch(0.95 0.008 90);
+    --muted: oklch(0.70 0.015 250);
+    --line: oklch(0.34 0.02 255);
+    --accent: oklch(0.80 0.155 64);
+    --ok: oklch(0.78 0.14 150);
+    --warn: oklch(0.82 0.14 85);
+    --high: oklch(0.68 0.17 25);
+    color-scheme: dark;
+    --f-display: "Bricolage Grotesque", "Trebuchet MS", system-ui, sans-serif;
+    --f-body: "Manrope", system-ui, -apple-system, sans-serif;
+    --f-mono: "IBM Plex Mono", ui-monospace, Menlo, monospace;
+  }
+  * { box-sizing: border-box; }
+  html, body { margin: 0; }
+  body {
+    background: var(--bg); color: var(--fg); font-family: var(--f-body);
+    line-height: 1.55; -webkit-font-smoothing: antialiased;
+    font-size: clamp(1rem, 0.96rem + 0.2vw, 1.1rem);
+  }
+  .wrap { max-width: 44rem; margin: 0 auto; padding-inline: clamp(1rem, 5vw, 2.5rem); padding-block: clamp(2.5rem, 2rem + 4vw, 4.5rem); }
+  h1, h2, h3 { font-family: var(--f-display); font-weight: 700; line-height: 1.05; letter-spacing: -0.02em; margin: 0; text-wrap: balance; }
+  h1 { font-size: clamp(2.1rem, 1.5rem + 3vw, 3.4rem); }
+  a { color: var(--accent); text-decoration: none; }
+  a:focus-visible, button:focus-visible, input:focus-visible { outline: 2px solid var(--accent); outline-offset: 3px; }
+  .eyebrow { font-family: var(--f-mono); font-size: 0.72rem; letter-spacing: 0.2em; text-transform: uppercase; color: var(--accent); margin: 0 0 1rem; }
+  .intro p { color: var(--muted); max-width: 54ch; }
+  .intro h1 { margin-bottom: 1.1rem; }
+  .meta { font-family: var(--f-mono); font-size: 0.75rem; color: var(--muted); letter-spacing: 0.04em; margin-top: 1.4rem; display: flex; gap: 1.2rem; flex-wrap: wrap; }
+
+  .rule { height: 1px; background: var(--line); margin-block: clamp(2rem, 4vw, 3rem); }
+
+  /* progress */
+  .progress { position: sticky; top: env(safe-area-inset-top, 0px); background: var(--bg); padding-block: 0.9rem; z-index: 5; display: flex; align-items: center; gap: 0.9rem; font-family: var(--f-mono); font-size: 0.76rem; color: var(--muted); }
+  .bar { flex: 1; height: 4px; background: var(--line); border-radius: 2px; overflow: hidden; min-width: 0; }
+  .bar i { display: block; height: 100%; width: 0; background: var(--accent); transition: width 0.3s ease; }
+
+  /* questions */
+  .q { padding-block: 1.6rem; border-bottom: 1px solid var(--line); }
+  .q:first-of-type { border-top: 1px solid var(--line); }
+  .q .num { font-family: var(--f-mono); font-size: 0.72rem; color: var(--accent); letter-spacing: 0.1em; }
+  .q h3 { font-size: 1.12rem; margin: 0.5rem 0 1rem; font-weight: 700; line-height: 1.3; letter-spacing: -0.01em; font-family: var(--f-body); }
+  .opts { display: flex; gap: 0.6rem; flex-wrap: wrap; }
+  .opt { flex: 1 1 auto; min-width: 0; }
+  .opt input { position: absolute; opacity: 0; pointer-events: none; }
+  .opt label { display: block; text-align: center; padding: 0.7rem 0.9rem; border: 1px solid var(--line); border-radius: 3px; cursor: pointer; font-size: 0.92rem; color: var(--muted); font-weight: 600; transition: border-color 0.15s, color 0.15s, background 0.15s; }
+  .opt label:hover { border-color: var(--muted); color: var(--fg); }
+  .opt input:checked + label { border-color: var(--accent); color: var(--fg); background: color-mix(in oklch, var(--accent) 14%, transparent); }
+
+  .actions { display: flex; align-items: center; gap: 1.2rem; flex-wrap: wrap; margin-top: 2rem; }
+  .cta { display: inline-flex; align-items: center; gap: 0.5rem; background: var(--accent); color: oklch(0.2 0.03 60); font-family: var(--f-body); font-weight: 700; font-size: 1rem; padding: 0.85rem 1.4rem; border: none; border-radius: 3px; cursor: pointer; }
+  .cta:disabled { opacity: 0.4; cursor: not-allowed; }
+  .cta:not(:disabled):hover { filter: brightness(1.06); }
+  .ghost { background: none; border: none; color: var(--muted); font-family: var(--f-mono); font-size: 0.78rem; cursor: pointer; text-decoration: underline; }
+  .hint { font-family: var(--f-mono); font-size: 0.74rem; color: var(--muted); }
+
+  /* result */
+  #result { scroll-margin-top: 4rem; }
+  .score-wrap { background: var(--bg-2); border: 1px solid var(--line); border-radius: 4px; padding: clamp(1.5rem, 1.2rem + 2vw, 2.4rem); }
+  .tier { font-family: var(--f-mono); font-size: 0.74rem; letter-spacing: 0.16em; text-transform: uppercase; }
+  .score-num { font-family: var(--f-display); font-weight: 700; font-size: clamp(2.6rem, 2rem + 3vw, 4rem); line-height: 1; letter-spacing: -0.03em; margin: 0.3rem 0 1.1rem; font-variant-numeric: tabular-nums; }
+  .meter { height: 8px; background: var(--line); border-radius: 4px; overflow: hidden; }
+  .meter i { display: block; height: 100%; width: 0; transition: width 0.6s cubic-bezier(0.22,1,0.36,1); }
+  .verdict { margin-top: 1.4rem; max-width: 56ch; }
+  .verdict p { margin: 0 0 0.9rem; }
+  .flags { margin-top: 1.6rem; display: flex; flex-direction: column; gap: 0.7rem; }
+  .flag { display: grid; grid-template-columns: auto 1fr; gap: 0.7rem; align-items: start; font-size: 0.95rem; }
+  .flag .m { color: var(--high); font-weight: 700; }
+  .flag.unsure .m { color: var(--warn); }
+  .close-cta { margin-top: 2.2rem; display: flex; flex-direction: column; gap: 1rem; }
+  .contact { font-family: var(--f-mono); font-size: 0.86rem; color: var(--muted); display: flex; flex-direction: column; gap: 0.45rem; margin-top: 0.5rem; }
+  .contact .val { color: var(--fg); }
+  .copy { background: none; border: 1px solid var(--line); color: var(--muted); font-family: var(--f-mono); font-size: 0.74rem; padding: 0.3rem 0.65rem; border-radius: 2px; cursor: pointer; margin-left: 0.5rem; }
+  .copy:hover { border-color: var(--accent); color: var(--accent); }
+  .disclaimer { font-size: 0.82rem; color: var(--muted); margin-top: 1.6rem; max-width: 58ch; }
+  footer { font-family: var(--f-mono); font-size: 0.72rem; color: var(--muted); letter-spacing: 0.04em; margin-top: 3rem; }
+
+  @media (prefers-reduced-motion: reduce) { * { transition: none !important; } }
+  @media (max-width: 520px) { .opt { flex-basis: 100%; } }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <div class="intro">
+    <p class="eyebrow">Clear Box · self-check</p>
+    <h1>How exposed is your AI feature?</h1>
+    <p>Ten questions about the AI agent or assistant you have running, or are about to ship. You or your developer can answer them in about ten minutes. Nothing you enter leaves your browser. At the end you get a score and the specific things worth a closer look.</p>
+    <div class="meta">
+      <span>10 questions</span><span>~10 minutes</span><span>Answers stay on your device</span>
+    </div>
+  </div>
+
+  <div class="rule"></div>
+
+  <div class="progress">
+    <span id="pcount">0 / 10</span>
+    <span class="bar"><i id="pbar"></i></span>
+  </div>
+
+  <form id="quiz"></form>
+
+  <div class="actions">
+    <button class="cta" id="see" disabled>See my result</button>
+    <button class="ghost" id="reset" type="button" hidden>Start over</button>
+    <span class="hint" id="remaining">Answer all ten to see your result.</span>
+  </div>
+
+  <div id="result" hidden>
+    <div class="rule"></div>
+    <div class="score-wrap">
+      <div class="tier" id="tier"></div>
+      <div class="score-num"><span id="scoreval">0</span><span style="font-size:0.4em;color:var(--muted);"> / 100 exposure</span></div>
+      <div class="meter"><i id="meter"></i></div>
+      <div class="verdict" id="verdict"></div>
+      <div class="flags" id="flags"></div>
+      <div class="close-cta">
+        <div class="disclaimer">This is a rough self-assessment, not a security audit. It points at where your risk is likely to sit. The only way to know if something is actually exploitable is to test it.</div>
+        <div>
+          <button class="cta" id="book">Book a scoping call &nbsp;→</button>
+        </div>
+        <div class="contact">
+          <div>Aaron Steele · South Australia</div>
+          <div><span class="val" id="email">your-email@example.com</span><button class="copy" id="copyEmail">copy</button></div>
+          <div style="opacity:0.6;">↑ replace with your real contact before sharing this page</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <footer>CLEAR BOX · AUTHORISED SECURITY TESTING ONLY</footer>
+
+</div>
+
+<script>
+(function () {
+  // Each question: the risky answer and the "not sure" answer both count toward exposure.
+  // flag = the one-line finding shown when the answer is risky or unsure.
+  var QS = [
+    { t: "Every action your AI agent can take (sending, reading, writing, deleting) is checked on your server, not just decided by the AI itself.",
+      opts: ["True", "False", "Not sure"], risk: 1, flag: "Actions may be gated by the AI's instructions rather than enforced by your backend." },
+    { t: "If a user changes an ID in a request, they cannot pull up another user's or another customer's records.",
+      opts: ["True", "False", "Not sure"], risk: 1, flag: "A changed ID may reach data that belongs to someone else." },
+    { t: "Who is allowed to do what is enforced in your backend code, not described in the AI's prompt or instructions.",
+      opts: ["True", "False", "Not sure"], risk: 1, flag: "Permissions described in a prompt are not enforced; they can be talked around." },
+    { t: "Content your agent reads (an uploaded file, a fetched web page, an incoming message) cannot contain hidden instructions that change what it does.",
+      opts: ["True", "False", "Not sure"], risk: 1, flag: "Ingested content may carry instructions that redirect the agent (indirect prompt injection)." },
+    { t: "If one account or API key were compromised, what it can reach is tightly limited, not most of the system.",
+      opts: ["True", "False", "Not sure"], risk: 1, flag: "A single compromised credential may open far more than it should." },
+    { t: "Different customers' data is isolated so one customer can never retrieve another's.",
+      opts: ["True", "False", "Not sure"], risk: 1, flag: "Tenant isolation may be incomplete; cross-customer access is possible." },
+    { t: "Secrets (API keys, passwords, tokens) are kept out of the AI's prompt and out of anything sent to the user's device.",
+      opts: ["True", "False", "Not sure"], risk: 1, flag: "Secrets in a prompt or shipped to the client are readable by an attacker." },
+    { t: "You record what the agent does with its tools, in enough detail to notice someone probing it at machine speed.",
+      opts: ["True", "False", "Not sure"], risk: 1, flag: "Without tool-level logging, automated probing can run unseen." },
+    { t: "When you ship a new release, someone checks that past security fixes still hold.",
+      opts: ["True", "False", "Not sure"], risk: 1, flag: "A release can quietly reintroduce a problem that was already fixed." },
+    { t: "Someone outside your own team has tried to break this, with written permission, and recorded what they found.",
+      opts: ["True", "False", "Not sure"], risk: 1, flag: "The system has never been tested adversarially by an outside party." }
+  ];
+
+  var form = document.getElementById("quiz");
+  var answers = {};
+  var KEY = "clearbox-selfcheck-v1";
+
+  // restore
+  try { var saved = JSON.parse(localStorage.getItem(KEY) || "{}"); if (saved && typeof saved === "object") answers = saved; } catch (e) {}
+
+  QS.forEach(function (q, i) {
+    var wrap = document.createElement("div");
+    wrap.className = "q";
+    var opts = q.opts.map(function (o, j) {
+      var id = "q" + i + "o" + j;
+      var checked = answers[i] === j ? " checked" : "";
+      return '<div class="opt"><input type="radio" name="q' + i + '" id="' + id + '" value="' + j + '"' + checked + '>' +
+             '<label for="' + id + '">' + o + '</label></div>';
+    }).join("");
+    wrap.innerHTML = '<div class="num">Q' + (i + 1) + '</div><h3>' + q.t + '</h3><div class="opts">' + opts + '</div>';
+    form.appendChild(wrap);
+  });
+
+  var seeBtn = document.getElementById("see");
+  var resetBtn = document.getElementById("reset");
+  var pcount = document.getElementById("pcount");
+  var pbar = document.getElementById("pbar");
+  var remaining = document.getElementById("remaining");
+
+  function answeredCount() { return Object.keys(answers).length; }
+  function refresh() {
+    var n = answeredCount();
+    pcount.textContent = n + " / 10";
+    pbar.style.width = (n * 10) + "%";
+    seeBtn.disabled = n < 10;
+    resetBtn.hidden = n === 0;
+    remaining.textContent = n < 10 ? (10 - n) + " left" : "Ready.";
+    try { localStorage.setItem(KEY, JSON.stringify(answers)); } catch (e) {}
+  }
+
+  form.addEventListener("change", function (e) {
+    if (e.target.name && e.target.name.indexOf("q") === 0) {
+      var idx = parseInt(e.target.name.slice(1), 10);
+      answers[idx] = parseInt(e.target.value, 10);
+      refresh();
+    }
+  });
+
+  function tierFor(score) {
+    if (score <= 20) return { label: "Low exposure", color: "var(--ok)",
+      lead: "On these ten questions you are in reasonable shape. That is uncommon, so it is worth confirming rather than assuming.",
+      body: "A self-check only reflects what you already know about. The value of a real test is finding the thing that is true but nobody on the team realised. If you are shipping to customers, one pass from outside is cheap insurance." };
+    if (score <= 55) return { label: "Moderate exposure", color: "var(--warn)",
+      lead: "There are real gaps here, and at least a few of them are the kind an automated attacker tries first.",
+      body: "Each flagged item below is a place where the honest answer is either \"no\" or \"we don't know\". Both are worth closing. The fastest way to prioritise is to find out which of them is actually reachable, rather than guessing." };
+    return { label: "High exposure", color: "var(--high)",
+      lead: "Several of the basics an attacker's tooling checks for are missing or unconfirmed. If this feature is live, it should be looked at soon.",
+      body: "The pattern below is common and fixable, but it does not fix itself, and it gets more expensive to find out the hard way. A scoped test will tell you which of these is exploitable today and what to change first." };
+  }
+
+  seeBtn.addEventListener("click", function () {
+    if (answeredCount() < 10) return;
+    var score = 0, flags = [], unsureCount = 0;
+    QS.forEach(function (q, i) {
+      var a = answers[i];              // 0 True, 1 False, 2 Not sure
+      if (a === 1) { score += 10; flags.push({ text: q.flag, unsure: false }); }
+      else if (a === 2) { score += 7; unsureCount++; flags.push({ text: q.flag, unsure: true }); }
+    });
+
+    var t = tierFor(score);
+    document.getElementById("tier").textContent = t.label;
+    document.getElementById("tier").style.color = t.color;
+    document.getElementById("scoreval").textContent = score;
+    var meter = document.getElementById("meter");
+    meter.style.background = t.color;
+
+    var verdict = document.getElementById("verdict");
+    var unsureNote = unsureCount >= 3 ? " You answered \"not sure\" " + unsureCount + " times. Not knowing is itself a finding: it means no one currently owns the answer." : "";
+    verdict.innerHTML = "<p>" + t.lead + "</p><p>" + t.body + unsureNote + "</p>";
+
+    var flagsEl = document.getElementById("flags");
+    flagsEl.innerHTML = "";
+    if (flags.length === 0) {
+      flagsEl.innerHTML = '<div class="flag"><span class="m" style="color:var(--ok)">✓</span><div>Nothing flagged on these ten questions.</div></div>';
+    } else {
+      flags.forEach(function (f) {
+        var d = document.createElement("div");
+        d.className = "flag" + (f.unsure ? " unsure" : "");
+        d.innerHTML = '<span class="m">' + (f.unsure ? "?" : "!") + '</span><div>' + f.text + '</div>';
+        flagsEl.appendChild(d);
+      });
+    }
+
+    var res = document.getElementById("result");
+    res.hidden = false;
+    requestAnimationFrame(function () { meter.style.width = score + "%"; });
+    res.scrollIntoView({ behavior: window.matchMedia("(prefers-reduced-motion: reduce)").matches ? "auto" : "smooth", block: "start" });
+  });
+
+  resetBtn.addEventListener("click", function () {
+    answers = {};
+    try { localStorage.removeItem(KEY); } catch (e) {}
+    form.querySelectorAll("input[type=radio]").forEach(function (r) { r.checked = false; });
+    document.getElementById("result").hidden = true;
+    refresh();
+    document.querySelector(".intro").scrollIntoView({ behavior: "auto", block: "start" });
+  });
+
+  document.getElementById("book").addEventListener("click", function () {
+    document.querySelector(".contact").scrollIntoView({ behavior: "smooth", block: "center" });
+  });
+
+  var copyBtn = document.getElementById("copyEmail");
+  copyBtn.addEventListener("click", function () {
+    var el = document.getElementById("email"), text = el.textContent.trim();
+    function done() { var o = copyBtn.textContent; copyBtn.textContent = "copied"; setTimeout(function () { copyBtn.textContent = o; }, 1400); }
+    function sel() { try { var r = document.createRange(); r.selectNodeContents(el); var s = getSelection(); s.removeAllRanges(); s.addRange(r); } catch (e) {} }
+    if (navigator.clipboard && navigator.clipboard.writeText) navigator.clipboard.writeText(text).then(done).catch(sel);
+    else sel();
+  });
+
+  refresh();
+})();
+</script>
+</body>
+</html>

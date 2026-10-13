@@ -1,0 +1,328 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Clear Box Security</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,400..800&family=IBM+Plex+Mono:wght@400;500&family=Manrope:wght@400;600;700&display=swap">
+<style>
+  /* Layout: single dark editorial column, full-bleed ink ground, one amber accent,
+     hairline rules that draw in, generous vertical rhythm. Committed dark world. */
+  :root {
+    --bg: oklch(0.16 0.018 255);
+    --bg-2: oklch(0.20 0.021 255);
+    --fg: oklch(0.95 0.008 90);
+    --muted: oklch(0.70 0.015 250);
+    --line: oklch(0.34 0.02 255);
+    --accent: oklch(0.80 0.155 64);
+    --accent-dim: oklch(0.80 0.155 64 / 0.16);
+    --danger: oklch(0.68 0.17 25);
+    color-scheme: dark;
+
+    --f-display: "Bricolage Grotesque", "Trebuchet MS", system-ui, sans-serif;
+    --f-body: "Manrope", system-ui, -apple-system, sans-serif;
+    --f-mono: "IBM Plex Mono", ui-monospace, "SF Mono", Menlo, monospace;
+  }
+
+  * { box-sizing: border-box; }
+  html, body { margin: 0; }
+  body {
+    background: var(--bg);
+    color: var(--fg);
+    font-family: var(--f-body);
+    font-weight: 400;
+    line-height: 1.55;
+    -webkit-font-smoothing: antialiased;
+    font-size: clamp(1rem, 0.96rem + 0.2vw, 1.12rem);
+  }
+
+  .wrap { max-width: 56rem; margin: 0 auto; padding-inline: clamp(1rem, 5vw, 3rem); }
+
+  /* ---- type ---- */
+  h1, h2, h3 { font-family: var(--f-display); font-weight: 700; line-height: 1.04; text-wrap: balance; letter-spacing: -0.02em; margin: 0; }
+  h1 { font-size: clamp(2.5rem, 1.4rem + 5.2vw, 5rem); }
+  h2 { font-size: clamp(1.7rem, 1.2rem + 2.2vw, 2.7rem); letter-spacing: -0.025em; }
+  h3 { font-size: clamp(1.15rem, 1.02rem + 0.6vw, 1.4rem); letter-spacing: -0.01em; }
+  p { margin: 0; }
+  a { color: var(--accent); text-decoration: none; }
+  a:focus-visible, button:focus-visible { outline: 2px solid var(--accent); outline-offset: 3px; border-radius: 2px; }
+
+  .eyebrow {
+    font-family: var(--f-mono);
+    font-size: 0.72rem;
+    letter-spacing: 0.22em;
+    text-transform: uppercase;
+    color: var(--accent);
+    margin: 0;
+  }
+  .lead { font-size: clamp(1.15rem, 1.02rem + 0.7vw, 1.5rem); color: var(--fg); line-height: 1.45; }
+  .muted { color: var(--muted); }
+
+  /* ---- drawn hairline ---- */
+  .rule { height: 1px; background: var(--accent); transform: scaleX(0); transform-origin: left; }
+  .rule.in { animation: draw 0.9s cubic-bezier(0.22, 1, 0.36, 1) forwards; }
+  @keyframes draw { to { transform: scaleX(1); } }
+
+  /* ---- sections ---- */
+  section { padding-block: clamp(3.5rem, 2rem + 7vw, 7rem); }
+  .section-head { display: flex; flex-direction: column; gap: 1.1rem; }
+  .section-head .rule { width: 4rem; margin-top: 0.4rem; }
+
+  /* ---- hero ---- */
+  .hero { padding-top: clamp(3.5rem, 2rem + 8vw, 6.5rem); padding-bottom: clamp(2.5rem, 1.5rem + 5vw, 4.5rem); }
+  .wordmark { font-family: var(--f-mono); font-size: 0.8rem; letter-spacing: 0.1em; color: var(--muted); display: flex; align-items: center; gap: 0.55rem; margin-bottom: clamp(2.5rem, 6vw, 5rem); }
+  .wordmark b { color: var(--fg); font-weight: 600; letter-spacing: 0.02em; }
+  .dot { width: 0.55rem; height: 0.55rem; background: var(--accent); border-radius: 50%; display: inline-block; }
+  .hero h1 { margin-bottom: 1.4rem; }
+  .hero .amber { color: var(--accent); }
+  .hero .lead { max-width: 40ch; margin-bottom: 2.2rem; }
+
+  .cta { display: inline-flex; align-items: center; gap: 0.6rem; background: var(--accent); color: oklch(0.2 0.03 60); font-family: var(--f-body); font-weight: 700; font-size: 1rem; padding: 0.85rem 1.4rem; border: none; border-radius: 2px; cursor: pointer; }
+  .cta:hover { filter: brightness(1.06); }
+
+  /* ---- the shift: three cards ---- */
+  .grid3 { display: grid; grid-template-columns: repeat(3, 1fr); gap: 1px; background: var(--line); border: 1px solid var(--line); margin-top: 2.5rem; }
+  .cell { background: var(--bg); padding: clamp(1.4rem, 1rem + 1.5vw, 2rem); display: flex; flex-direction: column; gap: 0.7rem; min-width: 0; }
+  .cell .n { font-family: var(--f-mono); font-size: 0.72rem; letter-spacing: 0.16em; color: var(--accent); }
+  .cell h3 { margin-bottom: 0.1rem; }
+  .cell p { color: var(--muted); font-size: 0.98rem; }
+
+  /* ---- plain prose blocks ---- */
+  .prose { display: flex; flex-direction: column; gap: 1.3rem; max-width: 60ch; margin-top: 2.2rem; }
+  .prose p { color: var(--fg); }
+  .prose .big { font-family: var(--f-display); font-weight: 600; font-size: clamp(1.3rem, 1.1rem + 1vw, 1.7rem); line-height: 1.25; letter-spacing: -0.02em; }
+
+  /* ---- what I test: list ---- */
+  .checks { display: flex; flex-direction: column; margin-top: 2.5rem; border-top: 1px solid var(--line); }
+  .check { display: grid; grid-template-columns: auto 1fr; gap: 1.1rem; padding-block: 1.5rem; border-bottom: 1px solid var(--line); align-items: start; }
+  .check .mark { color: var(--accent); font-family: var(--f-mono); font-size: 0.95rem; padding-top: 0.15rem; }
+  .check h3 { margin-bottom: 0.4rem; }
+  .check p { color: var(--muted); font-size: 0.98rem; max-width: 56ch; }
+
+  /* ---- deliverable panel ---- */
+  .panel { background: var(--bg-2); border: 1px solid var(--line); border-radius: 3px; padding: clamp(1.6rem, 1.2rem + 2vw, 2.6rem); margin-top: 2.5rem; display: flex; flex-direction: column; gap: 1.4rem; }
+  .panel ul { margin: 0; padding: 0; list-style: none; display: flex; flex-direction: column; gap: 1rem; }
+  .panel li { display: grid; grid-template-columns: auto 1fr; gap: 0.9rem; align-items: start; }
+  .panel li span.tick { color: var(--accent); font-weight: 700; }
+  .panel li b { font-weight: 700; }
+  .panel li p { color: var(--muted); font-size: 0.95rem; margin-top: 0.2rem; }
+
+  /* ---- steps ---- */
+  .steps { display: grid; grid-template-columns: repeat(3, 1fr); gap: 1.5rem; margin-top: 2.5rem; }
+  .step { display: flex; flex-direction: column; gap: 0.6rem; min-width: 0; }
+  .step .num { font-family: var(--f-display); font-weight: 700; font-size: 2.4rem; color: var(--accent); line-height: 1; letter-spacing: -0.03em; }
+  .step h3 { font-size: 1.1rem; }
+  .step p { color: var(--muted); font-size: 0.95rem; }
+
+  /* ---- close ---- */
+  .close { text-align: left; }
+  .close h2 { margin-bottom: 1.6rem; max-width: 18ch; }
+  .contact { font-family: var(--f-mono); font-size: 0.95rem; color: var(--muted); margin-top: 2rem; display: flex; flex-direction: column; gap: 0.5rem; }
+  .contact .val { color: var(--fg); }
+  .copy { background: none; border: 1px solid var(--line); color: var(--muted); font-family: var(--f-mono); font-size: 0.78rem; padding: 0.35rem 0.7rem; border-radius: 2px; cursor: pointer; margin-left: 0.5rem; }
+  .copy:hover { border-color: var(--accent); color: var(--accent); }
+
+  footer { padding-block: 3rem 4rem; color: var(--muted); font-family: var(--f-mono); font-size: 0.74rem; letter-spacing: 0.04em; }
+  footer .rule { width: 100%; margin-bottom: 2rem; transform: scaleX(1); opacity: 0.4; }
+
+  @media (max-width: 680px) {
+    .grid3 { grid-template-columns: 1fr; }
+    .steps { grid-template-columns: 1fr; gap: 2rem; }
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .rule { transform: scaleX(1); animation: none; }
+    * { scroll-behavior: auto; }
+  }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <header class="hero">
+    <p class="wordmark"><span class="dot"></span> <b>Clear&nbsp;Box</b> &nbsp;/&nbsp; security testing</p>
+    <p class="eyebrow">The thing that changed</p>
+    <h1>For years you were <span class="amber">too small to be worth attacking.</span> That is no longer the case.</h1>
+    <p class="lead">An attack that used to need a specialist and three days now costs an attacker a few cents and runs while they sleep. I come at your systems the way that attacker does, and I show you what they can already see.</p>
+    <button class="cta" id="top-cta">Book a scoping call &nbsp;→</button>
+  </header>
+
+  <section>
+    <div class="section-head">
+      <p class="eyebrow">Why now</p>
+      <h2>The maths of attacking you changed overnight.</h2>
+      <div class="rule reveal"></div>
+    </div>
+    <p class="prose big" style="margin-top:2.2rem;max-width:48ch;">For years, attacking a business your size cost more than it was worth. That is the only reason you were safe. AI changed the maths.</p>
+    <div class="grid3">
+      <div class="cell">
+        <span class="n">01</span>
+        <h3>Everything you ship is readable</h3>
+        <p>Your app, your website code, the way your systems talk to each other. An attacker's AI reads all of it in minutes. Anything you hoped stayed hidden already isn't.</p>
+      </div>
+      <div class="cell">
+        <span class="n">02</span>
+        <h3>Small no longer hides you</h3>
+        <p>When attacking one more business costs almost nothing, everyone is worth attacking. You are hit alongside ten thousand others, all at once, automatically.</p>
+      </div>
+      <div class="cell">
+        <span class="n">03</span>
+        <h3>The boring hole gets tried</h3>
+        <p>A human attacker skips the tedious weakness on a small target. A machine never gets bored. It tries the thing everyone forgot to check, every time.</p>
+      </div>
+    </div>
+  </section>
+
+  <section>
+    <div class="section-head">
+      <p class="eyebrow">What I do</p>
+      <h2>I attack you the way they will.</h2>
+      <div class="rule reveal"></div>
+    </div>
+    <div class="prose">
+      <p class="big">I don't test your systems from the outside and guess. I assume whoever comes after you already knows exactly how they work.</p>
+      <p>Then I look for the places your systems still rely on something an attacker now controls. That is usually where the real damage is, and it is rarely the obvious place.</p>
+    </div>
+    <div class="checks">
+      <div class="check">
+        <span class="mark">→</span>
+        <div>
+          <h3>Can someone act as a user they aren't?</h3>
+          <p>Logged in as a low-level account, can I reach what only an admin or another customer should see? I test whether your systems check who is asking, or just take their word for it.</p>
+        </div>
+      </div>
+      <div class="check">
+        <span class="mark">→</span>
+        <div>
+          <h3>Can I pull data that isn't mine?</h3>
+          <p>One customer's records, another tenant's files, the whole list. I test whether your systems check who is really asking, or just trust the request.</p>
+        </div>
+      </div>
+      <div class="check">
+        <span class="mark">→</span>
+        <div>
+          <h3>Can I make it do something it shouldn't?</h3>
+          <p>Send the email, move the money, delete the record, call something that was never meant to be called that way. I test what the system can be made to do, because that is where real money is lost.</p>
+        </div>
+      </div>
+      <div class="check">
+        <span class="mark">→</span>
+        <div>
+          <h3>Can I get in through what it trusts?</h3>
+          <p>A file it reads, a page it fetches, a message it processes. I test whether a hostile instruction hidden in ordinary content can quietly hand control to an attacker.</p>
+        </div>
+      </div>
+      <div class="check">
+        <span class="mark">→</span>
+        <div>
+          <h3>How far does one foothold go?</h3>
+          <p>If a single thing is compromised, what else falls with it? I test how much of your business a single weak point actually gives away.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section>
+    <div class="section-head">
+      <p class="eyebrow">What you get</p>
+      <h2>A short list of real problems, every one proven.</h2>
+      <div class="rule reveal"></div>
+    </div>
+    <p class="prose" style="max-width:58ch;">Not a 90-page scanner dump you'll never read. A short report a busy owner can act on, where every finding shows exactly what I did and exactly what came back.</p>
+    <div class="panel">
+      <ul>
+        <li><span class="tick">✓</span><div><b>A verdict per finding.</b><p>Real, with proof. Or ruled out, with the reason. Nothing left for you to interpret.</p></div></li>
+        <li><span class="tick">✓</span><div><b>The fix, in plain terms.</b><p>What to change and why it works, written so your developer or your vendor can act on it tomorrow.</p></div></li>
+        <li><span class="tick">✓</span><div><b>A free re-test.</b><p>Once you've made the changes, I check them. You find out the problem is actually gone, instead of taking it on faith.</p></div></li>
+        <li><span class="tick">✓</span><div><b>Plain-English for the people who sign off.</b><p>A plain summary the owner, the board, or a client can follow without needing it translated.</p></div></li>
+      </ul>
+    </div>
+  </section>
+
+  <section>
+    <div class="section-head">
+      <p class="eyebrow">How it works</p>
+      <h2>Three steps, with the price fixed up front.</h2>
+      <div class="rule reveal"></div>
+    </div>
+    <div class="steps">
+      <div class="step">
+        <div class="num">1</div>
+        <h3>A short call</h3>
+        <p>Twenty minutes. We walk through one system and what it must never be allowed to do. You leave with a fixed quote.</p>
+      </div>
+      <div class="step">
+        <div class="num">2</div>
+        <h3>The test</h3>
+        <p>A few days, against a safe copy, with your written go-ahead. I find the ways in and prove each one. You get the report.</p>
+      </div>
+      <div class="step">
+        <div class="num">3</div>
+        <h3>Every release after</h3>
+        <p>Each update can quietly reintroduce a problem. I re-test on a schedule, so what you fixed stays fixed.</p>
+      </div>
+    </div>
+  </section>
+
+  <section class="close">
+    <p class="eyebrow">Start here</p>
+    <h2>Find out what they already see.</h2>
+    <p class="lead muted" style="max-width:44ch;">It starts with one system and a short call. If there is nothing to find, I'll tell you that too.</p>
+    <button class="cta" id="bottom-cta" style="margin-top:2rem;">Book a scoping call &nbsp;→</button>
+    <div class="contact">
+      <div>Aaron Steele &nbsp;·&nbsp; South Australia</div>
+      <div>
+        <span class="val" id="email">your-email@example.com</span>
+        <button class="copy" id="copy-email" data-target="email">copy</button>
+      </div>
+      <div class="muted" style="font-size:0.78rem;opacity:0.7;">↑ replace with your real contact before sharing this page</div>
+    </div>
+  </section>
+
+  <footer>
+    <div class="rule"></div>
+    CLEAR BOX &nbsp;·&nbsp; AUTHORISED SECURITY TESTING ONLY &nbsp;·&nbsp; EVERY ENGAGEMENT UNDER WRITTEN SCOPE
+  </footer>
+
+</div>
+
+<script>
+  // Drawn hairlines on scroll (progressive enhancement; full width without JS or with reduced motion)
+  (function () {
+    var reduce = window.matchMedia && window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+    var rules = document.querySelectorAll(".rule.reveal");
+    if (reduce || !("IntersectionObserver" in window)) {
+      rules.forEach(function (r) { r.classList.add("in"); });
+    } else {
+      var io = new IntersectionObserver(function (entries) {
+        entries.forEach(function (e) { if (e.isIntersecting) { e.target.classList.add("in"); io.unobserve(e.target); } });
+      }, { threshold: 0.6 });
+      rules.forEach(function (r) { io.observe(r); });
+      // draw the first visible rules immediately so the opening frame isn't bare
+      requestAnimationFrame(function () {
+        rules.forEach(function (r) { if (r.getBoundingClientRect().top < window.innerHeight) r.classList.add("in"); });
+      });
+    }
+
+    // Scroll CTAs to the contact block
+    function toContact() { document.querySelector(".close").scrollIntoView({ behavior: reduce ? "auto" : "smooth", block: "start" }); }
+    var t = document.getElementById("top-cta"); if (t) t.addEventListener("click", toContact);
+
+    // Copy email (with selection fallback)
+    var btn = document.getElementById("copy-email");
+    if (btn) btn.addEventListener("click", function () {
+      var el = document.getElementById(btn.dataset.target);
+      var text = el ? el.textContent.trim() : "";
+      function done() { var o = btn.textContent; btn.textContent = "copied"; setTimeout(function () { btn.textContent = o; }, 1400); }
+      if (navigator.clipboard && navigator.clipboard.writeText) {
+        navigator.clipboard.writeText(text).then(done).catch(selectText);
+      } else { selectText(); }
+      function selectText() {
+        try { var r = document.createRange(); r.selectNodeContents(el); var s = window.getSelection(); s.removeAllRanges(); s.addRange(r); } catch (e) {}
+      }
+    });
+  })();
+</script>
+</body>
+</html>
