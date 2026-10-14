@@ -906,12 +906,13 @@ Object.assign(RESULT_TEXT, { hole:"to dig a hole", stones:"to gather stones", pi
 
 /* ---------- physics: things fall, bounce, roll downhill and come to rest ---------- */
 var moving = [];
-var ROUND = {berry:1, fig:1, nut:1, stone:1, gourd:1, gourdW:1, kernel:1, tuber:1, grubs:1};
+var ROUND = {nut:1, stone:1, gourd:1, gourdW:1};
+var SOFTLAND = {berry:1, fig:1, mash:1, pulp:1, grubs:1, kernel:1, mushB:1, mushR:1, meat:1, fish:1, rodent:1, leaves:1, tinder:1, mud:1, soil:1};
 var FLOATS = function(c){ var d=IT[c]; return !!(d.fuel || d.cat==="plant" || c==="fig" || c==="berry" || c==="gourd" || c==="gourdHalf"); };
 function launch(it, vx, vy, vz, z){ it.vx=vx||0; it.vy=vy||0; it.vz=vz||0; it.z=Math.max(it.z||0, z||0); if (moving.indexOf(it)<0) moving.push(it); }
 // fruit and twigs come down from where they grew, not out of thin air
 function dropFrom(src, cls, n, opt){ var top = src.tree ? ((src.canopyY!==undefined ? src.canopyY - elev(src.x,src.y) : 4) - 0.5) : 0.8, out=null;
-  for (var i=0;i<n;i++){ var it=addItem(cls, src.x+rr(-0.5,0.5), src.y+rr(-0.5,0.5), 1, opt); launch(it, rr(-0.9,0.9), rr(-0.9,0.9), rr(0,0.6), top*rr(0.7,1)); out=it; } return out; }
+  for (var i=0;i<n;i++){ var it=addItem(cls, src.x+rr(-0.6,0.6), src.y+rr(-0.6,0.6), 1, opt); launch(it, rr(-0.4,0.4), rr(-0.4,0.4), 0, top*rr(0.7,1)); out=it; } return out; }
 function wake(x, y, r){ items.forEach(function(it){ if (!it.heldBy && Math.hypot(it.x-x,it.y-y)<r && moving.indexOf(it)<0){ it.vx=it.vx||0; it.vy=it.vy||0; it.vz=0; it.z=it.z||0; moving.push(it); } }); }
 function physicsStep(dt){
   for (var i=moving.length-1;i>=0;i--){
@@ -929,12 +930,14 @@ function physicsStep(dt){
     it.floating=false; it.sunk=false;
     if (it.z<=0){
       it.z=0;
-      if (it.vz<-2.2 && !big){ it.vz=-it.vz*(round?0.4:0.2); it.vx*=0.6; it.vy*=0.6; continue; }
+      if (SOFTLAND[it.cls]){ it.vx=0; it.vy=0; it.vz=0; moving.splice(i,1); settle(it); continue; }
+      if (it.vz<-2.2 && !big){ it.vz=-it.vz*(round?0.3:0.15); it.vx*=0.5; it.vy*=0.5; continue; }
       it.vz=0;
       var gx=(elev(it.x+0.3,it.y)-elev(it.x-0.3,it.y))/0.6, gy=(elev(it.x,it.y+0.3)-elev(it.x,it.y-0.3))/0.6, slope=Math.hypot(gx,gy);
-      if (round && slope>0.35){ it.vx-=gx*2.5*dt; it.vy-=gy*2.5*dt; }
-      var fr=Math.pow(round?0.25:0.02, dt); it.vx*=fr; it.vy*=fr;
-      if (Math.hypot(it.vx,it.vy)<0.06 && !(round && slope>0.35)){ it.vx=0; it.vy=0; moving.splice(i,1); settle(it); }
+      var steep = round && slope>0.6;
+      if (steep){ it.vx-=gx*1.2*dt; it.vy-=gy*1.2*dt; }
+      var fr=Math.pow(round?0.08:0.01, dt); it.vx*=fr; it.vy*=fr;
+      if (Math.hypot(it.vx,it.vy)<0.08 && !steep){ it.vx=0; it.vy=0; moving.splice(i,1); settle(it); }
     }
   }
 }
@@ -1279,7 +1282,7 @@ function softHit(h, verb, held, t, out){
   if (t.k==="source"){ held.worn=(held.worn||0)+0.2; if (t.ref.stock>=1 && (t.ref.type==="bush")){ t.ref.stock--; addItem("berry",t.ref.x+rr(-1,1),t.ref.y+rr(-1,1),1); return out("knock",0.2,"A berry drops from the bush.",true); } return out("fray",0,"The "+hn+" "+vs(hn,"frays","fray")+" against the "+tn+".",true); }
   return null;
 }
-function knockAway(h, it, out, msg){ var o0=out; out=function(e,pay,m,minor){ return o0(e==="knock"?"nudge":e,pay,m,minor); }; if (IT[it.cls].big){ var bx=it.x-h.x, by=it.y-h.y, bl=Math.hypot(bx,by)||1; launch(it, bx/bl*0.4, by/bl*0.4, 0, 0); return out("shove",0,"The "+IT[it.cls].n+" is too heavy. It barely shifts.",true); } var dx=it.x-h.x, dy=it.y-h.y, dd=Math.hypot(dx,dy)||1, m=rr(1.5,3.2); launch(it, dx/dd*m+rr(-0.4,0.4), dy/dd*m+rr(-0.4,0.4), rr(1,2.5), 0.05); return out("knock",0,msg,true); }
+function knockAway(h, it, out, msg){ var o0=out; out=function(e,pay,m,minor){ return o0(e==="knock"?"nudge":e,pay,m,minor); }; if (IT[it.cls].big){ var bx=it.x-h.x, by=it.y-h.y, bl=Math.hypot(bx,by)||1; launch(it, bx/bl*0.4, by/bl*0.4, 0, 0); return out("shove",0,"The "+IT[it.cls].n+" is too heavy. It barely shifts.",true); } var dx=it.x-h.x, dy=it.y-h.y, dd=Math.hypot(dx,dy)||1, m=SOFTLAND[it.cls]?rr(0.4,0.8):rr(0.8,1.6); launch(it, dx/dd*m, dy/dd*m, SOFTLAND[it.cls]?0.5:rr(0.8,1.6), 0.05); return out("knock",0,msg,true); }
 function consequence(h, verb, ik, I, P, t, why){
   var res={effect:null,payoff:0,msg:null}, tn=tgtName(t), iname=instrName(ik), held=I&&I.item?I.item:null, hd=held?IT[held.cls]:null;
   function out(e,pay,m,minor){ res.effect=verb+"-"+e; res.payoff=pay; res.msg=(why?why+" ":"")+m; res.short=m; if (minor) res.minor=true; return res; }
