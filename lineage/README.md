@@ -6,6 +6,10 @@ A 3D hominin evolution sandbox prototype. You focus on any hominin and try to ge
 
 **The ground and water can be worked.** Water scooped by hand spills within seconds (longer in a leaf, longer still in a gourd bowl), soaks into dirt, sinks into sand and pools on rock. Hitting the ground with a stone digs a hole. Stones put together in one place form something: a pile (food on it stays off the wet ground), a ring (a fire inside won't spread), or, put into a hole, a stone-lined basin that holds water and fills when it rains. Mud seals a hole too.
 
+**The band can live on its own.** Left alone for 15 game days, nobody starves or dies of thirst: food regrows, they sleep at night (mostly up trees), stay within reach of their lake, remember where water is, and leave orders when too thirsty. Deaths always have a cause.
+
+**Reviewed by a council.** In October 2026 five reviewers played the game headless (outcomes, a first-time player, band behaviour, a player chasing prehistoric goals, and the wording) and a second round checked the fixes. Their scripts and reports are outside the repo, in `personal/lineage-council/`.
+
 **The tutorial** opens from the title screen. Lesson one teaches a habit, storing berries instead of eating them, from first grab to the band doing it on its own. Lesson two builds a water store: scoop, watch it seep away, dig, line with stones, fill.
 
 ## Run it
@@ -61,7 +65,7 @@ node tests/scenarios.js engine 222   # one test, one seed
 | water | Scooped water spills, seeps into dirt, a stone digs a hole, an unlined hole leaks, four stones make a basin that holds, leaves carry water longer, stones form a pile then a ring |
 | tutorial | Lesson one played through: the student passes 50% natural, is released, and the band recognises the habit |
 
-Some results are probabilistic. `theft` can fail on a seed because lethal food fights are deliberately rare (it failed on all three seeds before the October 2026 changes too), and `recog` can fail if the trained hominin dies first.
+Some results are probabilistic. `theft` usually fails: a fight over food now only kills when a much stronger hominin finishes off one who is already badly hurt, so the 40 test fights rarely include a death (it failed on all three seeds before the October 2026 changes too). `refuse` can occasionally fail on one seed when no pushed order happens to get through.
 
 The harness reads `index.html` with either line ending, so `npm test` also runs on a Windows checkout.
 

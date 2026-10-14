@@ -33,7 +33,7 @@ if (test==='engine'){
  // rub stick on stick until ember
  h.hold=[null,null]; S.giveNew(h,'stick',1); const tgtStick=S.addItem('stick',h.x,h.y,1); let rubs=0, ember=false; for(;rubs<40&&!ember;rubs++){ const r=S.attempt(h,'rub','stick',{k:'item',ref:tgtStick}); if (r.effect==='rub-friction') ember=true; } out.rubsToEmber=ember?rubs:'none';
  // scrape stick with flake
- h.hold=[null,null]; S.giveNew(h,'flake',1); const sk=S.addItem('stick',h.x,h.y,1); out.scrapeStick=S.attempt(h,'scrape','flake',{k:'item',ref:sk}).effect;
+ h.hold=[null,null]; S.giveNew(h,'flake',1); const sk=S.addItem('stick',h.x,h.y,1); let sr=null; for (let i=0;i<5 && sr!=='scrape-sharpen';i++){ h.hold=[null,null]; S.giveNew(h,'flake',1); sr=S.attempt(h,'scrape','flake',{k:'item',ref:sk}).effect; } out.scrapeStick=sr; // a few strokes, not one
  // poke mound with stick
  const mound=S.sources.find(s=>s.type==='mound'); h.hold=[null,null]; S.giveNew(h,'stick',1); mound.stock=20; out.termitesIn10=tries(10,()=>S.attempt(h,'poke','stick',{k:'source',ref:mound}).effect==='poke-termites');
  // squeeze a rock with teeth (silly combo)
