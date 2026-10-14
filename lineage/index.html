@@ -1572,6 +1572,8 @@ function attempt(h, verb, ik, t){
 
 /* ================= willingness (Phase 1) ================= */
 function foodish(t){ if (!t) return false; if (t.k==="source") return ["bush","figTree","nutTree","roots","mound","burrow"].indexOf(t.ref.type)>=0; if (t.k==="item") return !!IT[t.ref.cls].food || !!IT[t.ref.cls].carcass || t.ref.cls==="bone"; if (t.k==="water") return true; return false; }
+function foodFrom(t){ if (!t) return null; if (t.k==="item") return IT[t.ref.cls].food ? t.ref.cls : null; if (t.k==="source") return ({bush:"berry", figTree:"fig", nutTree:"nut", roots:"tuber"})[t.ref.type]||null; return null; }
+function storeWill(h, t){ var c=foodFrom(t); if (!c) return 0; return Math.max(0, 1-effRes(h,"put",c,"ground")-0.1)*0.8; }
 function motivation(h, verb, t){
   var g=h.genes, held=h.hold[0], curious = 0.2 + g.curiosity*0.45 + h.boredom*0.35;
   var hungry = Math.max(0,h.hunger-0.22)*1.6;
@@ -1582,8 +1584,8 @@ function motivation(h, verb, t){
     case "gather": case "dig": case "fish":
       if (t && t.k==="source" && (t.ref.type==="outcrop"||t.ref.type==="vine")) return {m:curious, need:"curious"};
       if (t && t.k==="water") return {m:Math.max(0,h.thirst-0.1)*1.5+curious*0.4, need:"thirsty"};
-      return {m:hungry + curious*0.12, need:"hungry"};
-    case "pick": if (t && t.k==="item" && IT[t.ref.cls].food) return {m:hungry+0.2, need:"hungry"}; return {m:curious+0.15, need:"curious"};
+      return {m:hungry + curious*0.12 + storeWill(h, t), need:"hungry"};
+    case "pick": if (t && t.k==="item" && IT[t.ref.cls].food) return {m:hungry+0.2+storeWill(h, t), need:"hungry"}; return {m:curious+0.15, need:"curious"};
     case "strike": case "cut": case "probe": if (foodish(t)) return {m:hungry + curious*0.35, need:"hungry"}; return {m:curious, need:"bored or curious"};
     case "groom": return {m:h.social*0.8 + (t&&t.ref?(h.bonds[t.ref.id]||0)*0.5:0), need:"in need of company"};
     case "share": case "give": return {m:(1-h.hunger)*0.6 + (t&&t.ref?(h.bonds[t.ref.id]||0)*0.6:0), need:"well fed or fond of them"};
@@ -1609,7 +1611,7 @@ function complianceRoll(h, tk){
   var push = (h.push[key] && time - h.push[key].t < 25) ? h.push[key].n : 0;
   var bondBoost = (tk.src==="ask" && tk.asker) ? (h.bonds[tk.asker.id]||0)*0.3 : 0;
   var pr = clamp(0.42 + mv.m*1.05 - res*0.45 + push*0.07 - (h.frustration||0)*0.2 + bondBoost, 0.04, 0.98);
-  if (tut && tut.on && h===tut.tutor && (tut.lesson===1 || (tut.lesson===0 && tut.step<=3))) pr=1;
+  if (tut && tut.on && h===tut.tutor && (tut.lesson===1 || (tut.lesson===0 && (tut.step<=4 || tk.av==="grab" || tk.av==="eat" || tk.verb==="gather")))) pr=1;
   if (rnd() < pr){ return true; }
   h.push[key] = {n:push+1, t:time};
   h.frustration = Math.min(1, (h.frustration||0) + 0.12 + push*0.03);
@@ -2884,19 +2886,24 @@ var LESSONS = [
   { enter:function(){ setSpeed(1); cam3.target.copy(V3(tut.tutor.x,tut.tutor.y)); follow=false; }, beacon:function(){ return beaconOf(tut.tutor); },
     check:function(){ if (focus && focus!==tut.tutor) tut.note="That's "+focus.name+". Tap "+tut.tutor.name+": their name is shown above them, under the arrow."; return focus===tut.tutor; },
     text:function(){ var n=escapeHTML(tut.tutor.name); return "This is <b>"+n+"</b>, the most curious of the band (the arrow is above them). Tap "+n+" to focus on them. Their panel, bottom left, shows what they're thinking, what they need and what they're holding."; } },
-  { enter:function(){ tut.tutor.hunger=Math.max(tut.tutor.hunger,0.5); tut.bush=nearestBushTo(tut.tutor); if (tut.bush && tut.bush.stock<6) tut.bush.stock=8; },
+  { enter:function(){ tut.tutor.hunger=Math.max(tut.tutor.hunger,0.6); tut.bush=nearestBushTo(tut.tutor); if (tut.bush && tut.bush.stock<6) tut.bush.stock=8; },
     want:function(){ return {av:"grab",ai:"hands"}; },
     beacon:function(){ if (!tut.bush || tut.bush.stock<1) tut.bush=nearestBushTo(tut.tutor); return beaconOf(tut.bush); },
     check:function(){ return holds(tut.tutor,"berry"); },
-    text:function(){ return escapeHTML(tut.tutor.name)+" is getting hungry. Tap the berry bush under the arrow, choose <b>Grab</b>, with <b>hands</b>, then press the button at the bottom of the menu."; } },
+    text:function(){ return escapeHTML(tut.tutor.name)+" is hungry. Tap the berry bush under the arrow and choose <b>Pick berries</b>."; } },
+  { want:function(){ return holds(tut.tutor,"berry") ? {av:"eat",ai:"berry"} : {av:"grab",ai:"hands"}; },
+    beacon:function(){ if (holds(tut.tutor,"berry")) return beaconOf(tut.tutor); if (!tut.bush || tut.bush.stock<1) tut.bush=nearestBushTo(tut.tutor); return beaconOf(tut.bush); },
+    check:function(){ return tut.tutor.hunger<0.25; },
+    text:function(){ var n=escapeHTML(tut.tutor.name), full=Math.round((1-tut.tutor.hunger)*100); return "A hungry hominin eats whatever it holds. That's instinct, and there's no point fighting it. So let "+n+" eat their fill first: tap "+n+" and choose <b>Eat</b>. Pick more and eat again until they're full.<br><br><b>"+n+" is "+Math.min(100,full)+"% full.</b> Full enough at 75%."; } },
   { enter:function(){ tut.stores0=stats.stores[tut.tutor.id]||0; },
-    want:function(){ return {av:"put",ai:"berry"}; },
-    check:function(){ if ((stats.stores[tut.tutor.id]||0)>tut.stores0) return true; if (!holds(tut.tutor,"berry") && !busy(tut.tutor)){ tut.back=2; tut.note="Back to step 3: "+tut.tutor.name+" ate them. That's instinct winning. Grab more and try again: every time you get them to store instead, the urge to eat gets a little weaker."; } return false; },
-    text:function(){ var n=escapeHTML(tut.tutor.name); return "Instinct says: eat them now. You want them kept for later. Quickly, before "+n+" eats them: right-click the bare ground right next to "+n+" (or click it and press <b>Do something here</b>), choose <b>Put</b>, with <b>berries</b>, then press the button."; } },
+    want:function(){ return holds(tut.tutor,"berry") ? {av:"put",ai:"berry"} : {av:"grab",ai:"hands"}; },
+    beacon:function(){ if (holds(tut.tutor,"berry")) return null; if (!tut.bush || tut.bush.stock<1) tut.bush=nearestBushTo(tut.tutor); return beaconOf(tut.bush); },
+    check:function(){ if ((stats.stores[tut.tutor.id]||0)>tut.stores0) return true; if (!holds(tut.tutor,"berry") && !busy(tut.tutor)){ tut.back=tut.tutor.hunger<0.3?2:3; tut.note=tut.tutor.name+" ate them. "+(tut.tutor.hunger<0.3?"Pick more and put them down this time.":"They were still hungry: let them eat their fill, then try again."); } return false; },
+    text:function(){ var n=escapeHTML(tut.tutor.name); return n+" is full, so these berries are <b>surplus</b>. Pick some more, then keep them for later: right-click the bare ground right next to "+n+" (or click it and press <b>Do something here</b>), choose <b>Put</b>, with <b>berries</b>, then press the button.<br><br>Their instinct now is to drop them or wander off, not to store them. That's what you're teaching."; } },
   { want:function(){ return holds(tut.tutor,"berry") ? {av:"put",ai:"berry"} : {av:"grab",ai:"hands"}; },
     beacon:function(){ if (holds(tut.tutor,"berry")) return null; if (!tut.bush || tut.bush.stock<1) tut.bush=nearestBushTo(tut.tutor); return beaconOf(tut.bush); },
     check:function(){ return tutNat(tut.tutor)>=0.5 && (stats.stores[tut.tutor.id]||0)>=6; },
-    text:function(){ var n=escapeHTML(tut.tutor.name), pc=Math.round(tutNat(tut.tutor)*100); return "Stored. Look at the <b>Teaching</b> bar on "+n+"'s panel: it shows how natural storing feels to them. Each time you make them do it, it gets easier. Keep going: grab berries, then put them on the same spot. <b>Repeat both</b> does the grab and the put again in one tap. The others nearby are watching and learning too (look above their heads). From here on they may refuse: they only do what they feel like. Asking again sometimes works, but pushing too hard makes them fed up.<br><br><b>"+n+": "+pc+"% natural, stored "+Math.min(6,stats.stores[tut.tutor.id]||0)+" of 6 times.</b> Get it past the line at 50%."; } },
+    text:function(){ var n=escapeHTML(tut.tutor.name), pc=Math.round(tutNat(tut.tutor)*100); return "Stored. Look at the <b>Teaching</b> bar on "+n+"'s panel: it shows how natural storing feels to them. Each time you make them do it, it gets easier. Keep going: pick berries, then put them on the same spot. <b>Repeat both</b> does the pick and the put again in one tap. If "+n+" gets hungry again, let them eat a few first. The others nearby are watching and learning too (look above their heads). From here on they may refuse: they only do what they feel like. Asking again sometimes works, but pushing too hard makes them fed up.<br><br><b>"+n+": "+pc+"% natural, stored "+Math.min(6,stats.stores[tut.tutor.id]||0)+" of 6 times.</b> Get it past the line at 50%."; } },
   { enter:function(){ tut.t5=time; },
     check:function(){ var p=storePattern(); return !!(p && p.recognized); },
     text:function(){ var n=escapeHTML(tut.tutor.name), p=storePattern()||{count:0,days:{},unprompted:0}; return n+" finds it natural now. But it only becomes a habit when someone does it <b>without being told</b>, and it keeps happening on <b>more than one day</b>. Press <b>Release</b> on the panel so "+n+" acts on their own, set the speed to <b>3×</b>, and watch. Someone who isn't very hungry will pick berries and store them unprompted. This usually takes a day or so of game time.<br><br>Stored "+Math.min(p.count,RECOG.count)+" of "+RECOG.count+" times, on "+Math.min(Object.keys(p.days||{}).length,RECOG.days)+" of "+RECOG.days+" days, "+Math.min(p.unprompted||0,RECOG.unprompted)+" of "+RECOG.unprompted+" without being told."+(time-tut.t5>DAY*2.5?"<br><br>Taking a while? Focus "+n+" again, store a few more, then release.":""); } },
@@ -2948,7 +2955,7 @@ function tutTick(){
   // lesson one keeps its student awake, alive and supplied, so the lesson is about teaching and not about survival
   if (tut.lesson>0 && tut.tutor){ var tw=tut.tutor; tw.hp=Math.max(tw.hp,0.4); tw.hunger=Math.min(tw.hunger,0.6); tw.thirst=Math.min(tw.thirst,0.6); tw.energy=Math.max(tw.energy,0.7); tw.fear=Math.min(tw.fear,0.3); tw.asleep=false; }
   if (tut.lesson===0 && tut.tutor){ tut.tutor.fear=Math.min(tut.tutor.fear,0.3); }
-  if (tut.lesson===0 && tut.tutor){ var tu=tut.tutor; tu.hp=Math.max(tu.hp,0.4); tu.thirst=Math.min(tu.thirst,0.5); tu.energy=Math.max(tu.energy,0.5); if (tut.step>=2 && tut.step<=4) tu.hunger=clamp(tu.hunger,0.42,0.5); if (tut.step===5) tu.hunger=clamp(tu.hunger,0.2,0.36); if (tut.bush && tut.bush.stock<3) tut.bush.stock=6; }
+  if (tut.lesson===0 && tut.tutor){ var tu=tut.tutor; tu.hp=Math.max(tu.hp,0.4); tu.thirst=Math.min(tu.thirst,0.5); tu.energy=Math.max(tu.energy,0.5); if (tut.step>=4 && tut.step<=5) tu.hunger=Math.min(tu.hunger,0.32); if (tut.step===6) tu.hunger=clamp(tu.hunger,0.2,0.36); if (tut.bush && tut.bush.stock<3) tut.bush.stock=6; }
   if (st.check){
     if (st.check()){ var nx=L.steps[tut.step+1]; if (!(nx && nx.done)) toast("Done."); gotoStep(tut.step+1); return; }
     if (tut.back!==undefined){ var b=tut.back; tut.back=undefined; tut.step=b; var sb=L.steps[b]; tut.want=sb.want||null; tut.beacon=sb.beacon||null; }

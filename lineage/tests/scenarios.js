@@ -183,14 +183,14 @@ if (test==='tutorial'){
   S.startTutorial(0); const tt=S.tut, tutor=tt.tutor; S.gotoStep(1); S.setFocus(tutor); S.tutTick(); out.stepAfterFocus=tt.step;
   let spot=null; for (let r=1;r<6&&!spot;r++) for (let a=0;a<16;a++){ const x=tutor.x+Math.cos(a/16*6.283)*r, y=tutor.y+Math.sin(a/16*6.283)*r; if (S.T(x,y)===3||S.T(x,y)===4){ spot={x:x,y:y}; break; } }
   const t0=S.getTime(); let ticks=0;
-  while (tt.step<5 && S.getTime()-t0<120*3){ S.update(0.05); ticks++; if (ticks%5===0) S.tutTick(); if (tutor.dead) break;
-    if (!tutor.task){ if (tutor.hold.some(i=>i&&i.cls==='berry')) S.setTask(tutor,'attempt',{k:'ground',x:spot.x,y:spot.y},'player',{av:'put',ai:'berry'});
+  while (tt.step<6 && S.getTime()-t0<120*3){ S.update(0.05); ticks++; if (ticks%5===0) S.tutTick(); if (tutor.dead) break;
+    if (!tutor.task){ if (tutor.hold.some(i=>i&&i.cls==='berry')) { if (tt.step===3) S.setTask(tutor,'attempt',{k:'self'},'player',{av:'eat',ai:'berry'}); else S.setTask(tutor,'attempt',{k:'ground',x:spot.x,y:spot.y},'player',{av:'put',ai:'berry'}); }
       else { const b=S.sources.filter(s=>s.type==='bush'&&s.stock>=1).sort((a,c)=>Math.hypot(a.x-tutor.x,a.y-tutor.y)-Math.hypot(c.x-tutor.x,c.y-tutor.y))[0]; S.setTask(tutor,'attempt',{k:'source',ref:b},'player',{av:'grab',ai:'hands'}); } } }
-  out.secondsToTeach=Math.round(S.getTime()-t0); out.storesByTutor=S.stats.stores[tutor.id]||0; out.natural=Math.round(S.tutNat(tutor)*100); out.stepReached=tt.step;
+  out.secondsToTeach=Math.round(S.getTime()-t0); out.ateInstead=S.chronicle.length; out.storesByTutor=S.stats.stores[tutor.id]||0; out.natural=Math.round(S.tutNat(tutor)*100); out.stepReached=tt.step;
   S.setFocus(null); const t1=S.getTime();
-  while (tt.step<6 && S.getTime()-t1<120*6){ S.update(0.05); ticks++; if (ticks%5===0) S.tutTick(); }
+  while (tt.step<7 && S.getTime()-t1<120*6){ S.update(0.05); ticks++; if (ticks%5===0) S.tutTick(); }
   const p=S.patterns['store|berry|ground']; out.daysToHabitAfterRelease=+((S.getTime()-t1)/120).toFixed(2); out.finalStep=tt.step; out.unprompted=p&&p.unprompted; out.tutorDead=tutor.dead;
   out.tutorLog=S.chronicle.filter(c=>c.text.indexOf(tutor.name)>=0).slice(0,6).map(c=>c.t.toFixed(2)+" "+c.text); out.thirst=+tutor.thirst.toFixed(2); out.hunger=+tutor.hunger.toFixed(2);
-  out.PASS = out.stepAfterFocus===2 && out.stepReached>=5 && tt.step===6;
+  out.PASS = out.stepAfterFocus===2 && out.stepReached>=6 && tt.step===7;
 }
 console.log(test, JSON.stringify(out));
