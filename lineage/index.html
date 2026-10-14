@@ -571,7 +571,7 @@ function doVerb(h, verb, t, forced){
     if (IT[dropped.cls].food){
       var onRock = T(p.x,p.y)===SAND || (t.k==="source" && t.ref.type==="outcrop");
       dropped.band=h.band; dropped.storer=h.id;
-      if (h.hunger>0.25 || forced || (h.task && h.task.src==="habit")){ res.effect="store"; dropped.storedKey="store|"+dropped.cls+"|"+tc; res.payoff=0; res.msg=h.name+" sets the "+IT[dropped.cls].n+" down to keep for later."; } else res.msg=h.name+" puts the "+IT[dropped.cls].n+" down.";
+      if (h.hunger>0.25 || forced || (h.task && h.task.src==="habit")){ res.effect="store"; dropped.storedKey="store|"+dropped.cls+"|"+tc; res.payoff=0; var inHole=spotAt(dropped.x,dropped.y,1.1); res.msg=h.name+(inHole && inHole.depth>=0.3 ? " puts the "+IT[dropped.cls].n+" down in the "+SPOTN[spotKind(inHole)]+" to keep for later." : " sets the "+IT[dropped.cls].n+" down to keep for later."); } else res.msg=h.name+" puts the "+IT[dropped.cls].n+" down.";
       addCache(h, dropped);
       if (onRock && seasonOf()==="dry"){ dropped.drying=true; }
       return res;
