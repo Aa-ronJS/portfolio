@@ -10,6 +10,8 @@ A 3D hominin evolution sandbox prototype. You focus on any hominin and try to ge
 
 **Reviewed by a council.** In October 2026 five reviewers played the game headless (outcomes, a first-time player, band behaviour, a player chasing prehistoric goals, and the wording) and a second round checked the fixes. Their scripts and reports are outside the repo, in `personal/lineage-council/`.
 
+**Things are physical.** Fruit falls from the canopy and bounces, knocked things skid and roll downhill, dropped things fall from the hand, floating things drift on the lake and stones sink. Digging lowers the land itself, so a hole is a real dip: water sits in it, and anything that rolls in stays there (a stone that lands in a hole becomes part of its lining).
+
 **The tutorial** opens from the title screen. Lesson one teaches a habit, storing berries instead of eating them, from first grab to the band doing it on its own. Lesson two builds a water store: scoop, watch it seep away, dig, line with stones, fill.
 
 ## Run it
@@ -32,8 +34,9 @@ Add `?seed=1234` to the address to replay a specific world. The seed is shown in
 | Action | Touch | Mouse / keyboard |
 |---|---|---|
 | Focus a hominin | Tap it | Click it |
-| Walk | Tap ground, then **Walk here** | Same |
-| Act on the ground or water | Tap it, choose **Do** and **With**, then the big button | Same |
+| Walk | Tap the ground | Click the ground |
+| Act on the ground | Press and hold, or tap **Do something here** after walking | Right-click the ground |
+| Get fruit from a tree or bush | Tap it, **Get figs** / **Pick berries**: fruit is shaken down and one picked up | Same |
 | Act on something | Tap it, choose **Do** and **With**, then **Try** | Same |
 | Repeat last attempt | **Again** on the hominin panel | Same |
 | Repeat the last two (grab, then put) | **Repeat both** | Same |

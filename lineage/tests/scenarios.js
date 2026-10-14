@@ -96,6 +96,7 @@ if (test==='theft'){
   const vic=mine()[0], killer=mine()[1], w2=mine()[2]; vic.caches=[{x:vic.x,y:vic.y,count:2,t:0,thieves:{}}]; w2.x=vic.x+2; w2.y=vic.y; const before=S.effRes(w2,'bury','none','berry'); S.kill(vic, killer); out.witnessBuryResDrop=+(before-S.effRes(w2,'bury','none','berry')).toFixed(3);
   out.PASS = out.storerAngryAtThief>0.3 && seizures>=1 && kills>=1 && out.witnessBuryResDrop>0;
 }
+function p0dbg(){ const q=Object.values(S.patterns).find(p=>p.effect==='store'); return q?{payoff:+q.payoff.toFixed(1),bands:q.bands,own:q.bandOwn,key:q.key,rec:q.recognized,stores:Object.values(S.patterns).filter(p=>p.effect==='store').map(p=>p.key+':'+p.count)}:null; }
 if (test==='recog'){
   const h=mine()[0]; S.setFocus(h); let firstDay=null, recogDay=null; const spot={x:h.x+1,y:h.y+1};
   for (let i=0;i<2400*4;i++){ S.update(0.05); h.thirst=Math.min(h.thirst,0.3);
@@ -106,7 +107,7 @@ if (test==='recog'){
   for (let i=0;i<2400*2;i++){ S.update(0.05); h.hp=Math.max(h.hp,0.6); if (i%200===0 && !h.dead){ h.hunger=Math.min(h.hunger,0.2); const fh=!h.hold[0]?0:(!h.hold[1]?1:-1); if(fh>=0){ const b=nearestBush(h); if(b){ b.stock=Math.max(b.stock,4); h.hold[fh]={id:70000+i,cls:'berry',x:h.x,y:h.y,count:3,fresh:1,wet:0,cooked:false,dried:false,fermented:false,covered:false,burn:0,band:-1,heldBy:h.id}; } } }
     const pp=Object.values(S.patterns).find(p=>p.effect==='store'); if (pp && pp.recognized && recogDay===null) recogDay=S.getTime()/120; }
   const p=Object.values(S.patterns).find(p=>p.effect==='store');
-  out.traineeDead=h.dead; out.deathLog=S.chronicle.filter(c=>c.text.indexOf(h.name)>=0).slice(0,3).map(c=>c.t.toFixed(1)+" "+c.text); out.traineeThought=h.thought; out.count=p&&p.count; out.days=p&&Object.keys(p.days).length; out.unprompted=p&&p.unprompted; out.firstDay=firstDay&&+firstDay.toFixed(2); out.recognisedDay=recogDay&&+recogDay.toFixed(2);
+  out.traineeDead=h.dead; out.payoff=p0dbg(); out.deathLog=S.chronicle.filter(c=>c.text.indexOf(h.name)>=0).slice(0,3).map(c=>c.t.toFixed(1)+" "+c.text); out.traineeThought=h.thought; out.count=p&&p.count; out.days=p&&Object.keys(p.days).length; out.unprompted=p&&p.unprompted; out.firstDay=firstDay&&+firstDay.toFixed(2); out.recognisedDay=recogDay&&+recogDay.toFixed(2);
   out.PASS = !!recogDay && Object.keys(p.days).length>=2 && (p.unprompted||0)>=1 && (recogDay-firstDay)>=1;
   out.note = recogDay? 'recognised' : 'not yet recognised (needs an unprompted performance)';
 }

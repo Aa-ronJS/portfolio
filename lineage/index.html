@@ -83,6 +83,7 @@ button:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
 .edgehint{position:absolute;z-index:4;pointer-events:auto;cursor:pointer;border:0;transform:translate(-50%,-50%);background:var(--accent);color:var(--accent-ink);font-weight:600;font-size:13px;padding:6px 10px;border-radius:999px;white-space:nowrap;box-shadow:0 2px 10px rgba(0,0,0,0.4)}
 .menu button.hint{box-shadow:0 0 0 2px var(--accent) inset;animation:pulse 1.2s infinite}
 .menu .walk{min-height:44px;width:100%}
+.actchip{position:absolute;z-index:4;transform:translate(-50%,-140%);background:var(--panel);border:1px solid var(--accent);color:var(--text);font-weight:600;font-size:13px;min-height:36px;padding:0 12px;border-radius:999px;white-space:nowrap}
 @keyframes pulse{50%{box-shadow:0 0 0 2px rgba(224,162,59,0.15) inset}}
 @media (prefers-reduced-motion: reduce){ .menu button.hint{animation:none} }
 </style>
@@ -121,6 +122,7 @@ button:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
 <div class="toast hidden" id="toast"></div>
 <div class="tut hidden" id="tut"></div>
 <div class="edgehint hidden" id="edgehint"></div>
+<button class="actchip hidden" id="actchip">Do something here</button>
 <div class="titlescreen" id="title"><div class="box">
 <h1>LINEAGE</h1>
 <p>A band of early hominins lives by a lake, running on instinct. You can't command them. You can steer one at a time, and whatever you make them do again and again gets easier, spreads to anyone watching, and can become a habit the whole band keeps.</p>
@@ -336,7 +338,7 @@ function record(h, verb, held, tgt, effect, payoff, forced, x, y, src){
     if (forced && h===focus && o.band===h.band && stage(o)!=="infant" && INSTINCT.indexOf(effect)<0 && (!o.popT || time-o.popT>6)){ o.popT=time; pop(o, "Watching: "+Math.round((1-effRes(o,verb,held,tgt))*100)+"% natural", "info"); }
   });
   if (forced) p.forced=(p.forced||0)+1;
-  if (!p.recognized && INSTINCT.indexOf(effect)<0 && (p.bands[h.band]||0)>=RECOG.count && Object.keys(p.days).length>=RECOG.days && ((p.bandOwn||{})[h.band]||0)>=RECOG.unprompted && p.payoff>-3){
+  if (!p.recognized && INSTINCT.indexOf(effect)<0 && (p.bands[h.band]||0)>=RECOG.count && Object.keys(p.days).length>=RECOG.days && ((p.bandOwn||{})[h.band]||0)>=RECOG.unprompted && p.payoff>-0.25*p.count){
     p.recognized = true; p.name = patName(p);
     var dupe = Object.keys(patterns).some(function(k2){ var q=patterns[k2]; return q!==p && q.recognized && q.name===p.name && q.bands[h.band]; });
     if (dupe) return;
@@ -371,7 +373,7 @@ function giveNew(h, cls, n, opt){ var it={id:nid++,cls:cls,x:h.x,y:h.y,count:n||
 function dropHeld(h, slot, x, y){ var it=h.hold[slot]; if(!it) return null; if (it.cls==="water"){ pourAt(x===undefined?h.x:x, y===undefined?h.y:y, it.units||1); returnVessel(h,slot); return null; } h.hold[slot]=null; if (slot===0 && h.hold[1]){ h.hold[0]=h.hold[1]; h.hold[1]=null; } it.heldBy=null; it.x=(x===undefined?h.x:x)+rr(-0.25,0.25); it.y=(y===undefined?h.y:y)+rr(-0.25,0.25);
   var merge=null; items.forEach(function(o){ if(!merge && o.cls===it.cls && !o.heldBy && dist(o,it)<0.5 && o.cooked===it.cooked && o.dried===it.dried && o.count<(IT[it.cls].stack||1)*3) merge=o; });
   if (merge && IT[it.cls].stack){ merge.count+=it.count; merge.fresh=Math.min(merge.fresh,it.fresh); return merge; }
-  items.push(it); return it; }
+  items.push(it); launch(it, rr(-0.3,0.3), rr(-0.3,0.3), 0.3, 0.7); return it; }
 function consumeHeld(h, slot, n){ var it=h.hold[slot]; it.count-=(n||1); if (it.count<=0){ h.hold[slot]=null; if(slot===0&&h.hold[1]){h.hold[0]=h.hold[1];h.hold[1]=null;} } }
 
 /* ================= verbs: rules from properties ================= */
@@ -738,6 +740,8 @@ function attemptCore(h, verb, ik, t){
     var grip = ik==="teeth" ? 0.35 : 1;
     if (t.k==="item"){ if (t.ref.cls==="carcass") return nothing("Too big to grab. Something sharp might get pieces off it."); var r2=doVerb(h,"pick",t,true); res.msg=r2.msg || h.name+" grabs the "+tn+"."; return res; }
     if (t.k==="source"){
+      if (P.part || P.high){ var fallen=nearestItem({x:t.ref.x,y:t.ref.y},function(i){ return i.cls===(P.part||P.high) && !(i.z>0.05) && !i.buried; },2.6); if (fallen && (P.high || t.ref.stock<1)){ toFront(h,fallen); var rf=doVerb(h,"pick",{k:"item",ref:fallen},true); if (heldItem(h,fallen.cls)) return out("gather",0.3,h.name+" picks up "+(fallen.count>1?"some ":"a ")+(fallen.count>1?IT[fallen.cls].n:IT[fallen.cls].n.replace(/ies$/,"y").replace(/s$/,""))+" from under the "+tn+"."); } }
+      if (P.high){ var srcH=t.ref; if (srcH.stock<1) return nothing("There's nothing ripe up there."); var nh=Math.min(Math.floor(srcH.stock), 1+Math.floor(rnd()*2+h.genes.strength)); srcH.stock-=nh; dropFrom(srcH, P.high, nh); h.after={cls:P.high, until:time+5, src:srcH}; return out("shake",1,h.name+" shakes the branches. "+(nh>1?numW(nh).replace(/^./,function(m){return m.toUpperCase();})+" "+IT[P.high].n+" fall":"One "+IT[P.high].n.replace(/s$/,"")+" falls")+"."); }
       if (P.part){ var src=t.ref; if (src.stock<1) return nothing("There's nothing left to grab."); var n=P.part==="stone"?1:(P.part==="gourd"?1:Math.max(1,Math.floor(1+skill*2*grip))); src.stock=Math.max(0,src.stock-(P.part==="stone"?0:n)); giveNew(h,P.part,n); return out(P.part==="stone"?"prise":"gather",0.3,h.name+" grabs "+(n>1?"some ":"a ")+(n>1?IT[P.part].n:IT[P.part].n.replace(/ies$/,"y").replace(/s$/,""))+"."); }
       if (P.tree){ if (rnd()<0.5*grip*(0.5+h.genes.strength*0.5)){ giveNew(h,"stick",1); return out("branch",0.3,h.name+" tears off a branch."); } return nothing("The branch bends but won't snap."); }
       if (P.under) return nothing("The roots are underground. Digging might reach them.");
@@ -784,7 +788,7 @@ function attemptCore(h, verb, ik, t){
       return nothing();
     }
     if (t.k==="source"){
-      if (P.tree){ var hi=P.high, srcT=t.ref, reachLong = I.long?1.4:1; if (hi && srcT.stock>=1 && rnd()<0.35*reachLong*(impact)){ var dn=Math.min(Math.floor(srcT.stock), 1+Math.floor(impact*2)); srcT.stock-=dn; for (var k=0;k<dn;k++) addItem(hi, srcT.x+rr(-1,1), srcT.y+rr(-1,1), 1); return out("shake",1.2,(dn>1?numW(dn).replace(/^./,function(m){return m.toUpperCase();})+" "+IT[hi].n+" drop":"One "+IT[hi].n.replace(/s$/,"")+" drops")+" from the tree."); } return nothing("The trunk shudders."); }
+      if (P.tree){ var hi=P.high, srcT=t.ref, reachLong = I.long?1.4:1; if (hi && srcT.stock>=1 && rnd()<0.35*reachLong*(impact)){ var dn=Math.min(Math.floor(srcT.stock), 1+Math.floor(impact*2)); srcT.stock-=dn; dropFrom(srcT, hi, dn); return out("shake",1.2,(dn>1?numW(dn).replace(/^./,function(m){return m.toUpperCase();})+" "+IT[hi].n+" drop":"One "+IT[hi].n.replace(/s$/,"")+" drops")+" from the tree."); } return nothing("The trunk shudders."); }
       if (P.inside==="termites"){ if ((I.hard||0)>0.6 && impact>0.7 && t.ref.stock>1){ t.ref.stock-=2; h.hunger=Math.max(0,h.hunger-0.06); return out("breakMound",0.5,"The mound cracks open. Termites spill out to eat."); } return nothing("The mound is hard as rock."); }
       if (P.part==="stone"){ if ((I.hard||0)>=0.8 && rnd()<0.12+skill*0.3){ addAt(t,h,"flake",1); return out("flake",0.9,"A flake splits off the rock face."); } return nothing(); }
       if (P.part==="berry"){ if (t.ref.stock>=1){ var bd=Math.min(Math.floor(t.ref.stock),2); t.ref.stock-=bd; addAt(t,h,"berry",bd); return out("knock",0.3,"Berries scatter on the ground."); } return nothing(); }
@@ -847,7 +851,7 @@ function attemptCore(h, verb, ik, t){
 
     return nothing();
   case "shake":
-    if (t.k==="source" && (P.tree || P.part==="berry")){ var srcS=t.ref, fall=P.high||(P.part==="berry"?"berry":null); if (fall && srcS.stock>=1 && rnd()<0.3+h.genes.strength*0.3){ var sn=Math.min(Math.floor(srcS.stock),2); srcS.stock-=sn; for (var j=0;j<sn;j++) addItem(fall, srcS.x+rr(-1,1), srcS.y+rr(-1,1),1); return out("shake",1,(sn>1?numW(sn).replace(/^./,function(m){return m.toUpperCase();})+" "+IT[fall].n+" fall":"One "+IT[fall].n.replace(/ies$/,"y").replace(/s$/,"")+" falls")+" to the ground."); } return nothing("Leaves rustle."); }
+    if (t.k==="source" && (P.tree || P.part==="berry")){ var srcS=t.ref, fall=P.high||(P.part==="berry"?"berry":null); if (fall && srcS.stock>=1 && rnd()<0.3+h.genes.strength*0.3){ var sn=Math.min(Math.floor(srcS.stock),2); srcS.stock-=sn; dropFrom(srcS, fall, sn); return out("shake",1,(sn>1?numW(sn).replace(/^./,function(m){return m.toUpperCase();})+" "+IT[fall].n+" fall":"One "+IT[fall].n.replace(/ies$/,"y").replace(/s$/,"")+" falls")+" to the ground."); } return nothing("Leaves rustle."); }
     if (t.k==="self" && I.item && IT[I.item.cls].water) return nothing("Water sloshes inside.");
     return nothing();
   case "throw": return doVerb(h,"throw",t,true);
@@ -900,6 +904,43 @@ var VESSEL = { hands:{life:6, n:"handful of water", units:1}, leaves:{life:25, n
 function itemName(it){ if (it.cls==="water") return (VESSEL[it.vessel]||VESSEL.hands).n; return IT[it.cls].n; }
 Object.assign(RESULT_TEXT, { hole:"to dig a hole", stones:"to gather stones", pile:"to pile stones", ring:"to ring stones", line:"to line a hole", basin:"to line a hole with stones", storeWater:"to store water", pour:"to pour water out", scoop:"to carry water", fillv:"to carry water", mudline:"to seal a hole with mud", smear:"to smear mud", cord:"to twist cord", shred:"into tinder", split:"to split it", grubs:"to find grubs", lines:"to make marks", print:"to leave prints", lookout:"to keep watch", tuber:"for roots", flood:"to flood it", drinkStore:"to drink stored water", drinkCarried:"to drink carried water", tuck:"to carry it on the body", shade:"for shade", mudcoat:"to hide their smell", dustbath:"to clean their fur", ornament:"as decoration", prise:"to prise out stones", handful:"to gather earth", mudhandful:"to gather mud", tenderise:"to soften meat", douse:"to put out fire", smother:"to put out fire", water:"to water plants", sniff:"to find things by smell" });
 
+/* ---------- physics: things fall, bounce, roll downhill and come to rest ---------- */
+var moving = [];
+var ROUND = {berry:1, fig:1, nut:1, stone:1, gourd:1, gourdW:1, kernel:1, tuber:1, grubs:1};
+var FLOATS = function(c){ var d=IT[c]; return !!(d.fuel || d.cat==="plant" || c==="fig" || c==="berry" || c==="gourd" || c==="gourdHalf"); };
+function launch(it, vx, vy, vz, z){ it.vx=vx||0; it.vy=vy||0; it.vz=vz||0; it.z=Math.max(it.z||0, z||0); if (moving.indexOf(it)<0) moving.push(it); }
+// fruit and twigs come down from where they grew, not out of thin air
+function dropFrom(src, cls, n, opt){ var top = src.tree ? ((src.canopyY!==undefined ? src.canopyY - elev(src.x,src.y) : 4) - 0.5) : 0.8, out=null;
+  for (var i=0;i<n;i++){ var it=addItem(cls, src.x+rr(-0.5,0.5), src.y+rr(-0.5,0.5), 1, opt); launch(it, rr(-0.9,0.9), rr(-0.9,0.9), rr(0,0.6), top*rr(0.7,1)); out=it; } return out; }
+function wake(x, y, r){ items.forEach(function(it){ if (!it.heldBy && Math.hypot(it.x-x,it.y-y)<r && moving.indexOf(it)<0){ it.vx=it.vx||0; it.vy=it.vy||0; it.vz=0; it.z=it.z||0; moving.push(it); } }); }
+function physicsStep(dt){
+  for (var i=moving.length-1;i>=0;i--){
+    var it=moving[i];
+    if (it.heldBy || items.indexOf(it)<0){ moving.splice(i,1); continue; }
+    var round=!!ROUND[it.cls], big=!!IT[it.cls].big;
+    it.vz -= 16*dt;
+    var nx=it.x+it.vx*dt, ny=it.y+it.vy*dt;
+    if (T(nx,ny)===ROCK && elev(nx,ny)>elev(it.x,it.y)+0.6){ it.vx*=-0.35; it.vy*=-0.35; nx=it.x; ny=it.y; }
+    it.x=clamp(nx,0.5,W-0.5); it.y=clamp(ny,0.5,H-0.5); it.z+=it.vz*dt;
+    if (isWater(it.x,it.y)){
+      if (it.z<=0){ it.z=0; it.vz=0; it.wet=1; if (FLOATS(it.cls)){ it.vx*=Math.pow(0.5,dt); it.vy*=Math.pow(0.5,dt); it.floating=true; if (Math.hypot(it.vx,it.vy)<0.03){ moving.splice(i,1); } } else { it.sunk=true; it.vx=it.vy=0; moving.splice(i,1); } }
+      continue;
+    }
+    it.floating=false; it.sunk=false;
+    if (it.z<=0){
+      it.z=0;
+      if (it.vz<-2.2 && !big){ it.vz=-it.vz*(round?0.4:0.2); it.vx*=0.6; it.vy*=0.6; continue; }
+      it.vz=0;
+      var gx=(elev(it.x+0.3,it.y)-elev(it.x-0.3,it.y))/0.6, gy=(elev(it.x,it.y+0.3)-elev(it.x,it.y-0.3))/0.6, slope=Math.hypot(gx,gy);
+      if (round && slope>0.35){ it.vx-=gx*2.5*dt; it.vy-=gy*2.5*dt; }
+      var fr=Math.pow(round?0.25:0.02, dt); it.vx*=fr; it.vy*=fr;
+      if (Math.hypot(it.vx,it.vy)<0.06 && !(round && slope>0.35)){ it.vx=0; it.vy=0; moving.splice(i,1); settle(it); }
+    }
+  }
+}
+// a stone that comes to rest in a hole becomes part of the lining
+function settle(it){ var sp=spotAt(it.x,it.y,0.9); if (!sp) return; if (it.cls==="stone" && sp.depth>=0.3){ sp.stones+=it.count; removeItem(it); return; } if (sp.water>=0.3) it.wet=1; }
+
 /* ---------- spots: places in the ground that hold what is put there ---------- */
 var spots = [], fishScare = [], murk = [], stats = {seep:0, stores:{}, storeOwn:0};
 var SPOTN = {basin:"stone-lined basin", clayPit:"mud-lined hole", hole:"hole", scrape:"shallow scrape", ring:"ring of stones", pile:"pile of stones", stones:"stones on the ground", rockPool:"rock pool", puddle:"puddle", mudPatch:"patch of mud", damp:"damp ground", marks:"marks in the dirt", packed:"packed earth", patch:"bare patch"};
@@ -945,7 +986,9 @@ function spotsUpdate(dt){
     if (s.depth<0.05) s.packed=Math.max(0,s.packed-dd*0.15);
     if (tt===SAND && s.depth>0) s.depth=Math.max(0,s.depth-dt*0.003);
     if (raining && s.depth>0 && s.stones<4) s.depth=Math.max(0, s.depth-dd*0.05);
-    if (spotEmpty(s)) spots.splice(i,1);
+    var want = s.rock ? 0 : -Math.min(1.2,s.depth)*0.9;
+    if (Math.abs(want-(s.dug||0))>0.02){ deform(s.x, s.y, want-(s.dug||0), 1.05); s.dug=want; }
+    if (spotEmpty(s) && Math.abs(s.dug||0)<0.03) spots.splice(i,1);
   }
   fishScare=fishScare.filter(function(z){ return time-z.t<25; });
   murk=murk.filter(function(z){ return time-z.t<40; });
@@ -1236,7 +1279,7 @@ function softHit(h, verb, held, t, out){
   if (t.k==="source"){ held.worn=(held.worn||0)+0.2; if (t.ref.stock>=1 && (t.ref.type==="bush")){ t.ref.stock--; addItem("berry",t.ref.x+rr(-1,1),t.ref.y+rr(-1,1),1); return out("knock",0.2,"A berry drops from the bush.",true); } return out("fray",0,"The "+hn+" "+vs(hn,"frays","fray")+" against the "+tn+".",true); }
   return null;
 }
-function knockAway(h, it, out, msg){ var o0=out; out=function(e,pay,m,minor){ return o0(e==="knock"?"nudge":e,pay,m,minor); }; if (IT[it.cls].big){ var bx=it.x-h.x, by=it.y-h.y, bl=Math.hypot(bx,by)||1; it.x=clamp(it.x+bx/bl*0.15,1,W-1); it.y=clamp(it.y+by/bl*0.15,1,H-1); return out("shove",0,"The "+IT[it.cls].n+" is too heavy. It barely shifts.",true); } var dx=it.x-h.x, dy=it.y-h.y, dd=Math.hypot(dx,dy)||1, m=rr(0.6,1.4), nx=it.x+dx/dd*m, ny=it.y+dy/dd*m; if (!walkable(nx,ny)){ nx=it.x+rr(-0.5,0.5); ny=it.y+rr(-0.5,0.5); } it.x=clamp(nx,1,W-1); it.y=clamp(ny,1,H-1); return out("knock",0,msg,true); }
+function knockAway(h, it, out, msg){ var o0=out; out=function(e,pay,m,minor){ return o0(e==="knock"?"nudge":e,pay,m,minor); }; if (IT[it.cls].big){ var bx=it.x-h.x, by=it.y-h.y, bl=Math.hypot(bx,by)||1; launch(it, bx/bl*0.4, by/bl*0.4, 0, 0); return out("shove",0,"The "+IT[it.cls].n+" is too heavy. It barely shifts.",true); } var dx=it.x-h.x, dy=it.y-h.y, dd=Math.hypot(dx,dy)||1, m=rr(1.5,3.2); launch(it, dx/dd*m+rr(-0.4,0.4), dy/dd*m+rr(-0.4,0.4), rr(1,2.5), 0.05); return out("knock",0,msg,true); }
 function consequence(h, verb, ik, I, P, t, why){
   var res={effect:null,payoff:0,msg:null}, tn=tgtName(t), iname=instrName(ik), held=I&&I.item?I.item:null, hd=held?IT[held.cls]:null;
   function out(e,pay,m,minor){ res.effect=verb+"-"+e; res.payoff=pay; res.msg=(why?why+" ":"")+m; res.short=m; if (minor) res.minor=true; return res; }
@@ -1361,7 +1404,7 @@ function consequence(h, verb, ik, I, P, t, why){
       if (tree||ty==="bush"||ty==="vine"){ if (seasonOf()==="wet"){ h.thirst=Math.max(0,h.thirst-0.04); s.licked=time; return out("dew",0.1,h.name+" licks the wet leaves.",true); } s.licked=time; h.hunger=Math.max(0,h.hunger-0.005); return out("sap",0,h.name+" licks at the "+tn+". A little sticky sap.",true); }
       h.thirst=Math.min(1,h.thirst+0.02); s.licked=time; return out("dry",0,"Dry. It only makes "+h.name+" thirstier.",true); }
     if (verb==="climb"){
-      if (ty==="bush"){ if (s.stock>=1){ var nb=Math.min(Math.floor(s.stock),2); s.stock-=nb; addItem("berry",s.x+rr(-1,1),s.y+rr(-1,1),nb); } else giveNew(h,"stick",1); return out("crush",0,h.name+" tries to climb the bush and crushes into it. Branches snap.",true); }
+      if (ty==="bush"){ if (s.stock>=1){ var nb=Math.min(Math.floor(s.stock),2); s.stock-=nb; dropFrom(s,"berry",nb); } else giveNew(h,"stick",1); return out("crush",0,h.name+" tries to climb the bush and crushes into it. Branches snap.",true); }
       if (ty==="mound"||ty==="outcrop") return lookout(h, ty==="outcrop"?26:22, out, "climbs the "+tn+" and looks out over the land");
       if (ty==="burrow"){ s.collapsed=true; return out("collapse",0,"The ground gives way. The burrow entrance collapses under "+h.name+".",true); }
       if (ty==="vine"){ hurt(h,0.02); s.stock=Math.max(0,s.stock-0.5); return out("tangle",0,h.name+" gets tangled in the vine and falls.",true); }
@@ -1384,12 +1427,12 @@ function consequence(h, verb, ik, I, P, t, why){
     if (ty==="outcrop"){ if (held && (hd.hard||0)>=0.8){ if (rnd()<0.4){ addItem("flake",s.x+rr(-0.5,0.5),s.y+rr(-0.5,0.5),1); return out("flake",0.9,"A sharp flake splits off the rock face."); } addItem("stone",s.x+rr(-0.8,0.8),s.y+rr(-0.8,0.8),1); return out("dislodge",0.2,"A chunk of rock breaks loose."); } if (held){ held.worn=(held.worn||0)+0.34; if (held.worn>=1){ consumeHeld(h,0,1); return out("break",0,"The "+itemName(held)+" breaks on the rock.",true); } return out("batter",0,"The "+itemName(held)+" "+vs(itemName(held),"is","are")+" battered on the rock.",true); } hurt(h,0.03); return out("bruise",0,"Solid rock. Bruised "+iname+".",true); }
     if (ty==="vine"){ if ((verb==="hit"||verb==="shake") && s.stock>=1){ s.stock--; addItem("gourd",s.x+rr(-0.5,0.5),s.y+rr(-0.5,0.5),1); return out("gourd",0.3,"A gourd drops off the vine."); } if (verb==="rub"||verb==="bite"){ s.touched=(s.touched||0)+1; return out("sap",0,"Sticky sap from the vine stem.",true); } addItem("leaves",s.x+rr(-0.5,0.5),s.y+rr(-0.5,0.5),1); return out("strip",0.1,"Vine leaves tear loose.",true); }
     if (ty==="bush" && verb==="rub"){ s.stripped=(s.stripped||0)+1; addItem("leaves",s.x+rr(-0.8,0.8),s.y+rr(-0.8,0.8),1); return out("leaf",0,"A few leaves come away in "+h.name+"'s hands.",true); }
-    if (ty==="bush"){ if (s.stock>=1){ var kb=Math.min(Math.floor(s.stock),2); s.stock-=kb; addItem("berry",s.x+rr(-1,1),s.y+rr(-1,1),kb); return out("knock",0.3,"Berries scatter on the ground."); } addItem("leaves",s.x+rr(-0.8,0.8),s.y+rr(-0.8,0.8),1); return out("strip",0.05,"Leaves fall from the bare bush.",true); }
+    if (ty==="bush"){ if (s.stock>=1){ var kb=Math.min(Math.floor(s.stock),2); s.stock-=kb; dropFrom(s,"berry",kb); return out("knock",0.3,"Berries scatter on the ground."); } addItem("leaves",s.x+rr(-0.8,0.8),s.y+rr(-0.8,0.8),1); return out("strip",0.05,"Leaves fall from the bare bush.",true); }
     // trees
     if (verb==="rub"){ s.touched=(s.touched||0)+1; if (held){ if (held) held.worn=(held.worn||0)+0.03; return out("scuff",0,h.name+" rubs the "+itemName(held)+" against the bark. "+((IT[held.cls].hard||0)>0.6?"It scuffs the bark.":"Bits of it stick to the trunk."),true); } groomFur(h,0.05); return out("scratch",0.05,h.name+" scratches their back on the rough bark.",true); }
     if (verb==="poke"||verb==="scrape"||verb==="bite"){ if (rnd()<0.35){ addAt(t,h,"grubs",1); return out("grubs",0.8,"Under the bark: grubs!"); } addAt(t,h,"bark",1); return out("bark",0.4,"Bark flakes off the trunk."); }
     if (verb==="dig"){ var sp4=spotAt(s.x+0.7,s.y,1)||makeSpot(s.x+0.7,s.y); sp4.depth=Math.min(0.6,sp4.depth+0.08); sp4.marks+=0.5; return out("roots",0.05,h.name+" digs among the tree roots. Hard going.",true); }
-    if (P.high && s.stock>=1 && rnd()<0.5){ var dn=1; s.stock-=dn; addItem(P.high, s.x+rr(-1,1), s.y+rr(-1,1), dn); return out("shake",1,"One "+IT[P.high].n.replace(/s$/,"")+" drops from the tree."); }
+    if (P.high && s.stock>=1 && rnd()<0.5){ var dn=1; s.stock-=dn; dropFrom(s, P.high, dn); return out("shake",1,"One "+IT[P.high].n.replace(/s$/,"")+" drops from the tree."); }
     addItem(rnd()<0.6?"leaves":"stick", s.x+rr(-1.2,1.2), s.y+rr(-1.2,1.2), 1); return out("twig",0.05,"Leaves and twigs come down.",true);
   }
 
@@ -1482,7 +1525,7 @@ function fp(h, t, noKnow){
   a+="|"+[items.length,fires.length,projectiles.length,spots.length,fishScare.length,murk.length].join(",");
   items.forEach(function(i){ if (Math.abs(i.x-h.x)<4 && Math.abs(i.y-h.y)<4) a+=";"+i.id+":"+i.cls+":"+i.count+":"+fpNum(i.x)+":"+fpNum(i.y)+(i.buried?"b":"")+(i.covered?"c":"")+fpNum(i.wet); });
   a+="|"+spots.map(function(s){ return [s.depth,s.stones,s.water,s.mud,s.damp,s.packed,s.marks].map(fpNum).join(":"); }).join(";");
-  if (t.k==="item"){ var it=t.ref; a+="|"+[it.cls,it.count,it.x,it.y,it.covered?1:0,it.buried?1:0,it.wet,it.soft?1:0,it.tender?1:0,it.dull,it.worn,it.flipped?1:0,it.slab?1:0,it.cracked?1:0,it.sharpening,it.dirty,it.marks,it.water,it.meat,it.sniffT,it.wetT,it.touched,it.bruised?1:0,it.twist,it.opened?1:0,it.tip?1:0,items.indexOf(it)>=0?1:0].map(fpNum).join(":"); }
+  if (t.k==="item"){ var it=t.ref; a+="|"+[it.cls,it.count,it.x,it.y,it.covered?1:0,it.buried?1:0,it.wet,it.soft?1:0,it.tender?1:0,it.dull,it.worn,it.flipped?1:0,it.slab?1:0,it.cracked?1:0,it.sharpening,it.dirty,it.marks,it.water,it.meat,it.sniffT,it.wetT,it.touched,it.vx,it.vy,it.vz,it.bruised?1:0,it.twist,it.opened?1:0,it.tip?1:0,items.indexOf(it)>=0?1:0].map(fpNum).join(":"); }
   else if (t.k==="source"){ var s=t.ref; a+="|"+[s.stock,s.rodents,s.loose,s.collapsed?1:0,s.watered,s.flooded,s.soft,s.smeared,s.stripped,s.licked,s.sniffed,s.touched].map(fpNum).join(":"); }
   else if (t.k==="hom"){ var o=t.ref; a+="|"+[o.hp,o.fear,o.anger[h.id],o.bonds[h.id],o.x,o.y,o.task?o.task.verb:"",o.copyOf?1:0,o.social,o.rank,o.touch?o.touch.t:"",o.coat?o.coat.k:"",o.wetT,o.boredom,o.dead?1:0,o.touched,o.energy].map(fpNum).join(":"); }
   else if (t.k==="animal"){ var an=t.ref; a+="|"+[an.hp,an.state,an.x,an.y,an.wary,an.bold,an.cool,an.t,an.noticed,an.dead?1:0,an.touched].map(fpNum).join(":"); }
@@ -1920,6 +1963,8 @@ function leopardBait(h){ }
 
 /* focused individual: obeys, but drives interrupt */
 function focusUpdate(h, dt){
+  if (h.after && time>h.after.until) h.after=null;
+  if (h.after && (!h.task || h.task.verb==="move") && freeHand(h)>=0){ var got=nearestItem(h,function(i){ return i.cls===h.after.cls && !(i.z>0.05) && moving.indexOf(i)<0; },4); if (got){ setTask(h,"attempt",{k:"item",ref:got},"player",{av:"grab",ai:"hands",complied:true}); h.after=null; } }
   socialPull(h, dt);
   if (time - (h.lastCacheCheck||0) > 2){ h.lastCacheCheck=time; checkCaches(h); }
   if (h.paused && time < h.paused){ h.vx=h.vy=0; if (h.task && h.task.src!=="player") stepTask(h,dt); return; }
@@ -2020,8 +2065,8 @@ function worldUpdate(dt){
     var grow = s.regrow*dd*(s.watered && time-s.watered<DAY ? 2 : 1);
     if (s.type==="bush" && season==="wet") s.stock=Math.min(s.max, s.stock+grow);
     else if (s.type==="bush") s.stock=Math.min(s.max*0.5, s.stock+grow*0.35);
-    if (s.type==="figTree"){ s.stock=Math.min(s.max,s.stock+grow*0.8); if (s.stock>=s.max-0.5 && rnd()<dt*0.02){ s.stock--; addItem("fig",s.x+rr(-1.5,1.5),s.y+rr(-1.5,1.5),1,{fresh:0.7}); } }
-    if (s.type==="nutTree" && season==="dry"){ s.stock=Math.min(s.max,s.stock+grow); if (s.stock>4 && rnd()<dt*0.015){ s.stock--; addItem("nut",s.x+rr(-1.5,1.5),s.y+rr(-1.5,1.5),1); } }
+    if (s.type==="figTree"){ s.stock=Math.min(s.max,s.stock+grow*0.8); if (s.stock>=s.max-0.5 && rnd()<dt*0.02){ s.stock--; dropFrom(s,"fig",1,{fresh:0.7}); } }
+    if (s.type==="nutTree" && season==="dry"){ s.stock=Math.min(s.max,s.stock+grow); if (s.stock>4 && rnd()<dt*0.015){ s.stock--; dropFrom(s,"nut",1); } }
     if (s.type==="tree") s.stock=Math.min(s.max,s.stock+grow*0.3);
     if (s.type==="mound") s.stock=Math.min(s.max,s.stock+grow);
     if (s.type==="vine"||s.type==="roots") s.stock=Math.min(s.max,s.stock+grow);
@@ -2037,7 +2082,7 @@ function worldUpdate(dt){
     if (it.cls==="water"){ pourAt(it.x,it.y,it.units||1); items.splice(i,1); continue; }
     if (it.cls==="ember" && !it.heldBy){ it.life=(it.life===undefined?30:it.life)-dt*(raining?3:1); if (it.life<=0){ items.splice(i,1); continue; } }
     if (d.food && !it.covered && it.band>=0 && !onKind(it.x,it.y,["pile","ring"]) && rnd()<dt*0.004){ noteLoss(it,"insects and birds ate it"); it.count--; if (it.count<=0){ items.splice(i,1); continue; } }
-    if (it.fresh<=0){ if (it.storedKey && patterns[it.storedKey]) patterns[it.storedKey].payoff-=0.5; noteLoss(it,"it rotted"); items.splice(i,1); continue; }
+    if (it.fresh<=0){ if (it.storedKey && patterns[it.storedKey]) patterns[it.storedKey].payoff-=0.25; noteLoss(it,"it rotted"); items.splice(i,1); continue; }
     if (it.cls==="carcass" && it.fresh<=0.01) items.splice(i,1);
   }
   creatures.forEach(function(h){ if (h.kind!=="hom"||h.dead) return; h.hold.forEach(function(s,ix){ if (s && IT[s.cls].perish){ s.fresh-=IT[s.cls].perish*dd*(s.cooked?0.4:1); if (s.fresh<=0){ h.hold[ix]=null; } } if (s && s.cls==="brand"){ s.burn-=dd*6; if (raining) s.burn-=dd*20; if (s.burn<=0){ h.hold[ix]=null; if (h===focus) h.thought="The burning stick went out."; } } }); if (!h.hold[0]&&h.hold[1]){h.hold[0]=h.hold[1];h.hold[1]=null;} });
@@ -2077,7 +2122,7 @@ function projUpdate(dt){
   for (var i=projectiles.length-1;i>=0;i--){
     var p=projectiles[i]; p.t+=dt*3; var d=Math.hypot(p.tx-p.x,p.ty-p.y);
     if (p.t>=1){
-      var it=p.item; it.heldBy=null; it.x=p.tx; it.y=p.ty; if (it.cls==="water"){ pourAt(it.x,it.y,it.units||1); if (p.hitT && p.hitT.k==="hom"){ p.hitT.ref.wetT=time; p.hitT.ref.coat=null; } projectiles.splice(i,1); continue; } if (!isWater(it.x,it.y)) items.push(it);
+      var it=p.item; it.heldBy=null; it.x=p.tx; it.y=p.ty; if (it.cls==="water"){ pourAt(it.x,it.y,it.units||1); if (p.hitT && p.hitT.k==="hom"){ p.hitT.ref.wetT=time; p.hitT.ref.coat=null; } projectiles.splice(i,1); continue; } items.push(it); var pdx=p.tx-p.x, pdy=p.ty-p.y, pdl=Math.hypot(pdx,pdy)||1; launch(it, pdx/pdl*2, pdy/pdl*2, 1.2, 0.3);
       if (p.hitT && stillValid(p.hitT)){
         var tgt=p.hitT.ref, d2=IT[it.cls], dmg=0.12*(d2.mass||0.3)*3*(d2.pointed?(it.hard?2.4:1.8):1)*(0.7+p.from.genes.strength*0.6);
         if (p.hitT.k==="animal"){ hurt(tgt,dmg/(tgt.kind==="antelope"?0.8:1.5),p.from); tgt.lastHitBy=p.from; if (tgt.kind==="hyena"||tgt.kind==="leopard"){ tgt.state="flee"; tgt.t=0; tgt.bold=Math.max(0.1,tgt.bold-(d2.burning?0.15:0.05)); } if (d2.burning && it.burn>0){ var tx=Math.floor(it.x), ty=Math.floor(it.y); if (dryness[ty*W+tx]>0.4) fireT[ty*W+tx]=1; } }
@@ -2094,6 +2139,7 @@ function update(dt){
   time += dt;
   worldUpdate(dt);
   spotsUpdate(dt);
+  physicsStep(dt);
   for (var i=0;i<creatures.length;i++){ var c=creatures[i]; if (c.dead) continue; if (c.kind==="hom") homUpdate(c,dt); else animalUpdate(c,dt); }
   projUpdate(dt);
   if (Math.floor(time*10)%50===0) creatures = creatures.filter(function(c){ return !c.dead || (time - (c.deadT||(c.deadT=time)))<1; });
@@ -2113,6 +2159,22 @@ for (var cy=0; cy<=H; cy++) for (var cx=0; cx<=W; cx++){ CH[cy*(W+1)+cx] = elevO
 function elev(x,y){ x=clamp(x,0,W-0.001); y=clamp(y,0,H-0.001); var x0=Math.floor(x), y0=Math.floor(y), fx=x-x0, fy=y-y0;
   var a=CH[y0*(W+1)+x0], b=CH[y0*(W+1)+x0+1], c=CH[(y0+1)*(W+1)+x0], d=CH[(y0+1)*(W+1)+x0+1];
   return a*(1-fx)*(1-fy)+b*fx*(1-fy)+c*(1-fx)*fy+d*fx*fy; }
+// digging lowers the land itself; filling raises it back
+var terrainDirty = false;
+function deform(x, y, dz, r){
+  if (!dz) return;
+  var x0=Math.max(0,Math.floor(x-r)), x1=Math.min(W,Math.ceil(x+r)), y0=Math.max(0,Math.floor(y-r)), y1=Math.min(H,Math.ceil(y+r));
+  for (var cy=y0; cy<=y1; cy++) for (var cx=x0; cx<=x1; cx++){ var d=Math.hypot(cx-x,cy-y); if (d>r) continue; var f=1-d/r; f=f*f*(3-2*f); CH[cy*(W+1)+cx]+=dz*f; }
+  if (typeof tPosArr!=="undefined"){
+    for (var ty=Math.max(0,y0-1); ty<Math.min(H,y1+1); ty++) for (var tx=Math.max(0,x0-1); tx<Math.min(W,x1+1); tx++){
+      var o=(ty*W+tx)*18, cs=[[tx,ty],[tx,ty+1],[tx+1,ty],[tx+1,ty],[tx,ty+1],[tx+1,ty+1]];
+      for (var k=0;k<6;k++) tPosArr[o+k*3+1]=CH[cs[k][1]*(W+1)+cs[k][0]];
+      dirtyTiles.push(ty*W+tx);
+    }
+    terrainDirty=true;
+  }
+  wake(x, y, r+0.5);
+}
 function groundY(x,y){ return Math.max(elev(x,y), isWater(x,y) ? WL-0.35 : -99); }
 function V3(x,y,lift){ return new T3.Vector3(wx(x), Math.max(elev(x,y), WL-0.5)+(lift||0), wz(y)); }
 
@@ -2157,6 +2219,7 @@ function tileColour(i){
   else if (t===BURNT){ tmpC.copy(TC[BURNT]).lerp(GRASS_WET, Math.min(1,burntT[i])*0.6); }
   else tmpC.copy(TC[t]);
   if (t===ROCK){ var e=CH[y*(W+1)+x]; if (e>14) tmpC.lerp(new T3.Color(0x9c6a48), 0.4); }
+  var sd=spotAt(x+0.5,y+0.5,1.2); if (sd && sd.depth>0.05 && !sd.rock){ var near=1-Math.min(1,Math.hypot(sd.x-x-0.5,sd.y-y-0.5)/1.2); tmpC.lerp(new T3.Color(0x3e2a18), Math.min(0.85, (0.3+sd.depth*0.6)*(0.4+near*0.6))); }
   return tmpC.multiplyScalar(0.93 + n*0.14);
 }
 function paintTile(i){ var c=tileColour(i), o=i*18; for (var k=0;k<6;k++){ var j=o+k*3, s=(k<3?1:0.96); tcol[j]=c.r*s; tcol[j+1]=c.g*s; tcol[j+2]=c.b*s; } }
@@ -2266,8 +2329,9 @@ function updateItems(){
     var n = IT[it.cls].stack ? Math.min(it.count,6) : 1;
     for (var j=0;j<n && m.count<ITEM_CAP;j++){
       var ox = n>1 ? (hash2(it.id,j)-0.5)*0.6 : 0, oz = n>1 ? (hash2(j,it.id)-0.5)*0.6 : 0;
-      var yy = isWater(it.x,it.y) ? WL-0.25 : p.y;
-      dummy.position.set(p.x+ox, yy+(it.cls==="carcass"?0.3:0.1), p.z+oz); dummy.rotation.set(0, hash2(it.id,j*3)*6, 0); dummy.scale.setScalar(1); dummy.updateMatrix();
+      var yy = isWater(it.x,it.y) ? (it.floating ? WL+0.02 : WL-0.25) : p.y;
+      var sc = (IT[it.cls].small || it.cls==="tuber" || it.cls==="fish" || it.cls==="rodent") ? 1.6 : (IT[it.cls].big ? 1 : 1.3);
+      dummy.position.set(p.x+ox, yy+(it.z||0)+(it.cls==="carcass"?0.3:0.12*sc)+(j>=3?0.15*sc:0), p.z+oz); dummy.rotation.set(it.z>0.05?time*6+j:0, hash2(it.id,j*3)*6, 0); dummy.scale.setScalar(sc); dummy.updateMatrix();
       m.setMatrixAt(m.count, dummy.matrix); m.setColorAt(m.count, itemColour(it)); m.count++;
     }
   });
@@ -2283,17 +2347,18 @@ var SMAT = { hole:new T3.MeshStandardMaterial({color:0x24180e, roughness:1}), da
 function syncSpots(){
   var live={};
   spots.forEach(function(s){ live[s.id]=1;
-    var key=[Math.round(s.depth*10),s.stones,Math.round(s.water*3),Math.ceil(s.mud),Math.round(s.damp*4),Math.min(6,Math.ceil(s.marks)),Math.round(s.packed*3)].join(",");
+    var key=[Math.round((s.dug||0)*20),Math.round(s.depth*10),s.stones,Math.round(s.water*3),Math.ceil(s.mud),Math.round(s.damp*4),Math.min(6,Math.ceil(s.marks)),Math.round(s.packed*3)].join(",");
     var v=spotViews[s.id]; if (v && v.key===key) return; if (v) spotGroup.remove(v.g);
     var g=new T3.Group(), p=V3(s.x,s.y), r=0.3+Math.min(1.2,s.depth)*0.45; g.position.set(p.x,p.y+0.02,p.z);
     if (s.packed>0.1){ var pk=new T3.Mesh(discGeo,SMAT.packed); pk.scale.setScalar(0.8); pk.position.y=0.005; g.add(pk); }
     if (s.damp>0.08||s.mud>0){ var dm=new T3.Mesh(discGeo, s.mud>0?SMAT.mud:SMAT.damp); dm.scale.setScalar(s.mud>0?Math.min(0.95,0.4+s.mud*0.15):0.9); dm.position.y=0.01; g.add(dm); }
-    if (s.depth>=0.05){ var hm=new T3.Mesh(discGeo,SMAT.hole); hm.scale.setScalar(r); hm.position.y=0.02; g.add(hm); }
-    if (s.water>0.05){ var cap=Math.max(1,spotCap(s)); var wm=new T3.Mesh(discGeo,SMAT.water); wm.scale.setScalar(Math.max(0.2,(s.depth>=0.05?r*0.9:0.6)*Math.sqrt(Math.min(1,s.water/cap)))); wm.position.y=0.035; g.add(wm); }
+    var dWorld = s.depth>=0.05 ? Math.min(1.2,s.depth)*0.9 : 0, wall=1.1;
+    if (s.depth>=0.05){ var hm=new T3.Mesh(discGeo,SMAT.hole); hm.scale.setScalar(0.35+s.depth*0.3); hm.position.y=0.02; g.add(hm); }
+    if (s.water>0.05){ var cap=Math.max(1,spotCap(s)), fill=Math.min(1,s.water/cap); var wm=new T3.Mesh(discGeo,SMAT.water); wm.scale.setScalar(s.depth>=0.05 ? Math.max(0.25,(0.3+fill*0.6)*wall) : 0.6*Math.sqrt(fill)); wm.position.y = s.depth>=0.05 ? 0.03+fill*dWorld*0.85 : 0.035; g.add(wm); }
     for (var m=0;m<Math.min(6,Math.ceil(s.marks));m++){ var ln=new T3.Mesh(markGeo,SMAT.mark); ln.position.set((hash2(s.id,m)-0.5)*0.8,0.03,(hash2(m,s.id)-0.5)*0.8); ln.rotation.y=hash2(s.id,m*3)*3; g.add(ln); }
     var n=Math.min(16,s.stones);
     for (var k=0;k<n;k++){ var pb=new T3.Mesh(pebGeo, k%2?MAT.rock:MAT.rock2), a=k/Math.max(1,n)*Math.PI*2+hash2(s.id,k)*0.3, px, py, pz;
-      if (s.depth>=0.3){ px=Math.cos(a)*r*0.92; pz=Math.sin(a)*r*0.92; py=0.04; }
+      if (s.depth>=0.3){ var rad=0.55+((k%2)?0.25:0); px=Math.cos(a)*rad*wall; pz=Math.sin(a)*rad*wall; py=0.05+((k%2)?dWorld*0.35:0); }
       else if (s.stones>=6){ px=Math.cos(a)*0.75; pz=Math.sin(a)*0.75; py=0.1; }
       else { var lay=k<3?0:(k<5?1:2); px=Math.cos(a*2.3)*(0.28-lay*0.12); pz=Math.sin(a*2.3)*(0.28-lay*0.12); py=0.12+lay*0.2; }
       pb.position.set(px,py,pz); pb.rotation.set(k,k*2.1,k*0.7); pb.scale.setScalar(0.9+hash2(s.id,k+9)*0.4); pb.castShadow=true; pb.receiveShadow=true; g.add(pb); }
@@ -2501,6 +2566,7 @@ function render(dt){
   timeU.value = time;
   if (frameN%2===0){ var arr=wgeo.attributes.position.array; for (var i=0;i<arr.length;i+=3){ var x=wbase[i], z=wbase[i+2]; arr[i+1]=Math.sin(x*0.15+time*0.9)*0.05+Math.cos(z*0.2+time*0.7)*0.04; } wgeo.attributes.position.needsUpdate=true; wgeo.computeVertexNormals(); }
   while (dirtyTiles.length){ refreshTileVisual(dirtyTiles.pop()); tgeo.attributes.color.needsUpdate=true; }
+  if (terrainDirty && frameN%6===0){ terrainDirty=false; tgeo.attributes.position.needsUpdate=true; tgeo.computeVertexNormals(); }
   if (frameN%240===0){ paintAll(); for (var g=0; g<grassTiles.length; g++) grassColour(g); if (grass.instanceColor) grass.instanceColor.needsUpdate=true; }
   if (frameN%15===0){ updateBerries(); updateFruit(); updateSourceMarks(); }
   updateItems(); syncFires(); if (frameN%3===0) updateWildfire(); syncCreatures(dt); syncProjectiles(); if (frameN%4===0) syncSpots(); syncBeacon();
@@ -2513,7 +2579,7 @@ function render(dt){
   fireLights.forEach(function(L,i){ var f=near[i]; if (f){ L.position.copy(V3(f.x,f.y,1.2)); L.intensity=(isNight()?3.2:1.2)*(0.6+Math.min(1,f.fuel)*0.5)*(1+Math.sin(time*13+i)*0.1); } else L.intensity=0; });
   updateRain(dt, cam3.target);
   renderer.render(scene, camera);
-  updateLabel(); updatePops(dt);
+  updateLabel(); updatePops(dt); syncActChip();
 }
 
 /* ---------- picking ---------- */
@@ -2524,7 +2590,7 @@ function pick3(sx, sy){
   creatures.forEach(function(c){ if (c.dead) return; var v=views[c.id]; if (!v) return; var wp=new T3.Vector3(); (v.root||v.g).getWorldPosition(wp); wp.y += c.kind==="hom" ? (v.height||1)*0.55 : 0.6; var s=screenOf(wp); if (s.z>1) return; var d=Math.hypot(s.x-sx,s.y-sy); if (d<bd){ bd=d; best=c.kind==="hom"?{k:"hom",ref:c}:{k:"animal",ref:c}; } });
   if (best) return best;
   bd=26; fires.forEach(function(f){ var s=screenOf(V3(f.x,f.y,0.5)); var d=Math.hypot(s.x-sx,s.y-sy); if (d<bd){ bd=d; best={k:"fire",ref:f}; } }); if (best) return best;
-  bd=20; items.forEach(function(it){ if (it.heldBy) return; var s=screenOf(V3(it.x,it.y,0.15)); if (s.z>1) return; var d=Math.hypot(s.x-sx,s.y-sy); if (d<bd){ bd=d; best={k:"item",ref:it}; } }); if (best) return best;
+  bd=26; items.forEach(function(it){ if (it.heldBy) return; var s=screenOf(V3(it.x,it.y,0.2+(it.z||0))); if (s.z>1) return; var d=Math.hypot(s.x-sx,s.y-sy); if (d<bd){ bd=d; best={k:"item",ref:it}; } }); if (best) return best;
   bd=30; spots.forEach(function(sp){ var k=spotKind(sp); if (k==="patch"||k==="packed"||(k==="damp"&&sp.damp<0.3)||k==="marks") return; var s=screenOf(V3(sp.x,sp.y,0.1)); if (s.z>1) return; var d=Math.hypot(s.x-sx,s.y-sy); if (d<bd){ bd=d; best={k:"spot",ref:sp}; } }); if (best) return best;
   ndc.set(sx/cv.clientWidth*2-1, -(sy/cv.clientHeight)*2+1); raycaster.setFromCamera(ndc, camera);
   var hitT = raycaster.intersectObject(terrain)[0], gp=null;
@@ -2543,7 +2609,7 @@ function pick3(sx, sy){
 /* ---------- input ---------- */
 var ptrs={}, dragMoved=false, downAt3=null, pinch0=0, twist0=0, panMode="pan";
 cv.addEventListener("contextmenu", function(e){ e.preventDefault(); });
-cv.addEventListener("pointerdown", function(e){ cv.setPointerCapture(e.pointerId); ptrs[e.pointerId]={x:e.clientX,y:e.clientY,b:e.button}; downAt3={x:e.clientX,y:e.clientY}; dragMoved=false; pinch0=0; });
+cv.addEventListener("pointerdown", function(e){ cv.setPointerCapture(e.pointerId); ptrs[e.pointerId]={x:e.clientX,y:e.clientY,b:e.button,downT:performance.now()}; downAt3={x:e.clientX,y:e.clientY}; dragMoved=false; pinch0=0; });
 cv.addEventListener("pointermove", function(e){
   var p=ptrs[e.pointerId]; if (!p) return; var ids=Object.keys(ptrs);
   if (ids.length===1){ var dx=e.clientX-p.x, dy=e.clientY-p.y; if (downAt3 && Math.hypot(e.clientX-downAt3.x,e.clientY-downAt3.y)>8) dragMoved=true;
@@ -2554,7 +2620,7 @@ cv.addEventListener("pointermove", function(e){
     pinch0=d; twist0=a; }
   p.x=e.clientX; p.y=e.clientY;
 });
-function ptrUp(e){ var p=ptrs[e.pointerId]; delete ptrs[e.pointerId]; var rem=Object.keys(ptrs).filter(function(k){return k!=="midY";}); if (rem.length<2){ pinch0=0; delete ptrs.midY; } if (!dragMoved && p && rem.length===0 && p.b!==2){ var r=cv.getBoundingClientRect(); tap3(e.clientX-r.left, e.clientY-r.top); } }
+function ptrUp(e){ var p=ptrs[e.pointerId]; delete ptrs[e.pointerId]; var rem=Object.keys(ptrs).filter(function(k){return k!=="midY";}); if (rem.length<2){ pinch0=0; delete ptrs.midY; } if (!dragMoved && p && rem.length===0){ var r=cv.getBoundingClientRect(); if (p.b===2 || (p.downT && performance.now()-p.downT>550)) tapAct3(e.clientX-r.left, e.clientY-r.top); else tap3(e.clientX-r.left, e.clientY-r.top); } }
 cv.addEventListener("pointerup", ptrUp); cv.addEventListener("pointercancel", function(e){ delete ptrs[e.pointerId]; pinch0=0; });
 cv.addEventListener("wheel", function(e){ e.preventDefault(); cam3.dist=clamp(cam3.dist*(1+e.deltaY*0.0012),6,140); }, {passive:false});
 window.addEventListener("keydown", function(e){ if (e.key==="q"||e.key==="Q") cam3.yaw+=0.15; if (e.key==="e"||e.key==="E") cam3.yaw-=0.15; });
@@ -2564,9 +2630,16 @@ function tap3(sx, sy){
   var t=pick3(sx,sy); if (!t) return;
   if (!focus){ if (t.k==="hom"){ setFocus(t.ref); } else toast("Tap any hominin to focus on it."); return; }
   if (t.k==="hom" && t.ref===focus){ openMenu({k:"self"}); return; }
-
+  if (t.k==="ground"){ setTask(focus,"move",t,"player"); focus.thought="Walking."; showActChip(t); return; }
   openMenu(t);
 }
+// right-click (or a long press) on the ground opens what you can do there without walking first
+function tapAct3(sx, sy){ if (!focus) return; var t=pick3(sx,sy); if (!t) return; hideActChip(); openMenu(t.k==="hom"&&t.ref===focus?{k:"self"}:t); }
+var actChipT=null;
+function showActChip(t){ actChipT={t:t, until:time+6}; }
+function hideActChip(){ actChipT=null; document.getElementById("actchip").classList.add("hidden"); }
+function syncActChip(){ var el=document.getElementById("actchip"); if (!actChipT || time>actChipT.until || !menu.classList.contains("hidden")){ if (actChipT && time>actChipT.until) actChipT=null; el.classList.add("hidden"); return; } var sp=screenOf(V3(actChipT.t.x,actChipT.t.y,0.3)); if (sp.z>1){ el.classList.add("hidden"); return; } el.style.left=sp.x+"px"; el.style.top=sp.y+"px"; el.classList.remove("hidden"); }
+document.getElementById("actchip").addEventListener("click", function(){ if (!actChipT) return; var t=actChipT.t; hideActChip(); var sp=spotAt(t.x,t.y,0.9); openMenu(sp && spotKind(sp)!=="patch" ? {k:"spot",ref:sp} : t); });
 
 /* ================= UI ================= */
 function setFocus(h){ if (focus && focus.task && focus.task.src==="player") focus.task=null; focus=h; if (h){ h.task=null; h.asleep=false; h.boredom=Math.max(0,h.boredom-0.3); h.thought="Waiting for you."; follow=true; document.getElementById("bFollow").classList.add("on"); } updateCard(); }
@@ -2696,7 +2769,7 @@ function renderSide(){
     cand.forEach(function(p){ html+='<div class="entry"><b>'+escapeHTML(patName(p))+'</b> <span class="t">'+(p.count>=2?"catching on":"tried once")+'</span><br><span class="t">Done '+Math.min(p.count,RECOG.count)+' of '+RECOG.count+' times, on '+Math.min(Object.keys(p.days||{}).length,RECOG.days)+' of '+RECOG.days+' days, '+Math.min(p.unprompted||0,RECOG.unprompted)+' of '+RECOG.unprompted+' times without being told.</span></div>'; });
     cand=[];
     if (cand.length){ html+='<div class="entry t">Emerging: '+cand.map(function(p){return escapeHTML(patName(p))+' ('+p.count+')';}).join(", ")+'</div>'; } }
-  if (sideMode==="help"){ html='<h3>How to play</h3><div class="help"><p>Tap any hominin to focus on it. There is no player band: you can switch to anyone, in any group, at any time. Tap the ground, the water or anything else to see what you can try there; walking is the first button. Tap the focused hominin to eat, drink, drop or wear what they hold.</p><p>Nothing is scripted. Tap anything, then choose what to do (grab, bite, squeeze, hit, scrape, poke, dig, rub, shake, throw, put, eat, sniff and more) and what to do it with (hands, teeth, feet, whole body, or whatever is held). Any combination can be tried, and every one does something: the result comes from the physical properties involved. Water spills from a hand within seconds and soaks into dirt; stones put together in one place form a pile, a ring, or the lining of a hole. "Again" repeats the last attempt and "Repeat both" repeats the last two. The Teaching bar on the panel shows how natural the last thing you asked feels to them. The focused hominin still has instincts: if they are hungry and holding food, they may eat it instead of doing what you asked. The more often someone does something against instinct, the easier it gets, and anyone watching learns a little too.</p><p>The focused hominin will not always obey. A full one will not pick berries, a calm one will not pick a fight. Keep ordering and they may give in, but frustration builds and they can lash out or storm off. The panel shows what would make them willing.</p><p>The band pulls at you: others come to groom, play, beg, court or challenge. Turning your back on a challenge costs rank. Stored food is remembered by whoever stored it; thieves get spotted, dominant males may take it by force, and fights can turn deadly. Burying or covering food helps.</p><p>A behaviour becomes a habit of the band once it has been done at least 8 times, on at least two days, and someone has done it without being told. Things they already do by instinct, like picking berries, do not count. Watch its progress under Culture.</p><p>You can only steer one individual at a time. Others will help briefly if you lead them or show them, then get bored. The world reacts: food rots, rain soaks, rivals steal, predators learn, seasons turn, and fire spreads.</p><p>Drag to pan. Pinch to zoom, twist two fingers to rotate, or use the round buttons on the right: rotate, zoom, and tilt. On a computer you can also scroll, right-drag, or press Q and E. "Camera follows" keeps the focused hominin centred, and the Less button shrinks the hominin panel.</p><p>Tap × or anywhere on the world to close this.</p><p class="t">World seed '+SEED0+'. Add ?seed='+SEED0+' to the page address to replay this world.</p></div>'; }
+  if (sideMode==="help"){ html='<h3>How to play</h3><div class="help"><p>Tap any hominin to focus on it. There is no player band: you can switch to anyone, in any group, at any time. Click the ground to walk there. To do something to the ground itself, right-click it, press and hold, or press <b>Do something here</b> after walking. Click anything else to see what you can try with it. Tap the focused hominin to eat, drink, drop or wear what they hold.</p><p>Nothing is scripted. Tap anything, then choose what to do (grab, bite, squeeze, hit, scrape, poke, dig, rub, shake, throw, put, eat, sniff and more) and what to do it with (hands, teeth, feet, whole body, or whatever is held). Any combination can be tried, and every one does something: the result comes from the physical properties involved. Water spills from a hand within seconds and soaks into dirt; stones put together in one place form a pile, a ring, or the lining of a hole. "Again" repeats the last attempt and "Repeat both" repeats the last two. The Teaching bar on the panel shows how natural the last thing you asked feels to them. The focused hominin still has instincts: if they are hungry and holding food, they may eat it instead of doing what you asked. The more often someone does something against instinct, the easier it gets, and anyone watching learns a little too.</p><p>The focused hominin will not always obey. A full one will not pick berries, a calm one will not pick a fight. Keep ordering and they may give in, but frustration builds and they can lash out or storm off. The panel shows what would make them willing.</p><p>The band pulls at you: others come to groom, play, beg, court or challenge. Turning your back on a challenge costs rank. Stored food is remembered by whoever stored it; thieves get spotted, dominant males may take it by force, and fights can turn deadly. Burying or covering food helps.</p><p>A behaviour becomes a habit of the band once it has been done at least 8 times, on at least two days, and someone has done it without being told. Things they already do by instinct, like picking berries, do not count. Watch its progress under Culture.</p><p>You can only steer one individual at a time. Others will help briefly if you lead them or show them, then get bored. The world reacts: food rots, rain soaks, rivals steal, predators learn, seasons turn, and fire spreads.</p><p>Drag to pan. Pinch to zoom, twist two fingers to rotate, or use the round buttons on the right: rotate, zoom, and tilt. On a computer you can also scroll, right-drag, or press Q and E. "Camera follows" keeps the focused hominin centred, and the Less button shrinks the hominin panel.</p><p>Tap × or anywhere on the world to close this.</p><p class="t">World seed '+SEED0+'. Add ?seed='+SEED0+' to the page address to replay this world.</p></div>'; }
   html = html.replace(/^<h3>(.*?)<\/h3>/, '<div class="sidehead"><h3>$1</h3><button class="close" data-close="1" aria-label="Close">×</button></div>');
   side.innerHTML=html;
 }
@@ -2752,6 +2825,8 @@ function tryLabel(av, t, ai){
   if (av==="drink" && (t.k==="ground"||t.k==="spot")) return t.k==="spot"&&t.ref.water>=0.3 ? "Drink from the "+tn.replace(/ holding.*$/,"") : "Lick the damp ground";
   if (av==="eat" && (t.k==="ground"||t.k==="spot")) return "Eat some earth";
   if (av==="dig" && t.k==="item") return "Bury the "+tn;
+  if (av==="grab" && t.k==="source"){ var gl={bush:"Pick berries", figTree:"Get figs (shake some down)", nutTree:"Get nuts (shake some down)", vine:"Pick a gourd", outcrop:"Prise out a stone", tree:"Break off a stick", roots:"Pull at the roots", mound:"Break off some mound earth", burrow:"Reach into the burrow"}[t.ref.type]; if (gl) return gl; }
+  if (av==="grab" && t.k==="item") return "Pick up the "+tn;
   if (av==="eat"||av==="drink"||av==="sniff"||av==="bite") return VERB[av].n+" "+(t.k==="hom"?tn:"the "+tn);
   if (av==="groom") return "Groom "+tn;
   if (av==="lead") return "Lead "+tn+" (they may follow)";
@@ -2814,7 +2889,7 @@ var LESSONS = [
   { enter:function(){ tut.stores0=stats.stores[tut.tutor.id]||0; },
     want:function(){ return {av:"put",ai:"berry"}; },
     check:function(){ if ((stats.stores[tut.tutor.id]||0)>tut.stores0) return true; if (!holds(tut.tutor,"berry") && !busy(tut.tutor)){ tut.back=2; tut.note="Back to step 3: "+tut.tutor.name+" ate them. That's instinct winning. Grab more and try again: every time you get them to store instead, the urge to eat gets a little weaker."; } return false; },
-    text:function(){ var n=escapeHTML(tut.tutor.name); return "Instinct says: eat them now. You want them kept for later. Quickly, before "+n+" eats them: tap the bare ground right next to "+n+", choose <b>Put</b>, with <b>berries</b>, then press the button."; } },
+    text:function(){ var n=escapeHTML(tut.tutor.name); return "Instinct says: eat them now. You want them kept for later. Quickly, before "+n+" eats them: right-click the bare ground right next to "+n+" (or click it and press <b>Do something here</b>), choose <b>Put</b>, with <b>berries</b>, then press the button."; } },
   { want:function(){ return holds(tut.tutor,"berry") ? {av:"put",ai:"berry"} : {av:"grab",ai:"hands"}; },
     beacon:function(){ if (holds(tut.tutor,"berry")) return null; if (!tut.bush || tut.bush.stock<1) tut.bush=nearestBushTo(tut.tutor); return beaconOf(tut.bush); },
     check:function(){ return tutNat(tut.tutor)>=0.5 && (stats.stores[tut.tutor.id]||0)>=6; },
@@ -2834,14 +2909,14 @@ var LESSONS = [
   { enter:function(){ tut.seep0=stats.seep; },
     want:function(){ return {av:"put",ai:"water"}; },
     check:function(){ if (stats.seep>tut.seep0) return true; if (!holds(focus,"water") && !busy(focus)){ tut.back=0; tut.note="It ran out of "+(focus?focus.name+"'s":"their")+" fingers into the lake before you put it anywhere. A handful lasts a few seconds. Grab another."; } return false; },
-    text:function(){ return "It's already dribbling away: a handful lasts a few seconds. Quick: tap the dry ground a few steps from the water, choose <b>Put</b>, with the <b>handful of water</b>."; } },
+    text:function(){ return "It's already dribbling away: a handful lasts a few seconds. Quick: right-click the dry ground a few steps from the water (or click it and press <b>Do something here</b>), choose <b>Put</b>, with the <b>handful of water</b>."; } },
   { want:function(){ return {av:"grab",ai:"hands"}; },
     beacon:function(){ var st=nearestItem(tutHolder(),function(i){ return i.cls==="stone"; },30); return st?{x:st.x,y:st.y,label:"Stone"}:null; },
     check:function(){ return holds(focus,"stone"); },
     text:function(){ return "It soaked into the dirt. Bare earth won't hold water. Let's make something that will. First, a stone: tap one of the grey stones near the band (the arrow points at one) and choose <b>Grab</b>."; } },
   { want:function(){ return {av:"hit",ai:"stone"}; },
     check:function(){ return !!(stats.playerHole && spots.indexOf(stats.playerHole)>=0 && stats.playerHole.depth>=0.5); },
-    text:function(){ var deep=stats.playerHole?stats.playerHole.depth:0; return "Now dig. Tap the ground a little way from the water (not sand: it slides back in), choose <b>Hit</b>, with <b>stone</b>. Each blow digs a little deeper. Press <b>Again</b> to keep hitting the same spot until there's a proper hole."+(deep>0?"<br><br><b>Hole: "+Math.min(100,Math.round(deep/0.5*100))+"% dug.</b>":""); } },
+    text:function(){ var deep=stats.playerHole?stats.playerHole.depth:0; return "Now dig. Right-click the ground a little way from the water (not sand: it slides back in), choose <b>Hit</b>, with <b>stone</b>. Each blow digs a little deeper. Press <b>Again</b> to keep hitting the same spot until there's a proper hole."+(deep>0?"<br><br><b>Hole: "+Math.min(100,Math.round(deep/0.5*100))+"% dug.</b>":""); } },
   { want:function(){ return holds(focus,"stone") ? {av:"put",ai:"stone"} : {av:"grab",ai:"hands"}; },
     beacon:function(){ if (!holds(focus,"stone")){ var st=nearestItem(tutHolder(),function(i){ return i.cls==="stone"; },30); return st?{x:st.x,y:st.y,label:"Stone"}:null; } var hole=stats.playerHole; return hole?{x:hole.x,y:hole.y,label:"Your hole"}:null; },
     check:function(){ return !!(stats.playerHole && spotKind(stats.playerHole)==="basin"); },
@@ -2908,7 +2983,7 @@ speed=0; ["sp0","sp1","sp3","sp8"].forEach(function(j){ document.getElementById(
 document.getElementById("tStart").addEventListener("click", function(){ document.getElementById("title").classList.add("hidden"); startTutorial(0); });
 document.getElementById("tFree").addEventListener("click", function(){ document.getElementById("title").classList.add("hidden"); setSpeed(1); toast("Tap any hominin to focus on it. Press ? for help."); });
 requestAnimationFrame(frame);
-window.__sim = {instrFor:instrFor, homeOf:homeOf, screenAt:function(x,y,lift){ return screenOf(V3(x,y,lift||1)); }, getMenu:function(){ return menu; }, tick:function(dt,n){ for (var i=0;i<(n||1);i++) update(dt*speed); render(dt); updateCard(); tutTick(); }, attemptCore:attemptCore, fp:fp, spots:spots, makeSpot:makeSpot, spotAt:spotAt, spotKind:spotKind, spotCap:spotCap, addFire:addFire, compVerbs:compVerbs, stats:stats, tut:tut, startTutorial:startTutorial, gotoStep:gotoStep, tutTick:tutTick, tutNat:tutNat, runQueue:runQueue, effResPub:function(h,a,b,c){return effRes(h,a,b,c);}, setRaining:function(v){raining=v;}, render:render, pick3:pick3, tap3:tap3, views:views, update:update, homs:homs, patterns:patterns, items:items, creatures:function(){return creatures;}, setFocus:setFocus, setTask:setTask, doVerb:doVerb, options:options, chronicle:chronicle, fires:fires, sources:sources, IT:IT, T:T, getFocus:function(){return focus;}, nearWater:nearWater};
+window.__sim = {attempt:attempt, giveNew:giveNew, addItem:addItem, launch:launch, instrFor:instrFor, homeOf:homeOf, screenAt:function(x,y,lift){ return screenOf(V3(x,y,lift||1)); }, getMenu:function(){ return menu; }, tick:function(dt,n){ for (var i=0;i<(n||1);i++) update(dt*speed); render(dt); updateCard(); tutTick(); }, attemptCore:attemptCore, fp:fp, spots:spots, makeSpot:makeSpot, spotAt:spotAt, spotKind:spotKind, spotCap:spotCap, addFire:addFire, compVerbs:compVerbs, stats:stats, tut:tut, startTutorial:startTutorial, gotoStep:gotoStep, tutTick:tutTick, tutNat:tutNat, runQueue:runQueue, effResPub:function(h,a,b,c){return effRes(h,a,b,c);}, setRaining:function(v){raining=v;}, render:render, pick3:pick3, tap3:tap3, views:views, update:update, homs:homs, patterns:patterns, items:items, creatures:function(){return creatures;}, setFocus:setFocus, setTask:setTask, doVerb:doVerb, options:options, chronicle:chronicle, fires:fires, sources:sources, IT:IT, T:T, getFocus:function(){return focus;}, nearWater:nearWater};
 })();
 </script>
 </body>
