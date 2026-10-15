@@ -1,0 +1,346 @@
+<!doctype html>
+<html lang="en-AU">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Glass hero lab</title>
+<meta name="description" content="A working reconstruction of the AI-plate plus glass-UI hero recipe, with the Figma layer stack written beside it.">
+<meta name="robots" content="noindex">
+<meta name="theme-color" content="#0b0d10">
+<link rel="preload" as="font" type="font/woff2" href="/fonts/clash-display-var.woff2" crossorigin>
+<link rel="preload" as="font" type="font/woff2" href="/fonts/satoshi-var.woff2" crossorigin>
+<link rel="preload" as="image" href="/img/hero.jpg" fetchpriority="high">
+
+<style>
+/* ===========================================================================
+   GLASS HERO LAB
+   A reconstruction of the "one AI plate + thin glass UI + Smart Animate
+   reveal" hero that the Grigoletto Figma pack is built from. Every layer
+   below carries a data-layer name that matches the layer stack table under
+   the artboard, so it can be rebuilt in Figma one layer at a time.
+   =========================================================================== */
+
+@font-face{font-family:'Clash';src:url('/fonts/clash-display-var.woff2') format('woff2-variations');font-weight:200 700;font-display:swap}
+@font-face{font-family:'Satoshi';src:url('/fonts/satoshi-var.woff2') format('woff2-variations');font-weight:300 900;font-display:swap}
+@font-face{font-family:'Mono';src:url('/fonts/ibm-plex-mono-400.woff2') format('woff2');font-weight:400;font-display:swap}
+@font-face{font-family:'Mono';src:url('/fonts/ibm-plex-mono-500.woff2') format('woff2');font-weight:500;font-display:swap}
+
+:root{
+  --ground:#0b0d10;
+  --ground-line:oklch(0.26 0.01 252);
+  --fg:oklch(0.968 0.006 84);
+  --fg-dim:oklch(0.80 0.012 84);
+  --fg-mute:oklch(0.645 0.014 252);
+  --amber:oklch(0.760 0.155 58);
+
+  /* The glass spec. Same four numbers on every glass layer in the pack. */
+  --glass-fill:rgba(255,255,255,0.07);
+  --glass-fill-strong:rgba(255,255,255,0.11);
+  --glass-line:rgba(255,255,255,0.14);
+  --glass-line-strong:rgba(255,255,255,0.22);
+  --glass-blur:18px;
+
+  --display:'Clash','Segoe UI Semibold','Helvetica Neue',Arial,sans-serif;
+  --body:'Satoshi','Segoe UI','Helvetica Neue',Arial,sans-serif;
+  --mono:'Mono',ui-monospace,Consolas,monospace;
+
+  --ease-out:cubic-bezier(0.16,1,0.3,1);
+  --ease:cubic-bezier(0.22,1,0.36,1);
+}
+
+*{box-sizing:border-box}
+html{background:var(--ground)}
+body{
+  margin:0; color:var(--fg); font-family:var(--body); font-size:1rem; line-height:1.55;
+  background:
+    linear-gradient(var(--ground-line) 1px, transparent 1px) 0 0/48px 48px,
+    linear-gradient(90deg, var(--ground-line) 1px, transparent 1px) 0 0/48px 48px,
+    var(--ground);
+  background-blend-mode:normal;
+  -webkit-font-smoothing:antialiased;
+}
+body::before{ /* dim the canvas grid so it reads as a Figma canvas, not a page */
+  content:""; position:fixed; inset:0; background:var(--ground); opacity:.86; pointer-events:none; z-index:-1;
+}
+
+.canvas{max-width:1520px; margin:0 auto; padding:clamp(20px,4vw,56px) clamp(16px,3vw,40px) 96px}
+.frame-label{
+  font-family:var(--mono); font-size:.6875rem; letter-spacing:.14em; text-transform:uppercase;
+  color:var(--fg-mute); display:flex; flex-wrap:wrap; gap:4px 18px; align-items:center; margin:0 0 10px 2px;
+}
+.frame-label span{white-space:nowrap}
+.frame-label b{color:var(--fg-dim); font-weight:500}
+.frame-label span:not(:first-child)::before{content:"·"; margin-right:18px; color:var(--ground-line)}
+
+/* ───────────────────────────── THE ARTBOARD ───────────────────────────── */
+.artboard{
+  position:relative; width:100%; aspect-ratio:1440/900; overflow:hidden;
+  container-type:inline-size; background:#101418; color:#fff;
+  outline:1px solid var(--ground-line); border-radius:0;
+  box-shadow:0 40px 120px -40px rgba(0,0,0,.8);
+  isolation:isolate; user-select:none;
+}
+.artboard *{box-sizing:border-box}
+
+/* L1  Plate — the AI image. Full bleed, cover, no filters. */
+.plate{position:absolute; inset:0; width:100%; height:100%; object-fit:cover; object-position:50% 60%}
+
+/* L2  Scrim — darkens the ground so white type survives on the bright sand. */
+.scrim{
+  position:absolute; inset:0; pointer-events:none;
+  background:
+    linear-gradient(180deg, rgba(8,10,14,.55) 0%, rgba(8,10,14,0) 28%, rgba(8,10,14,0) 62%, rgba(8,10,14,.62) 100%),
+    linear-gradient(90deg, rgba(8,10,14,.40) 0%, rgba(8,10,14,0) 45%);
+}
+
+/* L3  Headline — sits BEHIND the subject. Tracked tight, two lines. */
+.headline{
+  position:absolute; left:4.2cqw; bottom:7.5cqw; margin:0;
+  font-family:var(--display); font-weight:600; letter-spacing:-0.035em; line-height:.86;
+  font-size:14.6cqw; color:#fff; text-transform:uppercase;
+  text-shadow:0 2cqw 6cqw rgba(0,0,0,.35);
+}
+.headline i{font-style:normal; display:block; color:var(--amber)}
+
+/* L4  Cutout — the same image with its background removed, above the headline. */
+.cut{position:absolute; inset:0; width:100%; height:100%; object-fit:cover; object-position:50% 60%; pointer-events:none}
+.cut.is-missing{display:none}
+
+/* L5  Nav — one glass bar, auto layout, space between. */
+.glass{
+  background:var(--glass-fill); border:1px solid var(--glass-line);
+  -webkit-backdrop-filter:blur(var(--glass-blur)) saturate(140%);
+  backdrop-filter:blur(var(--glass-blur)) saturate(140%);
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.10), 0 1.2cqw 3cqw rgba(0,0,0,.28);
+}
+.nav{
+  position:absolute; top:2.2cqw; left:2.5cqw; right:2.5cqw; height:4.3cqw; border-radius:999px;
+  display:flex; align-items:center; justify-content:space-between; padding:0 .55cqw 0 1.6cqw;
+  font-size:.92cqw; letter-spacing:.02em;
+}
+.nav__logo{font-family:var(--display); font-weight:600; letter-spacing:.06em; font-size:1cqw}
+.nav__links{display:flex; gap:2.2cqw; margin:0; padding:0; list-style:none; color:rgba(255,255,255,.78)}
+.nav__links li:first-child{color:#fff}
+.nav__right{display:flex; align-items:center; gap:.8cqw}
+.nav__ico{width:2.2cqw; height:2.2cqw; border-radius:999px; display:grid; place-items:center; color:#fff}
+.nav__ico svg{width:1cqw; height:1cqw; stroke:currentColor; fill:none; stroke-width:1.8; stroke-linecap:round; stroke-linejoin:round}
+.nav__cta{
+  height:3.2cqw; padding:0 1.5cqw; border-radius:999px; background:#fff; color:#0b0d10;
+  font-weight:600; display:inline-flex; align-items:center; font-size:.92cqw;
+}
+
+/* L6  Eyebrow + subhead + CTA pair, top-left under the nav. */
+.copy{position:absolute; left:4.2cqw; top:10.5cqw; width:30cqw}
+.eyebrow{
+  font-family:var(--mono); font-size:.72cqw; letter-spacing:.18em; text-transform:uppercase;
+  color:var(--amber); margin:0 0 1cqw; display:flex; align-items:center; gap:.8cqw;
+}
+.eyebrow::before{content:""; width:2.4cqw; height:1px; background:currentColor}
+.subhead{margin:0 0 1.8cqw; font-size:1.25cqw; line-height:1.45; color:rgba(255,255,255,.86); font-weight:400}
+.ctas{display:flex; gap:.7cqw}
+.pill{
+  height:3.2cqw; padding:0 1.6cqw; border-radius:999px; display:inline-flex; align-items:center; gap:.7cqw;
+  font-size:.95cqw; font-weight:600; color:#fff; text-decoration:none;
+}
+.pill--solid{background:var(--amber); color:#1a1206}
+.pill svg{width:1cqw; height:1cqw; stroke:currentColor; fill:none; stroke-width:2; stroke-linecap:round; stroke-linejoin:round}
+
+/* L7  Stat chips — three small glass pills, top-right. */
+.stats{position:absolute; right:4.2cqw; top:10.5cqw; display:flex; flex-direction:column; gap:.7cqw; align-items:flex-end}
+.chip{
+  border-radius:999px; padding:.55cqw 1cqw .55cqw .7cqw; display:flex; align-items:center; gap:.7cqw; font-size:.85cqw;
+  color:rgba(255,255,255,.86);
+}
+.chip b{font-family:var(--display); font-weight:600; font-size:1.25cqw; color:#fff; letter-spacing:-.01em}
+.chip i{width:.55cqw; height:.55cqw; border-radius:999px; background:var(--amber); box-shadow:0 0 .8cqw var(--amber)}
+
+/* L8  Pager — numbered index bottom-right with a progress rule. */
+.pager{
+  position:absolute; right:4.2cqw; bottom:4.5cqw; display:flex; align-items:baseline; gap:1.2cqw;
+  font-family:var(--mono); font-size:.8cqw; letter-spacing:.12em; color:rgba(255,255,255,.7);
+}
+.pager b{font-family:var(--display); font-weight:500; font-size:2.2cqw; color:#fff; letter-spacing:-.02em}
+.pager .rule{width:9cqw; height:1px; background:rgba(255,255,255,.25); position:relative; top:-.6cqw}
+.pager .rule::after{content:""; position:absolute; left:0; top:0; height:100%; width:20%; background:var(--amber)}
+
+/* L9  Preview card — the Smart Animate pair. One layer, two states. */
+.card{
+  position:absolute; right:4.2cqw; bottom:10cqw; width:19cqw; height:7.2cqw; border-radius:1.4cqw;
+  padding:.6cqw; display:grid; grid-template-columns:6cqw 1fr auto; gap:1cqw; align-items:center;
+  cursor:pointer; text-align:left; color:#fff; font:inherit; z-index:3;
+  transition:width .62s var(--ease), height .62s var(--ease), right .62s var(--ease), bottom .62s var(--ease),
+             grid-template-columns .62s var(--ease), padding .62s var(--ease), border-radius .62s var(--ease);
+}
+.card__thumb{
+  width:100%; height:100%; border-radius:.9cqw; overflow:hidden; background:#000;
+  transition:border-radius .62s var(--ease);
+}
+.card__thumb img{width:100%; height:100%; object-fit:cover; display:block; transform:scale(1.02)}
+.card__meta{display:flex; flex-direction:column; gap:.2cqw; min-width:0}
+.card__kicker{font-family:var(--mono); font-size:.66cqw; letter-spacing:.16em; text-transform:uppercase; color:var(--amber)}
+.card__title{font-family:var(--display); font-weight:600; font-size:1.15cqw; line-height:1.1; letter-spacing:-.01em}
+.card__body{font-size:.9cqw; line-height:1.45; color:rgba(255,255,255,.8); margin:.6cqw 0 0; max-height:0; opacity:0; overflow:hidden; transition:max-height .62s var(--ease), opacity .4s ease}
+.card__go{
+  width:2.6cqw; height:2.6cqw; border-radius:999px; background:#fff; color:#0b0d10; display:grid; place-items:center;
+  transition:transform .62s var(--ease);
+}
+.card__go svg{width:1.1cqw; height:1.1cqw; stroke:currentColor; fill:none; stroke-width:2.2; stroke-linecap:round; stroke-linejoin:round}
+
+.artboard.is-open .card{
+  width:52cqw; height:30cqw; right:24cqw; bottom:10cqw; border-radius:1.8cqw; padding:1cqw;
+  grid-template-columns:27cqw 1fr auto;
+}
+.artboard.is-open .card__thumb{border-radius:1.2cqw}
+.artboard.is-open .card__body{max-height:12cqw; opacity:1}
+.artboard.is-open .card__go{transform:rotate(45deg)}
+.artboard.is-open .card__title{font-size:1.7cqw}
+
+/* Canvas dims behind the open card, like a Figma overlay with a scrim. */
+.veil{position:absolute; inset:0; background:rgba(6,8,12,.42); opacity:0; pointer-events:none; transition:opacity .5s ease; z-index:2}
+.artboard.is-open .veil{opacity:1; pointer-events:auto}
+
+/* ───────────────────────── REVEAL (Smart Animate "after delay") ───────────────────────── */
+.rv{opacity:0; transform:translateY(1.6cqw); animation:rv .9s var(--ease-out) forwards; animation-delay:var(--d,0s)}
+.rv--scale{transform:scale(1.04); animation-name:rv-scale; animation-duration:1.6s}
+@keyframes rv{to{opacity:1; transform:none}}
+@keyframes rv-scale{to{opacity:1; transform:none}}
+@media (prefers-reduced-motion:reduce){
+  .rv{animation:none; opacity:1; transform:none}
+  .card, .card__thumb, .card__body, .card__go, .veil{transition:none}
+}
+
+/* ───────────────────────── THE LAYER STACK, WRITTEN DOWN ───────────────────────── */
+.notes{margin-top:clamp(40px,6vw,80px); display:grid; gap:clamp(28px,4vw,56px); grid-template-columns:1fr; max-width:1200px}
+@media (min-width:900px){.notes{grid-template-columns:1.25fr 1fr}}
+.notes h2{
+  font-family:var(--display); font-weight:600; font-size:clamp(1.5rem,1.2rem + 1.4vw,2.4rem); letter-spacing:-.02em;
+  line-height:1.05; margin:0 0 .6em;
+}
+.notes p{color:var(--fg-dim); margin:0 0 1em; max-width:60ch}
+.stack{border-top:1px solid var(--ground-line); margin:0; padding:0; list-style:none}
+.stack li{
+  display:grid; grid-template-columns:44px 1fr; gap:14px; padding:14px 0; border-bottom:1px solid var(--ground-line);
+  align-items:baseline;
+}
+.stack .n{font-family:var(--mono); font-size:.72rem; color:var(--amber); letter-spacing:.1em}
+.stack b{font-family:var(--display); font-weight:600; font-size:1.05rem; display:block; margin-bottom:2px}
+.stack span{color:var(--fg-dim); font-size:.95rem}
+.stack code{font-family:var(--mono); font-size:.8rem; color:var(--fg); background:rgba(255,255,255,.06); padding:1px 5px}
+.kit{border-top:1px solid var(--ground-line); margin:0; padding:0; list-style:none}
+.kit li{padding:12px 0; border-bottom:1px solid var(--ground-line); display:grid; grid-template-columns:auto 1fr; gap:14px; align-items:baseline}
+.kit .t{font-family:var(--mono); font-size:.68rem; letter-spacing:.12em; text-transform:uppercase; color:var(--fg-mute); min-width:96px}
+.kit b{font-weight:600; color:var(--fg)}
+.kit span{color:var(--fg-dim); font-size:.95rem}
+.hint{font-family:var(--mono); font-size:.72rem; letter-spacing:.1em; text-transform:uppercase; color:var(--fg-mute); margin:12px 2px 0}
+.hint kbd{font:inherit; border:1px solid var(--ground-line); padding:1px 6px; color:var(--fg-dim)}
+</style>
+</head>
+<body>
+
+<div class="canvas">
+  <p class="frame-label"><b>Hero / Stormproof</b><span>1440 × 900</span><span>9 layers</span><span>1 prototype link</span></p>
+
+  <div class="artboard" id="artboard" role="group" aria-label="Hero artboard, 1440 by 900">
+
+    <img class="plate rv rv--scale" data-layer="01 plate" src="/img/hero.jpg" alt="A corrugated iron shed on red sand under a breaking storm, light coming through the cloud behind it." width="1584" height="672">
+    <div class="scrim" data-layer="02 scrim" aria-hidden="true"></div>
+
+    <h1 class="headline rv" data-layer="03 headline" style="--d:.25s">Storm<i>proof</i></h1>
+
+    <img class="cut" data-layer="04 cutout" src="/img/hero-cut.png" alt="" aria-hidden="true" width="1584" height="672"
+         onerror="this.classList.add('is-missing')">
+
+    <div class="veil" id="veil" aria-hidden="true"></div>
+
+    <nav class="nav glass rv" data-layer="05 nav" style="--d:.05s" aria-label="Demo navigation">
+      <span class="nav__logo">AS.</span>
+      <ul class="nav__links"><li>Work</li><li>Systems</li><li>Writing</li><li>Contact</li></ul>
+      <div class="nav__right">
+        <span class="nav__ico glass" aria-hidden="true"><svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="7"/><path d="M20 20l-3.5-3.5"/></svg></span>
+        <span class="nav__cta">Start a project</span>
+      </div>
+    </nav>
+
+    <div class="copy" data-layer="06 copy">
+      <p class="eyebrow rv" style="--d:.35s">Business systems that hold</p>
+      <p class="subhead rv" style="--d:.45s">CRMs, pipelines and agents built for the sort of weather that breaks the pretty ones.</p>
+      <div class="ctas rv" style="--d:.55s">
+        <a class="pill pill--solid" href="/#work">See the work <svg viewBox="0 0 24 24"><path d="M5 12h14M13 6l6 6-6 6"/></svg></a>
+        <a class="pill glass" href="/#contact">Get in touch</a>
+      </div>
+    </div>
+
+    <div class="stats" data-layer="07 stats">
+      <div class="chip glass rv" style="--d:.5s"><i></i><b>37,729</b> rows reconciled</div>
+      <div class="chip glass rv" style="--d:.6s"><i></i><b>1,019</b> companies rebuilt</div>
+      <div class="chip glass rv" style="--d:.7s"><i></i><b>2</b> people's jobs, one person</div>
+    </div>
+
+    <div class="pager rv" data-layer="08 pager" style="--d:.8s"><b>01</b><span class="rule"></span><span>05</span></div>
+
+    <button class="card glass rv" data-layer="09 card" id="card" type="button" style="--d:.9s" aria-expanded="false" aria-controls="cardBody">
+      <span class="card__thumb"><img src="/img/slab.jpg" alt="" width="1264" height="848" loading="lazy"></span>
+      <span class="card__meta">
+        <span class="card__kicker">Case 01</span>
+        <span class="card__title">Rain Check</span>
+        <span class="card__body" id="cardBody">A slab pour left mid-job under a threatening sky is the exact question this tool answers. Tap the arrow again to collapse.</span>
+      </span>
+      <span class="card__go" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M7 17L17 7M17 7H9M17 7v8"/></svg></span>
+    </button>
+
+  </div>
+  <p class="hint">Click the card to run the Smart Animate pair · <kbd>Esc</kbd> closes</p>
+
+  <section class="notes">
+    <div>
+      <h2>The layer stack, bottom to top</h2>
+      <p>This is the whole recipe. Nine layers, one prototype link, and the same four glass numbers on every translucent surface. Rebuild it in Figma in this order.</p>
+      <ol class="stack">
+        <li><span class="n">01</span><div><b>Plate</b><span>The AI image. 1440 × 900 frame, image fill set to Crop, subject on the right third, sky and ground left empty for type. Prompt for a cinematic 3D render or photograph with one light source and negative space. No filters on it.</span></div></li>
+        <li><span class="n">02</span><div><b>Scrim</b><span>A rectangle with two linear gradient fills: black 55% → 0% from the top, and black 62% → 0% from the bottom. This is what lets white type sit on a bright plate.</span></div></li>
+        <li><span class="n">03</span><div><b>Headline</b><span>Display face at roughly 210px, weight 600, tracking <code>-3.5%</code>, line height 86%. Two words, second one in the accent colour. Placed low-left so the subject overlaps its last letters.</span></div></li>
+        <li><span class="n">04</span><div><b>Cutout</b><span>Duplicate the plate, run a background-removal plugin on the copy, and leave it exactly in place above the headline. The subject now stands in front of the type. This one layer is what makes the whole thing look expensive.</span></div></li>
+        <li><span class="n">05</span><div><b>Nav</b><span>Auto layout, space between, 62px tall, radius 999. Glass spec: fill white <code>7%</code>, stroke white <code>14%</code> at 1px, background blur <code>18</code>, inner shadow white 10% at y=1. Logo left, four links centre, an icon and a white pill right.</span></div></li>
+        <li><span class="n">06</span><div><b>Copy</b><span>Eyebrow in mono, 11px, tracking 18%, with a 34px rule before it. Subhead at 18px, 145% line height, white at 86%. Two pills: one solid accent, one glass.</span></div></li>
+        <li><span class="n">07</span><div><b>Stat chips</b><span>Three glass pills, right aligned, 8px dot in the accent with a glow. The number in the display face at 18px, the label in body at 12px. Real figures only.</span></div></li>
+        <li><span class="n">08</span><div><b>Pager</b><span>"01" in display at 32px, a 130px hairline at white 25% with a 20% accent segment, "05" in mono. Bottom right.</span></div></li>
+        <li><span class="n">09</span><div><b>Card, two states</b><span>One component with a <code>collapsed</code> and an <code>expanded</code> variant, same layer names inside both. Prototype: On click → change to expanded, Smart Animate, ease out, 620ms. Entrance: each layer above gets an <code>After delay</code> from 50ms to 900ms in 100ms steps, moving up 24px into place.</span></div></li>
+      </ol>
+    </div>
+
+    <div>
+      <h2>What you need</h2>
+      <p>Nothing here needs a paid plan except the video demo, and even that has a free route.</p>
+      <ul class="kit">
+        <li><span class="t">Canvas</span><div><b>Figma, free plan.</b> <span>Frames, auto layout, variants, Smart Animate and background blur are all on the free tier.</span></div></li>
+        <li><span class="t">Plate</span><div><b>An image model.</b> <span>Midjourney, Flux or GPT Image for the scene. Ideogram or GPT Image if you want the headline rendered as 3D letters inside the picture. Ask for 16:10, one light source, negative space.</span></div></li>
+        <li><span class="t">Cutout</span><div><b>Background removal.</b> <span>Figma's built-in Remove Background, the remove.bg plugin, or rembg on your own machine. The cutout on this page came from rembg.</span></div></li>
+        <li><span class="t">Type</span><div><b>One display face, one body face, one mono.</b> <span>The pack uses Google fonts. This page uses the portfolio's Clash Display, Satoshi and Plex Mono.</span></div></li>
+        <li><span class="t">Icons</span><div><b>A thin line set.</b> <span>Lucide or Iconify, 1.8px stroke, round caps. Never more than three on a hero.</span></div></li>
+        <li><span class="t">Glass</span><div><b>Four numbers.</b> <span>Fill 7%, stroke 14%, blur 18, inner highlight 10%. Write them as styles once and reuse them on every surface.</span></div></li>
+        <li><span class="t">Motion</span><div><b>Smart Animate.</b> <span>Two variants of the card and staggered After-delay entrances. Ease out, 400 to 700ms. Nothing else.</span></div></li>
+        <li><span class="t">Mockup</span><div><b>A device scene.</b> <span>Generate a laptop in a matching environment with a blank screen, then map the frame onto it with a perspective mockup plugin such as Mockup or Artboard Studio.</span></div></li>
+        <li><span class="t">Demo</span><div><b>Screen recording, 4:5.</b> <span>Record the prototype in Present mode, cut it after the mockup shot in CapCut or Premiere, export WebM and MP4 at 1080 × 1350.</span></div></li>
+        <li><span class="t">Time</span><div><b>An afternoon.</b> <span>Half of it goes on getting the plate right. The UI layer is forty minutes once the styles exist.</span></div></li>
+      </ul>
+    </div>
+  </section>
+</div>
+
+<script>
+/* One prototype link: click → toggle the expanded variant. Esc and the veil close it. */
+(function(){
+  const board = document.getElementById('artboard');
+  const card  = document.getElementById('card');
+  const veil  = document.getElementById('veil');
+  function set(open){
+    board.classList.toggle('is-open', open);
+    card.setAttribute('aria-expanded', String(open));
+  }
+  card.addEventListener('click', () => set(!board.classList.contains('is-open')));
+  veil.addEventListener('click', () => set(false));
+  document.addEventListener('keydown', e => { if (e.key === 'Escape') set(false); });
+})();
+</script>
+</body>
+</html>
