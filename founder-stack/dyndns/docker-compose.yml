@@ -1,0 +1,11 @@
+# Dynamic DNS — keeps a DuckDNS name pointed at this server's changing IP
+# (home servers). Started by: stackctl dns duckdns up
+services:
+  duckdns:
+    image: lscr.io/linuxserver/duckdns:latest
+    restart: unless-stopped
+    environment:
+      SUBDOMAINS: ${DUCKDNS_SUBDOMAIN}
+      TOKEN: ${DUCKDNS_TOKEN}
+      LOG_FILE: "false"
+      TZ: ${TZ}

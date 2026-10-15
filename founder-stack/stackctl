@@ -1,0 +1,451 @@
+#!/usr/bin/env bash
+# stackctl — manage the Founder Stack.
+#   stackctl deploy [app...]    (one shot: up, bootstrapped, SSO on, branded — all apps or just these)
+#   stackctl list | status
+#   stackctl up <app...> | up --all
+#   stackctl down <app...> | down --all
+#   stackctl restart <app...>
+#   stackctl logs <app>
+#   stackctl update [app...]
+#   stackctl backup
+#   stackctl restore <backup-dir>
+#   stackctl sso on|off
+#   stackctl tunnel up|down     (Cloudflare Tunnel: no public IP needed)
+#   stackctl brand apply|show   (push name/logo/colour into every app)
+#   stackctl dns ip|check|cloudflare|duckdns up|down   (domain records: show, verify, automate)
+#   stackctl user add <email> [password] | passwd <email> [password] | rm <email>
+set -euo pipefail
+
+ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+ENVFILE="$ROOT/.env"
+APPS_DIR="$ROOT/apps"
+BACKUP_DIR="$ROOT/backups"
+
+log()  { printf '\033[1;32m==>\033[0m %s\n' "$*"; }
+fail() { printf '\033[1;31mERROR:\033[0m %s\n' "$*" >&2; exit 1; }
+
+[ -f "$ENVFILE" ] || fail "no .env found — run sudo ./install.sh first"
+
+# app -> subdomain (also documented in README/docs)
+subdomain() {
+  case "$1" in
+    homepage) echo home ;;      authentik) echo auth ;;
+    console) echo console ;;
+    calcom) echo cal ;;         invoiceninja) echo invoices ;;
+    twenty) echo crm ;;
+    listmonk) echo newsletter ;; formbricks) echo forms ;;
+    vikunja) echo tasks ;;      docmost) echo docs ;;
+    mattermost) echo chat ;;    chatwoot) echo support ;;
+    documenso) echo sign ;;     umami) echo analytics ;;
+    nextcloud) echo files ;;    vaultwarden) echo vault ;;
+    uptime-kuma) echo status ;; ghost) echo blog ;;
+    wordpress) echo site ;;     shlink) echo links-admin ;;
+    n8n) echo automate ;;       activepieces) echo flows ;;
+    peertube) echo video ;;     owncast) echo live ;;
+    videomaker) echo studio ;;  excalidraw) echo whiteboard ;;
+    jitsi) echo meet ;;         postiz) echo social ;;
+    openwebui) echo ai ;;
+    # ARM alternatives share the subdomain of the app they replace
+    espocrm) echo crm ;;        rocketchat) echo chat ;;
+    easyappointments) echo cal ;;
+    *) echo "$1" ;;
+  esac
+}
+
+# Three upstreams ship amd64-only images; on arm64 servers (e.g. Oracle's
+# Always Free tier) these ARM-capable alternatives take their place.
+alt_for() { # amd64-only app -> its ARM alternative
+  case "$1" in
+    twenty) echo espocrm ;; mattermost) echo rocketchat ;; calcom) echo easyappointments ;;
+  esac
+}
+replaces() { # ARM alternative -> the app it replaces
+  case "$1" in
+    espocrm) echo twenty ;; rocketchat) echo mattermost ;; easyappointments) echo calcom ;;
+  esac
+}
+is_arm() { case "$(uname -m)" in aarch64|arm64) return 0 ;; *) return 1 ;; esac; }
+
+# What people see: every app is named by its job, never by the upstream project.
+app_label() {
+  case "$1" in
+    homepage) echo "Hub" ;;             console) echo "Console" ;;
+    authentik) echo "Sign-on" ;;        vaultwarden) echo "Passwords" ;;
+    uptime-kuma) echo "Status page" ;;  n8n) echo "Automations" ;;
+    activepieces) echo "Automations (simple)" ;;
+    peertube) echo "Video hosting" ;;   owncast) echo "Live streaming" ;;
+    videomaker) echo "Video maker" ;;   excalidraw) echo "Whiteboard" ;;
+    jitsi) echo "Meetings" ;;           postiz) echo "Social scheduler" ;;
+    openwebui) echo "AI assistant" ;;
+    twenty|espocrm) echo "CRM" ;;       chatwoot) echo "Support desk" ;;
+    calcom|easyappointments) echo "Booking calendar" ;;
+    formbricks) echo "Forms" ;;         invoiceninja) echo "Invoices" ;;
+    documenso) echo "Signatures" ;;     listmonk) echo "Newsletter" ;;
+    ghost) echo "Blog" ;;               umami) echo "Analytics" ;;
+    mattermost|rocketchat) echo "Team chat" ;;
+    vikunja) echo "Tasks" ;;            docmost) echo "Docs" ;;
+    nextcloud) echo "Files" ;;          wordpress) echo "Website" ;;
+    shlink) echo "Short links" ;;       *) echo "$1" ;;
+  esac
+}
+# Friendly names accepted anywhere an app id is: stackctl up crm chat booking
+app_alias() {
+  local a; a="$(printf '%s' "$1" | tr '[:upper:]' '[:lower:]')"
+  case "$a" in
+    hub|home) echo homepage ;;                 sso|sign-on|signon|login) echo authentik ;;
+    passwords|vault) echo vaultwarden ;;       status|status-page|uptime) echo uptime-kuma ;;
+    automations|automation|automate) echo n8n ;;   flows|simple-automations) echo activepieces ;;
+    video|video-hosting|videos) echo peertube ;;   live|streaming|live-streaming) echo owncast ;;
+    studio|video-maker|videomaker) echo videomaker ;;  whiteboard|board) echo excalidraw ;;
+    meetings|meet|calls) echo jitsi ;;             social|scheduler|social-scheduler) echo postiz ;;
+    ai|assistant|ai-assistant) echo openwebui ;;
+    crm) is_arm && echo espocrm || echo twenty ;;
+    support|helpdesk|support-desk) echo chatwoot ;;
+    booking|bookings|calendar|scheduling|booking-calendar) is_arm && echo easyappointments || echo calcom ;;
+    forms|surveys) echo formbricks ;;          invoices|invoicing|billing) echo invoiceninja ;;
+    signatures|esign|sign) echo documenso ;;   newsletter|email-marketing) echo listmonk ;;
+    blog) echo ghost ;;                        analytics) echo umami ;;
+    chat|team-chat) is_arm && echo rocketchat || echo mattermost ;;
+    tasks|projects) echo vikunja ;;            docs|wiki) echo docmost ;;
+    files|storage|drive) echo nextcloud ;;
+    website|site|wordpress|cms|shop) echo wordpress ;;  links|short-links|shortlinks) echo shlink ;;
+    *) echo "$1" ;;
+  esac
+}
+
+all_apps() { ls -1 "$APPS_DIR"; }
+
+# The set `up --all` starts: everything, minus whichever side of each
+# amd64/ARM pair doesn't fit this server (they'd fight over one subdomain).
+# Not started by `deploy --all`/`up --all` unless asked for by name: the
+# simpler automation builder (n8n is the default) and the AI assistant (RAM-heavy).
+OPTIONAL_APPS="activepieces openwebui"
+default_apps() {
+  local a
+  for a in $(all_apps); do
+    case " $OPTIONAL_APPS " in *" $a "*) continue ;; esac
+    if is_arm; then [ -n "$(alt_for "$a")" ] && continue
+    else [ -n "$(replaces "$a")" ] && continue; fi
+    echo "$a"
+  done
+}
+
+app_tag() { # annotation for list/status output
+  local a="$1"
+  case " $OPTIONAL_APPS " in *" $a "*) echo "(optional — start by name)"; return ;; esac
+  if [ -n "$(alt_for "$a")" ]; then
+    is_arm && echo "(amd64-only: use $(alt_for "$a"))" || echo ""
+  elif [ -n "$(replaces "$a")" ]; then
+    is_arm && echo "(ARM alternative to $(replaces "$a"))" || echo "(alternative to $(replaces "$a"))"
+  fi
+}
+
+export STACK_ROOT="$ROOT"   # compose files (console) mount the stack at its host path
+
+compose() { # compose <app> <compose args...>
+  local app="$1"; shift
+  docker compose --env-file "$ENVFILE" -f "$APPS_DIR/$app/docker-compose.yml" -p "fs-$app" "$@"
+}
+
+resolve_apps() { # expands --all, validates names
+  if [ "${1:-}" = "--all" ]; then default_apps; return; fi
+  [ $# -gt 0 ] || fail "specify app names or --all (see: stackctl list)"
+  local a; for a in "$@"; do
+    a="$(app_alias "$a")"
+    [ -d "$APPS_DIR/$a" ] || fail "unknown app '$a' (see: stackctl list)"
+    echo "$a"
+  done
+}
+
+base_domain() { grep '^BASE_DOMAIN=' "$ENVFILE" | cut -d= -f2-; }
+
+running_count() { # number of running containers for an app; 0 on any error
+  local n
+  n="$(compose "$1" ps -q 2>/dev/null | wc -l)" || n=0
+  echo "$n"
+}
+
+wait_ready() { # <app> [seconds] — poll the app's URL until it answers (< 500)
+  local a="$1" t="${2:-300}" url code k=()
+  url="https://$(subdomain "$a").$(base_domain)/"
+  [ "${STACK_INSECURE:-0}" = 1 ] && k=(-k --noproxy '*')
+  while [ "$t" -gt 0 ]; do
+    code="$(curl -s "${k[@]}" -o /dev/null -w '%{http_code}' --max-time 10 "$url" 2>/dev/null || echo 000)"
+    case "$code" in 2*|3*|401|403) return 0 ;; esac   # 404 = traefik has no healthy backend yet
+    sleep 5; t=$((t-5))
+  done
+  return 1
+}
+
+cmd="${1:-}"; shift || true
+case "$cmd" in
+  list)
+    printf '%-18s %-38s %-17s %s\n' "APP" "URL" "ID" ""
+    for a in $(all_apps); do
+      printf '%-18s %-38s %-17s %s\n' "$(app_label "$a")" "https://$(subdomain "$a").$(base_domain)" "$a" "$(app_tag "$a")"
+    done
+    is_arm && echo && echo "arm64 server detected: 'up --all' uses the ARM alternatives automatically."
+    ;;
+
+  up)
+    for a in $(resolve_apps "$@"); do
+      if is_arm && [ -n "$(alt_for "$a")" ]; then
+        fail "$(app_label "$a") ($a) uses an amd64-only build; on this arm64 server use: stackctl up $(alt_for "$a")"
+      fi
+      # the two sides of a pair share a subdomain; refuse to run both
+      other="$(alt_for "$a")$(replaces "$a")"   # at most one is non-empty
+      if [ -n "$other" ] && [ "$(running_count "$other")" -gt 0 ]; then
+        fail "another $(app_label "$a") ($other) is already running on that address — stop it first: stackctl down $other"
+      fi
+      log "Starting $(app_label "$a") -> https://$(subdomain "$a").$(base_domain)"
+      compose "$a" up -d
+    done
+    log "Done. First-login steps per app: docs/APPS.md"
+    ;;
+
+  down)
+    for a in $(resolve_apps "$@"); do
+      log "Stopping $(app_label "$a") (data is kept)"
+      compose "$a" down
+    done
+    ;;
+
+  restart)
+    for a in $(resolve_apps "$@"); do compose "$a" restart; done
+    ;;
+
+  logs)
+    [ $# -eq 1 ] || fail "usage: stackctl logs <app>"
+    if [ "${STACKCTL_NO_FOLLOW:-0}" = 1 ]; then compose "$1" logs --tail=200   # console: one shot
+    else compose "$1" logs -f --tail=200; fi
+    ;;
+
+  status)
+    printf '%-17s %-10s %-38s %-18s %s\n' "ID" "STATE" "URL" "APP" ""
+    for a in $(all_apps); do
+      state="stopped"
+      [ "$(running_count "$a")" -gt 0 ] && state="running"
+      printf '%-17s %-10s %-38s %-18s %s\n' "$a" "$state" "https://$(subdomain "$a").$(base_domain)" "$(app_label "$a")" "$(app_tag "$a")"
+    done
+    ;;
+
+  update)
+    apps="$( [ $# -gt 0 ] && resolve_apps "$@" || all_apps )"
+    for a in $apps; do
+      [ "$(running_count "$a")" -gt 0 ] || continue
+      log "Updating $(app_label "$a")..."
+      compose "$a" pull
+      compose "$a" up -d
+    done
+    ;;
+
+  backup)
+    ts="$(date +%Y%m%d-%H%M%S)"
+    dest="$BACKUP_DIR/$ts"
+    mkdir -p "$dest"
+    log "Backing up to $dest"
+    for a in $(all_apps); do
+      [ "$(running_count "$a")" -gt 0 ] || continue
+      log "  $a: dumping databases..."
+      # Postgres containers in this app
+      for c in $(compose "$a" ps -q); do
+        img="$(docker inspect -f '{{.Config.Image}}' "$c")"
+        name="$(docker inspect -f '{{index .Config.Labels "com.docker.compose.service"}}' "$c")"
+        case "$img" in
+          postgres*|*"/postgres"*)
+            user="$(docker exec "$c" printenv POSTGRES_USER 2>/dev/null || echo postgres)"
+            docker exec "$c" pg_dumpall -U "$user" > "$dest/$a-$name.sql" ;;
+          mysql*|mariadb*)
+            pw="$(docker exec "$c" sh -c 'printenv MYSQL_ROOT_PASSWORD' 2>/dev/null || true)"
+            [ -n "$pw" ] && docker exec "$c" sh -c "exec mysqldump --all-databases -uroot -p\"\$MYSQL_ROOT_PASSWORD\"" > "$dest/$a-$name.sql" ;;
+        esac
+      done
+      log "  $a: archiving volumes..."
+      for v in $(docker volume ls -q --filter "label=com.docker.compose.project=fs-$a"); do
+        docker run --rm -v "$v":/data:ro -v "$dest":/backup busybox \
+          tar czf "/backup/$a-vol-$v.tar.gz" -C /data . >/dev/null
+      done
+    done
+    log "Backup complete: $dest — copy it off this server."
+    ;;
+
+  restore)
+    [ $# -eq 1 ] && [ -d "${1:-}" ] || fail "usage: stackctl restore <backup-dir>"
+    src="$(cd "$1" && pwd)"
+    log "Restoring volumes from $src (apps must be stopped: stackctl down --all)"
+    for f in "$src"/*-vol-*.tar.gz; do
+      [ -e "$f" ] || continue
+      v="$(basename "$f" .tar.gz)"; v="${v#*-vol-}"
+      docker volume create "$v" >/dev/null
+      docker run --rm -v "$v":/data -v "$src":/backup:ro busybox \
+        sh -c "cd /data && tar xzf /backup/$(basename "$f")"
+      log "  restored volume $v"
+    done
+    log "Volumes restored. Start apps (stackctl up ...). SQL dumps in $src are a"
+    log "second line of defense; volume restore alone brings databases back."
+    ;;
+
+  sso)
+    # Apps whose SSO wiring reads SSO_ENABLED / DOCUMENSO_OIDC_WELL_KNOWN
+    sso_apps="vikunja mattermost documenso vaultwarden"
+    set_env() { sed -i "s|^$1=.*|$1=$2|" "$ENVFILE"; }
+    d="$(base_domain)"
+    case "${1:-}" in
+      on)
+        set_env SSO_ENABLED true
+        set_env DOCUMENSO_OIDC_WELL_KNOWN "https://auth.$d/application/o/documenso/.well-known/openid-configuration"
+        log "Starting Authentik (sign-on portal: https://auth.$d, user 'akadmin', ADMIN_PASSWORD from .env)"
+        compose authentik up -d
+        for a in $sso_apps; do
+          # --force-recreate: compose does not detect inline-config content
+          # changes (vikunja's OIDC config), only env changes
+          [ "$(running_count "$a")" -gt 0 ] && { log "Re-applying $a with SSO..."; compose "$a" up -d --force-recreate; }
+        done
+        log "SSO is on. Listmonk + Nextcloud need a one-time manual step: docs/SSO.md"
+        ;;
+      off)
+        set_env SSO_ENABLED false
+        set_env DOCUMENSO_OIDC_WELL_KNOWN ""
+        for a in $sso_apps; do
+          [ "$(running_count "$a")" -gt 0 ] && compose "$a" up -d --force-recreate
+        done
+        log "SSO is off (Authentik left running; stop it with: stackctl down authentik)"
+        ;;
+      *) fail "usage: stackctl sso on|off" ;;
+    esac
+    ;;
+
+  user)
+    # One identity across the stack: real OIDC where possible, scripted
+    # same-credentials accounts everywhere else. See docs/SSO.md.
+    sub="${1:-}"; email="${2:-}"
+    [ -n "$email" ] || fail "usage: stackctl user add|passwd|rm <email> [password]"
+    case "$email" in *@*) ;; *) fail "'$email' doesn't look like an email" ;; esac
+    . "$ROOT/scripts/provision.sh"
+    case "$sub" in
+      add|passwd)
+        pass="${3:-$(openssl rand -base64 24 | tr -d '/+=' | cut -c1-20)}"
+        log "Provisioning '$email' across running apps..."
+        run_provisioners "$sub" "$email" "$pass"
+        echo
+        log "Password for $email (shown once — store it in Vaultwarden):"
+        printf '    %s\n' "$pass"
+        ;;
+      rm)
+        log "Removing '$email' across running apps..."
+        run_provisioners rm "$email" ""
+        ;;
+      *) fail "usage: stackctl user add|passwd|rm <email> [password]" ;;
+    esac
+    ;;
+
+  tunnel)
+    [ -n "$(grep '^CF_TUNNEL_TOKEN=' "$ENVFILE" | cut -d= -f2-)" ] || fail "set CF_TUNNEL_TOKEN in .env first (docs/ZERO-COST.md → Own hardware)"
+    case "${1:-}" in
+      up)   docker compose --env-file "$ENVFILE" -f "$ROOT/tunnel/docker-compose.yml" -p fs-tunnel up -d
+            log "Tunnel up. In Cloudflare: public hostname *.$(base_domain) → https://traefik:443, 'No TLS Verify' on." ;;
+      down) docker compose --env-file "$ENVFILE" -f "$ROOT/tunnel/docker-compose.yml" -p fs-tunnel down ;;
+      *) fail "usage: stackctl tunnel up|down" ;;
+    esac
+    ;;
+
+  dns)
+    d="$(base_domain)"
+    envv() { grep "^$1=" "$ENVFILE" | head -1 | cut -d= -f2-; }
+    public_ip() { curl -s --max-time 8 https://api.ipify.org 2>/dev/null || curl -s --max-time 8 https://ifconfig.me 2>/dev/null || true; }
+    hosts_needed() { echo "$d"; for a in $(all_apps); do echo "$(subdomain "$a").$d"; done; echo "www.$d"; echo "links.$d"; }
+    case "${1:-}" in
+      ip) public_ip; echo ;;
+      check)
+        ip="$(public_ip)"; [ -n "$ip" ] && log "This server's public IP: $ip" || log "Could not look up this server's public IP (no outbound internet?) — use the IP your host shows you."
+        echo "Records your domain needs (both pointing at this server):"
+        printf '  %-6s %-28s -> %s\n' A "$d" "${ip:-<server IP>}"; printf '  %-6s %-28s -> %s\n' A "*.$d" "${ip:-<server IP>}"
+        echo; echo "Checking what the internet sees:"
+        ok=0; bad=0
+        for h in $(hosts_needed | sort -u); do
+          got="$(getent ahostsv4 "$h" 2>/dev/null | awk '{print $1}' | head -1)"
+          if [ -n "$got" ] && { [ "$got" = "$ip" ] || [ -z "$ip" ]; }; then printf '  \033[1;32m✔\033[0m %s -> %s\n' "$h" "$got"; ok=$((ok+1))
+          elif [ -n "$got" ]; then printf '  \033[1;31m✖\033[0m %s -> %s (expected %s)\n' "$h" "$got" "$ip"; bad=$((bad+1))
+          else printf '  \033[1;31m✖\033[0m %s -> no record\n' "$h"; bad=$((bad+1)); fi
+        done
+        echo; [ "$bad" -eq 0 ] && log "DNS is complete." || log "$bad of $((ok+bad)) names still need records — a wildcard (*) record fixes them all at once."
+        ;;
+      cloudflare)
+        tok="$(envv CF_API_TOKEN)"; [ -n "$tok" ] || fail "set CF_API_TOKEN in .env (Cloudflare → My Profile → API Tokens → Edit zone DNS)"
+        ip="$(public_ip)"; [ -n "$ip" ] || fail "could not determine this server's public IP"
+        api="https://api.cloudflare.com/client/v4"; H=(-H "Authorization: Bearer $tok" -H "Content-Type: application/json")
+        zone="$(curl -s "${H[@]}" "$api/zones?name=$d" | sed -n 's/.*"id":"\([a-f0-9]\{32\}\)".*/\1/p' | head -1)"
+        [ -n "$zone" ] || fail "no Cloudflare zone named $d for this token (add the domain to Cloudflare first)"
+        for name in "$d" "*.$d"; do
+          rid="$(curl -s "${H[@]}" "$api/zones/$zone/dns_records?type=A&name=$name" | sed -n 's/.*"id":"\([a-f0-9]\{32\}\)".*/\1/p' | head -1)"
+          body="{\"type\":\"A\",\"name\":\"$name\",\"content\":\"$ip\",\"ttl\":300,\"proxied\":false}"
+          if [ -n "$rid" ]; then curl -s -X PUT "${H[@]}" "$api/zones/$zone/dns_records/$rid" -d "$body" >/dev/null && log "updated  A $name -> $ip"
+          else curl -s -X POST "${H[@]}" "$api/zones/$zone/dns_records" -d "$body" >/dev/null && log "created  A $name -> $ip"; fi
+        done
+        log "Done. Certificates are issued automatically as each app comes up (allow a minute for DNS)."
+        ;;
+      duckdns)
+        case "${2:-}" in
+          up)
+            [ -n "$(envv DUCKDNS_TOKEN)" ] || fail "set DUCKDNS_TOKEN in .env (duckdns.org shows it at the top of your page)"
+            sub="$(envv DUCKDNS_SUBDOMAIN)"; [ -n "$sub" ] || { sub="${d%.duckdns.org}"; sed -i "s|^DUCKDNS_SUBDOMAIN=.*|DUCKDNS_SUBDOMAIN=$sub|" "$ENVFILE"; }
+            docker compose --env-file "$ENVFILE" -f "$ROOT/dyndns/docker-compose.yml" -p fs-dyndns up -d
+            log "DuckDNS updater running: $sub.duckdns.org follows this server's IP (checked every 5 minutes)." ;;
+          down) docker compose --env-file "$ENVFILE" -f "$ROOT/dyndns/docker-compose.yml" -p fs-dyndns down ;;
+          *) fail "usage: stackctl dns duckdns up|down" ;;
+        esac ;;
+      *) fail "usage: stackctl dns ip|check|cloudflare|duckdns up|down" ;;
+    esac
+    ;;
+
+  brand)
+    . "$ROOT/scripts/provision.sh"   # http(), envval(), note_*(), listmonk_session()
+    . "$ROOT/scripts/brand.sh"
+    case "${1:-}" in
+      apply) log "Applying brand to the hub, console and every running app that supports it..."; brand_apply ;;
+      show)  echo "BRAND_NAME=$(brand_name)"; echo "BRAND_COLOR=$(brand_color)"; echo "BRAND_LOGO_URL=$(brand_logo)" ;;
+      *) fail "usage: stackctl brand apply|show   (edit BRAND_* in .env or use the console's Settings tab)" ;;
+    esac
+    ;;
+
+  deploy)
+    # The one-click path. Idempotent: safe to re-run any time.
+    # With no arguments: every app for this server. With names: just those
+    # (the hub and console always ride along — they're how you drive the rest).
+    if [ $# -gt 0 ]; then sel="homepage console $(resolve_apps "$@" | tr '\n' ' ')"; else sel="$(default_apps | tr '\n' ' ')"; fi
+    sel="$(printf '%s\n' $sel | awk '!seen[$0]++' | tr '\n' ' ')"
+    # running inside the console: leave the console itself alone (recreating it would cut this stream)
+    [ "${STACK_IN_CONSOLE:-0}" = 1 ] && sel="$(printf '%s\n' $sel | grep -vx console | tr '\n' ' ')"
+    log "1/5 Starting: $sel"
+    "$0" up $sel
+    log "2/5 Waiting for apps to come up (first boot runs migrations; a few minutes)..."
+    for a in $sel; do
+      [ "$(running_count "$a")" -gt 0 ] || continue
+      if wait_ready "$a" 420; then printf '  ready   %s\n' "$(app_label "$a")"; else printf '  slow    %s (still starting; will settle on its own)\n' "$(app_label "$a")"; fi
+    done
+    log "3/5 First-run setup (workspaces, owners, installs) from your .env..."
+    "$0" bootstrap
+    if [ "$(running_count authentik)" -gt 0 ]; then log "4/5 Turning on single sign-on..."; "$0" sso on
+    else log "4/5 Single sign-on skipped (authentik not selected)"; fi
+    log "5/5 Applying your brand everywhere..."
+    "$0" brand apply
+    echo
+    log "Deployed."
+    echo "    Hub:      https://home.$(base_domain)"
+    echo "    Console:  https://console.$(base_domain)   (admin / ADMIN_PASSWORD from .env)"
+    echo "    Sign-on:  https://auth.$(base_domain)      (akadmin / ADMIN_PASSWORD)"
+    echo "    Add your team: stackctl user add jane@yourco.com  — or the console's People tab."
+    ;;
+
+  bootstrap)
+    . "$ROOT/scripts/provision.sh"
+    run_bootstrap
+    ;;
+
+  ""|help|-h|--help)
+    sed -n '2,16p' "$0" | sed 's/^# \{0,1\}//'
+    ;;
+  *)
+    fail "unknown command '$cmd' (try: stackctl help)"
+    ;;
+esac

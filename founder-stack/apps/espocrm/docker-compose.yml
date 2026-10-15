@@ -1,0 +1,65 @@
+# EspoCRM — CRM, ARM-capable alternative to Twenty -> https://crm.${BASE_DOMAIN}
+# Shares the `crm.` subdomain with twenty: run one or the other, not both.
+services:
+  db:
+    image: mariadb:10.11
+    restart: unless-stopped
+    environment:
+      MYSQL_ROOT_PASSWORD: ${ESPOCRM_DB_ROOT_PASSWORD}
+      MYSQL_DATABASE: espocrm
+      MYSQL_USER: espocrm
+      MYSQL_PASSWORD: ${ESPOCRM_DB_PASSWORD}
+    volumes:
+      - db:/var/lib/mysql
+
+  app:
+    image: espocrm/espocrm:latest
+    restart: unless-stopped
+    depends_on:
+      - db
+    environment:
+      ESPOCRM_DATABASE_HOST: db
+      ESPOCRM_DATABASE_NAME: espocrm
+      ESPOCRM_DATABASE_USER: espocrm
+      ESPOCRM_DATABASE_PASSWORD: ${ESPOCRM_DB_PASSWORD}
+      # Pre-seeded admin from .env
+      ESPOCRM_ADMIN_USERNAME: ${ADMIN_USER}
+      ESPOCRM_ADMIN_PASSWORD: ${ADMIN_PASSWORD}
+      ESPOCRM_SITE_URL: https://crm.${BASE_DOMAIN}
+    volumes: &espocrm-volumes   # EspoCRM 10 layout: targeted mounts, not /var/www/html
+      - data:/var/www/html/data
+      - custom:/var/www/html/custom
+      - custom-client:/var/www/html/client/custom
+    networks:
+      - default
+      - proxy
+    labels:
+      traefik.enable: "true"
+      traefik.http.routers.espocrm.rule: Host(`crm.${BASE_DOMAIN}`)
+      traefik.http.routers.espocrm.entrypoints: websecure
+      traefik.http.routers.espocrm.tls.certresolver: le
+      traefik.http.services.espocrm.loadbalancer.server.port: 80
+
+  # runs EspoCRM's scheduled jobs (email sync, workflows, reminders)
+  daemon:
+    image: espocrm/espocrm:latest
+    restart: unless-stopped
+    depends_on:
+      - app
+    entrypoint: docker-daemon.sh
+    environment:
+      ESPOCRM_DATABASE_HOST: db
+      ESPOCRM_DATABASE_NAME: espocrm
+      ESPOCRM_DATABASE_USER: espocrm
+      ESPOCRM_DATABASE_PASSWORD: ${ESPOCRM_DB_PASSWORD}
+    volumes: *espocrm-volumes
+
+volumes:
+  db:
+  data:
+  custom:
+  custom-client:
+
+networks:
+  proxy:
+    external: true

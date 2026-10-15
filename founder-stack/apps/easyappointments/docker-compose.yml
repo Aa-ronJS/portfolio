@@ -1,0 +1,41 @@
+# Easy!Appointments — scheduling, ARM-capable alternative to Cal.com -> https://cal.${BASE_DOMAIN}
+# Shares the `cal.` subdomain with calcom: run one or the other, not both.
+services:
+  db:
+    image: mariadb:10.11
+    restart: unless-stopped
+    environment:
+      MYSQL_ROOT_PASSWORD: ${EASYAPPOINTMENTS_DB_ROOT_PASSWORD}
+      MYSQL_DATABASE: easyappointments
+      MYSQL_USER: easyappointments
+      MYSQL_PASSWORD: ${EASYAPPOINTMENTS_DB_PASSWORD}
+    volumes:
+      - db:/var/lib/mysql
+
+  app:
+    image: alextselegidis/easyappointments:latest
+    restart: unless-stopped
+    depends_on:
+      - db
+    environment:
+      BASE_URL: https://cal.${BASE_DOMAIN}
+      DB_HOST: db
+      DB_NAME: easyappointments
+      DB_USERNAME: easyappointments
+      DB_PASSWORD: ${EASYAPPOINTMENTS_DB_PASSWORD}
+    networks:
+      - default
+      - proxy
+    labels:
+      traefik.enable: "true"
+      traefik.http.routers.easyappointments.rule: Host(`cal.${BASE_DOMAIN}`)
+      traefik.http.routers.easyappointments.entrypoints: websecure
+      traefik.http.routers.easyappointments.tls.certresolver: le
+      traefik.http.services.easyappointments.loadbalancer.server.port: 80
+
+volumes:
+  db:
+
+networks:
+  proxy:
+    external: true

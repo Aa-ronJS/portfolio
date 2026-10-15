@@ -1,0 +1,26 @@
+title: Acme Studio
+description: Your whole business, one server.
+theme: light
+color: slate
+headerStyle: boxed
+hideVersion: true
+statusStyle: dot
+layout:
+  Customers:
+    style: row
+    columns: 4
+  Money:
+    style: row
+    columns: 4
+  Marketing:
+    style: row
+    columns: 6
+  Video:
+    style: row
+    columns: 3
+  Team:
+    style: row
+    columns: 6
+  Operations:
+    style: row
+    columns: 6

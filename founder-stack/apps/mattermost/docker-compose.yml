@@ -1,0 +1,61 @@
+# Mattermost — team chat (replaces Slack) -> https://chat.${BASE_DOMAIN}
+services:
+  db:
+    image: postgres:16-alpine
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: mmuser
+      POSTGRES_PASSWORD: ${MATTERMOST_DB_PASSWORD}
+      POSTGRES_DB: mattermost
+    volumes:
+      - db:/var/lib/postgresql/data
+
+  app:
+    image: mattermost/mattermost-team-edition:latest
+    restart: unless-stopped
+    depends_on:
+      - db
+    environment:
+      MM_SQLSETTINGS_DRIVERNAME: postgres
+      MM_SQLSETTINGS_DATASOURCE: postgres://mmuser:${MATTERMOST_DB_PASSWORD}@db:5432/mattermost?sslmode=disable&connect_timeout=10
+      MM_SERVICESETTINGS_SITEURL: https://chat.${BASE_DOMAIN}
+      # Lets `stackctl user add` manage accounts via mmctl --local
+      MM_SERVICESETTINGS_ENABLELOCALMODE: "true"
+      MM_TEAMSETTINGS_ENABLEOPENSERVER: ${MATTERMOST_OPEN_SERVER:-false}
+      TZ: ${TZ}
+      # SSO via Authentik using Mattermost's GitLab-compatible OAuth
+      # (the free edition's supported OIDC path; button reads "GitLab").
+      # Toggled by `stackctl sso on|off` (SSO_ENABLED in .env).
+      MM_GITLABSETTINGS_ENABLE: ${SSO_ENABLED}
+      MM_GITLABSETTINGS_ID: mattermost
+      MM_GITLABSETTINGS_SECRET: ${MATTERMOST_OIDC_CLIENT_SECRET}
+      MM_GITLABSETTINGS_AUTHENDPOINT: https://auth.${BASE_DOMAIN}/application/o/authorize/
+      MM_GITLABSETTINGS_TOKENENDPOINT: https://auth.${BASE_DOMAIN}/application/o/token/
+      MM_GITLABSETTINGS_USERAPIENDPOINT: https://auth.${BASE_DOMAIN}/application/o/userinfo/
+    volumes:
+      - config:/mattermost/config
+      - data:/mattermost/data
+      - logs:/mattermost/logs
+      - plugins:/mattermost/plugins
+      - client-plugins:/mattermost/client/plugins
+    networks:
+      - default
+      - proxy
+    labels:
+      traefik.enable: "true"
+      traefik.http.routers.mattermost.rule: Host(`chat.${BASE_DOMAIN}`)
+      traefik.http.routers.mattermost.entrypoints: websecure
+      traefik.http.routers.mattermost.tls.certresolver: le
+      traefik.http.services.mattermost.loadbalancer.server.port: 8065
+
+volumes:
+  db:
+  config:
+  data:
+  logs:
+  plugins:
+  client-plugins:
+
+networks:
+  proxy:
+    external: true

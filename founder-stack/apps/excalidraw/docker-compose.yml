@@ -1,0 +1,18 @@
+# Whiteboard — sketch, diagram, plan together -> https://whiteboard.${BASE_DOMAIN}
+services:
+  app:
+    image: excalidraw/excalidraw:latest
+    restart: unless-stopped
+    networks:
+      - default
+      - proxy
+    labels:
+      traefik.enable: "true"
+      traefik.http.routers.excalidraw.rule: Host(`whiteboard.${BASE_DOMAIN}`)
+      traefik.http.routers.excalidraw.entrypoints: websecure
+      traefik.http.routers.excalidraw.tls.certresolver: le
+      traefik.http.services.excalidraw.loadbalancer.server.port: 80
+
+networks:
+  proxy:
+    external: true

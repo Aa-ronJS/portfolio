@@ -1,0 +1,52 @@
+# Docmost — docs & wiki (replaces Notion/Confluence) -> https://docs.${BASE_DOMAIN}
+services:
+  db:
+    image: postgres:16-alpine
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: docmost
+      POSTGRES_PASSWORD: ${DOCMOST_DB_PASSWORD}
+      POSTGRES_DB: docmost
+    volumes:
+      - db:/var/lib/postgresql/data
+
+  redis:
+    image: redis:7-alpine
+    restart: unless-stopped
+
+  app:
+    image: docmost/docmost:latest
+    restart: unless-stopped
+    depends_on:
+      - db
+      - redis
+    environment:
+      APP_URL: https://docs.${BASE_DOMAIN}
+      APP_SECRET: ${DOCMOST_APP_SECRET}
+      DATABASE_URL: postgresql://docmost:${DOCMOST_DB_PASSWORD}@db:5432/docmost?schema=public
+      REDIS_URL: redis://redis:6379
+      MAIL_DRIVER: smtp
+      SMTP_HOST: ${SMTP_HOST}
+      SMTP_PORT: ${SMTP_PORT}
+      SMTP_USERNAME: ${SMTP_USER}
+      SMTP_PASSWORD: ${SMTP_PASSWORD}
+      MAIL_FROM_ADDRESS: ${SMTP_FROM}
+    volumes:
+      - storage:/app/data/storage
+    networks:
+      - default
+      - proxy
+    labels:
+      traefik.enable: "true"
+      traefik.http.routers.docmost.rule: Host(`docs.${BASE_DOMAIN}`)
+      traefik.http.routers.docmost.entrypoints: websecure
+      traefik.http.routers.docmost.tls.certresolver: le
+      traefik.http.services.docmost.loadbalancer.server.port: 3000
+
+volumes:
+  db:
+  storage:
+
+networks:
+  proxy:
+    external: true

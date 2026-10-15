@@ -1,0 +1,63 @@
+# Short links — branded short URLs with click stats
+#   API/redirects -> https://links.${BASE_DOMAIN}   admin UI -> https://links-admin.${BASE_DOMAIN}
+services:
+  db:
+    image: postgres:16-alpine
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: shlink
+      POSTGRES_PASSWORD: ${SHLINK_DB_PASSWORD}
+      POSTGRES_DB: shlink
+    volumes:
+      - db:/var/lib/postgresql/data
+
+  app:
+    image: shlinkio/shlink:stable
+    restart: unless-stopped
+    depends_on:
+      - db
+    environment:
+      DEFAULT_DOMAIN: links.${BASE_DOMAIN}
+      IS_HTTPS_ENABLED: "true"
+      DB_DRIVER: postgres
+      DB_HOST: db
+      DB_NAME: shlink
+      DB_USER: shlink
+      DB_PASSWORD: ${SHLINK_DB_PASSWORD}
+      INITIAL_API_KEY: ${SHLINK_API_KEY}
+      TIMEZONE: ${TZ}
+    networks:
+      - default
+      - proxy
+    labels:
+      traefik.enable: "true"
+      traefik.http.routers.shlink.rule: Host(`links.${BASE_DOMAIN}`)
+      traefik.http.routers.shlink.entrypoints: websecure
+      traefik.http.routers.shlink.tls.certresolver: le
+      traefik.http.services.shlink.loadbalancer.server.port: 8080
+
+  ui:
+    image: shlinkio/shlink-web-client:stable
+    restart: unless-stopped
+    environment:
+      SHLINK_SERVER_URL: https://links.${BASE_DOMAIN}
+      SHLINK_SERVER_API_KEY: ${SHLINK_API_KEY}
+    networks:
+      - default
+      - proxy
+    labels:
+      traefik.enable: "true"
+      traefik.http.routers.shlinkui.rule: Host(`links-admin.${BASE_DOMAIN}`)
+      traefik.http.routers.shlinkui.entrypoints: websecure
+      traefik.http.routers.shlinkui.tls.certresolver: le
+      traefik.http.services.shlinkui.loadbalancer.server.port: 8080
+      # the admin UI holds the API key, so it sits behind the console's login
+      traefik.http.routers.shlinkui.middlewares: shlinkui-auth
+      traefik.http.middlewares.shlinkui-auth.basicauth.users: ${ADMIN_HTPASSWD}
+
+volumes:
+  db:
+
+networks:
+  proxy:
+    external: true
