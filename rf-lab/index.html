@@ -11,7 +11,7 @@
 :root{
   --bg:#e3e6e1; --panel:#f4f5f1; --panel-2:#e9ebe6; --ink:#192023; --muted:#56626a; --line:#c6ccc6;
   --accent:#c84d07; --accent-ink:#ffffff; --accent-soft:#f7dcc9;
-  --good:#1d7f47; --warn:#9a7200; --bad:#bf2d2d;
+  --good:#1d7f47; --warn:#9a7200; --bad:#bf2d2d; --good-soft:#d8eedf; --bad-soft:#f6dcdc;
   --screen:#0a1113; --screen-2:#111b1e; --grid:#1c292c; --scr-text:#93a9ad; --trace:#ffc23a; --trace-2:#4fd6e8; --trace-3:#ff6b6b; --trace-4:#c792ff;
   --cov-good:#2fbf6a; --cov-warn:#f0b429; --cov-bad:#e5484d; --cov-dead:#4a2427;
   --f-display:"Barlow Condensed","Arial Narrow",system-ui,sans-serif;
@@ -22,11 +22,11 @@
 @media (prefers-color-scheme: dark){:root:not([data-theme="light"]){
   --bg:#0f1417; --panel:#161d20; --panel-2:#1c2428; --ink:#e1e6e3; --muted:#93a0a5; --line:#2b363a;
   --accent:#ff7b2e; --accent-ink:#1b0c02; --accent-soft:#3b2416;
-  --good:#45c47a; --warn:#e6b84a; --bad:#ff6b6b; color-scheme:dark;}}
+  --good:#45c47a; --warn:#e6b84a; --bad:#ff6b6b; --good-soft:#173525; --bad-soft:#3d1d1d; color-scheme:dark;}}
 :root[data-theme="dark"]{
   --bg:#0f1417; --panel:#161d20; --panel-2:#1c2428; --ink:#e1e6e3; --muted:#93a0a5; --line:#2b363a;
   --accent:#ff7b2e; --accent-ink:#1b0c02; --accent-soft:#3b2416;
-  --good:#45c47a; --warn:#e6b84a; --bad:#ff6b6b; color-scheme:dark;}
+  --good:#45c47a; --warn:#e6b84a; --bad:#ff6b6b; --good-soft:#173525; --bad-soft:#3d1d1d; color-scheme:dark;}
 
 *{box-sizing:border-box}
 [hidden]{display:none!important}
@@ -47,7 +47,7 @@ button,input,select{font:inherit;color:inherit}
 .brand h1{font-size:22px;font-weight:700;text-transform:uppercase;letter-spacing:.06em}
 .brand small{display:block;font-family:var(--f-mono);font-size:11px;color:var(--muted);letter-spacing:0}
 .benchbar{display:flex;gap:4px;overflow-x:auto;scrollbar-width:thin;flex:1 1 520px;min-width:0}
-.benchbar a{flex:none;display:flex;align-items:baseline;gap:6px;padding:7px 12px;border-radius:var(--r);text-decoration:none;color:var(--ink);font-family:var(--f-display);font-weight:600;font-size:16px;letter-spacing:.03em;text-transform:uppercase;border:1px solid transparent}
+.benchbar a{flex:none;display:flex;align-items:baseline;gap:5px;padding:7px 9px;border-radius:var(--r);text-decoration:none;color:var(--ink);font-family:var(--f-display);font-weight:600;font-size:15px;letter-spacing:.03em;text-transform:uppercase;border:1px solid transparent}
 .benchbar a span{font-family:var(--f-mono);font-size:11px;color:var(--muted)}
 .benchbar a:hover{border-color:var(--line)}
 .benchbar a[aria-current="page"]{background:var(--accent);color:var(--accent-ink)}
@@ -170,6 +170,70 @@ select{background:var(--panel-2);border:1px solid var(--line);border-radius:4px;
 #gl-q{background:var(--panel);border:1px solid var(--line);border-radius:4px;padding:8px 10px;width:100%;max-width:360px}
 .foot{border-top:1px solid var(--line);color:var(--muted);font-size:13px;padding-block:18px 28px}
 
+/* Training layer */
+.vh{position:absolute;opacity:0;width:1px;height:1px;overflow:hidden}
+.vh:focus-visible+label{outline:2px solid var(--accent);outline-offset:2px}
+label.btn{display:inline-block}
+.vh:disabled+label{opacity:.45;cursor:not-allowed}
+a.btn{text-decoration:none;color:var(--ink);text-align:center}
+a.btn.primary{color:var(--accent-ink)}
+.wo{background:var(--panel);border:2px solid var(--accent);border-radius:var(--r);padding:14px 16px;display:grid;gap:10px;scroll-margin-top:96px;min-width:0}
+.wo h3{font-size:22px;text-transform:uppercase;letter-spacing:.03em}
+.wo-ticket{font-size:15.5px;max-width:78ch}
+.wo form{display:grid;gap:12px}
+.wo fieldset{border:0;padding:0;margin:0;display:grid;gap:6px;min-width:0}
+.wo legend{font-family:var(--f-display);font-weight:600;font-size:13px;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);padding:0;margin-bottom:4px}
+.opts{display:grid;gap:5px}
+.opts label{display:flex;gap:8px;align-items:flex-start;font-size:14.5px;cursor:pointer}
+.opts input{accent-color:var(--accent);margin-top:4px;flex:none}
+.numin{display:flex;gap:8px;align-items:center;font-size:14px}
+.numin input{width:120px;background:var(--panel-2);border:1px solid var(--line);border-radius:4px;padding:6px 8px}
+.verdict{border-radius:4px;padding:10px 12px;font-size:14.5px}
+.verdict.ok{background:var(--good-soft)}
+.verdict.no{background:var(--bad-soft)}
+.course-top{display:grid;gap:8px;max-width:760px;margin-bottom:18px}
+.meter{height:12px;background:var(--panel);border:1px solid var(--line);border-radius:999px;overflow:hidden}
+.meter div{height:100%;background:var(--accent);width:0;transition:width .4s}
+.modules{list-style:none;margin:0;padding:0;display:grid;gap:12px}
+.mod{background:var(--panel);border:1px solid var(--line);border-radius:var(--r);padding:16px;display:grid;grid-template-columns:52px minmax(0,1fr) auto;gap:6px 16px;align-items:start}
+.mod .num{font-family:var(--f-display);font-weight:700;font-size:38px;line-height:1;color:var(--accent)}
+.mod h3{font-size:22px;text-transform:uppercase;letter-spacing:.03em}
+.mod p{font-size:14.5px;color:var(--muted);margin-top:4px}
+.mod .btn{align-self:center;min-width:104px}
+@media (max-width:640px){.mod{grid-template-columns:36px minmax(0,1fr)}.mod .btn{grid-column:2;justify-self:start}.mod .num{font-size:28px}}
+.chips{display:flex;flex-wrap:wrap;gap:6px;margin-top:8px}
+.chip{font-family:var(--f-mono);font-size:11.5px;border:1px solid var(--line);border-radius:999px;padding:3px 9px;background:var(--panel-2);white-space:nowrap}
+.chip.done{background:var(--good-soft);border-color:var(--good);color:var(--good)}
+.tick{font-family:var(--f-mono);font-size:12px;color:var(--good);font-weight:600}
+.quiz{border-top:1px solid var(--line);padding-top:12px;display:grid;gap:16px}
+.quiz>h4{font-size:19px;text-transform:uppercase;letter-spacing:.04em}
+.qq{display:grid;gap:7px;font-size:14px}
+.qq p.q{font-weight:600}
+.fb{font-size:13.5px;padding:8px 10px;border-radius:4px}
+.fb.ok{background:var(--good-soft)}
+.fb.no{background:var(--bad-soft)}
+.joblist{display:grid;gap:6px}
+.chal{display:flex;justify-content:space-between;gap:8px;align-items:center;font-size:14px;border:1px solid var(--line);border-radius:4px;padding:7px 8px 7px 10px;background:var(--panel-2)}
+.mlist{list-style:none;margin:0;padding:0;display:grid;gap:6px;font-size:14px}
+.mlist li{display:grid;grid-template-columns:18px minmax(0,1fr);gap:6px}
+.wsheet{width:100%;border-collapse:collapse;font-size:14px;min-width:560px}
+.wsheet th,.wsheet td{padding:7px 8px;border-bottom:1px solid var(--line);text-align:center}
+.wsheet th{font-family:var(--f-display);text-transform:uppercase;letter-spacing:.06em;font-size:12.5px;color:var(--muted)}
+.wsheet th:first-child,.wsheet td:first-child{text-align:left;font-family:var(--f-mono);font-size:13px}
+.wsheet td.ok{background:var(--good-soft)}
+.wsheet td.no{background:var(--bad-soft)}
+.wsheet input{accent-color:var(--accent);width:17px;height:17px}
+.spec{width:100%;border-collapse:collapse;font-size:13px}
+.spec th,.spec td{padding:5px 4px;border-bottom:1px solid var(--line);text-align:left;vertical-align:top}
+.spec th{font-family:var(--f-display);text-transform:uppercase;letter-spacing:.05em;font-size:12px;color:var(--muted)}
+.sbx{display:grid;grid-template-columns:repeat(auto-fit,minmax(210px,1fr));gap:12px}
+.rcard{border:1px solid var(--line);border-radius:var(--r);background:var(--panel-2);padding:12px;display:grid;gap:8px;align-content:start;min-width:0}
+.rcard h4{font-size:18px}
+.rstat{font-family:var(--f-mono);font-size:12px;color:var(--muted);min-height:3em}
+.ptt{width:100%;padding:16px 10px;font-size:16px;font-weight:700;border-radius:6px;border:2px solid var(--ink);background:var(--panel);cursor:pointer;touch-action:none;user-select:none;-webkit-user-select:none}
+.ptt.on{background:var(--accent);color:var(--accent-ink);border-color:var(--accent)}
+.btn.emg{background:var(--bad);color:#fff;border-color:var(--bad)}
+
 @media (prefers-reduced-motion: reduce){*{scroll-behavior:auto!important}}
 </style>
 
@@ -180,20 +244,39 @@ select{background:var(--panel-2);border:1px solid var(--line);border-radius:4px;
       <div><h1>Underground RF Lab</h1><small>leaky feeder · DMR · TETRA · a bench for learning radio</small></div>
     </div>
     <nav class="benchbar" aria-label="Benches">
+      <a href="#course"><span>▸</span>Course</a>
       <a href="#signal"><span>1</span>Signals</a>
       <a href="#feedline"><span>2</span>Cable &amp; antenna</a>
       <a href="#mine"><span>3</span>Underground</a>
       <a href="#digital"><span>4</span>Digital voice</a>
       <a href="#network"><span>5</span>Trunking</a>
-      <a href="#project"><span>6</span>Your project</a>
+      <a href="#testset"><span>6</span>Test set</a>
+      <a href="#project"><span>7</span>Your project</a>
     </nav>
   </div>
 </header>
 
 <main class="wrap">
 
+<!-- ================= COURSE ================= -->
+<section class="bench" id="b-course">
+  <div class="bench-head">
+    <p class="eyebrow">Training course · progress is saved in this browser</p>
+    <h2>Learn radio, bench by bench</h2>
+    <p class="lede">Work down the list in order. Every bench has experiments to try and questions to check yourself. Most also have jobs: something is broken or unknown, and you find it with the instruments before the lab tells you the answer.</p>
+  </div>
+  <div class="course-top"><div class="meter" role="progressbar" aria-label="Course progress" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0" id="co-meter"><div id="co-bar"></div></div><p id="co-sum" class="hint"></p></div>
+  <ol class="modules" id="co-mods"></ol>
+  <div class="prose" style="margin-top:24px">
+    <h3>How to get the most out of it</h3>
+    <p>Before you press <b>Set up</b> on an experiment, say what you think will happen. Then check. Being wrong and finding out why is the fastest way to learn this.</p>
+    <p>Jobs don't tell you what's wrong. Use the instruments, commit to an answer, and only press <b>Show me the answer</b> when you're properly stuck. A job you solve counts towards the course; a job you reveal doesn't.</p>
+    <div class="btnrow"><button class="btn" id="co-reset" type="button">Reset my progress</button></div>
+  </div>
+</section>
+
 <!-- ================= BENCH 1: SIGNALS ================= -->
-<section class="bench" id="b-signal">
+<section class="bench" id="b-signal" hidden>
   <div class="bench-head">
     <p class="eyebrow">Bench 1 · Signal generator, spectrum analyser, oscilloscope</p>
     <h2>Signals and the spectrum</h2>
@@ -201,6 +284,7 @@ select{background:var(--panel-2);border:1px solid var(--line);border-radius:4px;
   </div>
   <div class="bench-grid">
     <div class="instruments">
+      <div class="wo" id="wo-signal" hidden></div>
       <figure class="screen">
         <figcaption><span>Spectrum analyser · power against frequency</span><span id="sa-cap"></span></figcaption>
         <canvas id="cv-sa" class="cv-sa" aria-label="Spectrum analyser display"></canvas>
@@ -217,7 +301,7 @@ select{background:var(--panel-2);border:1px solid var(--line);border-radius:4px;
         </figure>
       </div>
       <div class="rack">
-        <div class="ctl wide"><span class="lbl">Modulation</span>
+        <div class="ctl wide"><span class="lbl" id="sg-mode-lbl">Modulation</span>
           <div class="seg" role="radiogroup" aria-label="Modulation">
             <label><input type="radio" name="sg-mode" value="cw"><span>Carrier only (CW)</span></label>
             <label><input type="radio" name="sg-mode" value="am"><span>AM</span></label>
@@ -259,6 +343,10 @@ select{background:var(--panel-2);border:1px solid var(--line);border-radius:4px;
         <button class="btn" data-exp="s4">Set up</button>
         <p class="look"><b>Look for:</b> the eye diagram stays open with a loud neighbour. Switch the second transmitter to the same channel and the eye slams shut. This is why channels must be coordinated across a site.</p></div>
       <div class="idea"><b>Units you will meet</b>dBm is power compared to one milliwatt. 0 dBm = 1 mW, +30 dBm = 1 W, +40 dBm = 10 W. Every 3 dB doubles or halves the power; every 10 dB is ×10. A radio can still decode signals around −110 dBm, which is 0.00000000000001 mW.</div>
+      <div class="exp jobs"><h4><i>Job</i>Identify a transmitter</h4>
+        <p>An unknown signal is on the air. The controls lock and you work out what it is with the instruments.</p>
+        <button class="btn primary" type="button" data-job="signal">Start a job</button><p class="hint" data-jobcount="signal"></p></div>
+      <div class="quiz" data-quiz="signal"></div>
     </aside>
   </div>
 </section>
@@ -266,15 +354,19 @@ select{background:var(--panel-2);border:1px solid var(--line);border-radius:4px;
 <!-- ================= BENCH 2: FEEDLINE ================= -->
 <section class="bench" id="b-feedline" hidden>
   <div class="bench-head">
-    <p class="eyebrow">Bench 2 · Transmitter, coax, wattmeter, antenna</p>
+    <p class="eyebrow">Bench 2 · Transmitter, coax, wattmeter, cable analyser, antenna</p>
     <h2>Cable and antenna</h2>
-    <p class="lede">Power leaves the radio, travels down coax cable, and has to get into the antenna. Cable eats power as heat. A bad antenna or a wet connector bounces power back down the cable. This bench shows where every watt goes.</p>
+    <p class="lede">Power leaves the radio, travels down coax cable, and has to get into the antenna. Cable eats power as heat. A bad antenna or a damaged cable bounces power back. This bench shows where every watt goes, and how a tech finds a fault without climbing up to it.</p>
   </div>
   <div class="bench-grid">
     <div class="instruments">
-      <figure class="screen">
+      <div class="wo" id="wo-feedline" hidden></div>
+      <figure class="screen" id="fig-wave">
         <figcaption><span>Line view · the last few wavelengths before the antenna</span><span id="fl-cap"></span></figcaption>
         <canvas id="cv-wave" class="cv-wave" aria-label="Voltage along the cable"></canvas>
+      </figure>
+      <figure class="screen">
+        <figcaption><span>Measurements</span><span id="fl-cap2"></span></figcaption>
         <div class="readouts" id="fl-read"></div>
       </figure>
       <div class="two">
@@ -288,10 +380,15 @@ select{background:var(--panel-2);border:1px solid var(--line);border-radius:4px;
         </figure>
       </div>
       <figure class="screen">
+        <figcaption><span>Cable and antenna analyser · distance to fault · tap the trace for a marker</span><span id="dtf-cap"></span></figcaption>
+        <canvas id="cv-dtf" class="cv-wave" aria-label="Distance to fault trace" style="touch-action:none"></canvas>
+        <div class="readouts" id="dtf-read"></div>
+      </figure>
+      <figure class="screen" id="fig-budget">
         <figcaption><span>Power budget · where the watts went</span><span></span></figcaption>
         <canvas id="cv-budget" class="cv-wave" aria-label="Power budget"></canvas>
       </figure>
-      <div class="rack">
+      <div class="rack" id="fl-rack">
         <div class="ctl"><label for="fl-pw">Radio output <output id="fl-pw-v"></output></label><input type="range" id="fl-pw" min="1" max="50" step="1" value="25"></div>
         <div class="ctl"><label for="fl-f">Frequency <output id="fl-f-v"></output></label><input type="range" id="fl-f" min="140" max="900" step="5" value="420"></div>
         <div class="ctl"><label for="fl-coax">Cable type</label>
@@ -319,11 +416,19 @@ select{background:var(--panel-2);border:1px solid var(--line);border-radius:4px;
       <div class="exp"><h4><i>2.3</i>Long cable hides a fault</h4>
         <p>Reflected power has to travel back down the lossy cable before the meter sees it.</p>
         <button class="btn" data-exp="f3">Set up</button>
-        <p class="look"><b>Look for:</b> VSWR at the antenna is terrible, but VSWR at the radio looks almost fine. Always measure as close to the antenna as you can, or use a cable analyser that measures distance to fault.</p></div>
+        <p class="look"><b>Look for:</b> VSWR at the antenna is terrible, but VSWR at the radio looks almost fine. Always measure as close to the antenna as you can, or use the distance-to-fault analyser.</p></div>
       <div class="exp"><h4><i>2.4</i>Dummy load fools the meter</h4>
         <button class="btn" data-exp="f4">Set up</button>
         <p class="look"><b>Look for:</b> perfect VSWR, full forward power, and zero radiated. A perfect match only means the power went somewhere. It does not mean it went into the air.</p></div>
+      <div class="exp"><h4><i>2.5</i>Read a distance-to-fault trace</h4>
+        <p>A cable analyser sends a signal down the cable and times the echoes, so every connector and fault shows up as a peak at its distance from the radio.</p>
+        <button class="btn" data-exp="f5">Set up</button>
+        <p class="look"><b>Look for:</b> small peaks at each connector and one at the antenna end. Now set <b>What's on the end</b> to <b>Water in the connector</b> and watch the far peak grow. Then try <b>Cable cut through</b>.</p></div>
       <div class="idea"><b>VSWR in one line</b>1.0 is perfect. Under 1.5 is good. Above 2.0 someone should look at it. Above 3.0 most radios turn their own power down to protect themselves.</div>
+      <div class="exp jobs"><h4><i>Job</i>Feedline fault</h4>
+        <p>A base station's cable run is playing up, or maybe it isn't. You only have access to the radio end.</p>
+        <button class="btn primary" type="button" data-job="feedline">Start a job</button><p class="hint" data-jobcount="feedline"></p></div>
+      <div class="quiz" data-quiz="feedline"></div>
     </aside>
   </div>
 </section>
@@ -331,12 +436,14 @@ select{background:var(--panel-2);border:1px solid var(--line);border-radius:4px;
 <!-- ================= BENCH 3: UNDERGROUND ================= -->
 <section class="bench" id="b-mine" hidden>
   <div class="bench-head">
-    <p class="eyebrow">Bench 3 · Coverage planner and drive test</p>
+    <p class="eyebrow">Bench 3 · Coverage planner, drive test, fault-finding</p>
     <h2>Radio underground</h2>
-    <p class="lede">Rock swallows UHF radio. Signal only gets around a mine by travelling along the tunnels, and it loses a lot at every corner. So underground systems either run a leaky feeder cable (a cable with slots that leaks signal along its length) down every drive, or put base station antennas at junctions, or both. Build a system on this example mine level and see what works.</p>
+    <p class="lede">Rock swallows UHF radio. Signal only gets around a mine by travelling along the tunnels, and it loses a lot at every corner. So underground systems either run a leaky feeder cable (a cable with slots that leaks signal along its length) down every drive, or put base station antennas at junctions, or both. Build a system on this example mine level, or trace your own, and see what works.</p>
   </div>
   <div class="bench-grid">
     <div class="instruments">
+      <div class="wo" id="wo-mine" hidden></div>
+      <div class="wo" id="mn-chal" hidden></div>
       <div class="rack" style="grid-template-columns:minmax(0,1fr)">
         <div class="ctl"><span class="lbl">Tool · click or drag on the map</span>
           <div class="seg toolbar" role="radiogroup" aria-label="Map tool">
@@ -346,11 +453,14 @@ select{background:var(--panel-2);border:1px solid var(--line);border-radius:4px;
             <label><input type="radio" name="mn-tool" value="cable"><span>Lay leaky feeder</span></label>
             <label><input type="radio" name="mn-tool" value="amp"><span>Add line amplifier</span></label>
             <label><input type="radio" name="mn-tool" value="erase"><span>Erase</span></label>
+            <label><input type="radio" name="mn-tool" value="dig"><span>Dig tunnel</span></label>
+            <label><input type="radio" name="mn-tool" value="fill"><span>Fill with rock</span></label>
+            <label hidden><input type="radio" name="mn-tool" value="mark"><span>Mark the fault</span></label>
           </div>
         </div>
       </div>
       <figure class="screen">
-        <figcaption><span>Example level plan · 1.2 km × 0.72 km · each square 10 m</span><span id="mn-cap"></span></figcaption>
+        <figcaption><span id="mn-title">Example level plan · 1.2 km × 0.72 km · each square 10 m</span><span id="mn-cap"></span></figcaption>
         <canvas id="cv-map" class="cv-map" aria-label="Mine level coverage map"></canvas>
         <div class="probe" id="mn-probe">Hover over a drive to probe the signal there.</div>
         <div class="legend"><span><i style="background:var(--cov-good)"></i>works with margin</span><span><i style="background:var(--cov-warn)"></i>works until you move or turn</span><span><i style="background:var(--cov-bad)"></i>below sensitivity</span><span><i style="background:var(--cov-dead)"></i>nothing</span><span><i style="background:#ff8a3d;height:4px;vertical-align:2px"></i>leaky feeder</span></div>
@@ -362,16 +472,20 @@ select{background:var(--panel-2);border:1px solid var(--line);border-radius:4px;
       </figure>
       <div class="rack">
         <div class="ctl"><label for="mn-preset">Start from</label>
-          <select id="mn-preset"><option value="leaky">Leaky feeder only, DMR (typical older system)</option><option value="tetra">TETRA base stations at junctions</option><option value="hybrid" selected>Hybrid: TETRA on the main drives, DMR leaky feeder in the stopes</option><option value="blank">Empty level, build your own</option></select></div>
+          <select id="mn-preset" data-lk="job ch"><option value="leaky">Leaky feeder only, DMR (typical older system)</option><option value="tetra">TETRA base stations at junctions</option><option value="hybrid" selected>Hybrid: TETRA on the main drives, DMR leaky feeder in the stopes</option><option value="blank">Empty level, build your own</option></select></div>
         <div class="ctl"><span class="lbl">Show coverage for</span>
           <div class="seg" role="radiogroup" aria-label="Network"><label><input type="radio" name="mn-net" value="tetra" checked><span>TETRA</span></label><label><input type="radio" name="mn-net" value="dmr"><span>DMR</span></label></div></div>
         <div class="ctl"><span class="lbl">Direction</span>
           <div class="seg" role="radiogroup" aria-label="Direction"><label><input type="radio" name="mn-view" value="dl"><span>Hear the base</span></label><label><input type="radio" name="mn-view" value="ul"><span>Be heard</span></label><label><input type="radio" name="mn-view" value="both" checked><span>Both (talk-back)</span></label></div></div>
         <div class="ctl"><label for="mn-band">Frequency band</label>
-          <select id="mn-band"><option value="150">VHF 150 MHz</option><option value="420" selected>UHF 420 MHz (where TETRA and DMR usually sit in Australia)</option><option value="800">800 MHz</option></select></div>
-        <div class="ctl"><label for="mn-fade">Fade margin <output id="mn-fade-v"></output></label><input type="range" id="mn-fade" min="0" max="25" step="1" value="10"></div>
-        <div class="ctl"><span class="lbl">Radio</span><label class="check"><input type="checkbox" id="mn-body" checked> Worn on the belt under a jacket (−6 dB)</label></div>
-        <div class="ctl wide"><div class="btnrow"><button class="btn primary" id="mn-walk">Run drive test: portal to far stope</button><button class="btn" id="mn-amps">Auto-place amplifiers every 400 m</button><button class="btn" id="mn-clear">Clear the level</button></div></div>
+          <select id="mn-band" data-lk="job ch"><option value="150">VHF 150 MHz</option><option value="420" selected>UHF 420 MHz (where TETRA and DMR usually sit in Australia)</option><option value="800">800 MHz</option></select></div>
+        <div class="ctl"><label for="mn-fade">Fade margin <output id="mn-fade-v"></output></label><input type="range" id="mn-fade" min="0" max="25" step="1" value="10" data-lk="job ch"></div>
+        <div class="ctl"><span class="lbl">Radio</span><label class="check"><input type="checkbox" id="mn-body" checked data-lk="job ch"> Worn on the belt under a jacket (−6 dB)</label></div>
+        <div class="ctl wide"><div class="btnrow"><button class="btn primary" id="mn-walk" type="button">Run drive test</button><button class="btn" id="mn-amps" type="button" data-lk="job">Auto-place amplifiers every 400 m</button><button class="btn" id="mn-clear" type="button" data-lk="job">Clear the level</button></div></div>
+        <div class="ctl wide"><span class="lbl">Your own mine layout</span>
+          <div class="btnrow"><button class="btn" id="mn-rock" type="button" data-lk="job ch">Start from solid rock</button><input type="file" id="mn-plan" accept="image/*" class="vh" data-lk="job ch"><label class="btn" for="mn-plan">Upload a plan to trace</label><button class="btn" id="mn-save" type="button" data-lk="job ch">Save my layout</button><button class="btn" id="mn-load" type="button" data-lk="job ch">Load my layout</button><button class="btn" id="mn-example" type="button" data-lk="job ch">Back to the example level</button></div>
+          <label class="check"><input type="checkbox" id="mn-planon" checked> Show the uploaded plan over the map</label>
+          <p class="hint" id="mn-layout-msg">Upload a level plan (a photo or screenshot), then use <b>Dig tunnel</b> to trace the drives over it and <b>Fill with rock</b> to fix mistakes. One square is 10 m, so crop the plan to about 1.2 km wide by 0.72 km tall first.</p></div>
       </div>
     </div>
     <aside class="sheet" aria-label="Lab sheet">
@@ -393,6 +507,15 @@ select{background:var(--panel-2);border:1px solid var(--line);border-radius:4px;
         <button class="btn" data-exp="m4">Set up</button>
         <p class="look"><b>Look for:</b> VHF turns corners better but dies fast in straight drives because the wave is too big for the tunnel. 800 MHz flies down straight drives and dies at every corner.</p></div>
       <div class="idea"><b>Why fade margin</b>Signal flickers up and down by 10 to 20 dB as you walk, because reflections off walls and vehicles add and cancel. Designers add a fade margin on top of the radio's sensitivity so it still works at the bottom of a flicker.</div>
+      <div class="exp jobs"><h4><i>Job</i>Coverage fault</h4>
+        <p>Something has failed on a working system. Find what and where, using the probe, the miner and the drive test.</p>
+        <button class="btn primary" type="button" data-job="mine">Start a job</button><p class="hint" data-jobcount="mine"></p></div>
+      <div class="exp"><h4><i>Design</i>Challenges</h4>
+        <p>Design a system that meets a requirement within limits, the way a real RF design brief works.</p>
+        <div class="joblist" id="mn-chlist"></div></div>
+      <div class="exp"><h4><i>3.5</i>Trace your own mine</h4>
+        <p>Get a plan of one level (a screenshot from the mine plan is fine). Press <b>Start from solid rock</b>, upload the plan, and dig the drives over it with <b>Dig tunnel</b>. Then try the designs from this bench on your own layout, and press <b>Save my layout</b> to keep it in this browser.</p></div>
+      <div class="quiz" data-quiz="mine"></div>
     </aside>
   </div>
 </section>
@@ -418,7 +541,7 @@ select{background:var(--panel-2);border:1px solid var(--line);border-radius:4px;
             <div class="blk"><div class="t" style="flex:1">One TETRA carrier · 25 kHz · 4 timeslots (1 control + 3 voice)</div></div>
             <div class="blk"><div class="d" style="flex:1">DMR carrier · 12.5 kHz · 2 slots</div><div class="d" style="flex:1">DMR carrier · 12.5 kHz · 2 slots</div></div>
           </div>
-          <p class="hint">Both work out to 6.25 kHz per voice path. The difference is not efficiency. It is what the network does with the slots: TETRA hands them out on demand from a central switch; basic DMR repeaters give each slot a fixed job.</p></div>
+          <p class="hint">Both work out to 6.25 kHz per voice path. The difference is not efficiency. It is what the network does with the slots: TETRA hands them out on demand from call control; basic DMR repeaters give each slot a fixed job.</p></div>
       </div>
       <figure class="screen">
         <figcaption><span>Signal strength against voice quality and bit errors</span><span id="cu-cap"></span></figcaption>
@@ -445,6 +568,7 @@ select{background:var(--panel-2);border:1px solid var(--line);border-radius:4px;
         <p>Turn every conversation on. A TETRA carrier has 3 voice slots. Slot 1 is reserved for the control channel that every radio listens to for instructions.</p>
         <p class="look"><b>Look for:</b> the sync and training bits in the middle of each burst. The receiver uses them to lock on to each burst, which is how it copes with reflections underground.</p></div>
       <div class="idea"><b>Why digital sounds "robotic"</b>The voice is compressed by a codec (AMBE+2 in DMR, ACELP in TETRA) down to a few thousand bits per second. When a packet is lost, the codec repeats the last sound to cover the gap. Lose several in a row and you hear warbling, then silence.</div>
+      <div class="quiz" data-quiz="digital"></div>
     </aside>
   </div>
 </section>
@@ -454,40 +578,124 @@ select{background:var(--panel-2);border:1px solid var(--line);border-radius:4px;
   <div class="bench-head">
     <p class="eyebrow">Bench 5 · Base stations, call control, gateway, console</p>
     <h2>Trunking and talkgroups</h2>
-    <p class="lede">With a trunked system like TETRA, radios don't pick a channel. They ask the network's call control for a call on a talkgroup, and it finds a free timeslot at every site where someone in that group is listening. Run each scenario and read the steps; the real message names are in orange.</p>
+    <p class="lede">With a trunked system like TETRA, radios don't pick a channel. They ask the network's call control for a call on a talkgroup, and it finds a free timeslot at every site where someone in that group is listening. Watch the guided scenarios first, then switch to the sandbox and run the radios yourself.</p>
   </div>
   <div class="bench-grid">
     <div class="instruments">
       <figure class="screen net">
-        <figcaption><span>Example system · surface and two levels</span><span id="nt-cap"></span></figcaption>
+        <figcaption><span>Example system · surface and two levels · green ring = hearing, yellow ring = talking</span><span id="nt-cap"></span></figcaption>
         <svg id="nt-svg" viewBox="0 0 900 520" role="img" aria-label="Network diagram"></svg>
       </figure>
       <div class="rack">
-        <div class="ctl wide"><span class="lbl">Scenarios</span>
+        <div class="ctl wide"><span class="lbl">Mode</span>
+          <div class="seg" role="radiogroup" aria-label="Mode"><label><input type="radio" name="nt-mode" value="guided" checked><span>Guided scenarios</span></label><label><input type="radio" name="nt-mode" value="sandbox"><span>Sandbox: run it yourself</span></label></div></div>
+        <div class="ctl wide" id="nt-guided"><span class="lbl">Scenarios</span>
           <div class="btnrow" id="nt-btns">
-            <button class="btn primary" data-sc="group">A calls talkgroup UG-OPS</button>
-            <button class="btn" data-sc="move">B drives to the other level</button>
-            <button class="btn" data-sc="emerg">C hits the emergency button</button>
-            <button class="btn" data-sc="busy">Busy hour on BS-1</button>
+            <button class="btn primary" type="button" data-sc="group">A calls talkgroup UG-OPS</button>
+            <button class="btn" type="button" data-sc="move">B drives to the other level</button>
+            <button class="btn" type="button" data-sc="emerg">C hits the emergency button</button>
+            <button class="btn" type="button" data-sc="busy">Busy hour on BS-1</button>
           </div></div>
         <div class="ctl"><span class="lbl">Equipment</span>
-          <label class="check"><input type="checkbox" id="nt-patch" checked> Gateway links DMR to TETRA</label>
-          <label class="check"><input type="checkbox" id="nt-bs1" checked> BS-1 is powered and working</label></div>
-        <div class="ctl"><label for="nt-speed">Speed</label><select id="nt-speed"><option value="0.6">Slow</option><option value="1" selected>Normal</option><option value="1.8">Fast</option></select></div>
+          <label class="check"><input type="checkbox" id="nt-patch" checked> Gateway between Simoco and DAMM is up</label>
+          <label class="check"><input type="checkbox" id="nt-bs1" checked> BS-1 is powered and working</label>
+          <label class="check"><input type="checkbox" id="nt-bs2" checked> BS-2 is powered and working</label></div>
+        <div class="ctl"><label for="nt-speed">Animation speed</label><select id="nt-speed"><option value="0.6">Slow</option><option value="1" selected>Normal</option><option value="1.8">Fast</option></select></div>
+      </div>
+      <div class="rack" id="nt-sbx" hidden style="grid-template-columns:minmax(0,1fr)">
+        <div class="sbx" id="sb-cards"></div>
+        <div class="sbx">
+          <div class="ctl"><label for="sb-patch">Gateway patch</label><select id="sb-patch"><option value="none">Nothing patched</option><option value="CH1=UG-OPS">Simoco CH1 ⇄ TETRA UG-OPS</option><option value="CH1=MAINT">Simoco CH1 ⇄ TETRA MAINT</option><option value="CH2=MAINT">Simoco CH2 ⇄ TETRA MAINT</option></select></div>
+          <div class="ctl"><label for="sb-bg1">Other crews talking on BS-1 <output id="sb-bg1-v"></output></label><input type="range" id="sb-bg1" min="0" max="3" step="1" value="0"></div>
+          <div class="ctl"><label for="sb-bg2">Other crews talking on BS-2 <output id="sb-bg2-v"></output></label><input type="range" id="sb-bg2" min="0" max="3" step="1" value="0"></div>
+        </div>
+        <p class="hint">Hold a <b>Hold to talk</b> button down (mouse, finger, or the Space key) to transmit, and let go to stop. The control room console always listens to UG-OPS and to every emergency.</p>
       </div>
     </div>
     <aside class="sheet" aria-label="What happened">
       <h3>Step by step</h3>
       <ol class="log" id="nt-log"><li><span>Pick a scenario. Each step shows up here with plain-English notes.</span></li></ol>
+      <div class="exp"><h4><i>Sandbox</i>Missions</h4><p>Switch to the sandbox and make each of these happen. They tick themselves off.</p><ul class="mlist" id="sb-mlist"></ul></div>
       <div class="idea"><b>Try this</b>Turn off the gateway, then hit the emergency button. Then turn off BS-1 and make A call. Both are real design questions for a mixed DMR and TETRA site.</div>
+      <div class="quiz" data-quiz="network"></div>
     </aside>
   </div>
 </section>
 
-<!-- ================= BENCH 6: PROJECT ================= -->
+<!-- ================= BENCH 6: TEST SET ================= -->
+<section class="bench" id="b-testset" hidden>
+  <div class="bench-head">
+    <p class="eyebrow">Bench 6 · Radio test set (service monitor)</p>
+    <h2>Testing radios</h2>
+    <p class="lede">Before a radio goes back underground, a tech plugs it into a test set and checks four things: how much power it puts out, whether it is on frequency, whether its modulation is clean, and whether its receiver can still hear a weak signal. A crate of radios has come back from the mine. Some are faulty. Test each one and fill in the worksheet.</p>
+  </div>
+  <div class="bench-grid">
+    <div class="instruments">
+      <div class="rack" style="grid-template-columns:minmax(0,1fr)">
+        <div class="ctl"><span class="lbl">Radio on the bench</span><div class="seg" role="radiogroup" aria-label="Radio on the bench" id="ts-radios"></div></div>
+        <p class="hint" id="ts-which"></p>
+      </div>
+      <div class="two">
+        <figure class="screen">
+          <figcaption><span>Transmitter spectrum</span><span id="ts-cap"></span></figcaption>
+          <canvas id="cv-ts" class="cv-sq" aria-label="Transmitter spectrum"></canvas>
+        </figure>
+        <figure class="screen">
+          <figcaption><span id="ts-m-title">Modulation</span><span id="ts-m-cap"></span></figcaption>
+          <canvas id="cv-ts2" class="cv-sq" aria-label="Modulation display"></canvas>
+        </figure>
+      </div>
+      <figure class="screen">
+        <figcaption><span>Transmitter measurements</span><span></span></figcaption>
+        <div class="readouts" id="ts-read"></div>
+      </figure>
+      <div class="rack">
+        <div class="ctl"><span class="lbl">Transmitter test</span>
+          <button class="btn primary" id="ts-key" type="button" aria-pressed="false">Key the radio (transmit)</button>
+          <p class="hint">The radio's antenna socket is cabled into the test set through an attenuator, so it's safe to transmit.</p></div>
+        <div class="ctl"><label for="ts-gen">Receiver test · generator level <output id="ts-gen-v"></output></label><input type="range" id="ts-gen" min="-130" max="-90" step="0.5" value="-112">
+          <div class="btnrow"><button class="btn" id="ts-ber" type="button">Measure bit errors (10 000 bits)</button><button class="btn" id="ts-spec" type="button">Go to the spec level</button></div></div>
+      </div>
+      <figure class="screen">
+        <figcaption><span>Receiver test · bit errors against generator level</span><span id="ts-ber-cap"></span></figcaption>
+        <canvas id="cv-ber" class="cv-wave" aria-label="Bit error measurements"></canvas>
+      </figure>
+      <div class="rack" style="grid-template-columns:minmax(0,1fr)">
+        <div class="ctl"><span class="lbl">Worksheet · tick every test a radio fails</span>
+          <div class="scroll-x"><table class="wsheet" id="ts-sheet"></table></div>
+          <div class="btnrow"><button class="btn primary" id="ts-submit" type="button">Hand in the worksheet</button><button class="btn" id="ts-new" type="button">Get a new crate of radios</button></div>
+          <div class="verdict" id="ts-result" hidden aria-live="polite"></div></div>
+      </div>
+    </div>
+    <aside class="sheet" aria-label="Lab sheet">
+      <h3>Lab sheet</h3>
+      <div class="exp"><h4><i>6.1</i>Test procedure</h4>
+        <p>For each radio:</p>
+        <ol style="margin:0;padding-left:20px;font-size:14px;display:grid;gap:4px">
+          <li>Pick it from the rack above.</li>
+          <li><b>Key the radio.</b> Read power, frequency error and the modulation figure, and compare them with the limits below.</li>
+          <li>Press <b>Go to the spec level</b>, then <b>Measure bit errors</b>. The receiver passes if bit errors are at or under the limit at that level.</li>
+          <li>Tick every test it fails on the worksheet. Leave a good radio's row empty.</li>
+        </ol></div>
+      <div class="exp"><h4><i>6.2</i>Lab limits</h4>
+        <div class="scroll-x"><table class="spec"><thead><tr><th>Test</th><th>TETRA handheld</th><th>DMR handheld</th></tr></thead><tbody>
+          <tr><td>Power</td><td>1 W (0.6–1.6 W)</td><td>4 W (2.5–5 W)</td></tr>
+          <tr><td>Frequency error</td><td>within ±100 Hz</td><td>within ±500 Hz</td></tr>
+          <tr><td>Modulation</td><td>vector error ≤ 10%</td><td>FSK error ≤ 5%</td></tr>
+          <tr><td>Receiver</td><td>bit errors ≤ 4% at −112 dBm</td><td>bit errors ≤ 5% at −117 dBm</td></tr></tbody></table></div>
+        <p class="hint">These are teaching limits in the right ballpark. On real radios, use the limits in the manufacturer's service manual.</p></div>
+      <div class="exp"><h4><i>6.3</i>What faults look like</h4>
+        <p><b>Low power:</b> a damaged power amplifier or a bad battery contact. <b>Off frequency:</b> the radio's reference oscillator has drifted; the constellation spins or the eye sits off-centre. <b>Bad modulation:</b> a distorted transmitter; the dots blur into ovals or the eye's levels are spread too far. <b>Deaf receiver:</b> a damaged front end; it needs a much stronger signal to get the same bit errors.</p></div>
+      <div class="idea"><b>Sweep it yourself</b>Measure bit errors at several levels from strong to weak. The dots trace a cliff. A deaf radio's cliff sits further to the right.</div>
+      <div class="quiz" data-quiz="testset"></div>
+    </aside>
+  </div>
+</section>
+
+<!-- ================= BENCH 7: PROJECT ================= -->
 <section class="bench" id="b-project" hidden>
   <div class="bench-head">
-    <p class="eyebrow">Bench 6 · From the lab to the mine</p>
+    <p class="eyebrow">Bench 7 · From the lab to the mine</p>
     <h2>Your project</h2>
     <p class="lede">Moving the underground radio from the existing Simoco system to a DAMM platform running TETRA. What the parts are, what changes, and the questions to put to engineers and vendors so you can run the job without being an RF engineer yourself.</p>
   </div>
@@ -557,24 +765,31 @@ function txt(ctx,s,x,y,col,align,base,size){ctx.fillStyle=col||SCR.text;ctx.font
 function ro(id,items){const el=document.getElementById(id);el.innerHTML=items.map(([k,v,c])=>`<div class="ro"><small>${k}</small><b class="${c||''}">${v}</b></div>`).join('');}
 function bindInput(id,obj,key,fmt,cb){const el=document.getElementById(id),out=document.getElementById(id+'-v');const read=()=>{const v=el.type==='checkbox'?el.checked:el.type==='range'?+el.value:el.value;obj[key]=v;if(out&&fmt)out.textContent=fmt(v);if(cb)cb();};el.addEventListener(el.tagName==='SELECT'||el.type==='checkbox'?'change':'input',read);read();return {set(v){if(el.type==='checkbox')el.checked=!!v;else el.value=v;read();}};}
 function bindRadio(name,obj,key,cb){const els=$$(`input[name="${name}"]`);const read=()=>{const e=els.find(e=>e.checked);if(e)obj[key]=e.value;if(cb)cb();};els.forEach(e=>e.addEventListener('change',read));read();return {set(v){els.forEach(e=>e.checked=(e.value===String(v)));read();}};}
-const store={get(k,d){try{const v=localStorage.getItem(k);return v==null?d:JSON.parse(v);}catch(e){return d;}},set(k,v){try{localStorage.setItem(k,JSON.stringify(v));}catch(e){}}};
+const store={get(k,d){try{const v=localStorage.getItem(k);return v==null?d:JSON.parse(v);}catch(e){return d;}},set(k,v){try{localStorage.setItem(k,JSON.stringify(v));return true;}catch(e){return false;}}};
 
 /* ===================== router ===================== */
-const BENCHES=['signal','feedline','mine','digital','network','project'];
-let current='signal';
+const BENCHES=['course','signal','feedline','mine','digital','network','testset','project'];
+let current='course';
 const onShow={},onTick={};
-function show(id){if(!BENCHES.includes(id))id='signal';current=id;BENCHES.forEach(b=>{document.getElementById('b-'+b).hidden=(b!==id);});$$('.benchbar a').forEach(a=>{if(a.getAttribute('href')==='#'+id)a.setAttribute('aria-current','page');else a.removeAttribute('aria-current');});if(onShow[id])requestAnimationFrame(()=>onShow[id]());}
+function show(id){if(!BENCHES.includes(id))id='course';current=id;BENCHES.forEach(b=>{document.getElementById('b-'+b).hidden=(b!==id);});$$('.benchbar a').forEach(a=>{if(a.getAttribute('href')==='#'+id)a.setAttribute('aria-current','page');else a.removeAttribute('aria-current');});if(onShow[id])requestAnimationFrame(()=>onShow[id]());}
 addEventListener('hashchange',()=>{show(location.hash.slice(1));scrollTo({top:0});});
 let lastT=performance.now();
 function loop(t){const dt=Math.min(0.1,(t-lastT)/1000);lastT=t;if(onTick[current])onTick[current](t,dt);requestAnimationFrame(loop);}
 addEventListener('resize',()=>{if(onShow[current])onShow[current]();});
+const pick=a=>a[Math.random()*a.length|0];
+const rnd=(a,b)=>a+Math.random()*(b-a);
+/* progress (this browser only) */
+const PROG=store.get('rflab-prog',{});
+const done=k=>!!PROG[k];
+let BOOTED=false;
+function mark(k,v){PROG[k]=v===undefined?true:v;store.set('rflab-prog',PROG);if(BOOTED)renderCourse();}
 
 /* ===================== BENCH 1: SIGNALS ===================== */
-const SG={mode:'tetra',fc:415.0125,lvl:-95,dev:2.5,tone:1000,depth:60,intf:'off',ilvl:-70,avg:true,hold:false};
+const SG={mode:'tetra',fc:415.0125,lvl:-95,dev:2.5,tone:1000,depth:60,intf:'off',ilvl:-70,avg:true,hold:false,myst:null};
 const FS=144000,NFFT=4096,EXTRA=640,LEN=NFFT+EXTRA,N0=db2lin(-166); // analyser: -174 dBm/Hz + 8 dB noise figure
 function rrcTaps(beta,sps,span,norm){const n=span*sps,h=new Float64Array(n+1);for(let i=0;i<=n;i++){const t=(i-n/2)/sps;let v;if(Math.abs(t)<1e-9)v=1-beta+4*beta/Math.PI;else if(Math.abs(Math.abs(4*beta*t)-1)<1e-9)v=beta/Math.SQRT2*((1+2/Math.PI)*Math.sin(Math.PI/(4*beta))+(1-2/Math.PI)*Math.cos(Math.PI/(4*beta)));else v=(Math.sin(Math.PI*t*(1-beta))+4*beta*t*Math.cos(Math.PI*t*(1+beta)))/(Math.PI*t*(1-16*beta*beta*t*t));h[i]=v;}
   let s=0;for(const v of h)s+=norm==='energy'?v*v:v;const k=norm==='energy'?1/Math.sqrt(s):1/s;for(let i=0;i<h.length;i++)h[i]*=k;return h;}
-const H_T=rrcTaps(0.35,8,8,'energy'),H_D=rrcTaps(0.2,30,6,'sum');
+const H_T=rrcTaps(0.35,8,8,'energy'),H_D=rrcTaps(0.2,30,10,'sum');
 const lpfCache={};
 function lpf(fc){const key=Math.round(fc/100);if(lpfCache[key])return lpfCache[key];const n=129,h=new Float64Array(n),wc=fc/FS;let s=0;for(let i=0;i<n;i++){const m=i-(n-1)/2;const sinc=m===0?2*wc:Math.sin(TAU*wc*m)/(Math.PI*m);h[i]=sinc*(0.54-0.46*Math.cos(TAU*i/(n-1)));s+=h[i];}for(let i=0;i<n;i++)h[i]/=s;return (lpfCache[key]=h);}
 function convC(re,im,h,from){const n=re.length,m=h.length,or=new Float64Array(n),oi=new Float64Array(n);for(let i=Math.max(m-1,from||0);i<n;i++){let a=0,b=0;for(let j=0;j<m;j++){a+=re[i-j]*h[j];b+=im[i-j]*h[j];}or[i]=a;oi[i]=b;}return [or,oi];}
@@ -586,36 +801,40 @@ function genSignal(mode,P,o){
   if(mode==='cw'){re.fill(A);}
   else if(mode==='am'){const w=TAU*o.tone/FS,p=Math.random()*TAU,m=o.depth/100;for(let i=0;i<LEN;i++)re[i]=A*(1+m*Math.sin(w*i+p));}
   else if(mode==='fm'){const b=o.dev*1000/o.tone,w=TAU*o.tone/FS,p0=Math.random()*TAU;for(let i=0;i<LEN;i++){const p=b*Math.sin(w*i+p0);re[i]=A*Math.cos(p);im[i]=A*Math.sin(p);}}
-  else if(mode==='dmr'){const sps=30,h=H_D,nh=h.length,ns=Math.ceil(LEN/sps)+1;syms=new Int8Array(ns);const fr=new Float64Array(LEN),L4=[3,1,-1,-3];
-    for(let k=0;k<ns;k++){const s=L4[Math.random()*4|0];syms[k]=s;const amp=s*648*sps,b=k*sps;for(let j=0;j<nh;j++){const n=b+j;if(n>=LEN)break;fr[n]+=amp*h[j];}}
+  else if(mode==='dmr'){const sps=30,h=H_D,nh=h.length,ns=Math.ceil(LEN/sps)+1,ds=o.devScale||1;syms=new Int8Array(ns);const fr=new Float64Array(LEN),L4=[3,1,-1,-3];
+    for(let k=0;k<ns;k++){const s=L4[Math.random()*4|0];syms[k]=s;const amp=s*648*ds*sps,b=k*sps;for(let j=0;j<nh;j++){const n=b+j;if(n>=LEN)break;fr[n]+=amp*h[j];}}
     let ph=Math.random()*TAU;for(let i=0;i<LEN;i++){ph+=TAU*fr[i]/FS;re[i]=A*Math.cos(ph);im[i]=A*Math.sin(ph);}}
   else if(mode==='tetra'){const sps=8,h=H_T,nh=h.length,ns=Math.ceil(LEN/sps)+1;syms=new Float64Array(ns);const D=[Math.PI/4,3*Math.PI/4,-Math.PI/4,-3*Math.PI/4];let th=(Math.random()*8|0)*Math.PI/4;const g=A*Math.sqrt(sps);
     for(let k=0;k<ns;k++){th+=D[Math.random()*4|0];syms[k]=th;const cr=g*Math.cos(th),ci=g*Math.sin(th),b=k*sps;for(let j=0;j<nh;j++){const n=b+j;if(n>=LEN)break;re[n]+=cr*h[j];im[n]+=ci*h[j];}}}
   return {re,im,syms};
 }
-const MODEINFO={cw:{bw:12500,name:'Unmodulated carrier'},am:{bw:12500,name:'Amplitude modulation'},fm:{bw:12500,name:'Analog FM · 12.5 kHz channel'},dmr:{bw:12500,name:'DMR · 4800 symbols/s'},tetra:{bw:25000,name:'TETRA · 18000 symbols/s'}};
+function mixOffset(re,im,f,ph0){const w=TAU*f/FS;for(let i=0;i<re.length;i++){const c=Math.cos(w*i+(ph0||0)),s=Math.sin(w*i+(ph0||0)),a=re[i],b=im[i];re[i]=a*c-b*s;im[i]=a*s+b*c;}}
+const MODEINFO={cw:{bw:12500,name:'an unmodulated carrier'},am:{bw:12500,name:'AM'},fm:{bw:12500,name:'analog FM'},dmr:{bw:12500,name:'DMR (4FSK)'},tetra:{bw:25000,name:'TETRA (π/4-DQPSK)'}};
 let saAvg=null,saLastMode='',sgLast=0,sgFrameData=null;
 function sgCompute(){
-  const mode=SG.mode,P=db2lin(SG.lvl),sig=genSignal(mode,P,SG),re=sig.re,im=sig.im;
+  const my=SG.myst,mode=my?my.mode:SG.mode,lvl=my?my.lvl:SG.lvl,o=my?Object.assign({},SG,{dev:my.dev,tone:my.tone,depth:60}):SG;
+  const P=db2lin(lvl),sig=genSignal(mode,P,o),re=sig.re,im=sig.im;
+  if(my&&my.off)mixOffset(re,im,my.off,0);
   let intOff=0;
-  if(SG.intf!=='off'){const spacing=mode==='tetra'?25000:12500;intOff=SG.intf==='adj'?spacing:0;const I=genSignal(mode,db2lin(SG.ilvl),Object.assign({},SG,{tone:SG.tone*1.37}));const w=TAU*intOff/FS,p=Math.random()*TAU;
-    for(let i=0;i<LEN;i++){const c=Math.cos(w*i+p),s=Math.sin(w*i+p);re[i]+=I.re[i]*c-I.im[i]*s;im[i]+=I.re[i]*s+I.im[i]*c;}}
+  if(!my&&SG.intf!=='off'){const spacing=mode==='tetra'?25000:12500;intOff=SG.intf==='adj'?spacing:0;const I=genSignal(mode,db2lin(SG.ilvl),Object.assign({},SG,{tone:SG.tone*1.37}));mixOffset(I.re,I.im,intOff,Math.random()*TAU);
+    for(let i=0;i<LEN;i++){re[i]+=I.re[i];im[i]+=I.im[i];}}
   const sd=Math.sqrt(N0*FS/2);for(let i=0;i<LEN;i++){re[i]+=sd*gauss();im[i]+=sd*gauss();}
   const fr=new Float64Array(NFFT),fi=new Float64Array(NFFT);for(let i=0;i<NFFT;i++){fr[i]=re[EXTRA+i]*HANN[i];fi[i]=im[EXTRA+i]*HANN[i];}fft(fr,fi);
   const spec=new Float64Array(NFFT),S2=HSUM*HSUM;for(let k=0;k<NFFT;k++){const kk=(k+NFFT/2)%NFFT;spec[k]=(fr[kk]*fr[kk]+fi[kk]*fi[kk])/S2;}
-  if(!saAvg||saLastMode!==mode||!SG.avg){saAvg=spec;}else{for(let k=0;k<NFFT;k++)saAvg[k]=saAvg[k]*0.7+spec[k]*0.3;}
-  saLastMode=mode;
-  sgFrameData={re,im,syms:sig.syms,mode,P,intOff};
+  const key=mode+(my?'m':'');
+  if(!saAvg||saLastMode!==key||!SG.avg){saAvg=spec;}else{for(let k=0;k<NFFT;k++)saAvg[k]=saAvg[k]*0.7+spec[k]*0.3;}
+  saLastMode=key;
+  sgFrameData={re,im,syms:sig.syms,mode,P,intOff,off:my?my.off:0};
 }
 function binHz(k){return (k-NFFT/2)*FS/NFFT;}
 function drawSA(){
   const {ctx,w,h}=fit($('#cv-sa'));const L=40,R=8,T=8,B=22,pw=w-L-R,ph=h-T-B;
   ctx.fillStyle=SCR.bg;ctx.fillRect(0,0,w,h);grid(ctx,L,T,pw,ph,10,12);
   const span=62500,top=-40,bot=-160,X=f=>L+(f+span)/(2*span)*pw,Y=d=>T+(top-d)/(top-bot)*ph;
-  const bw=MODEINFO[SG.mode].bw,sp=SG.mode==='tetra'?25000:12500;
+  const smode=SG.myst?'tetra':SG.mode,bw=MODEINFO[smode].bw,sp=smode==='tetra'?25000:12500;
   ctx.fillStyle='rgba(79,214,232,0.10)';ctx.fillRect(X(-bw/2),T,X(bw/2)-X(-bw/2),ph);
   ctx.strokeStyle='rgba(79,214,232,0.55)';ctx.setLineDash([3,3]);ctx.beginPath();[-bw/2,bw/2,sp-bw/2,sp+bw/2,-sp-bw/2,-sp+bw/2].forEach(f=>{if(Math.abs(f)<=span){ctx.moveTo(X(f)+.5,T);ctx.lineTo(X(f)+.5,T+ph);}});ctx.stroke();ctx.setLineDash([]);
-  txt(ctx,'YOUR CHANNEL',X(0),T+12,SCR.trace2,'center');txt(ctx,'NEXT CHANNEL',X(sp),T+12,'rgba(79,214,232,.6)','center');
+  txt(ctx,SG.myst?'ASSIGNED CHANNEL':'YOUR CHANNEL',X(0),T+12,SCR.trace2,'center');txt(ctx,'NEXT CHANNEL',X(sp),T+12,'rgba(79,214,232,.6)','center');
   for(let d=top;d>=bot;d-=20)txt(ctx,String(d),L-4,Y(d)+3,SCR.text,'right');
   txt(ctx,'dBm',2,T+8,SCR.text);
   txt(ctx,SG.fc.toFixed(4)+' MHz',X(0),h-6,SCR.text,'center');txt(ctx,'−50 kHz',X(-50000),h-6,SCR.text,'center');txt(ctx,'+50 kHz',X(50000),h-6,SCR.text,'center');txt(ctx,'−25',X(-25000),h-6,SCR.text,'center');txt(ctx,'+25',X(25000),h-6,SCR.text,'center');
@@ -624,7 +843,6 @@ function drawSA(){
   for(let k=0;k<NFFT;k++){const f=binHz(k);if(f<-span||f>span)continue;const c=Math.floor((X(f)-L));if(c<0||c>=cols.length)continue;const d=lin2db(saAvg[k]);if(d>cols[c])cols[c]=d;}
   ctx.beginPath();let started=false;for(let c=0;c<cols.length;c++){if(cols[c]===-Infinity)continue;const y=clamp(Y(cols[c]),T,T+ph);if(!started){ctx.moveTo(L+c,y);started=true;}else ctx.lineTo(L+c,y);}
   ctx.strokeStyle=SCR.trace;ctx.lineWidth=1.25;ctx.stroke();
-  // measurements
   let chP=0,adjP=0,pk=-Infinity,pkf=0;for(let k=0;k<NFFT;k++){const f=binHz(k);if(Math.abs(f)<=bw/2)chP+=saAvg[k];if(Math.abs(f-sp)<=bw/2)adjP+=saAvg[k];if(saAvg[k]>pk&&Math.abs(f)<span){pk=saAvg[k];pkf=f;}}
   chP/=ENBW;adjP/=ENBW;const noiseCh=N0*bw,sigCh=Math.max(chP-noiseCh,1e-30),snr=lin2db(sigCh)-lin2db(noiseCh);
   const pkd=lin2db(pk);ctx.fillStyle=SCR.trace3;ctx.beginPath();ctx.moveTo(X(pkf),Y(pkd)-4);ctx.lineTo(X(pkf)-4,Y(pkd)-11);ctx.lineTo(X(pkf)+4,Y(pkd)-11);ctx.fill();
@@ -633,8 +851,8 @@ function drawSA(){
 }
 function drawScope(){
   const {ctx,w,h}=fit($('#cv-scope'));const L=36,R=6,T=6,B=18,pw=w-L-R,ph=h-T-B;ctx.fillStyle=SCR.bg;ctx.fillRect(0,0,w,h);grid(ctx,L,T,pw,ph,8,8);
-  if(!sgFrameData)return;const {re,im,P}=sgFrameData;const n=432,fIF=6000,k=Math.sqrt(0.1)*1e6;// volts across 50 ohm -> µV
-  const A=Math.sqrt(P)*k,sd=Math.sqrt(N0*FS/2)*k;let full=Math.max(A*(SG.mode==='am'?2.1:1.5),sd*4);
+  if(!sgFrameData)return;const {re,im,P}=sgFrameData;const n=432,fIF=6000,k=Math.sqrt(0.1)*1e6;
+  const A=Math.sqrt(P)*k,sd=Math.sqrt(N0*FS/2)*k;let full=Math.max(A*1.6,sd*4);
   const nice=[0.1,0.2,0.5,1,2,5,10,20,50,100,200,500,1000,2000,5000,1e4,2e4,5e4,1e5,2e5,5e5,1e6,2e6,5e6];let div=nice.find(v=>v*4>=full)||5e6;full=div*4;
   ctx.beginPath();for(let i=0;i<n;i++){const t=i/FS,c=Math.cos(TAU*fIF*t),s=Math.sin(TAU*fIF*t);const v=(re[EXTRA+i]*c-im[EXTRA+i]*s)*k;const x=L+i/(n-1)*pw,y=T+ph/2-v/full*ph/2;if(i)ctx.lineTo(x,y);else ctx.moveTo(x,y);}
   ctx.strokeStyle=SCR.trace2;ctx.lineWidth=1.2;ctx.stroke();
@@ -642,73 +860,98 @@ function drawScope(){
   $('#sc-cap').innerHTML=`<b>${(A/Math.SQRT2).toPrecision(3)} µV rms</b>`;
 }
 function drawDemod(){
-  const {ctx,w,h}=fit($('#cv-demod'));ctx.fillStyle=SCR.bg;ctx.fillRect(0,0,w,h);if(!sgFrameData)return;const {re,im,syms,mode,P}=sgFrameData;
-  if(mode==='tetra'){
-    $('#dm-title').textContent='Constellation · one dot per symbol';const s=Math.min(w,h)-20,cx=w/2,cy=h/2,sc=s/2/1.6;grid(ctx,cx-s/2,cy-s/2,s,s,8,8);
+  const {ctx,w,h}=fit($('#cv-demod'));ctx.fillStyle=SCR.bg;ctx.fillRect(0,0,w,h);if(!sgFrameData)return;const {re,im,syms,mode:act,P}=sgFrameData;const dec=SG.mode,lock=dec===act;
+  if(dec==='tetra'){
+    $('#dm-title').textContent='TETRA decoder · constellation';const s=Math.min(w,h)-20,cx=w/2,cy=h/2,sc=s/2/1.6;grid(ctx,cx-s/2,cy-s/2,s,s,8,8);
     ctx.strokeStyle=SCR.grid2;ctx.beginPath();ctx.moveTo(cx-s/2,cy+.5);ctx.lineTo(cx+s/2,cy+.5);ctx.moveTo(cx+.5,cy-s/2);ctx.lineTo(cx+.5,cy+s/2);ctx.stroke();
     ctx.strokeStyle='rgba(255,194,58,.55)';for(let i=0;i<8;i++){const a=i*Math.PI/4;ctx.beginPath();ctx.arc(cx+Math.cos(a)*sc,cy-Math.sin(a)*sc,6,0,TAU);ctx.stroke();}
-    const g=Math.sqrt(P)*Math.sqrt(8),h0=H_T,nh=h0.length;let err=0,tot=0;ctx.fillStyle=SCR.trace2;
-    for(let k=0;k<syms.length;k++){const c=k*8+64;if(c<EXTRA||c>=LEN)continue;let a=0,b=0;for(let j=0;j<nh;j++){a+=re[c-j]*h0[j];b+=im[c-j]*h0[j];}a/=g;b/=g;const x=cx+a*sc,y=cy-b*sc;if(x>0&&x<w&&y>0&&y<h)ctx.fillRect(x-1.2,y-1.2,2.4,2.4);
-      const dec=Math.round(Math.atan2(b,a)/(Math.PI/4));const tx=Math.round(syms[k]/(Math.PI/4));if((((dec-tx)%8)+8)%8!==0)err++;tot++;}
-    $('#dm-cap').innerHTML=`<b>symbol errors ${err}/${tot}</b>`;
-  } else if(mode==='dmr'){
-    $('#dm-title').textContent='Eye diagram · after the FM detector';const L=44,R=6,T=6,B=18,pw=w-L-R,ph=h-T-B;grid(ctx,L,T,pw,ph,4,8);
+    const g=Math.sqrt(P)*Math.sqrt(8),h0=H_T,nh=h0.length,nsym=Math.floor((LEN-64)/8);let err=0,tot=0;ctx.fillStyle=SCR.trace2;
+    for(let k=0;k<nsym;k++){const c=k*8+64;if(c<EXTRA||c>=LEN)continue;let a=0,b=0;for(let j=0;j<nh;j++){a+=re[c-j]*h0[j];b+=im[c-j]*h0[j];}a/=g;b/=g;const x=cx+a*sc,y=cy-b*sc;if(x>0&&x<w&&y>0&&y<h)ctx.fillRect(x-1.2,y-1.2,2.4,2.4);
+      if(lock){const dc=Math.round(Math.atan2(b,a)/(Math.PI/4));const tx=Math.round(syms[k]/(Math.PI/4));if((((dc-tx)%8)+8)%8!==0)err++;tot++;}}
+    $('#dm-cap').innerHTML=lock?`<b>symbol errors ${err}/${tot}</b>`:'<b>no lock</b>';
+  } else if(dec==='dmr'){
+    $('#dm-title').textContent='DMR decoder · eye diagram';const L=44,R=6,T=6,B=18,pw=w-L-R,ph=h-T-B;grid(ctx,L,T,pw,ph,4,8);
     const [yr,yi]=convC(re,im,lpf(6250),EXTRA-400);const d=new Float64Array(LEN);for(let i=EXTRA-300;i<LEN;i++){d[i]=Math.atan2(yi[i]*yr[i-1]-yr[i]*yi[i-1],yr[i]*yr[i-1]+yi[i]*yi[i-1])*FS/TAU;}
-    const o=convR(d,H_D,EXTRA-60);const D=244,Y=f=>T+ph/2-f/3200*ph/2;
+    const o=convR(d,H_D,EXTRA-60);const D=364,Y=f=>T+ph/2-f/3200*ph/2,nsym=Math.floor((LEN-D)/30)+1;
     ctx.strokeStyle='rgba(255,194,58,.45)';ctx.setLineDash([4,4]);ctx.beginPath();[1944,648,-648,-1944].forEach(f=>{ctx.moveTo(L,Y(f));ctx.lineTo(L+pw,Y(f));});ctx.stroke();ctx.setLineDash([]);
     [1944,648,-648,-1944].forEach(f=>txt(ctx,(f>0?'+':'')+f,L-4,Y(f)+3,SCR.text,'right'));txt(ctx,'Hz',4,T+10,SCR.text);
     let err=0,tot=0;ctx.strokeStyle='rgba(79,214,232,.35)';ctx.lineWidth=1;
-    for(let k=0;k<syms.length;k++){const c=k*30+D;if(c-15<EXTRA||c+45>=LEN)continue;ctx.beginPath();for(let i=0;i<=60;i++){const x=L+i/60*pw,y=clamp(Y(o[c-15+i]),T,T+ph);if(i)ctx.lineTo(x,y);else ctx.moveTo(x,y);}ctx.stroke();
-      const f=o[c],dec=f>1296?3:f>0?1:f>-1296?-1:-3;if(dec!==syms[k])err++;tot++;}
-    $('#dm-cap').innerHTML=`<b>symbol errors ${err}/${tot}</b>`;
+    for(let k=0;k<nsym;k++){const c=k*30+D;if(c-15<EXTRA||c+45>=LEN)continue;ctx.beginPath();for(let i=0;i<=60;i++){const x=L+i/60*pw,y=clamp(Y(o[c-15+i]),T,T+ph);if(i)ctx.lineTo(x,y);else ctx.moveTo(x,y);}ctx.stroke();
+      if(lock){const f=o[c],dc=f>1296?3:f>0?1:f>-1296?-1:-3;if(dc!==syms[k])err++;tot++;}}
+    $('#dm-cap').innerHTML=lock?`<b>symbol errors ${err}/${tot}</b>`:'<b>no lock</b>';
   } else {
     const L=44,R=6,T=6,B=18,pw=w-L-R,ph=h-T-B;grid(ctx,L,T,pw,ph,10,8);const n=1440;
-    if(mode==='fm'){$('#dm-title').textContent='FM detector output · the recovered audio';const fc=Math.max(6250,SG.dev*1000+SG.tone+1500);const [yr,yi]=convC(re,im,lpf(fc),EXTRA-200);const d=new Float64Array(LEN);for(let i=EXTRA-150;i<LEN;i++)d[i]=Math.atan2(yi[i]*yr[i-1]-yr[i]*yi[i-1],yr[i]*yr[i-1]+yi[i]*yi[i-1])*FS/TAU;
-      const full=Math.max(3000,SG.dev*1000*1.4),Y=f=>T+ph/2-f/full*ph/2;ctx.beginPath();let acc=0;const m=12;for(let i=0;i<n;i++){const j=EXTRA+i;acc=0;for(let q=0;q<m;q++)acc+=d[j-q];const v=acc/m;const x=L+i/(n-1)*pw,y=clamp(Y(v),T,T+ph);if(i)ctx.lineTo(x,y);else ctx.moveTo(x,y);}ctx.strokeStyle=SCR.trace2;ctx.stroke();
-      txt(ctx,'+'+(full/1000).toFixed(1)+' kHz',L-4,T+8,SCR.text,'right');txt(ctx,'0',L-4,T+ph/2+3,SCR.text,'right');txt(ctx,'1 ms/div',w-R-4,h-5,SCR.text,'right');$('#dm-cap').innerHTML=`<b>Carson bandwidth ${(2*(SG.dev+SG.tone/1000)).toFixed(1)} kHz</b>`;}
-    else {$('#dm-title').textContent=mode==='am'?'AM detector output · the envelope':'Carrier level · nothing to recover';const [yr,yi]=convC(re,im,lpf(5000),EXTRA-200);const k=Math.sqrt(0.1)*1e6;const A=Math.sqrt(P)*k;const full=Math.max(A*2.2,Math.sqrt(N0*10000)*k*4);const Y=v=>T+ph-v/full*ph;
+    if(dec==='fm'){$('#dm-title').textContent='FM decoder · the recovered audio';const fc=Math.max(6250,SG.dev*1000+SG.tone+1500);const [yr,yi]=convC(re,im,lpf(fc),EXTRA-200);const d=new Float64Array(LEN);for(let i=EXTRA-150;i<LEN;i++)d[i]=Math.atan2(yi[i]*yr[i-1]-yr[i]*yi[i-1],yr[i]*yr[i-1]+yi[i]*yi[i-1])*FS/TAU;
+      const full=Math.max(3000,SG.dev*1000*1.4),Y=f=>T+ph/2-f/full*ph/2;ctx.beginPath();const m=12;for(let i=0;i<n;i++){const j=EXTRA+i;let acc=0;for(let q=0;q<m;q++)acc+=d[j-q];const v=acc/m;const x=L+i/(n-1)*pw,y=clamp(Y(v),T,T+ph);if(i)ctx.lineTo(x,y);else ctx.moveTo(x,y);}ctx.strokeStyle=SCR.trace2;ctx.stroke();
+      txt(ctx,'+'+(full/1000).toFixed(1)+' kHz',L-4,T+8,SCR.text,'right');txt(ctx,'0',L-4,T+ph/2+3,SCR.text,'right');txt(ctx,'1 ms/div',w-R-4,h-5,SCR.text,'right');$('#dm-cap').innerHTML=SG.myst?'':`<b>Carson bandwidth ${(2*(SG.dev+SG.tone/1000)).toFixed(1)} kHz</b>`;}
+    else {$('#dm-title').textContent=dec==='am'?'AM decoder · the envelope':'Carrier level meter';const [yr,yi]=convC(re,im,lpf(5000),EXTRA-200);const k=Math.sqrt(0.1)*1e6;const A=Math.sqrt(P)*k;const full=Math.max(A*2.2,Math.sqrt(N0*10000)*k*4);const Y=v=>T+ph-v/full*ph;
       ctx.beginPath();for(let i=0;i<n;i++){const j=EXTRA+i,v=Math.hypot(yr[j],yi[j])*k;const x=L+i/(n-1)*pw,y=clamp(Y(v),T,T+ph);if(i)ctx.lineTo(x,y);else ctx.moveTo(x,y);}ctx.strokeStyle=SCR.trace2;ctx.stroke();
       txt(ctx,full.toPrecision(2)+' µV',L-4,T+8,SCR.text,'right');txt(ctx,'0',L-4,T+ph,SCR.text,'right');txt(ctx,'1 ms/div',w-R-4,h-5,SCR.text,'right');$('#dm-cap').innerHTML='';}
   }
 }
-function sgVis(){$$('#b-signal [data-for]').forEach(el=>{el.hidden=!el.dataset.for.split(' ').includes(SG.mode);});saAvg=null;}
+function sgVis(){$$('#b-signal [data-for]').forEach(el=>{el.hidden=!!SG.myst||!el.dataset.for.split(' ').includes(SG.mode);});if(!SG.myst)saAvg=null;}
 const sgCtl={mode:bindRadio('sg-mode',SG,'mode',sgVis),lvl:bindInput('sg-lvl',SG,'lvl',v=>`${v} dBm · ${fmtW(v)}`),fc:bindInput('sg-fc',SG,'fc',v=>v.toFixed(4)+' MHz'),dev:bindInput('sg-dev',SG,'dev',v=>v.toFixed(1)+' kHz'),tone:bindInput('sg-tone',SG,'tone',v=>v+' Hz'),depth:bindInput('sg-depth',SG,'depth',v=>v+' %'),intf:bindInput('sg-intf',SG,'intf'),ilvl:bindInput('sg-ilvl',SG,'ilvl',v=>v+' dBm'),avg:bindInput('sg-avg',SG,'avg'),hold:bindInput('sg-hold',SG,'hold')};
 function sgDraw(){drawSA();drawScope();drawDemod();}
+function sgLock(on){['sg-lvl','sg-fc','sg-dev','sg-tone','sg-depth','sg-intf','sg-ilvl'].forEach(id=>{$('#'+id).disabled=on;});$('#sg-mode-lbl').textContent=on?'Receiver decode mode · try each one':'Modulation';saAvg=null;sgVis();}
 onShow.signal=()=>{if(!sgFrameData)sgCompute();sgDraw();};
 onTick.signal=(t)=>{if(SG.hold)return;if(t-sgLast<110)return;sgLast=t;sgCompute();sgDraw();};
+const SIGTELL={
+  cw:'A plain carrier is one thin spike and nothing else. Every decoder shows a flat line because nothing is being sent.',
+  am:'AM shows the carrier spike with a smaller spike either side, one audio-tone away. The AM decoder shows the tone riding on the envelope.',
+  fm:'Analog FM shows a comb of spikes spaced by the audio tone, and the FM decoder gives a clean sine wave.',
+  dmr:'DMR is about 10 kHz wide with rounded shoulders, narrower than the 25 kHz channel. In DMR decode the eye opens into four levels.',
+  tetra:'TETRA fills most of the 25 kHz channel with a flat top. In TETRA decode you get eight dots.'};
+function newSignalJob(){
+  const mode=pick(['cw','am','fm','dmr','tetra']),off=pick([0,0,2500,-3000,4500]),lvl=Math.round(rnd(-98,-70));
+  const prev={mode:SG.mode};
+  SG.myst={mode,off,lvl,dev:rnd(1.5,4),tone:pick([600,1000,1500])};sgLock(true);
+  startJob('signal',{kindLabel:'Signal identification',title:'Unknown transmitter on 415.0125 MHz',
+    ticket:'The control room keeps hearing something on the TETRA channel at <b>415.0125 MHz</b>. Find out what kind of transmitter it is, and whether it sits in the middle of the channel or off to one side.',
+    how:'The level and modulation controls are locked. Use the spectrum analyser to see its shape and width. Then switch the receiver decode mode until one locks on cleanly. An off-frequency TETRA signal makes the dots spin; an off-frequency DMR signal makes the eye sit off-centre.',
+    fields:[{type:'radio',name:'mode',label:'What is it?',options:[['cw','A plain carrier, no modulation'],['am','AM'],['fm','Analog FM voice'],['dmr','DMR (4FSK)'],['tetra','TETRA (π/4-DQPSK)']]},{type:'radio',name:'cent',label:'Is it centred on the channel?',options:[['yes','Yes, centred'],['no','No, it is a few kHz off frequency']]}],
+    progKey:'job:signal',
+    grade(v){const okm=v.mode===mode,okc=(v.cent==='yes')===(off===0);if(okm&&okc)return {ok:true,msg:'<b>Correct.</b> '+SIGTELL[mode]+(off?` It was ${Math.abs(off/1000)} kHz ${off>0?'high':'low'}.`:'')};
+      return {ok:false,msg:(okm?'<b>Right type</b>, but the frequency call is wrong. Compare the middle of the signal with the middle of the channel box.':okc?'<b>Right frequency call</b>, but the wrong type. Look at the width and shape, and try every decoder.':'<b>Both wrong.</b> Start with the width on the analyser, then try each decoder.')};},
+    reveal(){return `It was <b>${MODEINFO[mode].name}</b>${off?`, ${Math.abs(off/1000)} kHz ${off>0?'above':'below'} the channel centre`:', centred on the channel'}. ${SIGTELL[mode]}`;},
+    cleanup(){SG.myst=null;sgLock(false);sgCtl.mode.set(prev.mode);}});
+}
 
 /* ===================== BENCH 2: FEEDLINE ===================== */
-const FL={pw:25,f:420,coax:'lmr400',len:30,conn:2,load:'good',r:50,x:0,ant:'yagi',phase:0};
+const FL={pw:25,f:420,coax:'lmr400',len:30,conn:2,load:'good',r:50,x:0,ant:'yagi',phase:0,fault:null};
 const COAX={rg58:{name:'RG-58',l:29,vf:.66},rg213:{name:'RG-213',l:15,vf:.66},lmr400:{name:'LMR-400',l:8.9,vf:.85},h12:{name:'½″ heliax',l:5.0,vf:.88},h78:{name:'⅞″ heliax',l:2.6,vf:.89}};
 const LOADS={good:[50,0],wrong:[22,-38],wet:[118,45],open:[5000,0],short:[0.2,0],dummy:[50,0]};
 const ANT={whip:{g:2.15,bw:360,name:'¼-wave whip'},col:{g:6,bw:360,name:'collinear'},panel:{g:9,bw:65,name:'panel'},yagi:{g:11,bw:45,name:'yagi'}};
-let flRes=null,meterF=0,meterR=0;
+let flRes=null,meterF=0,meterR=0,dtfMark=null;
+function vs(gm){gm=Math.min(gm,0.9999);return (1+gm)/(1-gm);}
 function flCalc(){
-  const c=COAX[FL.coax],lossC=c.l*Math.sqrt(FL.f/450)*FL.len/100,lossK=FL.conn*0.15,line=lossC+lossK,att=db2lin(-line);
-  const R=FL.r,X=FL.x,nr=R-50,ni=X,dr=R+50,di=X,den=dr*dr+di*di,gr=(nr*dr+ni*di)/den,gi=(ni*dr-nr*di)/den,g=Math.min(0.9999,Math.hypot(gr,gi));
-  let Ptx=FL.pw,fold=false;
-  let Pf_ant=Ptx*att,Pr_ant=Pf_ant*g*g,Pr_tx=Pr_ant*att,gt=Math.sqrt(Pr_tx/Ptx),vswrTx=(1+gt)/(1-gt);
-  if(vswrTx>3){fold=true;Ptx=FL.pw*0.25;Pf_ant=Ptx*att;Pr_ant=Pf_ant*g*g;Pr_tx=Pr_ant*att;}
-  const vswrAnt=(1+g)/(1-g),acc=Pf_ant-Pr_ant,eff=FL.load==='dummy'?0:1,rad=acc*eff,G=ANT[FL.ant].g,eirp=rad>0?10*Math.log10(rad*1000)+G:-Infinity;
-  const heat=(Ptx-Pf_ant)+(Pr_ant-Pr_tx);
-  flRes={lossC,lossK,line,g,gr,gi,Ptx,Pf_ant,Pr_ant,Pr_tx,vswrTx,vswrAnt,rad,eirp,heat,fold,mm:-10*Math.log10(1-g*g),lambda:300/FL.f*c.vf,G};
+  const F=FL.fault,c=COAX[F?F.coax:FL.coax],len=F?F.len:FL.len,per=c.l*Math.sqrt(FL.f/450)/100;
+  const nconn=F?2:FL.conn,lossC=per*len,lossK=nconn*0.15,line=lossC+lossK,att=db2lin(-line);
+  let gr,gi;if(F){gr=F.ga;gi=0;}else{const R=FL.r,X=FL.x,nr=R-50,ni=X,dr=R+50,di=X,den=dr*dr+di*di;gr=(nr*dr+ni*di)/den;gi=(ni*dr-nr*di)/den;}
+  const g=Math.min(0.9999,Math.hypot(gr,gi)),gf=F?F.gf:0,df=F?F.d:0,attD=db2lin(-(per*df+0.15)),tf=1-gf*gf;
+  const run=P=>{const Pf_ant=P*att*tf,Pr_ant=Pf_ant*g*g,Pr_tx=P*attD*attD*gf*gf+Pr_ant*att*tf;return {Pf_ant,Pr_ant,Pr_tx};};
+  let Ptx=FL.pw*(F?F.pwf:1),fold=false,o=run(Ptx);
+  if(vs(Math.sqrt(o.Pr_tx/Ptx))>3){fold=true;Ptx*=0.25;o=run(Ptx);}
+  const acc=o.Pf_ant-o.Pr_ant,eff=(!F&&FL.load==='dummy')?0:1,rad=acc*eff,G=ANT[FL.ant].g,eirp=rad>1e-9?10*Math.log10(rad*1000)+G:-Infinity;
+  flRes={per,len,nconn,lossC,lossK,line,g,gr,gi,gf,df,Ptx,Pf_ant:o.Pf_ant,Pr_ant:o.Pr_ant,Pr_tx:o.Pr_tx,vswrTx:vs(Math.sqrt(o.Pr_tx/Ptx)),vswrAnt:vs(g),rad,eirp,heat:Ptx-o.Pr_tx-acc,fold,lambda:300/FL.f*c.vf,G};
 }
 function vsClass(v){return v<1.5?'good':v<2.5?'warn':'bad';}
+function vsTxt(v){return v>99?'> 99':v.toFixed(2);}
 function drawFeed(){
-  if(!flRes)flCalc();const r=flRes;
-  ro('fl-read',[['Cable loss',r.line.toFixed(1)+' dB'],['Reaches the antenna',fmtWatts(r.Pf_ant)],['Bounced back at antenna',fmtWatts(r.Pr_ant)],['VSWR at antenna',r.vswrAnt>99?'> 99':r.vswrAnt.toFixed(2),vsClass(r.vswrAnt)],['VSWR at radio',r.vswrTx>99?'> 99':r.vswrTx.toFixed(2),vsClass(r.vswrTx)],['Return loss',(r.g<1e-4?'> 80':(-20*Math.log10(r.g)).toFixed(1))+' dB'],['Radiated',fmtWatts(r.rad),r.rad<0.05*FL.pw?'bad':''],['EIRP',isFinite(r.eirp)?r.eirp.toFixed(1)+' dBm':'none'],['Heating the cable',fmtWatts(r.heat)]]);
-  $('#fl-cap').innerHTML=r.fold?'<b style="color:#ff6b6b">RADIO PROTECTING ITSELF · POWER CUT TO 25%</b>':`<b>λ = ${(r.lambda*100).toFixed(0)} cm in this cable</b>`;
-  drawBudget();drawPattern();
+  if(!flRes)flCalc();const r=flRes,F=FL.fault;
+  if(F){const rl=-10*Math.log10(Math.max(r.Pr_tx/r.Ptx,1e-9));ro('fl-read',[['Forward power at radio',fmtWatts(r.Ptx)],['Reflected power at radio',fmtWatts(r.Pr_tx)],['VSWR at radio',vsTxt(r.vswrTx)],['Return loss at radio',(rl>60?'> 60':rl.toFixed(1))+' dB']]);}
+  else ro('fl-read',[['Cable loss',r.line.toFixed(1)+' dB'],['Reaches the antenna',fmtWatts(r.Pf_ant)],['Bounced back at antenna',fmtWatts(r.Pr_ant)],['VSWR at antenna',vsTxt(r.vswrAnt),vsClass(r.vswrAnt)],['VSWR at radio',vsTxt(r.vswrTx),vsClass(r.vswrTx)],['Return loss',(r.g<1e-4?'> 80':(-20*Math.log10(r.g)).toFixed(1))+' dB'],['Radiated',fmtWatts(r.rad),r.rad<0.05*FL.pw?'bad':''],['EIRP',isFinite(r.eirp)?r.eirp.toFixed(1)+' dBm':'none'],['Heating the cable',fmtWatts(r.heat)]]);
+  const prot=r.fold?'<b style="color:#ff6b6b">VSWR ALARM · RADIO HAS CUT ITS POWER TO 25%</b>':'';
+  $('#fl-cap').innerHTML=prot||`<b>λ = ${(r.lambda*100).toFixed(0)} cm in this cable</b>`;
+  $('#fl-cap2').innerHTML=F?(prot||'<b>radio end only</b>'):prot;
+  $('#fig-wave').hidden=!!F;$('#fig-budget').hidden=!!F;
+  if(!F)drawBudget();drawPattern();drawDTF();
 }
 function drawWave(){
-  const {ctx,w,h}=fit($('#cv-wave'));const r=flRes;ctx.fillStyle=SCR.bg;ctx.fillRect(0,0,w,h);const L=10,Rt=70,T=14,B=20,pw=w-L-Rt,ph=h-T-B,mid=T+ph/2;grid(ctx,L,T,pw,ph,10,4);
+  if(FL.fault)return;const {ctx,w,h}=fit($('#cv-wave'));const r=flRes;ctx.fillStyle=SCR.bg;ctx.fillRect(0,0,w,h);const L=10,Rt=70,T=14,B=20,pw=w-L-Rt,ph=h-T-B,mid=T+ph/2;grid(ctx,L,T,pw,ph,10,4);
   const nl=2.5,beta=TAU,gr=r.gr,gi=r.gi;const amp=ph/2/2.05;
-  // envelope |1+Γe^{-j2βd}|
   ctx.fillStyle='rgba(79,214,232,.13)';ctx.beginPath();for(let i=0;i<=pw;i++){const d=(1-i/pw)*nl,a=-2*beta*d,er=1+gr*Math.cos(a)-gi*Math.sin(a),ei=gr*Math.sin(a)+gi*Math.cos(a),e=Math.hypot(er,ei);const x=L+i;if(i)ctx.lineTo(x,mid-e*amp);else ctx.moveTo(x,mid-e*amp);}
   for(let i=pw;i>=0;i--){const d=(1-i/pw)*nl,a=-2*beta*d,er=1+gr*Math.cos(a)-gi*Math.sin(a),ei=gr*Math.sin(a)+gi*Math.cos(a),e=Math.hypot(er,ei);ctx.lineTo(L+i,mid+e*amp);}ctx.fill();
-  // instantaneous Re{(e^{jβd}+Γe^{-jβd})e^{jωt}}
   const wt=FL.phase;ctx.beginPath();for(let i=0;i<=pw;i++){const d=(1-i/pw)*nl,b=beta*d;const vr=Math.cos(b)+gr*Math.cos(-b)-gi*Math.sin(-b),vi=Math.sin(b)+gr*Math.sin(-b)+gi*Math.cos(-b);const v=vr*Math.cos(wt)-vi*Math.sin(wt);const x=L+i;if(i)ctx.lineTo(x,mid-v*amp);else ctx.moveTo(x,mid-v*amp);}ctx.strokeStyle=SCR.trace;ctx.lineWidth=1.6;ctx.stroke();
-  // antenna glyph
   const ax=L+pw+8;ctx.strokeStyle=FL.load==='open'||FL.load==='short'?SCR.trace3:SCR.trace2;ctx.lineWidth=2;ctx.beginPath();ctx.moveTo(L+pw,mid);ctx.lineTo(ax+10,mid);ctx.moveTo(ax+10,mid);ctx.lineTo(ax+10,T+4);ctx.moveTo(ax+2,T+14);ctx.lineTo(ax+10,T+4);ctx.lineTo(ax+18,T+14);ctx.stroke();
   txt(ctx,FL.load==='dummy'?'LOAD':'ANT',ax+10,h-6,SCR.text,'center');
   for(let i=0;i<=5;i++){const d=nl*(1-i/5);txt(ctx,(d*r.lambda).toFixed(2)+' m',L+pw*i/5,h-6,SCR.text,i===0?'left':i===5?'right':'center');}
@@ -716,18 +959,18 @@ function drawWave(){
 }
 function drawWatt(){
   const {ctx,w,h}=fit($('#cv-watt'));const r=flRes;ctx.fillStyle=SCR.bg;ctx.fillRect(0,0,w,h);
-  const scales=[1,5,10,25,50,100];const fs=scales.find(s=>s>=r.Ptx*1.02)||100;
+  const scales=[1,5,10,25,50,100];const fs=scales.find(s=>s>=FL.pw*1.02)||100;
   const cx=w/2,cy=h*0.8,R=Math.min(w*0.42,h*0.68),a0=Math.PI*1.15,a1=Math.PI*1.85;
   ctx.fillStyle='#e9e4d6';ctx.beginPath();ctx.arc(cx,cy,R+14,Math.PI,0);ctx.lineTo(cx+R+14,cy+10);ctx.lineTo(cx-R-14,cy+10);ctx.closePath();ctx.fill();
   ctx.strokeStyle='#222';ctx.lineWidth=2;ctx.beginPath();ctx.arc(cx,cy,R,a0,a1);ctx.stroke();
-  const ang=v=>a0+(a1-a0)*Math.sqrt(clamp(v/fs,0,1));// square-law scale like a real diode meter
+  const ang=v=>a0+(a1-a0)*Math.sqrt(clamp(v/fs,0,1));
   ctx.lineWidth=1;for(let i=0;i<=10;i++){const v=fs*i/10,a=ang(v);ctx.beginPath();ctx.moveTo(cx+Math.cos(a)*R,cy+Math.sin(a)*R);ctx.lineTo(cx+Math.cos(a)*(R-(i%5?6:11)),cy+Math.sin(a)*(R-(i%5?6:11)));ctx.stroke();if(i%2===0){ctx.fillStyle='#222';ctx.font='10px "JetBrains Mono",monospace';ctx.textAlign='center';ctx.fillText(String(+(v).toFixed(fs<10?1:0)),cx+Math.cos(a)*(R-22),cy+Math.sin(a)*(R-22)+3);}}
   ctx.fillStyle='#222';ctx.font='600 11px "Barlow Condensed",sans-serif';ctx.textAlign='center';ctx.fillText('WATTS · '+fs+' W SCALE',cx,cy-R*0.35);
   meterF+=(r.Ptx-meterF)*0.15;meterR+=(r.Pr_tx-meterR)*0.15;
   [[meterF,'#c84d07'],[meterR,'#0a6f80']].forEach(([v,c])=>{const a=ang(v);ctx.strokeStyle=c;ctx.lineWidth=2.4;ctx.beginPath();ctx.moveTo(cx,cy);ctx.lineTo(cx+Math.cos(a)*(R-4),cy+Math.sin(a)*(R-4));ctx.stroke();});
   ctx.fillStyle='#222';ctx.beginPath();ctx.arc(cx,cy,5,0,TAU);ctx.fill();
   txt(ctx,'● forward '+fmtWatts(r.Ptx),8,h-8,'#ff9a5c');txt(ctx,'● reflected '+fmtWatts(r.Pr_tx),w-8,h-8,SCR.trace2,'right');
-  $('#wm-cap').innerHTML=`<b>VSWR ${r.vswrTx>99?'>99':r.vswrTx.toFixed(2)}</b>`;
+  $('#wm-cap').innerHTML=`<b>VSWR ${vsTxt(r.vswrTx)}</b>`;
 }
 function drawPattern(){
   const {ctx,w,h}=fit($('#cv-pat'));ctx.fillStyle=SCR.bg;ctx.fillRect(0,0,w,h);const a=ANT[FL.ant],cx=w/2,cy=h/2,R=Math.min(w,h)/2-18;
@@ -749,15 +992,34 @@ function drawBudget(){
   rows.forEach(([n,d,c],i)=>{const y=T+i*rh;txt(ctx,n,L-8,y+rh/2+3,SCR.text,'right',null,Math.max(9,Math.min(11,w/60)));if(isFinite(d)){ctx.fillStyle=c;ctx.fillRect(L,y+rh*0.2,X(d)-L,rh*0.6);}txt(ctx,isFinite(d)?d.toFixed(1)+' dBm':'—',X(isFinite(d)?d:0)+6,y+rh/2+3,'#e8f1f2');});
   for(let d=0;d<=60;d+=10)txt(ctx,String(d),X(d),h-3,SCR.text,'center');
 }
-function flPreset(){const p=LOADS[FL.load];if(p){flCtl.r.set(Math.min(500,Math.max(1,Math.round(p[0])))); flCtl.x.set(p[1]);if(FL.load==='open'){FL.r=5000;$('#fl-r-v').textContent='open circuit';}if(FL.load==='short'){FL.r=0.2;$('#fl-r-v').textContent='0.2 Ω (short)';}}flCalc();}
-const flUpd=()=>{flCalc();if(current==='feedline')drawFeed();};
+/* distance-to-fault: each discontinuity is a peak at its distance; height = its reflection minus the cable loss there and back */
+function dtfSpikes(){const r=flRes,F=FL.fault,sp=[[0.4,-31]];
+  if(!F){for(let i=1;i<=r.nconn-2;i++){const d=r.len*i/(r.nconn-1);sp.push([d,-33+((i*7)%5)-2*r.per*d]);}}
+  if(r.gf>0)sp.push([r.df,20*Math.log10(r.gf)-2*(r.per*r.df+0.15)]);
+  if(r.gf<0.99){const ge=Math.max(r.g,0.022);sp.push([r.len,20*Math.log10(ge)-2*r.line+20*Math.log10(1-r.gf*r.gf)]);}
+  return sp;}
+function dtfVal(d,sp,w){let lin=db2lin(-58+2.5*Math.sin(d*7.3)*Math.sin(d*1.7));for(const [sd,rl] of sp){const z=(d-sd)/w;lin+=db2lin(rl)*Math.exp(-z*z);}return lin2db(lin);}
+let dtfGeo=null;
+function drawDTF(){const {ctx,w,h}=fit($('#cv-dtf'));const r=flRes;ctx.fillStyle=SCR.bg;ctx.fillRect(0,0,w,h);const L=40,R=10,T=10,B=20,pw=w-L-R,ph=h-T-B;grid(ctx,L,T,pw,ph,10,6);
+  const maxD=Math.max(20,Math.ceil(r.len*1.25/10)*10),sp=dtfSpikes(),wd=0.35+maxD/160,X=d=>L+d/maxD*pw,Y=v=>T+(-clamp(v,-60,0))/60*ph;dtfGeo={L,pw,maxD};
+  for(let v=0;v>=-60;v-=20)txt(ctx,v+' dB',L-4,Y(v)+3,SCR.text,'right');for(let i=0;i<=10;i+=2)txt(ctx,(maxD*i/10).toFixed(0)+' m',X(maxD*i/10),h-5,SCR.text,i===0?'left':i===10?'right':'center');
+  ctx.beginPath();for(let i=0;i<=pw;i++){const d=i/pw*maxD,y=Y(dtfVal(d,sp,wd));if(i)ctx.lineTo(L+i,y);else ctx.moveTo(L+i,y);}ctx.strokeStyle=SCR.trace;ctx.lineWidth=1.4;ctx.stroke();
+  if(dtfMark!=null){const dm=clamp(dtfMark,0,maxD),v=dtfVal(dm,sp,wd);ctx.strokeStyle=SCR.trace3;ctx.setLineDash([3,3]);ctx.beginPath();ctx.moveTo(X(dm),T);ctx.lineTo(X(dm),T+ph);ctx.stroke();ctx.setLineDash([]);txt(ctx,`marker ${dm.toFixed(1)} m · ${v.toFixed(1)} dB`,Math.min(X(dm)+6,w-170),T+12,SCR.trace3);}
+  txt(ctx,'higher = more reflected',L+6,T+ph-6,SCR.text);
+  $('#dtf-cap').innerHTML=`<b>velocity factor ${COAX[FL.fault?FL.fault.coax:FL.coax].vf}</b>`;
+  const peaks=sp.filter(p=>p[0]>1).map(p=>[p[0],dtfVal(p[0],sp,wd)]).sort((a,b)=>b[1]-a[1]).slice(0,3);
+  ro('dtf-read',peaks.length?peaks.map((p,i)=>[`Peak ${i+1}`,`${p[0].toFixed(1)} m · ${p[1].toFixed(1)} dB`]):[['Peaks','none past the radio connector']]);}
+(function(){const cv=$('#cv-dtf');let down=false;const at=e=>{if(!dtfGeo)return;const rc=cv.getBoundingClientRect();dtfMark=clamp((e.clientX-rc.left-dtfGeo.L)/dtfGeo.pw,0,1)*dtfGeo.maxD;drawDTF();};
+  cv.addEventListener('pointerdown',e=>{down=true;cv.setPointerCapture(e.pointerId);at(e);});cv.addEventListener('pointermove',e=>{if(down||e.pointerType==='mouse')at(e);});['pointerup','pointercancel'].forEach(ev=>cv.addEventListener(ev,()=>{down=false;}));})();
+function flPreset(){const p=LOADS[FL.load];if(p){flCtl.r.set(Math.min(500,Math.max(1,Math.round(p[0]))));flCtl.x.set(p[1]);if(FL.load==='open'){FL.r=5000;$('#fl-r-v').textContent='open circuit';}if(FL.load==='short'){FL.r=0.2;$('#fl-r-v').textContent='0.2 Ω (short)';}}flCalc();}
+const flUpd=()=>{flCalc();if(current==='feedline'){drawFeed();drawWave();}};
 const flCtl={};
 flCtl.pw=bindInput('fl-pw',FL,'pw',v=>v+' W · '+(10*Math.log10(v*1000)).toFixed(1)+' dBm',flUpd);
 flCtl.f=bindInput('fl-f',FL,'f',v=>v+' MHz',flUpd);
 flCtl.coax=bindInput('fl-coax',FL,'coax',null,flUpd);
 flCtl.len=bindInput('fl-len',FL,'len',v=>v+' m',flUpd);
 flCtl.conn=bindInput('fl-conn',FL,'conn',v=>v+' × 0.15 dB',flUpd);
-flCtl.r=bindInput('fl-r',FL,'r',v=>v+' Ω',()=>{flUpd();});
+flCtl.r=bindInput('fl-r',FL,'r',v=>v+' Ω',flUpd);
 flCtl.x=bindInput('fl-x',FL,'x',v=>(v>=0?'+j':'−j')+Math.abs(v)+' Ω',flUpd);
 flCtl.ant=bindInput('fl-ant',FL,'ant',null,flUpd);
 flCtl.load=bindInput('fl-load',FL,'load',null,()=>{flPreset();flUpd();});
@@ -765,21 +1027,54 @@ $('#fl-r').addEventListener('input',()=>{if(FL.load!=='custom'){FL.load='custom'
 $('#fl-x').addEventListener('input',()=>{if(FL.load!=='custom'){FL.load='custom';$('#fl-load').value='custom';}});
 onShow.feedline=()=>{flCalc();drawFeed();drawWave();drawWatt();};
 onTick.feedline=(t,dt)=>{if(!REDUCED)FL.phase=(FL.phase+dt*3.2)%TAU;drawWave();drawWatt();};
+function flLock(on){$$('#fl-rack input,#fl-rack select').forEach(e=>e.disabled=on);}
+const FL_COMPLAINTS=['Since last week\'s firing, crews say they lose the base a lot closer than they used to.','Crews at the far end of the level say the base has gone scratchy and they keep having to repeat themselves.','The control room says this site\'s VSWR alarm flickered on overnight.','A loader clipped the cable tray on day shift. The supervisor wants the feedline checked before night shift.'];
+function newFeedJob(){
+  const coax=pick(['lmr400','h12','rg213','h78']),len=Math.round(rnd(35,150)),kind=pick(['crush','open','antenna','lowpower','ok']);
+  const F={kind,coax,len,d:0,gf:0,ga:rnd(0.02,0.07),pwf:1};
+  if(kind==='crush'){F.d=Math.round(rnd(6,len-12)*2)/2;F.gf=rnd(0.35,0.6);}
+  if(kind==='open'){F.d=Math.round(rnd(6,len-8)*2)/2;F.gf=0.999;}
+  if(kind==='antenna'){F.ga=rnd(0.45,0.75);}
+  if(kind==='lowpower'){F.pwf=rnd(0.25,0.45);}
+  const prev={pw:FL.pw,f:FL.f};flCtl.pw.set(25);flCtl.f.set(420);FL.fault=F;flLock(true);dtfMark=null;flUpd();
+  startJob('feedline',{kindLabel:'Feedline fault',title:`Base station feedline · ${COAX[coax].name}`,
+    ticket:`${pick(FL_COMPLAINTS)} The base station radio feeds a yagi through <b>${len} m of ${COAX[coax].name}</b>, with a connector at each end. The radio is set to <b>25 W</b>.`,
+    how:'You can only get at the radio end: the antenna is up a raise. Use the wattmeter and the distance-to-fault analyser. A reflection far down a lossy cable looks smaller than it really is, because the signal crosses the cable loss there and back.',
+    fields:[{type:'radio',name:'kind',label:'What is wrong?',options:[['crush','The cable is damaged partway along'],['open','The cable is cut right through'],['antenna','The problem is at the antenna end (antenna or its connector)'],['lowpower','The radio itself is putting out low power'],['ok','Nothing: the feedline is healthy']]},{type:'number',name:'dist',label:'If the cable is damaged or cut: how far from the radio?',unit:'metres'}],
+    progKey:'job:feedline',
+    grade(v){const okk=v.kind===kind;let okd=true;if(okk&&(kind==='crush'||kind==='open')){const d=parseFloat(v.dist);okd=isFinite(d)&&Math.abs(d-F.d)<=Math.max(3,0.06*len);}
+      if(okk&&okd)return {ok:true,msg:'<b>Correct.</b> '+feedExplain(F)};
+      if(okk)return {ok:false,msg:'<b>Right fault, wrong distance.</b> Read the distance of that peak off the analyser. Tap or drag on the trace for a marker.'};
+      return {ok:false,msg:'<b>Not that.</b> Compare forward power with the 25 W the radio should make, then look at where the peaks are on the analyser and whether there is anything after them.'};},
+    reveal(){return feedExplain(F);},
+    cleanup(){FL.fault=null;flLock(false);flCtl.pw.set(prev.pw);flCtl.f.set(prev.f);dtfMark=null;flUpd();}});
+}
+function feedExplain(F){switch(F.kind){
+  case 'crush':return `The cable was crushed <b>${F.d} m</b> from the radio. The analyser shows a peak there, with a smaller antenna peak at ${F.len} m behind it. Reflected power and VSWR at the radio both went up.`;
+  case 'open':return `The cable was cut through <b>${F.d} m</b> from the radio. There is a big peak there and nothing after it: no antenna peak, because no signal gets past the cut. Almost all the power comes back, and the radio cut its own power to protect itself.`;
+  case 'antenna':return `The cable is fine all the way along. The big reflection is right at the far end (${F.len} m), so the antenna or its connector is the problem. Water in the connector and a damaged antenna both look like this.`;
+  case 'lowpower':return `The cable and antenna are fine: only small connector peaks and a low VSWR. But forward power read about ${(25*F.pwf).toFixed(0)} W instead of 25 W. The radio's power amplifier or its supply is at fault.`;
+  default:return 'Nothing is wrong. Full 25 W forward, very little reflected, and only small connector peaks on the analyser. Checking and finding nothing is a real result: write it down so nobody repeats the job.';}}
 
 /* ===================== BENCH 3: UNDERGROUND ===================== */
 const MW=120,MH=72,CELL=10,NC=MW*MH;
 const MI=(x,y)=>y*MW+x;
-const tun=new Uint8Array(NC),cable=new Uint8Array(NC),ampAt=new Uint8Array(NC),rockTex=new Float32Array(NC);
+const tun=new Uint8Array(NC),cable=new Uint8Array(NC),ampAt=new Uint8Array(NC),rockTex=new Float32Array(NC),zoneOf=new Array(NC).fill(null);
 const TUN=[[3,3,40,3],[40,3,40,9],[40,9,8,9],[8,9,8,15],[8,15,40,15],[40,15,40,24],[6,24,114,24],[20,24,20,60],[45,24,45,60],[70,24,70,60],[95,24,95,60],[114,24,114,60],[20,60,114,60],[45,38,60,38],[70,38,86,38],[95,46,108,46],[20,46,32,46],[45,50,58,50],[70,24,70,16],[70,16,84,16]];
-const ROOMS=[[26,25,33,28],[62,20,67,23],[85,14,89,18]];
+const ZSEG=['decline','decline','decline','decline','decline','decline','main','xc','xc','xc','xc','xc','ore','stopes','stopes','stopes','stopes','stopes','spur','spur'];
+const ROOMS=[[26,25,33,28],[62,20,67,23],[85,14,89,18]],ZROOM=['workshop','crib','refuge'];
+const ZNAME={decline:'Decline',main:'Main drive',xc:'Crosscuts',ore:'Ore drive',stopes:'Stopes',spur:'Spur',workshop:'Workshop',crib:'Crib room',refuge:'Refuge chamber',all:'Whole level'};
 const LABELS=[[3,1.6,'Portal',''],[24,7.2,'Decline (going down)',''],[78,22.6,'Main drive',''],[78,58.6,'Ore drive',''],[29.5,30.4,'Workshop','c'],[64.5,19,'Crib room','c'],[87,12.6,'Refuge chamber','c'],[53,36.6,'Stope 1',''],[78,36.6,'Stope 2',''],[101,44.6,'Stope 3',''],[26,44.6,'Stope 4',''],[51,48.6,'Stope 5',''],[116,40,'Escape way','v']];
+const M={tool:'miner',net:'tetra',view:'both',band:420,fade:10,body:true,sites:[],miner:{x:62,y:24},res:null,dirty:true,walk:null,trace:[],stats:{},custom:false,fault:null,mark:null,reveal:null,lock:false,ch:null,chSnap:null,plan:null,planOn:true};
 function segFill(a,x1,y1,x2,y2,v){const dx=Math.sign(x2-x1),dy=Math.sign(y2-y1);let x=x1,y=y1;for(;;){a[MI(x,y)]=v;if(x===x2&&y===y2)break;x+=dx;y+=dy;}}
-TUN.forEach(s=>segFill(tun,...s,1));ROOMS.forEach(([x1,y1,x2,y2])=>{for(let y=y1;y<=y2;y++)for(let x=x1;x<=x2;x++)tun[MI(x,y)]=2;});
+function buildExample(){tun.fill(0);cable.fill(0);ampAt.fill(0);TUN.forEach(s=>segFill(tun,...s,1));ROOMS.forEach(([x1,y1,x2,y2])=>{for(let y=y1;y<=y2;y++)for(let x=x1;x<=x2;x++)tun[MI(x,y)]=2;});M.custom=false;M.dirty=true;}
+buildExample();
+TUN.forEach((s,i)=>{const dx=Math.sign(s[2]-s[0]),dy=Math.sign(s[3]-s[1]);let x=s[0],y=s[1];for(;;){zoneOf[MI(x,y)]=ZSEG[i];if(x===s[2]&&y===s[3])break;x+=dx;y+=dy;}});
+ROOMS.forEach((r,i)=>{for(let y=r[1];y<=r[3];y++)for(let x=r[0];x<=r[2];x++)zoneOf[MI(x,y)]=ZROOM[i];});
 {let s=12345;for(let i=0;i<NC;i++){s=(s*16807)%2147483647;rockTex[i]=s/2147483647;}}
 const BANDS={150:{f:150,a:12,corner:6,rock:0.6,lf:2.2,cpl:62},420:{f:420,a:4,corner:15,rock:1.6,lf:4.5,cpl:70},800:{f:800,a:3,corner:20,rock:3,lf:7,cpl:74}};
 const TECH={tetra:{name:'TETRA',site:40,port:30,sensP:-112,sensB:-115,col:'#4fd6e8'},dmr:{name:'DMR',site:40,port:36,sensP:-119,sensB:-119,col:'#c792ff'}};
 const LAUNCH=10; // dBm per channel into the leaky feeder
-const M={tool:'miner',net:'tetra',view:'both',band:420,fade:10,body:true,sites:[],miner:{x:62,y:24},res:null,dirty:true,probe:null,walk:null,trace:[],stats:{}};
 function fspl(dm,f){return 20*Math.log10(dm/1000)+20*Math.log10(f)+32.44;}
 class Heap{constructor(){this.k=[];this.v=[];this.lastKey=0;}get size(){return this.k.length;}
   push(key,val){const k=this.k,v=this.v;let i=k.length;k.push(key);v.push(val);while(i>0){const p=(i-1)>>1;if(k[p]<=key)break;k[i]=k[p];v[i]=v[p];i=p;}k[i]=key;v[i]=val;}
@@ -798,23 +1093,26 @@ function pointLoss(sx,sy,B){
     if(cell===s)best=fspl(5,B.f);loss[cell]=best;}
   return loss;}
 function leakyLoss(head,B){
-  const lev=new Float64Array(NC).fill(NaN);lev[head]=0;const q=[head];let qi=0,amps=0;
-  while(qi<q.length){const c=q[qi++],x=c%MW,y=(c/MW)|0;const nb=[];for(const [dx,dy] of DIRS){const nx=x+dx,ny=y+dy;if(nx<0||ny<0||nx>=MW||ny>=MH)continue;const n=MI(nx,ny);if(cable[n]&&isNaN(lev[n]))nb.push(n);}
-    const split=nb.length>1?10*Math.log10(nb.length)+0.5:0;for(const n of nb){let l=lev[c]-B.lf*CELL/100-split;if(ampAt[n]){amps++;l=Math.min(l+30,0);}lev[n]=l;q.push(n);}}
+  const MF=M.fault,lev=new Float64Array(NC).fill(NaN);lev[head]=0;const q=[head];let qi=0,amps=0;
+  while(qi<q.length){const c=q[qi++],x=c%MW,y=(c/MW)|0;const nb=[];for(const [dx,dy] of DIRS){const nx=x+dx,ny=y+dy;if(nx<0||ny<0||nx>=MW||ny>=MH)continue;const n=MI(nx,ny);if(cable[n]&&isNaN(lev[n])&&!(MF&&MF.kind==='cut'&&MF.cell===n))nb.push(n);}
+    const split=nb.length>1?10*Math.log10(nb.length)+0.5:0;
+    for(const n of nb){let l=lev[c]-B.lf*CELL/100-split;if(MF&&MF.kind==='damaged'&&MF.cell===n)l-=25;if(ampAt[n]){if(MF&&MF.kind==='deadamp'&&MF.cell===n)l-=40;else{amps++;l=Math.min(l+30,0);}}lev[n]=l;q.push(n);}}
   const loss=new Float32Array(NC).fill(Infinity),h=new Heap();
   for(let c=0;c<NC;c++)if(!isNaN(lev[c])){loss[c]=B.cpl-lev[c];h.push(loss[c],c);}
   while(h.size){const c=h.pop(),k=h.lastKey;if(k>loss[c])continue;if(k>200)break;const x=c%MW,y=(c/MW)|0;for(const [dx,dy] of DIRS){const nx=x+dx,ny=y+dy;if(nx<0||ny<0||nx>=MW||ny>=MH)continue;const n=MI(nx,ny);if(!tun[n])continue;const nk=k+(tun[n]===2?1.2:2.2)+B.a*CELL/100;if(nk<loss[n]){loss[n]=nk;h.push(nk,n);}}}
   return {loss,amps,cells:q.length};}
 function feedCell(s){const c=MI(s.x,s.y);if(cable[c])return c;for(const [dx,dy] of DIRS){const nx=s.x+dx,ny=s.y+dy;if(nx<0||ny<0||nx>=MW||ny>=MH)continue;const n=MI(nx,ny);if(cable[n])return n;}return -1;}
-function mnCompute(){
+function mnComputeRes(skip){
   const B=BANDS[M.band],res={};
-  for(const t of ['tetra','dmr']){const T=TECH[t],dl=new Float64Array(NC),ul=new Float32Array(NC).fill(-999);let anyAmps=0;
-    for(const s of M.sites){if(s.tech!==t)continue;const fc=feedCell(s);let loss,P,rise=0;
-      if(fc>=0){const r=leakyLoss(fc,B);loss=r.loss;P=LAUNCH;rise=10*Math.log10(1+r.amps);anyAmps+=r.amps;s.feeds=true;s.amps=r.amps;}else{loss=pointLoss(s.x,s.y,B);P=T.site;s.feeds=false;}
+  for(const t of ['tetra','dmr']){const T=TECH[t],dl=new Float64Array(NC),ul=new Float32Array(NC).fill(-999);
+    for(const s of M.sites){if(s.tech!==t||s.down||s===skip)continue;const fc=feedCell(s);let loss,P,rise=0;
+      if(fc>=0){const r=leakyLoss(fc,B);loss=r.loss;P=LAUNCH;rise=10*Math.log10(1+r.amps);s.feeds=true;}else{loss=pointLoss(s.x,s.y,B);P=T.site;s.feeds=false;}
       for(let c=0;c<NC;c++){if(!tun[c]||!isFinite(loss[c]))continue;dl[c]+=db2lin(P-loss[c]);const u=T.port-loss[c]-(T.sensB+rise);if(u>ul[c])ul[c]=u;}}
     const dld=new Float32Array(NC);for(let c=0;c<NC;c++)dld[c]=dl[c]>0?lin2db(dl[c]):-999;res[t]={dl:dld,ul};}
-  M.res=res;M.dirty=false;M.trace=[];}
-function margins(c,t){const r=M.res[t],T=TECH[t],body=M.body?6:0;const dl=r.dl[c]>-998?r.dl[c]-body-T.sensP:-999,ul=r.ul[c]>-998?r.ul[c]-body:-999;return {dl,ul,both:Math.min(dl,ul),rssi:r.dl[c]>-998?r.dl[c]-body:-999};}
+  return res;}
+function mnCompute(){M.res=mnComputeRes();M.dirty=false;M.trace=[];}
+function marginsR(res,c,t){const r=res[t],T=TECH[t],body=M.body?6:0;const dl=r.dl[c]>-998?r.dl[c]-body-T.sensP:-999,ul=r.ul[c]>-998?r.ul[c]-body:-999;return {dl,ul,both:Math.min(dl,ul),rssi:r.dl[c]>-998?r.dl[c]-body:-999};}
+function margins(c,t){return marginsR(M.res,c,t);}
 function viewMargin(c){const m=margins(c,M.net);return M.view==='dl'?m.dl:M.view==='ul'?m.ul:m.both;}
 const mapOff=document.createElement('canvas');mapOff.width=MW;mapOff.height=MH;
 function hexRgb(h){h=h.replace('#','');return [parseInt(h.slice(0,2),16),parseInt(h.slice(2,4),16),parseInt(h.slice(4,6),16)];}
@@ -825,27 +1123,24 @@ function drawMap(){
       if(m>=M.fade){good++;const k=0.6+0.4*clamp((m-M.fade)/25,0,1);rgb=[G[0]*k,G[1]*k,G[2]*k];}else if(m>=0)rgb=Y;else if(m>-25)rgb=Rd;else rgb=Dd;}
     d[c*4]=rgb[0];d[c*4+1]=rgb[1];d[c*4+2]=rgb[2];d[c*4+3]=255;}
   octx.putImageData(img,0,0);ctx.imageSmoothingEnabled=false;ctx.drawImage(mapOff,0,0,w,h);
-  // cable
+  if(M.plan&&M.planOn){ctx.save();ctx.globalAlpha=0.42;ctx.imageSmoothingEnabled=true;ctx.drawImage(M.plan,0,0,w,h);ctx.restore();}
   ctx.strokeStyle='#ff8a3d';ctx.lineWidth=Math.max(1.5,cs*0.28);ctx.lineCap='round';ctx.beginPath();
   for(let c=0;c<NC;c++){if(!cable[c])continue;const x=c%MW,y=(c/MW)|0;const px=(x+.5)*cs,py=(y+.5)*cs;let lone=true;if(x+1<MW&&cable[c+1]){ctx.moveTo(px,py);ctx.lineTo(px+cs,py);lone=false;}if(y+1<MH&&cable[c+MW]){ctx.moveTo(px,py);ctx.lineTo(px,py+cs);lone=false;}if(x>0&&cable[c-1])lone=false;if(y>0&&cable[c-MW])lone=false;if(lone){ctx.moveTo(px-cs*.3,py);ctx.lineTo(px+cs*.3,py);}}
   ctx.stroke();
-  // amps
   for(let c=0;c<NC;c++){if(!ampAt[c])continue;const x=(c%MW+.5)*cs,y=(((c/MW)|0)+.5)*cs,r=Math.max(4,cs*.7);ctx.fillStyle='#ffdd57';ctx.strokeStyle='#1a1a1a';ctx.lineWidth=1;ctx.beginPath();ctx.moveTo(x-r,y-r);ctx.lineTo(x+r,y);ctx.lineTo(x-r,y+r);ctx.closePath();ctx.fill();ctx.stroke();}
-  // labels
-  LABELS.forEach(([x,y,s,a])=>{ctx.save();ctx.font=`600 ${Math.max(9,cs*1.05)}px "Barlow Condensed",sans-serif`;ctx.fillStyle='rgba(236,230,220,.85)';ctx.textBaseline='middle';if(a==='v'){ctx.translate(x*cs,y*cs);ctx.rotate(-Math.PI/2);ctx.textAlign='center';ctx.fillText(s.toUpperCase(),0,0);}else{ctx.textAlign=a==='c'?'center':'left';ctx.fillText(s.toUpperCase(),x*cs,y*cs);}ctx.restore();});
-  // sites
+  if(!M.custom)LABELS.forEach(([x,y,s,a])=>{ctx.save();ctx.font=`600 ${Math.max(9,cs*1.05)}px "Barlow Condensed",sans-serif`;ctx.fillStyle='rgba(236,230,220,.85)';ctx.textBaseline='middle';if(a==='v'){ctx.translate(x*cs,y*cs);ctx.rotate(-Math.PI/2);ctx.textAlign='center';ctx.fillText(s.toUpperCase(),0,0);}else{ctx.textAlign=a==='c'?'center':'left';ctx.fillText(s.toUpperCase(),x*cs,y*cs);}ctx.restore();});
   M.sites.forEach(s=>{const x=(s.x+.5)*cs,y=(s.y+.5)*cs,r=Math.max(7,cs*1.3);ctx.fillStyle=TECH[s.tech].col;ctx.strokeStyle='#0a1113';ctx.lineWidth=2;ctx.beginPath();if(s.tech==='tetra')ctx.arc(x,y,r,0,TAU);else ctx.rect(x-r,y-r,2*r,2*r);ctx.fill();ctx.stroke();ctx.fillStyle='#0a1113';ctx.font=`700 ${Math.max(9,r*1.1)}px "Barlow Condensed",sans-serif`;ctx.textAlign='center';ctx.textBaseline='middle';ctx.fillText(s.tech==='tetra'?'T':'D',x,y+1);if(s.feeds){ctx.strokeStyle='#ff8a3d';ctx.lineWidth=2;ctx.beginPath();ctx.arc(x,y,r+3,0,TAU);ctx.stroke();}});
-  // scale bar
   const sb=10*cs;ctx.fillStyle='rgba(10,17,19,.75)';ctx.fillRect(w-sb-26,h-26,sb+18,20);ctx.strokeStyle='#e8f1f2';ctx.lineWidth=2;ctx.beginPath();ctx.moveTo(w-sb-17,h-12);ctx.lineTo(w-17,h-12);ctx.stroke();txt(ctx,'100 m',w-17-sb/2,h-15,'#e8f1f2','center',null,10);
-  // walk trail
   if(M.walk){ctx.strokeStyle='rgba(255,255,255,.5)';ctx.lineWidth=1;ctx.setLineDash([2,3]);ctx.beginPath();M.walk.route.forEach((c,i)=>{const x=(c%MW+.5)*cs,y=(((c/MW)|0)+.5)*cs;if(i)ctx.lineTo(x,y);else ctx.moveTo(x,y);});ctx.stroke();ctx.setLineDash([]);}
-  // miner
   const mx=(M.miner.x+.5)*cs,my=(M.miner.y+.5)*cs,mr=Math.max(6,cs*1.1);ctx.fillStyle='#ffe14d';ctx.strokeStyle='#0a1113';ctx.lineWidth=2;ctx.beginPath();ctx.arc(mx,my,mr,Math.PI,0);ctx.lineTo(mx+mr*1.3,my);ctx.lineTo(mx-mr*1.3,my);ctx.closePath();ctx.fill();ctx.stroke();
+  if(M.mark){const x=(M.mark.x+.5)*cs,y=(M.mark.y+.5)*cs,r=Math.max(7,cs*1.2);ctx.strokeStyle='#ff3b3b';ctx.lineWidth=3;ctx.beginPath();ctx.moveTo(x-r,y-r);ctx.lineTo(x+r,y+r);ctx.moveTo(x+r,y-r);ctx.lineTo(x-r,y+r);ctx.stroke();}
+  if(M.reveal!=null){const x=(M.reveal%MW+.5)*cs,y=(((M.reveal/MW)|0)+.5)*cs;ctx.strokeStyle='#ff4dff';ctx.lineWidth=3;ctx.beginPath();ctx.arc(x,y,Math.max(12,cs*2.4),0,TAU);ctx.stroke();txt(ctx,'FAULT',x+Math.max(14,cs*2.6),y+4,'#ff4dff',null,null,11);}
   M.stats.cov=tot?good/tot:0;$('#mn-cap').innerHTML=`<b>${TECH[M.net].name} · ${Math.round(M.stats.cov*100)}% of drives green</b>`;
-  mnReadout();}
+  $('#mn-title').textContent=M.custom?'Your layout · each square 10 m':'Example level plan · 1.2 km × 0.72 km · each square 10 m';
+  mnReadout();if(M.ch)chStatus();}
 function bars(m){return m<0?0:m<5?1:m<10?2:m<18?3:m<28?4:5;}
 function mnReadout(){
-  const c=MI(M.miner.x,M.miner.y);if(!tun[c]){ro('mn-read',[['Miner','in rock']]);return;}
+  const c=MI(M.miner.x,M.miner.y);if(!tun[c]){ro('mn-read',[['Miner','in rock: move the miner onto a drive']]);return;}
   const t=M.net,m=margins(c,t),o=t==='tetra'?'dmr':'tetra',mo=margins(c,o);
   let verdict,cls;if(m.dl>=M.fade&&m.ul>=M.fade){verdict='Two-way, solid';cls='good';}else if(m.dl>=0&&m.ul>=0){verdict='Works, drops if you move';cls='warn';}else if(m.dl>=0&&m.ul<0){verdict="Hears base, can't be heard";cls='bad';}else if(m.dl<0&&m.ul>=0){verdict="Heard, can't hear base";cls='bad';}else{verdict='No service';cls='bad';}
   const b=bars(m.dl);
@@ -854,14 +1149,16 @@ function drawStrip(){
   const {ctx,w,h}=fit($('#cv-strip'));ctx.fillStyle=SCR.bg;ctx.fillRect(0,0,w,h);const L=34,R=8,T=8,B=16,pw=w-L-R,ph=h-T-B,lo=-40,hi=80,Y=v=>T+(hi-clamp(v,lo,hi))/(hi-lo)*ph;grid(ctx,L,T,pw,ph,10,5);
   ctx.fillStyle='rgba(229,72,77,.12)';ctx.fillRect(L,Y(0),pw,Y(lo)-Y(0));ctx.fillStyle='rgba(240,180,41,.10)';ctx.fillRect(L,Y(M.fade),pw,Y(0)-Y(M.fade));
   for(let v=lo;v<=hi;v+=20)txt(ctx,String(v),L-4,Y(v)+3,SCR.text,'right');
-  const tr=M.trace;if(!tr.length){txt(ctx,'Press "Run drive test" and the miner walks from the portal down the decline and through stopes 5, 2 and 3.',L+8,T+ph/2,SCR.text);return;}
+  const tr=M.trace;if(!tr.length){$('#dt-cap').innerHTML='';txt(ctx,M.custom?'Press "Run drive test": the miner walks from where it stands to the furthest drive.':'Press "Run drive test": the miner walks from the portal down the decline and through stopes 5, 2 and 3.',L+8,T+ph/2,SCR.text);return;}
   const total=M.walk?M.walk.route.length:tr.length,X=i=>L+i/(Math.max(1,total-1))*pw;
   [['dl',SCR.trace2,'hear base'],['ul',SCR.trace4,'be heard']].forEach(([k,col,n],j)=>{ctx.strokeStyle=col;ctx.lineWidth=1.5;ctx.beginPath();tr.forEach((p,i)=>{const y=Y(p[k]);if(i)ctx.lineTo(X(i),y);else ctx.moveTo(X(i),y);});ctx.stroke();txt(ctx,'— '+n,L+8+j*90,T+11,col);});
   txt(ctx,`${(total*CELL/1000).toFixed(2)} km walk`,w-R-4,h-4,SCR.text,'right');
   const bad=tr.filter(p=>Math.min(p.dl,p.ul)<0).length;$('#dt-cap').innerHTML=`<b>${Math.round(bad/tr.length*100)}% of the walk without two-way service</b>`;}
 function bfsRoute(a,b){const prev=new Int32Array(NC).fill(-1),q=[a];prev[a]=a;let qi=0;while(qi<q.length){const c=q[qi++];if(c===b)break;const x=c%MW,y=(c/MW)|0;for(const [dx,dy] of DIRS){const nx=x+dx,ny=y+dy;if(nx<0||ny<0||nx>=MW||ny>=MH)continue;const n=MI(nx,ny);if(tun[n]&&prev[n]<0){prev[n]=c;q.push(n);}}}const r=[];let c=b;if(prev[b]<0)return [a];while(c!==a){r.push(c);c=prev[c];}r.push(a);return r.reverse();}
+function bfsFar(a){const dist=new Int32Array(NC).fill(-1),q=[a];dist[a]=0;let qi=0,far=a;while(qi<q.length){const c=q[qi++];if(dist[c]>dist[far])far=c;const x=c%MW,y=(c/MW)|0;for(const [dx,dy] of DIRS){const nx=x+dx,ny=y+dy;if(nx<0||ny<0||nx>=MW||ny>=MH)continue;const n=MI(nx,ny);if(tun[n]&&dist[n]<0){dist[n]=dist[c]+1;q.push(n);}}}return far;}
 function autoAmps(spacing){ampAt.fill(0);for(const s of M.sites){const h0=feedCell(s);if(h0<0)continue;const dist=new Int32Array(NC).fill(-1);dist[h0]=0;const q=[h0];let qi=0;while(qi<q.length){const c=q[qi++],x=c%MW,y=(c/MW)|0;for(const [dx,dy] of DIRS){const nx=x+dx,ny=y+dy;if(nx<0||ny<0||nx>=MW||ny>=MH)continue;const n=MI(nx,ny);if(cable[n]&&dist[n]<0){dist[n]=dist[c]+1;q.push(n);if(dist[n]%spacing===0)ampAt[n]=1;}}}}M.dirty=true;}
 function layCable(segs){segs.forEach(s=>segFill(cable,...s,1));}
+function layTree(){layCable([[3,3,40,3],[40,3,40,9],[40,9,8,9],[8,9,8,15],[8,15,40,15],[40,15,40,24],[6,24,114,24],[20,24,20,60],[45,24,45,60],[70,24,70,60],[70,60,114,60],[95,60,95,46],[95,46,108,46],[45,38,60,38],[70,38,86,38],[45,50,58,50],[20,46,32,46],[70,24,70,16],[70,16,84,16]]);}
 function mnPreset(p){M.sites=[];cable.fill(0);ampAt.fill(0);M.walk=null;M.trace=[];
   if(p==='leaky'){layCable([[3,3,40,3],[40,3,40,9],[40,9,8,9],[8,9,8,15],[8,15,40,15],[40,15,40,24],[6,24,114,24],[20,24,20,60],[45,24,45,60],[70,24,70,60],[95,24,95,60],[20,60,114,60],[70,24,70,16],[70,16,84,16]]);M.sites.push({x:3,y:3,tech:'dmr'});autoAmps(40);}
   else if(p==='tetra'){M.sites.push({x:40,y:24,tech:'tetra'},{x:95,y:24,tech:'tetra'},{x:70,y:60,tech:'tetra'},{x:24,y:9,tech:'tetra'});}
@@ -874,28 +1171,118 @@ bindRadio('mn-net',M,'net',()=>{M.trace=[];mnRedraw();});
 bindRadio('mn-view',M,'view',mnRedraw);
 const mnBand=bindInput('mn-band',M,'band',null,()=>{M.band=+M.band;M.dirty=true;mnRedraw();});
 const mnFade=bindInput('mn-fade',M,'fade',v=>v+' dB',mnRedraw);
-bindInput('mn-body',M,'body',null,mnRedraw);
+const mnBody=bindInput('mn-body',M,'body',null,mnRedraw);
 const setNet=v=>{$$('input[name=mn-net]').forEach(e=>e.checked=e.value===v);M.net=v;};
-const mnPre=bindInput('mn-preset',M,'preset',null,()=>{mnPreset(M.preset);if(M.preset==='leaky')setNet('dmr');else if(M.preset==='tetra')setNet('tetra');mnRedraw();});
+const setView=v=>{$$('input[name=mn-view]').forEach(e=>e.checked=e.value===v);M.view=v;};
+const setTool=v=>{$$('input[name=mn-tool]').forEach(e=>e.checked=e.value===v);M.tool=v;};
+const mnPre=bindInput('mn-preset',M,'preset',null,()=>{if(M.custom)buildExample();mnPreset(M.preset);if(M.preset==='leaky')setNet('dmr');else if(M.preset==='tetra')setNet('tetra');mnRedraw();});
 $('#mn-amps').onclick=()=>{autoAmps(40);mnRedraw();};
 $('#mn-clear').onclick=()=>{mnPreset('blank');$('#mn-preset').value='blank';mnRedraw();};
-$('#mn-walk').onclick=()=>{if(M.dirty)mnCompute();const wp=[MI(3,3),MI(58,50),MI(86,38),MI(108,46)];let route=[wp[0]];for(let i=1;i<wp.length;i++)route=route.concat(bfsRoute(wp[i-1],wp[i]).slice(1));M.walk={route,i:0,acc:0};M.trace=[];};
+$('#mn-walk').onclick=()=>{if(M.dirty)mnCompute();let route;
+  if(M.custom){const a=MI(M.miner.x,M.miner.y);if(!tun[a]){$('#mn-probe').textContent='Put the miner on a drive first.';return;}route=bfsRoute(a,bfsFar(a));}
+  else{const wp=[MI(3,3),MI(58,50),MI(86,38),MI(108,46)];route=[wp[0]];for(let i=1;i<wp.length;i++)route=route.concat(bfsRoute(wp[i-1],wp[i]).slice(1));}
+  M.walk={route,i:0,acc:0};M.trace=[];};
 function cellAt(e){const r=e.target.getBoundingClientRect();return {x:clamp(Math.floor((e.clientX-r.left)/r.width*MW),0,MW-1),y:clamp(Math.floor((e.clientY-r.top)/r.height*MH),0,MH-1)};}
-let painting=false,paintVal=1;
-function applyTool(p,first){const c=MI(p.x,p.y);if(!tun[c])return;
-  if(M.tool==='miner'){M.miner={x:p.x,y:p.y};M.walk=null;mnRedraw();return;}
-  if(M.tool==='tetra'||M.tool==='dmr'){if(!first)return;const i=M.sites.findIndex(s=>Math.abs(s.x-p.x)<=1&&Math.abs(s.y-p.y)<=1);if(i>=0)M.sites.splice(i,1);else if(M.sites.length<10)M.sites.push({x:p.x,y:p.y,tech:M.tool});}
-  else if(M.tool==='cable'){cable[c]=1;}
-  else if(M.tool==='amp'){if(!first)return;if(cable[c])ampAt[c]=ampAt[c]?0:1;}
-  else if(M.tool==='erase'){cable[c]=0;ampAt[c]=0;const i=M.sites.findIndex(s=>Math.abs(s.x-p.x)<=1&&Math.abs(s.y-p.y)<=1);if(i>=0)M.sites.splice(i,1);}
+let painting=false;
+function siteNear(p){return M.sites.findIndex(s=>Math.abs(s.x-p.x)<=1&&Math.abs(s.y-p.y)<=1);}
+function applyTool(p,first){const c=MI(p.x,p.y),T=M.tool;
+  if(T==='dig'){if(!tun[c]){tun[c]=1;M.custom=true;M.dirty=true;M.walk=null;mnRedraw();}return;}
+  if(T==='fill'){if(tun[c]){tun[c]=0;cable[c]=0;ampAt[c]=0;M.sites=M.sites.filter(s=>!(s.x===p.x&&s.y===p.y));M.custom=true;M.dirty=true;M.walk=null;mnRedraw();}return;}
+  if(T==='mark'){M.mark={x:p.x,y:p.y};const el=$('#wo-markpos');if(el)el.textContent=`${p.x*CELL} m E, ${p.y*CELL} m S`;mnRedraw();return;}
+  if(!tun[c])return;
+  if(T==='miner'){M.miner={x:p.x,y:p.y};M.walk=null;mnRedraw();return;}
+  if(M.lock)return;
+  if(T==='tetra'||T==='dmr'){if(!first)return;const i=siteNear(p);if(i>=0)M.sites.splice(i,1);else{
+      if(M.ch){const lim=M.ch.limits[T];const n=M.sites.filter(s=>s.tech===T).length;if(lim!=null&&n>=lim){$('#mn-probe').textContent=lim?`This challenge allows at most ${lim} ${TECH[T].name} ${lim===1?'site':'sites'}. Click an existing one to remove it.`:`This challenge doesn't use ${TECH[T].name}.`;return;}}
+      if(M.sites.length<12)M.sites.push({x:p.x,y:p.y,tech:T});}}
+  else if(T==='cable'){cable[c]=1;}
+  else if(T==='amp'){if(!first)return;if(cable[c])ampAt[c]=ampAt[c]?0:1;else{$('#mn-probe').textContent='Amplifiers go on the leaky feeder. Lay cable here first.';return;}}
+  else if(T==='erase'){cable[c]=0;ampAt[c]=0;const i=siteNear(p);if(i>=0)M.sites.splice(i,1);}
   M.dirty=true;M.walk=null;mnRedraw();}
 const cvMap=$('#cv-map');
 cvMap.addEventListener('pointerdown',e=>{painting=true;cvMap.setPointerCapture(e.pointerId);applyTool(cellAt(e),true);});
-cvMap.addEventListener('pointermove',e=>{const p=cellAt(e);if(painting&&(M.tool==='cable'||M.tool==='erase'||M.tool==='miner'))applyTool(p,false);
-  const c=MI(p.x,p.y);if(M.res&&tun[c]){const m=margins(c,M.net);$('#mn-probe').textContent=`Probe ${p.x*CELL} m, ${p.y*CELL} m · ${TECH[M.net].name} ${m.rssi>-998?m.rssi.toFixed(1)+' dBm':'no signal'} · hear base ${m.dl>-998?m.dl.toFixed(0):'—'} dB · be heard ${m.ul>-998?m.ul.toFixed(0):'—'} dB${cable[c]?' · on the cable':''}`;}else $('#mn-probe').textContent=tun[c]?'':'Solid rock.';});
+cvMap.addEventListener('pointermove',e=>{const p=cellAt(e);if(painting&&['cable','erase','miner','dig','fill'].includes(M.tool))applyTool(p,false);
+  const c=MI(p.x,p.y);if(M.res&&tun[c]&&!M.dirty){const m=margins(c,M.net);$('#mn-probe').textContent=`Probe ${p.x*CELL} m E, ${p.y*CELL} m S · ${TECH[M.net].name} ${m.rssi>-998?m.rssi.toFixed(1)+' dBm':'no signal'} · hear base ${m.dl>-998?m.dl.toFixed(0)+' dB':'—'} · be heard ${m.ul>-998?m.ul.toFixed(0)+' dB':'—'}${cable[c]?' · on the cable':''}`;}else if(!tun[c])$('#mn-probe').textContent='Solid rock.';});
 ['pointerup','pointercancel'].forEach(ev=>cvMap.addEventListener(ev,()=>{painting=false;}));
 onShow.mine=()=>{drawMap();drawStrip();};
-onTick.mine=(t,dt)=>{const W=M.walk;if(!W||W.i>=W.route.length)return;W.acc+=dt*(REDUCED?400:45);let moved=false;while(W.acc>=1&&W.i<W.route.length){const c=W.route[W.i];M.miner={x:c%MW,y:(c/MW)|0};const m=margins(c,M.net);M.trace.push({dl:m.dl,ul:m.ul});W.i++;W.acc-=1;moved=true;}if(moved){drawMap();drawStrip();}};
+onTick.mine=(t,dt)=>{const W=M.walk;if(!W||W.i>=W.route.length)return;if(M.dirty)mnCompute();W.acc+=dt*(REDUCED?400:45);let moved=false;while(W.acc>=1&&W.i<W.route.length){const c=W.route[W.i];M.miner={x:c%MW,y:(c/MW)|0};const m=margins(c,M.net);M.trace.push({dl:m.dl,ul:m.ul});W.i++;W.acc-=1;moved=true;}if(moved){drawMap();drawStrip();}};
+/* own layouts */
+function layoutMsg(t){$('#mn-layout-msg').textContent=t;}
+$('#mn-rock').onclick=()=>{tun.fill(0);cable.fill(0);ampAt.fill(0);M.sites=[];M.custom=true;M.walk=null;M.trace=[];M.dirty=true;$('#mn-preset').value='blank';setTool('dig');layoutMsg('Solid rock. Dig tunnel is selected: drag on the map to dig drives, then place sites as usual.');mnRedraw();};
+$('#mn-example').onclick=()=>{buildExample();mnPreset('hybrid');$('#mn-preset').value='hybrid';M.plan=null;if(M.tool==='dig'||M.tool==='fill')setTool('miner');layoutMsg('Back on the example level.');mnRedraw();};
+$('#mn-plan').addEventListener('change',e=>{const f=e.target.files&&e.target.files[0];if(!f)return;const rd=new FileReader();rd.onload=()=>{const im=new Image();im.onload=()=>{M.plan=im;M.planOn=true;$('#mn-planon').checked=true;layoutMsg('Plan loaded and stretched over the whole map. Press Start from solid rock if you haven\'t, then trace the drives with Dig tunnel. The picture itself isn\'t saved, only what you dig.');mnRedraw();};im.onerror=()=>layoutMsg('That file could not be opened as a picture. Try a PNG or JPG screenshot.');im.src=rd.result;};rd.onerror=()=>layoutMsg('That file could not be read. Try again or use a different file.');rd.readAsDataURL(f);e.target.value='';});
+$('#mn-planon').addEventListener('change',e=>{M.planOn=e.target.checked;mnRedraw();});
+$('#mn-save').onclick=()=>{const ok=store.set('rflab-layout',{tun:Array.from(tun),cable:Array.from(cable),amp:Array.from(ampAt),sites:M.sites.map(s=>({x:s.x,y:s.y,tech:s.tech})),custom:M.custom});layoutMsg(ok?'Layout saved in this browser. Load my layout brings it back.':'This browser would not let the lab save. Your layout is still on screen, but it will be lost if you close the page.');};
+$('#mn-load').onclick=()=>{const s=store.get('rflab-layout',null);if(!s||!s.tun||s.tun.length!==NC){layoutMsg('Nothing saved in this browser yet. Press Save my layout first.');return;}tun.set(s.tun);cable.set(s.cable);ampAt.set(s.amp);M.sites=s.sites;M.custom=!!s.custom;M.walk=null;M.trace=[];M.dirty=true;layoutMsg('Saved layout loaded.');mnRedraw();};
+/* locking for jobs and challenges */
+function mnLockUI(level){
+  $$('#b-mine [data-lk]').forEach(e=>{e.disabled=!!level&&e.dataset.lk.split(' ').includes(level);});
+  const allow=level==='job'?['miner','mark']:level==='ch'?['miner','tetra','dmr','cable','amp','erase']:['miner','tetra','dmr','cable','amp','erase','dig','fill'];
+  $$('input[name=mn-tool]').forEach(e=>{e.closest('label').hidden=!allow.includes(e.value);});
+  if(!allow.includes(M.tool))setTool('miner');if(level==='job')setTool('mark');
+  M.lock=level==='job';}
+function mnSnap(){return {tun:tun.slice(),cable:cable.slice(),amp:ampAt.slice(),sites:M.sites.map(s=>({x:s.x,y:s.y,tech:s.tech})),miner:{x:M.miner.x,y:M.miner.y},band:M.band,net:M.net,view:M.view,fade:M.fade,body:M.body,custom:M.custom,preset:$('#mn-preset').value};}
+function mnRestore(s){tun.set(s.tun);cable.set(s.cable);ampAt.set(s.amp);M.sites=s.sites;M.miner=s.miner;M.fault=null;M.mark=null;M.reveal=null;M.walk=null;M.trace=[];M.custom=s.custom;mnBand.set(s.band);setNet(s.net);setView(s.view);mnFade.set(s.fade);mnBody.set(s.body);$('#mn-preset').value=s.preset;M.dirty=true;mnRedraw();}
+/* fault-finding jobs */
+function nearestLabel(c){const x=c%MW,y=(c/MW)|0;let best='the level',bd=1e9;LABELS.forEach(([lx,ly,s,a])=>{if(s==='Portal')return;const cx=a===''?lx+4:lx,cy=ly+1.5,d=Math.hypot(cx-x,cy-y);if(d<bd){bd=d;best=s;}});return best.startsWith('Stope')?best:'the '+best.replace(' (going down)','').toLowerCase();}
+function faultImpact(){const f=M.fault,sd=f.kind==='sitedown'?M.sites[f.site]:null;M.fault=null;if(sd)sd.down=false;const base=mnComputeRes();M.fault=f;if(sd)sd.down=true;const res=mnComputeRes();M.res=res;M.dirty=false;M.trace=[];
+  let count=0;const tally={};for(let c=0;c<NC;c++){if(!tun[c])continue;if(marginsR(base,c,M.net).both>=0&&marginsR(res,c,M.net).both<0){count++;const n=nearestLabel(c);tally[n]=(tally[n]||0)+1;}}
+  return {count,names:Object.entries(tally).sort((a,b)=>b[1]-a[1]).slice(0,2).map(e=>e[0])};}
+const MN_WHEN=['since last night\'s firing','since a loader went through on day shift','since the weekend shutdown','since a power dip on Tuesday'];
+function newMineJob(){if(M.ch)endChallenge();
+  const snap=mnSnap();buildExample();M.plan=null;mnBand.set(420);mnFade.set(10);mnBody.set(true);setView('both');M.walk=null;
+  const KINDS=['deadamp','cut','damaged','sitedown'];let kind=pick(KINDS),info={count:0,names:[]};
+  for(let t=0;t<40;t++){M.fault=null;
+    if(kind==='sitedown'){mnPreset('tetra');setNet('tetra');const i=Math.random()*M.sites.length|0;M.sites[i].down=true;M.fault={kind,site:i,cell:MI(M.sites[i].x,M.sites[i].y)};}
+    else{mnPreset('blank');layTree();M.sites.push({x:3,y:3,tech:'dmr'});autoAmps(40);setNet('dmr');const cells=[];for(let c=0;c<NC;c++){if(kind==='deadamp'?ampAt[c]:(cable[c]&&!ampAt[c]&&((c%MW)>14||((c/MW)|0)>10)))cells.push(c);}M.fault={kind,cell:pick(cells)};}
+    info=faultImpact();if(info.count>=10)break;kind=pick(KINDS);}
+  M.miner={x:40,y:24};M.mark=null;M.reveal=null;$('#mn-preset').value=M.fault.kind==='sitedown'?'tetra':'leaky';
+  mnLockUI('job');
+  const f=M.fault,netName=TECH[M.net].name;
+  startJob('mine',{kindLabel:'Coverage fault',title:`${netName} dropping out around ${info.names[0]||'the level'}`,
+    ticket:`Crews around <b>${info.names.join(' and ')}</b> report ${netName} dropping out ${pick(MN_WHEN)}. Other areas seem fine. The map shows the system as built: ${f.kind==='sitedown'?'four TETRA base stations':'one DMR repeater at the portal feeding a leaky feeder, with line amplifiers'}.`,
+    how:'You can\'t see the fault on the map. Hover over drives to probe the signal, move the miner, or run the drive test, and find where the signal stops making sense. Then click the map with the <b>Mark the fault</b> tool where you think the fault is.',
+    fields:[{type:'radio',name:'kind',label:'What has failed?',options:[['deadamp','A line amplifier'],['cut','The leaky feeder is cut through'],['damaged','The leaky feeder is crushed but still connected'],['sitedown','A base station is off air']]},{type:'note',label:'Your mark on the map: <b id="wo-markpos">none yet</b>'}],
+    progKey:'job:mine',
+    grade(v){if(!M.mark)return {ok:false,msg:'Mark where you think the fault is first: choose <b>Mark the fault</b> and click the map.'};const fx=f.cell%MW,fy=(f.cell/MW)|0,d=Math.hypot(M.mark.x-fx,M.mark.y-fy)*CELL,okk=v.kind===f.kind,okd=d<=(f.kind==='sitedown'?40:60);
+      if(okk&&okd)return {ok:true,msg:'<b>Found it.</b> '+mineExplain(f)};
+      if(okk)return {ok:false,msg:`<b>Right kind of fault, but your mark is about ${Math.max(10,Math.round(d/10)*10)} m away.</b> Find the exact point where the signal changes.`};
+      if(okd)return {ok:false,msg:'<b>Right place, wrong kind of fault.</b> Think about what happens past that point, and whether the next amplifier brings the signal back.'};
+      return {ok:false,msg:'<b>Not yet.</b> Work outwards from the head-end or the sites and watch where the margin suddenly drops.'};},
+    reveal(){M.reveal=f.cell;mnRedraw();return mineExplain(f);},
+    cleanup(){mnLockUI(null);mnRestore(snap);}});
+  mnRedraw();}
+function mineExplain(f){const at=`${(f.cell%MW)*CELL} m E, ${((f.cell/MW)|0)*CELL} m S`;switch(f.kind){
+  case 'deadamp':return `The line amplifier at ${at} had failed. Signal is normal up to it and gone after it, in both directions. On a real system you would check its status lights and the DC voltage on the cable either side of it.`;
+  case 'cut':return `The leaky feeder was cut at ${at}. Everything past the cut lost signal, including the amplifiers after it, which had nothing to amplify. Before the cut was normal.`;
+  case 'damaged':return `The leaky feeder was crushed at ${at}, adding about 25 dB of loss. The next amplifier makes most of that back, so only the stretch between the damage and the next amplifier suffered. That is why this kind is harder to find.`;
+  default:return `The TETRA base station at ${at} was off air. The area it covered went dark. Neighbouring sites still reach a little way in, which is why the edge of the dead area is amber, not red.`;}}
+/* design challenges */
+const CHALL=[
+  {id:'c1',title:'Main road',net:'tetra',zones:['decline','main'],target:95,limits:{tetra:2,dmr:0},brief:'Give the decline and the main drive solid two-way TETRA coverage (95% green) with at most 2 TETRA sites.',win:'Two well-placed sites light up long straight drives. Notice where they ended up: at bends, where each one can see down two drives at once.'},
+  {id:'c2',title:'Safe places',net:'tetra',zones:['refuge','crib','workshop'],target:100,limits:{tetra:3,dmr:0},brief:'The refuge chamber, crib room and workshop must be 100% green on TETRA. At most 3 TETRA sites.',win:'Places people gather in an emergency get their own coverage, not whatever leaks in from a drive. In a real design they are named in the requirement with no exceptions.'},
+  {id:'c3',title:'Feeder from scratch',net:'dmr',zones:['ore','stopes'],target:90,limits:{tetra:0,dmr:1},budget:40,brief:'One DMR repeater and leaky feeder: the ore drive and every stope at 90% two-way. Budget 40 points.',win:'A leaky feeder follows the drives, so corners don\'t matter. The price is cable, amplifiers, and the noise those amplifiers add on the way back.'},
+  {id:'c4',title:'Whole level, two sites',net:'tetra',zones:'all',target:88,limits:{tetra:2,dmr:0},noCable:true,brief:'Get 88% of every drive and room on the level green on TETRA with only 2 TETRA sites. No leaky feeder.',win:'With only two sites, placement decides everything. Sites at junctions, where they see down several drives at once, beat sites in the middle of a drive. In this lab the corner losses are typical values; real tunnels can be harsher, which is why designs are proven with a walk test.'},
+  {id:'c5',title:'Lose a site',net:'tetra',zones:['decline','main'],target:85,limits:{tetra:4,dmr:0},n1:true,brief:'The decline and main drive must stay at least 85% green on TETRA even if any one TETRA site fails. At most 4 sites.',win:'Designing so that no single failure leaves a drive dark is called redundancy. Overlap costs money, and that cost is what you trade against the risk.'}];
+function designCost(){let c=0,cab=0,amps=0;M.sites.forEach(s=>c+=s.tech==='tetra'?10:6);for(let i=0;i<NC;i++){if(cable[i])cab++;if(ampAt[i])amps++;}return {total:Math.round(c+cab/10+amps),cab,amps,t:M.sites.filter(s=>s.tech==='tetra').length,d:M.sites.filter(s=>s.tech==='dmr').length};}
+function zoneCov(res){const ch=M.ch,z={};for(let c=0;c<NC;c++){if(!tun[c])continue;const zn=zoneOf[c];if(!zn)continue;if(ch.zones!=='all'&&!ch.zones.includes(zn))continue;const key=ch.zones==='all'?'all':zn;(z[key]=z[key]||[0,0])[1]++;if(marginsR(res,c,ch.net).both>=M.fade)z[key][0]++;}const out={};for(const k in z)out[k]=z[k][0]/z[k][1]*100;return out;}
+function chStatus(){const ch=M.ch,el=$('#ch-live');if(!ch||!M.res||!el)return;const cov=zoneCov(M.res),cost=designCost(),zs=ch.zones==='all'?['all']:ch.zones;
+  const chips=zs.map(z=>{const v=cov[z]||0;return `<span class="chip ${v>=ch.target?'done':''}">${ZNAME[z]} ${v.toFixed(0)}%</span>`;});
+  if(ch.limits.tetra)chips.push(`<span class="chip ${cost.t<=ch.limits.tetra?'':'no'}">TETRA sites ${cost.t}/${ch.limits.tetra}</span>`);if(ch.limits.dmr)chips.push(`<span class="chip">DMR repeaters ${cost.d}/${ch.limits.dmr}</span>`);if(ch.budget)chips.push(`<span class="chip ${cost.total<=ch.budget?'done':''}">${cost.total}/${ch.budget} points</span>`);
+  el.innerHTML=`<div class="chips">${chips.join('')}<span class="chip">target ${ch.target}% each</span></div>`;}
+function startChallenge(id){if(JOB.mine)endJob('mine');if(M.ch)endChallenge();const ch=CHALL.find(c=>c.id===id);
+  M.chSnap=mnSnap();buildExample();M.plan=null;mnPreset('blank');$('#mn-preset').value='blank';mnBand.set(420);mnFade.set(10);mnBody.set(true);setView('both');setNet(ch.net);M.ch=ch;mnLockUI('ch');setTool(ch.net);M.miner={x:40,y:24};
+  const box=$('#mn-chal');box.hidden=false;
+  box.innerHTML=`<div><p class="eyebrow">Design challenge${done('ch:'+id)?' · already passed':''}</p><h3>${ch.title}</h3></div><p class="wo-ticket">${ch.brief}</p><p class="hint">Points: TETRA site 10, DMR repeater 6, leaky feeder 1 per 100 m, line amplifier 1. Green means two-way with a 10 dB fade margin, radio worn on the belt.</p><div id="ch-live"></div><div class="btnrow"><button class="btn primary" type="button" id="ch-check">Check my design</button><button class="btn" type="button" id="ch-quit">Leave the challenge</button></div><div class="verdict" id="ch-res" hidden aria-live="polite"></div>`;
+  $('#ch-check').onclick=checkChallenge;$('#ch-quit').onclick=endChallenge;box.scrollIntoView({block:'start',behavior:REDUCED?'auto':'smooth'});mnRedraw();}
+function checkChallenge(){const ch=M.ch;if(!ch)return;if(M.dirty)mnCompute();const out=$('#ch-res');out.hidden=false;const cost=designCost(),probs=[];
+  if(ch.limits.tetra!=null&&cost.t>ch.limits.tetra)probs.push(`too many TETRA sites (${cost.t})`);if(ch.limits.dmr!=null&&cost.d>ch.limits.dmr)probs.push(`too many DMR repeaters (${cost.d})`);if(ch.budget&&cost.total>ch.budget)probs.push(`over budget: ${cost.total} of ${ch.budget} points`);if(ch.noCable&&cost.cab>0)probs.push('this one is antennas only, so remove the leaky feeder');
+  const zs=ch.zones==='all'?['all']:ch.zones,cov=zoneCov(M.res);zs.forEach(z=>{if((cov[z]||0)<ch.target)probs.push(`${ZNAME[z]} is at ${(cov[z]||0).toFixed(0)}%`);});
+  if(!probs.length&&ch.n1){const ts=M.sites.filter(s=>s.tech==='tetra');if(ts.length<2)probs.push('with only one site, losing it loses everything');else for(const s of ts){const cv=zoneCov(mnComputeRes(s));const bad=zs.find(z=>(cv[z]||0)<ch.target);if(bad){probs.push(`if the site at ${s.x*CELL} m E, ${s.y*CELL} m S fails, the ${ZNAME[bad].toLowerCase()} drops to ${(cv[bad]||0).toFixed(0)}%`);break;}}}
+  if(probs.length){out.className='verdict no';out.innerHTML='<b>Not yet:</b> '+probs.join('; ')+'.';}
+  else{out.className='verdict ok';out.innerHTML='<b>Passed.</b> '+ch.win;mark('ch:'+ch.id);renderChList();}}
+function endChallenge(){if(!M.ch)return;M.ch=null;const box=$('#mn-chal');box.hidden=true;box.innerHTML='';mnLockUI(null);if(M.chSnap)mnRestore(M.chSnap);M.chSnap=null;}
+function renderChList(){$('#mn-chlist').innerHTML=CHALL.map(c=>`<div class="chal"><span>${done('ch:'+c.id)?'<span class="tick">✓ </span>':''}<b>${c.title}</b></span><button class="btn" type="button" data-ch="${c.id}">${done('ch:'+c.id)?'Try again':'Start'}</button></div>`).join('');$$('#mn-chlist [data-ch]').forEach(b=>b.onclick=()=>startChallenge(b.dataset.ch));}
 mnPreset('hybrid');
 
 /* ===================== BENCH 4: DIGITAL ===================== */
@@ -976,8 +1363,11 @@ onTick.digital=(t,dt)=>{DG.t+=REDUCED?0:dt;drawTDMA();};
 /* ===================== BENCH 5: TRUNKING ===================== */
 const NN={CON:{x:120,y:62,l:'Control room',s:'dispatcher console',k:'console'},SW:{x:450,y:62,l:'Call control',s:'DAMM: spread over the BSs',k:'switch'},GW:{x:770,y:62,l:'Gateway',s:'Simoco ⇄ DAMM',k:'gw'},
   BS1:{x:260,y:220,l:'BS-1',s:'DAMM TETRA · Level 1',k:'bs'},BS2:{x:520,y:385,l:'BS-2',s:'DAMM TETRA · Level 2',k:'bs'},RPT:{x:770,y:220,l:'Simoco repeater',s:'DMR · leaky feeder',k:'rpt'},
-  A:{x:110,y:300,l:'A · Shift boss',s:'TETRA handheld',k:'radio'},B:{x:360,y:458,l:'B · Loader operator',s:'TETRA vehicle radio',k:'radio'},C:{x:850,y:430,l:'C · Electrician',s:'DMR handheld',k:'radio'},LF:{x:770,y:430,k:'pt'}};
-const NS={patch:true,bs1:true,bAt:'BS2',slots:{BS1:['ctrl',null,null,null],BS2:['ctrl',null,null,null],RPT:[null,null]},running:false};
+  A:{x:110,y:300,l:'A · Shift boss',s:'TETRA handheld',k:'radio'},B:{x:360,y:458,l:'B · Loader operator',s:'TETRA vehicle radio',k:'radio'},C:{x:850,y:430,l:'C · Electrician',s:'Simoco DMR handheld',k:'radio'},LF:{x:770,y:430,k:'pt'}};
+const POS={A:{1:{x:110,y:300},2:{x:200,y:458}},B:{1:{x:400,y:296},2:{x:360,y:458}}};
+const NS={patch:true,up:{BS1:true,BS2:true},lvl:{A:1,B:2},slots:{BS1:['ctrl',null,null,null],BS2:['ctrl',null,null,null],RPT:[null,null]},running:false,hear:new Set(),talk:new Set(),mode:'guided'};
+const SITE_NAME=s=>s==='RPT'?'the Simoco repeater':s.replace('BS','BS-');
+function siteOf(id){if(id==='C')return 'RPT';const s='BS'+NS.lvl[id];return NS.up[s]?s:null;}
 const SVGNS='http://www.w3.org/2000/svg';
 function el(tag,attrs,parent,text){const e=document.createElementNS(SVGNS,tag);for(const k in attrs)e.setAttribute(k,attrs[k]);if(text!=null)e.textContent=text;if(parent)parent.appendChild(e);return e;}
 const svg=$('#nt-svg');let gLinks,gPk,gNodes,gSlots;
@@ -990,90 +1380,266 @@ function ntBuild(){svg.innerHTML='';
   el('polyline',{points:'770,232 770,500 600,500',fill:'none',stroke:'#ff8a3d','stroke-width':3,'stroke-dasharray':'2 5'},svg);
   el('text',{x:778,y:505,fill:'#ff8a3d','font-family':'JetBrains Mono,monospace','font-size':10},svg,'leaky feeder');
   gLinks=el('g',{},svg);gSlots=el('g',{},svg);gNodes=el('g',{},svg);gPk=el('g',{},svg);ntDraw();}
-const LINKS=[['CON','SW','fibre'],['SW','BS1','fibre'],['SW','BS2','fibre'],['SW','GW','ip'],['GW','RPT','fibre'],['A','BS1','air'],['B','@b','air'],['C','LF','air'],['LF','RPT','cable']];
+const STATIC_LINKS=[['CON','SW','fibre'],['SW','BS1','fibre'],['SW','BS2','fibre'],['SW','GW','ip'],['GW','RPT','fibre'],['C','LF','air'],['LF','RPT','cable']];
 function ntDraw(){gLinks.innerHTML='';gNodes.innerHTML='';
-  LINKS.forEach(([a,b,t])=>{if(b==='@b')b=NS.bAt;const A=NN[a],Bn=NN[b];const dead=(a==='A'&&!NS.bs1)||(b==='BS1'&&!NS.bs1&&t!=='fibre')||(t==='ip'&&!NS.patch);const col=t==='air'?'#4fd6e8':t==='cable'?'#ff8a3d':t==='ip'?'#c792ff':'#93a9ad';el('line',{x1:A.x,y1:A.y,x2:Bn.x,y2:Bn.y,stroke:dead?'#5a3a3a':col,'stroke-width':t==='air'?1.5:2.5,'stroke-dasharray':t==='air'?'4 4':dead?'6 6':'none',opacity:dead?0.7:0.75},gLinks);});
-  for(const id in NN){const n=NN[id];if(n.k==='pt')continue;const g=el('g',{transform:`translate(${n.x},${n.y})`},gNodes);const failed=id==='BS1'&&!NS.bs1;
+  STATIC_LINKS.concat([['A','BS'+NS.lvl.A,'air'],['B','BS'+NS.lvl.B,'air']]).forEach(([a,b,t])=>{const A=NN[a],Bn=NN[b];const bs=(b==='BS1'||b==='BS2');const dead=(bs&&!NS.up[b])||(t==='ip'&&!NS.patch)||(t==='fibre'&&a==='GW'&&!NS.patch);const col=t==='air'?'#4fd6e8':t==='cable'?'#ff8a3d':t==='ip'?'#c792ff':'#93a9ad';el('line',{x1:A.x,y1:A.y,x2:Bn.x,y2:Bn.y,stroke:dead?'#7a3a3a':col,'stroke-width':t==='air'?1.5:2.5,'stroke-dasharray':t==='air'?'4 4':dead?'6 6':'none',opacity:dead?0.8:0.75},gLinks);});
+  for(const id in NN){const n=NN[id];if(n.k==='pt')continue;const g=el('g',{transform:`translate(${n.x},${n.y})`},gNodes);const failed=(id==='BS1'||id==='BS2')&&!NS.up[id];
+    if(NS.talk.has(id))el('circle',{r:34,fill:'none',stroke:'#ffc23a','stroke-width':4},g);else if(NS.hear.has(id))el('circle',{r:34,fill:'none',stroke:'#7cf0a8','stroke-width':4},g);
     if(n.k==='radio'){el('rect',{x:-11,y:-18,width:22,height:36,rx:4,fill:id==='C'?'#c792ff':'#4fd6e8',stroke:'#0a1113','stroke-width':2},g);el('line',{x1:6,y1:-18,x2:6,y2:-30,stroke:'#e8f1f2','stroke-width':3},g);el('rect',{x:-6,y:-12,width:12,height:8,fill:'#0a1113'},g);}
-    else if(n.k==='bs'){el('path',{d:'M0 -30 L-14 18 M0 -30 L14 18 M-9 0 L9 0 M-11 9 L11 9',stroke:failed?'#e5484d':'#4fd6e8','stroke-width':3,fill:'none'},g);el('circle',{cx:0,cy:-32,r:5,fill:failed?'#e5484d':'#4fd6e8'},g);if(failed){el('path',{d:'M-20 -20 L20 20 M20 -20 L-20 20',stroke:'#e5484d','stroke-width':4},g);}}
+    else if(n.k==='bs'){el('path',{d:'M0 -30 L-14 18 M0 -30 L14 18 M-9 0 L9 0 M-11 9 L11 9',stroke:failed?'#e5484d':'#4fd6e8','stroke-width':3,fill:'none'},g);el('circle',{cx:0,cy:-32,r:5,fill:failed?'#e5484d':'#4fd6e8'},g);if(failed)el('path',{d:'M-20 -20 L20 20 M20 -20 L-20 20',stroke:'#e5484d','stroke-width':4},g);}
     else if(n.k==='rpt'){el('rect',{x:-20,y:-16,width:40,height:28,rx:3,fill:'#c792ff',stroke:'#0a1113','stroke-width':2},g);el('line',{x1:-10,y1:-6,x2:10,y2:-6,stroke:'#0a1113','stroke-width':2},g);el('line',{x1:-10,y1:2,x2:10,y2:2,stroke:'#0a1113','stroke-width':2},g);}
     else if(n.k==='switch'){el('rect',{x:-30,y:-20,width:60,height:40,rx:3,fill:'#e8f1f2',stroke:'#0a1113','stroke-width':2},g);for(let i=0;i<4;i++)el('rect',{x:-24,y:-14+i*8,width:48,height:5,fill:i%2?'#4fd6e8':'#93a9ad'},g);}
     else if(n.k==='gw'){el('rect',{x:-26,y:-18,width:52,height:36,rx:3,fill:NS.patch?'#ffc23a':'#5b5145',stroke:'#0a1113','stroke-width':2},g);el('path',{d:'M-14 -4 L14 -4 M8 -10 L14 -4 L8 2 M14 6 L-14 6 M-8 0 L-14 6 L-8 12',stroke:'#0a1113','stroke-width':2,fill:'none'},g);}
     else if(n.k==='console'){el('rect',{x:-26,y:-20,width:52,height:32,rx:3,fill:'#e8f1f2',stroke:'#0a1113','stroke-width':2},g);el('rect',{x:-20,y:-15,width:40,height:22,fill:'#0f3a40'},g);el('rect',{x:-8,y:12,width:16,height:6,fill:'#93a9ad'},g);}
-    const ty=n.k==='radio'?34:n.k==='bs'?34:34;const halo={'paint-order':'stroke',stroke:'#111b1e','stroke-width':4,'stroke-linejoin':'round'};el('text',Object.assign({x:0,y:ty,'text-anchor':'middle',fill:'#e8f1f2','font-family':'Barlow Condensed,sans-serif','font-size':15,'font-weight':600},halo),g,n.l);el('text',Object.assign({x:0,y:ty+14,'text-anchor':'middle',fill:'#93a9ad','font-family':'JetBrains Mono,monospace','font-size':10},halo),g,n.s);}
+    const halo={'paint-order':'stroke',stroke:'#111b1e','stroke-width':4,'stroke-linejoin':'round'};el('text',Object.assign({x:0,y:34,'text-anchor':'middle',fill:'#e8f1f2','font-family':'Barlow Condensed,sans-serif','font-size':15,'font-weight':600},halo),g,n.l);el('text',Object.assign({x:0,y:48,'text-anchor':'middle',fill:'#93a9ad','font-family':'JetBrains Mono,monospace','font-size':10},halo),g,failed?'OFF AIR':n.s);}
   ntSlots();}
-const SLOTCOL={ctrl:'#8a9aa0'};
-function ntSlots(){gSlots.innerHTML='';[['BS1',4],['BS2',4],['RPT',2]].forEach(([id,n])=>{const N=NN[id],x0=N.x+(id==='RPT'?30:24),y0=N.y-24;el('text',{x:x0,y:y0-4,fill:'#93a9ad','font-family':'JetBrains Mono,monospace','font-size':9},gSlots,'SLOTS');
-  for(let i=0;i<n;i++){const v=NS.slots[id][i];const col=v==null?'#1a2629':v==='ctrl'?SLOTCOL.ctrl:v.col;const r=el('rect',{x:x0+i*20,y:y0,width:17,height:14,fill:col,stroke:'#2c3a3e'},gSlots);if(v)el('title',{},r,v==='ctrl'?'Control channel':v.name);el('text',{x:x0+i*20+8.5,y:y0+10.5,'text-anchor':'middle',fill:v?'#0a1113':'#5a6a6e','font-family':'JetBrains Mono,monospace','font-size':9},gSlots,v==='ctrl'?'C':String(i+1));}});}
+function ntSlots(){if(!gSlots)return;gSlots.innerHTML='';[['BS1',4],['BS2',4],['RPT',2]].forEach(([id,n])=>{const N=NN[id],x0=N.x+(id==='RPT'?30:24),y0=N.y-24;el('text',{x:x0,y:y0-4,fill:'#93a9ad','font-family':'JetBrains Mono,monospace','font-size':9},gSlots,'SLOTS');
+  for(let i=0;i<n;i++){const off=id!=='RPT'&&!NS.up[id];const v=off?null:NS.slots[id][i];const col=off?'#3a1c1c':v==null?'#1a2629':v==='ctrl'?'#8a9aa0':v.col;const r=el('rect',{x:x0+i*20,y:y0,width:17,height:14,fill:col,stroke:'#2c3a3e'},gSlots);if(v)el('title',{},r,v==='ctrl'?'Control channel':v.name);el('text',{x:x0+i*20+8.5,y:y0+10.5,'text-anchor':'middle',fill:v?'#0a1113':'#5a6a6e','font-family':'JetBrains Mono,monospace','font-size':9},gSlots,v==='ctrl'?'C':String(i+1));}});}
 const speed=()=>+$('#nt-speed').value;
 const wait=ms=>new Promise(r=>setTimeout(r,ms/speed()));
-function logStep(msg,text,cls){const li=document.createElement('li');if(cls)li.className=cls;li.innerHTML=`<span>${msg?`<code>${msg}</code> `:''}${text}</span>`;const lg=$('#nt-log');lg.appendChild(li);lg.scrollTop=lg.scrollHeight;}
-function pkt(path,label,kind){return new Promise(res=>{const col=kind==='alarm'?'#ff5252':kind==='voice'?'#7cf0a8':'#ffc23a';const g=el('g',{},gPk);const c=el('circle',{r:kind==='voice'?4:7,fill:col,stroke:'#0a1113','stroke-width':1.5},g);let t2=null;if(label){t2=el('text',{fill:col,'font-family':'JetBrains Mono,monospace','font-size':11,'font-weight':600,'paint-order':'stroke',stroke:'#0a1113','stroke-width':3},g,label);}
+function logStep(msg,text,cls){const li=document.createElement('li');if(cls)li.className=cls;li.innerHTML=`<span>${msg?`<code>${msg}</code> `:''}${text}</span>`;const lg=$('#nt-log');lg.appendChild(li);while(lg.children.length>60)lg.removeChild(lg.firstChild);lg.scrollTop=lg.scrollHeight;}
+function pkt(path,label,kind){return new Promise(res=>{if(path.some(id=>!NN[id])){res();return;}const col=kind==='alarm'?'#ff5252':kind==='voice'?'#7cf0a8':'#ffc23a';const g=el('g',{},gPk);const c=el('circle',{r:kind==='voice'?4:7,fill:col,stroke:'#0a1113','stroke-width':1.5},g);let t2=null;if(label){t2=el('text',{fill:col,'font-family':'JetBrains Mono,monospace','font-size':11,'font-weight':600,'paint-order':'stroke',stroke:'#0a1113','stroke-width':3},g,label);}
   const pts=path.map(id=>NN[id]);const segs=[];let total=0;for(let i=1;i<pts.length;i++){const d=Math.hypot(pts[i].x-pts[i-1].x,pts[i].y-pts[i-1].y);segs.push(d);total+=d;}const dur=(REDUCED?150:Math.max(500,total*2.4))/speed();const t0=performance.now();
-  function fr(now){let p=clamp((now-t0)/dur,0,1),dist=p*total,i=0;while(i<segs.length-1&&dist>segs[i]){dist-=segs[i];i++;}const a=pts[i],b=pts[i+1],f=segs[i]?dist/segs[i]:1,x=a.x+(b.x-a.x)*f,y=a.y+(b.y-a.y)*f;c.setAttribute('cx',x);c.setAttribute('cy',y);if(t2){t2.setAttribute('x',x+10);t2.setAttribute('y',y-10);}if(p<1)requestAnimationFrame(fr);else{setTimeout(()=>g.remove(),kind==='voice'?0:250/speed());res();}}requestAnimationFrame(fr);});}
+  function fr(now){const p=clamp((now-t0)/dur,0,1);let dist=p*total,i=0;while(i<segs.length-1&&dist>segs[i]){dist-=segs[i];i++;}const a=pts[i],b=pts[i+1]||pts[i],f=segs[i]?dist/segs[i]:1,x=a.x+(b.x-a.x)*f,y=a.y+(b.y-a.y)*f;c.setAttribute('cx',x);c.setAttribute('cy',y);if(t2){t2.setAttribute('x',x+10);t2.setAttribute('y',y-10);}if(p<1)requestAnimationFrame(fr);else{setTimeout(()=>g.remove(),kind==='voice'?0:250/speed());res();}}requestAnimationFrame(fr);});}
 async function voice(paths,ms){const end=performance.now()+ms/speed();while(performance.now()<end){paths.forEach(p=>pkt(p,null,'voice'));await wait(260);}await wait(400);}
-function alloc(id,name,col,preempt){const s=NS.slots[id];for(let i=0;i<s.length;i++){if(s[i]==null){s[i]={name,col};ntSlots();return i;}}if(preempt){for(let i=0;i<s.length;i++){if(s[i]!=='ctrl'){s[i]={name,col};ntSlots();return i;}}}return -1;}
-function freeSlot(id,i){if(i>=0&&NS.slots[id][i]&&NS.slots[id][i]!=='ctrl')NS.slots[id][i]=null;ntSlots();}
+const GCOL={'UG-OPS':'#4fd6e8','MAINT':'#ffc23a','CHARGE':'#7cf0a8','CH1':'#c792ff','CH2':'#ff9ad5'};
+function allocSlot(site,name,col,pre){const s=NS.slots[site];if(site!=='RPT'&&!NS.up[site])return -1;for(let i=0;i<s.length;i++)if(s[i]==null){s[i]={name,col};ntSlots();return i;}
+  if(pre){for(let i=0;i<s.length;i++){const v=s[i];if(v&&v!=='ctrl'&&v.name!=='EMERGENCY'){logStep('pre-empted',`The emergency takes slot ${i+1} on ${SITE_NAME(site)} from <b>${v.name}</b>. That call is cut off at that site.`,'alarm');for(const k in SBX.calls){const c=SBX.calls[k];c.slots=c.slots.filter(([x,j])=>!(x===site&&j===i));}s[i]={name,col};ntSlots();markSb('preempt');return i;}}}return -1;}
+function freeSlot(site,i){if(i>=0&&NS.slots[site][i]&&NS.slots[site][i]!=='ctrl')NS.slots[site][i]=null;ntSlots();}
+function placeRadio(id){if(POS[id]){const p=POS[id][NS.lvl[id]];NN[id].x=p.x;NN[id].y=p.y;}}
 function moveNode(id,to,ms){return new Promise(res=>{const n=NN[id],fx=n.x,fy=n.y,t0=performance.now(),d=(REDUCED?50:ms)/speed();function fr(now){const p=clamp((now-t0)/d,0,1),e=p<.5?2*p*p:1-Math.pow(-2*p+2,2)/2;n.x=fx+(to.x-fx)*e;n.y=fy+(to.y-fy)*e;ntDraw();if(p<1)requestAnimationFrame(fr);else res();}requestAnimationFrame(fr);});}
-const UG={name:'UG-OPS',col:'#4fd6e8'};
+
+/* ---- guided scenarios ---- */
+const UG={name:'UG-OPS call',col:'#4fd6e8'};
+const bAt=()=>'BS'+NS.lvl.B;
 async function scGroup(){
-  const sb=NS.bAt;logStep('PTT','A presses the talk button. A\'s radio is set to talkgroup <b>UG-OPS</b>.');
-  if(!NS.bs1){logStep('','A\'s radio has lost BS-1. It scans for another TETRA site, but BS-2 is a level down behind rock and can\'t be heard.','alarm');await pkt(['A','BS1'],'no site','alarm');
+  NS.lvl.A=1;placeRadio('A');ntDraw();const sb=bAt();logStep('PTT','A presses the talk button. A\'s radio is set to talkgroup <b>UG-OPS</b>.');
+  if(!NS.up.BS1){logStep('','A\'s radio has lost BS-1. It scans for another TETRA site, but BS-2 is a level down behind rock and can\'t be heard.','alarm');await pkt(['A','BS1'],'no site','alarm');
     logStep('DMO','The radio falls back to <b>Direct Mode</b>: radio-to-radio, no base station. It only reaches radios within a few hundred metres of tunnel.');
-    if(NS.bAt==='BS1'){await pkt(['A','B'],'DMO voice','voice');logStep('','B is on Level 1 nearby and hears A directly. Nobody else does: no control room, no recording, no DMR side.');}
-    else{logStep('','B is on Level 2, out of direct range. <b>Nobody hears A.</b> This is why underground TETRA designs overlap sites and plan for a base station failing.','alarm');}
+    if(NS.lvl.B===1){await pkt(['A','B'],'DMO voice','voice');logStep('','B is on Level 1 nearby and hears A directly. Nobody else does: no control room, no recording, no Simoco side.');}
+    else logStep('','B is on Level 2, out of direct range. <b>Nobody hears A.</b> This is why underground TETRA designs overlap sites and plan for a base station failing.','alarm');
     return;}
   await pkt(['A','BS1'],'U-SETUP','ctrl');logStep('U-SETUP','On the control timeslot, A\'s radio asks the network for a group call on UG-OPS.');
   await pkt(['BS1','SW'],'call request','ctrl');
-  logStep('','Call control looks up who is listening to UG-OPS right now: B (registered on '+sb.replace('BS','BS-')+'), the control room console'+(NS.patch?', and the DMR talkgroup patched through the gateway.':'. The gateway patch is off, so the DMR side is not included.'));
-  const tA=alloc('BS1','UG-OPS call',UG.col),tB=sb!=='BS1'?alloc(sb,'UG-OPS call',UG.col):-1;
+  logStep('','Call control looks up who is listening to UG-OPS right now: B (registered on '+SITE_NAME(sb)+'), the control room console'+(NS.patch?', and the Simoco channel patched through the gateway.':'. The gateway is down, so the Simoco side is left out.'));
+  const tA=allocSlot('BS1',UG.name,UG.col),tB=sb!=='BS1'?allocSlot(sb,UG.name,UG.col):-1;
   await Promise.all([pkt(['SW','BS1'],'allocate TS'+(tA+1),'ctrl'),sb!=='BS1'?pkt(['SW',sb],'allocate TS'+(tB+1),'ctrl'):null]);
-  logStep('','Each base station with a listener reserves a free traffic timeslot for this call. Sites with nobody in UG-OPS stay free for other calls.');
-  const ps=[pkt(['BS1','A'],'D-CONNECT','ctrl'),pkt([sb,'B'],'D-SETUP','ctrl'),pkt(['SW','CON'],'D-SETUP','ctrl')];if(NS.patch)ps.push(pkt(['SW','GW','RPT'],'patch',"ctrl"));await Promise.all(ps);
-  if(NS.patch)NS.slots.RPT[0]={name:'patched UG-OPS',col:'#c792ff'},ntSlots();
+  logStep('','Each base station with a listener reserves a free traffic timeslot. Sites with nobody in UG-OPS keep their slots free for other calls.');
+  const ps=[pkt(['BS1','A'],'D-CONNECT','ctrl'),pkt([sb,'B'],'D-SETUP','ctrl'),pkt(['SW','CON'],'D-SETUP','ctrl')];if(NS.patch)ps.push(pkt(['SW','GW','RPT'],'patch','ctrl'));await Promise.all(ps);
+  if(NS.patch){NS.slots.RPT[0]={name:'patched UG-OPS',col:'#c792ff'};ntSlots();}
   logStep('D-CONNECT','A gets the go-ahead (a short "talk permit" beep). B and the console are told which slot to listen on. All of this takes about a third of a second.');
+  NS.talk.add('A');['B','CON'].concat(NS.patch?['C']:[]).forEach(x=>NS.hear.add(x));ntDraw();
   const vp=[['A','BS1','SW','CON'],sb!=='BS1'?['A','BS1','SW',sb,'B']:['A','BS1','B']];if(NS.patch)vp.push(['A','BS1','SW','GW','RPT','LF','C']);
-  logStep('voice','A talks. The voice is digitised by the codec and sent in A\'s timeslot, copied by call control to every site and console in the group'+(NS.patch?', and converted by the gateway so the DMR electrician hears it too.':'.'));
-  await voice(vp,2600);
+  logStep('voice','A talks. The voice is digitised by the codec and sent in A\'s timeslot, then copied to every site and console in the group'+(NS.patch?', and converted by the gateway so the electrician on the Simoco radio hears it too.':'.'));
+  await voice(vp,2600);NS.talk.clear();NS.hear.clear();ntDraw();
   await pkt(['A','BS1'],'U-TX-CEASED','ctrl');logStep('U-TX-CEASED','A lets go of the button. The call is held open for a few seconds of "hang time" so someone can answer without setting up a new call.');
   await wait(900);
   await Promise.all([pkt(['SW','BS1','A'],'D-RELEASE','ctrl'),pkt(['SW',sb,'B'],'D-RELEASE','ctrl')]);freeSlot('BS1',tA);if(tB>=0)freeSlot(sb,tB);NS.slots.RPT[0]=null;ntSlots();
-  logStep('D-RELEASE','Nobody answered, so call control ends the call and the timeslots go back in the pool.');}
-async function scMove(){const from=NS.bAt,to=from==='BS2'?'BS1':'BS2';
-  if(to==='BS1'&&!NS.bs1){logStep('','B drives up to Level 1, but BS-1 is down. B stays on BS-2 as long as it can hear it.','alarm');return;}
-  logStep('',`B drives the loader ${to==='BS1'?'up the decline to Level 1':'back down to Level 2'}.`);
-  await moveNode('B',to==='BS1'?{x:400,y:296}:{x:360,y:458},1800);
-  logStep('','B\'s radio has been measuring every site it can hear. '+to.replace('BS','BS-')+' is now clearly stronger, so the radio changes site on its own. This is called cell reselection.');
-  const old=NS.bAt;NS.bAt=to;ntDraw();
-  await pkt(['B',to],'U-LOCATION-UPDATE','ctrl');await pkt([to,'SW'],'location update','ctrl');await pkt(['SW',to,'B'],'D-LOCATION-UPDATE-ACCEPT','ctrl');
-  logStep('D-LOCATION-UPDATE-ACCEPT',`Call control now sends UG-OPS calls for B to ${to.replace('BS','BS-')} instead of ${old.replace('BS','BS-')}. Nobody touched a channel knob.`);}
+  logStep('D-RELEASE','Nobody answered, so the call ends and the timeslots go back in the pool.');}
+async function scMove(){const to=NS.lvl.B===2?1:2,site='BS'+to;
+  if(!NS.up[site]){logStep('',`B drives towards Level ${to}, but ${SITE_NAME(site)} is down. Turn it back on to try this.`,'alarm');return;}
+  logStep('',`B drives the loader ${to===1?'up the decline to Level 1':'back down to Level 2'}.`);
+  NS.lvl.B=to;await moveNode('B',POS.B[to],1800);
+  logStep('','B\'s radio has been measuring every site it can hear. '+SITE_NAME(site)+' is now clearly stronger, so the radio changes site on its own. This is called cell reselection.');
+  await pkt(['B',site],'U-LOCATION-UPDATE','ctrl');await pkt([site,'SW'],'location update','ctrl');await pkt(['SW',site,'B'],'D-LOCATION-UPDATE-ACCEPT','ctrl');
+  logStep('D-LOCATION-UPDATE-ACCEPT',`Calls for B now go to ${SITE_NAME(site)}. Nobody touched a channel knob.`);}
 async function scEmerg(){logStep('','C, an electrician still on the old Simoco DMR system, presses the orange emergency button.','alarm');
   await pkt(['C','LF','RPT'],'EMERGENCY','alarm');logStep('EMERGENCY ALARM','The DMR radio sends an emergency alarm with its ID up the leaky feeder to the repeater.','alarm');
-  if(!NS.patch){logStep('','The gateway is off, so <b>the alarm stops here</b>. Other DMR radios on this repeater see it. The control room and every TETRA radio do not. When DMR and TETRA run side by side, this link is a safety item.','alarm');return;}
+  if(!NS.patch){logStep('','The gateway is down, so <b>the alarm stops here</b>. Other radios on the Simoco repeater see it. The control room and every TETRA radio do not. During a changeover, this link is a safety item.','alarm');return;}
   await pkt(['RPT','GW'],'alarm + ID','alarm');await pkt(['GW','SW'],'priority 15','alarm');
-  logStep('emergency call','The gateway turns it into a TETRA emergency call. Emergency is the highest priority and can pre-empt: if every slot is busy, the lowest-priority call gets cut off to make room.','alarm');
+  logStep('emergency call','The gateway turns it into a TETRA emergency call. Emergency is the highest priority and can pre-empt: if every slot is busy, the lowest-priority call is cut off to make room.','alarm');
   await pkt(['SW','CON'],'ALARM · C · Level 2','alarm');logStep('','The control room console sounds an alarm and shows who pressed it and where.','alarm');
-  const E={name:'EMERGENCY',col:'#ff5252'};const sites=['BS1',NS.bAt].filter((v,i,a)=>a.indexOf(v)===i&&(v!=='BS1'||NS.bs1));const got=sites.map(s=>[s,alloc(s,'EMERGENCY',E.col,true)]);NS.slots.RPT[0]={name:'EMERGENCY',col:'#ff5252'};ntSlots();
-  const vp=[['C','LF','RPT','GW','SW','CON']];sites.forEach(s=>vp.push(['C','LF','RPT','GW','SW',s,s==='BS1'&&NS.bAt!=='BS1'?'A':(s===NS.bAt?'B':'A')]));if(sites.includes('BS1')&&NS.bAt==='BS1')vp.push(['C','LF','RPT','GW','SW','BS1','A']);
-  await voice(vp,2400);logStep('voice','C\'s microphone opens for an "open mic" period so the control room can hear what is happening, even if C can\'t hold the button.');
+  const sites=['BS1',bAt()].filter((v,i,a)=>a.indexOf(v)===i&&NS.up[v]);const got=sites.map(s=>[s,allocSlot(s,'EMERGENCY','#ff5252',true)]);NS.slots.RPT[0]={name:'EMERGENCY',col:'#ff5252'};ntSlots();
+  const vp=[['C','LF','RPT','GW','SW','CON']];if(NS.up.BS1)vp.push(['C','LF','RPT','GW','SW','BS1','A']);if(siteOf('B'))vp.push(bAt()==='BS1'?['C','LF','RPT','GW','SW','BS1','B']:['C','LF','RPT','GW','SW',bAt(),'B']);
+  NS.talk.add('C');['CON'].concat(NS.up.BS1?['A']:[]).concat(siteOf('B')?['B']:[]).forEach(x=>NS.hear.add(x));ntDraw();
+  await voice(vp,2400);NS.talk.clear();NS.hear.clear();ntDraw();logStep('voice','C\'s microphone stays open for a set time ("hot mic") so the control room can hear what is happening, even if C can\'t hold the button.');
   got.forEach(([s,i])=>freeSlot(s,i));NS.slots.RPT[0]=null;ntSlots();logStep('','The control room acknowledges and ends the emergency from the console.');}
-async function scBusy(){if(!NS.bs1){logStep('','BS-1 is down. Turn it back on to try this one.','alarm');return;}
+async function scBusy(){if(!NS.up.BS1){logStep('','BS-1 is down. Turn it back on to try this one.','alarm');return;}
+  NS.lvl.A=1;placeRadio('A');ntDraw();
   logStep('','Three crews are already talking through BS-1: Drill crew, Charge-up and Fitters. With one carrier, BS-1 has 3 traffic slots plus the control slot.');
-  const busy=[['Drill crew','#ffc23a'],['Charge-up','#7cf0a8'],['Fitters','#ff9ad5']].map(([n,c])=>alloc('BS1',n,c));await wait(700);
+  const busy=[['Drill crew','#ffc23a'],['Charge-up','#7cf0a8'],['Fitters','#ff9ad5']].map(([n,c])=>allocSlot('BS1',n,c));await wait(700);
   await pkt(['A','BS1'],'U-SETUP','ctrl');await pkt(['BS1','SW'],'call request','ctrl');
   await pkt(['SW','BS1','A'],'D-CALL-PROCEEDING','ctrl');logStep('D-CALL-PROCEEDING','No free slot on BS-1. Call control puts A in a queue and A hears a "please wait" tone instead of nothing.');
-  await wait(1800);freeSlot('BS1',busy[0]);logStep('','The drill crew finishes. A slot frees up and call control gives it to the first call in the queue.');
-  const tA=alloc('BS1','UG-OPS call',UG.col);await pkt(['SW','BS1','A'],'D-CONNECT TS'+(tA+1),'ctrl');await voice([['A','BS1','SW','CON']],1400);
+  await wait(1800);freeSlot('BS1',busy[0]);logStep('','The drill crew finishes. A slot frees up and goes to the first call in the queue.');
+  const tA=allocSlot('BS1',UG.name,UG.col);await pkt(['SW','BS1','A'],'D-CONNECT TS'+(tA+1),'ctrl');await voice([['A','BS1','SW','CON']],1400);
   freeSlot('BS1',tA);freeSlot('BS1',busy[1]);freeSlot('BS1',busy[2]);
-  logStep('','Lesson: count how many groups talk at once at each site in the busiest hour (shift change, a blast, an incident). A second carrier on a site adds 4 more slots.');}
+  logStep('','Lesson: count how many groups talk at once at each site in the busiest hour (shift change, a firing, an incident). A second carrier on a site adds 4 more slots.');}
 const SC={group:scGroup,move:scMove,emerg:scEmerg,busy:scBusy};
-$$('#nt-btns [data-sc]').forEach(b=>b.addEventListener('click',async()=>{if(NS.running)return;NS.running=true;$$('#nt-btns button').forEach(x=>x.disabled=true);$('#nt-log').innerHTML='';try{await SC[b.dataset.sc]();}finally{NS.running=false;$$('#nt-btns button').forEach(x=>x.disabled=false);}}));
-$('#nt-patch').addEventListener('change',e=>{NS.patch=e.target.checked;ntDraw();});
-$('#nt-bs1').addEventListener('change',e=>{NS.bs1=e.target.checked;if(!NS.bs1&&NS.bAt==='BS1'){NS.bAt='BS2';NN.B.x=360;NN.B.y=458;}ntDraw();});
-ntBuild();
-onShow.network=()=>{};
+$$('#nt-btns [data-sc]').forEach(b=>b.addEventListener('click',async()=>{if(NS.running||NS.mode!=='guided')return;if(!NS.up.BS2&&b.dataset.sc!=='move'){$('#nt-log').innerHTML='';logStep('','Turn BS-2 back on for the guided scenarios.','alarm');return;}
+  NS.running=true;sbResetCalls();$$('#nt-btns button').forEach(x=>x.disabled=true);$('#nt-log').innerHTML='';try{await SC[b.dataset.sc]();mark('sc:'+b.dataset.sc);}finally{NS.running=false;NS.talk.clear();NS.hear.clear();ntDraw();$$('#nt-btns button').forEach(x=>x.disabled=false);}}));
 
-/* ===================== BENCH 6: PROJECT ===================== */
+/* ---- sandbox: drive the radios yourself ---- */
+const TG_T=['UG-OPS','MAINT','CHARGE'],TG_D=['CH1','CH2'];
+const SBX={tg:{A:'UG-OPS',B:'UG-OPS',C:'CH1'},patchMap:'none',calls:{},bg:{BS1:0,BS2:0},pressed:{},voiceT:{},queueT:{},dmo:{},msg:{},emerg:{}};
+function patchPair(){if(!NS.patch||SBX.patchMap==='none')return null;const [d,t]=SBX.patchMap.split('=');return {d,t};}
+function groupOf(id){const tg=SBX.tg[id],p=patchPair();if(p&&(tg===p.d||tg===p.t))return p.t+'+'+p.d;return tg;}
+function inGroup(g,id){if(id==='CON')return g.split('+').includes('UG-OPS');return g.split('+').includes(SBX.tg[id]);}
+const crosses=(a,b)=>(a==='C')!==(b==='C'); // Simoco side vs DAMM side (the console is on the DAMM side)
+function hearersFor(call,talker){const out=[];['A','B','C','CON'].forEach(m=>{if(m===talker)return;
+  if(!(inGroup(call.group,m)||(call.emergency&&m==='CON')))return;
+  if(crosses(talker,m)&&!NS.patch)return;
+  if(m==='CON'){out.push(m);return;}
+  const s=siteOf(m);if(!s)return;if(!call.slots.some(([x])=>x===s))return;out.push(m);});return out;}
+function pathTo(from,to){const fs=siteOf(from);const up=from==='C'?['C','LF','RPT','GW','SW']:[from,fs,'SW'];
+  if(to==='CON')return up.concat(['CON']);
+  if(to==='C')return from==='C'?null:up.concat(['GW','RPT','LF','C']);
+  const ts=siteOf(to);if(!ts)return null;if(from!=='C'&&ts===fs)return [from,fs,to];return up.concat([ts,to]);}
+function setupCall(id,emerg){const group=groupOf(id),orig=siteOf(id),nm=emerg?'EMERGENCY':group.replace('+',' ⇄ '),col=emerg?'#ff5252':(GCOL[group.split('+')[0]]||'#93a9ad');
+  const need=new Set();['A','B','C'].forEach(m=>{if(m===id||!inGroup(group,m))return;if(crosses(id,m)&&!NS.patch)return;const s=siteOf(m);if(s)need.add(s);});
+  const o=allocSlot(orig,nm,col,emerg);if(o<0)return null;const call={group,slots:[[orig,o]],emergency:emerg,talker:null,hang:null,missed:[],hs:[]};
+  need.forEach(s=>{if(s===orig)return;const i=allocSlot(s,nm,col,emerg);if(i<0)call.missed.push(s);else call.slots.push([s,i]);});
+  SBX.calls[group]=call;
+  if(id==='C')pkt(['C','LF','RPT'],emerg?'EMERGENCY':'voice header',emerg?'alarm':'ctrl');else pkt([id,orig],emerg?'U-SETUP · emergency':'U-SETUP',emerg?'alarm':'ctrl');
+  logStep(emerg?'emergency call':'U-SETUP',`${id} starts a call on <b>${nm}</b>. Slots reserved on ${call.slots.map(([s,i])=>`${SITE_NAME(s)} (slot ${i+1})`).join(', ')}.`,emerg?'alarm':'');
+  call.missed.forEach(s=>{logStep('',`${SITE_NAME(s)} has no free slot, so radios there miss this call.`,'alarm');if(s===siteOf('B')&&inGroup(group,'B')&&id!=='B')markSb('miss');});
+  return call;}
+function beginTalk(id,call){call.talker=id;if(call.hang){clearTimeout(call.hang);call.hang=null;}NS.talk.add(id);call.hs=hearersFor(call,id);call.hs.forEach(h=>NS.hear.add(h));
+  clearInterval(SBX.voiceT[id]);SBX.voiceT[id]=setInterval(()=>{call.hs.forEach(h=>{const p=pathTo(id,h);if(p)pkt(p,null,'voice');});},320);
+  logStep('D-CONNECT',`${id} gets the talk-permit beep and talks. ${call.hs.length?'Heard by '+call.hs.map(m=>m==='CON'?'the control room':m).join(', ')+'.':'Nobody else in this group can hear it right now.'}`);
+  if(id==='C'&&call.hs.includes('A'))markSb('c2a');if(id==='C'&&call.emergency&&call.hs.includes('CON'))markSb('emerg');
+  sbStatus();ntDraw();}
+function endTalk(id){clearInterval(SBX.voiceT[id]);delete SBX.voiceT[id];NS.talk.delete(id);const call=Object.values(SBX.calls).find(c=>c.talker===id);
+  if(call){call.hs.forEach(h=>NS.hear.delete(h));call.talker=null;const s=siteOf(id);if(id==='C')pkt(['C','LF','RPT'],'end of transmission','ctrl');else if(s)pkt([id,s],'U-TX-CEASED','ctrl');
+    logStep('U-TX-CEASED',`${id} lets go. The call stays open for a few seconds of hang time so someone can answer.`);
+    call.hang=setTimeout(()=>{if(call.talker)return;call.slots.forEach(([s,i])=>freeSlot(s,i));if(SBX.calls[call.group]===call)delete SBX.calls[call.group];logStep('D-RELEASE','Nobody answered. The call ends and its slots go back in the pool.');applyBg('BS1');applyBg('BS2');sbStatus();ntDraw();},2600/speed());}
+  sbStatus();ntDraw();}
+function sbPress(id){if(NS.mode!=='sandbox'||NS.running||SBX.pressed[id]||SBX.emerg[id])return;SBX.pressed[id]=true;sbBtn(id,true);
+  const site=siteOf(id);
+  if(!site){const hs=['A','B'].filter(o=>o!==id&&NS.lvl[o]===NS.lvl[id]&&SBX.tg[o]===SBX.tg[id]);SBX.dmo[id]=hs;NS.talk.add(id);hs.forEach(h=>NS.hear.add(h));
+    SBX.voiceT[id]=setInterval(()=>hs.forEach(h=>pkt([id,h],null,'voice')),320);
+    logStep('DMO',`${id} has no base station, so the radio talks directly to other radios (Direct Mode). ${hs.length?'Heard by '+hs.join(', ')+', on the same level and talkgroup.':'No radio on the same level and talkgroup is in range. Nobody hears it.'}`,hs.length?'':'alarm');
+    if(hs.length)markSb('dmo');sbStatus();ntDraw();return;}
+  const call=SBX.calls[groupOf(id)];
+  if(call&&call.talker&&call.talker!==id){SBX.msg[id]=`Busy: ${call.talker} is talking`;logStep('',`${id} presses talk, but ${call.talker} already has the floor. A group call is one person at a time, so ${id} hears a "talk prohibited" tone.`);sbStatus();return;}
+  if(call){beginTalk(id,call);return;}
+  const c=setupCall(id,false);if(c){beginTalk(id,c);return;}
+  logStep('D-CALL-PROCEEDING',`No free slot on ${SITE_NAME(site)}. ${id}'s call is queued and ${id} hears a "please wait" tone. Keep holding, or free up a slot.`,'alarm');markSb('queue');SBX.msg[id]='Queued: waiting for a free slot';sbStatus();
+  SBX.queueT[id]=setInterval(()=>{if(!SBX.pressed[id]){clearInterval(SBX.queueT[id]);delete SBX.queueT[id];return;}const ex=SBX.calls[groupOf(id)];if(ex&&ex.talker)return;const c2=ex||setupCall(id,false);if(c2){clearInterval(SBX.queueT[id]);delete SBX.queueT[id];delete SBX.msg[id];beginTalk(id,c2);}},500);}
+function sbRelease(id){if(!SBX.pressed[id]||SBX.emerg[id])return;SBX.pressed[id]=false;sbBtn(id,false);delete SBX.msg[id];
+  if(SBX.queueT[id]){clearInterval(SBX.queueT[id]);delete SBX.queueT[id];logStep('',`${id} gives up waiting.`);sbStatus();return;}
+  if(SBX.dmo[id]){clearInterval(SBX.voiceT[id]);delete SBX.voiceT[id];SBX.dmo[id].forEach(h=>NS.hear.delete(h));NS.talk.delete(id);delete SBX.dmo[id];sbStatus();ntDraw();return;}
+  if(NS.talk.has(id))endTalk(id);else sbStatus();}
+async function sbEmergency(id){if(NS.mode!=='sandbox'||NS.running||NS.talk.has(id)||SBX.emerg[id])return;const site=siteOf(id);
+  if(!site){logStep('',`${id} presses emergency but has no base station, so the alarm can't reach anyone. A real radio keeps retrying until it finds a site.`,'alarm');return;}
+  SBX.emerg[id]=true;
+  if(id==='C'){await pkt(['C','LF','RPT'],'EMERGENCY ALARM','alarm');if(!NS.patch){logStep('EMERGENCY ALARM','The gateway is down, so the alarm stops at the Simoco repeater. The control room never sees it.','alarm');SBX.emerg[id]=false;return;}await pkt(['RPT','GW','SW','CON'],'ALARM','alarm');}
+  else await pkt([id,site,'SW','CON'],'ALARM','alarm');
+  logStep('ALARM',`The control room console sounds an alarm with ${id}'s ID and site. An emergency call opens with top priority.`,'alarm');
+  const grp=groupOf(id),old=SBX.calls[grp];if(old){if(old.talker){clearInterval(SBX.voiceT[old.talker]);NS.talk.delete(old.talker);old.hs.forEach(h=>NS.hear.delete(h));}if(old.hang)clearTimeout(old.hang);old.slots.forEach(([s,i])=>freeSlot(s,i));delete SBX.calls[grp];}
+  const c=setupCall(id,true);if(!c){SBX.emerg[id]=false;return;}beginTalk(id,c);sbBtn(id,true,'Emergency: open mic');
+  setTimeout(()=>{SBX.emerg[id]=false;sbBtn(id,false);if(NS.talk.has(id))endTalk(id);},4200/speed());}
+function sbBtn(id,on,label){const b=$('#sb-ptt-'+id);if(!b)return;b.classList.toggle('on',on);b.textContent=on?(label||'Talking · let go to stop'):'Hold to talk';}
+function sbStatus(){['A','B','C'].forEach(id=>{const e=$('#sb-st-'+id);if(!e)return;const s=siteOf(id);let t;
+  if(SBX.msg[id])t=SBX.msg[id];else if(NS.talk.has(id))t=SBX.dmo[id]?'Talking in Direct Mode':'Talking';
+  else if(NS.hear.has(id)){const who=[...NS.talk].find(x=>(SBX.dmo[x]||[]).includes(id)||Object.values(SBX.calls).some(c=>c.talker===x&&c.hs.includes(id)));t='Hearing '+(who||'a call');}else t='Idle';
+  e.textContent=`${t} · ${SBX.tg[id]} · ${s?SITE_NAME(s):'no site, Direct Mode only'}`;});}
+function applyBg(site){const s=NS.slots[site];if(!s||(site!=='RPT'&&!NS.up[site]))return;for(let i=0;i<s.length;i++)if(s[i]&&s[i].name==='Other crew')s[i]=null;let n=NS.mode==='sandbox'?SBX.bg[site]:0;for(let i=1;i<s.length&&n>0;i++){if(s[i]==null){s[i]={name:'Other crew',col:'#8d7a6a'};n--;}}ntSlots();}
+function sbResetCalls(){Object.values(SBX.voiceT).forEach(clearInterval);Object.values(SBX.queueT).forEach(clearInterval);Object.values(SBX.calls).forEach(c=>{if(c.hang)clearTimeout(c.hang);});
+  SBX.voiceT={};SBX.queueT={};SBX.calls={};SBX.dmo={};SBX.msg={};SBX.pressed={};SBX.emerg={};NS.talk.clear();NS.hear.clear();
+  NS.slots={BS1:['ctrl',null,null,null],BS2:['ctrl',null,null,null],RPT:[null,null]};applyBg('BS1');applyBg('BS2');['A','B','C'].forEach(id=>sbBtn(id,false));sbStatus();if(gNodes)ntDraw();}
+const SBM=[['c2a','Get C, on the old Simoco radio, heard by A on TETRA.'],['dmo','Turn off a base station and still get a TETRA radio heard, in Direct Mode.'],['queue','Get a call queued because a site has no free slot.'],['miss','Make B miss a call because B\'s site is full.'],['emerg','Get an emergency from C through to the control room.'],['preempt','Make an emergency push another call off a busy site.']];
+function markSb(k){if(NS.mode!=='sandbox')return;if(!done('sb:'+k)){mark('sb:'+k);const m=SBM.find(x=>x[0]===k);if(m)logStep('mission done',m[1]);}renderMissions();}
+function renderMissions(){$('#sb-mlist').innerHTML=SBM.map(([k,t])=>`<li>${done('sb:'+k)?'<span class="tick">✓</span>':'<span class="tick" style="color:var(--muted)">○</span>'}<span>${t}</span></li>`).join('');}
+function sbCards(){const R=[['A','A · Shift boss','TETRA handheld'],['B','B · Loader operator','TETRA vehicle radio'],['C','C · Electrician','Simoco DMR handheld']];
+  $('#sb-cards').innerHTML=R.map(([id,n,s])=>`<div class="rcard"><h4>${n}</h4><p class="hint">${s}</p>
+    <div class="ctl"><label for="sb-tg-${id}">${id==='C'?'Simoco channel':'Talkgroup'}</label><select id="sb-tg-${id}">${(id==='C'?TG_D:TG_T).map(t=>`<option value="${t}" ${SBX.tg[id]===t?'selected':''}>${t}</option>`).join('')}</select></div>
+    ${id!=='C'?`<div class="ctl"><label for="sb-lv-${id}">Where</label><select id="sb-lv-${id}"><option value="1" ${NS.lvl[id]===1?'selected':''}>Level 1 (BS-1)</option><option value="2" ${NS.lvl[id]===2?'selected':''}>Level 2 (BS-2)</option></select></div>`:'<p class="hint">Level 2, on the leaky feeder.</p>'}
+    <button class="ptt" type="button" id="sb-ptt-${id}" aria-label="Hold to talk on radio ${id}">Hold to talk</button>
+    <button class="btn emg" type="button" id="sb-em-${id}">Emergency button</button>
+    <p class="rstat" id="sb-st-${id}" aria-live="polite"></p></div>`).join('');
+  ['A','B','C'].forEach(id=>{const b=$('#sb-ptt-'+id);
+    b.addEventListener('pointerdown',e=>{e.preventDefault();try{b.setPointerCapture(e.pointerId);}catch(x){}sbPress(id);});
+    ['pointerup','pointercancel','lostpointercapture'].forEach(ev=>b.addEventListener(ev,()=>sbRelease(id)));
+    b.addEventListener('keydown',e=>{if((e.key===' '||e.key==='Enter')&&!e.repeat){e.preventDefault();sbPress(id);}});
+    b.addEventListener('keyup',e=>{if(e.key===' '||e.key==='Enter'){e.preventDefault();sbRelease(id);}});b.addEventListener('blur',()=>sbRelease(id));
+    b.addEventListener('contextmenu',e=>e.preventDefault());
+    $('#sb-em-'+id).addEventListener('click',()=>sbEmergency(id));
+    $('#sb-tg-'+id).addEventListener('change',e=>{if(NS.talk.has(id))sbRelease(id);SBX.tg[id]=e.target.value;const s=siteOf(id);if(s&&id!=='C')pkt([id,s],'U-ATTACH-DETACH-GROUP-IDENTITY','ctrl');logStep(id==='C'?'':'U-ATTACH-DETACH-GROUP-IDENTITY',id==='C'?`C switches the Simoco radio to ${e.target.value}.`:`${id} switches to talkgroup ${e.target.value} and tells the network, so calls for that group reach it.`);sbStatus();});
+    if(id!=='C')$('#sb-lv-'+id).addEventListener('change',async e=>{if(NS.talk.has(id))sbRelease(id);NS.lvl[id]=+e.target.value;await moveNode(id,POS[id][NS.lvl[id]],1200);const s=siteOf(id);
+      if(s){pkt([id,s],'U-LOCATION-UPDATE','ctrl');logStep('U-LOCATION-UPDATE',`${id} is now on Level ${NS.lvl[id]} and registers with ${SITE_NAME(s)}.`);}else logStep('',`${id} is on Level ${NS.lvl[id]}, but that level's base station is down. No service: Direct Mode only.`,'alarm');sbStatus();ntDraw();});});
+  sbStatus();}
+bindRadio('nt-mode',NS,'mode',()=>{$('#nt-guided').hidden=NS.mode!=='guided';$('#nt-sbx').hidden=NS.mode!=='sandbox';sbResetCalls();$('#nt-log').innerHTML='';
+  logStep('',NS.mode==='sandbox'?'Sandbox. Hold a talk button and watch. Change talkgroups, levels, the gateway patch, the other crews and the equipment, then try again.':'Pick a scenario. Each step shows up here with plain-English notes.');});
+$('#nt-patch').addEventListener('change',e=>{NS.patch=e.target.checked;if(NS.mode==='sandbox'){sbResetCalls();logStep('',NS.patch?'Gateway back up.':'Gateway down: the Simoco side and the DAMM side can no longer hear each other.',NS.patch?'':'alarm');}ntDraw();});
+['1','2'].forEach(n=>$('#nt-bs'+n).addEventListener('change',e=>{NS.up['BS'+n]=e.target.checked;if(NS.mode==='sandbox'){sbResetCalls();logStep('',`BS-${n} is ${e.target.checked?'back on air':'off air'}.`,e.target.checked?'':'alarm');}ntDraw();sbStatus();}));
+$('#sb-patch').addEventListener('change',e=>{SBX.patchMap=e.target.value;sbResetCalls();logStep('',SBX.patchMap==='none'?'Gateway patch removed.':`Gateway now links ${SBX.patchMap.replace('=',' with ')}. They act as one group.`);});
+['1','2'].forEach(n=>bindInput('sb-bg'+n,SBX.bg,'BS'+n,v=>v+(v===1?' crew':' crews'),()=>{applyBg('BS'+n);}));
+ntBuild();sbCards();
+onShow.network=()=>{renderMissions();};
+
+/* ===================== BENCH 6: TEST SET ===================== */
+const TSPEC={tetra:{name:'TETRA handheld',pw:1,pmin:0.6,pmax:1.6,ferr:100,mod:10,modName:'Vector error (RMS)',rxLvl:-112,rxBer:4},dmr:{name:'DMR handheld',pw:4,pmin:2.5,pmax:5,ferr:500,mod:5,modName:'FSK error',rxLvl:-117,rxBer:5}};
+const TS={radios:[],sel:0,keyed:false,last:0,frame:null,graded:false,gen:-112};
+const TFAULT={power:r=>`low power (${r.pw.toFixed(2)} W).`,freq:r=>`off frequency (${r.ferr>0?'+':''}${r.ferr.toFixed(0)} Hz).`,mod:r=>r.type==='tetra'?'distorted modulation (vector error well over 10%).':'over-deviating (FSK error well over 5%).',rx:r=>`deaf receiver (needs about ${r.sensOff.toFixed(0)} dB more signal than a good one).`};
+function newCrate(){let rs;
+  do{rs=[];['tetra','tetra','tetra','dmr','dmr','dmr'].sort(()=>Math.random()-.5).forEach(t=>{const f=new Set();if(Math.random()<0.55){f.add(pick(['power','freq','mod','rx']));if(Math.random()<0.2)f.add(pick(['power','freq','mod','rx']));}const S=TSPEC[t],sg=Math.random()<.5?-1:1;
+    rs.push({id:(t==='tetra'?'T-':'D-')+(1000+Math.random()*9000|0),type:t,faults:f,pw:f.has('power')?S.pw*rnd(0.2,0.48):S.pw*rnd(0.88,1.12),ferr:f.has('freq')?sg*(t==='tetra'?rnd(250,900):rnd(900,2200)):sg*(t==='tetra'?rnd(2,45):rnd(10,220)),modBad:f.has('mod'),devScale:f.has('mod')?rnd(1.24,1.32):rnd(0.985,1.015),sensOff:f.has('rx')?rnd(9,16):rnd(-1.5,1.5),bers:[]});});
+  }while(rs.filter(r=>r.faults.size).length<2||rs.filter(r=>!r.faults.size).length<1);
+  TS.radios=rs;TS.sel=0;TS.keyed=false;TS.frame=null;TS.graded=false;tsRadios();tsSheet();tsKeyBtn();$('#ts-result').hidden=true;if(current==='testset')tsDraw();}
+const tsRadio=()=>TS.radios[TS.sel];
+function tsRadios(){$('#ts-radios').innerHTML=TS.radios.map((r,i)=>`<label><input type="radio" name="ts-r" value="${i}" ${i===TS.sel?'checked':''}><span>${r.id} · ${r.type==='tetra'?'TETRA':'DMR'}</span></label>`).join('');
+  $$('input[name=ts-r]').forEach(e=>e.addEventListener('change',()=>{TS.sel=+e.value;TS.keyed=false;TS.frame=null;tsKeyBtn();tsWhich();tsDraw();}));tsWhich();}
+function tsWhich(){const r=tsRadio();$('#ts-which').textContent=`On the bench: ${r.id}, a ${TSPEC[r.type].name}. Should make ${TSPEC[r.type].pw} W.`;}
+function tsKeyBtn(){const b=$('#ts-key');b.setAttribute('aria-pressed',String(TS.keyed));b.textContent=TS.keyed?'Stop transmitting':'Key the radio (transmit)';b.classList.toggle('primary',!TS.keyed);}
+let DMR_G=null; // the test set's own receive-filter gain, measured once on a perfect signal (instrument calibration)
+function dmrDetect(re,im){const [yr,yi]=convC(re,im,lpf(6250),EXTRA-400);const d=new Float64Array(LEN);for(let i=EXTRA-300;i<LEN;i++)d[i]=Math.atan2(yi[i]*yr[i-1]-yr[i]*yi[i-1],yr[i]*yr[i-1]+yi[i]*yi[i-1])*FS/TAU;return convR(d,H_D,EXTRA-60);}
+function dmrGain(){if(DMR_G)return DMR_G;const sig=genSignal('dmr',1,{}),o=dmrDetect(sig.re,sig.im);let a=0,b=0;for(let k=0;k*30+364<LEN;k++){const c=k*30+364;if(c<EXTRA)continue;const s=sig.syms[k]*648;a+=o[c]*s;b+=s*s;}return (DMR_G=a/b);}
+function tsTx(r){const P=r.pw*1000,sig=genSignal(r.type,P,{devScale:r.devScale}),re=sig.re,im=sig.im;let ph=0;const w=TAU*r.ferr/FS,A=Math.sqrt(P);
+  for(let i=0;i<LEN;i++){let a=re[i],b=im[i];if(r.type==='tetra'){if(r.modBad){a*=1.24;b*=0.8;const m=Math.hypot(a,b)/A,k=1/(1+0.16*m*m);a*=k;b*=k;}ph+=gauss()*0.0015;}
+    const c=Math.cos(w*i+ph),s=Math.sin(w*i+ph);re[i]=a*c-b*s;im[i]=a*s+b*c;}
+  const sd=A*3e-4;for(let i=0;i<LEN;i++){re[i]+=sd*gauss();im[i]+=sd*gauss();}
+  let pw=0;for(let i=EXTRA;i<LEN;i++)pw+=re[i]*re[i]+im[i]*im[i];pw/=(LEN-EXTRA);
+  const fr=new Float64Array(NFFT),fi=new Float64Array(NFFT);for(let i=0;i<NFFT;i++){fr[i]=re[EXTRA+i]*HANN[i];fi[i]=im[EXTRA+i]*HANN[i];}fft(fr,fi);const spec=new Float64Array(NFFT),S2=HSUM*HSUM;for(let k=0;k<NFFT;k++){const kk=(k+NFFT/2)%NFFT;spec[k]=(fr[kk]*fr[kk]+fi[kk]*fi[kk])/S2;}
+  const out={pdbm:10*Math.log10(pw),spec,type:r.type};
+  if(r.type==='tetra'){const g=Math.sqrt(P*8),h=H_T,nh=h.length,pts=[],th=[];for(let k=0;k*8+64<LEN;k++){const c=k*8+64;if(c<EXTRA)continue;let a=0,b=0;for(let j=0;j<nh;j++){a+=re[c-j]*h[j];b+=im[c-j]*h[j];}pts.push([a/g,b/g]);th.push(sig.syms[k]);}
+    let ar=0,ai=0;for(let k=1;k<pts.length;k++){const [x1,y1]=pts[k],[x0,y0]=pts[k-1],zr=x1*x0+y1*y0,zi=y1*x0-x1*y0,d=th[k]-th[k-1],cr=Math.cos(-d),ci=Math.sin(-d);ar+=zr*cr-zi*ci;ai+=zr*ci+zi*cr;}
+    const dphi=Math.atan2(ai,ar);out.ferr=dphi*18000/TAU;
+    const rr=pts.map(([x,y],k)=>{const a=-dphi*k,c=Math.cos(a),s=Math.sin(a);return [x*c-y*s,x*s+y*c];});let gr=0,gi=0;rr.forEach(([x,y],k)=>{const c=Math.cos(th[k]),s=Math.sin(th[k]);gr+=x*c+y*s;gi+=y*c-x*s;});gr/=rr.length;gi/=rr.length;
+    let e2=0;rr.forEach(([x,y],k)=>{const c=Math.cos(th[k]),s=Math.sin(th[k]),ir=gr*c-gi*s,ii=gr*s+gi*c;e2+=(x-ir)**2+(y-ii)**2;});out.mod=Math.sqrt(e2/rr.length/(gr*gr+gi*gi))*100;out.pts=pts;}
+  else{const [yr,yi]=convC(re,im,lpf(6250),EXTRA-400);const d=new Float64Array(LEN);for(let i=EXTRA-300;i<LEN;i++)d[i]=Math.atan2(yi[i]*yr[i-1]-yr[i]*yi[i-1],yr[i]*yr[i-1]+yi[i]*yi[i-1])*FS/TAU;const o=convR(d,H_D,EXTRA-60);
+    const G=dmrGain(),D=364,cs=[];let m=0;for(let k=0;k*30+D<LEN;k++){const c=k*30+D;if(c<EXTRA)continue;cs.push([o[c],sig.syms[k]]);m+=o[c]-G*sig.syms[k]*648;}m/=cs.length;out.ferr=m;let e2=0,n=0,outer=0,no=0;cs.forEach(([oc,s])=>{const v=(oc-m)/G;e2+=(v-s*648)**2;n++;if(Math.abs(s)===3){outer+=Math.abs(v);no++;}});
+    out.mod=Math.sqrt(e2/n)/1944*100;out.dev=outer/no;out.o=o;}
+  return out;}
+function tsDraw(){const r=tsRadio(),f=TS.keyed?TS.frame:null,S=TSPEC[r.type];
+  {const {ctx,w,h}=fit($('#cv-ts'));const L=36,R=6,T=8,B=18,pw=w-L-R,ph=h-T-B;ctx.fillStyle=SCR.bg;ctx.fillRect(0,0,w,h);grid(ctx,L,T,pw,ph,10,8);const span=25000,top=40,bot=-80,X=fq=>L+(fq+span)/(2*span)*pw,Y=d=>T+(top-d)/(top-bot)*ph;const bw=r.type==='tetra'?25000:12500;
+    ctx.fillStyle='rgba(79,214,232,0.10)';ctx.fillRect(X(-bw/2),T,X(bw/2)-X(-bw/2),ph);for(let d=40;d>=-80;d-=40)txt(ctx,String(d),L-4,Y(d)+3,SCR.text,'right');txt(ctx,'−25 kHz',L,h-5,SCR.text);txt(ctx,'+25 kHz',w-R,h-5,SCR.text,'right');txt(ctx,'channel',X(0),h-5,SCR.text,'center');
+    if(f){const cols=new Float64Array(Math.ceil(pw)).fill(-Infinity);for(let k=0;k<NFFT;k++){const fq=binHz(k);if(Math.abs(fq)>span)continue;const c=Math.floor(X(fq)-L);if(c<0||c>=cols.length)continue;const d=lin2db(f.spec[k]);if(d>cols[c])cols[c]=d;}ctx.beginPath();let st=false;for(let c=0;c<cols.length;c++){if(cols[c]===-Infinity)continue;const y=clamp(Y(cols[c]),T,T+ph);if(!st){ctx.moveTo(L+c,y);st=true;}else ctx.lineTo(L+c,y);}ctx.strokeStyle=SCR.trace;ctx.lineWidth=1.2;ctx.stroke();}
+    else txt(ctx,'Radio not transmitting',L+pw/2,T+ph/2,SCR.text,'center');
+    $('#ts-cap').innerHTML=f?'<b>keyed</b>':'';}
+  {const {ctx,w,h}=fit($('#cv-ts2'));ctx.fillStyle=SCR.bg;ctx.fillRect(0,0,w,h);
+    if(r.type==='tetra'){$('#ts-m-title').textContent='Constellation · raw, not corrected';const s=Math.min(w,h)-20,cx=w/2,cy=h/2,sc=s/2/1.6;grid(ctx,cx-s/2,cy-s/2,s,s,8,8);ctx.strokeStyle='rgba(255,194,58,.55)';for(let i=0;i<8;i++){const a=i*Math.PI/4;ctx.beginPath();ctx.arc(cx+Math.cos(a)*sc,cy-Math.sin(a)*sc,6,0,TAU);ctx.stroke();}
+      if(f){ctx.fillStyle=SCR.trace2;f.pts.forEach(([a,b])=>{ctx.fillRect(cx+a*sc-1.2,cy-b*sc-1.2,2.4,2.4);});}}
+    else{$('#ts-m-title').textContent='Eye diagram · after the FM detector';const L=44,R=6,T=6,B=18,pw=w-L-R,ph=h-T-B;grid(ctx,L,T,pw,ph,4,8);const Y=fq=>T+ph/2-fq/3200*ph/2;ctx.strokeStyle='rgba(255,194,58,.45)';ctx.setLineDash([4,4]);ctx.beginPath();[1944,648,-648,-1944].forEach(fq=>{ctx.moveTo(L,Y(fq));ctx.lineTo(L+pw,Y(fq));});ctx.stroke();ctx.setLineDash([]);[1944,648,-648,-1944].forEach(fq=>txt(ctx,(fq>0?'+':'')+fq,L-4,Y(fq)+3,SCR.text,'right'));
+      if(f){ctx.strokeStyle='rgba(79,214,232,.35)';for(let k=0;k*30+364+45<LEN;k++){const c=k*30+364;if(c-15<EXTRA)continue;ctx.beginPath();for(let i=0;i<=60;i++){const x=L+i/60*pw,y=clamp(Y(f.o[c-15+i]),T,T+ph);if(i)ctx.lineTo(x,y);else ctx.moveTo(x,y);}ctx.stroke();}}}
+    if(!f)txt(ctx,'Radio not transmitting',w/2,h/2,SCR.text,'center');$('#ts-m-cap').innerHTML='';}
+  if(f){const W=Math.pow(10,(f.pdbm-30)/10);const items=[['Power',`${W.toFixed(2)} W · ${f.pdbm.toFixed(1)} dBm`],['Frequency error',`${f.ferr>=0?'+':''}${f.ferr.toFixed(0)} Hz`],[S.modName,`${f.mod.toFixed(1)} %`]];if(r.type==='dmr')items.push(['Outer deviation',`±${f.dev.toFixed(0)} Hz (nominal ±1944)`]);ro('ts-read',items);}
+  else ro('ts-read',[['Power','—'],['Frequency error','—'],[S.modName,'—']]);
+  tsBerDraw();}
+function tsBerDraw(){const r=tsRadio(),S=TSPEC[r.type];const {ctx,w,h}=fit($('#cv-ber'));ctx.fillStyle=SCR.bg;ctx.fillRect(0,0,w,h);const L=44,R=10,T=10,B=20,pw=w-L-R,ph=h-T-B,lo=-130,hi=-90,X=v=>L+(v-lo)/(hi-lo)*pw,Y=b=>T+(-Math.log10(clamp(b,1e-4,1)))/4*ph;grid(ctx,L,T,pw,ph,8,4);
+  [1,0.1,0.01,0.001,0.0001].forEach(b=>txt(ctx,(b*100)+'%',L-4,Y(b)+3,SCR.text,'right'));for(let v=lo;v<=hi;v+=10)txt(ctx,v+' dBm',X(v),h-5,SCR.text,v===lo?'left':v===hi?'right':'center');
+  ctx.strokeStyle=SCR.trace3;ctx.setLineDash([4,4]);ctx.beginPath();ctx.moveTo(X(S.rxLvl),T);ctx.lineTo(X(S.rxLvl),T+ph);ctx.moveTo(L,Y(S.rxBer/100));ctx.lineTo(L+pw,Y(S.rxBer/100));ctx.stroke();ctx.setLineDash([]);
+  txt(ctx,`limit ${S.rxBer}% at ${S.rxLvl} dBm`,X(S.rxLvl)+6,T+12,SCR.trace3);
+  ctx.fillStyle=SCR.trace2;r.bers.forEach(([v,b])=>{ctx.beginPath();ctx.arc(X(v),Y(Math.max(b,1e-4)),4,0,TAU);ctx.fill();});
+  const last=r.bers[r.bers.length-1];$('#ts-ber-cap').innerHTML=last?`<b>last: ${(last[1]*100).toFixed(2)}% at ${last[0]} dBm</b>`:'';}
+function tsSheet(){$('#ts-sheet').innerHTML=`<thead><tr><th>Radio</th><th>Power</th><th>Frequency</th><th>Modulation</th><th>Receiver</th><th>Verdict</th></tr></thead><tbody>${TS.radios.map((r,i)=>`<tr data-i="${i}"><td>${r.id}</td>${['power','freq','mod','rx'].map(k=>`<td><input type="checkbox" data-f="${k}" aria-label="${r.id} fails ${k}"></td>`).join('')}<td class="vd">Pass</td></tr>`).join('')}</tbody>`;
+  $$('#ts-sheet tbody tr').forEach(tr=>$$('input',tr).forEach(cb=>cb.addEventListener('change',()=>{$('.vd',tr).textContent=$$('input:checked',tr).length?'Fail':'Pass';})));}
+$('#ts-key').onclick=()=>{TS.keyed=!TS.keyed;TS.frame=TS.keyed?tsTx(tsRadio()):null;tsKeyBtn();tsDraw();};
+const tsGen=bindInput('ts-gen',TS,'gen',v=>v+' dBm');
+$('#ts-spec').onclick=()=>tsGen.set(TSPEC[tsRadio().type].rxLvl);
+$('#ts-ber').onclick=()=>{const r=tsRadio(),p=berAt(r.type,TS.gen-r.sensOff),bits=10000;const errs=Math.max(0,Math.round(p*bits+gauss()*Math.sqrt(bits*p*(1-p))));r.bers.push([TS.gen,errs/bits]);tsBerDraw();};
+$('#ts-new').onclick=newCrate;
+$('#ts-submit').onclick=()=>{let right=0;const notes=[];
+  $$('#ts-sheet tbody tr').forEach(tr=>{const r=TS.radios[+tr.dataset.i];let ok=true;$$('input',tr).forEach(cb=>{if(cb.checked!==r.faults.has(cb.dataset.f))ok=false;});tr.firstElementChild.className=ok?'ok':'no';if(ok)right++;
+    notes.push(`<li><b>${r.id}</b> ${ok?'✓':'✗'} ${r.faults.size?'Faults: '+[...r.faults].map(k=>TFAULT[k](r)).join(' '):'Good radio, passes everything.'}</li>`);});
+  const out=$('#ts-result'),pass=right>=5;out.hidden=false;out.className='verdict '+(pass?'ok':'no');
+  const first=!TS.graded;TS.graded=true;
+  out.innerHTML=`<b>${right} of ${TS.radios.length} radios right.</b> ${pass?(first?'That crate counts towards the course.':'Already handed in, so it doesn\'t count again.'):'Get a new crate and try again: test every radio, all four tests.'}<ul style="margin:6px 0 0;padding-left:18px">${notes.join('')}</ul>`;
+  if(pass&&first)mark('ts:crates',(PROG['ts:crates']||0)+1);};
+onShow.testset=()=>{tsDraw();};
+onTick.testset=(t)=>{if(!TS.keyed||t-TS.last<180)return;TS.last=t;TS.frame=tsTx(tsRadio());tsDraw();};
+newCrate();
+
+/* ===================== BENCH 7: PROJECT ===================== */
 const ICONS={
  radio:'<svg viewBox="0 0 44 44" fill="none" stroke="currentColor" stroke-width="2.4"><rect x="12" y="12" width="20" height="28" rx="3"/><path d="M27 12V3"/><rect x="16" y="16" width="12" height="7"/><path d="M17 29h10M17 34h10"/></svg>',
  tower:'<svg viewBox="0 0 44 44" fill="none" stroke="currentColor" stroke-width="2.4"><path d="M22 8L12 40M22 8l10 32M15 28h14M17 20h10"/><circle cx="22" cy="6" r="3"/><path d="M10 6a14 14 0 0 1 0-0M8 2c-4 4-4 10 0 14M36 2c4 4 4 10 0 14"/></svg>',
@@ -1198,6 +1764,98 @@ const GL=[
 function glRender(q){q=(q||'').toLowerCase();$('#gl-list').innerHTML=GL.filter(([t,d])=>!q||t.toLowerCase().includes(q)||d.toLowerCase().includes(q)).map(([t,d])=>`<div><dt>${t}</dt><dd>${d}</dd></div>`).join('')||'<p class="hint">No term matches. Try a shorter word.</p>';}
 glRender('');$('#gl-q').addEventListener('input',e=>glRender(e.target.value));
 
+/* ===================== TRAINING: quizzes, jobs, course ===================== */
+const QUIZ={
+ signal:[
+  ['How many watts is +30 dBm?',['1 milliwatt','1 watt','30 watts','1000 watts'],1,'0 dBm is 1 mW and every 10 dB is ×10, so +30 dBm is 1000 mW, which is 1 W.'],
+  ['A signal drops by 3 dB. What happened to its power?',['It halved','It dropped by a third','It dropped to a tenth','Nothing you could measure'],0,'Every 3 dB is a doubling or a halving. 10 dB is a factor of ten.'],
+  ['On the analyser TETRA is a flat-topped block about 25 kHz wide. Why so much wider than a plain carrier?',['The analyser is out of calibration','Sending 36 000 bits a second takes a lot of spectrum','TETRA uses more power','The noise floor is higher'],1,'The faster you send data, the wider the signal. A bare carrier carries nothing, so it is a single thin line.'],
+  ['Set up 1.3 and drop the level to −120 dBm. Why do symbol errors climb?',['The transmitter is broken','Noise is now nearly as strong as the signal, so dots land in the wrong place','The channel is too wide','The analyser is averaging'],1,'A weak signal plus the same noise means each received dot gets pushed around until some land in a neighbour\'s spot.'],
+  ['A loud transmitter on the next channel barely affects the eye diagram, but the same one on your channel shuts it. Why?',['The receiver filter blocks the next channel but cannot block your own','Adjacent transmitters use less power','DMR ignores interference','The eye diagram only shows one channel'],0,'Receivers filter out everything outside their channel. Anything inside it gets through, which is why channel planning across a site matters.']],
+ feedline:[
+  ['What does a VSWR of 1.0 mean?',['Total reflection','A perfect match: nothing bounces back','The cable is open','The radio is off'],1,'1.0 is perfect. Under 1.5 is good, and above 3 most radios protect themselves.'],
+  ['Why can VSWR at the radio look fine when the antenna is bad?',['Meters are inaccurate','The reflected power loses strength travelling back down the lossy cable','The radio corrects the reflection','VSWR only measures the radio'],1,'The reflection crosses the cable loss twice before the meter sees it. Measure near the antenna, or use distance to fault.'],
+  ['Which cable loses the least power over 100 m at 420 MHz?',['RG-58','RG-213','LMR-400','⅞″ heliax'],3,'Thicker cable with a foam dielectric loses less. That is why base stations use heliax.'],
+  ['On a distance-to-fault trace, a big peak part way along with nothing after it means…',['A good antenna','The cable is cut through at that distance','Too much power','Normal connector loss'],1,'An open circuit reflects everything, so nothing reaches further down to make more peaks.'],
+  ['A dummy load shows a perfect VSWR. How much does it radiate?',['All of it','Half','Almost nothing','It depends on the cable'],2,'A dummy load turns power into heat. A good match only means the power was absorbed, not that it went into the air.']],
+ mine:[
+  ['Why does UHF get around corners so badly underground?',['Rock reflects it perfectly','The tunnel guides it like a pipe, and turning out of the pipe loses a lot','UHF can\'t travel more than 100 m','Corners have more noise'],1,'Straight drives act as a waveguide at UHF. Each 90° turn costs roughly 10 to 20 dB.'],
+  ['"I can hear base but base can\'t hear me." What usually causes it?',['The handheld has much less power than the base station','The base is on the wrong channel','Too much fade margin','The leaky feeder is too short'],0,'A 1 W handheld on a belt against a 10 W base: the uplink runs out first. A design has to check both directions.'],
+  ['What does each extra line amplifier on a leaky feeder do to the uplink?',['Nothing','Adds noise that reaches the head-end receiver','Doubles the range','Turns off the downlink'],1,'Every amplifier passes its own noise back to the head-end, so the base receiver gets slightly deafer with each one.'],
+  ['Why do designers add a fade margin?',['To use more power','The signal flickers 10 to 20 dB as you move, and the link must survive the dips','To meet the licence','To save cable'],1,'Without it, a link that works standing still drops out every few steps.'],
+  ['On a leaky feeder, signal is normal up to one point and gone after it, in both directions. Most likely cause?',['A base station is off','The cable is cut or an amplifier has died at that point','Too much fade margin','The radios are on the wrong talkgroup'],1,'Nothing gets past that point either way, so everything beyond it is dark, including healthy amplifiers with nothing to amplify.']],
+ digital:[
+  ['What is the "cliff effect"?',['Digital voice gets gradually hissier','Digital voice stays clean, then breaks up over just a few dB','Analog voice cuts out suddenly','Signals fall off cliffs underground'],1,'Error correction hides errors until it can\'t, then quality falls off fast.'],
+  ['On the main TETRA carrier, how many timeslots are left for voice?',['1','2','3','4'],2,'Slot 1 on the main carrier is the control channel every idle radio listens to.'],
+  ['Which carries more voice paths in 25 kHz?',['TETRA','DMR','The same: 4 paths, 6.25 kHz each','Analog FM'],2,'One TETRA carrier has 4 slots in 25 kHz. Two DMR carriers have 2 slots each in 12.5 kHz each.'],
+  ['Walking around, the curves shift about 8 to 10 dB to the right. Why?',['Walking uses more battery','The signal flickers, and the dips cause errors even when the average is fine','The radio switches to analog','The codec changes'],1,'That is the fade margin from bench 3, showing up in the bit errors.']],
+ network:[
+  ['What is a talkgroup?',['A frequency','A named group of radios that hear each other wherever they are on the network','A base station','A type of antenna'],1,'It is the trunked equivalent of a channel, but it follows the radios from site to site.'],
+  ['In a DAMM TetraFlex system, where does call control live?',['In one central switch on the surface','Spread across the base stations, linked by IP','In each handheld','In the gateway'],1,'That removes a single point of failure, and makes the IP network part of the radio system.'],
+  ['The gateway is down and an electrician on the old Simoco radio hits emergency. Who sees it?',['Everyone','Only the control room','Only radios on the Simoco side','Nobody at all'],2,'During a changeover, the gateway is a safety item.'],
+  ['A TETRA radio loses every base station. What can it still do?',['Nothing','Talk directly to nearby TETRA radios in Direct Mode (DMO)','Call the control room','Use the leaky feeder'],1,'DMO only reaches radios a few hundred metres away through the tunnels, with no control room and no recording.'],
+  ['A site has no free slot when someone presses talk. What does TETRA do?',['Drops the call silently','Queues the call and plays a "please wait" tone','Uses another frequency at random','Cuts off another call'],1,'Only emergency calls pre-empt. Normal calls queue.']],
+ testset:[
+  ['How is receiver sensitivity tested?',['Measure how loud the speaker is','Feed in a known weak signal and count bit errors','Measure transmit power','Check the battery'],1,'Set the generator to the spec level; the bit errors must be at or under the limit.'],
+  ['A TETRA constellation on the test set spins round and round. What is wrong?',['Low power','The radio is off frequency','The receiver is deaf','Nothing'],1,'A frequency error makes the phase drift steadily, so the dots rotate.'],
+  ['A DMR radio shows 20% FSK error and its eye levels are spread too far apart. Most likely?',['Over-deviation: the modulation is too strong','Low battery','Off frequency','A receiver fault'],0,'Too much deviation spreads the four levels and widens the signal towards the next channel.'],
+  ['A radio needs 12 dB more signal than normal to get the same bit errors. What is that?',['Over-deviation','A deaf receiver (poor sensitivity)','Low power','Frequency error'],1,'Often a damaged front end. It will drop out much closer to the base than a good radio.']]};
+function renderQuiz(bench){const box=$(`.quiz[data-quiz="${bench}"]`);if(!box)return;const qs=QUIZ[bench];
+  box.innerHTML='<h4>Check yourself</h4>'+qs.map((q,i)=>`<div class="qq" data-i="${i}"><p class="q">${i+1}. ${q[0]}</p><div class="opts" role="radiogroup">${q[1].map((o,j)=>`<label><input type="radio" name="q-${bench}-${i}" value="${j}"><span>${o}</span></label>`).join('')}</div><div class="btnrow"><button class="btn" type="button">Check</button></div><div class="fb" hidden></div></div>`).join('');
+  $$('.qq',box).forEach(d=>{const i=+d.dataset.i,q=qs[i],fb=$('.fb',d);if(done(`q:${bench}:${i}`)){fb.hidden=false;fb.className='fb ok';fb.innerHTML='<b>Answered correctly.</b> '+q[3];}
+    $('button',d).onclick=()=>{const sel=$('input:checked',d);fb.hidden=false;if(!sel){fb.className='fb no';fb.textContent='Pick an answer first.';return;}const ok=+sel.value===q[2];fb.className='fb '+(ok?'ok':'no');fb.innerHTML=ok?'<b>Right.</b> '+q[3]:'<b>Not quite.</b> Have another go, or try it on the bench first.';if(ok)mark(`q:${bench}:${i}`);};});}
+function renderAllQuizzes(){Object.keys(QUIZ).forEach(renderQuiz);}
+/* work orders */
+const JOB={};
+function startJob(bench,job){if(JOB[bench])endJob(bench);let n=store.get('rflab-jobno',1040)+1;store.set('rflab-jobno',n);job.no='WO-'+n;JOB[bench]=job;renderWO(bench);}
+function fieldHtml(bench,f){if(f.type==='radio')return `<fieldset><legend>${f.label}</legend><div class="opts">${f.options.map(([v,l])=>`<label><input type="radio" name="${f.name}" value="${v}" required><span>${l}</span></label>`).join('')}</div></fieldset>`;
+  if(f.type==='number')return `<fieldset><legend>${f.label}</legend><div class="numin"><input type="number" name="${f.name}" step="0.5" min="0" inputmode="decimal" aria-label="${f.label}"><span>${f.unit||''}</span></div></fieldset>`;
+  return `<p class="hint">${f.label}</p>`;}
+function renderWO(bench){const box=$('#wo-'+bench),j=JOB[bench];if(!box)return;box.hidden=!j;if(!j){box.innerHTML='';return;}
+  box.innerHTML=`<div><p class="eyebrow">Work order ${j.no} · ${j.kindLabel}</p><h3>${j.title}</h3></div><p class="wo-ticket">${j.ticket}</p><p class="hint">${j.how}</p><form novalidate>${j.fields.map(f=>fieldHtml(bench,f)).join('')}<div class="btnrow"><button class="btn primary" type="submit">Submit my answer</button><button class="btn" type="button" data-act="reveal">Show me the answer</button><button class="btn" type="button" data-act="close">Close this job</button></div></form><div class="verdict" hidden aria-live="polite"></div>`;
+  const form=$('form',box),out=$('.verdict',box);
+  form.addEventListener('submit',e=>{e.preventDefault();const v={};new FormData(form).forEach((val,k)=>{v[k]=val;});const need=j.fields.filter(f=>f.type==='radio').find(f=>!v[f.name]);out.hidden=false;
+    if(need){out.className='verdict no';out.textContent='Answer every question first: '+need.label;return;}
+    const r=j.grade(v);out.className='verdict '+(r.ok?'ok':'no');out.innerHTML=r.msg+(r.ok&&j.revealed?' <i>(You looked at the answer first, so this one doesn\'t count.)</i>':'');
+    if(r.ok&&!j.solved&&!j.revealed){j.solved=true;mark(j.progKey,(PROG[j.progKey]||0)+1);}
+    if(r.ok)out.insertAdjacentHTML('beforeend',` <button class="btn" type="button" data-act="next">Next job</button>`);const nx=$('[data-act=next]',out);if(nx)nx.onclick=()=>{JOBGEN[bench]();if(onShow[current])onShow[current]();};});
+  $('[data-act=reveal]',box).onclick=()=>{j.revealed=true;out.hidden=false;out.className='verdict no';out.innerHTML='<b>Answer:</b> '+j.reveal();};
+  $('[data-act=close]',box).onclick=()=>{endJob(bench);if(onShow[current])onShow[current]();};
+  box.scrollIntoView({block:'start',behavior:REDUCED?'auto':'smooth'});}
+function endJob(bench){const j=JOB[bench];JOB[bench]=null;if(j&&j.cleanup)j.cleanup();renderWO(bench);}
+const JOBGEN={};[['signal',newSignalJob],['feedline',newFeedJob],['mine',newMineJob]].forEach(([k,fn])=>{JOBGEN[k]=()=>{if(JOB[k])endJob(k);fn();};});
+$$('[data-job]').forEach(b=>b.addEventListener('click',()=>{JOBGEN[b.dataset.job]();if(onShow[current])onShow[current]();}));
+/* course */
+const MODS=[
+  {b:'signal',n:1,t:'Signals, units and the spectrum',d:'dBm, noise, bandwidth, and what DMR and TETRA look like on real instruments.',exps:['s1','s2','s3','s4'],quiz:'signal',job:'signal',jobsNeed:3},
+  {b:'feedline',n:2,t:'Cable and antennas',d:'Where the watts go, VSWR, and finding cable faults with a distance-to-fault analyser.',exps:['f1','f2','f3','f4','f5'],quiz:'feedline',job:'feedline',jobsNeed:3},
+  {b:'mine',n:3,t:'Radio underground',d:'Tunnels, corners, leaky feeder, amplifiers, talk-back, finding coverage faults, and designing coverage within a budget.',exps:['m1','m2','m3','m4'],quiz:'mine',job:'mine',jobsNeed:3,ch:true},
+  {b:'digital',n:4,t:'Digital voice',d:'Timeslots, bit errors, and why digital falls off a cliff. Listen to it.',exps:['d1','d2'],quiz:'digital'},
+  {b:'network',n:5,t:'Trunking, talkgroups and the gateway',d:'How a call is set up, what the gateway does during the Simoco to DAMM changeover, and what happens when things fail.',guided:['group','move','emerg','busy'],quiz:'network',sb:true},
+  {b:'testset',n:6,t:'Testing radios',d:'Power, frequency, modulation and receiver sensitivity: the checks a radio tech does on every radio.',quiz:'testset',crates:2},
+  {b:'project',n:7,t:'Your project',d:'The parts of the Simoco to DAMM job and the questions to put to the designer and vendor.',check:true}];
+function modParts(m){const p=[];
+  if(m.exps)p.push(['Experiments',m.exps.filter(e=>done('exp:'+e)).length,m.exps.length]);
+  if(m.quiz)p.push(['Questions',QUIZ[m.quiz].filter((_,i)=>done(`q:${m.quiz}:${i}`)).length,QUIZ[m.quiz].length]);
+  if(m.job)p.push(['Jobs solved',Math.min(PROG['job:'+m.job]||0,m.jobsNeed),m.jobsNeed]);
+  if(m.ch)p.push(['Design challenges',CHALL.filter(c=>done('ch:'+c.id)).length,CHALL.length]);
+  if(m.guided)p.push(['Guided scenarios',m.guided.filter(g=>done('sc:'+g)).length,m.guided.length]);
+  if(m.sb)p.push(['Sandbox missions',SBM.filter(s=>done('sb:'+s[0])).length,SBM.length]);
+  if(m.crates)p.push(['Crates of radios passed',Math.min(PROG['ts:crates']||0,m.crates),m.crates]);
+  if(m.check){const s=store.get('rflab-checks',{});p.push(['Vendor questions answered',Math.min(Object.values(s).filter(Boolean).length,QS.length),QS.length]);}
+  return p;}
+function renderCourse(){const box=$('#co-mods');if(!box)return;let got=0;
+  box.innerHTML=MODS.map(m=>{const parts=modParts(m),f=parts.reduce((a,p)=>a+p[1]/p[2],0)/parts.length,complete=f>=0.999;got+=f;
+    return `<li class="mod"><span class="num">${m.n}</span><div><h3>${m.t}${complete?' <span class="tick">✓ complete</span>':''}</h3><p>${m.d}</p><div class="chips">${parts.map(p=>`<span class="chip ${p[1]>=p[2]?'done':''}">${p[0]} ${p[1]}/${p[2]}</span>`).join('')}</div></div><a class="btn ${!complete?'primary':''}" href="#${m.b}">${f===0?'Start':complete?'Revisit':'Continue'}</a></li>`;}).join('');
+  const pct=Math.round(got/MODS.length*100);$('#co-bar').style.width=pct+'%';$('#co-meter').setAttribute('aria-valuenow',String(pct));
+  $('#co-sum').textContent=pct===0?'Not started. Begin with bench 1.':pct>=100?'Course complete. Everything here is now yours to revisit.':`${pct}% of the course done.`;
+  $$('[data-jobcount]').forEach(e=>{const n=PROG['job:'+e.dataset.jobcount]||0;e.textContent=n?`Jobs solved so far: ${n}`:'';});}
+let resetArm=0;
+$('#co-reset').onclick=()=>{const b=$('#co-reset');if(Date.now()-resetArm<4000){Object.keys(PROG).forEach(k=>delete PROG[k]);store.set('rflab-prog',PROG);resetArm=0;b.textContent='Progress erased';renderCourse();renderAllQuizzes();renderChList();renderMissions();setTimeout(()=>{b.textContent='Reset my progress';},2000);}
+  else{resetArm=Date.now();b.textContent='Press again within 4 seconds to erase all progress';setTimeout(()=>{if(resetArm&&Date.now()-resetArm>=3900){resetArm=0;b.textContent='Reset my progress';}},4100);}};
+onShow.course=()=>renderCourse();
+$$('#pj-check input').forEach(c=>c.addEventListener('change',()=>renderCourse()));
+
 /* ===================== experiments ===================== */
 const EXPS={
  s1(){sgCtl.mode.set('cw');sgCtl.lvl.set(-90);sgCtl.intf.set('off');sgCtl.avg.set(true);},
@@ -1208,16 +1866,21 @@ const EXPS={
  f2(){flCtl.coax.set('lmr400');flCtl.len.set(15);flCtl.load.set('short');},
  f3(){flCtl.coax.set('rg213');flCtl.len.set(120);flCtl.load.set('wet');},
  f4(){flCtl.coax.set('lmr400');flCtl.len.set(10);flCtl.load.set('dummy');},
- m1(){mnPreset('blank');$('#mn-preset').value='blank';M.sites.push({x:62,y:24,tech:'tetra'});M.dirty=true;mnBand.set(420);$$('input[name=mn-net]').forEach(e=>e.checked=e.value==='tetra');M.net='tetra';M.miner={x:62,y:24};mnRedraw();},
- m2(){mnPre.set('leaky');ampAt.fill(0);M.dirty=true;$$('input[name=mn-net]').forEach(e=>e.checked=e.value==='dmr');M.net='dmr';M.miner={x:105,y:60};mnRedraw();},
- m3(){mnPre.set('tetra');$$('input[name=mn-net]').forEach(e=>e.checked=e.value==='tetra');M.net='tetra';$$('input[name=mn-view]').forEach(e=>e.checked=e.value==='dl');M.view='dl';mnRedraw();},
+ f5(){flCtl.coax.set('lmr400');flCtl.len.set(80);flCtl.conn.set(4);flCtl.f.set(420);flCtl.load.set('good');dtfMark=null;},
+ m1(){mnPreset('blank');$('#mn-preset').value='blank';M.sites.push({x:62,y:24,tech:'tetra'});M.dirty=true;mnBand.set(420);setNet('tetra');M.miner={x:62,y:24};mnRedraw();},
+ m2(){mnPre.set('leaky');ampAt.fill(0);M.dirty=true;setNet('dmr');M.miner={x:105,y:60};mnRedraw();},
+ m3(){mnPre.set('tetra');setNet('tetra');setView('dl');mnRedraw();},
  m4(){mnPre.set('hybrid');mnBand.set(150);},
  d1(){dgRssi.set(-108);dgFade.set(false);},
  d2(){dgRssi.set(-110);dgFade.set(false);},
 };
-$$('[data-exp]').forEach(b=>b.addEventListener('click',()=>{const f=EXPS[b.dataset.exp];if(f){f();const id=current;if(onShow[id])onShow[id]();b.textContent='Set up ✓';setTimeout(()=>b.textContent='Set up',1400);}}));
+$$('[data-exp]').forEach(b=>b.addEventListener('click',()=>{const id=b.dataset.exp,f=EXPS[id];if(!f)return;
+  if(JOB[current])endJob(current);if(current==='mine'){if(M.ch)endChallenge();if(M.custom){buildExample();M.plan=null;}}
+  f();mark('exp:'+id);if(onShow[current])onShow[current]();b.textContent='Set up ✓';setTimeout(()=>b.textContent='Set up',1400);}));
 
 /* boot */
-show(location.hash.slice(1)||'signal');
+renderAllQuizzes();renderChList();renderMissions();
+BOOTED=true;renderCourse();
+show(location.hash.slice(1)||'course');
 requestAnimationFrame(loop);
 </script>

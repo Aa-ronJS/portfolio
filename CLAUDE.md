@@ -53,7 +53,10 @@ Three independent things live here:
 
 - **`rf-lab/`** — Underground RF Lab: a single-file interactive radio lab
   (signals, cable/antenna, mine coverage planner, digital voice, TETRA/DMR
-  trunking, project checklist) built for learning underground mine radio.
+  trunking with a sandbox, radio test set, project checklist) built as a
+  training course for an underground Simoco to DAMM (TETRA/DMR) migration:
+  fault-finding work orders, design challenges, quizzes, progress in
+  localStorage.
   No build step; open `rf-lab/index.html`. Written as an Artifact body (no
   `<html>`/`<head>` wrapper). Physics is simplified; see the footer.
 
