@@ -452,9 +452,9 @@ select{background:var(--panel-2);border:1px solid var(--line);border-radius:4px;
 <!-- ================= BENCH 5: TRUNKING ================= -->
 <section class="bench" id="b-network" hidden>
   <div class="bench-head">
-    <p class="eyebrow">Bench 5 · Base stations, switch, gateway, console</p>
+    <p class="eyebrow">Bench 5 · Base stations, call control, gateway, console</p>
     <h2>Trunking and talkgroups</h2>
-    <p class="lede">With a trunked system like TETRA, radios don't pick a channel. They ask a central switch for a call on a talkgroup, and the switch finds a free timeslot at every site where someone in that group is listening. Run each scenario and read the steps; the real message names are in orange.</p>
+    <p class="lede">With a trunked system like TETRA, radios don't pick a channel. They ask the network's call control for a call on a talkgroup, and it finds a free timeslot at every site where someone in that group is listening. Run each scenario and read the steps; the real message names are in orange.</p>
   </div>
   <div class="bench-grid">
     <div class="instruments">
@@ -489,12 +489,13 @@ select{background:var(--panel-2);border:1px solid var(--line);border-radius:4px;
   <div class="bench-head">
     <p class="eyebrow">Bench 6 · From the lab to the mine</p>
     <h2>Your project</h2>
-    <p class="lede">Moving an underground mine from a single legacy system to TETRA plus DMR. What the parts are, what changes, and the questions to put to engineers and vendors so you can run the job without being an RF engineer yourself.</p>
+    <p class="lede">Moving the underground radio from the existing Simoco system to a DAMM platform running TETRA. What the parts are, what changes, and the questions to put to engineers and vendors so you can run the job without being an RF engineer yourself.</p>
   </div>
   <div class="prose">
     <h3>The picture in one paragraph</h3>
-    <p>Most underground mines run one system for voice: a leaky feeder cable strung along the drives with amplifiers every few hundred metres, carrying analog or DMR channels from a head-end near the portal. The move you're describing usually ends up as TETRA for the main operational network (trunked talkgroups, a central switch, a control room console, data and emergency features) and DMR where it still makes sense, often riding on the existing leaky feeder in the stopes or for particular crews. A gateway ties the two together so an emergency on one is heard on the other. The hard parts are coverage underground, the cutover while the mine keeps running, and making sure the two halves really talk to each other.</p>
-    <p class="hint">Assumptions in this lab: "DARM" is read as DMR (Digital Mobile Radio), and the existing system is treated as a leaky feeder. The mine level, power levels and frequencies are realistic examples, not Olympic Dam's actual design. Licensed frequencies, site layouts and equipment choices come from the site's RF design and the ACMA licence.</p>
+    <p>Today the underground runs on Simoco radio equipment. Simoco sells DMR, analog and older MPT1327 trunked systems, and underground those are usually carried along the drives by a leaky feeder with amplifiers every few hundred metres. The new system is built on DAMM (a Danish maker whose TetraFlex base stations can run TETRA and DMR on the same hardware). So the end state is likely TETRA for the main operational network (trunked talkgroups, control room console, data, emergency features), with DMR where it still makes sense, all on DAMM infrastructure. During the changeover, the old Simoco system and the new DAMM system have to run side by side and talk to each other, so an emergency on one is heard on the other. The hard parts are coverage underground, the cutover while the mine keeps running, and the link between old and new.</p>
+    <p class="idea"><b>One DAMM detail that changes the picture</b>A classic TETRA network has one big central switch. DAMM TetraFlex spreads the switching across the base stations themselves, linked over an IP network. That removes the single box whose failure takes everything down, but it makes the IP network (fibre, switches, its power) part of the radio system. On bench 5, read "TETRA switch" as "call control", which in a DAMM system lives in the base stations.</p>
+    <p class="hint">Assumptions in this lab: the existing Simoco system is treated as DMR or analog channels on a leaky feeder, which is the most common underground arrangement. Check which Simoco system and which technology (DMR Tier II, Tier III, analog, MPT1327) the site actually has. The mine level, power levels and frequencies are realistic examples, not Olympic Dam's actual design. Licensed frequencies, site layouts and equipment choices come from the site's RF design and the ACMA licence.</p>
   </div>
 
   <h3 style="font-size:24px;text-transform:uppercase;letter-spacing:.03em;margin:28px 0 12px">The parts list</h3>
@@ -973,8 +974,8 @@ onShow.digital=()=>{drawTDMA();drawCurve();};
 onTick.digital=(t,dt)=>{DG.t+=REDUCED?0:dt;drawTDMA();};
 
 /* ===================== BENCH 5: TRUNKING ===================== */
-const NN={CON:{x:120,y:62,l:'Control room',s:'dispatcher console',k:'console'},SW:{x:450,y:62,l:'TETRA switch',s:'SwMI · surface',k:'switch'},GW:{x:770,y:62,l:'Gateway',s:'DMR ⇄ TETRA',k:'gw'},
-  BS1:{x:260,y:220,l:'BS-1',s:'TETRA · Level 1',k:'bs'},BS2:{x:520,y:385,l:'BS-2',s:'TETRA · Level 2',k:'bs'},RPT:{x:770,y:220,l:'DMR repeater',s:'leaky feeder head-end',k:'rpt'},
+const NN={CON:{x:120,y:62,l:'Control room',s:'dispatcher console',k:'console'},SW:{x:450,y:62,l:'Call control',s:'DAMM: spread over the BSs',k:'switch'},GW:{x:770,y:62,l:'Gateway',s:'Simoco ⇄ DAMM',k:'gw'},
+  BS1:{x:260,y:220,l:'BS-1',s:'DAMM TETRA · Level 1',k:'bs'},BS2:{x:520,y:385,l:'BS-2',s:'DAMM TETRA · Level 2',k:'bs'},RPT:{x:770,y:220,l:'Simoco repeater',s:'DMR · leaky feeder',k:'rpt'},
   A:{x:110,y:300,l:'A · Shift boss',s:'TETRA handheld',k:'radio'},B:{x:360,y:458,l:'B · Loader operator',s:'TETRA vehicle radio',k:'radio'},C:{x:850,y:430,l:'C · Electrician',s:'DMR handheld',k:'radio'},LF:{x:770,y:430,k:'pt'}};
 const NS={patch:true,bs1:true,bAt:'BS2',slots:{BS1:['ctrl',null,null,null],BS2:['ctrl',null,null,null],RPT:[null,null]},running:false};
 const SVGNS='http://www.w3.org/2000/svg';
@@ -1024,7 +1025,7 @@ async function scGroup(){
     return;}
   await pkt(['A','BS1'],'U-SETUP','ctrl');logStep('U-SETUP','On the control timeslot, A\'s radio asks the network for a group call on UG-OPS.');
   await pkt(['BS1','SW'],'call request','ctrl');
-  logStep('','The switch looks up who is listening to UG-OPS right now: B (registered on '+sb.replace('BS','BS-')+'), the control room console'+(NS.patch?', and the DMR talkgroup patched through the gateway.':'. The gateway patch is off, so the DMR side is not included.'));
+  logStep('','Call control looks up who is listening to UG-OPS right now: B (registered on '+sb.replace('BS','BS-')+'), the control room console'+(NS.patch?', and the DMR talkgroup patched through the gateway.':'. The gateway patch is off, so the DMR side is not included.'));
   const tA=alloc('BS1','UG-OPS call',UG.col),tB=sb!=='BS1'?alloc(sb,'UG-OPS call',UG.col):-1;
   await Promise.all([pkt(['SW','BS1'],'allocate TS'+(tA+1),'ctrl'),sb!=='BS1'?pkt(['SW',sb],'allocate TS'+(tB+1),'ctrl'):null]);
   logStep('','Each base station with a listener reserves a free traffic timeslot for this call. Sites with nobody in UG-OPS stay free for other calls.');
@@ -1032,12 +1033,12 @@ async function scGroup(){
   if(NS.patch)NS.slots.RPT[0]={name:'patched UG-OPS',col:'#c792ff'},ntSlots();
   logStep('D-CONNECT','A gets the go-ahead (a short "talk permit" beep). B and the console are told which slot to listen on. All of this takes about a third of a second.');
   const vp=[['A','BS1','SW','CON'],sb!=='BS1'?['A','BS1','SW',sb,'B']:['A','BS1','B']];if(NS.patch)vp.push(['A','BS1','SW','GW','RPT','LF','C']);
-  logStep('voice','A talks. The voice is digitised by the codec and sent in A\'s timeslot, copied by the switch to every site and console in the group'+(NS.patch?', and converted by the gateway so the DMR electrician hears it too.':'.'));
+  logStep('voice','A talks. The voice is digitised by the codec and sent in A\'s timeslot, copied by call control to every site and console in the group'+(NS.patch?', and converted by the gateway so the DMR electrician hears it too.':'.'));
   await voice(vp,2600);
   await pkt(['A','BS1'],'U-TX-CEASED','ctrl');logStep('U-TX-CEASED','A lets go of the button. The call is held open for a few seconds of "hang time" so someone can answer without setting up a new call.');
   await wait(900);
   await Promise.all([pkt(['SW','BS1','A'],'D-RELEASE','ctrl'),pkt(['SW',sb,'B'],'D-RELEASE','ctrl')]);freeSlot('BS1',tA);if(tB>=0)freeSlot(sb,tB);NS.slots.RPT[0]=null;ntSlots();
-  logStep('D-RELEASE','Nobody answered, so the switch ends the call and the timeslots go back in the pool.');}
+  logStep('D-RELEASE','Nobody answered, so call control ends the call and the timeslots go back in the pool.');}
 async function scMove(){const from=NS.bAt,to=from==='BS2'?'BS1':'BS2';
   if(to==='BS1'&&!NS.bs1){logStep('','B drives up to Level 1, but BS-1 is down. B stays on BS-2 as long as it can hear it.','alarm');return;}
   logStep('',`B drives the loader ${to==='BS1'?'up the decline to Level 1':'back down to Level 2'}.`);
@@ -1045,8 +1046,8 @@ async function scMove(){const from=NS.bAt,to=from==='BS2'?'BS1':'BS2';
   logStep('','B\'s radio has been measuring every site it can hear. '+to.replace('BS','BS-')+' is now clearly stronger, so the radio changes site on its own. This is called cell reselection.');
   const old=NS.bAt;NS.bAt=to;ntDraw();
   await pkt(['B',to],'U-LOCATION-UPDATE','ctrl');await pkt([to,'SW'],'location update','ctrl');await pkt(['SW',to,'B'],'D-LOCATION-UPDATE-ACCEPT','ctrl');
-  logStep('D-LOCATION-UPDATE-ACCEPT',`The switch now sends UG-OPS calls for B to ${to.replace('BS','BS-')} instead of ${old.replace('BS','BS-')}. Nobody touched a channel knob.`);}
-async function scEmerg(){logStep('','C, an electrician on a DMR radio, presses the orange emergency button.','alarm');
+  logStep('D-LOCATION-UPDATE-ACCEPT',`Call control now sends UG-OPS calls for B to ${to.replace('BS','BS-')} instead of ${old.replace('BS','BS-')}. Nobody touched a channel knob.`);}
+async function scEmerg(){logStep('','C, an electrician still on the old Simoco DMR system, presses the orange emergency button.','alarm');
   await pkt(['C','LF','RPT'],'EMERGENCY','alarm');logStep('EMERGENCY ALARM','The DMR radio sends an emergency alarm with its ID up the leaky feeder to the repeater.','alarm');
   if(!NS.patch){logStep('','The gateway is off, so <b>the alarm stops here</b>. Other DMR radios on this repeater see it. The control room and every TETRA radio do not. When DMR and TETRA run side by side, this link is a safety item.','alarm');return;}
   await pkt(['RPT','GW'],'alarm + ID','alarm');await pkt(['GW','SW'],'priority 15','alarm');
@@ -1060,8 +1061,8 @@ async function scBusy(){if(!NS.bs1){logStep('','BS-1 is down. Turn it back on to
   logStep('','Three crews are already talking through BS-1: Drill crew, Charge-up and Fitters. With one carrier, BS-1 has 3 traffic slots plus the control slot.');
   const busy=[['Drill crew','#ffc23a'],['Charge-up','#7cf0a8'],['Fitters','#ff9ad5']].map(([n,c])=>alloc('BS1',n,c));await wait(700);
   await pkt(['A','BS1'],'U-SETUP','ctrl');await pkt(['BS1','SW'],'call request','ctrl');
-  await pkt(['SW','BS1','A'],'D-CALL-PROCEEDING','ctrl');logStep('D-CALL-PROCEEDING','No free slot on BS-1. The switch puts A in a queue and A hears a "please wait" tone instead of nothing.');
-  await wait(1800);freeSlot('BS1',busy[0]);logStep('','The drill crew finishes. A slot frees up and the switch gives it to the first call in the queue.');
+  await pkt(['SW','BS1','A'],'D-CALL-PROCEEDING','ctrl');logStep('D-CALL-PROCEEDING','No free slot on BS-1. Call control puts A in a queue and A hears a "please wait" tone instead of nothing.');
+  await wait(1800);freeSlot('BS1',busy[0]);logStep('','The drill crew finishes. A slot frees up and call control gives it to the first call in the queue.');
   const tA=alloc('BS1','UG-OPS call',UG.col);await pkt(['SW','BS1','A'],'D-CONNECT TS'+(tA+1),'ctrl');await voice([['A','BS1','SW','CON']],1400);
   freeSlot('BS1',tA);freeSlot('BS1',busy[1]);freeSlot('BS1',busy[2]);
   logStep('','Lesson: count how many groups talk at once at each site in the busiest hour (shift change, a blast, an incident). A second carrier on a site adds 4 more slots.');}
@@ -1088,9 +1089,9 @@ const ICONS={
  end:'<svg viewBox="0 0 44 44" fill="none" stroke="currentColor" stroke-width="2.4"><path d="M4 22h22"/><rect x="26" y="14" width="12" height="16" rx="2"/></svg>'};
 const PARTS=[
  ['radio','Handheld and vehicle radios','On people and machines','TETRA handhelds are usually 1 W; DMR handhelds about 4 W. Vehicle radios are 3 to 10 W with an outside antenna.','Fails: flat battery, broken antenna, wrong talkgroup programmed, worn on the belt under a jacket.'],
- ['tower','TETRA base station (TBS)','At junctions underground or on the surface','One or more carriers, each with 4 timeslots. Talks to the switch over fibre or IP.','Fails: power, backhaul cut, overheating in a hot cuddy. Plan for losing one.'],
+ ['tower','TETRA base station (TBS)','At junctions underground or on the surface','One or more carriers, each with 4 timeslots. Talks to call control over fibre or IP.','Fails: power, backhaul cut, overheating in a hot cuddy. Plan for losing one.'],
  ['box','DMR repeater','At the leaky feeder head-end or a junction','Receives on one frequency and retransmits on another so handhelds can reach each other through it. Two timeslots per carrier.','Fails: power, duplexer drift, interference on the input frequency.'],
- ['box','Switch / core (SwMI)','Surface comms room, ideally duplicated','The brain of TETRA. Knows every radio, every talkgroup, every site. Sets up and tears down calls.','Fails: if there is only one and it dies, sites drop to fallback mode. Ask about redundancy.'],
+ ['box','Call control (SwMI)','Classic TETRA: a central switch in the surface comms room. DAMM: spread across the base stations','The brain of TETRA. Knows every radio, every talkgroup, every site. Sets up and tears down calls.','Fails: with a central switch, losing it drops sites to fallback. With DAMM, losing the IP network between base stations splits the system. Ask about both.'],
  ['split','Combiner and duplexer','Inside the base station rack','A combiner lets several transmitters share one antenna or cable. A duplexer lets a transmitter and receiver share one antenna without deafening the receiver.','Fails: costs a few dB each; must be tuned for the licensed frequencies.'],
  ['ant','Antennas','On the base station and on every radio','Turn cable power into radio waves. Directional antennas (panels, yagis) aim down a drive; omnis go every way.','Fails: knocked by vehicles, wrong band, water in the connector.'],
  ['cable','Leaky feeder (radiating cable)','Strung along the roof or wall of every drive','Coax with slots in the shield so it leaks signal along its whole length, and picks up radios along its length too.','Fails: damaged by vehicles, blasting and rock falls. Loses a few dB per 100 m, so it needs amplifiers.'],
@@ -1117,6 +1118,11 @@ const QS=[
  ['Acceptance testing','How will coverage be proven? Ask for a drive test (walk test) of every drive with a calibrated receiver, with the results as a map.'],
  ['Radio programming and training','Who programs the radios and talkgroups, and how will a crew that has used the old radios for years be trained on the new ones?'],
  ['Maintenance','Who fixes damaged cable and amplifiers, how fast, and what spares are held on site?'],
+ ['DAMM technologies per site','Which DAMM base stations go where, and which technologies are licensed and enabled on each one: TETRA only, or TETRA and DMR?'],
+ ['Simoco to DAMM link','During the changeover, how do Simoco radios and DAMM radios talk to each other? Through what gateway, carrying which talkgroups, emergency alarms and radio IDs?'],
+ ['Reusing Simoco radios','Can any existing Simoco handhelds or vehicle radios work on the DAMM DMR side, or does every radio get replaced? DMR from different makers does not always work together, so ask for it to be tested.'],
+ ['Reusing the leaky feeder','Is the existing leaky feeder and its amplifiers staying? If so, are they rated for the new frequencies and for TETRA and DMR carriers together, and who checks the amplifier noise and power levels?'],
+ ['IP network','DAMM base stations talk to each other over IP. What network carries that underground, is it redundant, and is it on backup power like the radios?'],
 ];
 const saved=store.get('rflab-checks',{});
 $('#pj-check').innerHTML=QS.map(([t,q],i)=>`<li><label><input type="checkbox" data-q="${i}" ${saved[i]?'checked':''}><span><b>${t}.</b> ${q}</span></label></li>`).join('');
@@ -1184,6 +1190,10 @@ const GL=[
  ['Picket-fencing','Analog signal chopping in and out as you move through fades. Digital equivalent is dropouts.'],
  ['Drive test / walk test','Measuring real signal levels along every route with a calibrated receiver.'],
  ['ACMA','Australian Communications and Media Authority, which licenses radio frequencies.'],
+ ['DAMM / TetraFlex','DAMM is a Danish maker of radio infrastructure. TetraFlex is its system: base stations that can run TETRA and DMR, with call switching spread across the base stations over IP.'],
+ ['Simoco','A radio maker with a long history in Australian mining. It sells DMR, analog and older MPT1327 trunked systems.'],
+ ['MPT1327','An older analog trunking standard, common on Australian mine sites before digital radio.'],
+ ['Cutover / parallel running','Running the old and new systems at the same time while crews move across, so nobody is left without radio.'],
 ];
 function glRender(q){q=(q||'').toLowerCase();$('#gl-list').innerHTML=GL.filter(([t,d])=>!q||t.toLowerCase().includes(q)||d.toLowerCase().includes(q)).map(([t,d])=>`<div><dt>${t}</dt><dd>${d}</dd></div>`).join('')||'<p class="hint">No term matches. Try a shorter word.</p>';}
 glRender('');$('#gl-q').addEventListener('input',e=>glRender(e.target.value));
