@@ -51,6 +51,12 @@ Three independent things live here:
   every button must still work with its word
   (`tests/apptest/pics.cjs`).
 
+- **`rf-lab/`** — Underground RF Lab: a single-file interactive radio lab
+  (signals, cable/antenna, mine coverage planner, digital voice, TETRA/DMR
+  trunking, project checklist) built for learning underground mine radio.
+  No build step; open `rf-lab/index.html`. Written as an Artifact body (no
+  `<html>`/`<head>` wrapper). Physics is simplified; see the footer.
+
 The portfolio site and the pipeline share nothing except
 `public/fonts/satoshi-var.woff2`, which the pipeline ships converted to
 TTF for captions.

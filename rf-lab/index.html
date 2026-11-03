@@ -1,0 +1,1213 @@
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Underground RF Lab</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<meta name="description" content="A virtual radio lab for learning underground mine radio: signals, feedlines, tunnel coverage, digital voice, and TETRA/DMR trunking.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Barlow:wght@400;500;600&family=Barlow+Condensed:wght@500;600;700&family=JetBrains+Mono:wght@400;600&display=swap">
+<style>
+/* Layout: an instrument rack. A bench bar along the top; each bench = instrument screens + control faceplates (left) and a lab sheet of experiments (right). */
+:root{
+  --bg:#e3e6e1; --panel:#f4f5f1; --panel-2:#e9ebe6; --ink:#192023; --muted:#56626a; --line:#c6ccc6;
+  --accent:#c84d07; --accent-ink:#ffffff; --accent-soft:#f7dcc9;
+  --good:#1d7f47; --warn:#9a7200; --bad:#bf2d2d;
+  --screen:#0a1113; --screen-2:#111b1e; --grid:#1c292c; --scr-text:#93a9ad; --trace:#ffc23a; --trace-2:#4fd6e8; --trace-3:#ff6b6b; --trace-4:#c792ff;
+  --cov-good:#2fbf6a; --cov-warn:#f0b429; --cov-bad:#e5484d; --cov-dead:#4a2427;
+  --f-display:"Barlow Condensed","Arial Narrow",system-ui,sans-serif;
+  --f-body:"Barlow",system-ui,-apple-system,"Segoe UI",sans-serif;
+  --f-mono:"JetBrains Mono",ui-monospace,Menlo,Consolas,monospace;
+  --r:6px;
+}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){
+  --bg:#0f1417; --panel:#161d20; --panel-2:#1c2428; --ink:#e1e6e3; --muted:#93a0a5; --line:#2b363a;
+  --accent:#ff7b2e; --accent-ink:#1b0c02; --accent-soft:#3b2416;
+  --good:#45c47a; --warn:#e6b84a; --bad:#ff6b6b; color-scheme:dark;}}
+:root[data-theme="dark"]{
+  --bg:#0f1417; --panel:#161d20; --panel-2:#1c2428; --ink:#e1e6e3; --muted:#93a0a5; --line:#2b363a;
+  --accent:#ff7b2e; --accent-ink:#1b0c02; --accent-soft:#3b2416;
+  --good:#45c47a; --warn:#e6b84a; --bad:#ff6b6b; color-scheme:dark;}
+
+*{box-sizing:border-box}
+[hidden]{display:none!important}
+body{background:var(--bg);color:var(--ink);font-family:var(--f-body);font-size:15px;line-height:1.5;margin:0}
+body::before{content:"";position:fixed;inset:0 0 auto;height:env(safe-area-inset-top,0px);z-index:10;background:var(--panel)}
+.wrap{padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));max-width:1440px;margin:0 auto}
+h1,h2,h3,h4{font-family:var(--f-display);font-weight:600;letter-spacing:.01em;text-wrap:balance;margin:0;line-height:1.1}
+p{margin:0}
+a{color:var(--accent)}
+button,input,select{font:inherit;color:inherit}
+:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+
+/* Header + bench bar */
+.top{position:sticky;top:env(safe-area-inset-top,0px);z-index:9;background:var(--panel);border-bottom:1px solid var(--line)}
+.top .wrap{display:flex;align-items:center;gap:20px;padding-block:10px;flex-wrap:wrap}
+.brand{display:flex;align-items:center;gap:10px;min-width:0}
+.brand svg{flex:none}
+.brand h1{font-size:22px;font-weight:700;text-transform:uppercase;letter-spacing:.06em}
+.brand small{display:block;font-family:var(--f-mono);font-size:11px;color:var(--muted);letter-spacing:0}
+.benchbar{display:flex;gap:4px;overflow-x:auto;scrollbar-width:thin;flex:1 1 520px;min-width:0}
+.benchbar a{flex:none;display:flex;align-items:baseline;gap:6px;padding:7px 12px;border-radius:var(--r);text-decoration:none;color:var(--ink);font-family:var(--f-display);font-weight:600;font-size:16px;letter-spacing:.03em;text-transform:uppercase;border:1px solid transparent}
+.benchbar a span{font-family:var(--f-mono);font-size:11px;color:var(--muted)}
+.benchbar a:hover{border-color:var(--line)}
+.benchbar a[aria-current="page"]{background:var(--accent);color:var(--accent-ink)}
+.benchbar a[aria-current="page"] span{color:var(--accent-ink);opacity:.8}
+
+/* Bench layout */
+.bench{padding-block:22px 48px}
+.bench-head{display:grid;grid-template-columns:minmax(0,1fr);gap:6px;margin-bottom:18px;max-width:900px}
+.eyebrow{font-family:var(--f-mono);font-size:11px;letter-spacing:.12em;text-transform:uppercase;color:var(--accent)}
+.bench-head h2{font-size:clamp(28px,4vw,40px);font-weight:700;text-transform:uppercase;letter-spacing:.02em}
+.lede{color:var(--muted);max-width:68ch;font-size:16px}
+.bench-grid{display:grid;grid-template-columns:minmax(0,1fr) 340px;gap:20px;align-items:start}
+@media (max-width:1040px){.bench-grid{grid-template-columns:minmax(0,1fr)}}
+.instruments{display:grid;gap:14px;min-width:0}
+.two{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:14px}
+@media (max-width:680px){.two{grid-template-columns:minmax(0,1fr)}}
+
+/* Instrument screen */
+.screen{margin:0;background:var(--screen);border-radius:var(--r);padding:8px;border:1px solid #000;box-shadow:inset 0 0 0 1px #24323a;min-width:0}
+.screen figcaption{display:flex;justify-content:space-between;gap:8px;flex-wrap:wrap;font-family:var(--f-mono);font-size:11px;letter-spacing:.06em;text-transform:uppercase;color:var(--scr-text);padding:2px 4px 6px}
+.screen figcaption b{color:var(--trace);font-weight:600;text-transform:none;letter-spacing:.02em}
+.screen canvas{display:block;width:100%;border-radius:3px;background:var(--screen-2)}
+.cv-sa{aspect-ratio:16/7}
+.cv-sq{aspect-ratio:4/3}
+.cv-wave{aspect-ratio:16/5}
+.cv-map{aspect-ratio:5/3;touch-action:none;cursor:crosshair}
+.cv-strip{aspect-ratio:16/4}
+.cv-tdma{aspect-ratio:16/6}
+.cv-curve{aspect-ratio:16/8}
+.readouts{display:grid;grid-template-columns:repeat(auto-fit,minmax(130px,1fr));gap:6px;padding:8px 2px 0}
+.ro{background:#0e171a;border:1px solid #1d2a2e;border-radius:4px;padding:6px 8px;min-width:0}
+.ro small{display:block;font-family:var(--f-mono);font-size:10px;letter-spacing:.08em;text-transform:uppercase;color:var(--scr-text)}
+.ro b{display:block;font-family:var(--f-mono);font-size:14px;line-height:1.3;font-weight:600;color:#e8f1f2;font-variant-numeric:tabular-nums;overflow-wrap:anywhere}
+.ro b.good{color:var(--cov-good)} .ro b.warn{color:var(--cov-warn)} .ro b.bad{color:var(--cov-bad)}
+
+/* Faceplates (controls) */
+.rack{background:var(--panel);border:1px solid var(--line);border-radius:var(--r);padding:14px;display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:14px 18px}
+.ctl{display:grid;gap:5px;min-width:0}
+.ctl>label,.ctl>.lbl{font-family:var(--f-display);font-weight:600;font-size:13px;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);display:flex;justify-content:space-between;gap:8px}
+.ctl output{font-family:var(--f-mono);font-size:12px;color:var(--ink);letter-spacing:0;text-transform:none;font-variant-numeric:tabular-nums}
+.ctl.wide{grid-column:1/-1}
+input[type=range]{width:100%;accent-color:var(--accent)}
+select{background:var(--panel-2);border:1px solid var(--line);border-radius:4px;padding:6px 8px;width:100%}
+.check{display:flex;align-items:center;gap:8px;font-size:14px}
+.check input{accent-color:var(--accent);width:16px;height:16px}
+.seg{display:flex;flex-wrap:wrap;gap:4px}
+.seg label{position:relative;cursor:pointer}
+.seg input{position:absolute;opacity:0;width:1px;height:1px}
+.seg span{display:block;padding:6px 10px;border:1px solid var(--line);border-radius:4px;background:var(--panel-2);font-size:13px;font-weight:500;white-space:nowrap}
+.seg input:checked+span{background:var(--ink);color:var(--panel);border-color:var(--ink)}
+.seg input:focus-visible+span{outline:2px solid var(--accent);outline-offset:2px}
+.btn{cursor:pointer;border:1px solid var(--line);background:var(--panel-2);border-radius:4px;padding:7px 12px;font-weight:600;font-size:14px}
+.btn:hover{border-color:var(--ink)}
+.btn.primary{background:var(--accent);color:var(--accent-ink);border-color:var(--accent)}
+.btn:disabled{opacity:.45;cursor:not-allowed}
+.btnrow{display:flex;flex-wrap:wrap;gap:6px}
+.hint{font-size:13px;color:var(--muted)}
+
+/* Lab sheet */
+.sheet{background:var(--panel);border:1px solid var(--line);border-radius:var(--r);padding:16px;display:grid;gap:16px;min-width:0}
+.sheet h3{font-size:20px;text-transform:uppercase;letter-spacing:.04em}
+.sheet>p{font-size:14px;color:var(--muted)}
+.exp{border-top:1px solid var(--line);padding-top:12px;display:grid;gap:7px}
+.exp h4{font-size:17px;display:flex;gap:8px;align-items:baseline}
+.exp h4 i{font-style:normal;font-family:var(--f-mono);font-size:11px;color:var(--accent)}
+.exp p{font-size:14px}
+.exp .look{font-size:13.5px;color:var(--muted)}
+.exp .look b{color:var(--ink)}
+.exp .btn{justify-self:start}
+.idea{background:var(--accent-soft);border-radius:4px;padding:10px 12px;font-size:14px}
+.idea b{font-family:var(--f-display);letter-spacing:.06em;text-transform:uppercase;font-size:12px;display:block;color:var(--accent)}
+
+/* Mine bench */
+.toolbar{display:flex;flex-wrap:wrap;gap:6px;align-items:center}
+.legend{display:flex;flex-wrap:wrap;gap:12px;font-size:12px;color:var(--scr-text);font-family:var(--f-mono);padding:8px 4px 0}
+.legend i{display:inline-block;width:12px;height:12px;border-radius:2px;vertical-align:-2px;margin-right:5px}
+.probe{font-family:var(--f-mono);font-size:12px;color:var(--scr-text);padding:6px 4px 0;min-height:1.6em}
+
+/* Digital bench */
+.calls{display:flex;flex-wrap:wrap;gap:8px}
+.callchip{display:flex;align-items:center;gap:6px;border:1px solid var(--line);border-radius:999px;padding:4px 10px 4px 6px;font-size:13px;background:var(--panel-2);cursor:pointer}
+.callchip input{accent-color:var(--accent)}
+.blocks{display:grid;gap:8px;font-family:var(--f-mono);font-size:12px}
+.blk{display:flex;height:44px;border-radius:4px;overflow:hidden;border:1px solid var(--line)}
+.blk div{display:flex;align-items:center;justify-content:center;text-align:center;padding:2px;line-height:1.2;min-width:0;overflow:hidden}
+.blk .t{background:#1f6f7a;color:#e9fbff}
+.blk .d{background:#5c3f8a;color:#f4ecff}
+.blk .d+.d{border-left:2px solid var(--panel)}
+
+/* Network bench */
+.net svg{display:block;width:100%;height:auto;background:var(--screen-2);border-radius:3px}
+.log{list-style:none;margin:0;padding:0;display:grid;gap:8px;max-height:420px;overflow:auto;counter-reset:s}
+.log li{display:grid;grid-template-columns:auto minmax(0,1fr);gap:4px 10px;font-size:14px;counter-increment:s;padding-bottom:8px;border-bottom:1px dashed var(--line)}
+.log li::before{content:counter(s);font-family:var(--f-mono);font-size:11px;color:var(--muted);padding-top:3px}
+.log code{font-family:var(--f-mono);font-size:12px;background:var(--panel-2);border:1px solid var(--line);border-radius:3px;padding:0 5px;color:var(--accent)}
+.log li.alarm code{color:var(--bad)}
+
+/* Project bench */
+.cards{display:grid;grid-template-columns:repeat(auto-fill,minmax(250px,1fr));gap:12px}
+.card{background:var(--panel);border:1px solid var(--line);border-radius:var(--r);padding:14px;display:grid;gap:6px;align-content:start;min-width:0}
+.card svg{width:44px;height:44px;color:var(--accent)}
+.card h4{font-size:18px}
+.card p{font-size:14px}
+.card .where{font-family:var(--f-mono);font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:.06em}
+.card .fail{font-size:13px;color:var(--muted)}
+.prose{max-width:72ch;display:grid;gap:12px}
+.prose h3{font-size:24px;text-transform:uppercase;letter-spacing:.03em;margin-top:14px}
+.compare{width:100%;border-collapse:collapse;font-size:14px;min-width:620px}
+.compare th,.compare td{text-align:left;padding:8px 10px;border-bottom:1px solid var(--line);vertical-align:top}
+.compare th{font-family:var(--f-display);text-transform:uppercase;letter-spacing:.06em;font-size:13px;color:var(--muted)}
+.scroll-x{overflow-x:auto}
+.checklist{list-style:none;padding:0;margin:0;display:grid;gap:8px}
+.checklist label{display:grid;grid-template-columns:20px minmax(0,1fr);gap:10px;align-items:start;font-size:14.5px;cursor:pointer}
+.checklist input{accent-color:var(--accent);width:16px;height:16px;margin-top:3px}
+.checklist small{display:block;color:var(--muted);font-size:13px}
+.gloss{display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:10px 18px}
+.gloss div{border-top:1px solid var(--line);padding-top:8px;font-size:14px}
+.gloss dt{font-family:var(--f-display);font-weight:600;font-size:16px}
+.gloss dd{margin:2px 0 0;color:var(--muted)}
+#gl-q{background:var(--panel);border:1px solid var(--line);border-radius:4px;padding:8px 10px;width:100%;max-width:360px}
+.foot{border-top:1px solid var(--line);color:var(--muted);font-size:13px;padding-block:18px 28px}
+
+@media (prefers-reduced-motion: reduce){*{scroll-behavior:auto!important}}
+</style>
+
+<header class="top">
+  <div class="wrap">
+    <div class="brand">
+      <svg width="34" height="34" viewBox="0 0 34 34" aria-hidden="true"><rect x="1" y="1" width="32" height="32" rx="5" fill="var(--ink)"/><path d="M5 22c3-9 5-9 6 0s3 9 6 0 3-9 6 0 3 9 6 0" stroke="var(--trace)" stroke-width="2" fill="none"/><path d="M5 27h24" stroke="var(--accent)" stroke-width="2"/></svg>
+      <div><h1>Underground RF Lab</h1><small>leaky feeder · DMR · TETRA · a bench for learning radio</small></div>
+    </div>
+    <nav class="benchbar" aria-label="Benches">
+      <a href="#signal"><span>1</span>Signals</a>
+      <a href="#feedline"><span>2</span>Cable &amp; antenna</a>
+      <a href="#mine"><span>3</span>Underground</a>
+      <a href="#digital"><span>4</span>Digital voice</a>
+      <a href="#network"><span>5</span>Trunking</a>
+      <a href="#project"><span>6</span>Your project</a>
+    </nav>
+  </div>
+</header>
+
+<main class="wrap">
+
+<!-- ================= BENCH 1: SIGNALS ================= -->
+<section class="bench" id="b-signal">
+  <div class="bench-head">
+    <p class="eyebrow">Bench 1 · Signal generator, spectrum analyser, oscilloscope</p>
+    <h2>Signals and the spectrum</h2>
+    <p class="lede">A radio signal is a steady wave, the carrier, that gets wiggled to carry voice or data. The wiggling is called modulation. Here you generate one and look at it three ways, the same way a radio tech does on a real bench.</p>
+  </div>
+  <div class="bench-grid">
+    <div class="instruments">
+      <figure class="screen">
+        <figcaption><span>Spectrum analyser · power against frequency</span><span id="sa-cap"></span></figcaption>
+        <canvas id="cv-sa" class="cv-sa" aria-label="Spectrum analyser display"></canvas>
+        <div class="readouts" id="sa-read"></div>
+      </figure>
+      <div class="two">
+        <figure class="screen">
+          <figcaption><span>Oscilloscope · voltage against time</span><span id="sc-cap"></span></figcaption>
+          <canvas id="cv-scope" class="cv-sq" aria-label="Oscilloscope display"></canvas>
+        </figure>
+        <figure class="screen">
+          <figcaption><span id="dm-title">Receiver view</span><span id="dm-cap"></span></figcaption>
+          <canvas id="cv-demod" class="cv-sq" aria-label="Receiver demodulator display"></canvas>
+        </figure>
+      </div>
+      <div class="rack">
+        <div class="ctl wide"><span class="lbl">Modulation</span>
+          <div class="seg" role="radiogroup" aria-label="Modulation">
+            <label><input type="radio" name="sg-mode" value="cw"><span>Carrier only (CW)</span></label>
+            <label><input type="radio" name="sg-mode" value="am"><span>AM</span></label>
+            <label><input type="radio" name="sg-mode" value="fm"><span>Analog FM</span></label>
+            <label><input type="radio" name="sg-mode" value="dmr"><span>DMR · 4FSK</span></label>
+            <label><input type="radio" name="sg-mode" value="tetra" checked><span>TETRA · π/4-DQPSK</span></label>
+          </div>
+        </div>
+        <div class="ctl"><label for="sg-lvl">Signal level <output id="sg-lvl-v"></output></label><input type="range" id="sg-lvl" min="-150" max="-40" step="1" value="-95"></div>
+        <div class="ctl"><label for="sg-fc">Carrier frequency <output id="sg-fc-v"></output></label><input type="range" id="sg-fc" min="403" max="430" step="0.0125" value="415.0125"></div>
+        <div class="ctl" data-for="fm"><label for="sg-dev">FM deviation <output id="sg-dev-v"></output></label><input type="range" id="sg-dev" min="0.5" max="10" step="0.1" value="2.5"></div>
+        <div class="ctl" data-for="am fm"><label for="sg-tone">Audio tone <output id="sg-tone-v"></output></label><input type="range" id="sg-tone" min="300" max="3000" step="50" value="1000"></div>
+        <div class="ctl" data-for="am"><label for="sg-depth">AM depth <output id="sg-depth-v"></output></label><input type="range" id="sg-depth" min="0" max="100" step="5" value="60"></div>
+        <div class="ctl"><label for="sg-intf">Second transmitter</label>
+          <select id="sg-intf"><option value="off">Off</option><option value="adj">On the next channel (adjacent)</option><option value="co">On the same channel (co-channel)</option></select></div>
+        <div class="ctl"><label for="sg-ilvl">Second transmitter level <output id="sg-ilvl-v"></output></label><input type="range" id="sg-ilvl" min="-150" max="-40" step="1" value="-70"></div>
+        <div class="ctl"><span class="lbl">Display</span>
+          <label class="check"><input type="checkbox" id="sg-avg" checked> Average the trace</label>
+          <label class="check"><input type="checkbox" id="sg-hold"> Freeze</label></div>
+      </div>
+    </div>
+    <aside class="sheet" aria-label="Lab sheet">
+      <h3>Lab sheet</h3>
+      <p>Press <b>Set up</b> on an experiment and the bench is configured for you. Then move the sliders and watch.</p>
+      <div class="exp"><h4><i>1.1</i>Find the noise floor</h4>
+        <p>Every receiver hears a hiss of random thermal noise, roughly −174 dBm in every hertz of bandwidth, plus what the receiver adds itself. A signal below that floor is gone.</p>
+        <button class="btn" data-exp="s1">Set up</button>
+        <p class="look"><b>Look for:</b> drag the level down from −90 to −150 dBm. The carrier spike sinks into the grass. That grass is the noise floor.</p></div>
+      <div class="exp"><h4><i>1.2</i>Modulation takes up room</h4>
+        <p>A bare carrier is a single line. Add voice and it spreads out. FM spreads more as you raise the deviation (how far the frequency swings).</p>
+        <button class="btn" data-exp="s2">Set up</button>
+        <p class="look"><b>Look for:</b> raise deviation past 5 kHz and the signal spills outside the 12.5 kHz channel box into the neighbour's channel. That is why deviation is set in the radio's programming and not left to chance.</p></div>
+      <div class="exp"><h4><i>1.3</i>Read a TETRA constellation</h4>
+        <p>TETRA sends 2 bits at a time by jumping the phase of the carrier. The receiver view plots each jump as a dot. Eight clean clusters means clean data.</p>
+        <button class="btn" data-exp="s3">Set up</button>
+        <p class="look"><b>Look for:</b> lower the level towards −120 dBm. The dots smear into each other and the symbol error counter climbs. That is a weak signal turning into broken audio.</p></div>
+      <div class="exp"><h4><i>1.4</i>Neighbour vs same channel</h4>
+        <p>A strong transmitter next door is mostly blocked by the receiver's filter. The same transmitter on your channel is not.</p>
+        <button class="btn" data-exp="s4">Set up</button>
+        <p class="look"><b>Look for:</b> the eye diagram stays open with a loud neighbour. Switch the second transmitter to the same channel and the eye slams shut. This is why channels must be coordinated across a site.</p></div>
+      <div class="idea"><b>Units you will meet</b>dBm is power compared to one milliwatt. 0 dBm = 1 mW, +30 dBm = 1 W, +40 dBm = 10 W. Every 3 dB doubles or halves the power; every 10 dB is ×10. A radio can still decode signals around −110 dBm, which is 0.00000000000001 mW.</div>
+    </aside>
+  </div>
+</section>
+
+<!-- ================= BENCH 2: FEEDLINE ================= -->
+<section class="bench" id="b-feedline" hidden>
+  <div class="bench-head">
+    <p class="eyebrow">Bench 2 · Transmitter, coax, wattmeter, antenna</p>
+    <h2>Cable and antenna</h2>
+    <p class="lede">Power leaves the radio, travels down coax cable, and has to get into the antenna. Cable eats power as heat. A bad antenna or a wet connector bounces power back down the cable. This bench shows where every watt goes.</p>
+  </div>
+  <div class="bench-grid">
+    <div class="instruments">
+      <figure class="screen">
+        <figcaption><span>Line view · the last few wavelengths before the antenna</span><span id="fl-cap"></span></figcaption>
+        <canvas id="cv-wave" class="cv-wave" aria-label="Voltage along the cable"></canvas>
+        <div class="readouts" id="fl-read"></div>
+      </figure>
+      <div class="two">
+        <figure class="screen">
+          <figcaption><span>Through-line wattmeter at the radio</span><span id="wm-cap"></span></figcaption>
+          <canvas id="cv-watt" class="cv-sq" aria-label="Wattmeter"></canvas>
+        </figure>
+        <figure class="screen">
+          <figcaption><span>Antenna pattern · seen from above</span><span id="ap-cap"></span></figcaption>
+          <canvas id="cv-pat" class="cv-sq" aria-label="Antenna radiation pattern"></canvas>
+        </figure>
+      </div>
+      <figure class="screen">
+        <figcaption><span>Power budget · where the watts went</span><span></span></figcaption>
+        <canvas id="cv-budget" class="cv-wave" aria-label="Power budget"></canvas>
+      </figure>
+      <div class="rack">
+        <div class="ctl"><label for="fl-pw">Radio output <output id="fl-pw-v"></output></label><input type="range" id="fl-pw" min="1" max="50" step="1" value="25"></div>
+        <div class="ctl"><label for="fl-f">Frequency <output id="fl-f-v"></output></label><input type="range" id="fl-f" min="140" max="900" step="5" value="420"></div>
+        <div class="ctl"><label for="fl-coax">Cable type</label>
+          <select id="fl-coax"><option value="rg58">RG-58 (thin, 5 mm)</option><option value="rg213">RG-213 (10 mm)</option><option value="lmr400" selected>LMR-400 (10 mm, low loss)</option><option value="h12">½″ foam heliax</option><option value="h78">⅞″ foam heliax</option></select></div>
+        <div class="ctl"><label for="fl-len">Cable length <output id="fl-len-v"></output></label><input type="range" id="fl-len" min="1" max="200" step="1" value="30"></div>
+        <div class="ctl"><label for="fl-conn">Connectors in the run <output id="fl-conn-v"></output></label><input type="range" id="fl-conn" min="0" max="12" step="1" value="2"></div>
+        <div class="ctl"><label for="fl-load">What's on the end</label>
+          <select id="fl-load"><option value="good">Good antenna (50 Ω)</option><option value="wrong">Antenna cut for another band</option><option value="wet">Water in the connector</option><option value="open">Cable cut through (open)</option><option value="short">Cable crushed (short)</option><option value="dummy">Dummy load (test resistor)</option><option value="custom">Custom impedance…</option></select></div>
+        <div class="ctl"><label for="fl-r">Load resistance R <output id="fl-r-v"></output></label><input type="range" id="fl-r" min="1" max="500" step="1" value="50"></div>
+        <div class="ctl"><label for="fl-x">Load reactance X <output id="fl-x-v"></output></label><input type="range" id="fl-x" min="-300" max="300" step="1" value="0"></div>
+        <div class="ctl"><label for="fl-ant">Antenna type</label>
+          <select id="fl-ant"><option value="whip">¼-wave whip · 2 dBi · all directions</option><option value="col">Collinear omni · 6 dBi · all directions</option><option value="panel">Panel · 9 dBi · 65° beam</option><option value="yagi" selected>Yagi · 11 dBi · 45° beam</option></select></div>
+      </div>
+    </div>
+    <aside class="sheet" aria-label="Lab sheet">
+      <h3>Lab sheet</h3>
+      <div class="exp"><h4><i>2.1</i>Thin cable cooks your power</h4>
+        <p>Cable loss is quoted in dB per 100 m and gets worse as frequency goes up.</p>
+        <button class="btn" data-exp="f1">Set up</button>
+        <p class="look"><b>Look for:</b> 60 m of RG-58 at 420 MHz throws away most of a 25 W radio. Swap to ⅞″ heliax and most of it arrives. Underground base stations use the fat stuff for this reason.</p></div>
+      <div class="exp"><h4><i>2.2</i>A crushed cable</h4>
+        <p>Loaders and rock falls damage cable. A short or open sends all the power back.</p>
+        <button class="btn" data-exp="f2">Set up</button>
+        <p class="look"><b>Look for:</b> the standing wave: fixed humps and dead spots instead of a smooth travelling wave. The reflected needle jumps and the radio protects itself by cutting power.</p></div>
+      <div class="exp"><h4><i>2.3</i>Long cable hides a fault</h4>
+        <p>Reflected power has to travel back down the lossy cable before the meter sees it.</p>
+        <button class="btn" data-exp="f3">Set up</button>
+        <p class="look"><b>Look for:</b> VSWR at the antenna is terrible, but VSWR at the radio looks almost fine. Always measure as close to the antenna as you can, or use a cable analyser that measures distance to fault.</p></div>
+      <div class="exp"><h4><i>2.4</i>Dummy load fools the meter</h4>
+        <button class="btn" data-exp="f4">Set up</button>
+        <p class="look"><b>Look for:</b> perfect VSWR, full forward power, and zero radiated. A perfect match only means the power went somewhere. It does not mean it went into the air.</p></div>
+      <div class="idea"><b>VSWR in one line</b>1.0 is perfect. Under 1.5 is good. Above 2.0 someone should look at it. Above 3.0 most radios turn their own power down to protect themselves.</div>
+    </aside>
+  </div>
+</section>
+
+<!-- ================= BENCH 3: UNDERGROUND ================= -->
+<section class="bench" id="b-mine" hidden>
+  <div class="bench-head">
+    <p class="eyebrow">Bench 3 · Coverage planner and drive test</p>
+    <h2>Radio underground</h2>
+    <p class="lede">Rock swallows UHF radio. Signal only gets around a mine by travelling along the tunnels, and it loses a lot at every corner. So underground systems either run a leaky feeder cable (a cable with slots that leaks signal along its length) down every drive, or put base station antennas at junctions, or both. Build a system on this example mine level and see what works.</p>
+  </div>
+  <div class="bench-grid">
+    <div class="instruments">
+      <div class="rack" style="grid-template-columns:minmax(0,1fr)">
+        <div class="ctl"><span class="lbl">Tool · click or drag on the map</span>
+          <div class="seg toolbar" role="radiogroup" aria-label="Map tool">
+            <label><input type="radio" name="mn-tool" value="miner" checked><span>Move the miner</span></label>
+            <label><input type="radio" name="mn-tool" value="tetra"><span>Place TETRA site</span></label>
+            <label><input type="radio" name="mn-tool" value="dmr"><span>Place DMR repeater</span></label>
+            <label><input type="radio" name="mn-tool" value="cable"><span>Lay leaky feeder</span></label>
+            <label><input type="radio" name="mn-tool" value="amp"><span>Add line amplifier</span></label>
+            <label><input type="radio" name="mn-tool" value="erase"><span>Erase</span></label>
+          </div>
+        </div>
+      </div>
+      <figure class="screen">
+        <figcaption><span>Example level plan · 1.2 km × 0.72 km · each square 10 m</span><span id="mn-cap"></span></figcaption>
+        <canvas id="cv-map" class="cv-map" aria-label="Mine level coverage map"></canvas>
+        <div class="probe" id="mn-probe">Hover over a drive to probe the signal there.</div>
+        <div class="legend"><span><i style="background:var(--cov-good)"></i>works with margin</span><span><i style="background:var(--cov-warn)"></i>works until you move or turn</span><span><i style="background:var(--cov-bad)"></i>below sensitivity</span><span><i style="background:var(--cov-dead)"></i>nothing</span><span><i style="background:#ff8a3d;height:4px;vertical-align:2px"></i>leaky feeder</span></div>
+        <div class="readouts" id="mn-read"></div>
+      </figure>
+      <figure class="screen">
+        <figcaption><span>Drive test · margin along the walk (dB above what the radio needs)</span><span id="dt-cap"></span></figcaption>
+        <canvas id="cv-strip" class="cv-strip" aria-label="Drive test chart"></canvas>
+      </figure>
+      <div class="rack">
+        <div class="ctl"><label for="mn-preset">Start from</label>
+          <select id="mn-preset"><option value="leaky">Leaky feeder only, DMR (typical older system)</option><option value="tetra">TETRA base stations at junctions</option><option value="hybrid" selected>Hybrid: TETRA on the main drives, DMR leaky feeder in the stopes</option><option value="blank">Empty level, build your own</option></select></div>
+        <div class="ctl"><span class="lbl">Show coverage for</span>
+          <div class="seg" role="radiogroup" aria-label="Network"><label><input type="radio" name="mn-net" value="tetra" checked><span>TETRA</span></label><label><input type="radio" name="mn-net" value="dmr"><span>DMR</span></label></div></div>
+        <div class="ctl"><span class="lbl">Direction</span>
+          <div class="seg" role="radiogroup" aria-label="Direction"><label><input type="radio" name="mn-view" value="dl"><span>Hear the base</span></label><label><input type="radio" name="mn-view" value="ul"><span>Be heard</span></label><label><input type="radio" name="mn-view" value="both" checked><span>Both (talk-back)</span></label></div></div>
+        <div class="ctl"><label for="mn-band">Frequency band</label>
+          <select id="mn-band"><option value="150">VHF 150 MHz</option><option value="420" selected>UHF 420 MHz (where TETRA and DMR usually sit in Australia)</option><option value="800">800 MHz</option></select></div>
+        <div class="ctl"><label for="mn-fade">Fade margin <output id="mn-fade-v"></output></label><input type="range" id="mn-fade" min="0" max="25" step="1" value="10"></div>
+        <div class="ctl"><span class="lbl">Radio</span><label class="check"><input type="checkbox" id="mn-body" checked> Worn on the belt under a jacket (−6 dB)</label></div>
+        <div class="ctl wide"><div class="btnrow"><button class="btn primary" id="mn-walk">Run drive test: portal to far stope</button><button class="btn" id="mn-amps">Auto-place amplifiers every 400 m</button><button class="btn" id="mn-clear">Clear the level</button></div></div>
+      </div>
+    </div>
+    <aside class="sheet" aria-label="Lab sheet">
+      <h3>Lab sheet</h3>
+      <p>Green needs both directions to work with margin to spare. The miner's radio is much weaker than the base station, so "I can hear them but they can't hear me" is the classic underground fault.</p>
+      <div class="exp"><h4><i>3.1</i>Corners kill UHF</h4>
+        <p>One TETRA site in the middle of the main drive.</p>
+        <button class="btn" data-exp="m1">Set up</button>
+        <p class="look"><b>Look for:</b> strong signal straight down the drive for hundreds of metres, then each crosscut goes amber and red within a few corners. Move the site with the TETRA tool (click to remove, click to place).</p></div>
+      <div class="exp"><h4><i>3.2</i>Leaky feeder needs amplifiers</h4>
+        <p>A leaky feeder loses a few dB every 100 m. Without amplifiers the far end goes dead.</p>
+        <button class="btn" data-exp="m2">Set up</button>
+        <p class="look"><b>Look for:</b> the deep end in red. Press <b>Auto-place amplifiers</b> and it lights up. Then switch to <b>Be heard</b>: every amplifier also adds noise on the way back, so the base hears a little less with each one.</p></div>
+      <div class="exp"><h4><i>3.3</i>Hear but not be heard</h4>
+        <button class="btn" data-exp="m3">Set up</button>
+        <p class="look"><b>Look for:</b> flip between <b>Hear the base</b> and <b>Be heard</b>. The 1 W TETRA handheld on a belt gives out long before the 10 W base does. That gap is where people say "base, base, do you read?" and nobody answers.</p></div>
+      <div class="exp"><h4><i>3.4</i>Change the band</h4>
+        <p>Keep the hybrid design and switch between VHF, UHF and 800 MHz.</p>
+        <button class="btn" data-exp="m4">Set up</button>
+        <p class="look"><b>Look for:</b> VHF turns corners better but dies fast in straight drives because the wave is too big for the tunnel. 800 MHz flies down straight drives and dies at every corner.</p></div>
+      <div class="idea"><b>Why fade margin</b>Signal flickers up and down by 10 to 20 dB as you walk, because reflections off walls and vehicles add and cancel. Designers add a fade margin on top of the radio's sensitivity so it still works at the bottom of a flicker.</div>
+    </aside>
+  </div>
+</section>
+
+<!-- ================= BENCH 4: DIGITAL ================= -->
+<section class="bench" id="b-digital" hidden>
+  <div class="bench-head">
+    <p class="eyebrow">Bench 4 · Timeslots, bit errors, and what it sounds like</p>
+    <h2>Digital voice</h2>
+    <p class="lede">DMR and TETRA both chop your voice into small digital packets and squeeze several conversations onto one frequency by taking turns very fast. This is called TDMA. When the signal gets weak, analog radio gets hissy. Digital stays perfect, then falls off a cliff.</p>
+  </div>
+  <div class="bench-grid">
+    <div class="instruments">
+      <figure class="screen">
+        <figcaption><span>Timeslots in slow motion · 1 second here = 20 ms on air</span><span id="td-cap"></span></figcaption>
+        <canvas id="cv-tdma" class="cv-tdma" aria-label="TDMA timeslot timeline"></canvas>
+      </figure>
+      <div class="rack" style="grid-template-columns:minmax(0,1fr)">
+        <div class="ctl"><span class="lbl">Start or stop conversations</span>
+          <div class="calls" id="td-calls"></div></div>
+        <div class="ctl"><span class="lbl">The same 25 kHz of spectrum, two ways</span>
+          <div class="blocks">
+            <div class="blk"><div class="t" style="flex:1">One TETRA carrier · 25 kHz · 4 timeslots (1 control + 3 voice)</div></div>
+            <div class="blk"><div class="d" style="flex:1">DMR carrier · 12.5 kHz · 2 slots</div><div class="d" style="flex:1">DMR carrier · 12.5 kHz · 2 slots</div></div>
+          </div>
+          <p class="hint">Both work out to 6.25 kHz per voice path. The difference is not efficiency. It is what the network does with the slots: TETRA hands them out on demand from a central switch; basic DMR repeaters give each slot a fixed job.</p></div>
+      </div>
+      <figure class="screen">
+        <figcaption><span>Signal strength against voice quality and bit errors</span><span id="cu-cap"></span></figcaption>
+        <canvas id="cv-curve" class="cv-curve" aria-label="Voice quality and bit error curves"></canvas>
+        <div class="readouts" id="cu-read"></div>
+      </figure>
+      <div class="rack">
+        <div class="ctl wide"><label for="dg-rssi">Signal at the radio <output id="dg-rssi-v"></output></label><input type="range" id="dg-rssi" min="-130" max="-80" step="0.5" value="-108"></div>
+        <div class="ctl"><span class="lbl">Conditions</span><label class="check"><input type="checkbox" id="dg-fade"> Walking (signal flickers)</label></div>
+        <div class="ctl wide"><span class="lbl">Listen · uses your speakers</span>
+          <div class="btnrow"><button class="btn" data-listen="fm">Play analog FM</button><button class="btn" data-listen="dmr">Play DMR</button><button class="btn" data-listen="tetra">Play TETRA</button><button class="btn" id="dg-stop">Stop</button></div>
+          <p class="hint" id="dg-now">The test voice is synthetic babble so you can hear hiss and dropouts. Move the slider while it plays.</p></div>
+      </div>
+    </div>
+    <aside class="sheet" aria-label="Lab sheet">
+      <h3>Lab sheet</h3>
+      <div class="exp"><h4><i>4.1</i>The cliff</h4>
+        <button class="btn" data-exp="d1">Set up</button>
+        <p class="look"><b>Look for:</b> play DMR at −108 dBm: clean. Slide down slowly to −122. It stays clean, then breaks into chirps and gaps over just a few dB. Do the same with analog FM: the hiss creeps in gradually and you can still make out words.</p></div>
+      <div class="exp"><h4><i>4.2</i>Walking makes it worse</h4>
+        <button class="btn" data-exp="d2">Set up</button>
+        <p class="look"><b>Look for:</b> tick <b>Walking</b>. The average signal is the same but the curves slide right by roughly 8 to 10 dB. That gap is the fade margin from bench 3, measured.</p></div>
+      <div class="exp"><h4><i>4.3</i>Fill the slots</h4>
+        <p>Turn every conversation on. A TETRA carrier has 3 voice slots. Slot 1 is reserved for the control channel that every radio listens to for instructions.</p>
+        <p class="look"><b>Look for:</b> the sync and training bits in the middle of each burst. The receiver uses them to lock on to each burst, which is how it copes with reflections underground.</p></div>
+      <div class="idea"><b>Why digital sounds "robotic"</b>The voice is compressed by a codec (AMBE+2 in DMR, ACELP in TETRA) down to a few thousand bits per second. When a packet is lost, the codec repeats the last sound to cover the gap. Lose several in a row and you hear warbling, then silence.</div>
+    </aside>
+  </div>
+</section>
+
+<!-- ================= BENCH 5: TRUNKING ================= -->
+<section class="bench" id="b-network" hidden>
+  <div class="bench-head">
+    <p class="eyebrow">Bench 5 · Base stations, switch, gateway, console</p>
+    <h2>Trunking and talkgroups</h2>
+    <p class="lede">With a trunked system like TETRA, radios don't pick a channel. They ask a central switch for a call on a talkgroup, and the switch finds a free timeslot at every site where someone in that group is listening. Run each scenario and read the steps; the real message names are in orange.</p>
+  </div>
+  <div class="bench-grid">
+    <div class="instruments">
+      <figure class="screen net">
+        <figcaption><span>Example system · surface and two levels</span><span id="nt-cap"></span></figcaption>
+        <svg id="nt-svg" viewBox="0 0 900 520" role="img" aria-label="Network diagram"></svg>
+      </figure>
+      <div class="rack">
+        <div class="ctl wide"><span class="lbl">Scenarios</span>
+          <div class="btnrow" id="nt-btns">
+            <button class="btn primary" data-sc="group">A calls talkgroup UG-OPS</button>
+            <button class="btn" data-sc="move">B drives to the other level</button>
+            <button class="btn" data-sc="emerg">C hits the emergency button</button>
+            <button class="btn" data-sc="busy">Busy hour on BS-1</button>
+          </div></div>
+        <div class="ctl"><span class="lbl">Equipment</span>
+          <label class="check"><input type="checkbox" id="nt-patch" checked> Gateway links DMR to TETRA</label>
+          <label class="check"><input type="checkbox" id="nt-bs1" checked> BS-1 is powered and working</label></div>
+        <div class="ctl"><label for="nt-speed">Speed</label><select id="nt-speed"><option value="0.6">Slow</option><option value="1" selected>Normal</option><option value="1.8">Fast</option></select></div>
+      </div>
+    </div>
+    <aside class="sheet" aria-label="What happened">
+      <h3>Step by step</h3>
+      <ol class="log" id="nt-log"><li><span>Pick a scenario. Each step shows up here with plain-English notes.</span></li></ol>
+      <div class="idea"><b>Try this</b>Turn off the gateway, then hit the emergency button. Then turn off BS-1 and make A call. Both are real design questions for a mixed DMR and TETRA site.</div>
+    </aside>
+  </div>
+</section>
+
+<!-- ================= BENCH 6: PROJECT ================= -->
+<section class="bench" id="b-project" hidden>
+  <div class="bench-head">
+    <p class="eyebrow">Bench 6 · From the lab to the mine</p>
+    <h2>Your project</h2>
+    <p class="lede">Moving an underground mine from a single legacy system to TETRA plus DMR. What the parts are, what changes, and the questions to put to engineers and vendors so you can run the job without being an RF engineer yourself.</p>
+  </div>
+  <div class="prose">
+    <h3>The picture in one paragraph</h3>
+    <p>Most underground mines run one system for voice: a leaky feeder cable strung along the drives with amplifiers every few hundred metres, carrying analog or DMR channels from a head-end near the portal. The move you're describing usually ends up as TETRA for the main operational network (trunked talkgroups, a central switch, a control room console, data and emergency features) and DMR where it still makes sense, often riding on the existing leaky feeder in the stopes or for particular crews. A gateway ties the two together so an emergency on one is heard on the other. The hard parts are coverage underground, the cutover while the mine keeps running, and making sure the two halves really talk to each other.</p>
+    <p class="hint">Assumptions in this lab: "DARM" is read as DMR (Digital Mobile Radio), and the existing system is treated as a leaky feeder. The mine level, power levels and frequencies are realistic examples, not Olympic Dam's actual design. Licensed frequencies, site layouts and equipment choices come from the site's RF design and the ACMA licence.</p>
+  </div>
+
+  <h3 style="font-size:24px;text-transform:uppercase;letter-spacing:.03em;margin:28px 0 12px">The parts list</h3>
+  <div class="cards" id="pj-cards"></div>
+
+  <div class="prose" style="margin-top:28px">
+    <h3>TETRA, DMR and leaky feeder side by side</h3>
+  </div>
+  <div class="scroll-x" style="margin-top:10px">
+    <table class="compare">
+      <thead><tr><th></th><th>Leaky feeder (analog or DMR)</th><th>DMR</th><th>TETRA</th></tr></thead>
+      <tbody>
+        <tr><td><b>What it is</b></td><td>A way of carrying radio along tunnels. Any radio standard can ride on it.</td><td>Digital radio standard. Tier II is conventional repeaters; Tier III adds trunking.</td><td>Digital trunked radio standard built for public safety and big industrial sites.</td></tr>
+        <tr><td><b>Channel</b></td><td>Whatever it carries</td><td>12.5 kHz, 2 timeslots</td><td>25 kHz, 4 timeslots</td></tr>
+        <tr><td><b>Modulation</b></td><td>—</td><td>4FSK, 9.6 kbit/s</td><td>π/4-DQPSK, 36 kbit/s</td></tr>
+        <tr><td><b>Handheld power</b></td><td>—</td><td>Typically 4 W (UHF)</td><td>Typically 1 W</td></tr>
+        <tr><td><b>Strengths</b></td><td>Continuous coverage along every drive the cable reaches; simple.</td><td>Cheaper radios, simple, good range per watt, easy to put on a leaky feeder.</td><td>Central switch, talkgroups across many sites, priority and pre-emption, full-duplex calls, data, strong encryption options, direct mode.</td></tr>
+        <tr><td><b>Weak spots</b></td><td>Single cable is a single point of failure; noise builds up through amplifiers; cable gets damaged.</td><td>Conventional mode has fixed channels and no central control of who talks where.</td><td>Lower handheld power means uplink is often the limit underground; more infrastructure.</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <div class="prose" style="margin-top:28px">
+    <h3>Questions to put to the RF designer and vendor</h3>
+    <p class="hint">Tick them off as you get answers. Ticks are saved in this browser only.</p>
+    <ul class="checklist" id="pj-check"></ul>
+
+    <h3>Glossary</h3>
+    <input id="gl-q" type="search" placeholder="Search terms, e.g. VSWR" aria-label="Search the glossary">
+  </div>
+  <dl class="gloss" id="gl-list" style="margin-top:14px"></dl>
+</section>
+
+<footer class="foot"><p>The physics here is real but simplified: free-space loss, tunnel waveguide loss, corner and rock losses, leaky feeder longitudinal and coupling loss, thermal noise at −174 dBm/Hz, and bit error curves calibrated to typical datasheet sensitivities. It is for learning and for asking better questions, not for signing off a design.</p></footer>
+</main>
+
+<script>
+"use strict";
+/* ===================== shared helpers ===================== */
+const TAU=Math.PI*2;
+const $=(s,r=document)=>r.querySelector(s);
+const $$=(s,r=document)=>[...r.querySelectorAll(s)];
+const clamp=(x,a,b)=>Math.max(a,Math.min(b,x));
+const db2lin=d=>Math.pow(10,d/10);
+const lin2db=x=>10*Math.log10(Math.max(x,1e-300));
+const cssv=n=>getComputedStyle(document.documentElement).getPropertyValue(n).trim();
+const REDUCED=matchMedia('(prefers-reduced-motion: reduce)').matches;
+function fmtW(dbm){const w=Math.pow(10,(dbm-30)/10);const u=[[1,'W'],[1e-3,'mW'],[1e-6,'µW'],[1e-9,'nW'],[1e-12,'pW'],[1e-15,'fW'],[1e-18,'aW']];for(const [s,n] of u){if(w>=s)return (w/s).toPrecision(3)+' '+n;}return (w/1e-21).toPrecision(3)+' zW';}
+function fmtWatts(w){return w>=1?w.toFixed(w<10?2:1)+' W':w>=1e-3?(w*1e3).toFixed(1)+' mW':(w*1e6).toFixed(1)+' µW';}
+function erfc(x){const z=Math.abs(x),t=1/(1+0.5*z);const r=t*Math.exp(-z*z-1.26551223+t*(1.00002368+t*(0.37409196+t*(0.09678418+t*(-0.18628806+t*(0.27886807+t*(-1.13520398+t*(1.48851587+t*(-0.82215223+t*0.17087277)))))))));return x>=0?r:2-r;}
+let _spare=null;
+function gauss(){if(_spare!==null){const s=_spare;_spare=null;return s;}let u=0;while(u===0)u=Math.random();const v=Math.random(),m=Math.sqrt(-2*Math.log(u));_spare=m*Math.sin(TAU*v);return m*Math.cos(TAU*v);}
+function fft(re,im){const n=re.length;for(let i=1,j=0;i<n;i++){let bit=n>>1;for(;j&bit;bit>>=1)j^=bit;j^=bit;if(i<j){let t=re[i];re[i]=re[j];re[j]=t;t=im[i];im[i]=im[j];im[j]=t;}}
+  for(let len=2;len<=n;len<<=1){const ang=-TAU/len,wr=Math.cos(ang),wi=Math.sin(ang),half=len>>1;for(let i=0;i<n;i+=len){let cr=1,ci=0;for(let j=0;j<half;j++){const a=i+j,b=a+half;const xr=re[b]*cr-im[b]*ci,xi=re[b]*ci+im[b]*cr;re[b]=re[a]-xr;im[b]=im[a]-xi;re[a]+=xr;im[a]+=xi;const t=cr*wr-ci*wi;ci=cr*wi+ci*wr;cr=t;}}}}
+function fit(cv){const r=cv.getBoundingClientRect(),dpr=Math.min(2,window.devicePixelRatio||1);const W=Math.max(1,Math.round(r.width*dpr)),H=Math.max(1,Math.round(r.height*dpr));if(cv.width!==W||cv.height!==H){cv.width=W;cv.height=H;}const ctx=cv.getContext('2d');ctx.setTransform(dpr,0,0,dpr,0,0);return {ctx,w:r.width,h:r.height};}
+const SCR={bg:'#111b1e',grid:'#1c292c',grid2:'#26363a',text:'#93a9ad',trace:'#ffc23a',trace2:'#4fd6e8',trace3:'#ff6b6b',trace4:'#c792ff',good:'#2fbf6a',warn:'#f0b429',bad:'#e5484d'};
+function grid(ctx,x,y,w,h,nx,ny){ctx.strokeStyle=SCR.grid;ctx.lineWidth=1;ctx.beginPath();for(let i=0;i<=nx;i++){const X=Math.round(x+w*i/nx)+.5;ctx.moveTo(X,y);ctx.lineTo(X,y+h);}for(let j=0;j<=ny;j++){const Y=Math.round(y+h*j/ny)+.5;ctx.moveTo(x,Y);ctx.lineTo(x+w,Y);}ctx.stroke();}
+function txt(ctx,s,x,y,col,align,base,size){ctx.fillStyle=col||SCR.text;ctx.font=(size||10)+'px "JetBrains Mono",ui-monospace,monospace';ctx.textAlign=align||'left';ctx.textBaseline=base||'alphabetic';ctx.fillText(s,x,y);}
+function ro(id,items){const el=document.getElementById(id);el.innerHTML=items.map(([k,v,c])=>`<div class="ro"><small>${k}</small><b class="${c||''}">${v}</b></div>`).join('');}
+function bindInput(id,obj,key,fmt,cb){const el=document.getElementById(id),out=document.getElementById(id+'-v');const read=()=>{const v=el.type==='checkbox'?el.checked:el.type==='range'?+el.value:el.value;obj[key]=v;if(out&&fmt)out.textContent=fmt(v);if(cb)cb();};el.addEventListener(el.tagName==='SELECT'||el.type==='checkbox'?'change':'input',read);read();return {set(v){if(el.type==='checkbox')el.checked=!!v;else el.value=v;read();}};}
+function bindRadio(name,obj,key,cb){const els=$$(`input[name="${name}"]`);const read=()=>{const e=els.find(e=>e.checked);if(e)obj[key]=e.value;if(cb)cb();};els.forEach(e=>e.addEventListener('change',read));read();return {set(v){els.forEach(e=>e.checked=(e.value===String(v)));read();}};}
+const store={get(k,d){try{const v=localStorage.getItem(k);return v==null?d:JSON.parse(v);}catch(e){return d;}},set(k,v){try{localStorage.setItem(k,JSON.stringify(v));}catch(e){}}};
+
+/* ===================== router ===================== */
+const BENCHES=['signal','feedline','mine','digital','network','project'];
+let current='signal';
+const onShow={},onTick={};
+function show(id){if(!BENCHES.includes(id))id='signal';current=id;BENCHES.forEach(b=>{document.getElementById('b-'+b).hidden=(b!==id);});$$('.benchbar a').forEach(a=>{if(a.getAttribute('href')==='#'+id)a.setAttribute('aria-current','page');else a.removeAttribute('aria-current');});if(onShow[id])requestAnimationFrame(()=>onShow[id]());}
+addEventListener('hashchange',()=>{show(location.hash.slice(1));scrollTo({top:0});});
+let lastT=performance.now();
+function loop(t){const dt=Math.min(0.1,(t-lastT)/1000);lastT=t;if(onTick[current])onTick[current](t,dt);requestAnimationFrame(loop);}
+addEventListener('resize',()=>{if(onShow[current])onShow[current]();});
+
+/* ===================== BENCH 1: SIGNALS ===================== */
+const SG={mode:'tetra',fc:415.0125,lvl:-95,dev:2.5,tone:1000,depth:60,intf:'off',ilvl:-70,avg:true,hold:false};
+const FS=144000,NFFT=4096,EXTRA=640,LEN=NFFT+EXTRA,N0=db2lin(-166); // analyser: -174 dBm/Hz + 8 dB noise figure
+function rrcTaps(beta,sps,span,norm){const n=span*sps,h=new Float64Array(n+1);for(let i=0;i<=n;i++){const t=(i-n/2)/sps;let v;if(Math.abs(t)<1e-9)v=1-beta+4*beta/Math.PI;else if(Math.abs(Math.abs(4*beta*t)-1)<1e-9)v=beta/Math.SQRT2*((1+2/Math.PI)*Math.sin(Math.PI/(4*beta))+(1-2/Math.PI)*Math.cos(Math.PI/(4*beta)));else v=(Math.sin(Math.PI*t*(1-beta))+4*beta*t*Math.cos(Math.PI*t*(1+beta)))/(Math.PI*t*(1-16*beta*beta*t*t));h[i]=v;}
+  let s=0;for(const v of h)s+=norm==='energy'?v*v:v;const k=norm==='energy'?1/Math.sqrt(s):1/s;for(let i=0;i<h.length;i++)h[i]*=k;return h;}
+const H_T=rrcTaps(0.35,8,8,'energy'),H_D=rrcTaps(0.2,30,6,'sum');
+const lpfCache={};
+function lpf(fc){const key=Math.round(fc/100);if(lpfCache[key])return lpfCache[key];const n=129,h=new Float64Array(n),wc=fc/FS;let s=0;for(let i=0;i<n;i++){const m=i-(n-1)/2;const sinc=m===0?2*wc:Math.sin(TAU*wc*m)/(Math.PI*m);h[i]=sinc*(0.54-0.46*Math.cos(TAU*i/(n-1)));s+=h[i];}for(let i=0;i<n;i++)h[i]/=s;return (lpfCache[key]=h);}
+function convC(re,im,h,from){const n=re.length,m=h.length,or=new Float64Array(n),oi=new Float64Array(n);for(let i=Math.max(m-1,from||0);i<n;i++){let a=0,b=0;for(let j=0;j<m;j++){a+=re[i-j]*h[j];b+=im[i-j]*h[j];}or[i]=a;oi[i]=b;}return [or,oi];}
+function convR(x,h,from){const n=x.length,m=h.length,o=new Float64Array(n);for(let i=Math.max(m-1,from||0);i<n;i++){let a=0;for(let j=0;j<m;j++)a+=x[i-j]*h[j];o[i]=a;}return o;}
+const HANN=new Float64Array(NFFT);let HSUM=0;for(let i=0;i<NFFT;i++){HANN[i]=0.5-0.5*Math.cos(TAU*i/NFFT);HSUM+=HANN[i];}
+const ENBW=1.5;
+function genSignal(mode,P,o){
+  const re=new Float64Array(LEN),im=new Float64Array(LEN),A=Math.sqrt(P);let syms=null;
+  if(mode==='cw'){re.fill(A);}
+  else if(mode==='am'){const w=TAU*o.tone/FS,p=Math.random()*TAU,m=o.depth/100;for(let i=0;i<LEN;i++)re[i]=A*(1+m*Math.sin(w*i+p));}
+  else if(mode==='fm'){const b=o.dev*1000/o.tone,w=TAU*o.tone/FS,p0=Math.random()*TAU;for(let i=0;i<LEN;i++){const p=b*Math.sin(w*i+p0);re[i]=A*Math.cos(p);im[i]=A*Math.sin(p);}}
+  else if(mode==='dmr'){const sps=30,h=H_D,nh=h.length,ns=Math.ceil(LEN/sps)+1;syms=new Int8Array(ns);const fr=new Float64Array(LEN),L4=[3,1,-1,-3];
+    for(let k=0;k<ns;k++){const s=L4[Math.random()*4|0];syms[k]=s;const amp=s*648*sps,b=k*sps;for(let j=0;j<nh;j++){const n=b+j;if(n>=LEN)break;fr[n]+=amp*h[j];}}
+    let ph=Math.random()*TAU;for(let i=0;i<LEN;i++){ph+=TAU*fr[i]/FS;re[i]=A*Math.cos(ph);im[i]=A*Math.sin(ph);}}
+  else if(mode==='tetra'){const sps=8,h=H_T,nh=h.length,ns=Math.ceil(LEN/sps)+1;syms=new Float64Array(ns);const D=[Math.PI/4,3*Math.PI/4,-Math.PI/4,-3*Math.PI/4];let th=(Math.random()*8|0)*Math.PI/4;const g=A*Math.sqrt(sps);
+    for(let k=0;k<ns;k++){th+=D[Math.random()*4|0];syms[k]=th;const cr=g*Math.cos(th),ci=g*Math.sin(th),b=k*sps;for(let j=0;j<nh;j++){const n=b+j;if(n>=LEN)break;re[n]+=cr*h[j];im[n]+=ci*h[j];}}}
+  return {re,im,syms};
+}
+const MODEINFO={cw:{bw:12500,name:'Unmodulated carrier'},am:{bw:12500,name:'Amplitude modulation'},fm:{bw:12500,name:'Analog FM · 12.5 kHz channel'},dmr:{bw:12500,name:'DMR · 4800 symbols/s'},tetra:{bw:25000,name:'TETRA · 18000 symbols/s'}};
+let saAvg=null,saLastMode='',sgLast=0,sgFrameData=null;
+function sgCompute(){
+  const mode=SG.mode,P=db2lin(SG.lvl),sig=genSignal(mode,P,SG),re=sig.re,im=sig.im;
+  let intOff=0;
+  if(SG.intf!=='off'){const spacing=mode==='tetra'?25000:12500;intOff=SG.intf==='adj'?spacing:0;const I=genSignal(mode,db2lin(SG.ilvl),Object.assign({},SG,{tone:SG.tone*1.37}));const w=TAU*intOff/FS,p=Math.random()*TAU;
+    for(let i=0;i<LEN;i++){const c=Math.cos(w*i+p),s=Math.sin(w*i+p);re[i]+=I.re[i]*c-I.im[i]*s;im[i]+=I.re[i]*s+I.im[i]*c;}}
+  const sd=Math.sqrt(N0*FS/2);for(let i=0;i<LEN;i++){re[i]+=sd*gauss();im[i]+=sd*gauss();}
+  const fr=new Float64Array(NFFT),fi=new Float64Array(NFFT);for(let i=0;i<NFFT;i++){fr[i]=re[EXTRA+i]*HANN[i];fi[i]=im[EXTRA+i]*HANN[i];}fft(fr,fi);
+  const spec=new Float64Array(NFFT),S2=HSUM*HSUM;for(let k=0;k<NFFT;k++){const kk=(k+NFFT/2)%NFFT;spec[k]=(fr[kk]*fr[kk]+fi[kk]*fi[kk])/S2;}
+  if(!saAvg||saLastMode!==mode||!SG.avg){saAvg=spec;}else{for(let k=0;k<NFFT;k++)saAvg[k]=saAvg[k]*0.7+spec[k]*0.3;}
+  saLastMode=mode;
+  sgFrameData={re,im,syms:sig.syms,mode,P,intOff};
+}
+function binHz(k){return (k-NFFT/2)*FS/NFFT;}
+function drawSA(){
+  const {ctx,w,h}=fit($('#cv-sa'));const L=40,R=8,T=8,B=22,pw=w-L-R,ph=h-T-B;
+  ctx.fillStyle=SCR.bg;ctx.fillRect(0,0,w,h);grid(ctx,L,T,pw,ph,10,12);
+  const span=62500,top=-40,bot=-160,X=f=>L+(f+span)/(2*span)*pw,Y=d=>T+(top-d)/(top-bot)*ph;
+  const bw=MODEINFO[SG.mode].bw,sp=SG.mode==='tetra'?25000:12500;
+  ctx.fillStyle='rgba(79,214,232,0.10)';ctx.fillRect(X(-bw/2),T,X(bw/2)-X(-bw/2),ph);
+  ctx.strokeStyle='rgba(79,214,232,0.55)';ctx.setLineDash([3,3]);ctx.beginPath();[-bw/2,bw/2,sp-bw/2,sp+bw/2,-sp-bw/2,-sp+bw/2].forEach(f=>{if(Math.abs(f)<=span){ctx.moveTo(X(f)+.5,T);ctx.lineTo(X(f)+.5,T+ph);}});ctx.stroke();ctx.setLineDash([]);
+  txt(ctx,'YOUR CHANNEL',X(0),T+12,SCR.trace2,'center');txt(ctx,'NEXT CHANNEL',X(sp),T+12,'rgba(79,214,232,.6)','center');
+  for(let d=top;d>=bot;d-=20)txt(ctx,String(d),L-4,Y(d)+3,SCR.text,'right');
+  txt(ctx,'dBm',2,T+8,SCR.text);
+  txt(ctx,SG.fc.toFixed(4)+' MHz',X(0),h-6,SCR.text,'center');txt(ctx,'−50 kHz',X(-50000),h-6,SCR.text,'center');txt(ctx,'+50 kHz',X(50000),h-6,SCR.text,'center');txt(ctx,'−25',X(-25000),h-6,SCR.text,'center');txt(ctx,'+25',X(25000),h-6,SCR.text,'center');
+  if(!saAvg)return;
+  const cols=new Float64Array(Math.ceil(pw)).fill(-Infinity);
+  for(let k=0;k<NFFT;k++){const f=binHz(k);if(f<-span||f>span)continue;const c=Math.floor((X(f)-L));if(c<0||c>=cols.length)continue;const d=lin2db(saAvg[k]);if(d>cols[c])cols[c]=d;}
+  ctx.beginPath();let started=false;for(let c=0;c<cols.length;c++){if(cols[c]===-Infinity)continue;const y=clamp(Y(cols[c]),T,T+ph);if(!started){ctx.moveTo(L+c,y);started=true;}else ctx.lineTo(L+c,y);}
+  ctx.strokeStyle=SCR.trace;ctx.lineWidth=1.25;ctx.stroke();
+  // measurements
+  let chP=0,adjP=0,pk=-Infinity,pkf=0;for(let k=0;k<NFFT;k++){const f=binHz(k);if(Math.abs(f)<=bw/2)chP+=saAvg[k];if(Math.abs(f-sp)<=bw/2)adjP+=saAvg[k];if(saAvg[k]>pk&&Math.abs(f)<span){pk=saAvg[k];pkf=f;}}
+  chP/=ENBW;adjP/=ENBW;const noiseCh=N0*bw,sigCh=Math.max(chP-noiseCh,1e-30),snr=lin2db(sigCh)-lin2db(noiseCh);
+  const pkd=lin2db(pk);ctx.fillStyle=SCR.trace3;ctx.beginPath();ctx.moveTo(X(pkf),Y(pkd)-4);ctx.lineTo(X(pkf)-4,Y(pkd)-11);ctx.lineTo(X(pkf)+4,Y(pkd)-11);ctx.fill();
+  $('#sa-cap').innerHTML=`<b>RBW ${(ENBW*FS/NFFT).toFixed(0)} Hz</b>`;
+  ro('sa-read',[['Marker (peak)',`${(SG.fc+pkf/1e6).toFixed(4)} MHz · ${pkd.toFixed(1)} dBm`],['Channel power',`${lin2db(chP).toFixed(1)} dBm`],['…in watts',fmtW(lin2db(chP))],['Noise in channel',`${lin2db(noiseCh).toFixed(1)} dBm`],['Signal to noise',`${snr>-20?snr.toFixed(1):'< −20'} dB`,snr>20?'good':snr>8?'warn':'bad'],['Next channel power',`${lin2db(adjP).toFixed(1)} dBm`]]);
+}
+function drawScope(){
+  const {ctx,w,h}=fit($('#cv-scope'));const L=36,R=6,T=6,B=18,pw=w-L-R,ph=h-T-B;ctx.fillStyle=SCR.bg;ctx.fillRect(0,0,w,h);grid(ctx,L,T,pw,ph,8,8);
+  if(!sgFrameData)return;const {re,im,P}=sgFrameData;const n=432,fIF=6000,k=Math.sqrt(0.1)*1e6;// volts across 50 ohm -> µV
+  const A=Math.sqrt(P)*k,sd=Math.sqrt(N0*FS/2)*k;let full=Math.max(A*(SG.mode==='am'?2.1:1.5),sd*4);
+  const nice=[0.1,0.2,0.5,1,2,5,10,20,50,100,200,500,1000,2000,5000,1e4,2e4,5e4,1e5,2e5,5e5,1e6,2e6,5e6];let div=nice.find(v=>v*4>=full)||5e6;full=div*4;
+  ctx.beginPath();for(let i=0;i<n;i++){const t=i/FS,c=Math.cos(TAU*fIF*t),s=Math.sin(TAU*fIF*t);const v=(re[EXTRA+i]*c-im[EXTRA+i]*s)*k;const x=L+i/(n-1)*pw,y=T+ph/2-v/full*ph/2;if(i)ctx.lineTo(x,y);else ctx.moveTo(x,y);}
+  ctx.strokeStyle=SCR.trace2;ctx.lineWidth=1.2;ctx.stroke();
+  txt(ctx,(div>=1000?(div/1000)+' mV':div+' µV')+'/div',L+4,T+12,SCR.text);txt(ctx,'0.375 ms/div',w-R-4,h-5,SCR.text,'right');txt(ctx,'0',L-4,T+ph/2+3,SCR.text,'right');
+  $('#sc-cap').innerHTML=`<b>${(A/Math.SQRT2).toPrecision(3)} µV rms</b>`;
+}
+function drawDemod(){
+  const {ctx,w,h}=fit($('#cv-demod'));ctx.fillStyle=SCR.bg;ctx.fillRect(0,0,w,h);if(!sgFrameData)return;const {re,im,syms,mode,P}=sgFrameData;
+  if(mode==='tetra'){
+    $('#dm-title').textContent='Constellation · one dot per symbol';const s=Math.min(w,h)-20,cx=w/2,cy=h/2,sc=s/2/1.6;grid(ctx,cx-s/2,cy-s/2,s,s,8,8);
+    ctx.strokeStyle=SCR.grid2;ctx.beginPath();ctx.moveTo(cx-s/2,cy+.5);ctx.lineTo(cx+s/2,cy+.5);ctx.moveTo(cx+.5,cy-s/2);ctx.lineTo(cx+.5,cy+s/2);ctx.stroke();
+    ctx.strokeStyle='rgba(255,194,58,.55)';for(let i=0;i<8;i++){const a=i*Math.PI/4;ctx.beginPath();ctx.arc(cx+Math.cos(a)*sc,cy-Math.sin(a)*sc,6,0,TAU);ctx.stroke();}
+    const g=Math.sqrt(P)*Math.sqrt(8),h0=H_T,nh=h0.length;let err=0,tot=0;ctx.fillStyle=SCR.trace2;
+    for(let k=0;k<syms.length;k++){const c=k*8+64;if(c<EXTRA||c>=LEN)continue;let a=0,b=0;for(let j=0;j<nh;j++){a+=re[c-j]*h0[j];b+=im[c-j]*h0[j];}a/=g;b/=g;const x=cx+a*sc,y=cy-b*sc;if(x>0&&x<w&&y>0&&y<h)ctx.fillRect(x-1.2,y-1.2,2.4,2.4);
+      const dec=Math.round(Math.atan2(b,a)/(Math.PI/4));const tx=Math.round(syms[k]/(Math.PI/4));if((((dec-tx)%8)+8)%8!==0)err++;tot++;}
+    $('#dm-cap').innerHTML=`<b>symbol errors ${err}/${tot}</b>`;
+  } else if(mode==='dmr'){
+    $('#dm-title').textContent='Eye diagram · after the FM detector';const L=44,R=6,T=6,B=18,pw=w-L-R,ph=h-T-B;grid(ctx,L,T,pw,ph,4,8);
+    const [yr,yi]=convC(re,im,lpf(6250),EXTRA-400);const d=new Float64Array(LEN);for(let i=EXTRA-300;i<LEN;i++){d[i]=Math.atan2(yi[i]*yr[i-1]-yr[i]*yi[i-1],yr[i]*yr[i-1]+yi[i]*yi[i-1])*FS/TAU;}
+    const o=convR(d,H_D,EXTRA-60);const D=244,Y=f=>T+ph/2-f/3200*ph/2;
+    ctx.strokeStyle='rgba(255,194,58,.45)';ctx.setLineDash([4,4]);ctx.beginPath();[1944,648,-648,-1944].forEach(f=>{ctx.moveTo(L,Y(f));ctx.lineTo(L+pw,Y(f));});ctx.stroke();ctx.setLineDash([]);
+    [1944,648,-648,-1944].forEach(f=>txt(ctx,(f>0?'+':'')+f,L-4,Y(f)+3,SCR.text,'right'));txt(ctx,'Hz',4,T+10,SCR.text);
+    let err=0,tot=0;ctx.strokeStyle='rgba(79,214,232,.35)';ctx.lineWidth=1;
+    for(let k=0;k<syms.length;k++){const c=k*30+D;if(c-15<EXTRA||c+45>=LEN)continue;ctx.beginPath();for(let i=0;i<=60;i++){const x=L+i/60*pw,y=clamp(Y(o[c-15+i]),T,T+ph);if(i)ctx.lineTo(x,y);else ctx.moveTo(x,y);}ctx.stroke();
+      const f=o[c],dec=f>1296?3:f>0?1:f>-1296?-1:-3;if(dec!==syms[k])err++;tot++;}
+    $('#dm-cap').innerHTML=`<b>symbol errors ${err}/${tot}</b>`;
+  } else {
+    const L=44,R=6,T=6,B=18,pw=w-L-R,ph=h-T-B;grid(ctx,L,T,pw,ph,10,8);const n=1440;
+    if(mode==='fm'){$('#dm-title').textContent='FM detector output · the recovered audio';const fc=Math.max(6250,SG.dev*1000+SG.tone+1500);const [yr,yi]=convC(re,im,lpf(fc),EXTRA-200);const d=new Float64Array(LEN);for(let i=EXTRA-150;i<LEN;i++)d[i]=Math.atan2(yi[i]*yr[i-1]-yr[i]*yi[i-1],yr[i]*yr[i-1]+yi[i]*yi[i-1])*FS/TAU;
+      const full=Math.max(3000,SG.dev*1000*1.4),Y=f=>T+ph/2-f/full*ph/2;ctx.beginPath();let acc=0;const m=12;for(let i=0;i<n;i++){const j=EXTRA+i;acc=0;for(let q=0;q<m;q++)acc+=d[j-q];const v=acc/m;const x=L+i/(n-1)*pw,y=clamp(Y(v),T,T+ph);if(i)ctx.lineTo(x,y);else ctx.moveTo(x,y);}ctx.strokeStyle=SCR.trace2;ctx.stroke();
+      txt(ctx,'+'+(full/1000).toFixed(1)+' kHz',L-4,T+8,SCR.text,'right');txt(ctx,'0',L-4,T+ph/2+3,SCR.text,'right');txt(ctx,'1 ms/div',w-R-4,h-5,SCR.text,'right');$('#dm-cap').innerHTML=`<b>Carson bandwidth ${(2*(SG.dev+SG.tone/1000)).toFixed(1)} kHz</b>`;}
+    else {$('#dm-title').textContent=mode==='am'?'AM detector output · the envelope':'Carrier level · nothing to recover';const [yr,yi]=convC(re,im,lpf(5000),EXTRA-200);const k=Math.sqrt(0.1)*1e6;const A=Math.sqrt(P)*k;const full=Math.max(A*2.2,Math.sqrt(N0*10000)*k*4);const Y=v=>T+ph-v/full*ph;
+      ctx.beginPath();for(let i=0;i<n;i++){const j=EXTRA+i,v=Math.hypot(yr[j],yi[j])*k;const x=L+i/(n-1)*pw,y=clamp(Y(v),T,T+ph);if(i)ctx.lineTo(x,y);else ctx.moveTo(x,y);}ctx.strokeStyle=SCR.trace2;ctx.stroke();
+      txt(ctx,full.toPrecision(2)+' µV',L-4,T+8,SCR.text,'right');txt(ctx,'0',L-4,T+ph,SCR.text,'right');txt(ctx,'1 ms/div',w-R-4,h-5,SCR.text,'right');$('#dm-cap').innerHTML='';}
+  }
+}
+function sgVis(){$$('#b-signal [data-for]').forEach(el=>{el.hidden=!el.dataset.for.split(' ').includes(SG.mode);});saAvg=null;}
+const sgCtl={mode:bindRadio('sg-mode',SG,'mode',sgVis),lvl:bindInput('sg-lvl',SG,'lvl',v=>`${v} dBm · ${fmtW(v)}`),fc:bindInput('sg-fc',SG,'fc',v=>v.toFixed(4)+' MHz'),dev:bindInput('sg-dev',SG,'dev',v=>v.toFixed(1)+' kHz'),tone:bindInput('sg-tone',SG,'tone',v=>v+' Hz'),depth:bindInput('sg-depth',SG,'depth',v=>v+' %'),intf:bindInput('sg-intf',SG,'intf'),ilvl:bindInput('sg-ilvl',SG,'ilvl',v=>v+' dBm'),avg:bindInput('sg-avg',SG,'avg'),hold:bindInput('sg-hold',SG,'hold')};
+function sgDraw(){drawSA();drawScope();drawDemod();}
+onShow.signal=()=>{if(!sgFrameData)sgCompute();sgDraw();};
+onTick.signal=(t)=>{if(SG.hold)return;if(t-sgLast<110)return;sgLast=t;sgCompute();sgDraw();};
+
+/* ===================== BENCH 2: FEEDLINE ===================== */
+const FL={pw:25,f:420,coax:'lmr400',len:30,conn:2,load:'good',r:50,x:0,ant:'yagi',phase:0};
+const COAX={rg58:{name:'RG-58',l:29,vf:.66},rg213:{name:'RG-213',l:15,vf:.66},lmr400:{name:'LMR-400',l:8.9,vf:.85},h12:{name:'½″ heliax',l:5.0,vf:.88},h78:{name:'⅞″ heliax',l:2.6,vf:.89}};
+const LOADS={good:[50,0],wrong:[22,-38],wet:[118,45],open:[5000,0],short:[0.2,0],dummy:[50,0]};
+const ANT={whip:{g:2.15,bw:360,name:'¼-wave whip'},col:{g:6,bw:360,name:'collinear'},panel:{g:9,bw:65,name:'panel'},yagi:{g:11,bw:45,name:'yagi'}};
+let flRes=null,meterF=0,meterR=0;
+function flCalc(){
+  const c=COAX[FL.coax],lossC=c.l*Math.sqrt(FL.f/450)*FL.len/100,lossK=FL.conn*0.15,line=lossC+lossK,att=db2lin(-line);
+  const R=FL.r,X=FL.x,nr=R-50,ni=X,dr=R+50,di=X,den=dr*dr+di*di,gr=(nr*dr+ni*di)/den,gi=(ni*dr-nr*di)/den,g=Math.min(0.9999,Math.hypot(gr,gi));
+  let Ptx=FL.pw,fold=false;
+  let Pf_ant=Ptx*att,Pr_ant=Pf_ant*g*g,Pr_tx=Pr_ant*att,gt=Math.sqrt(Pr_tx/Ptx),vswrTx=(1+gt)/(1-gt);
+  if(vswrTx>3){fold=true;Ptx=FL.pw*0.25;Pf_ant=Ptx*att;Pr_ant=Pf_ant*g*g;Pr_tx=Pr_ant*att;}
+  const vswrAnt=(1+g)/(1-g),acc=Pf_ant-Pr_ant,eff=FL.load==='dummy'?0:1,rad=acc*eff,G=ANT[FL.ant].g,eirp=rad>0?10*Math.log10(rad*1000)+G:-Infinity;
+  const heat=(Ptx-Pf_ant)+(Pr_ant-Pr_tx);
+  flRes={lossC,lossK,line,g,gr,gi,Ptx,Pf_ant,Pr_ant,Pr_tx,vswrTx,vswrAnt,rad,eirp,heat,fold,mm:-10*Math.log10(1-g*g),lambda:300/FL.f*c.vf,G};
+}
+function vsClass(v){return v<1.5?'good':v<2.5?'warn':'bad';}
+function drawFeed(){
+  if(!flRes)flCalc();const r=flRes;
+  ro('fl-read',[['Cable loss',r.line.toFixed(1)+' dB'],['Reaches the antenna',fmtWatts(r.Pf_ant)],['Bounced back at antenna',fmtWatts(r.Pr_ant)],['VSWR at antenna',r.vswrAnt>99?'> 99':r.vswrAnt.toFixed(2),vsClass(r.vswrAnt)],['VSWR at radio',r.vswrTx>99?'> 99':r.vswrTx.toFixed(2),vsClass(r.vswrTx)],['Return loss',(r.g<1e-4?'> 80':(-20*Math.log10(r.g)).toFixed(1))+' dB'],['Radiated',fmtWatts(r.rad),r.rad<0.05*FL.pw?'bad':''],['EIRP',isFinite(r.eirp)?r.eirp.toFixed(1)+' dBm':'none'],['Heating the cable',fmtWatts(r.heat)]]);
+  $('#fl-cap').innerHTML=r.fold?'<b style="color:#ff6b6b">RADIO PROTECTING ITSELF · POWER CUT TO 25%</b>':`<b>λ = ${(r.lambda*100).toFixed(0)} cm in this cable</b>`;
+  drawBudget();drawPattern();
+}
+function drawWave(){
+  const {ctx,w,h}=fit($('#cv-wave'));const r=flRes;ctx.fillStyle=SCR.bg;ctx.fillRect(0,0,w,h);const L=10,Rt=70,T=14,B=20,pw=w-L-Rt,ph=h-T-B,mid=T+ph/2;grid(ctx,L,T,pw,ph,10,4);
+  const nl=2.5,beta=TAU,gr=r.gr,gi=r.gi;const amp=ph/2/2.05;
+  // envelope |1+Γe^{-j2βd}|
+  ctx.fillStyle='rgba(79,214,232,.13)';ctx.beginPath();for(let i=0;i<=pw;i++){const d=(1-i/pw)*nl,a=-2*beta*d,er=1+gr*Math.cos(a)-gi*Math.sin(a),ei=gr*Math.sin(a)+gi*Math.cos(a),e=Math.hypot(er,ei);const x=L+i;if(i)ctx.lineTo(x,mid-e*amp);else ctx.moveTo(x,mid-e*amp);}
+  for(let i=pw;i>=0;i--){const d=(1-i/pw)*nl,a=-2*beta*d,er=1+gr*Math.cos(a)-gi*Math.sin(a),ei=gr*Math.sin(a)+gi*Math.cos(a),e=Math.hypot(er,ei);ctx.lineTo(L+i,mid+e*amp);}ctx.fill();
+  // instantaneous Re{(e^{jβd}+Γe^{-jβd})e^{jωt}}
+  const wt=FL.phase;ctx.beginPath();for(let i=0;i<=pw;i++){const d=(1-i/pw)*nl,b=beta*d;const vr=Math.cos(b)+gr*Math.cos(-b)-gi*Math.sin(-b),vi=Math.sin(b)+gr*Math.sin(-b)+gi*Math.cos(-b);const v=vr*Math.cos(wt)-vi*Math.sin(wt);const x=L+i;if(i)ctx.lineTo(x,mid-v*amp);else ctx.moveTo(x,mid-v*amp);}ctx.strokeStyle=SCR.trace;ctx.lineWidth=1.6;ctx.stroke();
+  // antenna glyph
+  const ax=L+pw+8;ctx.strokeStyle=FL.load==='open'||FL.load==='short'?SCR.trace3:SCR.trace2;ctx.lineWidth=2;ctx.beginPath();ctx.moveTo(L+pw,mid);ctx.lineTo(ax+10,mid);ctx.moveTo(ax+10,mid);ctx.lineTo(ax+10,T+4);ctx.moveTo(ax+2,T+14);ctx.lineTo(ax+10,T+4);ctx.lineTo(ax+18,T+14);ctx.stroke();
+  txt(ctx,FL.load==='dummy'?'LOAD':'ANT',ax+10,h-6,SCR.text,'center');
+  for(let i=0;i<=5;i++){const d=nl*(1-i/5);txt(ctx,(d*r.lambda).toFixed(2)+' m',L+pw*i/5,h-6,SCR.text,i===0?'left':i===5?'right':'center');}
+  txt(ctx,'shaded = voltage envelope · line = voltage right now',L+4,T-3,SCR.text);
+}
+function drawWatt(){
+  const {ctx,w,h}=fit($('#cv-watt'));const r=flRes;ctx.fillStyle=SCR.bg;ctx.fillRect(0,0,w,h);
+  const scales=[1,5,10,25,50,100];const fs=scales.find(s=>s>=r.Ptx*1.02)||100;
+  const cx=w/2,cy=h*0.8,R=Math.min(w*0.42,h*0.68),a0=Math.PI*1.15,a1=Math.PI*1.85;
+  ctx.fillStyle='#e9e4d6';ctx.beginPath();ctx.arc(cx,cy,R+14,Math.PI,0);ctx.lineTo(cx+R+14,cy+10);ctx.lineTo(cx-R-14,cy+10);ctx.closePath();ctx.fill();
+  ctx.strokeStyle='#222';ctx.lineWidth=2;ctx.beginPath();ctx.arc(cx,cy,R,a0,a1);ctx.stroke();
+  const ang=v=>a0+(a1-a0)*Math.sqrt(clamp(v/fs,0,1));// square-law scale like a real diode meter
+  ctx.lineWidth=1;for(let i=0;i<=10;i++){const v=fs*i/10,a=ang(v);ctx.beginPath();ctx.moveTo(cx+Math.cos(a)*R,cy+Math.sin(a)*R);ctx.lineTo(cx+Math.cos(a)*(R-(i%5?6:11)),cy+Math.sin(a)*(R-(i%5?6:11)));ctx.stroke();if(i%2===0){ctx.fillStyle='#222';ctx.font='10px "JetBrains Mono",monospace';ctx.textAlign='center';ctx.fillText(String(+(v).toFixed(fs<10?1:0)),cx+Math.cos(a)*(R-22),cy+Math.sin(a)*(R-22)+3);}}
+  ctx.fillStyle='#222';ctx.font='600 11px "Barlow Condensed",sans-serif';ctx.textAlign='center';ctx.fillText('WATTS · '+fs+' W SCALE',cx,cy-R*0.35);
+  meterF+=(r.Ptx-meterF)*0.15;meterR+=(r.Pr_tx-meterR)*0.15;
+  [[meterF,'#c84d07'],[meterR,'#0a6f80']].forEach(([v,c])=>{const a=ang(v);ctx.strokeStyle=c;ctx.lineWidth=2.4;ctx.beginPath();ctx.moveTo(cx,cy);ctx.lineTo(cx+Math.cos(a)*(R-4),cy+Math.sin(a)*(R-4));ctx.stroke();});
+  ctx.fillStyle='#222';ctx.beginPath();ctx.arc(cx,cy,5,0,TAU);ctx.fill();
+  txt(ctx,'● forward '+fmtWatts(r.Ptx),8,h-8,'#ff9a5c');txt(ctx,'● reflected '+fmtWatts(r.Pr_tx),w-8,h-8,SCR.trace2,'right');
+  $('#wm-cap').innerHTML=`<b>VSWR ${r.vswrTx>99?'>99':r.vswrTx.toFixed(2)}</b>`;
+}
+function drawPattern(){
+  const {ctx,w,h}=fit($('#cv-pat'));ctx.fillStyle=SCR.bg;ctx.fillRect(0,0,w,h);const a=ANT[FL.ant],cx=w/2,cy=h/2,R=Math.min(w,h)/2-18;
+  ctx.strokeStyle=SCR.grid;for(let i=1;i<=3;i++){ctx.beginPath();ctx.arc(cx,cy,R*i/3,0,TAU);ctx.stroke();}
+  for(let i=0;i<12;i++){const t=i*TAU/12;ctx.beginPath();ctx.moveTo(cx,cy);ctx.lineTo(cx+Math.cos(t)*R,cy+Math.sin(t)*R);ctx.stroke();}
+  txt(ctx,'0 dB',cx+3,cy-R+11,SCR.text);txt(ctx,'−10',cx+3,cy-R*2/3+11,SCR.text);txt(ctx,'−20',cx+3,cy-R/3+11,SCR.text);
+  let n=0;if(a.bw<360)n=Math.log(0.5)/(2*Math.log(Math.cos(a.bw*Math.PI/180/4)));
+  ctx.beginPath();for(let i=0;i<=360;i++){const t=i*Math.PI/180;let g=1;if(n){const m=Math.pow(Math.abs(Math.cos(t/2)),2*n);g=Math.max(m,db2lin(-22)*(0.6+0.4*Math.abs(Math.sin(3*t))));}const d=clamp(10*Math.log10(g),-30,0),rr=R*(1+d/30);const x=cx+Math.sin(t)*rr,y=cy-Math.cos(t)*rr;if(i)ctx.lineTo(x,y);else ctx.moveTo(x,y);}
+  ctx.closePath();ctx.fillStyle='rgba(255,194,58,.18)';ctx.fill();ctx.strokeStyle=SCR.trace;ctx.lineWidth=1.5;ctx.stroke();
+  txt(ctx,a.bw<360?'↑ main beam':'same in every direction',cx,h-5,SCR.text,'center');
+  $('#ap-cap').innerHTML=`<b>${a.g} dBi</b>`;
+}
+function drawBudget(){
+  const {ctx,w,h}=fit($('#cv-budget'));const r=flRes;ctx.fillStyle=SCR.bg;ctx.fillRect(0,0,w,h);
+  const dbm=W=>W>0?10*Math.log10(W*1000):-Infinity;
+  const rows=[['Radio output',dbm(r.Ptx),SCR.trace],['After the cable',dbm(r.Ptx*db2lin(-r.lossC)),SCR.trace],['After connectors',dbm(r.Pf_ant),SCR.trace],['Accepted by antenna',dbm(r.Pf_ant-r.Pr_ant),SCR.trace2],['Radiated',dbm(r.rad),SCR.trace2],['EIRP (with antenna gain)',r.eirp,SCR.good]];
+  const L=Math.min(170,w*0.38),R=60,T=8,rh=(h-T-16)/rows.length,lo=0,hi=60,X=d=>L+clamp((d-lo)/(hi-lo),0,1)*(w-L-R);
+  grid(ctx,L,T,w-L-R,rh*rows.length,6,0);
+  rows.forEach(([n,d,c],i)=>{const y=T+i*rh;txt(ctx,n,L-8,y+rh/2+3,SCR.text,'right',null,Math.max(9,Math.min(11,w/60)));if(isFinite(d)){ctx.fillStyle=c;ctx.fillRect(L,y+rh*0.2,X(d)-L,rh*0.6);}txt(ctx,isFinite(d)?d.toFixed(1)+' dBm':'—',X(isFinite(d)?d:0)+6,y+rh/2+3,'#e8f1f2');});
+  for(let d=0;d<=60;d+=10)txt(ctx,String(d),X(d),h-3,SCR.text,'center');
+}
+function flPreset(){const p=LOADS[FL.load];if(p){flCtl.r.set(Math.min(500,Math.max(1,Math.round(p[0])))); flCtl.x.set(p[1]);if(FL.load==='open'){FL.r=5000;$('#fl-r-v').textContent='open circuit';}if(FL.load==='short'){FL.r=0.2;$('#fl-r-v').textContent='0.2 Ω (short)';}}flCalc();}
+const flUpd=()=>{flCalc();if(current==='feedline')drawFeed();};
+const flCtl={};
+flCtl.pw=bindInput('fl-pw',FL,'pw',v=>v+' W · '+(10*Math.log10(v*1000)).toFixed(1)+' dBm',flUpd);
+flCtl.f=bindInput('fl-f',FL,'f',v=>v+' MHz',flUpd);
+flCtl.coax=bindInput('fl-coax',FL,'coax',null,flUpd);
+flCtl.len=bindInput('fl-len',FL,'len',v=>v+' m',flUpd);
+flCtl.conn=bindInput('fl-conn',FL,'conn',v=>v+' × 0.15 dB',flUpd);
+flCtl.r=bindInput('fl-r',FL,'r',v=>v+' Ω',()=>{flUpd();});
+flCtl.x=bindInput('fl-x',FL,'x',v=>(v>=0?'+j':'−j')+Math.abs(v)+' Ω',flUpd);
+flCtl.ant=bindInput('fl-ant',FL,'ant',null,flUpd);
+flCtl.load=bindInput('fl-load',FL,'load',null,()=>{flPreset();flUpd();});
+$('#fl-r').addEventListener('input',()=>{if(FL.load!=='custom'){FL.load='custom';$('#fl-load').value='custom';}});
+$('#fl-x').addEventListener('input',()=>{if(FL.load!=='custom'){FL.load='custom';$('#fl-load').value='custom';}});
+onShow.feedline=()=>{flCalc();drawFeed();drawWave();drawWatt();};
+onTick.feedline=(t,dt)=>{if(!REDUCED)FL.phase=(FL.phase+dt*3.2)%TAU;drawWave();drawWatt();};
+
+/* ===================== BENCH 3: UNDERGROUND ===================== */
+const MW=120,MH=72,CELL=10,NC=MW*MH;
+const MI=(x,y)=>y*MW+x;
+const tun=new Uint8Array(NC),cable=new Uint8Array(NC),ampAt=new Uint8Array(NC),rockTex=new Float32Array(NC);
+const TUN=[[3,3,40,3],[40,3,40,9],[40,9,8,9],[8,9,8,15],[8,15,40,15],[40,15,40,24],[6,24,114,24],[20,24,20,60],[45,24,45,60],[70,24,70,60],[95,24,95,60],[114,24,114,60],[20,60,114,60],[45,38,60,38],[70,38,86,38],[95,46,108,46],[20,46,32,46],[45,50,58,50],[70,24,70,16],[70,16,84,16]];
+const ROOMS=[[26,25,33,28],[62,20,67,23],[85,14,89,18]];
+const LABELS=[[3,1.6,'Portal',''],[24,7.2,'Decline (going down)',''],[78,22.6,'Main drive',''],[78,58.6,'Ore drive',''],[29.5,30.4,'Workshop','c'],[64.5,19,'Crib room','c'],[87,12.6,'Refuge chamber','c'],[53,36.6,'Stope 1',''],[78,36.6,'Stope 2',''],[101,44.6,'Stope 3',''],[26,44.6,'Stope 4',''],[51,48.6,'Stope 5',''],[116,40,'Escape way','v']];
+function segFill(a,x1,y1,x2,y2,v){const dx=Math.sign(x2-x1),dy=Math.sign(y2-y1);let x=x1,y=y1;for(;;){a[MI(x,y)]=v;if(x===x2&&y===y2)break;x+=dx;y+=dy;}}
+TUN.forEach(s=>segFill(tun,...s,1));ROOMS.forEach(([x1,y1,x2,y2])=>{for(let y=y1;y<=y2;y++)for(let x=x1;x<=x2;x++)tun[MI(x,y)]=2;});
+{let s=12345;for(let i=0;i<NC;i++){s=(s*16807)%2147483647;rockTex[i]=s/2147483647;}}
+const BANDS={150:{f:150,a:12,corner:6,rock:0.6,lf:2.2,cpl:62},420:{f:420,a:4,corner:15,rock:1.6,lf:4.5,cpl:70},800:{f:800,a:3,corner:20,rock:3,lf:7,cpl:74}};
+const TECH={tetra:{name:'TETRA',site:40,port:30,sensP:-112,sensB:-115,col:'#4fd6e8'},dmr:{name:'DMR',site:40,port:36,sensP:-119,sensB:-119,col:'#c792ff'}};
+const LAUNCH=10; // dBm per channel into the leaky feeder
+const M={tool:'miner',net:'tetra',view:'both',band:420,fade:10,body:true,sites:[],miner:{x:62,y:24},res:null,dirty:true,probe:null,walk:null,trace:[],stats:{}};
+function fspl(dm,f){return 20*Math.log10(dm/1000)+20*Math.log10(f)+32.44;}
+class Heap{constructor(){this.k=[];this.v=[];this.lastKey=0;}get size(){return this.k.length;}
+  push(key,val){const k=this.k,v=this.v;let i=k.length;k.push(key);v.push(val);while(i>0){const p=(i-1)>>1;if(k[p]<=key)break;k[i]=k[p];v[i]=v[p];i=p;}k[i]=key;v[i]=val;}
+  pop(){const k=this.k,v=this.v,rk=k[0],rv=v[0],lk=k.pop(),lv=v.pop(),n=k.length;if(n>0){let i=0;for(;;){const l=2*i+1;if(l>=n)break;const r=l+1,c=(r<n&&k[r]<k[l])?r:l;if(k[c]>=lk)break;k[i]=k[c];v[i]=v[c];i=c;}k[i]=lk;v[i]=lv;}this.lastKey=rk;return rv;}}
+const DIRS=[[1,0],[0,1],[-1,0],[0,-1]];
+function pointLoss(sx,sy,B){
+  const cost=new Float64Array(NC*4).fill(Infinity),dist=new Float64Array(NC*4),h=new Heap(),s=MI(sx,sy),step=B.a*CELL/100;
+  for(let d=0;d<4;d++){cost[s*4+d]=0;h.push(0,s*4+d);}
+  while(h.size){const st=h.pop(),c=h.lastKey;if(c>cost[st])continue;const cell=st>>2,d=st&3,x=cell%MW,y=(cell/MW)|0;
+    for(let nd=0;nd<4;nd++){if(nd===((d+2)&3))continue;const nx=x+DIRS[nd][0],ny=y+DIRS[nd][1];if(nx<0||ny<0||nx>=MW||ny>=MH)continue;const nc=MI(nx,ny);if(!tun[nc])continue;
+      let add=step;if(nd!==d&&tun[nc]!==2&&tun[cell]!==2)add+=B.corner;const ns=nc*4+nd,cc=c+add;if(cc<cost[ns]){cost[ns]=cc;dist[ns]=dist[st]+CELL;h.push(cc,ns);}}}
+  const loss=new Float32Array(NC).fill(Infinity);
+  for(let cell=0;cell<NC;cell++){if(!tun[cell])continue;let best=Infinity;for(let d=0;d<4;d++){const st=cell*4+d;if(cost[st]===Infinity)continue;const Lp=fspl(Math.max(dist[st],CELL),B.f)+cost[st];if(Lp<best)best=Lp;}
+    const x=cell%MW,y=(cell/MW)|0,dx=x-sx,dy=y-sy,D=Math.hypot(dx,dy);
+    if(D>=1&&D<45){const n=Math.ceil(D*2);let rc=0;for(let i=1;i<n;i++){const px=Math.round(sx+dx*i/n),py=Math.round(sy+dy*i/n);if(!tun[MI(px,py)])rc++;}const rockM=rc*D*CELL/n;const Lr=fspl(D*CELL,B.f)+rockM*B.rock;best=-lin2db(db2lin(-best)+db2lin(-Lr));}
+    if(cell===s)best=fspl(5,B.f);loss[cell]=best;}
+  return loss;}
+function leakyLoss(head,B){
+  const lev=new Float64Array(NC).fill(NaN);lev[head]=0;const q=[head];let qi=0,amps=0;
+  while(qi<q.length){const c=q[qi++],x=c%MW,y=(c/MW)|0;const nb=[];for(const [dx,dy] of DIRS){const nx=x+dx,ny=y+dy;if(nx<0||ny<0||nx>=MW||ny>=MH)continue;const n=MI(nx,ny);if(cable[n]&&isNaN(lev[n]))nb.push(n);}
+    const split=nb.length>1?10*Math.log10(nb.length)+0.5:0;for(const n of nb){let l=lev[c]-B.lf*CELL/100-split;if(ampAt[n]){amps++;l=Math.min(l+30,0);}lev[n]=l;q.push(n);}}
+  const loss=new Float32Array(NC).fill(Infinity),h=new Heap();
+  for(let c=0;c<NC;c++)if(!isNaN(lev[c])){loss[c]=B.cpl-lev[c];h.push(loss[c],c);}
+  while(h.size){const c=h.pop(),k=h.lastKey;if(k>loss[c])continue;if(k>200)break;const x=c%MW,y=(c/MW)|0;for(const [dx,dy] of DIRS){const nx=x+dx,ny=y+dy;if(nx<0||ny<0||nx>=MW||ny>=MH)continue;const n=MI(nx,ny);if(!tun[n])continue;const nk=k+(tun[n]===2?1.2:2.2)+B.a*CELL/100;if(nk<loss[n]){loss[n]=nk;h.push(nk,n);}}}
+  return {loss,amps,cells:q.length};}
+function feedCell(s){const c=MI(s.x,s.y);if(cable[c])return c;for(const [dx,dy] of DIRS){const nx=s.x+dx,ny=s.y+dy;if(nx<0||ny<0||nx>=MW||ny>=MH)continue;const n=MI(nx,ny);if(cable[n])return n;}return -1;}
+function mnCompute(){
+  const B=BANDS[M.band],res={};
+  for(const t of ['tetra','dmr']){const T=TECH[t],dl=new Float64Array(NC),ul=new Float32Array(NC).fill(-999);let anyAmps=0;
+    for(const s of M.sites){if(s.tech!==t)continue;const fc=feedCell(s);let loss,P,rise=0;
+      if(fc>=0){const r=leakyLoss(fc,B);loss=r.loss;P=LAUNCH;rise=10*Math.log10(1+r.amps);anyAmps+=r.amps;s.feeds=true;s.amps=r.amps;}else{loss=pointLoss(s.x,s.y,B);P=T.site;s.feeds=false;}
+      for(let c=0;c<NC;c++){if(!tun[c]||!isFinite(loss[c]))continue;dl[c]+=db2lin(P-loss[c]);const u=T.port-loss[c]-(T.sensB+rise);if(u>ul[c])ul[c]=u;}}
+    const dld=new Float32Array(NC);for(let c=0;c<NC;c++)dld[c]=dl[c]>0?lin2db(dl[c]):-999;res[t]={dl:dld,ul};}
+  M.res=res;M.dirty=false;M.trace=[];}
+function margins(c,t){const r=M.res[t],T=TECH[t],body=M.body?6:0;const dl=r.dl[c]>-998?r.dl[c]-body-T.sensP:-999,ul=r.ul[c]>-998?r.ul[c]-body:-999;return {dl,ul,both:Math.min(dl,ul),rssi:r.dl[c]>-998?r.dl[c]-body:-999};}
+function viewMargin(c){const m=margins(c,M.net);return M.view==='dl'?m.dl:M.view==='ul'?m.ul:m.both;}
+const mapOff=document.createElement('canvas');mapOff.width=MW;mapOff.height=MH;
+function hexRgb(h){h=h.replace('#','');return [parseInt(h.slice(0,2),16),parseInt(h.slice(2,4),16),parseInt(h.slice(4,6),16)];}
+function drawMap(){
+  if(M.dirty)mnCompute();const {ctx,w,h}=fit($('#cv-map'));const cs=w/MW;const octx=mapOff.getContext('2d'),img=octx.createImageData(MW,MH),d=img.data;
+  const G=hexRgb(SCR.good),Y=hexRgb(SCR.warn),Rd=hexRgb(SCR.bad),Dd=[74,36,39];let good=0,tot=0;
+  for(let c=0;c<NC;c++){let rgb;if(!tun[c]){const v=rockTex[c];rgb=[40+v*14,35+v*11,31+v*9];}else{const m=viewMargin(c);tot++;
+      if(m>=M.fade){good++;const k=0.6+0.4*clamp((m-M.fade)/25,0,1);rgb=[G[0]*k,G[1]*k,G[2]*k];}else if(m>=0)rgb=Y;else if(m>-25)rgb=Rd;else rgb=Dd;}
+    d[c*4]=rgb[0];d[c*4+1]=rgb[1];d[c*4+2]=rgb[2];d[c*4+3]=255;}
+  octx.putImageData(img,0,0);ctx.imageSmoothingEnabled=false;ctx.drawImage(mapOff,0,0,w,h);
+  // cable
+  ctx.strokeStyle='#ff8a3d';ctx.lineWidth=Math.max(1.5,cs*0.28);ctx.lineCap='round';ctx.beginPath();
+  for(let c=0;c<NC;c++){if(!cable[c])continue;const x=c%MW,y=(c/MW)|0;const px=(x+.5)*cs,py=(y+.5)*cs;let lone=true;if(x+1<MW&&cable[c+1]){ctx.moveTo(px,py);ctx.lineTo(px+cs,py);lone=false;}if(y+1<MH&&cable[c+MW]){ctx.moveTo(px,py);ctx.lineTo(px,py+cs);lone=false;}if(x>0&&cable[c-1])lone=false;if(y>0&&cable[c-MW])lone=false;if(lone){ctx.moveTo(px-cs*.3,py);ctx.lineTo(px+cs*.3,py);}}
+  ctx.stroke();
+  // amps
+  for(let c=0;c<NC;c++){if(!ampAt[c])continue;const x=(c%MW+.5)*cs,y=(((c/MW)|0)+.5)*cs,r=Math.max(4,cs*.7);ctx.fillStyle='#ffdd57';ctx.strokeStyle='#1a1a1a';ctx.lineWidth=1;ctx.beginPath();ctx.moveTo(x-r,y-r);ctx.lineTo(x+r,y);ctx.lineTo(x-r,y+r);ctx.closePath();ctx.fill();ctx.stroke();}
+  // labels
+  LABELS.forEach(([x,y,s,a])=>{ctx.save();ctx.font=`600 ${Math.max(9,cs*1.05)}px "Barlow Condensed",sans-serif`;ctx.fillStyle='rgba(236,230,220,.85)';ctx.textBaseline='middle';if(a==='v'){ctx.translate(x*cs,y*cs);ctx.rotate(-Math.PI/2);ctx.textAlign='center';ctx.fillText(s.toUpperCase(),0,0);}else{ctx.textAlign=a==='c'?'center':'left';ctx.fillText(s.toUpperCase(),x*cs,y*cs);}ctx.restore();});
+  // sites
+  M.sites.forEach(s=>{const x=(s.x+.5)*cs,y=(s.y+.5)*cs,r=Math.max(7,cs*1.3);ctx.fillStyle=TECH[s.tech].col;ctx.strokeStyle='#0a1113';ctx.lineWidth=2;ctx.beginPath();if(s.tech==='tetra')ctx.arc(x,y,r,0,TAU);else ctx.rect(x-r,y-r,2*r,2*r);ctx.fill();ctx.stroke();ctx.fillStyle='#0a1113';ctx.font=`700 ${Math.max(9,r*1.1)}px "Barlow Condensed",sans-serif`;ctx.textAlign='center';ctx.textBaseline='middle';ctx.fillText(s.tech==='tetra'?'T':'D',x,y+1);if(s.feeds){ctx.strokeStyle='#ff8a3d';ctx.lineWidth=2;ctx.beginPath();ctx.arc(x,y,r+3,0,TAU);ctx.stroke();}});
+  // scale bar
+  const sb=10*cs;ctx.fillStyle='rgba(10,17,19,.75)';ctx.fillRect(w-sb-26,h-26,sb+18,20);ctx.strokeStyle='#e8f1f2';ctx.lineWidth=2;ctx.beginPath();ctx.moveTo(w-sb-17,h-12);ctx.lineTo(w-17,h-12);ctx.stroke();txt(ctx,'100 m',w-17-sb/2,h-15,'#e8f1f2','center',null,10);
+  // walk trail
+  if(M.walk){ctx.strokeStyle='rgba(255,255,255,.5)';ctx.lineWidth=1;ctx.setLineDash([2,3]);ctx.beginPath();M.walk.route.forEach((c,i)=>{const x=(c%MW+.5)*cs,y=(((c/MW)|0)+.5)*cs;if(i)ctx.lineTo(x,y);else ctx.moveTo(x,y);});ctx.stroke();ctx.setLineDash([]);}
+  // miner
+  const mx=(M.miner.x+.5)*cs,my=(M.miner.y+.5)*cs,mr=Math.max(6,cs*1.1);ctx.fillStyle='#ffe14d';ctx.strokeStyle='#0a1113';ctx.lineWidth=2;ctx.beginPath();ctx.arc(mx,my,mr,Math.PI,0);ctx.lineTo(mx+mr*1.3,my);ctx.lineTo(mx-mr*1.3,my);ctx.closePath();ctx.fill();ctx.stroke();
+  M.stats.cov=tot?good/tot:0;$('#mn-cap').innerHTML=`<b>${TECH[M.net].name} · ${Math.round(M.stats.cov*100)}% of drives green</b>`;
+  mnReadout();}
+function bars(m){return m<0?0:m<5?1:m<10?2:m<18?3:m<28?4:5;}
+function mnReadout(){
+  const c=MI(M.miner.x,M.miner.y);if(!tun[c]){ro('mn-read',[['Miner','in rock']]);return;}
+  const t=M.net,m=margins(c,t),o=t==='tetra'?'dmr':'tetra',mo=margins(c,o);
+  let verdict,cls;if(m.dl>=M.fade&&m.ul>=M.fade){verdict='Two-way, solid';cls='good';}else if(m.dl>=0&&m.ul>=0){verdict='Works, drops if you move';cls='warn';}else if(m.dl>=0&&m.ul<0){verdict="Hears base, can't be heard";cls='bad';}else if(m.dl<0&&m.ul>=0){verdict="Heard, can't hear base";cls='bad';}else{verdict='No service';cls='bad';}
+  const b=bars(m.dl);
+  ro('mn-read',[['Miner position',`${M.miner.x*CELL} m E · ${M.miner.y*CELL} m S`],[`${TECH[t].name} signal at radio`,m.rssi>-998?`${m.rssi.toFixed(1)} dBm`:'none'],['Bars','▮'.repeat(b)+'▯'.repeat(5-b)],['Margin: hear base',m.dl>-998?`${m.dl.toFixed(1)} dB`:'—',m.dl>=M.fade?'good':m.dl>=0?'warn':'bad'],['Margin: be heard',m.ul>-998?`${m.ul.toFixed(1)} dB`:'—',m.ul>=M.fade?'good':m.ul>=0?'warn':'bad'],['Verdict',verdict,cls],[`${TECH[o].name} here`,mo.both>-998?(mo.both>=M.fade?'good':mo.both>=0?'marginal':'no'):'no',mo.both>=M.fade?'good':mo.both>=0?'warn':'bad']]);}
+function drawStrip(){
+  const {ctx,w,h}=fit($('#cv-strip'));ctx.fillStyle=SCR.bg;ctx.fillRect(0,0,w,h);const L=34,R=8,T=8,B=16,pw=w-L-R,ph=h-T-B,lo=-40,hi=80,Y=v=>T+(hi-clamp(v,lo,hi))/(hi-lo)*ph;grid(ctx,L,T,pw,ph,10,5);
+  ctx.fillStyle='rgba(229,72,77,.12)';ctx.fillRect(L,Y(0),pw,Y(lo)-Y(0));ctx.fillStyle='rgba(240,180,41,.10)';ctx.fillRect(L,Y(M.fade),pw,Y(0)-Y(M.fade));
+  for(let v=lo;v<=hi;v+=20)txt(ctx,String(v),L-4,Y(v)+3,SCR.text,'right');
+  const tr=M.trace;if(!tr.length){txt(ctx,'Press "Run drive test" and the miner walks from the portal down the decline and through stopes 5, 2 and 3.',L+8,T+ph/2,SCR.text);return;}
+  const total=M.walk?M.walk.route.length:tr.length,X=i=>L+i/(Math.max(1,total-1))*pw;
+  [['dl',SCR.trace2,'hear base'],['ul',SCR.trace4,'be heard']].forEach(([k,col,n],j)=>{ctx.strokeStyle=col;ctx.lineWidth=1.5;ctx.beginPath();tr.forEach((p,i)=>{const y=Y(p[k]);if(i)ctx.lineTo(X(i),y);else ctx.moveTo(X(i),y);});ctx.stroke();txt(ctx,'— '+n,L+8+j*90,T+11,col);});
+  txt(ctx,`${(total*CELL/1000).toFixed(2)} km walk`,w-R-4,h-4,SCR.text,'right');
+  const bad=tr.filter(p=>Math.min(p.dl,p.ul)<0).length;$('#dt-cap').innerHTML=`<b>${Math.round(bad/tr.length*100)}% of the walk without two-way service</b>`;}
+function bfsRoute(a,b){const prev=new Int32Array(NC).fill(-1),q=[a];prev[a]=a;let qi=0;while(qi<q.length){const c=q[qi++];if(c===b)break;const x=c%MW,y=(c/MW)|0;for(const [dx,dy] of DIRS){const nx=x+dx,ny=y+dy;if(nx<0||ny<0||nx>=MW||ny>=MH)continue;const n=MI(nx,ny);if(tun[n]&&prev[n]<0){prev[n]=c;q.push(n);}}}const r=[];let c=b;if(prev[b]<0)return [a];while(c!==a){r.push(c);c=prev[c];}r.push(a);return r.reverse();}
+function autoAmps(spacing){ampAt.fill(0);for(const s of M.sites){const h0=feedCell(s);if(h0<0)continue;const dist=new Int32Array(NC).fill(-1);dist[h0]=0;const q=[h0];let qi=0;while(qi<q.length){const c=q[qi++],x=c%MW,y=(c/MW)|0;for(const [dx,dy] of DIRS){const nx=x+dx,ny=y+dy;if(nx<0||ny<0||nx>=MW||ny>=MH)continue;const n=MI(nx,ny);if(cable[n]&&dist[n]<0){dist[n]=dist[c]+1;q.push(n);if(dist[n]%spacing===0)ampAt[n]=1;}}}}M.dirty=true;}
+function layCable(segs){segs.forEach(s=>segFill(cable,...s,1));}
+function mnPreset(p){M.sites=[];cable.fill(0);ampAt.fill(0);M.walk=null;M.trace=[];
+  if(p==='leaky'){layCable([[3,3,40,3],[40,3,40,9],[40,9,8,9],[8,9,8,15],[8,15,40,15],[40,15,40,24],[6,24,114,24],[20,24,20,60],[45,24,45,60],[70,24,70,60],[95,24,95,60],[20,60,114,60],[70,24,70,16],[70,16,84,16]]);M.sites.push({x:3,y:3,tech:'dmr'});autoAmps(40);}
+  else if(p==='tetra'){M.sites.push({x:40,y:24,tech:'tetra'},{x:95,y:24,tech:'tetra'},{x:70,y:60,tech:'tetra'},{x:24,y:9,tech:'tetra'});}
+  else if(p==='hybrid'){M.sites.push({x:40,y:24,tech:'tetra'},{x:95,y:24,tech:'tetra'},{x:24,y:9,tech:'tetra'});layCable([[45,25,45,60],[20,60,114,60],[20,46,20,60],[70,38,70,60],[95,46,95,60],[45,38,60,38],[70,38,86,38],[95,46,108,46],[45,50,58,50],[20,46,32,46]]);M.sites.push({x:45,y:24,tech:'dmr'});autoAmps(40);}
+  M.dirty=true;}
+let mnPending=false;
+const mnRedraw=()=>{if(current!=='mine'||mnPending)return;mnPending=true;requestAnimationFrame(()=>{mnPending=false;drawMap();drawStrip();});};
+bindRadio('mn-tool',M,'tool');
+bindRadio('mn-net',M,'net',()=>{M.trace=[];mnRedraw();});
+bindRadio('mn-view',M,'view',mnRedraw);
+const mnBand=bindInput('mn-band',M,'band',null,()=>{M.band=+M.band;M.dirty=true;mnRedraw();});
+const mnFade=bindInput('mn-fade',M,'fade',v=>v+' dB',mnRedraw);
+bindInput('mn-body',M,'body',null,mnRedraw);
+const setNet=v=>{$$('input[name=mn-net]').forEach(e=>e.checked=e.value===v);M.net=v;};
+const mnPre=bindInput('mn-preset',M,'preset',null,()=>{mnPreset(M.preset);if(M.preset==='leaky')setNet('dmr');else if(M.preset==='tetra')setNet('tetra');mnRedraw();});
+$('#mn-amps').onclick=()=>{autoAmps(40);mnRedraw();};
+$('#mn-clear').onclick=()=>{mnPreset('blank');$('#mn-preset').value='blank';mnRedraw();};
+$('#mn-walk').onclick=()=>{if(M.dirty)mnCompute();const wp=[MI(3,3),MI(58,50),MI(86,38),MI(108,46)];let route=[wp[0]];for(let i=1;i<wp.length;i++)route=route.concat(bfsRoute(wp[i-1],wp[i]).slice(1));M.walk={route,i:0,acc:0};M.trace=[];};
+function cellAt(e){const r=e.target.getBoundingClientRect();return {x:clamp(Math.floor((e.clientX-r.left)/r.width*MW),0,MW-1),y:clamp(Math.floor((e.clientY-r.top)/r.height*MH),0,MH-1)};}
+let painting=false,paintVal=1;
+function applyTool(p,first){const c=MI(p.x,p.y);if(!tun[c])return;
+  if(M.tool==='miner'){M.miner={x:p.x,y:p.y};M.walk=null;mnRedraw();return;}
+  if(M.tool==='tetra'||M.tool==='dmr'){if(!first)return;const i=M.sites.findIndex(s=>Math.abs(s.x-p.x)<=1&&Math.abs(s.y-p.y)<=1);if(i>=0)M.sites.splice(i,1);else if(M.sites.length<10)M.sites.push({x:p.x,y:p.y,tech:M.tool});}
+  else if(M.tool==='cable'){cable[c]=1;}
+  else if(M.tool==='amp'){if(!first)return;if(cable[c])ampAt[c]=ampAt[c]?0:1;}
+  else if(M.tool==='erase'){cable[c]=0;ampAt[c]=0;const i=M.sites.findIndex(s=>Math.abs(s.x-p.x)<=1&&Math.abs(s.y-p.y)<=1);if(i>=0)M.sites.splice(i,1);}
+  M.dirty=true;M.walk=null;mnRedraw();}
+const cvMap=$('#cv-map');
+cvMap.addEventListener('pointerdown',e=>{painting=true;cvMap.setPointerCapture(e.pointerId);applyTool(cellAt(e),true);});
+cvMap.addEventListener('pointermove',e=>{const p=cellAt(e);if(painting&&(M.tool==='cable'||M.tool==='erase'||M.tool==='miner'))applyTool(p,false);
+  const c=MI(p.x,p.y);if(M.res&&tun[c]){const m=margins(c,M.net);$('#mn-probe').textContent=`Probe ${p.x*CELL} m, ${p.y*CELL} m · ${TECH[M.net].name} ${m.rssi>-998?m.rssi.toFixed(1)+' dBm':'no signal'} · hear base ${m.dl>-998?m.dl.toFixed(0):'—'} dB · be heard ${m.ul>-998?m.ul.toFixed(0):'—'} dB${cable[c]?' · on the cable':''}`;}else $('#mn-probe').textContent=tun[c]?'':'Solid rock.';});
+['pointerup','pointercancel'].forEach(ev=>cvMap.addEventListener(ev,()=>{painting=false;}));
+onShow.mine=()=>{drawMap();drawStrip();};
+onTick.mine=(t,dt)=>{const W=M.walk;if(!W||W.i>=W.route.length)return;W.acc+=dt*(REDUCED?400:45);let moved=false;while(W.acc>=1&&W.i<W.route.length){const c=W.route[W.i];M.miner={x:c%MW,y:(c/MW)|0};const m=margins(c,M.net);M.trace.push({dl:m.dl,ul:m.ul});W.i++;W.acc-=1;moved=true;}if(moved){drawMap();drawStrip();}};
+mnPreset('hybrid');
+
+/* ===================== BENCH 4: DIGITAL ===================== */
+const DG={rssi:-108,fade:false,calls:{d1:true,d2:false,t2:true,t3:false,t4:false},playing:null,t:0};
+const CALLS=[['d1','DMR slot 1 · Shift crew','#c792ff'],['d2','DMR slot 2 · Fitters','#ff9ad5'],['t2','TETRA slot 2 · UG-OPS','#4fd6e8'],['t3','TETRA slot 3 · Charge-up','#7cf0a8'],['t4','TETRA slot 4 · Control room','#ffc23a']];
+$('#td-calls').innerHTML=CALLS.map(([k,n,c])=>`<label class="callchip"><input type="checkbox" data-call="${k}" ${DG.calls[k]?'checked':''}><i style="width:10px;height:10px;border-radius:50%;background:${c};display:inline-block"></i>${n}</label>`).join('');
+$$('#td-calls input').forEach(i=>i.addEventListener('change',()=>{DG.calls[i.dataset.call]=i.checked;}));
+function drawTDMA(){
+  const {ctx,w,h}=fit($('#cv-tdma'));ctx.fillStyle=SCR.bg;ctx.fillRect(0,0,w,h);const L=8,R=8,pw=w-L-R,win=120,X=ms=>L+ms/win*pw;
+  const lanes=[{name:'DMR · 12.5 kHz · frame 60 ms',y:20,slot:30,n:2,keys:['d1','d2']},{name:'TETRA · 25 kHz · frame 56.67 ms',y:h/2+12,slot:170/12,n:4,keys:['t1','t2','t3','t4']}];
+  const lh=h/2-40,tnow=(DG.t*20)%win;
+  lanes.forEach(ln=>{txt(ctx,ln.name.toUpperCase(),L,ln.y-6,SCR.text);const ns=Math.ceil(win/ln.slot)+1;
+    for(let i=0;i<ns;i++){const t0=i*ln.slot;if(t0>=win)break;const si=i%ln.n,key=ln.keys[si],x0=X(t0),x1=X(Math.min(win,t0+ln.slot));const on=key==='t1'||DG.calls[key];const col=key==='t1'?'#8a9aa0':(CALLS.find(c=>c[0]===key)||[])[2];const live=tnow>=t0&&tnow<t0+ln.slot;
+      ctx.fillStyle=on?col:'#1a2629';ctx.globalAlpha=on?(live?1:0.55):1;
+      if(on){const bw=x1-x0;if(ln.n===2){const burst=27.5/30;const a=108/264,b=48/264;ctx.fillRect(x0+1,ln.y,bw*burst*a-1,lh);ctx.globalAlpha=on?(live?1:0.8):1;ctx.fillStyle='#ffffff';ctx.fillRect(x0+bw*burst*a,ln.y,bw*burst*b,lh);ctx.fillStyle=col;ctx.globalAlpha=live?1:0.55;ctx.fillRect(x0+bw*burst*(a+b),ln.y,bw*burst*a,lh);ctx.globalAlpha=1;ctx.fillStyle='#33464b';ctx.fillRect(x0+bw*burst,ln.y+lh*0.3,bw*(1-burst)-1,lh*0.4);}
+        else{const a=(6+216)/510,b=22/510;ctx.fillRect(x0+1,ln.y,bw*a-1,lh);ctx.globalAlpha=live?1:0.8;ctx.fillStyle='#ffffff';ctx.fillRect(x0+bw*a,ln.y,bw*b,lh);ctx.fillStyle=col;ctx.globalAlpha=live?1:0.55;ctx.fillRect(x0+bw*(a+b),ln.y,bw*a-2,lh);}}
+      else{ctx.fillRect(x0+1,ln.y,x1-x0-2,lh);}
+      ctx.globalAlpha=1;if(x1-x0>26)txt(ctx,(key==='t1'?'CTRL':'TS'+(si+1)),x0+4,ln.y+lh-5,on?'#0a1113':SCR.text,'left',null,10);}
+    for(let f=0;f<win;f+=ln.slot*ln.n){ctx.strokeStyle='#e8f1f2';ctx.globalAlpha=.4;ctx.beginPath();ctx.moveTo(X(f)+.5,ln.y-2);ctx.lineTo(X(f)+.5,ln.y+lh+2);ctx.stroke();ctx.globalAlpha=1;}});
+  ctx.strokeStyle=SCR.trace3;ctx.lineWidth=2;ctx.beginPath();ctx.moveTo(X(tnow),10);ctx.lineTo(X(tnow),h-14);ctx.stroke();
+  for(let ms=0;ms<=win;ms+=20)txt(ctx,ms+' ms',X(ms),h-3,SCR.text,ms===0?'left':ms===win?'right':'center');
+  const nd=(DG.calls.d1?1:0)+(DG.calls.d2?1:0),nt=(DG.calls.t2?1:0)+(DG.calls.t3?1:0)+(DG.calls.t4?1:0);
+  $('#td-cap').innerHTML=`<b>white = sync / training bits · ${nd+nt} conversations on air</b>`;}
+const DT={fm:{name:'Analog FM',col:SCR.trace},dmr:{name:'DMR',bitrate:9600,nf:7,k:0.205,q:3.7,col:SCR.trace4},tetra:{name:'TETRA',bitrate:36000,nf:9,k:0.44,q:3.5,col:SCR.trace2}};
+function cnrFM(r){return r+174-7-10*Math.log10(12500);}
+function audioSnr(cnr){return cnr>=10?cnr+13:23-(10-cnr)*3;}
+function berAt(t,r){const T=DT[t];const eb=r+174-T.nf-10*Math.log10(T.bitrate);return Math.min(0.5,0.5*erfc(Math.sqrt(T.k*db2lin(eb))));}
+function ferOf(ber){return 1/(1+Math.pow(0.07/Math.max(ber,1e-12),3.5));}
+function sig(x){return 1/(1+Math.exp(-x));}
+function qualInst(t,r){if(t==='fm'){const c=cnrFM(r);if(c<3)return 1;return 1+3.2*sig((audioSnr(c)-14)/4);}const f=ferOf(berAt(t,r));return 1+(DT[t].q-1)*Math.pow(1-f,3);}
+const FADEPTS=(()=>{const a=[];const M=120;for(let i=0;i<M;i++)a.push(10*Math.log10(-Math.log(1-(i+0.5)/M)));return a;})();
+function qual(t,r,fade){if(!fade)return qualInst(t,r);let s=0;for(const d of FADEPTS)s+=qualInst(t,r+d);return s/FADEPTS.length;}
+function ber(t,r,fade){if(!fade)return berAt(t,r);let s=0;for(const d of FADEPTS)s+=berAt(t,r+d);return s/FADEPTS.length;}
+function drawCurve(){
+  const {ctx,w,h}=fit($('#cv-curve'));ctx.fillStyle=SCR.bg;ctx.fillRect(0,0,w,h);const L=46,R=10,T=10,B=20,pw=w-L-R,gap=16,ph1=(h-T-B-gap)*0.58,ph2=(h-T-B-gap)-ph1,lo=-130,hi=-80,X=r=>L+(r-lo)/(hi-lo)*pw;
+  grid(ctx,L,T,pw,ph1,10,4);const Yq=q=>T+(5-q)/4*ph1;[1,2,3,4,5].forEach(q=>txt(ctx,String(q),L-6,Yq(q)+3,SCR.text,'right'));txt(ctx,'VOICE',4,T+8,SCR.text);txt(ctx,'QUALITY',4,T+19,SCR.text);
+  const y2=T+ph1+gap;grid(ctx,L,y2,pw,ph2,10,4);const Yb=b=>y2+(-Math.log10(clamp(b,1e-5,1)))/5*ph2*1.0;[1,1e-1,1e-2,1e-3,1e-4].forEach((b,i)=>txt(ctx,i?'1e-'+i:'1',L-6,Yb(b)+3,SCR.text,'right'));txt(ctx,'BIT',4,y2+8,SCR.text);txt(ctx,'ERRORS',4,y2+19,SCR.text);
+  ['fm','dmr','tetra'].forEach(t=>{ctx.strokeStyle=DT[t].col;ctx.lineWidth=1.8;ctx.beginPath();for(let i=0;i<=pw;i+=2){const r=lo+(i/pw)*(hi-lo),y=Yq(qual(t,r,DG.fade));if(i)ctx.lineTo(L+i,y);else ctx.moveTo(L+i,y);}ctx.stroke();
+    if(t!=='fm'){ctx.beginPath();for(let i=0;i<=pw;i+=2){const r=lo+(i/pw)*(hi-lo),y=Yb(ber(t,r,DG.fade));if(i)ctx.lineTo(L+i,y);else ctx.moveTo(L+i,y);}ctx.stroke();}});
+  ['fm','dmr','tetra'].forEach((t,i)=>txt(ctx,'— '+DT[t].name,L+8+i*96,T+12,DT[t].col));
+  ctx.strokeStyle='#e8f1f2';ctx.setLineDash([3,3]);ctx.beginPath();ctx.moveTo(X(DG.rssi),T);ctx.lineTo(X(DG.rssi),y2+ph2);ctx.stroke();ctx.setLineDash([]);
+  for(let r=lo;r<=hi;r+=10)txt(ctx,r+' dBm',X(r),h-4,SCR.text,r===lo?'left':r===hi?'right':'center');
+  const lab=q=>q>=3.4?['clear','good']:q>=2.5?['understandable','warn']:q>=1.6?['breaking up','bad']:['unusable','bad'];
+  const qf=qual('fm',DG.rssi,DG.fade),qd=qual('dmr',DG.rssi,DG.fade),qt=qual('tetra',DG.rssi,DG.fade);
+  const cliff=t=>{for(let r=-80;r>=-140;r-=0.5)if(qual(t,r,DG.fade)<2.5)return r;return -140;};
+  ro('cu-read',[['Analog FM',lab(qf)[0],lab(qf)[1]],['DMR',lab(qd)[0],lab(qd)[1]],['TETRA',lab(qt)[0],lab(qt)[1]],['DMR bit errors',(ber('dmr',DG.rssi,DG.fade)*100).toPrecision(2)+' %'],['TETRA bit errors',(ber('tetra',DG.rssi,DG.fade)*100).toPrecision(2)+' %'],['Usable down to',`FM ${cliff('fm')} · DMR ${cliff('dmr')} · TETRA ${cliff('tetra')} dBm`]]);
+  $('#cu-cap').innerHTML=`<b>${DG.fade?'walking':'standing still'}</b>`;}
+/* --- audio --- */
+let actx=null,asrc=null,renderTimer=0;
+function makeVoice(sr,secs){const n=Math.floor(sr*secs),out=new Float32Array(n);let seed=7;const rnd=()=>{seed=(seed*16807)%2147483647;return seed/2147483647;};
+  const V=[[730,1090,2440],[270,2290,3010],[300,870,2240],[530,1840,2480],[660,1720,2410],[490,1350,1690]];let pos=Math.floor(0.12*sr);
+  while(pos<n-0.3*sr){const dur=Math.floor((0.13+rnd()*0.15)*sr),v=V[rnd()*V.length|0],f0=115+rnd()*45,cons=rnd()<0.6;const ex=new Float32Array(dur);let ph=0;
+    for(let i=0;i<dur;i++){const f=f0*(1-0.15*i/dur);ph+=f/sr;if(ph>=1){ph-=1;ex[i]=1;}ex[i]+=0.02*(rnd()-.5);}
+    const res=new Float32Array(dur);v.forEach((F,j)=>{const bw=[90,120,170][j],r=Math.exp(-Math.PI*bw/sr),c=2*r*Math.cos(TAU*F/sr),g=(1-r)*[1,0.55,0.25][j];let y1=0,y2=0;for(let i=0;i<dur;i++){const y=g*ex[i]+c*y1-r*r*y2;y2=y1;y1=y;res[i]+=y;}});
+    for(let i=0;i<dur;i++){const e=Math.sin(Math.PI*i/dur);out[pos+i]+=res[i]*e*e*6;}
+    if(cons){const cl=Math.floor(0.035*sr);let y1=0;for(let i=0;i<cl&&pos-cl+i>0;i++){const nz=(rnd()-.5);y1=0.6*y1+nz;out[pos-cl+i]+=(nz-y1*0.5)*0.12*Math.sin(Math.PI*i/cl);}}
+    pos+=dur+Math.floor((rnd()<0.22?0.28:0.03)*sr);}
+  let pk=0;for(let i=0;i<n;i++)pk=Math.max(pk,Math.abs(out[i]));for(let i=0;i<n;i++)out[i]=out[i]/pk*0.55;return out;}
+let VOICE=null;
+function fadingTrack(n,sr){const tr=new Float32Array(n);if(!DG.fade){tr.fill(0);return tr;}const K=8,fd=2,ph=[],al=[];for(let i=0;i<K;i++){ph.push(Math.random()*TAU);al.push(Math.random()*TAU);}for(let s=0;s<n;s++){const t=s/sr;let re=0,im=0;for(let i=0;i<K;i++){const a=TAU*fd*Math.cos(al[i])*t+ph[i];re+=Math.cos(a);im+=Math.sin(a);}tr[s]=10*Math.log10(Math.max(1e-4,(re*re+im*im)/K));}return tr;}
+function lowpass(x,sr,fc){const a=Math.exp(-TAU*fc/sr);let y=0,z=0;for(let i=0;i<x.length;i++){y=(1-a)*x[i]+a*y;z=(1-a)*y+a*z;x[i]=z;}}
+function renderAudio(mode){const sr=16000,secs=4.5,n=Math.floor(sr*secs);if(!VOICE)VOICE=makeVoice(sr,secs);const v=Float32Array.from(VOICE),fadeT=fadingTrack(n,sr),out=new Float32Array(n);
+  if(mode==='fm'){let click=0,sq=1;for(let i=0;i<n;i++){const c=cnrFM(DG.rssi+fadeT[i]);if(c<3)sq=Math.max(0,sq-0.004);else sq=Math.min(1,sq+0.02);const nl=0.12*Math.pow(10,-audioSnr(c)/20);let s=v[i]+nl*(Math.random()*2-1)*1.7;if(c<12&&Math.random()<(120*Math.exp(-c/3))/sr)click=0.7*(Math.random()<.5?-1:1);s+=click;click*=0.86;out[i]=s*sq;}lowpass(out,sr,3200);}
+  else{lowpass(v,sr,3400);const blk=Math.floor(0.06*sr),fr=Math.floor(0.02*sr);let lost=0,prev=new Float32Array(fr);
+    for(let b=0;b<n;b+=blk){const r=DG.rssi+fadeT[Math.min(n-1,b+blk/2|0)];const p=ferOf(berAt(mode,r));const bad=Math.random()<p;
+      for(let f=b;f<Math.min(n,b+blk);f+=fr){if(!bad){lost=0;for(let i=0;i<fr&&f+i<n;i++){out[f+i]=v[f+i];prev[i]=v[f+i];}}else{lost++;const g=lost>3?0:Math.pow(0.55,lost);for(let i=0;i<fr&&f+i<n;i++)out[f+i]=prev[i]*g*(i%2?1:-1)*-1;}}}}
+  return out;}
+function playAudio(mode){try{if(!actx)actx=new (window.AudioContext||window.webkitAudioContext)();if(actx.state==='suspended')actx.resume();stopAudio(true);const d=renderAudio(mode);const buf=actx.createBuffer(1,d.length,16000);buf.copyToChannel?buf.copyToChannel(d,0):buf.getChannelData(0).set(d);asrc=actx.createBufferSource();asrc.buffer=buf;asrc.loop=true;const g=actx.createGain();g.gain.value=0.8;asrc.connect(g).connect(actx.destination);asrc.start();DG.playing=mode;$('#dg-now').textContent=`Playing ${DT[mode].name} at ${DG.rssi} dBm${DG.fade?', walking':''}. It loops; move the slider to re-render.`;$$('[data-listen]').forEach(b=>b.classList.toggle('primary',b.dataset.listen===mode));}catch(e){$('#dg-now').textContent='Audio could not start in this browser: '+e.message;}}
+function stopAudio(keep){if(asrc){try{asrc.stop();}catch(e){}asrc=null;}if(!keep){DG.playing=null;$$('[data-listen]').forEach(b=>b.classList.remove('primary'));$('#dg-now').textContent='Stopped.';}}
+$$('[data-listen]').forEach(b=>b.addEventListener('click',()=>playAudio(b.dataset.listen)));
+$('#dg-stop').addEventListener('click',()=>stopAudio(false));
+const dgUpd=()=>{if(current==='digital')drawCurve();if(DG.playing){clearTimeout(renderTimer);renderTimer=setTimeout(()=>playAudio(DG.playing),250);}};
+const dgRssi=bindInput('dg-rssi',DG,'rssi',v=>`${v} dBm · ${fmtW(v)}`,dgUpd);
+const dgFade=bindInput('dg-fade',DG,'fade',null,dgUpd);
+onShow.digital=()=>{drawTDMA();drawCurve();};
+onTick.digital=(t,dt)=>{DG.t+=REDUCED?0:dt;drawTDMA();};
+
+/* ===================== BENCH 5: TRUNKING ===================== */
+const NN={CON:{x:120,y:62,l:'Control room',s:'dispatcher console',k:'console'},SW:{x:450,y:62,l:'TETRA switch',s:'SwMI · surface',k:'switch'},GW:{x:770,y:62,l:'Gateway',s:'DMR ⇄ TETRA',k:'gw'},
+  BS1:{x:260,y:220,l:'BS-1',s:'TETRA · Level 1',k:'bs'},BS2:{x:520,y:385,l:'BS-2',s:'TETRA · Level 2',k:'bs'},RPT:{x:770,y:220,l:'DMR repeater',s:'leaky feeder head-end',k:'rpt'},
+  A:{x:110,y:300,l:'A · Shift boss',s:'TETRA handheld',k:'radio'},B:{x:360,y:458,l:'B · Loader operator',s:'TETRA vehicle radio',k:'radio'},C:{x:850,y:430,l:'C · Electrician',s:'DMR handheld',k:'radio'},LF:{x:770,y:430,k:'pt'}};
+const NS={patch:true,bs1:true,bAt:'BS2',slots:{BS1:['ctrl',null,null,null],BS2:['ctrl',null,null,null],RPT:[null,null]},running:false};
+const SVGNS='http://www.w3.org/2000/svg';
+function el(tag,attrs,parent,text){const e=document.createElementNS(SVGNS,tag);for(const k in attrs)e.setAttribute(k,attrs[k]);if(text!=null)e.textContent=text;if(parent)parent.appendChild(e);return e;}
+const svg=$('#nt-svg');let gLinks,gPk,gNodes,gSlots;
+function ntBuild(){svg.innerHTML='';
+  el('rect',{x:0,y:0,width:900,height:125,fill:'#16242a'},svg);el('rect',{x:0,y:125,width:900,height:395,fill:'#231d19'},svg);
+  for(let i=0;i<60;i++){el('circle',{cx:(i*137)%900,cy:140+((i*71)%370),r:1+(i%3),fill:'#2f2722'},svg);}
+  el('line',{x1:0,y1:125,x2:900,y2:125,stroke:'#6b5a4a','stroke-width':2},svg);
+  el('text',{x:12,y:116,fill:'#93a9ad','font-family':'JetBrains Mono,monospace','font-size':11},svg,'SURFACE');
+  [[290,'LEVEL 1 · 300 m below',520],[475,'LEVEL 2 · 450 m below',650]].forEach(([y,t,x])=>{el('rect',{x:20,y:y-14,width:860,height:28,fill:'#3a312b',rx:4},svg);el('text',{x,y:y+4,fill:'#a8968a','font-family':'JetBrains Mono,monospace','font-size':10,'text-anchor':'middle'},svg,t);});
+  el('polyline',{points:'770,232 770,500 600,500',fill:'none',stroke:'#ff8a3d','stroke-width':3,'stroke-dasharray':'2 5'},svg);
+  el('text',{x:778,y:505,fill:'#ff8a3d','font-family':'JetBrains Mono,monospace','font-size':10},svg,'leaky feeder');
+  gLinks=el('g',{},svg);gSlots=el('g',{},svg);gNodes=el('g',{},svg);gPk=el('g',{},svg);ntDraw();}
+const LINKS=[['CON','SW','fibre'],['SW','BS1','fibre'],['SW','BS2','fibre'],['SW','GW','ip'],['GW','RPT','fibre'],['A','BS1','air'],['B','@b','air'],['C','LF','air'],['LF','RPT','cable']];
+function ntDraw(){gLinks.innerHTML='';gNodes.innerHTML='';
+  LINKS.forEach(([a,b,t])=>{if(b==='@b')b=NS.bAt;const A=NN[a],Bn=NN[b];const dead=(a==='A'&&!NS.bs1)||(b==='BS1'&&!NS.bs1&&t!=='fibre')||(t==='ip'&&!NS.patch);const col=t==='air'?'#4fd6e8':t==='cable'?'#ff8a3d':t==='ip'?'#c792ff':'#93a9ad';el('line',{x1:A.x,y1:A.y,x2:Bn.x,y2:Bn.y,stroke:dead?'#5a3a3a':col,'stroke-width':t==='air'?1.5:2.5,'stroke-dasharray':t==='air'?'4 4':dead?'6 6':'none',opacity:dead?0.7:0.75},gLinks);});
+  for(const id in NN){const n=NN[id];if(n.k==='pt')continue;const g=el('g',{transform:`translate(${n.x},${n.y})`},gNodes);const failed=id==='BS1'&&!NS.bs1;
+    if(n.k==='radio'){el('rect',{x:-11,y:-18,width:22,height:36,rx:4,fill:id==='C'?'#c792ff':'#4fd6e8',stroke:'#0a1113','stroke-width':2},g);el('line',{x1:6,y1:-18,x2:6,y2:-30,stroke:'#e8f1f2','stroke-width':3},g);el('rect',{x:-6,y:-12,width:12,height:8,fill:'#0a1113'},g);}
+    else if(n.k==='bs'){el('path',{d:'M0 -30 L-14 18 M0 -30 L14 18 M-9 0 L9 0 M-11 9 L11 9',stroke:failed?'#e5484d':'#4fd6e8','stroke-width':3,fill:'none'},g);el('circle',{cx:0,cy:-32,r:5,fill:failed?'#e5484d':'#4fd6e8'},g);if(failed){el('path',{d:'M-20 -20 L20 20 M20 -20 L-20 20',stroke:'#e5484d','stroke-width':4},g);}}
+    else if(n.k==='rpt'){el('rect',{x:-20,y:-16,width:40,height:28,rx:3,fill:'#c792ff',stroke:'#0a1113','stroke-width':2},g);el('line',{x1:-10,y1:-6,x2:10,y2:-6,stroke:'#0a1113','stroke-width':2},g);el('line',{x1:-10,y1:2,x2:10,y2:2,stroke:'#0a1113','stroke-width':2},g);}
+    else if(n.k==='switch'){el('rect',{x:-30,y:-20,width:60,height:40,rx:3,fill:'#e8f1f2',stroke:'#0a1113','stroke-width':2},g);for(let i=0;i<4;i++)el('rect',{x:-24,y:-14+i*8,width:48,height:5,fill:i%2?'#4fd6e8':'#93a9ad'},g);}
+    else if(n.k==='gw'){el('rect',{x:-26,y:-18,width:52,height:36,rx:3,fill:NS.patch?'#ffc23a':'#5b5145',stroke:'#0a1113','stroke-width':2},g);el('path',{d:'M-14 -4 L14 -4 M8 -10 L14 -4 L8 2 M14 6 L-14 6 M-8 0 L-14 6 L-8 12',stroke:'#0a1113','stroke-width':2,fill:'none'},g);}
+    else if(n.k==='console'){el('rect',{x:-26,y:-20,width:52,height:32,rx:3,fill:'#e8f1f2',stroke:'#0a1113','stroke-width':2},g);el('rect',{x:-20,y:-15,width:40,height:22,fill:'#0f3a40'},g);el('rect',{x:-8,y:12,width:16,height:6,fill:'#93a9ad'},g);}
+    const ty=n.k==='radio'?34:n.k==='bs'?34:34;const halo={'paint-order':'stroke',stroke:'#111b1e','stroke-width':4,'stroke-linejoin':'round'};el('text',Object.assign({x:0,y:ty,'text-anchor':'middle',fill:'#e8f1f2','font-family':'Barlow Condensed,sans-serif','font-size':15,'font-weight':600},halo),g,n.l);el('text',Object.assign({x:0,y:ty+14,'text-anchor':'middle',fill:'#93a9ad','font-family':'JetBrains Mono,monospace','font-size':10},halo),g,n.s);}
+  ntSlots();}
+const SLOTCOL={ctrl:'#8a9aa0'};
+function ntSlots(){gSlots.innerHTML='';[['BS1',4],['BS2',4],['RPT',2]].forEach(([id,n])=>{const N=NN[id],x0=N.x+(id==='RPT'?30:24),y0=N.y-24;el('text',{x:x0,y:y0-4,fill:'#93a9ad','font-family':'JetBrains Mono,monospace','font-size':9},gSlots,'SLOTS');
+  for(let i=0;i<n;i++){const v=NS.slots[id][i];const col=v==null?'#1a2629':v==='ctrl'?SLOTCOL.ctrl:v.col;const r=el('rect',{x:x0+i*20,y:y0,width:17,height:14,fill:col,stroke:'#2c3a3e'},gSlots);if(v)el('title',{},r,v==='ctrl'?'Control channel':v.name);el('text',{x:x0+i*20+8.5,y:y0+10.5,'text-anchor':'middle',fill:v?'#0a1113':'#5a6a6e','font-family':'JetBrains Mono,monospace','font-size':9},gSlots,v==='ctrl'?'C':String(i+1));}});}
+const speed=()=>+$('#nt-speed').value;
+const wait=ms=>new Promise(r=>setTimeout(r,ms/speed()));
+function logStep(msg,text,cls){const li=document.createElement('li');if(cls)li.className=cls;li.innerHTML=`<span>${msg?`<code>${msg}</code> `:''}${text}</span>`;const lg=$('#nt-log');lg.appendChild(li);lg.scrollTop=lg.scrollHeight;}
+function pkt(path,label,kind){return new Promise(res=>{const col=kind==='alarm'?'#ff5252':kind==='voice'?'#7cf0a8':'#ffc23a';const g=el('g',{},gPk);const c=el('circle',{r:kind==='voice'?4:7,fill:col,stroke:'#0a1113','stroke-width':1.5},g);let t2=null;if(label){t2=el('text',{fill:col,'font-family':'JetBrains Mono,monospace','font-size':11,'font-weight':600,'paint-order':'stroke',stroke:'#0a1113','stroke-width':3},g,label);}
+  const pts=path.map(id=>NN[id]);const segs=[];let total=0;for(let i=1;i<pts.length;i++){const d=Math.hypot(pts[i].x-pts[i-1].x,pts[i].y-pts[i-1].y);segs.push(d);total+=d;}const dur=(REDUCED?150:Math.max(500,total*2.4))/speed();const t0=performance.now();
+  function fr(now){let p=clamp((now-t0)/dur,0,1),dist=p*total,i=0;while(i<segs.length-1&&dist>segs[i]){dist-=segs[i];i++;}const a=pts[i],b=pts[i+1],f=segs[i]?dist/segs[i]:1,x=a.x+(b.x-a.x)*f,y=a.y+(b.y-a.y)*f;c.setAttribute('cx',x);c.setAttribute('cy',y);if(t2){t2.setAttribute('x',x+10);t2.setAttribute('y',y-10);}if(p<1)requestAnimationFrame(fr);else{setTimeout(()=>g.remove(),kind==='voice'?0:250/speed());res();}}requestAnimationFrame(fr);});}
+async function voice(paths,ms){const end=performance.now()+ms/speed();while(performance.now()<end){paths.forEach(p=>pkt(p,null,'voice'));await wait(260);}await wait(400);}
+function alloc(id,name,col,preempt){const s=NS.slots[id];for(let i=0;i<s.length;i++){if(s[i]==null){s[i]={name,col};ntSlots();return i;}}if(preempt){for(let i=0;i<s.length;i++){if(s[i]!=='ctrl'){s[i]={name,col};ntSlots();return i;}}}return -1;}
+function freeSlot(id,i){if(i>=0&&NS.slots[id][i]&&NS.slots[id][i]!=='ctrl')NS.slots[id][i]=null;ntSlots();}
+function moveNode(id,to,ms){return new Promise(res=>{const n=NN[id],fx=n.x,fy=n.y,t0=performance.now(),d=(REDUCED?50:ms)/speed();function fr(now){const p=clamp((now-t0)/d,0,1),e=p<.5?2*p*p:1-Math.pow(-2*p+2,2)/2;n.x=fx+(to.x-fx)*e;n.y=fy+(to.y-fy)*e;ntDraw();if(p<1)requestAnimationFrame(fr);else res();}requestAnimationFrame(fr);});}
+const UG={name:'UG-OPS',col:'#4fd6e8'};
+async function scGroup(){
+  const sb=NS.bAt;logStep('PTT','A presses the talk button. A\'s radio is set to talkgroup <b>UG-OPS</b>.');
+  if(!NS.bs1){logStep('','A\'s radio has lost BS-1. It scans for another TETRA site, but BS-2 is a level down behind rock and can\'t be heard.','alarm');await pkt(['A','BS1'],'no site','alarm');
+    logStep('DMO','The radio falls back to <b>Direct Mode</b>: radio-to-radio, no base station. It only reaches radios within a few hundred metres of tunnel.');
+    if(NS.bAt==='BS1'){await pkt(['A','B'],'DMO voice','voice');logStep('','B is on Level 1 nearby and hears A directly. Nobody else does: no control room, no recording, no DMR side.');}
+    else{logStep('','B is on Level 2, out of direct range. <b>Nobody hears A.</b> This is why underground TETRA designs overlap sites and plan for a base station failing.','alarm');}
+    return;}
+  await pkt(['A','BS1'],'U-SETUP','ctrl');logStep('U-SETUP','On the control timeslot, A\'s radio asks the network for a group call on UG-OPS.');
+  await pkt(['BS1','SW'],'call request','ctrl');
+  logStep('','The switch looks up who is listening to UG-OPS right now: B (registered on '+sb.replace('BS','BS-')+'), the control room console'+(NS.patch?', and the DMR talkgroup patched through the gateway.':'. The gateway patch is off, so the DMR side is not included.'));
+  const tA=alloc('BS1','UG-OPS call',UG.col),tB=sb!=='BS1'?alloc(sb,'UG-OPS call',UG.col):-1;
+  await Promise.all([pkt(['SW','BS1'],'allocate TS'+(tA+1),'ctrl'),sb!=='BS1'?pkt(['SW',sb],'allocate TS'+(tB+1),'ctrl'):null]);
+  logStep('','Each base station with a listener reserves a free traffic timeslot for this call. Sites with nobody in UG-OPS stay free for other calls.');
+  const ps=[pkt(['BS1','A'],'D-CONNECT','ctrl'),pkt([sb,'B'],'D-SETUP','ctrl'),pkt(['SW','CON'],'D-SETUP','ctrl')];if(NS.patch)ps.push(pkt(['SW','GW','RPT'],'patch',"ctrl"));await Promise.all(ps);
+  if(NS.patch)NS.slots.RPT[0]={name:'patched UG-OPS',col:'#c792ff'},ntSlots();
+  logStep('D-CONNECT','A gets the go-ahead (a short "talk permit" beep). B and the console are told which slot to listen on. All of this takes about a third of a second.');
+  const vp=[['A','BS1','SW','CON'],sb!=='BS1'?['A','BS1','SW',sb,'B']:['A','BS1','B']];if(NS.patch)vp.push(['A','BS1','SW','GW','RPT','LF','C']);
+  logStep('voice','A talks. The voice is digitised by the codec and sent in A\'s timeslot, copied by the switch to every site and console in the group'+(NS.patch?', and converted by the gateway so the DMR electrician hears it too.':'.'));
+  await voice(vp,2600);
+  await pkt(['A','BS1'],'U-TX-CEASED','ctrl');logStep('U-TX-CEASED','A lets go of the button. The call is held open for a few seconds of "hang time" so someone can answer without setting up a new call.');
+  await wait(900);
+  await Promise.all([pkt(['SW','BS1','A'],'D-RELEASE','ctrl'),pkt(['SW',sb,'B'],'D-RELEASE','ctrl')]);freeSlot('BS1',tA);if(tB>=0)freeSlot(sb,tB);NS.slots.RPT[0]=null;ntSlots();
+  logStep('D-RELEASE','Nobody answered, so the switch ends the call and the timeslots go back in the pool.');}
+async function scMove(){const from=NS.bAt,to=from==='BS2'?'BS1':'BS2';
+  if(to==='BS1'&&!NS.bs1){logStep('','B drives up to Level 1, but BS-1 is down. B stays on BS-2 as long as it can hear it.','alarm');return;}
+  logStep('',`B drives the loader ${to==='BS1'?'up the decline to Level 1':'back down to Level 2'}.`);
+  await moveNode('B',to==='BS1'?{x:400,y:296}:{x:360,y:458},1800);
+  logStep('','B\'s radio has been measuring every site it can hear. '+to.replace('BS','BS-')+' is now clearly stronger, so the radio changes site on its own. This is called cell reselection.');
+  const old=NS.bAt;NS.bAt=to;ntDraw();
+  await pkt(['B',to],'U-LOCATION-UPDATE','ctrl');await pkt([to,'SW'],'location update','ctrl');await pkt(['SW',to,'B'],'D-LOCATION-UPDATE-ACCEPT','ctrl');
+  logStep('D-LOCATION-UPDATE-ACCEPT',`The switch now sends UG-OPS calls for B to ${to.replace('BS','BS-')} instead of ${old.replace('BS','BS-')}. Nobody touched a channel knob.`);}
+async function scEmerg(){logStep('','C, an electrician on a DMR radio, presses the orange emergency button.','alarm');
+  await pkt(['C','LF','RPT'],'EMERGENCY','alarm');logStep('EMERGENCY ALARM','The DMR radio sends an emergency alarm with its ID up the leaky feeder to the repeater.','alarm');
+  if(!NS.patch){logStep('','The gateway is off, so <b>the alarm stops here</b>. Other DMR radios on this repeater see it. The control room and every TETRA radio do not. When DMR and TETRA run side by side, this link is a safety item.','alarm');return;}
+  await pkt(['RPT','GW'],'alarm + ID','alarm');await pkt(['GW','SW'],'priority 15','alarm');
+  logStep('emergency call','The gateway turns it into a TETRA emergency call. Emergency is the highest priority and can pre-empt: if every slot is busy, the lowest-priority call gets cut off to make room.','alarm');
+  await pkt(['SW','CON'],'ALARM · C · Level 2','alarm');logStep('','The control room console sounds an alarm and shows who pressed it and where.','alarm');
+  const E={name:'EMERGENCY',col:'#ff5252'};const sites=['BS1',NS.bAt].filter((v,i,a)=>a.indexOf(v)===i&&(v!=='BS1'||NS.bs1));const got=sites.map(s=>[s,alloc(s,'EMERGENCY',E.col,true)]);NS.slots.RPT[0]={name:'EMERGENCY',col:'#ff5252'};ntSlots();
+  const vp=[['C','LF','RPT','GW','SW','CON']];sites.forEach(s=>vp.push(['C','LF','RPT','GW','SW',s,s==='BS1'&&NS.bAt!=='BS1'?'A':(s===NS.bAt?'B':'A')]));if(sites.includes('BS1')&&NS.bAt==='BS1')vp.push(['C','LF','RPT','GW','SW','BS1','A']);
+  await voice(vp,2400);logStep('voice','C\'s microphone opens for an "open mic" period so the control room can hear what is happening, even if C can\'t hold the button.');
+  got.forEach(([s,i])=>freeSlot(s,i));NS.slots.RPT[0]=null;ntSlots();logStep('','The control room acknowledges and ends the emergency from the console.');}
+async function scBusy(){if(!NS.bs1){logStep('','BS-1 is down. Turn it back on to try this one.','alarm');return;}
+  logStep('','Three crews are already talking through BS-1: Drill crew, Charge-up and Fitters. With one carrier, BS-1 has 3 traffic slots plus the control slot.');
+  const busy=[['Drill crew','#ffc23a'],['Charge-up','#7cf0a8'],['Fitters','#ff9ad5']].map(([n,c])=>alloc('BS1',n,c));await wait(700);
+  await pkt(['A','BS1'],'U-SETUP','ctrl');await pkt(['BS1','SW'],'call request','ctrl');
+  await pkt(['SW','BS1','A'],'D-CALL-PROCEEDING','ctrl');logStep('D-CALL-PROCEEDING','No free slot on BS-1. The switch puts A in a queue and A hears a "please wait" tone instead of nothing.');
+  await wait(1800);freeSlot('BS1',busy[0]);logStep('','The drill crew finishes. A slot frees up and the switch gives it to the first call in the queue.');
+  const tA=alloc('BS1','UG-OPS call',UG.col);await pkt(['SW','BS1','A'],'D-CONNECT TS'+(tA+1),'ctrl');await voice([['A','BS1','SW','CON']],1400);
+  freeSlot('BS1',tA);freeSlot('BS1',busy[1]);freeSlot('BS1',busy[2]);
+  logStep('','Lesson: count how many groups talk at once at each site in the busiest hour (shift change, a blast, an incident). A second carrier on a site adds 4 more slots.');}
+const SC={group:scGroup,move:scMove,emerg:scEmerg,busy:scBusy};
+$$('#nt-btns [data-sc]').forEach(b=>b.addEventListener('click',async()=>{if(NS.running)return;NS.running=true;$$('#nt-btns button').forEach(x=>x.disabled=true);$('#nt-log').innerHTML='';try{await SC[b.dataset.sc]();}finally{NS.running=false;$$('#nt-btns button').forEach(x=>x.disabled=false);}}));
+$('#nt-patch').addEventListener('change',e=>{NS.patch=e.target.checked;ntDraw();});
+$('#nt-bs1').addEventListener('change',e=>{NS.bs1=e.target.checked;if(!NS.bs1&&NS.bAt==='BS1'){NS.bAt='BS2';NN.B.x=360;NN.B.y=458;}ntDraw();});
+ntBuild();
+onShow.network=()=>{};
+
+/* ===================== BENCH 6: PROJECT ===================== */
+const ICONS={
+ radio:'<svg viewBox="0 0 44 44" fill="none" stroke="currentColor" stroke-width="2.4"><rect x="12" y="12" width="20" height="28" rx="3"/><path d="M27 12V3"/><rect x="16" y="16" width="12" height="7"/><path d="M17 29h10M17 34h10"/></svg>',
+ tower:'<svg viewBox="0 0 44 44" fill="none" stroke="currentColor" stroke-width="2.4"><path d="M22 8L12 40M22 8l10 32M15 28h14M17 20h10"/><circle cx="22" cy="6" r="3"/><path d="M10 6a14 14 0 0 1 0-0M8 2c-4 4-4 10 0 14M36 2c4 4 4 10 0 14"/></svg>',
+ box:'<svg viewBox="0 0 44 44" fill="none" stroke="currentColor" stroke-width="2.4"><rect x="6" y="10" width="32" height="24" rx="2"/><path d="M11 17h22M11 23h22M11 29h12"/></svg>',
+ cable:'<svg viewBox="0 0 44 44" fill="none" stroke="currentColor" stroke-width="2.4"><path d="M4 22h36"/><path d="M4 18h36M4 26h36" stroke-width="1.4"/><path d="M10 14v-4M18 14v-4M26 14v-4M34 14v-4M10 30v4M18 30v4M26 30v4M34 30v4" stroke-width="1.6"/></svg>',
+ amp:'<svg viewBox="0 0 44 44" fill="none" stroke="currentColor" stroke-width="2.4"><path d="M4 22h8M32 22h8"/><path d="M12 10v24l20-12z"/></svg>',
+ split:'<svg viewBox="0 0 44 44" fill="none" stroke="currentColor" stroke-width="2.4"><path d="M4 22h16l16-12M20 22l16 12"/><circle cx="20" cy="22" r="3"/></svg>',
+ ant:'<svg viewBox="0 0 44 44" fill="none" stroke="currentColor" stroke-width="2.4"><path d="M22 40V12M12 6l10 6 10-6"/><path d="M8 20c-3 3-3 9 0 12M36 20c3 3 3 9 0 12"/></svg>',
+ gw:'<svg viewBox="0 0 44 44" fill="none" stroke="currentColor" stroke-width="2.4"><rect x="6" y="8" width="32" height="28" rx="2"/><path d="M12 18h20l-5-5M32 26H12l5 5"/></svg>',
+ screen:'<svg viewBox="0 0 44 44" fill="none" stroke="currentColor" stroke-width="2.4"><rect x="5" y="7" width="34" height="23" rx="2"/><path d="M16 38h12M22 30v8"/></svg>',
+ fibre:'<svg viewBox="0 0 44 44" fill="none" stroke="currentColor" stroke-width="2.4"><path d="M4 30c8-14 14-14 20 0s12 14 16 0"/><circle cx="4" cy="30" r="2"/><circle cx="40" cy="30" r="2"/></svg>',
+ batt:'<svg viewBox="0 0 44 44" fill="none" stroke="currentColor" stroke-width="2.4"><rect x="6" y="12" width="30" height="20" rx="2"/><path d="M36 18h3v8h-3M18 16l-4 7h7l-4 7"/></svg>',
+ end:'<svg viewBox="0 0 44 44" fill="none" stroke="currentColor" stroke-width="2.4"><path d="M4 22h22"/><rect x="26" y="14" width="12" height="16" rx="2"/></svg>'};
+const PARTS=[
+ ['radio','Handheld and vehicle radios','On people and machines','TETRA handhelds are usually 1 W; DMR handhelds about 4 W. Vehicle radios are 3 to 10 W with an outside antenna.','Fails: flat battery, broken antenna, wrong talkgroup programmed, worn on the belt under a jacket.'],
+ ['tower','TETRA base station (TBS)','At junctions underground or on the surface','One or more carriers, each with 4 timeslots. Talks to the switch over fibre or IP.','Fails: power, backhaul cut, overheating in a hot cuddy. Plan for losing one.'],
+ ['box','DMR repeater','At the leaky feeder head-end or a junction','Receives on one frequency and retransmits on another so handhelds can reach each other through it. Two timeslots per carrier.','Fails: power, duplexer drift, interference on the input frequency.'],
+ ['box','Switch / core (SwMI)','Surface comms room, ideally duplicated','The brain of TETRA. Knows every radio, every talkgroup, every site. Sets up and tears down calls.','Fails: if there is only one and it dies, sites drop to fallback mode. Ask about redundancy.'],
+ ['split','Combiner and duplexer','Inside the base station rack','A combiner lets several transmitters share one antenna or cable. A duplexer lets a transmitter and receiver share one antenna without deafening the receiver.','Fails: costs a few dB each; must be tuned for the licensed frequencies.'],
+ ['ant','Antennas','On the base station and on every radio','Turn cable power into radio waves. Directional antennas (panels, yagis) aim down a drive; omnis go every way.','Fails: knocked by vehicles, wrong band, water in the connector.'],
+ ['cable','Leaky feeder (radiating cable)','Strung along the roof or wall of every drive','Coax with slots in the shield so it leaks signal along its whole length, and picks up radios along its length too.','Fails: damaged by vehicles, blasting and rock falls. Loses a few dB per 100 m, so it needs amplifiers.'],
+ ['amp','Line amplifiers (bi-directional)','Every 350 to 500 m along the leaky feeder','Make up the cable loss in both directions. Often powered by DC sent down the cable itself.','Fails: one failed amp kills everything beyond it. Every amp adds noise to the uplink.'],
+ ['split','Splitters and taps','At junctions in the cable','Split the leaky feeder into branches. Each split shares the power between branches.','Fails: unbalanced splits leave one branch weak.'],
+ ['end','Terminator','At every cable end','A 50 Ω load that stops signal reflecting back from the open end.','Fails: missing terminators cause reflections and odd dead spots.'],
+ ['fibre','Fibre DAS and remote units','Fibre down the shaft or decline, radio units at each level','Carries radio over fibre to small remote units underground. Fibre has almost no loss over kilometres.','Fails: remote units need power; fibre needs protecting from blasting.'],
+ ['gw','Interop gateway','Between the DMR and TETRA systems','Patches a DMR talkgroup to a TETRA talkgroup and passes IDs and emergency alarms across.','Fails: if it is down, the two systems are deaf to each other, including emergencies.'],
+ ['screen','Dispatch console','Control room','Lets controllers talk to any talkgroup, see who is calling, take emergency alarms, record calls.','Fails: a console that can\'t reach the DMR side misses half the mine.'],
+ ['batt','Power and backup','At every powered device underground','Base stations, repeaters and amplifiers need UPS or battery backup so radio keeps working in a power outage, which is exactly when it is needed.','Fails: ask how many hours of backup each site has.'],
+];
+$('#pj-cards').innerHTML=PARTS.map(([ic,n,w,d,f])=>`<article class="card">${ICONS[ic]}<h4>${n}</h4><p class="where">${w}</p><p>${d}</p><p class="fail">${f}</p></article>`).join('');
+const QS=[
+ ['Coverage target','What percentage of drives, and which places must have coverage with no exceptions (refuge chambers, crib rooms, workshops, the decline, escape ways)?'],
+ ['Fade margin and probability','What signal level and fade margin is the design aiming for, and at what probability (e.g. 95% of locations, 95% of the time)?'],
+ ['Talk-back','Is the design limited by the downlink or the handheld uplink? What handheld power and body loss are assumed?'],
+ ['Frequencies and licences','Which frequencies will TETRA and DMR use, are the ACMA licences in hand, and has anyone checked for interference with the existing system during parallel running?'],
+ ['Gateway','Exactly which DMR talkgroups patch to which TETRA talkgroups? Do emergency alarms and radio IDs cross? What happens if the gateway fails?'],
+ ['Redundancy','What happens when one base station, one amplifier, the switch, or the fibre fails? Do neighbouring sites overlap? Is the leaky feeder looped or fed from both ends?'],
+ ['Cutover plan','Will old and new systems run in parallel? In what order do levels move over? Who gets new radios first? How do crews on the old system talk to crews on the new one during the changeover?'],
+ ['Capacity','How many talkgroups need to talk at once at the busiest site, at the busiest hour? How many carriers per base station?'],
+ ['Blasting and detonators','Has the RF design been checked against the site\'s blasting rules for safe distances between transmitters and initiation systems?'],
+ ['Power backup','How long does each underground site keep working on battery during a power outage?'],
+ ['Acceptance testing','How will coverage be proven? Ask for a drive test (walk test) of every drive with a calibrated receiver, with the results as a map.'],
+ ['Radio programming and training','Who programs the radios and talkgroups, and how will a crew that has used the old radios for years be trained on the new ones?'],
+ ['Maintenance','Who fixes damaged cable and amplifiers, how fast, and what spares are held on site?'],
+];
+const saved=store.get('rflab-checks',{});
+$('#pj-check').innerHTML=QS.map(([t,q],i)=>`<li><label><input type="checkbox" data-q="${i}" ${saved[i]?'checked':''}><span><b>${t}.</b> ${q}</span></label></li>`).join('');
+$$('#pj-check input').forEach(c=>c.addEventListener('change',()=>{saved[c.dataset.q]=c.checked;store.set('rflab-checks',saved);}));
+const GL=[
+ ['dB (decibel)','A ratio on a log scale. +3 dB is double the power, +10 dB is ten times, −3 dB is half.'],
+ ['dBm','Power compared to 1 milliwatt. 0 dBm = 1 mW, 30 dBm = 1 W, −100 dBm = 0.1 picowatt.'],
+ ['dBi','Antenna gain compared to an imaginary antenna that radiates equally in every direction.'],
+ ['EIRP','Effective radiated power: transmitter power minus cable loss plus antenna gain. Licences cap it.'],
+ ['RSSI','Received signal strength indicator: how strong the signal is at the radio, usually in dBm.'],
+ ['Noise floor','The background hiss every receiver hears. Thermal noise is −174 dBm per hertz of bandwidth.'],
+ ['SNR / CNR','Signal-to-noise (or carrier-to-noise) ratio: how far the signal sits above the noise, in dB.'],
+ ['Sensitivity','The weakest signal a radio can still decode properly. Around −112 dBm for TETRA, −119 dBm for DMR.'],
+ ['Fade margin','Extra signal on top of sensitivity so the link survives the dips caused by reflections as you move.'],
+ ['Fading','Rapid ups and downs in signal as reflections add and cancel. Underground it can swing 20 dB in a step.'],
+ ['Path loss','How much signal is lost between transmitter and receiver.'],
+ ['Free-space path loss','The loss from a wave spreading out. Grows 6 dB every time distance doubles.'],
+ ['Waveguide effect','A tunnel bigger than the wavelength channels UHF signals along it, which is why straight drives carry well.'],
+ ['Corner loss','The big drop (10 to 20 dB at UHF) when signal has to turn into a side drive.'],
+ ['Leaky feeder','Radiating coax cable with slots in its shield. Leaks signal out and picks it up along its length.'],
+ ['Longitudinal loss','How much signal a leaky feeder loses per 100 m along its length.'],
+ ['Coupling loss','How much signal is lost between the leaky feeder and a radio a couple of metres away. Typically 60 to 80 dB.'],
+ ['Line amplifier','An amplifier placed along a leaky feeder to make up for cable loss, usually in both directions.'],
+ ['Head-end','Where the base station or repeater connects into the leaky feeder.'],
+ ['DAS','Distributed antenna system: one base station fed out to many antennas or remote units, often by fibre.'],
+ ['Base station / TBS','TETRA base station. Contains one or more carriers and connects to the switch.'],
+ ['Repeater','Receives on one frequency and retransmits on another, so radios can reach each other through it.'],
+ ['Carrier','One radio frequency channel. A TETRA carrier holds 4 timeslots, a DMR carrier holds 2.'],
+ ['Duplex spacing','The gap between a repeater\'s receive and transmit frequencies. 10 MHz is common in the 400 MHz band.'],
+ ['Duplexer','Filter that lets a transmitter and receiver share one antenna.'],
+ ['Combiner','Lets several transmitters share one antenna or cable.'],
+ ['Uplink / downlink','Uplink is radio to base. Downlink is base to radio.'],
+ ['Talk-back','Whether the base can hear the handheld, not just the other way round. Usually the weak side underground.'],
+ ['TDMA','Time-division multiple access: taking turns on one frequency in very short timeslots.'],
+ ['Timeslot','One turn in a TDMA frame. 30 ms in DMR, about 14 ms in TETRA.'],
+ ['Trunking','Radios share a pool of channels handed out on demand by a controller, instead of each group owning a channel.'],
+ ['Talkgroup','A named group of radios that hear each other, like UG-OPS. The trunked equivalent of a channel.'],
+ ['SwMI','Switching and management infrastructure: the TETRA core switch and its management.'],
+ ['Control channel (MCCH)','The timeslot every idle TETRA radio listens to for instructions and calls.'],
+ ['Cell reselection / handover','A radio moving its registration from one base station to a stronger one as it moves.'],
+ ['DMO','Direct mode operation: TETRA radios talking to each other without any base station.'],
+ ['Hang time','The few seconds a call stays open after someone stops talking so a reply doesn\'t need a new call.'],
+ ['Pre-emption','A higher-priority call (such as emergency) taking a slot away from a lower-priority one.'],
+ ['DMR Tier II / III','Tier II is conventional DMR with repeaters; Tier III adds trunking like TETRA.'],
+ ['Gateway / patch','A link that joins a talkgroup on one system to a talkgroup on another.'],
+ ['Modulation','How information is put onto the carrier: changing its amplitude, frequency or phase.'],
+ ['4FSK','Four-level frequency shift keying, used by DMR: the carrier jumps between four frequencies, 2 bits per jump.'],
+ ['π/4-DQPSK','The modulation TETRA uses: the carrier phase jumps by ±45° or ±135°, 2 bits per jump.'],
+ ['Constellation','A plot of each received symbol\'s phase and amplitude. Tight clusters mean a clean signal.'],
+ ['Eye diagram','Overlaid traces of a digital signal. An open eye means the receiver can tell the levels apart.'],
+ ['Vocoder / codec','Compresses voice to a few kbit/s. AMBE+2 in DMR, ACELP in TETRA.'],
+ ['BER','Bit error rate: the fraction of bits received wrong.'],
+ ['FEC','Forward error correction: extra bits that let the receiver fix some errors itself.'],
+ ['Cliff effect','Digital voice stays clean until errors overwhelm the error correction, then falls apart quickly.'],
+ ['Squelch','Mutes the speaker when there is no usable signal so you don\'t hear hiss.'],
+ ['Channel spacing','The width given to each channel: 12.5 kHz for DMR and narrowband FM, 25 kHz for TETRA.'],
+ ['Adjacent / co-channel','Interference from the next channel over, or from another transmitter on the same channel.'],
+ ['Impedance (50 Ω)','The electrical match radio equipment is built for. Mismatches reflect power.'],
+ ['VSWR','Voltage standing wave ratio: a measure of how much power is reflected. 1.0 is perfect.'],
+ ['Return loss','Another way to say how much is reflected, in dB. Bigger is better: 20 dB means 1% reflected.'],
+ ['Heliax','Thick, low-loss coax with a corrugated copper outer, used for base station runs.'],
+ ['N-type connector','The standard weatherproof RF connector on base station gear.'],
+ ['Dummy load','A resistor that soaks up transmitter power for testing without radiating.'],
+ ['Wavelength','Distance between wave peaks. About 71 cm at 420 MHz, 2 m at 150 MHz.'],
+ ['Picket-fencing','Analog signal chopping in and out as you move through fades. Digital equivalent is dropouts.'],
+ ['Drive test / walk test','Measuring real signal levels along every route with a calibrated receiver.'],
+ ['ACMA','Australian Communications and Media Authority, which licenses radio frequencies.'],
+];
+function glRender(q){q=(q||'').toLowerCase();$('#gl-list').innerHTML=GL.filter(([t,d])=>!q||t.toLowerCase().includes(q)||d.toLowerCase().includes(q)).map(([t,d])=>`<div><dt>${t}</dt><dd>${d}</dd></div>`).join('')||'<p class="hint">No term matches. Try a shorter word.</p>';}
+glRender('');$('#gl-q').addEventListener('input',e=>glRender(e.target.value));
+
+/* ===================== experiments ===================== */
+const EXPS={
+ s1(){sgCtl.mode.set('cw');sgCtl.lvl.set(-90);sgCtl.intf.set('off');sgCtl.avg.set(true);},
+ s2(){sgCtl.mode.set('fm');sgCtl.lvl.set(-70);sgCtl.dev.set(2.5);sgCtl.tone.set(1000);sgCtl.intf.set('off');},
+ s3(){sgCtl.mode.set('tetra');sgCtl.lvl.set(-95);sgCtl.intf.set('off');},
+ s4(){sgCtl.mode.set('dmr');sgCtl.lvl.set(-100);sgCtl.intf.set('adj');sgCtl.ilvl.set(-60);},
+ f1(){flCtl.coax.set('rg58');flCtl.len.set(60);flCtl.f.set(420);flCtl.pw.set(25);flCtl.load.set('good');},
+ f2(){flCtl.coax.set('lmr400');flCtl.len.set(15);flCtl.load.set('short');},
+ f3(){flCtl.coax.set('rg213');flCtl.len.set(120);flCtl.load.set('wet');},
+ f4(){flCtl.coax.set('lmr400');flCtl.len.set(10);flCtl.load.set('dummy');},
+ m1(){mnPreset('blank');$('#mn-preset').value='blank';M.sites.push({x:62,y:24,tech:'tetra'});M.dirty=true;mnBand.set(420);$$('input[name=mn-net]').forEach(e=>e.checked=e.value==='tetra');M.net='tetra';M.miner={x:62,y:24};mnRedraw();},
+ m2(){mnPre.set('leaky');ampAt.fill(0);M.dirty=true;$$('input[name=mn-net]').forEach(e=>e.checked=e.value==='dmr');M.net='dmr';M.miner={x:105,y:60};mnRedraw();},
+ m3(){mnPre.set('tetra');$$('input[name=mn-net]').forEach(e=>e.checked=e.value==='tetra');M.net='tetra';$$('input[name=mn-view]').forEach(e=>e.checked=e.value==='dl');M.view='dl';mnRedraw();},
+ m4(){mnPre.set('hybrid');mnBand.set(150);},
+ d1(){dgRssi.set(-108);dgFade.set(false);},
+ d2(){dgRssi.set(-110);dgFade.set(false);},
+};
+$$('[data-exp]').forEach(b=>b.addEventListener('click',()=>{const f=EXPS[b.dataset.exp];if(f){f();const id=current;if(onShow[id])onShow[id]();b.textContent='Set up ✓';setTimeout(()=>b.textContent='Set up',1400);}}));
+
+/* boot */
+show(location.hash.slice(1)||'signal');
+requestAnimationFrame(loop);
+</script>
