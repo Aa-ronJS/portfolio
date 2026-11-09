@@ -1,29 +1,50 @@
 # Licensing playbook
 
-Five product ideas to license to bigger companies, plus the test every idea
-has to pass first. Researched November 2026. Nothing here has been filed,
-built or sent yet.
+Five product ideas to license to bigger companies, plus the test every
+idea has to pass first. Researched November 2026 in two rounds. Nothing
+here has been filed, built or sent yet.
 
-| # | Product | Score /14 | File |
-|---|---------|-----------|------|
-| 1 | Reproof tab: jacket label that says when the coating has worn off | 13 | [1-reproof-tab.md](1-reproof-tab.md) |
-| 2 | Pan-ready click disc: pops when the pan is hot enough | 12 | [2-pan-ready-disc.md](2-pan-ready-disc.md) |
-| 3 | Mug tilt rail: stops puddles on mugs in the dishwasher | 11 | [3-mug-tilt-rail.md](3-mug-tilt-rail.md) |
-| 4 | Green-zone gauge for dog ramps | 10 | [4-ramp-gauge.md](4-ramp-gauge.md) |
-| 5 | One-pump-per-zone sunscreen | 9 | [5-sunscreen-dose.md](5-sunscreen-dose.md) |
+| Product | Score /14 | File |
+|---------|-----------|------|
+| Reproof indicator: a tab that shows when a water-repellent coating has worn off (jackets, tents, boat covers, awnings) | 13 | [1-reproof-tab.md](1-reproof-tab.md) |
+| Wear marks for pickleball paddles: printed dots that fade as the grit wears | 13 | [4-paddle-wear-marks.md](4-paddle-wear-marks.md) |
+| Pan-ready click disc: pops when the pan is hot enough | 12 | [2-pan-ready-disc.md](2-pan-ready-disc.md) |
+| Mug tilt rail: stops puddles on mugs in the dishwasher | 11 | [3-mug-tilt-rail.md](3-mug-tilt-rail.md) |
+| Fit mark for sun-protective swim shirts: turns striped when outgrown | 10 | [5-rashie-fit-mark.md](5-rashie-fit-mark.md) |
+
+## What changed in round two
+
+Round one produced one strong idea and four small ones. Round two took
+the strong idea's pattern and looked for it elsewhere:
+
+> Something wears out invisibly. A cheap printed or mechanical signal
+> makes it visible. The company that sells the replacement profits every
+> time the signal shows.
+
+Findings:
+
+- **The pattern is old where the product is old.** Razors, toothbrushes,
+  shoes, hi-vis clothing and commercial cutting boards already have wear
+  indicators, on sale or patented.
+- **It's open where the product or the problem is new.** PFAS-free
+  coatings are new. Rough-faced pickleball paddles are new. Those are
+  the two 13s.
+- **The reproof tab is wider than jackets.** The maker of Sunbrella
+  outdoor fabric tells owners to re-treat with a named product and check
+  with a water-drop test. The same tab works there.
 
 ## Part 1: the test
 
 The test has three kill rules and seven scores. Only the kill rules can
-kill an idea outright. Everything else is scored, so one weak spot doesn't
-sink an otherwise good idea.
+kill an idea outright. Everything else is scored, so one weak spot
+doesn't sink an otherwise good idea.
 
 ### Kill rules
 
 | Rule | Kills the idea if... | Does NOT kill it |
 |------|----------------------|------------------|
-| K1 Already sold | The same product with the same mechanism is on sale now | A similar product, an old patent, or a product that solves the problem badly |
-| K2 Too hard to make | A licensee would need new factory technology, or regulatory approval (medical, child safety) | Needing a new mould or a bought-in part |
+| K1 Already sold or patented | The same product with the same mechanism is on sale, or a live patent claims it | A similar product, an expired patent, or a product that solves the problem badly |
+| K2 Too hard to make | A licensee would need new factory technology, or regulatory approval (medical, child safety) | Needing a new mould, print pass or bought-in part |
 | K3 Nobody to pitch | Fewer than 5 companies already sell in that aisle | No open submission portal (direct contact still counts) |
 
 Prior art is a reason to redesign, not to quit. If a search finds
@@ -54,52 +75,55 @@ Each step costs under about A$200. Stop at the first failure and redesign.
    confidential.
 4. **Pitch 30 companies** with a sell sheet and a 60-second video.
 5. **Read the signal.** If 3 or more ask for more information, keep going.
-   If none of 30 reply with interest, shelve it. Stephen Key's own hit
-   rate on toys was 1 deal from hundreds of pitches, so silence from a few
-   companies means nothing.
+   If none of 30 reply with interest, shelve it.
 
 ### Ideas that failed the test
 
 | Idea | Result | Why |
 |------|--------|-----|
-| Air fryer liner hold-downs | K1 | Magnetic silicone clips are sold in dozens of Amazon listings |
+| Cutting board with a warning layer under the surface | K1 | San Jamar holds US 10,617,261 and 10,617,262 (granted 2020) on exactly this |
+| Fade indicator for hi-vis workwear | K1 | MiRiCal Emblems sells a "Sun-Safe Indicator" label that fades with the garment |
+| Wear indicator for running shoes | Score 5 = 0 | Several patents (US 6,922,916, US 7,353,770, US 6,578,291) |
+| Air fryer liner hold-downs | K1 | Magnetic silicone clips are sold in dozens of listings |
 | Jar lid that releases its vacuum | K1 | The EEASY Lid and EP2535290 already do it |
 | Litter box with adjustable entry | K1 | Richell PAW TRAX and others |
-| Colour-change "too hot" pan coating | Score 5 = 0 | SEB and Fissler hold dense patents; inks fade at 250°C |
+| Colour-change "too hot" pan coating | Score 5 = 0 | SEB and Fissler hold dense patents |
 | Pole for cordless blinds | Score 5 = 0 | US 8,739,853 covers it and poles are sold |
+| Angle gauge for dog ramps | Dropped | Passed at 10, but a ramp maker can add a gauge without a licence |
+| One-pump-per-zone sunscreen | Dropped | Passed at 9, but nothing to patent |
 
 ## Part 2: what's ready and what isn't
 
-Each product file contains the evidence, the design, the prior art found,
-a description ready to adapt for a provisional patent, a prototype
-shopping list, the companies to pitch with contact routes, the pitch
-email and the sell sheet copy.
+Each product file contains the evidence, the design, the prior art
+found, a description ready to adapt for a provisional patent, a
+prototype shopping list, the companies to pitch with contact routes,
+the pitch email and the sell sheet copy.
 
 Three things only you can do:
 
 1. **Build and film the prototypes.** Shopping lists are in each file.
-   My cost estimates are rough: about A$100 to A$200 per product.
+   My cost estimates are rough: about A$40 to A$150 per product.
 2. **File the provisionals.** A$100 each at IP Australia. A patent
    attorney's drafting fee is extra and I couldn't find a published
-   price; budget a few thousand dollars per idea if you use one. A
-   cheaper route is to self-file from the descriptions here and pay an
-   attorney only to review the top two.
+   price. A cheaper route is to self-file from the descriptions here
+   and pay an attorney only to review the two 13s.
 3. **Send the pitches.** Not before step 2.
 
 ## Caveats
 
-- **The patent searches are web searches, not attorney searches.** I found
-  no blocking product or patent for the five, but a proper search could.
-- **Costs and retail prices are my estimates**, not supplier quotes.
-- **Some contact routes are unverified.** Each file marks which ones I
-  confirmed on the company's own site.
+- **The patent searches are web searches, not attorney searches.** Round
+  two killed two ideas that looked open after a first search, so a
+  proper search could kill more.
+- **Costs and prices are my estimates**, not supplier quotes.
+- **Contact routes:** confirmed for Lifetime Brands, Nikwax and Gear Aid.
+  The paddle and swimwear pitches are all cold approaches.
 - **I'm not a patent attorney.** The provisional descriptions are drafts.
 
 ## Suggested order
 
 | Week | Do |
 |------|----|
-| 1 | Order parts for products 1 to 3. Build the three bench tests. |
-| 2 | Ten-stranger test on each. Film 60-second demos. |
-| 3 | File provisionals for the ones that passed. |
-| 4 to 8 | Pitch 30 companies per product. Build products 4 and 5 while waiting. |
+| 1 | Bench-test the reproof tab and the paddle wear marks. |
+| 2 | Ten-stranger test and 60-second film for each. |
+| 3 | File provisionals for both. |
+| 4 to 8 | Pitch 30 companies each. Bench-test the pan disc, mug rail and fit mark while waiting. |

@@ -43,6 +43,29 @@ An alternative build uses water-reveal ink (white when dry, clear when
 wet), which is sold for screen printing
 ([SFXC](https://www.sfxc.co.uk/products/hydrochromic-ink-paint-for-fabric)).
 
+## Wider market: outdoor fabrics
+
+The same tab works on anything with a re-treatable water-repellent
+finish: tents, swags, awnings, boat covers, outdoor cushions.
+
+- Glen Raven, which makes Sunbrella outdoor fabric, tells owners to
+  re-treat "after thorough cleaning or as needed" and names 303 Fabric
+  Guard as its preferred product
+  ([Sunbrella](https://www.sunbrella.com/blog/cleaning--protecting-with-303)).
+- The check is the same water-drop test: "if the water soaks in, it's
+  time to re-treat"
+  ([Sailrite](https://www.sailrite.com/how-to-treat-sunbrella-fabric)).
+- So there is already a fabric maker and a re-treatment brand working
+  as a pair, with no signal between them.
+
+Extra licensees this opens up:
+
+| Company | Why | Verified? |
+|---------|-----|-----------|
+| Gold Eagle (303 Fabric Guard) | Every signal sells a bottle | Product yes; contact route no |
+| Glen Raven (Sunbrella) | Could sew it into every cover and awning | No route found |
+| Australian swag, tent and awning makers | Canvas reproofing is routine for campers | Not researched yet |
+
 ## Prior art found
 
 | Reference | What it is | Why it doesn't block |
