@@ -54,3 +54,11 @@ Three independent things live here:
 The portfolio site and the pipeline share nothing except
 `public/fonts/satoshi-var.woff2`, which the pipeline ships converted to
 TTF for captions.
+
+## How to answer Aaron's questions
+
+Aaron is **not a painter or tradie**. Chasem is one project, not who he is.
+When he asks a general question (business ideas, research, strategy,
+"what's out there"), give a **broad, non-tailored answer researched on
+the web**. Don't frame it around this repo, Chasem or painting, and don't
+rehash repo contents unless he asks about them.
