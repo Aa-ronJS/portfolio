@@ -25,6 +25,9 @@ Three independent things live here:
   name "Quote and Chase" is gone and should not come back.
   `chasem-landing/public/app/` is a byte-for-byte copy of `chasem-app/`;
   keep them identical and bump `sw.js`'s VERSION when you change one.
+  `tools/sync-chasem.sh --bump` does both. `tools/check-chasem-sync.sh` checks it, and
+  runs as a Stop hook (`.claude/settings.json`) and in CI (`.github/workflows/chasem.yml`),
+  so a session can't end with the copies drifted. To ship, use the `/ship-chasem` skill.
 
   **Two rules that outrank everything else in Chasem:**
 

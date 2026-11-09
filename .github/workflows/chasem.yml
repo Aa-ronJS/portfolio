@@ -1,0 +1,53 @@
+# Chasem: every push and PR that touches it runs the relay tests, the ~50 browser
+# suites, and the check that the two copies of the app match and sw.js was bumped.
+name: chasem
+on:
+  push:
+    paths: ['chasem-app/**', 'chasem-landing/**', 'tools/*chasem*', '.github/workflows/chasem.yml']
+  pull_request:
+    paths: ['chasem-app/**', 'chasem-landing/**', 'tools/*chasem*', '.github/workflows/chasem.yml']
+  workflow_dispatch:
+
+concurrency:
+  group: chasem-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  sync:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with: { fetch-depth: 0 }
+      - name: app copy matches and sw.js VERSION moved
+        run: BASE=origin/master tools/check-chasem-sync.sh
+
+  relay:
+    runs-on: ubuntu-latest
+    defaults: { run: { working-directory: chasem-landing } }
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with: { node-version: 20, cache: npm, cache-dependency-path: chasem-landing/package-lock.json }
+      - run: npm ci
+      - run: npm test
+
+  app:
+    runs-on: ubuntu-latest
+    timeout-minutes: 60
+    defaults: { run: { working-directory: chasem-app } }
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with: { node-version: 20, cache: npm, cache-dependency-path: chasem-app/package-lock.json }
+      - uses: actions/setup-python@v5
+        with: { python-version: '3.12' }
+      - run: npm ci
+      - name: render the wall photos the measuring tests check against
+        working-directory: chasem-app/tests
+        run: |
+          pip install -q opencv-python-headless numpy
+          python3 mtest/scene.py && python3 mtest/scene2.py
+          python3 mtest/scene3.py && python3 mtest/scene3.py bias
+          python3 smoke/measure/scene4.py && python3 smoke/measure/fixtures.py
+      - name: every browser suite
+        run: QC_CHROME=/usr/bin/google-chrome npm test
