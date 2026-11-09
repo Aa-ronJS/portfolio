@@ -62,3 +62,7 @@ When he asks a general question (business ideas, research, strategy,
 "what's out there"), give a **broad, non-tailored answer researched on
 the web**. Don't frame it around this repo, Chasem or painting, and don't
 rehash repo contents unless he asks about them.
+
+Don't hand decisions back to him. When there's a choice about what to
+research or do next, make it, say what you chose, and do the work. Don't
+end with "which would you like?"
