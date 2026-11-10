@@ -2,12 +2,13 @@
 
 Built by `pipeline.py` from `ideas.json`. Don't edit this file by hand.
 
-6 live, 5 through the kill checks and waiting to be scored, 8 waiting to be screened, 42 killed or shelved. Patent money spent so far: A$0.
+7 live, 4 through the kill checks and waiting to be scored, 8 waiting to be screened, 42 killed or shelved. Patent money spent so far: A$0.
 
 ## Live ideas, best first
 
 | Idea | Stage | Score /14 | Odds | Worth (expected) | Patent money? | Next step |
 |------|-------|-----------|------|------------------|---------------|-----------|
+| [Cat Picasso scratch-art wrap](../play/cat-picasso.md) | sized | 10 | 7% | A$39,200 | Not yet. Prove it first. | Problem probe: ask 10 companies about the problem only. Then bench test and 10 strangers. |
 | [Paddle wear marks](../4-paddle-wear-marks.md) | sized | 12 | 6% | A$22,950 | Not yet. Prove it first. | Problem probe: ask 10 companies about the problem only. Then bench test and 10 strangers. |
 | [Reproof tab](../1-reproof-tab.md) | sized | 13 | 10% | A$21,750 | Not yet. Prove it first. | Problem probe: ask 10 companies about the problem only. Then bench test and 10 strangers. |
 | [Dishwasher door-popper](../6-dishwasher-door-pop.md) | sized | 12 | 6% | A$18,900 | Not yet. Prove it first. | Problem probe: ask 10 companies about the problem only. Then bench test and 10 strangers. |
@@ -22,7 +23,6 @@ Built by `pipeline.py` from `ideas.json`. Don't edit this file by hand.
 | Idea | What the check found |
 |------|----------------------|
 | Cold Case mystery game | PLAY LANE. Hook: the evidence was erased and your freezer brings it back. First case sketched in play/cold-case.md. No patent needed; pitched on a prototype and video. |
-| Cat Picasso scratch-art scratcher | PLAY LANE. Layered colours under a dark top sheet; the cat's scratches make a painting. No product found. Needs a cat and a week. |
 | Hot Hands heat-print party game | PLAY LANE. A touch leaves a fading heat print; the detective reads who touched what. No game found. |
 | Dark Tent walk-in camera | PLAY LANE. Blackout play tent with a lens; the garden appears upside down inside. No retail product found. |
 | Night Visitors footprint kit | PLAY LANE. Ink tunnel that records overnight animal footprints. Sold for conservation use; no children's kit found. |

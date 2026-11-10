@@ -26,7 +26,7 @@ someone show this to a friend?**
 | Idea | One line | Nothing like it found? | File |
 |------|----------|------------------------|------|
 | Cold Case | A mystery game where the evidence was erased, and your freezer brings it back | No published game found using freezer, heat and water reveals together | [cold-case.md](cold-case.md) |
-| Cat Picasso | A scratcher that turns into a painting as the cat claws through coloured layers. Comes with a frame | No product found | below |
+| Cat Picasso | A scratching-post wrap that becomes a painting as the cat claws through coloured layers. Frame it, fit a fresh wrap | No product found | [cat-picasso.md](cat-picasso.md) |
 | Hot Hands | A party game where your fingerprints give you away: touch a card and your heat print shows for a few seconds | No game found; one 2015 patent application on colour-changing cards, status unknown | below |
 | Dark Tent | A play tent that is a walk-in camera: the garden appears upside down on the wall inside | No retail product found; the principle is centuries old | below |
 | Night Visitors | A backyard kit that collects the footprints of whatever came through overnight | Sold to conservation groups (NHBS); no children's kit found | below |
@@ -35,22 +35,8 @@ Each has had one product search. None has been built or played.
 
 ### Cat Picasso
 
-- **What it is:** a flat scratch board built from layers of different
-  coloured card under a dark top sheet. Each scratch tears through to a
-  colour. After a few weeks the board is an abstract painting, and it
-  comes with a frame to hang it in.
-- **Why it could travel:** every one is unique and made by the buyer's
-  own cat, which is exactly what people post. A cardboard scratcher
-  featured by one Costco account drew over 4.9 million views.
-- **Market:** cat scratchers are put at about US$0.8 billion a year by
-  one market report.
-- **Who to pitch:** Suck UK (its site invites idea submissions and it
-  already sells novelty cat scratchers), Kazoo (Australian; sells a
-  games-console scratcher), Petmate (inventor page), Frisco, KONG, Catit.
-- **Biggest doubt:** cats prefer the edge of corrugated card to a flat
-  face. It needs a cat and a week.
-- **Bench test:** glue five sheets of coloured card under black card on
-  a board, rub in catnip, and photograph it daily.
+Now a removable, replaceable wrap around a post. Written up in full in
+[cat-picasso.md](cat-picasso.md).
 
 ### Hot Hands
 

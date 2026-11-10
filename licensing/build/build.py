@@ -119,6 +119,27 @@ def fig_fit():
 <text x="350" y="206" text-anchor="middle" class="sub">Stretched fabric. Sun turns stripy.</text>
 </svg>'''
 
+def fig_cat():
+    def streaks(x0, y0, sx, sy):
+        cols = ["var(--signal)", "var(--accent)", "#e0b020", "var(--signal)", "var(--accent)", "#e0b020", "var(--signal)"]
+        pts = [(12, 18, 6, 50), (26, 30, -4, 62), (40, 12, 5, 44), (52, 48, -3, 52), (20, 78, 4, 40), (46, 92, -5, 34), (34, 58, 3, 46)]
+        return "".join(
+            f'<line x1="{x0+px*sx:.0f}" y1="{y0+py*sy:.0f}" x2="{x0+(px+dx)*sx:.0f}" y2="{y0+(py+dy)*sy:.0f}" stroke="{c}" stroke-width="{4*sx:.0f}" stroke-linecap="round"/>'
+            for (px, py, dx, dy), c in zip(pts, cols))
+    return f'''<svg viewBox="0 0 480 230" role="img" aria-label="A scratching post with a dark wrap scratched through to bright colours, and the same wrap unrolled and hanging in a frame.">
+<ellipse cx="110" cy="166" rx="62" ry="9" fill="var(--muted)"/>
+<rect x="76" y="20" width="68" height="146" rx="8" fill="var(--fg)"/>
+{streaks(76, 20, 1, 1)}
+<path d="M196 92 h56 m-14 -12 l14 12 l-14 12" fill="none" stroke="var(--muted)" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/>
+<rect x="292" y="14" width="136" height="152" fill="var(--surface)" stroke="var(--fg)" stroke-width="5"/>
+<rect x="306" y="28" width="108" height="124" fill="var(--fg)"/>
+{streaks(306, 28, 1.6, 0.85)}
+<text x="110" y="196" text-anchor="middle" class="cap">On the post</text>
+<text x="110" y="214" text-anchor="middle" class="sub">Scratches reveal the colours.</text>
+<text x="360" y="196" text-anchor="middle" class="cap">On the wall</text>
+<text x="360" y="214" text-anchor="middle" class="sub">Unroll, frame, fit a fresh wrap.</text>
+</svg>'''
+
 # ---------------------------------------------------------------- products
 
 PRODUCTS = [
@@ -326,6 +347,34 @@ PRODUCTS = [
         ],
         figdesc="Figure 1 shows the indicator in two states: on the left with the fabric relaxed, appearing solid; on the right with the fabric extended, appearing striped.",
     ),
+    dict(
+        slug="cat-picasso", name="Cat Picasso", fig=fig_cat, site=False, status="Design concept",
+        line="Your cat makes the painting.",
+        category="Cat scratching posts and gifts",
+        problem=[
+            "Scratching posts wear out and get thrown away.",
+            "Replacement wraps already sell, but they are only spare parts.",
+            "Owners love sharing what their cats do, and a worn post gives them nothing to share.",
+        ],
+        how=[
+            "A removable wrap of coloured card layers under a dark outer layer.",
+            "Each scratch tears through to a colour.",
+            "When it&rsquo;s finished, the wrap comes off, unrolls flat and goes in a frame.",
+            "A fresh wrap goes on the post.",
+        ],
+        value=[
+            "Every finished artwork sells a refill.",
+            "Each one is unique and made by the buyer&rsquo;s own cat.",
+            "Printed card and two straps. Nothing new to manufacture.",
+            "A wrap-only pack fits posts people already own.",
+        ],
+        facts=[
+            ("30 &times; 40 cm", "the wrap unrolls to a standard frame size"),
+            ("US$0.8 billion", "a year spent on cat scratchers (one market estimate)"),
+        ],
+        field="", background="", summary="x", detail=[], variants=[], figdesc="",
+    ),
+
 ]
 
 # ---------------------------------------------------------------- shared CSS
@@ -350,9 +399,11 @@ def ul(items):
 def site():
     nav = "".join(
         f'<li><a href="#{p["slug"]}"><span class="n">{p["name"]}</span><span class="l">{p["line"]}</span><span class="c">{p["category"]}</span></a></li>'
-        for p in PRODUCTS)
+        for p in PRODUCTS if p.get("site") is not False)
     sections = ""
     for p in PRODUCTS:
+        if p.get("site") is False:
+            continue
         facts = "".join(f'<div class="fact"><b>{v}</b><span>{k}</span></div>' for v, k in p["facts"])
         sections += f'''
 <section class="product" id="{p["slug"]}">
@@ -469,7 +520,7 @@ footer b{{color:var(--fg)}}
 <div><h2>How it works</h2>{ul(p["how"])}</div>
 <div><h2>Why license it</h2>{ul(p["value"])}</div>
 </div>
-<footer><span><b>{INVENTOR}</b>, inventor</span><span>Design concept &middot; Patent pending</span><span>Reply to the covering email</span></footer>
+<footer><span><b>{INVENTOR}</b>, inventor</span><span>{p.get("status", "Design concept &middot; Patent pending")}</span><span>Reply to the covering email</span></footer>
 </body></html>'''
 
 # ---------------------------------------------------------------- provisional specs
@@ -522,7 +573,8 @@ def main():
     (ROOT / "site" / "pitch-site.html").write_text(site())
     for p in PRODUCTS:
         (ROOT / "sell-sheets" / f'{p["slug"]}.html').write_text(sheet(p))
-        (ROOT / "filing" / f'{p["slug"]}.html').write_text(spec(p))
+        if p["slug"] in TITLES:
+            (ROOT / "filing" / f'{p["slug"]}.html').write_text(spec(p))
     print("built", len(PRODUCTS), "products")
 
 

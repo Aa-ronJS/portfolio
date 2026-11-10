@@ -419,9 +419,23 @@
     },
     {
       "id": "cat-picasso",
-      "name": "Cat Picasso scratch-art scratcher",
-      "stage": "screened",
-      "note": "PLAY LANE. Layered colours under a dark top sheet; the cat's scratches make a painting. No product found. Needs a cat and a week."
+      "name": "Cat Picasso scratch-art wrap",
+      "stage": "sized",
+      "scores": [
+        1,
+        1,
+        2,
+        2,
+        1,
+        1,
+        2
+      ],
+      "odds": 0.07,
+      "modest": 80000,
+      "strong": 800000,
+      "spent": 0,
+      "file": "play/cat-picasso.md",
+      "note": "Play lane. Removable, replaceable wrap (Aaron's design). Needs a cat and two weeks. No patent money: design registration and a name at most."
     },
     {
       "id": "hot-hands",
