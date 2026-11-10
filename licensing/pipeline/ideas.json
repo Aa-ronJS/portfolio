@@ -410,6 +410,48 @@
       "name": "Problem: adult bed rails, the most-repeated US recall type, for entrapment",
       "stage": "raw",
       "pattern": "recall"
+    },
+    {
+      "id": "cold-case",
+      "name": "Cold Case mystery game",
+      "stage": "screened",
+      "note": "PLAY LANE. Hook: the evidence was erased and your freezer brings it back. First case sketched in play/cold-case.md. No patent needed; pitched on a prototype and video."
+    },
+    {
+      "id": "cat-picasso",
+      "name": "Cat Picasso scratch-art scratcher",
+      "stage": "screened",
+      "note": "PLAY LANE. Layered colours under a dark top sheet; the cat's scratches make a painting. No product found. Needs a cat and a week."
+    },
+    {
+      "id": "hot-hands",
+      "name": "Hot Hands heat-print party game",
+      "stage": "screened",
+      "note": "PLAY LANE. A touch leaves a fading heat print; the detective reads who touched what. No game found."
+    },
+    {
+      "id": "dark-tent",
+      "name": "Dark Tent walk-in camera",
+      "stage": "screened",
+      "note": "PLAY LANE. Blackout play tent with a lens; the garden appears upside down inside. No retail product found."
+    },
+    {
+      "id": "night-visitors",
+      "name": "Night Visitors footprint kit",
+      "stage": "screened",
+      "note": "PLAY LANE. Ink tunnel that records overnight animal footprints. Sold for conservation use; no children's kit found."
+    },
+    {
+      "id": "heat-jigsaw",
+      "name": "Jigsaw that transforms with heat when finished",
+      "stage": "killed",
+      "reason": "K1: Galt and Gift Republic sell heat-sensitive jigsaws"
+    },
+    {
+      "id": "thirsty-pot",
+      "name": "Plant pot that shows a message when the soil is dry",
+      "stage": "shelved",
+      "reason": "Colour-changing soil inserts are sold (PlantDoc, Wrox) and US 8,997,682 covers the indicator"
     }
   ]
 }

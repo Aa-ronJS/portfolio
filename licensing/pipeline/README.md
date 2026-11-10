@@ -94,6 +94,16 @@ Three places to find them, best first:
 3. **Counted complaints.** Logged cases, recall counts, poll numbers.
    A single forum post doesn't count.
 
+## The play lane
+
+Problem-first sourcing finds useful products, and useful products are
+often dull. A second lane, in `licensing/play/`, starts from delight:
+a physical effect that surprises people, turned into a toy, game or
+gift. It has its own first question (would someone show this to a
+friend?), needs no patent, and is pitched on a prototype and a video.
+Play ideas sit on the board without a money figure until one has been
+built and tried on real people.
+
 ## Rules learned the hard way
 
 1. **Read the patent claims before scoring, not after.** A search
@@ -112,6 +122,9 @@ Three places to find them, best first:
    boards and golf clubs.
 6. **The retrofit is often the opening.** Makers patent the built-in
    fix for new models. The add-on for the millions of old ones is left.
+8. **Useful is not the same as wanted.** Three rounds of fixes for small
+   annoyances were called boring, fairly. Ask of every idea whether
+   anyone would be excited to own it or show it.
 7. **When a batch comes back empty, change where the ideas come from**
    before running another.
 

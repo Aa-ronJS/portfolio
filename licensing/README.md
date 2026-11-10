@@ -14,6 +14,12 @@ what would make us surer, see [CONFIDENCE.md](CONFIDENCE.md).
 | Mug tilt rail: stops puddles on mugs in the dishwasher | 11 | [3-mug-tilt-rail.md](3-mug-tilt-rail.md) |
 | Fit mark for sun-protective swim shirts: turns striped when outgrown | 10 | [5-rashie-fit-mark.md](5-rashie-fit-mark.md) |
 
+## The play lane
+
+Toys, games and novelty ideas, judged on delight first, are in
+[play/README.md](play/README.md). The first one written up is a mystery
+game, [Cold Case](play/cold-case.md).
+
 ## What changed in round two
 
 Round one produced one strong idea and four small ones. Round two took

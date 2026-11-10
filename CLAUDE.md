@@ -82,3 +82,8 @@ separate from everything else in this repo. Start with
 `licensing/pipeline/BOARD.md` for the current state and
 `licensing/pipeline/README.md` for how ideas move through it.
 `/screen-ideas` runs the next batch.
+
+Aaron wants ideas with some excitement in them, not only tidy fixes for
+small annoyances. Lead with the ones people would want to own or show a
+friend (`licensing/play/`), and say plainly when an idea is merely
+useful.

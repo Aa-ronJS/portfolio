@@ -2,7 +2,7 @@
 
 Built by `pipeline.py` from `ideas.json`. Don't edit this file by hand.
 
-6 live, 0 through the kill checks and waiting to be scored, 8 waiting to be screened, 40 killed or shelved. Patent money spent so far: A$0.
+6 live, 5 through the kill checks and waiting to be scored, 8 waiting to be screened, 42 killed or shelved. Patent money spent so far: A$0.
 
 ## Live ideas, best first
 
@@ -21,6 +21,11 @@ Built by `pipeline.py` from `ideas.json`. Don't edit this file by hand.
 
 | Idea | What the check found |
 |------|----------------------|
+| Cold Case mystery game | PLAY LANE. Hook: the evidence was erased and your freezer brings it back. First case sketched in play/cold-case.md. No patent needed; pitched on a prototype and video. |
+| Cat Picasso scratch-art scratcher | PLAY LANE. Layered colours under a dark top sheet; the cat's scratches make a painting. No product found. Needs a cat and a week. |
+| Hot Hands heat-print party game | PLAY LANE. A touch leaves a fading heat print; the detective reads who touched what. No game found. |
+| Dark Tent walk-in camera | PLAY LANE. Blackout play tent with a lens; the garden appears upside down inside. No retail product found. |
+| Night Visitors footprint kit | PLAY LANE. Ink tunnel that records overnight animal footprints. Sold for conservation use; no children's kit found. |
 
 ## Waiting to be screened
 
@@ -81,3 +86,5 @@ Unchecked. Most will die at the kill checks.
 | No-drill furniture anchor for renters | K1: adhesive no-drill anchors are sold, and several states now let renters drill |
 | Safe opener for child-resistant coin and hearing-aid battery packs | Best-documented pain of the batch (3,500 logged cases), but general package openers exist, Rayovac is redesigning its packs and 69% of recent hearing-aid buyers chose rechargeable. Worth about A$3,000, below the A$5,000 bar |
 | Second lint filter or fin cleaner for heat pump dryers | Replacement foam filters for heat pump dryers are already sold per model, so a second filter is not new. A coil cleaner is a small chemical product |
+| Jigsaw that transforms with heat when finished | K1: Galt and Gift Republic sell heat-sensitive jigsaws |
+| Plant pot that shows a message when the soil is dry | Colour-changing soil inserts are sold (PlantDoc, Wrox) and US 8,997,682 covers the indicator |
