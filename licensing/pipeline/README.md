@@ -86,7 +86,7 @@ A sized idea needs `scores` (seven numbers, 0 to 2), `odds`, `modest` and
 
 ## What three batches have taught us
 
-- **About 9 in 10 ideas die at the free checks.** Of 43 ideas so far,
+- **About 9 in 10 ideas die at the free checks.** Of 37 ideas checked so far,
   5 are live. That is the system working: none of the dead ones cost
   anything.
 - **One patent blocks a whole family.** Under Armour's US 9,578,908
