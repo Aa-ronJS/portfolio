@@ -70,3 +70,11 @@ end with "which would you like?"
 When he questions the quality of work ("is that the best you can do?"),
 that is a request to go and do better, not to critique what was done.
 Do the improved work in the same reply.
+
+## Licensing ideas
+
+`licensing/` holds product ideas to license to bigger companies. It is
+separate from everything else in this repo. Start with
+`licensing/pipeline/BOARD.md` for the current state and
+`licensing/pipeline/README.md` for how ideas move through it.
+`/screen-ideas` runs the next batch.
