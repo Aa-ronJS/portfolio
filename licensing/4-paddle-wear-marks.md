@@ -2,7 +2,7 @@
 
 **One line:** "When the dots fade, your spin is gone."
 
-**Score: 13/14.** Pain 2, workaround 2, five-second 2, fits 2, protectable 2, tailwind 2, access 1.
+**Score: 12/14.** Pain 2, workaround 2, five-second 2, fits 2, protectable 1, tailwind 2, access 1. (Was 13 before the closer patent search below.)
 
 ## The problem
 
@@ -58,7 +58,23 @@ It adds one print pass and no parts.
 | [Reload paddle](https://www.reloadpaddle.com/) | Patented replaceable textured topsheet | Solves wear by swapping the face. Doesn't show when to swap, so it's also a possible licensee |
 | Razor wear strips ([US 5,388,331](https://patents.google.com/patent/US5388331)) | Top layer wears away to reveal a contrasting layer | Different product. Shows the general idea is old, so the claim must be on peak-only printing plus a protected reference |
 
-Two searches found no paddle wear indicator, in products or patents.
+| [US 9,005,046](https://patents.google.com/patent/US9005046) (Nike, now Karsten/PING; filed 2011) | "Golf club head or other ball striking device with wear indicator": a shallow indent in the face that disappears as the face wears. The description lists rackets and bats, and mentions optional paint that wears away | **Closest reference, found on a second pass.** Google lists it as expired for unpaid fees, so it shouldn't stop anyone making this, but it is prior art. It means "a mark on a striking face that vanishes with wear" is not new |
+| [US 8,430,761](https://patents.google.com/patent/US8430761) (Nike, now Karsten; filed 2009) | Golf club wear indicators, including an outer coating that wears through to a different colour | Also listed as expired. Same effect on novelty |
+| [US 11,254,112](https://patents.google.com/patent/US11254112) (Stryker) | Mattress cover with a wear layer and a durable reference layer for colour comparison | Different field, but shows the reference-mark idea exists |
+
+Two searches found no paddle wear indicator on sale. **A second, closer
+patent search found the golf references above.** What is left to claim is
+narrower than I first said:
+
+1. the marking sits only on the peaks of a spin texture, so its fading
+   tracks the loss of roughness and not general face wear; and
+2. matching reference marks in a zone the ball never hits.
+
+That is a real difference, but a patent examiner may call it an obvious
+step from the golf patents. I've cut the score for "something to
+protect" from 2 to 1 and the odds of a deal from 8% to 6%. Have an
+attorney confirm both golf patents have lapsed and give a view on what
+can be claimed before filing.
 
 ## Draft description for a provisional
 

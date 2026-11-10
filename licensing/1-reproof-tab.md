@@ -74,7 +74,22 @@ Extra licensees this opens up:
 | [US 10,993,484](https://image-ppubs.uspto.gov/dirsearch-public/print/downloadPdf/10993484) | Fabric with coated and uncoated areas that show a pattern when wet | The pattern shows whenever it rains. Ours shows only after the coating wears out. Closest reference: have an attorney read its claims |
 | [US 2009/0064919](https://patents.google.com/patent/US20090064919A1/en) | Tag that changes colour with water or sweat | A use indicator, not a wear indicator |
 
+| [US 9,578,908](https://patents.google.com/patent/US9578908) (Under Armour; active, runs to about 2035) | Clothing with a coloured part hidden under a second coloured layer that fades with wear and washing, exposing the first | **Found on a second pass. The most important one to design around.** Its claims need the covering layer to fade. Ours never fades: it turns see-through only while wet, and only once the coating has gone. It also covers clothing only, not tents, awnings or covers |
+
 I found no product and no patent for an indicator of coating failure.
+
+**Design rules that keep clear of the two live patents** (my reading, not
+legal advice):
+
+- The covering layer must not fade or wear away. The reveal comes from
+  wetting only.
+- The tab is coated all over. No pattern of coated and uncoated patches,
+  which is what Nike's US 10,993,484 claims.
+- The stick-on patch for care brands is the safest first product: it is
+  sold as an accessory, and the same design works on non-clothing.
+
+A closer read of US 10,993,484 confirms it is about showing that the
+ground or air is wet. It says nothing about the coating wearing out.
 
 ## Draft description for a provisional
 

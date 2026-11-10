@@ -7,7 +7,7 @@ here has been filed, built or sent yet.
 | Product | Score /14 | File |
 |---------|-----------|------|
 | Reproof indicator: a tab that shows when a water-repellent coating has worn off (jackets, tents, boat covers, awnings) | 13 | [1-reproof-tab.md](1-reproof-tab.md) |
-| Wear marks for pickleball paddles: printed dots that fade as the grit wears | 13 | [4-paddle-wear-marks.md](4-paddle-wear-marks.md) |
+| Wear marks for pickleball paddles: printed dots that fade as the grit wears | 12 | [4-paddle-wear-marks.md](4-paddle-wear-marks.md) |
 | Pan-ready click disc: pops when the pan is hot enough | 12 | [2-pan-ready-disc.md](2-pan-ready-disc.md) |
 | Mug tilt rail: stops puddles on mugs in the dishwasher | 11 | [3-mug-tilt-rail.md](3-mug-tilt-rail.md) |
 | Fit mark for sun-protective swim shirts: turns striped when outgrown | 10 | [5-rashie-fit-mark.md](5-rashie-fit-mark.md) |
@@ -27,8 +27,8 @@ Findings:
   shoes, hi-vis clothing and commercial cutting boards already have wear
   indicators, on sale or patented.
 - **It's open where the product or the problem is new.** PFAS-free
-  coatings are new. Rough-faced pickleball paddles are new. Those are
-  the two 13s.
+  coatings are new. Rough-faced pickleball paddles are new. Those were
+  the two top scorers.
 - **The reproof tab is wider than jackets.** The maker of Sunbrella
   outdoor fabric tells owners to re-treat with a named product and check
   with a water-drop test. The same tab works there.
@@ -84,6 +84,7 @@ Each step costs under about A$200. Stop at the first failure and redesign.
 | Cutting board with a warning layer under the surface | K1 | San Jamar holds US 10,617,261 and 10,617,262 (granted 2020) on exactly this |
 | Fade indicator for hi-vis workwear | K1 | MiRiCal Emblems sells a "Sun-Safe Indicator" label that fades with the garment |
 | Wear indicator for running shoes | Score 5 = 0 | Several patents (US 6,922,916, US 7,353,770, US 6,578,291) |
+| Mattress protector with a failure indicator | K1 | Stryker holds US 11,254,112 |
 | Air fryer liner hold-downs | K1 | Magnetic silicone clips are sold in dozens of listings |
 | Jar lid that releases its vacuum | K1 | The EEASY Lid and EP2535290 already do it |
 | Litter box with adjustable entry | K1 | Richell PAW TRAX and others |
@@ -106,7 +107,7 @@ Three things only you can do:
 2. **File the provisionals.** A$100 each at IP Australia. A patent
    attorney's drafting fee is extra and I couldn't find a published
    price. A cheaper route is to self-file from the descriptions here
-   and pay an attorney only to review the two 13s.
+   and pay an attorney only to review the top two.
 3. **Send the pitches.** Not before step 2.
 
 ## Caveats
@@ -123,7 +124,7 @@ Three things only you can do:
 
 | Week | Do |
 |------|----|
-| 1 | Bench-test the reproof tab and the paddle wear marks. |
+| 1 | Bench-test the reproof tab and the paddle wear marks. Ask an attorney about the golf patents. |
 | 2 | Ten-stranger test and 60-second film for each. |
 | 3 | File provisionals for both. |
 | 4 to 8 | Pitch 30 companies each. Bench-test the pan disc, mug rail and fit mark while waiting. |

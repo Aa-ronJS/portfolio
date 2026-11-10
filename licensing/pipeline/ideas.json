@@ -18,7 +18,7 @@
       "strong": 275000,
       "spent": 0,
       "file": "1-reproof-tab.md",
-      "note": "Bench test next. Attorney should read US 10,993,484."
+      "note": "Bench test next. Attorney to read Under Armour US 9,578,908 (active) and Nike US 10,993,484 (active). Keep the design to reveal-by-wetting, fully coated."
     },
     {
       "id": "grit-dots",
@@ -29,16 +29,16 @@
         2,
         2,
         2,
-        2,
+        1,
         2,
         1
       ],
-      "odds": 0.08,
+      "odds": 0.06,
       "modest": 60000,
       "strong": 525000,
       "spent": 0,
       "file": "4-paddle-wear-marks.md",
-      "note": "Bench test next. All pitches are cold approaches."
+      "note": "Golf patents US 9,005,046 and US 8,430,761 show face wear indicators; both listed as expired. Protection now rests on peak-only printing plus reference marks."
     },
     {
       "id": "pan-click",
@@ -78,7 +78,7 @@
       "strong": 190000,
       "spent": 0,
       "file": "3-mug-tilt-rail.md",
-      "note": "Check the MugBrick product before anything else."
+      "note": "MugBrick checked: it is a couch cup holder, not a rival. Closest reference is EP 1993427."
     },
     {
       "id": "fit-mark",
@@ -236,9 +236,9 @@
     {
       "id": "mattress-protector",
       "name": "Mattress protector mark that shows when the waterproof layer has failed",
-      "stage": "screened",
+      "stage": "killed",
       "pattern": "wear-out",
-      "note": "No indicator found. Mechanism not designed yet."
+      "reason": "K1: Stryker holds US 11,254,112, a mattress cover with a wear layer that reveals an indicator"
     },
     {
       "id": "helmet-age",

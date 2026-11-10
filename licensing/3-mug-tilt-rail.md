@@ -39,7 +39,7 @@ tines on the top rack and stays there.
 | [EP 1993427 B1](https://data.epo.org/gpi/EP1993427B1) | Dishwasher rack insert that holds items (baby bottles) inclined against a strut | Closest reference. A different structure for a different item, but an attorney should read the claims |
 | Silicone stemware holders | Clip a wine glass stem to a tine | For stability, not drainage |
 | Angled side rows built into some racks | Maker's own rack design | Not a retrofit, and only at the sides |
-| "MugBrick" (listed on The Grommet) | Unknown: I couldn't open the page | **Check this first.** If it's the same thing, K1 kills the idea |
+| MugBrick | A silicone drink holder for couches and desks | Checked: not a dishwasher product. No conflict |
 
 ## Draft description for a provisional
 
@@ -119,4 +119,3 @@ rail won't stay on different racks.
 - The handle-down loading trick is free and partly works.
 - Rack designs vary a lot. Fit is the main engineering problem.
 - No tailwind: this sells on a universal annoyance alone.
-- MugBrick is unchecked.

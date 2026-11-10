@@ -2,13 +2,13 @@
 
 Built by `pipeline.py` from `ideas.json`. Don't edit this file by hand.
 
-5 live, 6 through the kill checks and waiting to be scored, 14 waiting to be screened, 12 killed or shelved. Patent money spent so far: A$0.
+5 live, 5 through the kill checks and waiting to be scored, 14 waiting to be screened, 13 killed or shelved. Patent money spent so far: A$0.
 
 ## Live ideas, best first
 
 | Idea | Stage | Score /14 | Odds | Worth (expected) | Patent money? | Next step |
 |------|-------|-----------|------|------------------|---------------|-----------|
-| [Paddle wear marks](../4-paddle-wear-marks.md) | sized | 13 | 8% | A$30,600 | Not yet. Prove it first. | Problem probe: ask 10 companies about the problem only. Then bench test and 10 strangers. |
+| [Paddle wear marks](../4-paddle-wear-marks.md) | sized | 12 | 6% | A$22,950 | Not yet. Prove it first. | Problem probe: ask 10 companies about the problem only. Then bench test and 10 strangers. |
 | [Reproof tab](../1-reproof-tab.md) | sized | 13 | 10% | A$21,750 | Not yet. Prove it first. | Problem probe: ask 10 companies about the problem only. Then bench test and 10 strangers. |
 | [Pan-ready click disc](../2-pan-ready-disc.md) | sized | 12 | 6% | A$10,500 | Not yet. Prove it first. | Problem probe: ask 10 companies about the problem only. Then bench test and 10 strangers. |
 | [Mug tilt rail](../3-mug-tilt-rail.md) | sized | 11 | 5% | A$6,650 | Not yet. Prove it first. | Problem probe: ask 10 companies about the problem only. Then bench test and 10 strangers. |
@@ -25,7 +25,6 @@ Built by `pipeline.py` from `ideas.json`. Don't edit this file by hand.
 | Resistance band with a marker that shows before it perishes and snaps | No indicator found. Bands can snap with no visible warning; a forensic paper records an eye injury. |
 | Insect-repellent clothing tag that shows when the treatment has washed out | No indicator found. Labels claim 70 washes; Consumer Reports found protection dropped after 25. |
 | Swim goggle mark that shows when the anti-fog coating has gone | No indicator found. Coating lasts weeks; re-coating pens are sold, so a signal sells them. |
-| Mattress protector mark that shows when the waterproof layer has failed | No indicator found. Mechanism not designed yet. |
 
 ## Waiting to be screened
 
@@ -64,3 +63,4 @@ Unchecked. Most will die at the kill checks.
 | One-pump-per-zone sunscreen | Nothing to patent |
 | Sports bra band mark that shows when the elastic has gone | K1: Under Armour holds US 9,578,908, a sports bra with a colour-change wear indicator |
 | Climbing shoe rubber with a colour layer before the rand is exposed | K1: Decathlon sells climbing shoes with a wear indicator in the rand |
+| Mattress protector mark that shows when the waterproof layer has failed | K1: Stryker holds US 11,254,112, a mattress cover with a wear layer that reveals an indicator |

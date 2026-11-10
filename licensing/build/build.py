@@ -92,11 +92,11 @@ def fig_mug():
 <text x="114" y="206" text-anchor="middle" class="sub">Dirty water pools on top.</text>
 <line x1="270" y1="150" x2="450" y2="150" stroke="var(--fg)" stroke-width="3"/>{tines(285)}
 <rect x="270" y="143" width="180" height="9" rx="4" fill="var(--signal)"/>
-<path d="M312 143 l22 -16 v16 Z" fill="var(--signal)"/>
-<g transform="rotate(-10 400 143)">
-<rect x="316" y="55" width="84" height="88" rx="8" fill="var(--surface)" stroke="var(--fg)" stroke-width="2"/>
+<g transform="rotate(8 407 143)">
+<rect x="323" y="55" width="84" height="88" rx="8" fill="var(--surface)" stroke="var(--fg)" stroke-width="2"/>
 </g>
-<path d="M410 74 q10 14 0 22 q-10 -8 0 -22 Z" fill="var(--accent)"/>
+<path d="M306 143 L324 128 L334 143 Z" fill="var(--signal)" stroke="var(--fg)" stroke-width="1.5" stroke-linejoin="round"/>
+<path d="M426 66 q9 13 0 20 q-9 -7 0 -20 Z" fill="var(--accent)"/>
 <text x="360" y="186" text-anchor="middle" class="cap">On the rail</text>
 <text x="360" y="206" text-anchor="middle" class="sub">Tilted. Water runs off.</text>
 </svg>'''
