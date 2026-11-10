@@ -2,7 +2,7 @@
 
 Built by `pipeline.py` from `ideas.json`. Don't edit this file by hand.
 
-5 live, 2 through the kill checks and waiting to be scored, 8 waiting to be screened, 39 killed or shelved. Patent money spent so far: A$0.
+6 live, 0 through the kill checks and waiting to be scored, 8 waiting to be screened, 40 killed or shelved. Patent money spent so far: A$0.
 
 ## Live ideas, best first
 
@@ -10,6 +10,7 @@ Built by `pipeline.py` from `ideas.json`. Don't edit this file by hand.
 |------|-------|-----------|------|------------------|---------------|-----------|
 | [Paddle wear marks](../4-paddle-wear-marks.md) | sized | 12 | 6% | A$22,950 | Not yet. Prove it first. | Problem probe: ask 10 companies about the problem only. Then bench test and 10 strangers. |
 | [Reproof tab](../1-reproof-tab.md) | sized | 13 | 10% | A$21,750 | Not yet. Prove it first. | Problem probe: ask 10 companies about the problem only. Then bench test and 10 strangers. |
+| [Dishwasher door-popper](../6-dishwasher-door-pop.md) | sized | 12 | 6% | A$18,900 | Not yet. Prove it first. | Problem probe: ask 10 companies about the problem only. Then bench test and 10 strangers. |
 | [Pan-ready click disc](../2-pan-ready-disc.md) | sized | 12 | 6% | A$10,500 | Not yet. Prove it first. | Problem probe: ask 10 companies about the problem only. Then bench test and 10 strangers. |
 | [Mug tilt rail](../3-mug-tilt-rail.md) | sized | 11 | 5% | A$6,650 | Not yet. Prove it first. | Problem probe: ask 10 companies about the problem only. Then bench test and 10 strangers. |
 | [Swim shirt fit mark](../5-rashie-fit-mark.md) | sized | 10 | 3% | A$3,000 | Too small to file for. Pitch only where no disclosure is needed, or shelve. | Problem probe: ask 10 companies about the problem only. Then bench test and 10 strangers. |
@@ -20,8 +21,6 @@ Built by `pipeline.py` from `ideas.json`. Don't edit this file by hand.
 
 | Idea | What the check found |
 |------|----------------------|
-| Second lint filter or fin cleaner for heat pump dryers | CHANGE: dryers are moving to heat pump (EU label rules from July 2025; a US utility programme saw 1% to 4.5% of sales in two years). NEW WEAKNESS: lint clogs the hidden evaporator; one owner's manual says clean every 2 years and owners report dismantling the machine. BUYER: appliance-care brands. NO retail tool found in one search. Makers hold many patents on built-in cleaning, so an add-on filter or cleaner is the opening. Needs a closer product and patent check. |
-| Retrofit door-popper so an older dishwasher airs itself dry | CHANGE: dishwashers dropped heated drying to save energy. NEW WEAKNESS: plastics come out wet; repair guides call it physics. EVIDENCE: Bosch (AutoAir) and Samsung (AutoRelease) now sell auto-opening doors as the fix, so makers agree it works. BUYER: the same kitchen-accessory companies as the mug rail. NO retrofit gadget found in one search. Mechanism not designed yet: it has to know the cycle has ended. |
 
 ## Waiting to be screened
 
@@ -81,3 +80,4 @@ Unchecked. Most will die at the kill checks.
 | Pacifier that shows when its 4 to 6 weeks are up | No product found, but it scores 8 of 14: no complaints, no tailwind, and a date ring is easy to copy |
 | No-drill furniture anchor for renters | K1: adhesive no-drill anchors are sold, and several states now let renters drill |
 | Safe opener for child-resistant coin and hearing-aid battery packs | Best-documented pain of the batch (3,500 logged cases), but general package openers exist, Rayovac is redesigning its packs and 69% of recent hearing-aid buyers chose rechargeable. Worth about A$3,000, below the A$5,000 bar |
+| Second lint filter or fin cleaner for heat pump dryers | Replacement foam filters for heat pump dryers are already sold per model, so a second filter is not new. A coil cleaner is a small chemical product |

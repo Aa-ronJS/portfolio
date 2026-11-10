@@ -346,8 +346,8 @@
     {
       "id": "heat-pump-dryer-fins",
       "name": "Second lint filter or fin cleaner for heat pump dryers",
-      "stage": "screened",
-      "note": "CHANGE: dryers are moving to heat pump (EU label rules from July 2025; a US utility programme saw 1% to 4.5% of sales in two years). NEW WEAKNESS: lint clogs the hidden evaporator; one owner's manual says clean every 2 years and owners report dismantling the machine. BUYER: appliance-care brands. NO retail tool found in one search. Makers hold many patents on built-in cleaning, so an add-on filter or cleaner is the opening. Needs a closer product and patent check."
+      "stage": "shelved",
+      "reason": "Replacement foam filters for heat pump dryers are already sold per model, so a second filter is not new. A coil cleaner is a small chemical product"
     },
     {
       "id": "robot-vac-hair",
@@ -357,9 +357,23 @@
     },
     {
       "id": "dishwasher-door-pop",
-      "name": "Retrofit door-popper so an older dishwasher airs itself dry",
-      "stage": "screened",
-      "note": "CHANGE: dishwashers dropped heated drying to save energy. NEW WEAKNESS: plastics come out wet; repair guides call it physics. EVIDENCE: Bosch (AutoAir) and Samsung (AutoRelease) now sell auto-opening doors as the fix, so makers agree it works. BUYER: the same kitchen-accessory companies as the mug rail. NO retrofit gadget found in one search. Mechanism not designed yet: it has to know the cycle has ended."
+      "name": "Dishwasher door-popper",
+      "stage": "sized",
+      "scores": [
+        2,
+        2,
+        2,
+        1,
+        1,
+        2,
+        2
+      ],
+      "odds": 0.06,
+      "modest": 45000,
+      "strong": 450000,
+      "spent": 0,
+      "file": "6-dishwasher-door-pop.md",
+      "note": "First idea from the problem-first method. Needs a sensor that knows the cycle has ended. Miele US 9,084,526 is live."
     },
     {
       "id": "plastic-free-wipes",

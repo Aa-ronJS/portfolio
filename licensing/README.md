@@ -2,12 +2,14 @@
 
 Five product ideas to license to bigger companies, plus the test every
 idea has to pass first. Researched November 2026 in two rounds. Nothing
-here has been filed, built or sent yet.
+here has been filed, built or sent yet. For how sure we are of each, and
+what would make us surer, see [CONFIDENCE.md](CONFIDENCE.md).
 
 | Product | Score /14 | File |
 |---------|-----------|------|
 | Reproof indicator: a tab that shows when a water-repellent coating has worn off (jackets, tents, boat covers, awnings) | 13 | [1-reproof-tab.md](1-reproof-tab.md) |
 | Wear marks for pickleball paddles: printed dots that fade as the grit wears | 12 | [4-paddle-wear-marks.md](4-paddle-wear-marks.md) |
+| Door-popper for older dishwashers: opens the door at the end of the cycle so plastics dry | 12 | [6-dishwasher-door-pop.md](6-dishwasher-door-pop.md) |
 | Pan-ready click disc: pops when the pan is hot enough | 12 | [2-pan-ready-disc.md](2-pan-ready-disc.md) |
 | Mug tilt rail: stops puddles on mugs in the dishwasher | 11 | [3-mug-tilt-rail.md](3-mug-tilt-rail.md) |
 | Fit mark for sun-protective swim shirts: turns striped when outgrown | 10 | [5-rashie-fit-mark.md](5-rashie-fit-mark.md) |
