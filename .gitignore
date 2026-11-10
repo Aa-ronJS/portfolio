@@ -6,3 +6,6 @@ node_modules/
 .env
 .env.*
 !.env.example
+
+# Private product-licensing work: never commit to this public repo
+licensing/

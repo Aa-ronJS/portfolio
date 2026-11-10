@@ -82,15 +82,19 @@ included. Never create drafts in or send from his Gmail, even though a
 Gmail connector may be attached. If no Outlook connector is available
 in the session, write the email text to a file and say so.
 
-## Licensing ideas
+## This repository is public
 
-`licensing/` holds product ideas to license to bigger companies. It is
-separate from everything else in this repo. Start with
-`licensing/pipeline/BOARD.md` for the current state and
-`licensing/pipeline/README.md` for how ideas move through it.
-`/screen-ideas` runs the next batch.
+Anyone can read everything pushed here, on any branch. Before pushing
+anything that isn't meant for the public (product ideas, patent drafts,
+pitch material, contact lists, anything Aaron hasn't published), check
+the repository's visibility and keep it out if the repo is public.
+
+Aaron's product-licensing work is **not** kept here for that reason. It
+was pushed here by mistake in November 2026 and taken out of the tree.
+`licensing/` is in `.gitignore`. If he asks about licensing ideas, ask
+him for the backup archive or a private place to work; never commit
+that work to this repository while it is public.
 
 Aaron wants ideas with some excitement in them, not only tidy fixes for
 small annoyances. Lead with the ones people would want to own or show a
-friend (`licensing/play/`), and say plainly when an idea is merely
-useful.
+friend, and say plainly when an idea is merely useful.
