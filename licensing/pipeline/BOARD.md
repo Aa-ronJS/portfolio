@@ -2,7 +2,7 @@
 
 Built by `pipeline.py` from `ideas.json`. Don't edit this file by hand.
 
-5 live, 0 through the kill checks and waiting to be scored, 10 waiting to be screened, 32 killed or shelved. Patent money spent so far: A$0.
+5 live, 2 through the kill checks and waiting to be scored, 8 waiting to be screened, 39 killed or shelved. Patent money spent so far: A$0.
 
 ## Live ideas, best first
 
@@ -20,6 +20,8 @@ Built by `pipeline.py` from `ideas.json`. Don't edit this file by hand.
 
 | Idea | What the check found |
 |------|----------------------|
+| Second lint filter or fin cleaner for heat pump dryers | CHANGE: dryers are moving to heat pump (EU label rules from July 2025; a US utility programme saw 1% to 4.5% of sales in two years). NEW WEAKNESS: lint clogs the hidden evaporator; one owner's manual says clean every 2 years and owners report dismantling the machine. BUYER: appliance-care brands. NO retail tool found in one search. Makers hold many patents on built-in cleaning, so an add-on filter or cleaner is the opening. Needs a closer product and patent check. |
+| Retrofit door-popper so an older dishwasher airs itself dry | CHANGE: dishwashers dropped heated drying to save energy. NEW WEAKNESS: plastics come out wet; repair guides call it physics. EVIDENCE: Bosch (AutoAir) and Samsung (AutoRelease) now sell auto-opening doors as the fix, so makers agree it works. BUYER: the same kitchen-accessory companies as the mug rail. NO retrofit gadget found in one search. Mechanism not designed yet: it has to know the cycle has ended. |
 
 ## Waiting to be screened
 
@@ -27,16 +29,14 @@ Unchecked. Most will die at the kill checks.
 
 | Idea | Pattern |
 |------|---------|
-| Yoga mat grip wear marks | wear-out |
-| Bike helmet sticker that shows sun exposure and age | wear-out |
-| Sunscreen bottle label that shows it has been left in the heat too long | wear-out |
-| Tent fly patch that shows UV damage before the fabric tears | wear-out |
-| Hearing protector cushion mark that shows when it has hardened | wear-out |
-| Ski or snowboard base mark that shows when it needs waxing | wear-out |
-| Padel or tennis ball mark that shows lost pressure | wear-out |
 | Mechanical fix for grease leaking through PFAS-free food wrappers | forced-change |
-| Tool for cleaning lint from a heat pump dryer's heat exchanger | forced-change |
 | Fix for hair tangling in robot vacuum rollers | new-category |
+| Problem: plastic-free wet wipes after the UK ban (Wales Dec 2026, England May 2027, Scotland Aug 2027) | forced-change |
+| Problem: PFAS-free dental floss after state bans (Colorado 2026, Vermont 2027) | forced-change |
+| Problem: mould in front-loader door seals since cold, low-water washing | forced-change |
+| Problem: brake discs rusting on electric cars that rarely use them | forced-change |
+| Problem: cardboard bread tags and compostable fruit stickers that fail, after state plastic bans | forced-change |
+| Problem: adult bed rails, the most-repeated US recall type, for entrapment | recall |
 
 ## Killed or shelved
 
@@ -61,8 +61,15 @@ Unchecked. Most will die at the kill checks.
 | Period underwear mark that shows when the absorbent layer is worn out | K1: Under Armour's US 9,578,908 (live to about 2035) covers clothing where a layer fades with wear and washing to expose another |
 | Sun shirt mark that shows when fabric has thinned or faded below its rating | K1: Under Armour's US 9,578,908 (live to about 2035) covers clothing where a layer fades with wear and washing to expose another |
 | Swim goggle mark that shows when the anti-fog coating has gone | Fails the pain test: fogging is its own signal, so nothing is hidden from the swimmer |
+| Yoga mat grip wear marks | Sourced the old way (solution first, no evidence anyone has the problem). Not worth a check |
 | Climbing shoe rubber with a colour layer before the rand is exposed | K1: Decathlon sells climbing shoes with a wear indicator in the rand |
 | Mattress protector mark that shows when the waterproof layer has failed | K1: Stryker holds US 11,254,112, a mattress cover with a wear layer that reveals an indicator |
+| Bike helmet sticker that shows sun exposure and age | Sourced the old way (solution first, no evidence anyone has the problem). Not worth a check |
+| Sunscreen bottle label that shows it has been left in the heat too long | Sourced the old way (solution first, no evidence anyone has the problem). Not worth a check |
+| Tent fly patch that shows UV damage before the fabric tears | Sourced the old way (solution first, no evidence anyone has the problem). Not worth a check |
+| Hearing protector cushion mark that shows when it has hardened | Sourced the old way (solution first, no evidence anyone has the problem). Not worth a check |
+| Ski or snowboard base mark that shows when it needs waxing | Sourced the old way (solution first, no evidence anyone has the problem). Not worth a check |
+| Padel or tennis ball mark that shows lost pressure | Sourced the old way (solution first, no evidence anyone has the problem). Not worth a check |
 | Fix for pans sliding on smooth induction hobs | K1: silicone induction mats are widely sold |
 | Fix for attached bottle caps hitting the face | Real complaint (70.7% disliked the change in one poll), but the buyers are a few closure giants with their own patents |
 | Child-safe battery door that older hands can still open | The documented pain is the battery packs, not device doors. See the pack opener |

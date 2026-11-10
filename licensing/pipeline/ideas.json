@@ -218,8 +218,8 @@
     {
       "id": "yoga-mat-grip",
       "name": "Yoga mat grip wear marks",
-      "stage": "raw",
-      "pattern": "wear-out"
+      "stage": "shelved",
+      "reason": "Sourced the old way (solution first, no evidence anyone has the problem). Not worth a check"
     },
     {
       "id": "climbing-rubber",
@@ -238,38 +238,38 @@
     {
       "id": "helmet-age",
       "name": "Bike helmet sticker that shows sun exposure and age",
-      "stage": "raw",
-      "pattern": "wear-out"
+      "stage": "shelved",
+      "reason": "Sourced the old way (solution first, no evidence anyone has the problem). Not worth a check"
     },
     {
       "id": "sunscreen-heat",
       "name": "Sunscreen bottle label that shows it has been left in the heat too long",
-      "stage": "raw",
-      "pattern": "wear-out"
+      "stage": "shelved",
+      "reason": "Sourced the old way (solution first, no evidence anyone has the problem). Not worth a check"
     },
     {
       "id": "tent-fly-uv",
       "name": "Tent fly patch that shows UV damage before the fabric tears",
-      "stage": "raw",
-      "pattern": "wear-out"
+      "stage": "shelved",
+      "reason": "Sourced the old way (solution first, no evidence anyone has the problem). Not worth a check"
     },
     {
       "id": "earmuff-cushion",
       "name": "Hearing protector cushion mark that shows when it has hardened",
-      "stage": "raw",
-      "pattern": "wear-out"
+      "stage": "shelved",
+      "reason": "Sourced the old way (solution first, no evidence anyone has the problem). Not worth a check"
     },
     {
       "id": "ski-base-dry",
       "name": "Ski or snowboard base mark that shows when it needs waxing",
-      "stage": "raw",
-      "pattern": "wear-out"
+      "stage": "shelved",
+      "reason": "Sourced the old way (solution first, no evidence anyone has the problem). Not worth a check"
     },
     {
       "id": "padel-ball-pressure",
       "name": "Padel or tennis ball mark that shows lost pressure",
-      "stage": "raw",
-      "pattern": "wear-out"
+      "stage": "shelved",
+      "reason": "Sourced the old way (solution first, no evidence anyone has the problem). Not worth a check"
     },
     {
       "id": "induction-slide",
@@ -345,15 +345,57 @@
     },
     {
       "id": "heat-pump-dryer-fins",
-      "name": "Tool for cleaning lint from a heat pump dryer's heat exchanger",
-      "stage": "raw",
-      "pattern": "forced-change"
+      "name": "Second lint filter or fin cleaner for heat pump dryers",
+      "stage": "screened",
+      "note": "CHANGE: dryers are moving to heat pump (EU label rules from July 2025; a US utility programme saw 1% to 4.5% of sales in two years). NEW WEAKNESS: lint clogs the hidden evaporator; one owner's manual says clean every 2 years and owners report dismantling the machine. BUYER: appliance-care brands. NO retail tool found in one search. Makers hold many patents on built-in cleaning, so an add-on filter or cleaner is the opening. Needs a closer product and patent check."
     },
     {
       "id": "robot-vac-hair",
       "name": "Fix for hair tangling in robot vacuum rollers",
       "stage": "raw",
       "pattern": "new-category"
+    },
+    {
+      "id": "dishwasher-door-pop",
+      "name": "Retrofit door-popper so an older dishwasher airs itself dry",
+      "stage": "screened",
+      "note": "CHANGE: dishwashers dropped heated drying to save energy. NEW WEAKNESS: plastics come out wet; repair guides call it physics. EVIDENCE: Bosch (AutoAir) and Samsung (AutoRelease) now sell auto-opening doors as the fix, so makers agree it works. BUYER: the same kitchen-accessory companies as the mug rail. NO retrofit gadget found in one search. Mechanism not designed yet: it has to know the cycle has ended."
+    },
+    {
+      "id": "plastic-free-wipes",
+      "name": "Problem: plastic-free wet wipes after the UK ban (Wales Dec 2026, England May 2027, Scotland Aug 2027)",
+      "stage": "raw",
+      "pattern": "forced-change"
+    },
+    {
+      "id": "pfas-free-floss",
+      "name": "Problem: PFAS-free dental floss after state bans (Colorado 2026, Vermont 2027)",
+      "stage": "raw",
+      "pattern": "forced-change"
+    },
+    {
+      "id": "front-loader-mould",
+      "name": "Problem: mould in front-loader door seals since cold, low-water washing",
+      "stage": "raw",
+      "pattern": "forced-change"
+    },
+    {
+      "id": "ev-brake-rust",
+      "name": "Problem: brake discs rusting on electric cars that rarely use them",
+      "stage": "raw",
+      "pattern": "forced-change"
+    },
+    {
+      "id": "card-bread-tags",
+      "name": "Problem: cardboard bread tags and compostable fruit stickers that fail, after state plastic bans",
+      "stage": "raw",
+      "pattern": "forced-change"
+    },
+    {
+      "id": "bed-rail-entrapment",
+      "name": "Problem: adult bed rails, the most-repeated US recall type, for entrapment",
+      "stage": "raw",
+      "pattern": "recall"
     }
   ]
 }

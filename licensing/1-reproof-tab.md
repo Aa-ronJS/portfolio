@@ -65,6 +65,7 @@ Extra licensees this opens up:
 | Gold Eagle (303 Fabric Guard) | Every signal sells a bottle | Product yes; contact route no |
 | Glen Raven (Sunbrella) | Could sew it into every cover and awning | No route found |
 | Australian swag, tent and awning makers | Canvas reproofing is routine for campers | Not researched yet |
+| Fabric-protector brands and furniture protection plans (Scotchgard, Guardsman) | Sofa and carpet protectors are now PFAS-free too, and one guide says they resist oil less well. A professional treatment is quoted as lasting 12 to 24 months, with no way to tell when it has gone | Problem partly sourced; no route found |
 
 ## Prior art found
 

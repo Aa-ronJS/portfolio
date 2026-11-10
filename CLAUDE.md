@@ -71,6 +71,10 @@ When he questions the quality of work ("is that the best you can do?"),
 that is a request to go and do better, not to critique what was done.
 Do the improved work in the same reply.
 
+When something keeps failing, don't report the failure and stop. Work
+out why the method failed, change the method, record the lesson where
+the next session will read it, and rerun.
+
 ## Licensing ideas
 
 `licensing/` holds product ideas to license to bigger companies. It is

@@ -65,15 +65,55 @@ Change the bar, the years or the blend at the top of `pipeline.py`.
 
 ## Where new ideas come from
 
-Two patterns have produced every idea that survived so far:
+**Start from a problem with evidence, not from a solution.** The first
+three batches started from a solution I liked (a wear indicator) and
+looked for products to put it on. 32 of 37 died. The five survivors and
+the best later leads all began somewhere else: a change that had already
+happened, and a problem people could be shown to have.
 
-- **Wear-out:** something stops working invisibly, a cheap signal shows
-  it, and the company selling the replacement profits. It's open only
-  where the product or the problem is new.
-- **Forced change:** a law or a technology shift makes a whole industry
-  change its product, and the replacement has a new flaw.
+Every new entry now has to answer four questions before anyone thinks
+about a solution:
 
-Add any idea to `ideas.json` as `"stage": "raw"` with a one-line name.
+| Question | Good answer | Bad answer |
+|----------|-------------|------------|
+| What changed? | A law, a ban or a technology switch, with a date | Nothing; the product has always been like this |
+| What new weakness did the change create? | The replacement fails in a way the old one didn't | A general annoyance |
+| Where is the evidence? | Counted complaints, recalls, a maker's manual admitting it, a maker's newer model fixing it, or a viral workaround | "People probably hate this" |
+| Who profits from a fix? | A named kind of company that sells more because of it | "Consumers" |
+
+Three places to find them, best first:
+
+1. **Forced substitutions.** List what a rule or shift made everyone
+   replace, then ask how the replacement is worse. PFAS-free coatings
+   wear out faster: the reproof tab. Non-stick giving way to steel and
+   ceramic: the pan disc. Eco dishwashers that don't heat-dry: the mug
+   rail and the door-popper lead. Heat pump dryers: the lint lead.
+2. **What makers admit.** A manual that says "this is normal", or a new
+   model whose headline feature fixes an old flaw, proves the problem
+   and proves the fix works. The gap is every older unit still in use.
+3. **Counted complaints.** Logged cases, recall counts, poll numbers.
+   A single forum post doesn't count.
+
+## Rules learned the hard way
+
+1. **Read the patent claims before scoring, not after.** A search
+   summary is not a patent check. The paddle marks lost a point when
+   the claims were finally read.
+2. **One live patent can close a whole family.** Under Armour's
+   US 9,578,908 closes any clothing idea that works by a layer fading
+   with wear and washing, until about 2035. Check new clothing ideas
+   against it first.
+3. **If the failure announces itself, there is no product.** Foggy
+   goggles need no fog indicator.
+4. **If the maker can add it for free, there is no licence.** The dog
+   ramp gauge.
+5. **A crowded mechanism is a warning, not a pattern to copy.** Wear
+   indicators exist for razors, shoes, bras, sponges, cloths, cutting
+   boards and golf clubs.
+6. **The retrofit is often the opening.** Makers patent the built-in
+   fix for new models. The add-on for the millions of old ones is left.
+7. **When a batch comes back empty, change where the ideas come from**
+   before running another.
 
 ## Adding or moving an idea
 
