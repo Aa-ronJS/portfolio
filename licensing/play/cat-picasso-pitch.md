@@ -9,8 +9,7 @@ sent.
 |------|-------|
 | One-page sell sheet (PDF) | `licensing/sell-sheets/cat-picasso.pdf` |
 | Full write-up and bench test | [cat-picasso.md](cat-picasso.md) |
-| Gmail draft to Suck UK, with the illustration embedded | Your Gmail drafts |
-| Gmail draft to Petmate | Your Gmail drafts |
+| Email to Suck UK and email to Petmate | Below, to send from Outlook |
 | Wording for the form-only companies | Below |
 | Follow-up emails | Below |
 
@@ -43,6 +42,56 @@ sent.
 
 Pitch 1 to 4 first. They are small enough to decide quickly, and
 interest from one is leverage with the big ranges.
+
+## The two emails
+
+Send from Outlook. Attach the sell sheet.
+
+**To Suck UK** (info@suck.uk.com)
+
+> Subject: Idea submission: Cat Picasso, a scratching post where the cat makes the art
+>
+> Hello,
+>
+> Your site says you welcome ideas, so here is one for the cat range.
+>
+> Cat Picasso is a scratching post with a removable wrap. The wrap is
+> layers of brightly coloured card under a dark outer layer. Every
+> scratch tears through to a colour, so over a few weeks the cat turns
+> it into an abstract painting.
+>
+> When it's finished, the wrap comes off, unrolls flat and goes in a
+> frame. It's sized to open out at 30 x 40 cm, a standard frame size. A
+> fresh wrap goes on the post.
+>
+> Why I think it suits Suck UK:
+>
+> - Every one is unique and made by the buyer's own cat, which is what
+>   people share.
+> - Every finished artwork sells a refill.
+> - It's printed card and two straps. A wrap-only pack fits posts people
+>   already own.
+> - I could find decorated scratchers, but none where the cat reveals
+>   the picture.
+>
+> It's at design stage. I'm building a prototype and will have
+> time-lapse footage of a cat making one.
+>
+> The one-page sheet is attached. Could you tell me the right person to
+> send this to?
+>
+> Aaron Steele
+> Australia
+
+**To Petmate** (Petmate-ideas@petmate.com)
+
+Same body, with this first line in place of the Suck UK opening:
+
+> I understand from your inventor page that submissions are not
+> confidential. I'm sending this on that basis.
+
+and "Why it could suit your cat range:" in place of "Why I think it
+suits Suck UK:".
 
 ## For the forms (Kikkerland, Kazoo)
 

@@ -75,6 +75,13 @@ When something keeps failing, don't report the failure and stop. Work
 out why the method failed, change the method, record the lesson where
 the next session will read it, and rerun.
 
+## Email
+
+Use Aaron's **Outlook** for anything to do with sending email, drafts
+included. Never create drafts in or send from his Gmail, even though a
+Gmail connector may be attached. If no Outlook connector is available
+in the session, write the email text to a file and say so.
+
 ## Licensing ideas
 
 `licensing/` holds product ideas to license to bigger companies. It is
