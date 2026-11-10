@@ -83,3 +83,22 @@ Edit `ideas.json`, then run:
 
 A sized idea needs `scores` (seven numbers, 0 to 2), `odds`, `modest` and
 `strong` (A$ a year), and `file` (its write-up in `licensing/`).
+
+## What three batches have taught us
+
+- **About 9 in 10 ideas die at the free checks.** Of 43 ideas so far,
+  5 are live. That is the system working: none of the dead ones cost
+  anything.
+- **One patent blocks a whole family.** Under Armour's US 9,578,908
+  covers clothing where a layer fades with wear and washing. Any
+  clothing idea that works by fading is dead until about 2035. The
+  reproof tab and the fit mark survive because they work by wetting and
+  by stretch.
+- **The wear-out pattern is nearly mined out.** It has been patented in
+  most established product types. It stays open only where the product
+  or the problem is new.
+- **The best new lead came from counted complaints**, not from a
+  pattern: 3,500 logged cases about battery packaging after a 2024 law.
+  Future batches should start from complaint counts after a rule change.
+- **Check for a failure that announces itself.** Foggy goggles need no
+  indicator. An idea only works if the owner can't already tell.

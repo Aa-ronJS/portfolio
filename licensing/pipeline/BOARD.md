@@ -2,7 +2,7 @@
 
 Built by `pipeline.py` from `ideas.json`. Don't edit this file by hand.
 
-5 live, 5 through the kill checks and waiting to be scored, 14 waiting to be screened, 13 killed or shelved. Patent money spent so far: A$0.
+5 live, 0 through the kill checks and waiting to be scored, 10 waiting to be screened, 32 killed or shelved. Patent money spent so far: A$0.
 
 ## Live ideas, best first
 
@@ -20,11 +20,6 @@ Built by `pipeline.py` from `ideas.json`. Don't edit this file by hand.
 
 | Idea | What the check found |
 |------|----------------------|
-| Air fryer basket with a contrasting layer that shows when the non-stick has worn through | No cookware indicator found, but US 11,254,112 (cover with wear detection) needs reading. |
-| Compression sock mark that shows lost compression | No indicator found. Sports socks only: medical-grade ones need regulatory approval. |
-| Resistance band with a marker that shows before it perishes and snaps | No indicator found. Bands can snap with no visible warning; a forensic paper records an eye injury. |
-| Insect-repellent clothing tag that shows when the treatment has washed out | No indicator found. Labels claim 70 washes; Consumer Reports found protection dropped after 25. |
-| Swim goggle mark that shows when the anti-fog coating has gone | No indicator found. Coating lasts weeks; re-coating pens are sold, so a signal sells them. |
 
 ## Waiting to be screened
 
@@ -32,9 +27,6 @@ Unchecked. Most will die at the kill checks.
 
 | Idea | Pattern |
 |------|---------|
-| Insole with a wear-through colour layer at heel and forefoot | wear-out |
-| Period underwear mark that shows when the absorbent layer is worn out | wear-out |
-| Sun shirt mark that shows when fabric has thinned or faded below its rating | wear-out |
 | Yoga mat grip wear marks | wear-out |
 | Bike helmet sticker that shows sun exposure and age | wear-out |
 | Sunscreen bottle label that shows it has been left in the heat too long | wear-out |
@@ -42,10 +34,9 @@ Unchecked. Most will die at the kill checks.
 | Hearing protector cushion mark that shows when it has hardened | wear-out |
 | Ski or snowboard base mark that shows when it needs waxing | wear-out |
 | Padel or tennis ball mark that shows lost pressure | wear-out |
-| Fix for pans sliding on smooth induction hobs | forced-change |
-| Fix for attached bottle caps hitting the face | forced-change |
-| Child-safe battery door that older hands can still open | forced-change |
 | Mechanical fix for grease leaking through PFAS-free food wrappers | forced-change |
+| Tool for cleaning lint from a heat pump dryer's heat exchanger | forced-change |
+| Fix for hair tangling in robot vacuum rollers | new-category |
 
 ## Killed or shelved
 
@@ -61,6 +52,25 @@ Unchecked. Most will die at the kill checks.
 | Pole for cordless blinds | K1: US 8,739,853 and poles on sale |
 | Angle gauge for dog ramps | A ramp maker can add a gauge without a licence |
 | One-pump-per-zone sunscreen | Nothing to patent |
+| Air fryer basket with a contrasting layer that shows when the non-stick has worn through | Dense cookware-coating patents (SEB) and a close wear-layer patent (US 11,254,112) |
+| Insole with a wear-through colour layer at heel and forefoot | Nothing to protect: several shoe wear-indicator patents (US 6,578,291, US 7,353,770, US 5,894,682) |
 | Sports bra band mark that shows when the elastic has gone | K1: Under Armour holds US 9,578,908, a sports bra with a colour-change wear indicator |
+| Compression sock mark that shows lost compression | K1 for a fade-with-washing design: Under Armour's US 9,578,908 (live to about 2035) covers clothing where a layer fades with wear and washing to expose another |
+| Resistance band with a marker that shows before it perishes and snaps | Fabric safety sleeves already solve the snap risk; DE102016003697 covers stretch-figure indicators on bands |
+| Insect-repellent clothing tag that shows when the treatment has washed out | K1: Under Armour's US 9,578,908 (live to about 2035) covers clothing where a layer fades with wear and washing to expose another |
+| Period underwear mark that shows when the absorbent layer is worn out | K1: Under Armour's US 9,578,908 (live to about 2035) covers clothing where a layer fades with wear and washing to expose another |
+| Sun shirt mark that shows when fabric has thinned or faded below its rating | K1: Under Armour's US 9,578,908 (live to about 2035) covers clothing where a layer fades with wear and washing to expose another |
+| Swim goggle mark that shows when the anti-fog coating has gone | Fails the pain test: fogging is its own signal, so nothing is hidden from the swimmer |
 | Climbing shoe rubber with a colour layer before the rand is exposed | K1: Decathlon sells climbing shoes with a wear indicator in the rand |
 | Mattress protector mark that shows when the waterproof layer has failed | K1: Stryker holds US 11,254,112, a mattress cover with a wear layer that reveals an indicator |
+| Fix for pans sliding on smooth induction hobs | K1: silicone induction mats are widely sold |
+| Fix for attached bottle caps hitting the face | Real complaint (70.7% disliked the change in one poll), but the buyers are a few closure giants with their own patents |
+| Child-safe battery door that older hands can still open | The documented pain is the battery packs, not device doors. See the pack opener |
+| Kitchen sponge that fades when it's due for the bin | K1: Skura sells sponges with a Fade-to-Change indicator |
+| Mascara cap that shows time since first opening | Nothing to protect: US 5,269,085, US 8,944,284 and US 10,019,609 |
+| Children's shoe that shows when it's outgrown | Nothing to protect: at least six patents (US 6,796,057, US 6,651,349 and others) |
+| Microfibre cloth that shows when it's worn out | K1: EP 3294948 covers a cloth whose two colours converge over washes |
+| Flea collar that shows when its 8 months are up | No product found, but the collar is a registered pesticide and the signal is an off-the-shelf time strip |
+| Pacifier that shows when its 4 to 6 weeks are up | No product found, but it scores 8 of 14: no complaints, no tailwind, and a date ring is easy to copy |
+| No-drill furniture anchor for renters | K1: adhesive no-drill anchors are sold, and several states now let renters drill |
+| Safe opener for child-resistant coin and hearing-aid battery packs | Best-documented pain of the batch (3,500 logged cases), but general package openers exist, Rayovac is redesigning its packs and 69% of recent hearing-aid buyers chose rechargeable. Worth about A$3,000, below the A$5,000 bar |
