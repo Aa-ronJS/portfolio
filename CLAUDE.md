@@ -1,6 +1,6 @@
 # portfolio — repo map for Claude sessions
 
-Three independent things live here:
+Four independent things live here:
 
 - **`public/`** — Aaron's portfolio site (one HTML file, no build step),
   deployed to https://aaronsteele.vercel.app via `npx vercel deploy
@@ -50,6 +50,11 @@ Three independent things live here:
   in hand, red when money is overdue. If `pics.js` fails to load,
   every button must still work with its word
   (`tests/apptest/pics.cjs`).
+
+- **`voice-agent/`** — places phone calls in a clone of Aaron's voice toward
+  a stated goal (ElevenLabs agent + Twilio number) and saves the transcript
+  and recording. Start with `voice-agent/README.md`. Call output and keys
+  stay out of git.
 
 The portfolio site and the pipeline share nothing except
 `public/fonts/satoshi-var.woff2`, which the pipeline ships converted to
