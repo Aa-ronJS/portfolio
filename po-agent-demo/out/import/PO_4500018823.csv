@@ -1,0 +1,4 @@
+po_number,customer_id,shipto_id,requested_date,line_no,item_no,quantity,uom,unit_price,ship_via,carrier_account,notes,review_flags
+4500018823,C1001,S01,2026-11-24,1,WID-1010,500,EA,4.20,Best Way,,,
+4500018823,C1001,S01,2026-11-24,2,BRK-0300,250,EA,2.15,Best Way,,,
+4500018823,C1001,S01,2026-11-24,3,FST-0825,40,BX,18.50,Best Way,,,

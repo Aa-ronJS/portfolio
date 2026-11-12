@@ -1,0 +1,3 @@
+po_number,customer_id,shipto_id,requested_date,line_no,item_no,quantity,uom,unit_price,ship_via,carrier_account,notes,review_flags
+,C1004,S01,2026-12-01,1,TUB-0600,36,EA,22.00,,,,MISSING_PO_NUMBER
+,C1004,S01,2026-12-01,2,GSK-0150,200,EA,1.85,,,,MISSING_PO_NUMBER

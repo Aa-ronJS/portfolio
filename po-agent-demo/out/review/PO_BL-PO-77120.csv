@@ -1,0 +1,4 @@
+po_number,customer_id,shipto_id,requested_date,line_no,item_no,quantity,uom,unit_price,ship_via,carrier_account,notes,review_flags
+BL-PO-77120,C1002,S01,2026-12-03,1,WID-1010,300,EA,4.35,UPS,8R4W21,"Ship collect on UPS Acct# 8R4W21, no Saturday delivery",
+BL-PO-77120,C1002,S01,2026-12-03,2,BRK-0300,300,EA,2.10,UPS,8R4W21,"Ship collect on UPS Acct# 8R4W21, no Saturday delivery",
+BL-PO-77120,C1002,S01,2026-12-03,3,FST-0825,25,BX,18.10,UPS,8R4W21,"Ship collect on UPS Acct# 8R4W21, no Saturday delivery",PRICE_MISMATCH

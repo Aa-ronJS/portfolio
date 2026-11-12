@@ -1,0 +1,4 @@
+po_number,customer_id,shipto_id,requested_date,line_no,item_no,quantity,uom,unit_price,ship_via,carrier_account,notes,review_flags
+CSG-20991,C1003,,2026-12-10,1,WID-2040,120,EA,6.90,"customer truck, call before delivery",,,UNKNOWN_SHIPTO
+CSG-20991,C1003,,2026-12-10,2,FST-0825,60,EA,19.25,"customer truck, call before delivery",,,UNKNOWN_SHIPTO|UOM_MISMATCH
+CSG-20991,C1003,,2026-12-10,3,GSK-0150,400,EA,1.80,"customer truck, call before delivery",,,UNKNOWN_SHIPTO

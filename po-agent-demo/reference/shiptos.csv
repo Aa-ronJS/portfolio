@@ -1,0 +1,6 @@
+customer_id,shipto_id,address
+C1001,S01,4400 Foundry Road Dayton OH 45402
+C1001,S02,1200 Warehouse Way Columbus OH 43215
+C1002,S01,88 Market Street Louisville KY 40202
+C1003,S01,15 Harbor Drive Savannah GA 31401
+C1004,S01,702 Mill Lane Tulsa OK 74103
