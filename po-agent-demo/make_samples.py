@@ -11,6 +11,7 @@ from reportlab.pdfgen import canvas
 from reportlab.platypus import Table, TableStyle
 
 INBOX = Path(__file__).parent / "inbox"
+PDFS = Path(__file__).parent / "sample_pdfs"
 W, H = letter
 
 
@@ -113,6 +114,8 @@ def eml(n, sender, subject, body, filename, pdf):
     m = EmailMessage(); m["From"] = sender; m["To"] = "orders@example-manufacturer.com"; m["Subject"] = subject
     m.set_content(body); m.add_attachment(pdf, maintype="application", subtype="pdf", filename=filename)
     (INBOX / f"{n:02d}_{filename[:-4]}.eml").write_bytes(bytes(m))
+    PDFS.mkdir(exist_ok=True)
+    (PDFS / f"{n:02d}_{filename}").write_bytes(pdf)  # loose copies, easy to open and look at
 
 
 if __name__ == "__main__":
