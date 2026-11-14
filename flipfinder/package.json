@@ -1,0 +1,9 @@
+{
+  "name": "flipfinder",
+  "private": true,
+  "version": "0.1.0",
+  "description": "Checks local second-hand listings against eBay Australia prices and flags the ones worth buying to resell.",
+  "bin": { "flip": "bin/flip.js" },
+  "scripts": { "test": "node --test" },
+  "engines": { "node": ">=18" }
+}
