@@ -82,6 +82,13 @@ included. Never create drafts in or send from his Gmail, even though a
 Gmail connector may be attached. If no Outlook connector is available
 in the session, write the email text to a file and say so.
 
+The Outlook connector cannot attach files, and cannot forward a message
+that has one. When an email needs an attachment, send the email from
+Outlook as usual, then email the file from Gmail **to Aaron's own
+Outlook address only** (the one exception to the Gmail rule), with the
+message text ready to forward and the recipient's address on the first
+line. Aaron forwards it from Outlook.
+
 ## Licensing ideas
 
 `licensing/` holds product ideas to license to bigger companies. It is
