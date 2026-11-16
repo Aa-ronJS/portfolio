@@ -87,7 +87,9 @@ that has one. When an email needs an attachment, send the email from
 Outlook as usual, then email the file from Gmail **to Aaron's own
 Outlook address only** (the one exception to the Gmail rule), with the
 message text ready to forward and the recipient's address on the first
-line. Aaron forwards it from Outlook.
+line. Aaron forwards it from Outlook. A session running on Aaron's home
+PC can attach and send in Outlook directly, so this workaround is only
+for cloud sessions.
 
 ## Licensing ideas
 
