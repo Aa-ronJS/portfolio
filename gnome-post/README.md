@@ -10,6 +10,18 @@ gnome brings it up.
 The idea is Potato Parcel, but nobody packs anything. Potato Parcel sold
 $10–15 novelty mail and reported $10k–25k a month.
 
+## Who runs away: their pet, not a gnome
+
+Few people own a gnome, but 73% of Australian households have a pet
+(Animal Medicines Australia, 2025). So the default runaway is the
+recipient's own dog or cat. The buyer gives its name, species and
+colour, and Claude draws it from that. The gnome stays as one option
+among others, such as the car, the sourdough starter or the office
+fridge.
+
+The first card must be plainly a joke (the dog on a jet ski in Bali),
+so no one thinks for even a second that their real pet is missing.
+
 ## Fully automated flow
 
 1. A Stripe Checkout page collects the recipient's name, their address,
