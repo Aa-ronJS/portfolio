@@ -22,6 +22,22 @@ fridge.
 The first card must be plainly a joke (the dog on a jet ski in Bali),
 so no one thinks for even a second that their real pet is missing.
 
+## Where it's sold (the part that decides whether it works)
+
+A website of our own gets no visitors unless someone markets it, which
+means the money isn't passive. So sell it on Etsy, where people already
+search for "personalized pet gift" and "funny gift for cat lover".
+Etsy's personalisation box collects the pet's details, and the Etsy API
+passes each order into the flow below.
+
+Aim at the US first, for two reasons:
+- **It's a bigger market.** There are far more Etsy gift buyers.
+- **Postage is cheaper.** A card costs about US$0.80 including postage
+  there, against A$3.30 for an Australia Post postcard stamp.
+
+Test before building: put up one listing (US$0.20) and fill the first
+orders by hand. Build the automation only after it sells.
+
 ## Fully automated flow
 
 1. A Stripe Checkout page collects the recipient's name, their address,
