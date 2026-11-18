@@ -1,0 +1,368 @@
+digraph OD {
+graph [rankdir=TB, fontname="Helvetica", fontsize=13, nodesep=0.35, ranksep=0.55, splines=ortho, newrank=true, pad=0.6,
+  label=<<B><FONT POINT-SIZE="40">Olympic Dam — Underground Radio System</FONT></B><BR/><FONT POINT-SIZE="20">If-this-then-that process flow of every component in the signal path: handset → leaky feeder → amplifiers → fibre → shaft → headend → towers → control room, with fault-finding and emergency fallbacks</FONT><BR/><FONT POINT-SIZE="14">Standard architecture for a large mine with a leaky-feeder backbone. BHP does not publish Olympic Dam's equipment vendors or channel plans, so specific items are typical, not confirmed. Known Olympic Dam context: leaky-feeder radio, automated underground electric train, Minlog tracking.</FONT>>, labelloc=t];
+node [fontname="Helvetica", fontsize=12, shape=box, style="rounded,filled", fillcolor="#ffffff", color="#444444", penwidth=1.2, margin="0.15,0.08"];
+edge [fontname="Helvetica-Bold", fontsize=11, color="#555555", arrowsize=0.8];
+
+// ---------- styles via macros ----------
+// decision = diamond yellow ; fault/action = red ; start/end = oval green
+
+// ===== LEGEND =====
+subgraph cluster_legend { label=<<B>LEGEND</B>>; style="rounded"; color="#999999"; fontsize=14;
+  L1 [label="Start / end", shape=oval, fillcolor="#b7e4c7"];
+  L2 [label="Decision gate\n(IF … THEN …)", shape=diamond, fillcolor="#ffe08a"];
+  L3 [label="Physical component", fillcolor="#dbe9ff"];
+  L4 [label="Fault → repair action", fillcolor="#ffc9c9"];
+  L5 [label="Power component", fillcolor="#ffe3c2"];
+  L6 [label="Data / IP component", fillcolor="#e5dbff"];
+  L1->L2->L3->L4->L5->L6 [style=invis];
+}
+
+// ===== 0. START =====
+START [label="START\nWorker underground needs to talk\n(or a machine needs to send data)", shape=oval, fillcolor="#b7e4c7", fontsize=14];
+
+// ===== 1. FIELD / SUBSCRIBER EQUIPMENT =====
+subgraph cluster_field { label=<<B>1 · FIELD EQUIPMENT (what the person or machine carries)</B>>; style="rounded,filled"; fillcolor="#f3f8ff"; color="#6a8fc7"; fontsize=16;
+  D_type [label="Which device?", shape=diamond, fillcolor="#ffe08a"];
+  HH [label="Handheld portable radio\n(VHF/UHF leaky-feeder band,\noften DMR digital)", fillcolor="#dbe9ff"];
+  HH_parts [label="Handheld parts:\n• Li-ion battery pack • belt clip\n• Stub/whip antenna (SMA/BNC)\n• PTT button • channel knob\n• Orange EMERGENCY button\n• Man-down / lone-worker tilt sensor\n• Remote speaker-mic (RSM) + cable\n• Intrinsically-safe rating label", fillcolor="#dbe9ff"];
+  VEH [label="Vehicle mobile radio\n(LV, loader, truck, IT, jumbo,\nagitator, charge-up rig)", fillcolor="#dbe9ff"];
+  VEH_parts [label="Mobile radio parts:\n• Radio body + control head\n• Fist mic / handset\n• Roof/ROPS antenna + magnetic or bolt mount\n• Coax jumper (RG-58/LMR-240)\n• 12/24 V DC-DC converter • inline fuse\n• Noise filter • ignition-sense wire", fillcolor="#dbe9ff"];
+  LOCO [label="Automated electric train\nlocomotive radio modem\n(ore haulage control & telemetry)", fillcolor="#dbe9ff"];
+  FIXED [label="Fixed-plant radio modems / RTUs\n(pumps, fans, crushers, ore passes,\nloading chutes, conveyors)", fillcolor="#dbe9ff"];
+  TAG [label="Personnel / vehicle tracking tag\n(cap-lamp tag, active RFID;\nMinlog rollout reported at OD)", fillcolor="#dbe9ff"];
+  GASDET [label="Portable gas detector\nwith wireless link", fillcolor="#dbe9ff"];
+  BB [label="Broadband device\n(Wi-Fi/LTE phone, tablet,\nteleremote machine, camera)", fillcolor="#e5dbff"];
+  D_type -> HH [xlabel="person, voice"];
+  D_type -> VEH [xlabel="in vehicle"];
+  D_type -> LOCO [xlabel="train"];
+  D_type -> FIXED [xlabel="plant"];
+  D_type -> TAG [xlabel="location"];
+  D_type -> GASDET [xlabel="gas reading"];
+  D_type -> BB [xlabel="high-speed data"];
+  HH -> HH_parts [style=dashed, arrowhead=none];
+  VEH -> VEH_parts [style=dashed, arrowhead=none];
+}
+START -> D_type;
+
+// pre-use checks
+subgraph cluster_preuse { label=<<B>1a · PRE-USE CHECKS (lamp room / charger)</B>>; style="rounded,filled"; fillcolor="#fff9ec"; color="#d8a64a"; fontsize=16;
+  CHG [label="Multi-unit charger rack\n(lamp room / muster point)", fillcolor="#ffe3c2"];
+  D_batt [label="Battery charged &\nradio powers on?", shape=diamond, fillcolor="#ffe08a"];
+  F_batt [label="Swap battery from charger rack;\ntag faulty pack out of service", fillcolor="#ffc9c9"];
+  D_ant [label="Antenna fitted tight,\nnot snapped?", shape=diamond, fillcolor="#ffe08a"];
+  F_ant [label="Replace antenna\n(from comms tech store)", fillcolor="#ffc9c9"];
+  D_chan [label="On correct underground\nchannel / talkgroup?", shape=diamond, fillcolor="#ffe08a"];
+  F_chan [label="Select UG leaky-feeder channel\n(surface simplex channels\nwill NOT reach underground)", fillcolor="#ffc9c9"];
+  D_radiocheck [label="Radio check with\ncontrol OK at portal / shaft?", shape=diamond, fillcolor="#ffe08a"];
+  F_radiocheck [label="Do not enter: get a spare radio\nand report the fault to the comms tech", fillcolor="#ffc9c9"];
+  CHG -> D_batt;
+  D_batt -> D_ant [xlabel="YES"];
+  D_batt -> F_batt [xlabel="NO"];
+  F_batt -> D_batt;
+  D_ant -> D_chan [xlabel="YES"];
+  D_ant -> F_ant [xlabel="NO"];
+  F_ant -> D_ant;
+  D_chan -> D_radiocheck [xlabel="YES"];
+  D_chan -> F_chan [xlabel="NO"];
+  F_chan -> D_chan;
+  D_radiocheck -> F_radiocheck [xlabel="NO"];
+}
+HH -> CHG; VEH -> D_ant;
+
+// ===== 2. KEYING UP / CALL TYPE =====
+subgraph cluster_call { label=<<B>2 · WHAT KIND OF TRANSMISSION?</B>>; style="rounded,filled"; fillcolor="#f6f6f6"; color="#888888"; fontsize=16;
+  PTT [label="User presses PTT\n(or device sends data packet)", fillcolor="#dbe9ff"];
+  D_emerg [label="Emergency button pressed\nOR man-down triggered?", shape=diamond, fillcolor="#ffe08a"];
+  D_calltype [label="Group call, private call,\nor data?", shape=diamond, fillcolor="#ffe08a"];
+  GRP [label="Group (talkgroup) voice call\ne.g. Production, Services,\nTrain, Emergency", fillcolor="#dbe9ff"];
+  PRV [label="Private (individual) call\nto one radio ID", fillcolor="#dbe9ff"];
+  DATA [label="Data: GPS-less location beacon,\ntext message, telemetry, train control", fillcolor="#e5dbff"];
+  PTT -> D_emerg;
+  D_emerg -> D_calltype [xlabel="NO"];
+  D_calltype -> GRP [xlabel="group"];
+  D_calltype -> PRV [xlabel="private"];
+  D_calltype -> DATA [xlabel="data"];
+}
+D_radiocheck -> PTT [xlabel="YES"];
+LOCO -> DATA; FIXED -> DATA; TAG -> DATA; GASDET -> DATA;
+
+// ===== 3. COVERAGE: AM I NEAR THE CABLE? =====
+subgraph cluster_cov { label=<<B>3 · RF COVERAGE AT THE WORKING PLACE</B>>; style="rounded,filled"; fillcolor="#eefaf2"; color="#4f9d69"; fontsize=16;
+  D_bb [label="Broadband device?", shape=diamond, fillcolor="#ffe08a"];
+  D_near [label="Within line-of-sight of the\nleaky feeder (typically 10–30 m,\nless around bends)?", shape=diamond, fillcolor="#ffe08a"];
+  D_stopeant [label="Stope / crosscut has a\nradiating antenna tail or\nportable repeater fitted?", shape=diamond, fillcolor="#ffe08a"];
+  STANT [label="Antenna tail: passive tap/coupler\n→ coax jumper → panel or\nYagi antenna aimed into stope", fillcolor="#dbe9ff"];
+  PREP [label="Portable / bridging repeater\n(battery or 240 V; for new headings\nbefore cable is extended)", fillcolor="#dbe9ff"];
+  F_move [label="NO COVERAGE: move back toward the\nmain drive or cable until you hear\ncontrol. Request a cable extension\n(dead-zone report)", fillcolor="#ffc9c9"];
+  D_ap [label="Wi-Fi AP / LTE small cell\nin range?", shape=diamond, fillcolor="#ffe08a"];
+  AP [label="Wi-Fi access point (IP67) or\nprivate LTE small cell / radio head\n+ panel antennas + PoE injector", fillcolor="#e5dbff"];
+  MESH [label="Mobile mesh / face Wi-Fi node\n(on trailer or machine)", fillcolor="#e5dbff"];
+  F_noap [label="No broadband: fall back to\nleaky-feeder voice/data, or\ndeploy a mobile mesh node", fillcolor="#ffc9c9"];
+  D_bb -> D_ap [xlabel="YES"];
+  D_bb -> D_near [xlabel="NO"];
+  D_ap -> AP [xlabel="YES"];
+  D_ap -> F_noap [xlabel="NO"];
+  F_noap -> MESH;
+  D_near -> D_stopeant [xlabel="NO"];
+  D_stopeant -> STANT [xlabel="tail"];
+  D_stopeant -> PREP [xlabel="repeater"];
+  D_stopeant -> F_move [xlabel="NEITHER"];
+  F_move -> D_near [style=dashed];
+}
+GRP -> D_bb; PRV -> D_bb; DATA -> D_bb; BB -> D_bb;
+
+// ===== 4. LEAKY FEEDER DISTRIBUTION =====
+subgraph cluster_lf { label=<<B>4 · LEAKY-FEEDER DISTRIBUTION (drives, declines, levels)</B>>; style="rounded,filled"; fillcolor="#eef4ff"; color="#3d6bb3"; fontsize=16;
+  LFC [label="Leaky-feeder radiating coax\n(½″ slotted outer conductor, foam dielectric,\nfire-retardant low-smoke jacket)\nrun along drive backs", fillcolor="#dbe9ff"];
+  HANG [label="Mounting hardware:\n• Rock-bolt/mesh hangers every ~1–3 m\n• Cable ties / clips (stand-off from rock)\n• Catenary / messenger wire across voids\n• ID labels & warning tape", fillcolor="#dbe9ff"];
+  CONN [label="Connectors & jumpers:\n• N-type male/female\n• Self-amalgamating tape + heat shrink\n• Barrel joiners / splice kits", fillcolor="#dbe9ff"];
+  D_branch [label="Junction with a crosscut,\ndecline, or ramp?", shape=diamond, fillcolor="#ffe08a"];
+  SPLIT [label="Passive splitter / directional coupler\n(2-way, 3-way, tap 6/10/20 dB)\n+ DC-pass ports so power flows on", fillcolor="#dbe9ff"];
+  D_dir [label="Signal direction?", shape=diamond, fillcolor="#ffe08a"];
+  UPL [label="UPLINK (mobile → headend):\nsignal enters cable through slots,\ntravels toward the head of the system", fillcolor="#dbe9ff"];
+  DNL [label="DOWNLINK (headend → mobile):\nsignal leaks out of slots\nall along the cable", fillcolor="#dbe9ff"];
+  D_amp [label="Cable loss since last\namplifier exceeds design?\n(typically every 350–500 m)", shape=diamond, fillcolor="#ffe08a"];
+  AMP [label="Bi-directional in-line line amplifier\n(separate uplink & downlink gain stages,\nAGC, diplexer filters, status LEDs,\nmonitoring transponder)", fillcolor="#dbe9ff"];
+  D_ampok [label="Amplifier healthy?\n(LEDs green, current draw OK,\nmonitoring shows no alarm)", shape=diamond, fillcolor="#ffe08a"];
+  F_amp [label="Swap amplifier with a spare;\ncheck connectors for water;\nlog serial number", fillcolor="#ffc9c9"];
+  D_cascade [label="More than ~15–20 amps\nin cascade? (noise build-up)", shape=diamond, fillcolor="#ffe08a"];
+  FNODE [label="Fibre-optic RF node\n(RF ↔ optical converter: injects\na fresh signal into a new feeder segment)", fillcolor="#e5dbff"];
+  D_end [label="End of the cable run?", shape=diamond, fillcolor="#ffe08a"];
+  TERM [label="50 Ω end-of-line terminator\nor end-of-line antenna\n(stops reflections; sealed against water)", fillcolor="#dbe9ff"];
+  LFC -> HANG [style=dashed, arrowhead=none];
+  LFC -> CONN [style=dashed, arrowhead=none];
+  LFC -> D_branch;
+  D_branch -> SPLIT [xlabel="YES"];
+  D_branch -> D_dir [xlabel="NO"];
+  SPLIT -> D_dir;
+  D_dir -> UPL [xlabel="talking"];
+  D_dir -> DNL [xlabel="listening"];
+  UPL -> D_amp;
+  D_amp -> AMP [xlabel="YES"];
+  D_amp -> D_end [xlabel="NO"];
+  AMP -> D_ampok;
+  D_ampok -> F_amp [xlabel="NO"];
+  F_amp -> D_ampok;
+  D_ampok -> D_cascade [xlabel="YES"];
+  D_cascade -> FNODE [xlabel="YES"];
+  D_cascade -> D_end [xlabel="NO"];
+  D_end -> TERM [xlabel="YES (far end)"];
+}
+D_near -> LFC [xlabel="YES"]; STANT -> SPLIT; PREP -> LFC;
+
+// ===== 5. POWER =====
+subgraph cluster_pwr { label=<<B>5 · POWER FOR THE UNDERGROUND RADIO NETWORK</B>>; style="rounded,filled"; fillcolor="#fff6ec"; color="#d08a3c"; fontsize=16;
+  MAINS [label="Mine reticulation\n(HV substation → transformer →\n415/240 V distribution board)", fillcolor="#ffe3c2"];
+  DB [label="Local distribution box / DOL board\n+ RCD/circuit breaker\n+ isolation & lock-out point", fillcolor="#ffe3c2"];
+  PSU [label="Line power supply / power inserter\n(240 VAC → 12–60 VDC sent\ndown the leaky-feeder centre conductor)", fillcolor="#ffe3c2"];
+  UPSB [label="Battery backup in PSU or UPS\n(typically 4–8+ hrs; mandatory\nfor emergency comms)", fillcolor="#ffe3c2"];
+  DCB [label="DC block / power-break\n(isolates power zones so one\nshort doesn't kill the whole level)", fillcolor="#ffe3c2"];
+  D_mains [label="Mains power present?", shape=diamond, fillcolor="#ffe08a"];
+  D_ups [label="UPS / battery charge OK?", shape=diamond, fillcolor="#ffe08a"];
+  F_ups [label="Comms OUT on this zone:\ndispatch electrician + comms tech;\nreplace batteries; tell control\nso they warn the crews affected", fillcolor="#ffc9c9"];
+  D_volt [label="DC voltage at the far amplifier\nabove its minimum?\n(voltage drops along the coax)", shape=diamond, fillcolor="#ffe08a"];
+  F_volt [label="Add a mid-run power inserter or\nreduce amps per PSU; check for\nhigh-resistance joints", fillcolor="#ffc9c9"];
+  MAINS -> DB -> PSU;
+  PSU -> D_mains;
+  D_mains -> D_volt [xlabel="YES"];
+  D_mains -> UPSB [xlabel="NO"];
+  UPSB -> D_ups;
+  D_ups -> D_volt [xlabel="YES (on battery)"];
+  D_ups -> F_ups [xlabel="NO"];
+  D_volt -> F_volt [xlabel="NO"];
+  PSU -> DCB [style=dashed];
+}
+D_volt -> AMP [xlabel="YES: powers amps", style=bold, color="#d08a3c"];
+D_volt -> FNODE [style=bold, color="#d08a3c"];
+
+// ===== 6. LEVEL COMMS ROOM / IP NETWORK =====
+subgraph cluster_lvl { label=<<B>6 · UNDERGROUND COMMS CABINET / LEVEL SWITCH ROOM</B>>; style="rounded,filled"; fillcolor="#f5f0ff"; color="#7a5cc2"; fontsize=16;
+  CAB [label="IP-rated comms cabinet / sea container\n(dust-sealed, air-conditioned or fan-cooled,\nearth bar, cable glands)", fillcolor="#e5dbff"];
+  SW [label="Industrial Ethernet switch\n(managed L2/L3, ring protocol,\nPoE for APs & cameras)", fillcolor="#e5dbff"];
+  PATCH [label="Fibre patch panel / splice tray\n+ SFP optics + fibre patch leads", fillcolor="#e5dbff"];
+  MC [label="Media converters / RF-over-fibre\nmaster units / RoIP gateway", fillcolor="#e5dbff"];
+  UPS2 [label="Cabinet UPS + PDU", fillcolor="#ffe3c2"];
+  FBR [label="Underground fibre backbone\n(armoured single-mode, loose-tube,\nring topology between levels)", fillcolor="#e5dbff"];
+  D_ring [label="Fibre ring intact?\n(both paths up)", shape=diamond, fillcolor="#ffe08a"];
+  RINGFO [label="Ring protocol fails over to the\nother direction in <50 ms;\nalarm raised to the NOC", fillcolor="#ffc9c9"];
+  D_sw [label="Switch port / link up?", shape=diamond, fillcolor="#ffe08a"];
+  F_sw [label="Check SFP, patch lead, port\nconfig; swap switch from spares;\nOTDR test fibre for breaks", fillcolor="#ffc9c9"];
+  CAB -> SW; CAB -> PATCH; CAB -> MC; CAB -> UPS2;
+  PATCH -> FBR;
+  SW -> D_sw;
+  D_sw -> F_sw [xlabel="NO"];
+  D_sw -> FBR [xlabel="YES"];
+  FBR -> D_ring;
+  D_ring -> RINGFO [xlabel="NO (cut)"];
+}
+FNODE -> MC [xlabel="optical"];
+AP -> SW; MESH -> SW;
+
+// ===== 7. SHAFT / DECLINE RISER =====
+subgraph cluster_shaft { label=<<B>7 · RISER: SHAFT AND DECLINE CABLE PATHS TO THE SURFACE</B>>; style="rounded,filled"; fillcolor="#f2f2f2"; color="#666666"; fontsize=16;
+  D_path [label="Which riser path?", shape=diamond, fillcolor="#ffe08a"];
+  SHAFT [label="Shaft cable route\n(hoisting / service shaft):\nvertical-rated coax + fibre,\nshaft cable clamps / stringers,\nstrain-relief at collar", fillcolor="#dbe9ff"];
+  DECL [label="Main decline from surface portal:\nleaky feeder + fibre the whole length\n(also gives vehicles coverage)", fillcolor="#dbe9ff"];
+  CAGE [label="Cage / skip radio:\ntrailing or shaft leaky feeder,\nshaft signalling interface", fillcolor="#dbe9ff"];
+  D_redund [label="Second diverse path\n(other shaft or decline) available?", shape=diamond, fillcolor="#ffe08a"];
+  F_single [label="Single point of failure:\nraise as a risk; plan diverse route", fillcolor="#ffc9c9"];
+  D_path -> SHAFT [xlabel="shaft"];
+  D_path -> DECL [xlabel="decline"];
+  SHAFT -> CAGE [style=dashed];
+  SHAFT -> D_redund; DECL -> D_redund;
+  D_redund -> F_single [xlabel="NO"];
+}
+D_ring -> D_path [xlabel="YES"]; RINGFO -> D_path;
+D_end -> D_path [xlabel="NO: head of system"];
+TERM -> D_path [style=invis];
+
+// ===== 8. SURFACE HEADEND =====
+subgraph cluster_head { label=<<B>8 · SURFACE HEADEND / MAIN COMMS ROOM</B>>; style="rounded,filled"; fillcolor="#eef4ff"; color="#3d6bb3"; fontsize=16;
+  HEADAMP [label="Headend amplifier / head-end interface\n(splits uplink from downlink,\nsets levels into the feeder)", fillcolor="#dbe9ff"];
+  ATT [label="Variable attenuators & filters\n(level balancing, out-of-band rejection)", fillcolor="#dbe9ff"];
+  MCPL [label="Receiver multicoupler\n(1 RX feed → many repeaters)", fillcolor="#dbe9ff"];
+  COMB [label="Transmitter combiner\n(cavity / hybrid; many repeaters → 1 TX feed)", fillcolor="#dbe9ff"];
+  DUP [label="Duplexer\n(TX and RX on one cable)", fillcolor="#dbe9ff"];
+  RPT [label="Base station repeaters\n(1 per channel/timeslot pair;\nanalog FM or DMR Tier II/III)", fillcolor="#dbe9ff"];
+  D_rpt [label="Repeater keyed up & receiving?\n(RSSI shown on front panel / NMS)", shape=diamond, fillcolor="#ffe08a"];
+  F_rpt [label="Fail over to hot-standby repeater;\ncheck PA, synth lock, power;\nreturn faulty unit to vendor", fillcolor="#ffc9c9"];
+  TRUNK [label="Trunking site controller / DMR network\ncontroller (allocates channels, radio IDs,\nprivate calls, emergency priority)", fillcolor="#e5dbff"];
+  REF [label="GPS / timing reference\n(10 MHz + 1PPS; needed for\nmulti-site digital sync)", fillcolor="#e5dbff"];
+  NMS [label="Network management system (NMS):\npolls every amplifier, PSU, switch,\nrepeater; raises alarms", fillcolor="#e5dbff"];
+  RACK [label="19″ racks, earth bar, surge arrestors,\nHVAC, fire suppression, UPS + generator", fillcolor="#ffe3c2"];
+  HEADAMP -> ATT -> DUP;
+  DUP -> MCPL [xlabel="RX"];
+  MCPL -> RPT;
+  RPT -> COMB [xlabel="TX"];
+  COMB -> DUP;
+  RPT -> D_rpt;
+  D_rpt -> F_rpt [xlabel="NO"];
+  F_rpt -> D_rpt;
+  D_rpt -> TRUNK [xlabel="YES"];
+  REF -> TRUNK [style=dashed];
+  RACK -> RPT [style=dashed, color="#d08a3c"];
+}
+SHAFT -> HEADAMP; DECL -> HEADAMP; D_redund -> HEADAMP [xlabel="YES"]; F_single -> HEADAMP;
+
+// ===== 9. ROUTING DECISION =====
+subgraph cluster_route { label=<<B>9 · WHERE DOES THE CALL GO?</B>>; style="rounded,filled"; fillcolor="#f6f6f6"; color="#888888"; fontsize=16;
+  D_dest [label="Destination?", shape=diamond, fillcolor="#ffe08a"];
+  UGBACK [label="Rebroadcast on the downlink to\nevery underground radio\nin that talkgroup", fillcolor="#dbe9ff"];
+  GW [label="Radio interconnect gateway / RoIP\n(bridges the UG channel to surface\nchannels and the dispatch console)", fillcolor="#e5dbff"];
+  DSRV [label="Application servers:\ntracking server, train control (ATO),\nSCADA historian, fleet management", fillcolor="#e5dbff"];
+  PABX [label="Telephone interconnect (PABX/VoIP)\nfor radio-to-phone calls", fillcolor="#e5dbff"];
+  D_dest -> UGBACK [xlabel="underground users"];
+  D_dest -> GW [xlabel="surface / control"];
+  D_dest -> DSRV [xlabel="data"];
+  D_dest -> PABX [xlabel="phone"];
+}
+TRUNK -> D_dest;
+UGBACK -> HEADAMP [xlabel="downlink", style=bold, color="#3d6bb3"];
+HEADAMP -> DNL [xlabel="down the feeder", style=bold, color="#3d6bb3"];
+SW -> DSRV [xlabel="IP", style=dashed, color="#7a5cc2"];
+
+// ===== 10. SURFACE TOWERS =====
+subgraph cluster_tower { label=<<B>10 · SURFACE TOWERS &amp; WIDE-AREA RADIO</B>>; style="rounded,filled"; fillcolor="#eefaf2"; color="#4f9d69"; fontsize=16;
+  TOWER [label="Lattice / monopole radio tower\n(climbing ladder, fall arrest,\naviation obstruction light)", fillcolor="#dbe9ff"];
+  TANT [label="Tower antennas:\nomni collinear (VHF/UHF),\nsector panels (LTE), Yagi links", fillcolor="#dbe9ff"];
+  TFEED [label="Low-loss feeder (7/8″ or 1-5/8″ heliax)\n+ earthing kits + hoisting grip\n+ wall entry plate", fillcolor="#dbe9ff"];
+  LPROT [label="Lightning protection:\nair terminal, down conductor,\ncoax surge arrestors, earth grid\n(<10 Ω target)", fillcolor="#ffe3c2"];
+  SREP [label="Surface repeaters / LTE eNodeB\n(plant, mill, smelter, village,\nvehicle fleet)", fillcolor="#dbe9ff"];
+  MW [label="Microwave / fibre backhaul\n(between towers and to\nremote sites)", fillcolor="#e5dbff"];
+  D_lightning [label="Storm / lightning\nstrike damage?", shape=diamond, fillcolor="#ffe08a"];
+  F_light [label="Replace surge arrestor cartridges;\ntest earth resistance; check feeder VSWR\nwith a site master / cable analyser", fillcolor="#ffc9c9"];
+  SURF [label="Surface radios:\nsupervisors, ERT, shift boss,\nsurface fleet", fillcolor="#dbe9ff"];
+  TOWER -> TANT -> TFEED -> SREP;
+  LPROT -> TOWER [style=dashed, color="#d08a3c"];
+  SREP -> MW [style=dashed];
+  SREP -> D_lightning;
+  D_lightning -> F_light [xlabel="YES"];
+  D_lightning -> SURF [xlabel="NO"];
+  F_light -> SURF;
+}
+GW -> SREP [xlabel="patched talkgroup"];
+
+// ===== 11. CONTROL ROOM =====
+subgraph cluster_ctrl { label=<<B>11 · CONTROL ROOM / DISPATCH (site or remote operations centre)</B>>; style="rounded,filled"; fillcolor="#f5f0ff"; color="#7a5cc2"; fontsize=16;
+  CONSOLE [label="Dispatch console\n(multi-channel PC client, desk mics,\nfootswitch, speakers, call recording)", fillcolor="#e5dbff"];
+  REC [label="Voice logging recorder\n(all channels, timestamped)", fillcolor="#e5dbff"];
+  MAP [label="Tracking display:\nlast tag reader / beacon zone\nfor each person and vehicle", fillcolor="#e5dbff"];
+  D_ack [label="Controller answers\nand acknowledges?", shape=diamond, fillcolor="#ffe08a"];
+  F_ack [label="Escalate: backup controller /\nshift supervisor phone;\ncall unanswered = treat as emergency", fillcolor="#ffc9c9"];
+  CONSOLE -> REC [style=dashed];
+  CONSOLE -> D_ack;
+  D_ack -> F_ack [xlabel="NO"];
+}
+GW -> CONSOLE; DSRV -> MAP; PABX -> CONSOLE [style=dashed];
+
+// ===== 12. HEARD THE REPLY? =====
+subgraph cluster_reply { label=<<B>12 · DID THE CALLER HEAR THE REPLY?</B>>; style="rounded,filled"; fillcolor="#eefaf2"; color="#4f9d69"; fontsize=16;
+  D_heard [label="Reply heard clearly\nunderground?", shape=diamond, fillcolor="#ffe08a"];
+  DONE [label="COMMUNICATION COMPLETE\n(call logged, location stamped)", shape=oval, fillcolor="#b7e4c7", fontsize=14];
+  D_heard -> DONE [xlabel="YES"];
+}
+DNL -> D_heard;
+D_ack -> D_heard [xlabel="YES: reply on downlink"];
+SURF -> D_heard [style=dashed];
+
+// ===== 13. FAULT FINDING =====
+subgraph cluster_fault { label=<<B>13 · FAULT FINDING (comms tech) — work from the headend outward</B>>; style="rounded,filled"; fillcolor="#fff0f0"; color="#c24f4f"; fontsize=16;
+  D_scope [label="Who is affected?", shape=diamond, fillcolor="#ffe08a"];
+  F_one [label="ONE radio: swap radio;\ncheck battery, antenna, channel;\nreprogram codeplug if needed", fillcolor="#ffc9c9"];
+  F_all [label="WHOLE MINE: check headend first.\nRepeater, combiner, duplexer,\nheadend amp, UPS, gateway", fillcolor="#ffc9c9"];
+  D_nms [label="NMS shows the last amplifier\nthat still reports OK?", shape=diamond, fillcolor="#ffe08a"];
+  WALK [label="Walk the cable from the last good amp\nwith a portable RF signal-level meter /\nspectrum analyser + test transmitter", fillcolor="#ffc9c9"];
+  D_cause [label="What did you find?", shape=diamond, fillcolor="#ffe08a"];
+  C_cut [label="Cable cut / crushed\n(blast damage, scaling, vehicle\nstrike, ground support work)\n→ splice kit or new length +\n2 N-connectors; re-hang", fillcolor="#ffc9c9"];
+  C_water [label="Water in connector / amp\n→ cut back, re-terminate,\nre-seal with amalgamating tape\n+ heat shrink", fillcolor="#ffc9c9"];
+  C_amp [label="Dead amplifier / blown fuse\n→ swap; check for a short\ndownstream before re-powering", fillcolor="#ffc9c9"];
+  C_psu [label="PSU / mains / UPS failure\n→ electrician restores supply;\nreplace batteries", fillcolor="#ffc9c9"];
+  C_node [label="Fibre node or switch fault\n→ swap module; OTDR the fibre;\nre-splice at the break", fillcolor="#ffc9c9"];
+  C_osc [label="Amplifier oscillation / overload\n(gain too high, open end, missing\nterminator) → re-terminate, re-balance", fillcolor="#ffc9c9"];
+  RETEST [label="Re-test: radio check from the\nfar end of the affected section;\nupdate coverage map & NMS", fillcolor="#ffc9c9"];
+  D_scope -> F_one [xlabel="one person"];
+  D_scope -> F_all [xlabel="everyone"];
+  D_scope -> D_nms [xlabel="one level / area"];
+  D_nms -> WALK [xlabel="YES"];
+  D_nms -> F_all [xlabel="NO (headend side)"];
+  WALK -> D_cause;
+  D_cause -> C_cut; D_cause -> C_water; D_cause -> C_amp; D_cause -> C_psu; D_cause -> C_node; D_cause -> C_osc;
+  C_cut -> RETEST; C_water -> RETEST; C_amp -> RETEST; C_psu -> RETEST; C_node -> RETEST; C_osc -> RETEST;
+  F_one -> RETEST; F_all -> RETEST;
+}
+D_heard -> D_scope [xlabel="NO"];
+RETEST -> PTT [xlabel="try again", style=dashed];
+
+// ===== 14. EMERGENCY & BACKUP =====
+subgraph cluster_em { label=<<B>14 · EMERGENCY PATH &amp; BACKUP SYSTEMS</B>>; style="rounded,filled"; fillcolor="#fff0f0"; color="#c24f4f"; fontsize=16;
+  EMPRI [label="Emergency call: pre-empts the channel;\nsends radio ID and last known location;\nopens mic hot for a set time", fillcolor="#ffc9c9"];
+  EMALARM [label="Console: audible/visual alarm;\ntracking display shows location", fillcolor="#e5dbff"];
+  ERT [label="Controller activates the Emergency Response\nTeam / mines rescue; broadcasts on all talkgroups", fillcolor="#ffc9c9"];
+  D_lfok [label="Leaky feeder working\nin the incident area?", shape=diamond, fillcolor="#ffe08a"];
+  D_backup [label="Which backup is reachable?", shape=diamond, fillcolor="#ffe08a"];
+  TTE [label="Through-the-earth (TTE) paging\n(very-low-frequency loop antenna on surface;\ncap-lamp receivers flash + text;\nworks with NO underground infrastructure)", fillcolor="#dbe9ff"];
+  REFUGE [label="Refuge chamber comms:\nhard-wired phone / fibre phone /\nown leaky-feeder tail + battery radio", fillcolor="#dbe9ff"];
+  FPHONE [label="Fixed underground phones\n(at crib rooms, workshops,\nshaft stations, pump stations)", fillcolor="#dbe9ff"];
+  STENCH [label="Stench-gas warning\n(ethyl mercaptan into the\nventilation & compressed air)", fillcolor="#dbe9ff"];
+  F_noback [label="No comms at all:\nfollow trigger action response plan,\ngo to refuge chamber / self-escape;\nrescue uses last tracked location", fillcolor="#ffc9c9"];
+  EMPRI -> EMALARM -> ERT -> D_lfok;
+  D_lfok -> D_backup [xlabel="NO"];
+  D_backup -> TTE [xlabel="surface → people"];
+  D_backup -> REFUGE [xlabel="in refuge"];
+  D_backup -> FPHONE [xlabel="near phone"];
+  D_backup -> STENCH [xlabel="mass alert"];
+  D_backup -> F_noback [xlabel="none"];
+}
+D_emerg -> EMPRI [xlabel="YES"];
+D_lfok -> D_bb [xlabel="YES: normal path\nwith priority"];
+MAP -> EMALARM [style=dashed];
+REFUGE -> CONSOLE [style=dashed]; FPHONE -> PABX [style=dashed];
+F_noback -> DONE [style=invis];
+
+// cross-links for monitoring
+NMS -> D_nms [style=dashed, color="#c24f4f", xlabel="alarms"];
+AMP -> NMS [style=dotted, color="#7a5cc2"];
+PSU -> NMS [style=dotted, color="#7a5cc2"];
+SW -> NMS [style=dotted, color="#7a5cc2"];
+}
