@@ -126,20 +126,34 @@ def _splits(words: list[str], max_lines: int = 3):
 
 
 def _fit_text(draw, words: list[str], font_path: Path, box: tuple[int, int, int, int]):
-    """Largest size at which the words fit the box; among layouts that fit
-    at that size, the most balanced line lengths win."""
+    """Pick the line breaks a designer would: as big as possible, but a
+    third line has to earn its keep, and no short word sits alone on a
+    line ("MY", "IT") or is left dangling at the end."""
     bw, bh = box[2] - box[0], box[3] - box[1]
-    for size in range(int(320 * S), 40, -6):
-        font = ImageFont.truetype(str(font_path), size)
-        line_h = font.getbbox("Hg")[3] - font.getbbox("Hg")[1]
-        fits = []
-        for lines in _splits(words):
+    fonts = {}
+    best = None
+    for lines in _splits(words):
+        size_fit = None
+        for size in range(int(320 * S), 40, -6):
+            font = fonts.get(size) or fonts.setdefault(size, ImageFont.truetype(str(font_path), size))
+            line_h = font.getbbox("Hg")[3] - font.getbbox("Hg")[1]
             widths = [draw.textlength(" ".join(l), font=font) for l in lines]
             total_h = line_h * len(lines) + int(line_h * 0.12) * (len(lines) - 1)
             if max(widths) <= bw and total_h <= bh:
-                fits.append((max(widths) - min(widths) + 40 * len(lines), lines))
-        if fits:
-            return size, font, min(fits, key=lambda f: f[0])[1], line_h
+                size_fit = (size, font, line_h, widths)
+                break
+        if not size_fit:
+            continue
+        size, font, line_h, widths = size_fit
+        score = size
+        score *= {1: 1.0, 2: 0.97, 3: 0.82}[len(lines)]
+        if len(words) > 1 and any(len(l) == 1 and len(l[0]) <= 3 for l in lines):
+            score *= 0.75  # orphaned short word
+        score *= 1 - 0.15 * (max(widths) - min(widths)) / max(widths)  # ragged lines
+        if best is None or score > best[0]:
+            best = (score, size, font, lines, line_h)
+    if best:
+        return best[1], best[2], best[3], best[4]
     font = ImageFont.truetype(str(font_path), 40)
     return 40, font, [words], 40
 
