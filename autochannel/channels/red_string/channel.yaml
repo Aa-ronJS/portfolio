@@ -1,0 +1,29 @@
+# Red String Files (anonymous). Plan: ../PORTFOLIO.md. Only what differs from ../defaults.yaml.
+# Visual sources (build list): Evidence-board visuals: quoted dialogue and lore as text cards, timelines, diagrams, maps the channel draws itself; generic mood stock. No game or film footage, trailers, music or character art (Content ID and copyright).
+
+channel_name: "Red String Files"
+
+writer:
+  batch_size: 4
+
+format:
+  target_seconds: 1000
+  max_seconds: 1800
+
+voice:
+  file: voices/aaron-brisk.safetensors
+  speed: 1.05
+
+visuals:
+  clip_seconds: 5
+  darken: 0.55
+  captions:
+    enabled: true
+    colour: "#FFFFFF"
+    highlight: "#E63946"
+
+publish:
+  days: [wed, sun]
+  category_id: "24"
+  description_footer: |
+    Narration synthesised with Kyutai Pocket TTS (CC BY 4.0).

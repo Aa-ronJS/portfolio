@@ -1,183 +1,192 @@
 # Portfolio framework: seven channels, one machine
 
 One named channel (`aaron/`, plan in `aaron/STRATEGY.md`) plus six
-anonymous ones, all run by the same engine. Everything in the named
-channel's framework (script craft, packaging, decision rules, 3-month
-review) applies to every channel. This file covers what changes when
-there are seven. Written 18 Nov 2026.
+anonymous ones in genres Aaron chose, all run by the same engine. The
+craft and decision rules in the named channel's framework apply
+everywhere; this file covers what's different with seven. Updated
+18 Nov 2026.
 
 ## The principle
 
 **Quality comes from the system, not from Aaron's hours.** Each channel
-gets its own rules, researched scripts, rotated structures and its own
-review. None of that thins out with more channels. What has to scale is
+gets its own rules, researched or carefully written scripts, and review.
+That doesn't thin out with more channels. What has to scale is
 **distinctness**: seven channels from one engine must never look like
-one template with the nouns swapped. That's the craft problem, and it's
-also YouTube's "inauthentic content" test, which judges each channel
-for signs of mass production.
+one template with the nouns swapped, which is exactly YouTube's
+"inauthentic content" test.
 
 ## The seven
 
-| Channel | Niche | Register | Main footage | Posts (UTC) |
+| Channel | Genre | Length | Register (voice file) | Posts (UTC) |
 |---|---|---|---|---|
-| **Aaron Steele** (named) | Why the ordinary world works like this | Dry, wry | Pexels, maps | Tue, Fri |
-| **Slow Orbit** | Space missions that went sideways | Calm, late-night | NASA, National Archives | Mon, Thu |
-| **Odd Lines** | Odd borders and strange places | Brisk, wry | Maps, satellite imagery, drone stock | Wed, Sat |
-| **Dry Fauna** | Animal behaviour, told deadpan | Deadpan | US Fish & Wildlife, NPS, NOAA, stock | Thu, Sun |
-| **Restless Ground** | Volcanoes, storms, quakes, deep sea | Measured, urgent | USGS, NOAA, NASA Earth | Mon, Fri |
-| **Hangar Archive** | Cold War aircraft and prototypes | Brisk, factual | DVIDS, National Archives, NASA Armstrong | Tue, Sat |
-| **Footnote Hour** | Forgotten everyday history and words | Warm, amused | Prelinger films, Library of Congress, museum CC0 art | Wed, Sun |
+| **Aaron Steele** (named) | Why the ordinary world works like this | 8–12 min | dry (`aaron-dry`) | Tue, Fri |
+| **The Second Knock** | Original horror stories in the r/nosleep style | ~20 min, 3–4 stories | low, close (`aaron-low`) | Wed, Sat |
+| **Red String Files** | Game, film and TV theories | 15–18 min | brisk detective (`aaron-brisk`) | Wed, Sun |
+| **Ledger of the Odd** | Strange and creepy real history | 10–15 min | measured (`aaron-measured`) | Mon, Thu |
+| **Treeline Reports** | Cryptids: the case for and against | 15–18 min | hushed campfire (`aaron-hushed`) | Tue, Sat |
+| **Lamplight Lectures** | Calm history and science to fall asleep to | ~2 hours | slowest, softest (`aaron-sleep`) | Sun |
+| **Blind Spot Lab** | Psychology: biases and experiments | 11–15 min | curious teacher (`aaron-warm`) | Mon, Fri |
 
-Why these six: each has a free footage source that actually shows its
-subject, sits in or near the education category where ads pay most
-(median ~US$10 per 1,000 views), and doesn't compete with the others
-for the same viewers. Rejected: a standalone ocean channel (splits
-Dry Fauna and Restless Ground), standalone etymology (too little search
-demand, folded into Footnote Hour), disasters (tragedy), mythology
-(religion-adjacent and full of AI slop), food history (low pay).
+Thirteen uploads a week, never more than two a day. Comparable channels
+prove the demand: Mr. Nightmare (~7.1M) and Lazy Masquerade (~1.9M) for
+horror; The Game Theorists (~19.6M) and Film Theory (~13.5M); Weird
+History (~5M) and Fascinating Horror (~1.4M); Bedtime Stories (~1.1M)
+for cryptids; the "boring history for sleep" networks (one video at 2.3M
+views); Psych2Go (~13M) and Sprouts (~2M) for psychology. Counts are from
+third-party trackers, approximate.
 
-Two pairs share some audience: Dry Fauna/Restless Ground (nature) and
-Slow Orbit/Hangar Archive (NASA-era footage). Their topics don't
-overlap, but never cross-post Shorts between them.
+## The three genres with traps, and how each is built around them
 
-Two posts a day across the portfolio, fourteen a week, spread so no day
-is heavier than another.
+**Horror: we write the stories, we never take them.** Reddit authors
+own their posts; Reddit's licence covers Reddit, not narrators. Reading
+someone's story without permission is copyright infringement, it's the
+exact "readings of other materials you did not originally create" that
+YouTube's reused-content rule bans, and r/nosleep went dark in 2020 over
+narrators doing it. So The Second Knock writes **original fiction in that
+style**, every description says so, and titles never say "true". Real
+usernames, real crimes and real people are banned. Violence stays
+implied, which also keeps full ads.
+*Later, optionally:* narrate real authors' stories with written
+permission (and a revenue share), the way established narrators do.
+That's a manual relationship, not something to automate.
+
+**Theories: an evidence board, never the footage.** Game and film clips,
+trailers and music trigger Content ID (YouTube's automatic copyright
+matching): ad money goes to the rights holder, or the video is blocked,
+and disputed claims can become strikes (three in 90 days ends the
+channel). AI images of copyrighted characters are the kind of content
+behind the December 2025 bans of the fake-trailer channels. So Red String
+Files is built from quoted dialogue on text cards, timelines, diagrams,
+maps and mood stock. It's a distinct look that nobody can claim.
+
+**Sleep: the honest one in a sloppy genre.** "Boring history for sleep"
+networks still monetise, but they are the textbook mass-produced
+template, and historians have documented their invented facts. Lamplight
+Lectures differs on purpose: one a week (not daily), sourced facts in the
+description, distinct chapters per video, no loops or re-uploads, no
+captions, quieter audio (-20 LUFS) and slow pans. A 2-hour video watched
+for 20 minutes is fast watch time toward the Partner Program.
+
+The other three are safer but have rules too:
+- **Creepy history:** events over 50 years old, victims named with respect, no gore.
+- **Cryptids:** case for *and* against, never claiming a cryptid is real,
+  never faking photographic "evidence" (that would also need an AI label).
+- **Psychology:** biases and experiments only, honest about studies that
+  failed to replicate, never diagnosis or treatment advice.
 
 ## Keeping seven channels distinct
 
-Every channel differs on all of these, not one or two:
-
 | Layer | How it varies |
 |---|---|
-| **Voice** | One voice, five registers. The clone copies the *delivery* of the recording it's made from, so Aaron records one take per register and each becomes its own voice file: `aaron-dry`, `aaron-calm`, `aaron-measured`, `aaron-brisk`, `aaron-warm`. Speed differs per channel too |
-| **Script shape** | Own RULES.md: own audience, register, banned phrases and channel-specific rules. Structures rotate within each channel |
-| **Pacing** | Calm channels cut slower (6–10 s), brisk ones faster (3–5 s) |
-| **Look** | Own caption colours now; own caption font, title cards and map style (build list) |
-| **Thumbnails** | Own template per channel: colour, type and composition (build list) |
-| **Footage** | Different primary archives, so the same stock clip never anchors two channels |
-| **Schedule** | Different posting days |
+| **Voice** | One voice, seven registers: the clone copies the *delivery* of the recording it's made from, so one take per register (see `voices/README.md`) gives seven narrators. Speed, pauses and loudness differ too |
+| **Writing** | Own RULES.md per channel: genre, structure, banned phrases. Horror and sleep don't follow the explainer recipe at all |
+| **Length and pace** | 10 minutes to 2 hours; cuts from every 5 s (theories, psychology) to every 75 s (sleep) |
+| **Look** | Own caption colours and darkness now; own font, card and thumbnail style (build list). Sleep has no captions |
+| **Footage** | Different sources per genre (see each channel.yaml) |
+| **Schedule** | Different days |
 
-### About using Aaron's voice everywhere
-His choice, with eyes open. Registers make the channels feel different,
-but anyone who knows his voice well could connect them. YouTube itself
-always knows: all seven are paid through one AdSense account (allowed:
-one account can pay many channels; a *second* AdSense account per
-person is what gets closed). Anonymity here means anonymous to
-viewers, nothing more. The descriptions say "Narration synthesised with
-Kyutai Pocket TTS" without "the creator's own voice", so the channels
+### About Aaron's voice on all seven
+Aaron's choice. Registers make the narrators feel different, but anyone
+who knows his voice well could connect them. YouTube always knows: all
+seven are paid through one AdSense account. One account can pay many
+channels; a *second* AdSense account in his name is what gets closed.
+Anonymous means anonymous to viewers. The anonymous channels'
+descriptions don't say "the creator's own voice", so the channels
 aren't linked in writing.
 
 ## Accounts
 
-- Each channel is a **Brand Account** under one Google login; viewers
-  can't see who owns a Brand Account.
-- One Google Cloud app serves all seven. Each channel signs in once
-  (`python -m ac <channel> youtube-auth`) and gets its own secret,
-  `YT_REFRESH_TOKEN_<CHANNEL>`. Each day's job only ever sees its own channel's.
-- Upload quota is 100 a day per app; the portfolio uses 2.
+- Each anonymous channel is a **Brand Account** under one Google login
+  (viewers can't see the owner).
+- One Google Cloud app serves all seven; each channel signs in once and
+  gets its own `YT_REFRESH_TOKEN_<CHANNEL>` secret. Each day's job sees
+  only its own channel's.
 
 ## Aaron's time
 
-- **Named channel:** 5 minutes a day, as planned.
-- **Six anonymous channels:** one weekly batch, ~15 minutes. Each
-  channel keeps 4 scripts ahead (two weeks), so a missed week costs
-  nothing. `python -m ac pending` lists every script waiting, across
-  channels; the phone version is on the build list.
+- Named channel: 5 minutes a day.
+- Six anonymous channels: one weekly batch, ~15–20 minutes, approving
+  scripts (title, opening and outline, not every word). Each channel
+  keeps two weeks of scripts ahead; Lamplight keeps four.
 
-## Money
-
-Budget US$50/month for everything.
+## Money and compute (US$50/month for everything)
 
 | Item | Estimate |
 |---|---|
-| Scripts: ~60 a month × ~$0.50 (researched, Claude Opus 5.5) | ~$30 |
+| Scripts: ~55 regular (~$0.30–0.50) + 4 two-hour sleep scripts (~$1.50) | ~$30 |
 | Voice, rendering, footage, upload | $0 |
-| Compute: ~60 videos × ~15 min ≈ 900 of the 2,000 free private-repo minutes | $0 |
-| Headroom (rewrites, thumbnail experiments) | ~$20 |
+| Compute: ~1,500 of the 2,000 free private-repo minutes (sleep videos are ~40% of it) | $0 |
+| Headroom | ~$20 |
 
-If scripts come in over budget, the first lever is fewer scripts
-binned, not a cheaper model.
+If minutes run out, the cheapest fix is GitHub's pay-per-minute overage
+(a few dollars) or running the jobs on a spare home computer for free.
+
+**What these genres pay:** entertainment-type genres (horror, theories,
+cryptids) sit nearer YouTube's all-niche median of about $2–4 per 1,000
+views than education's ~$10. History, psychology and sleep can land in
+education. Verified per-genre data doesn't exist. The vendor-blog
+horror figures ($4–14) are unaudited, so plan on $2–4 until Studio shows
+real numbers.
 
 ## Portfolio decision rules
 
 The per-video and per-channel rules in `aaron/STRATEGY.md` section 8
 apply to each channel. On top of those:
 
-- **Judge channels against their own median**, never against each other
-  in the first 3 months; niches have different natural audiences.
-- **At the mid-February review, rank all seven** on share of video
-  watched (the thing a cheap machine can improve) and on watch-time
-  growth.
-  - **Top 2:** move to 3 videos a week.
+- **Judge each channel against its own median**, never against the
+  others in the first 3 months.
+- **Mid-February review: rank all seven** on share of video watched and
+  watch-time growth.
+  - **Top 2:** move to 3 a week (Lamplight: 2 a week).
   - **Middle:** unchanged.
-  - **Bottom 2:** change format or register for a month, then **retire
-    or replace** with a reserve niche (national parks, or the runners-up
-    from research) if still bottom.
-- **Copy what works across channels:** a hook, structure or packaging
-  idea that lifts one channel gets tried on two others, never all six
-  at once.
-- **One strike anywhere pauses everything.** A copyright claim, a
-  community-guidelines strike or a demonetisation email stops posting on
-  every channel until the cause is understood. Same machine, so possibly
-  the same cause.
+  - **Bottom 2:** one month of format or register change, then retire or
+    replace if still bottom.
+- **Copy what works**, one or two channels at a time, never all at once.
+- **One strike anywhere pauses everything** until the cause is known.
+  Same machine, so possibly the same cause.
 
-## Footage, licences and Content ID
+## Shorts
 
-- Every clip used is logged with its source URL and licence in the
-  episode file (build list), so any claim can be answered in minutes.
-- Public-domain footage gets bogus Content ID claims (NASA's own Mars
-  landing upload was once taken down). Dispute them; a claimant who
-  doesn't respond within 30 days loses the claim.
-- Archive film: pictures only. Old soundtracks can still be in copyright.
-- ESA: only items marked CC BY-SA. Mixkit: Free tier only. Videvo: never
-  "editorial use". NASA: no logos, nothing implying endorsement.
-- No channel leans mostly on one public-domain source that others have
-  already uploaded wholesale.
-
-## Shorts across the portfolio
-
-About 2 Shorts per long video, not 10. Agency data shows heavy-Shorts
-months coinciding with lower long-form ad rates, and Shorts pay little
-(about $0.02–$1.50 per 1,000 views). They're trailers, judged on whether
-long-form views follow.
+About 2 per long video (none for Lamplight). Horror and cryptids
+make the strongest Shorts: one story beat or one sighting, ending on
+the cliffhanger. They're trailers, judged on whether long-form views follow.
 
 ## Build list additions (on top of `aaron/STRATEGY.md` section 9)
 
-1. **Footage sources** beyond Pexels: Pixabay (API), NASA Image and
-   Video Library (API), National Archives (API), DVIDS (API), Internet
-   Archive / Prelinger, Wikimedia Commons, Smithsonian/Met CC0. Each
-   channel lists its sources in channel.yaml; every clip's licence goes
-   in the episode log.
-2. **Stills mode:** slow pans and zooms on archive photos and paintings,
-   for Footnote Hour and Hangar Archive.
-3. **Per-channel look:** caption font, title cards, map style, cut pace.
-4. **Per-channel thumbnail templates.**
-5. **Weekly approval on the phone**: one digest of every pending script,
-   with approve/bin/note per script.
-6. **Portfolio weekly report**: all seven channels on one page, ranked by
-   their own median.
-7. **Strike switch**: one setting that pauses every channel.
+1. **Card renderer:** text cards, quote cards, timelines, diagrams and
+   maps from b-roll cues like `text card: ...`, `timeline: ...`,
+   `map: ...`. Red String Files and Blind Spot Lab depend on it; today
+   those cues would be sent to stock search.
+2. **Stills mode:** slow pans over archive scans and paintings (Ledger
+   of the Odd, Lamplight Lectures).
+3. **Footage sources** beyond Pexels: Pixabay, Library of Congress,
+   Chronicling America, Prelinger, Wikimedia Commons, NPS/US Fish &
+   Wildlife, each clip logged with its licence.
+4. **Sleep mode:** long-job resume (a crashed 2-hour render picks up
+   where it stopped), no captions (done), chapters from the script.
+5. **Per-channel look and thumbnail templates.**
+6. **Weekly approval on the phone** across all channels.
+7. **Portfolio weekly report** and a **strike switch** that pauses everything.
 
-## Before launch: checks to do by hand
+## Before launch, by hand
 
-- Search each channel name as a YouTube handle and a trademark; the
-  research found no channel using them but didn't check handles.
-- Record the five voice takes (`voices/README.md`).
+- Check each channel name as a YouTube handle (web searches found none
+  in use, but small channels index badly).
+- Record the seven voice takes.
 - Create the six Brand Accounts and sign each in.
 
 ## Sources
-- AIR Media-Tech, RPM by niche from verified revenue (2026): https://air.io/en/air-data-findings/which-youtube-niche-makes-the-most-money-in-2026-ranked-by-real-rpm-and-cpm
-- AIR Media-Tech, Shorts RPM by niche (2026): https://air.io/en/air-data-findings/what-is-youtube-shorts-rpm-in-your-niche-in-2026
+- YouTube monetisation policies (inauthentic and reused content): https://support.google.com/youtube/answer/1311392
+- YouTube advertiser-friendly guidelines: https://support.google.com/youtube/answer/6162278
+- YouTube altered/synthetic content disclosure: https://support.google.com/youtube/answer/14328491
+- YouTube Partner Program thresholds: https://support.google.com/youtube/answer/72851
+- YouTube medical misinformation policy: https://support.google.com/youtube/answer/10008196
+- r/nosleep blackout over narrators (Tubefilter, 2020): https://www.tubefilter.com/2020/02/26/horror-subreddit-r-nosleep-goes-dark-to-protest-youtubers-stealing-their-stories/
+- Reddit user agreement (archived): https://webarchive.library.unt.edu/web/20191121210518/https://www.reddit.com/help/useragreement
+- AI slop crackdown and channel bans, Jan 2026 (Tubefilter): https://tubefilter.com/2026/01/29/youtube-ai-slop-channel-crackdown-bans/
+- Neal Mohan's 2026 letter (Variety): https://au.variety.com/2026/digital/news/youtube-channels-using-ai-tools-reduce-slop-neal-mohan-letter-32190/
+- AI "boring history for sleep" videos (404 Media): https://www.404media.co/ai-generated-boring-history-videos-are-flooding-youtube-and-drowning-out-real-history/
+- AI cryptid vlogs criticised (Sharon Hill): https://sharonahill.substack.com/p/ai-cryptid-vlogs
+- AIR Media-Tech, verified RPM by niche (2026): https://air.io/en/air-data-findings/which-youtube-niche-makes-the-most-money-in-2026-ranked-by-real-rpm-and-cpm
 - Google, one AdSense account for several channels: https://support.google.com/youtube/answer/9914702
-- NASA media usage: https://www.nasa.gov/nasa-brand-center/images-and-media/
-- NASA footage taken down by Content ID (Techdirt): https://www.techdirt.com/articles/20210407/15421746573/content-moderation-case-study-nasa-footage-taken-down-youtube-moderation-2012.shtml
-- ESA copyright notice: https://www.esa.int/ESA_Multimedia/Copyright_Notice_Images
-- NOAA image licensing: https://www.omao.noaa.gov/image-licensing-usage-info
-- NPS b-roll terms: https://www.nps.gov/deva/learn/photosmultimedia/b-roll-footage.htm
-- DVIDS API terms: https://api.dvidshub.net/docs/tos
-- National Archives catalog API: https://www.archives.gov/research/catalog/help/api
-- Prelinger Archives help: https://help.archive.org/help/prelinger-archive/
-- Pixabay licence: https://pixabay.com/service/license-summary/
-- Videvo licence types: https://help.videvo.net/article/27-license-types-and-usage
-- YouTube, Content ID disputes: https://support.google.com/youtube/answer/2797454
-- YouTube monetisation policies: https://support.google.com/youtube/answer/1311392
+- Prelinger Archives: https://help.archive.org/help/prelinger-archive/

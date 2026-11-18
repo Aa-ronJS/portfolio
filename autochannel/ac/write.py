@@ -1,8 +1,7 @@
 """Scriptwriter: RULES.md + IDEAS.md + what's already been made -> new
-episodes in queue/.
+episodes in the channel's queue/.
 
-One Claude call writes a whole batch, so a week of scripts costs one
-request. Structured output means the reply is always valid episodes.
+Structured output means every reply is a valid episode or nothing.
 """
 from __future__ import annotations
 
@@ -20,13 +19,9 @@ class Script(BaseModel):
     description: str = Field(description="2-3 sentence YouTube description")
     tags: list[str]
     broll: list[str] = Field(
-        description="One stock-footage search term (2-4 plain words) per ~4 seconds of narration, in order"
+        description="Plain footage search terms (2-4 words) in narration order, as often as the channel rules ask"
     )
     idea: str = Field(description="The IDEAS.md line this came from, verbatim, or empty")
-
-
-class Batch(BaseModel):
-    scripts: list[Script]
 
 
 SYSTEM = """You write scripts for a faceless YouTube channel narrated in the \
@@ -75,32 +70,39 @@ def write(cfg: dict, n: int | None = None) -> list:
     )
     ideas = _ideas(cfg)
     done = store.history(cfg)
-    prompt = (
-        f"Write {n} new scripts.\n\n"
-        + ("Use these ideas from the creator first, in order, one per script:\n"
-           + "\n".join(f"- {i}" for i in ideas[:n]) + "\n\n" if ideas else "")
-        + ("Already made or queued (do not repeat these topics or angles):\n"
-           + "\n".join(f"- {t}" for t in done) if done else "Nothing has been made yet.")
-    )
-
     client = anthropic.Anthropic()
-    resp = client.beta.messages.parse(
-        model=w["model"],
-        max_tokens=16000,
-        system=system,
-        messages=[{"role": "user", "content": prompt}],
-        output_format=Batch,
-        output_config={"effort": w.get("effort", "medium")},
-        # If a safety classifier declines, retry on the model Anthropic picks
-        # instead of failing the day's run.
-        betas=["server-side-fallback-2026-07-01"],
-        fallbacks="default",
-    )
-    if resp.stop_reason == "refusal" or resp.parsed_output is None:
-        raise RuntimeError(f"writer returned no scripts (stop_reason={resp.stop_reason})")
-
-    paths = []
-    for s in resp.parsed_output.scripts:
+    paths, used = [], []
+    # One script per request, streamed: a 2-hour sleep script is ~18,000
+    # words, and one bad script never costs the rest of the batch.
+    for k in range(n):
+        idea = ideas[k] if k < len(ideas) else ""
+        prompt = (
+            "Write one new script.\n\n"
+            + (f"Use this idea from the creator: {idea}\n\n" if idea else "")
+            + ("Already made or queued (do not repeat these topics or angles):\n"
+               + "\n".join(f"- {t}" for t in done) if done else "Nothing has been made yet.")
+        )
+        try:
+            with client.beta.messages.stream(
+                model=w["model"],
+                max_tokens=64000,
+                system=system,
+                messages=[{"role": "user", "content": prompt}],
+                output_format=Script,
+                output_config={"effort": w.get("effort", "medium")},
+                # If a safety classifier declines (horror, crime history),
+                # retry on the model Anthropic picks instead of failing.
+                betas=["server-side-fallback-2026-07-01"],
+                fallbacks="default",
+            ) as stream:
+                resp = stream.get_final_message()
+        except anthropic.APIError as e:
+            print(f"  script {k + 1}: API error {e}")
+            continue
+        s = getattr(resp, "parsed_output", None)
+        if resp.stop_reason in ("refusal", "max_tokens") or s is None:
+            print(f"  script {k + 1}: no script (stop_reason={resp.stop_reason})")
+            continue
         ep = {
             "title": s.title.strip(),
             "approved": not w.get("review", False),
@@ -108,11 +110,16 @@ def write(cfg: dict, n: int | None = None) -> list:
             "description": s.description.strip(),
             "tags": s.tags,
             "broll": s.broll,
-            "idea": s.idea,
+            "idea": s.idea or idea,
             "writer": resp.model,
         }
         paths.append(store.save(ep, store.new_path(cfg, s.title)))
-    _mark_used(cfg, [s.idea for s in resp.parsed_output.scripts])
-    u = resp.usage
-    print(f"wrote {len(paths)} scripts ({u.input_tokens} in / {u.output_tokens} out tokens)")
+        done.insert(0, ep["title"])
+        used.append(ep["idea"])
+        u = resp.usage
+        print(f"  wrote '{ep['title']}' ({len(ep['narration'].split())} words; "
+              f"{u.input_tokens} in / {u.output_tokens} out tokens)")
+    _mark_used(cfg, used)
+    if not paths:
+        raise RuntimeError("writer produced no scripts")
     return paths

@@ -8,13 +8,19 @@ say anything.
 The clone copies the *delivery* of the recording, not just the voice, so
 one take per register gives each channel its own narrator:
 
-| file | register | used by |
+| file | how to read the take | used by |
 |---|---|---|
-| `aaron-dry` | dry, wry, conversational | Aaron Steele, Odd Lines, Dry Fauna |
-| `aaron-calm` | calm, unhurried, late-night | Slow Orbit |
-| `aaron-measured` | measured, a little urgent | Restless Ground |
-| `aaron-brisk` | brisk, economical | Hangar Archive |
-| `aaron-warm` | warm, amused | Footnote Hour |
+| `aaron-dry` | dry, wry, like telling a mate something surprising | Aaron Steele |
+| `aaron-low` | low, close to the mic, slow, as if it's 2am and you'd rather not say it | The Second Knock |
+| `aaron-brisk` | quick, sharp, a detective laying out evidence | Red String Files |
+| `aaron-measured` | steady documentary, serious but not grim | Ledger of the Odd |
+| `aaron-hushed` | quiet campfire voice, curious, a bit wary | Treeline Reports |
+| `aaron-sleep` | slowest and softest, reading to someone half asleep | Lamplight Lectures |
+| `aaron-warm` | warm, curious teacher, a little playful | Blind Spot Lab |
+
+Read a paragraph that suits each channel (a story opening for
+`aaron-low`, a calm history passage for `aaron-sleep`). How you sound in
+the take is how that channel will sound.
 
 ## Recording the sample (5 minutes)
 

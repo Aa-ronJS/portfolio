@@ -1,0 +1,30 @@
+# The Second Knock (anonymous). Plan: ../PORTFOLIO.md. Only what differs from ../defaults.yaml.
+# Visual sources (build list): Night roads, motels, forests, empty houses, rain: Pexels/Pixabay stock and public-domain photos with slow push-ins. Never anything that pretends to be the real place or person.
+
+channel_name: "The Second Knock"
+
+writer:
+  batch_size: 4
+
+format:
+  target_seconds: 1200
+  max_seconds: 2400
+
+voice:
+  file: voices/aaron-low.safetensors
+  speed: 0.95
+
+visuals:
+  clip_seconds: 7
+  darken: 0.6
+  captions:
+    enabled: true
+    colour: "#E8E8E8"
+    highlight: "#C1121F"
+
+publish:
+  days: [wed, sat]
+  category_id: "24"
+  description_footer: |
+    Original fiction. All stories, people and events are invented.
+    Narration synthesised with Kyutai Pocket TTS (CC BY 4.0).

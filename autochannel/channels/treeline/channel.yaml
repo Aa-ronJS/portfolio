@@ -1,0 +1,29 @@
+# Treeline Reports (anonymous). Plan: ../PORTFOLIO.md. Only what differs from ../defaults.yaml.
+# Visual sources (build list): Fog, forest, lake and mountain stock (Pexels/Pixabay), NPS and US Fish & Wildlife public-domain footage, historic newspaper clippings of sightings, sighting maps.
+
+channel_name: "Treeline Reports"
+
+writer:
+  batch_size: 4
+
+format:
+  target_seconds: 1000
+  max_seconds: 1800
+
+voice:
+  file: voices/aaron-hushed.safetensors
+  speed: 0.95
+
+visuals:
+  clip_seconds: 8
+  darken: 0.55
+  captions:
+    enabled: true
+    colour: "#EDEDE9"
+    highlight: "#8FBC8F"
+
+publish:
+  days: [tue, sat]
+  category_id: "24"
+  description_footer: |
+    Narration synthesised with Kyutai Pocket TTS (CC BY 4.0).

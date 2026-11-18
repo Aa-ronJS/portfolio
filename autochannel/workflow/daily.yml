@@ -51,7 +51,7 @@ jobs:
     needs: plan
     if: needs.plan.outputs.due != '[]'
     runs-on: ubuntu-latest
-    timeout-minutes: 60
+    timeout-minutes: 300           # a 2-hour sleep video renders for ~2-3 hours
     strategy:
       fail-fast: false              # one channel failing never stops the others
       max-parallel: 4

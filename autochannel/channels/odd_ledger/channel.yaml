@@ -1,0 +1,29 @@
+# Ledger of the Odd (anonymous). Plan: ../PORTFOLIO.md. Only what differs from ../defaults.yaml.
+# Visual sources (build list): Library of Congress and Chronicling America scans (US works 1930 or earlier are public domain), Prelinger films (pictures only, check each licence), Wikimedia Commons public-domain images and old maps, with slow Ken Burns moves.
+
+channel_name: "Ledger of the Odd"
+
+writer:
+  batch_size: 4
+
+format:
+  target_seconds: 750
+  max_seconds: 1200
+
+voice:
+  file: voices/aaron-measured.safetensors
+  speed: 1.0
+
+visuals:
+  clip_seconds: 7
+  darken: 0.5
+  captions:
+    enabled: true
+    colour: "#F4EBDD"
+    highlight: "#D4A373"
+
+publish:
+  days: [mon, thu]
+  category_id: "27"
+  description_footer: |
+    Narration synthesised with Kyutai Pocket TTS (CC BY 4.0).

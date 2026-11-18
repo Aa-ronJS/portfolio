@@ -1,0 +1,29 @@
+# Blind Spot Lab (anonymous). Plan: ../PORTFOLIO.md. Only what differs from ../defaults.yaml.
+# Visual sources (build list): Kinetic text, simple charts and diagrams, people and city stock (Pexels/Pixabay), public-domain archive photos of classic studies where genuinely public domain.
+
+channel_name: "Blind Spot Lab"
+
+writer:
+  batch_size: 4
+
+format:
+  target_seconds: 780
+  max_seconds: 1300
+
+voice:
+  file: voices/aaron-warm.safetensors
+  speed: 1.0
+
+visuals:
+  clip_seconds: 5
+  darken: 0.55
+  captions:
+    enabled: true
+    colour: "#FFFFFF"
+    highlight: "#4EA8DE"
+
+publish:
+  days: [mon, fri]
+  category_id: "27"
+  description_footer: |
+    Narration synthesised with Kyutai Pocket TTS (CC BY 4.0).
