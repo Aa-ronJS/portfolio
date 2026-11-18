@@ -1,0 +1,375 @@
+<!doctype html>
+<html lang="en-AU">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Outgrown</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<meta name="description" content="Every Monday: the small Australian companies that just won a federal contract bigger than anything they've had before.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,700;12..96,800&family=Instrument+Sans:wght@400;500;600&family=JetBrains+Mono:wght@400;600&display=swap">
+<style>
+/* Layout: one left-aligned column; the step-change bar (last year vs this contract) is the recurring motif. */
+:root{
+  --bg:#f5f6f8; --surface:#ffffff; --fg:#13171d; --muted:#5a6472; --line:#dde1e7;
+  --accent:#d4470c; --accent-soft:#fbe7dc; --prior:#b9c1cc; --ink:#1d3557;
+  --display:"Bricolage Grotesque", "Arial Narrow", system-ui, sans-serif;
+  --body:"Instrument Sans", system-ui, -apple-system, "Segoe UI", sans-serif;
+  --mono:"JetBrains Mono", ui-monospace, "SFMono-Regular", Menlo, monospace;
+  --s1:.8125rem; --s2:.9375rem; --s3:1.0625rem; --s4:1.375rem; --s5:clamp(1.6rem,3.2vw,2.1rem); --s6:clamp(2.3rem,6.2vw,4.1rem);
+}
+@media (prefers-color-scheme: dark){ :root:not([data-theme="light"]){
+  --bg:#0f1217; --surface:#161b22; --fg:#e8ecf1; --muted:#98a2b0; --line:#272e38;
+  --accent:#ff7a3d; --accent-soft:#3a1e10; --prior:#4a5361; --ink:#a9c4ec; color-scheme:dark }}
+:root[data-theme="dark"]{
+  --bg:#0f1217; --surface:#161b22; --fg:#e8ecf1; --muted:#98a2b0; --line:#272e38;
+  --accent:#ff7a3d; --accent-soft:#3a1e10; --prior:#4a5361; --ink:#a9c4ec; color-scheme:dark }
+
+*{box-sizing:border-box}
+:root{padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+body{margin:0}
+[hidden]{display:none!important}
+img{max-width:100%}
+body{background:var(--bg);color:var(--fg);font:400 var(--s3)/1.6 var(--body);-webkit-font-smoothing:antialiased}
+.wrap{max-width:1080px;margin:0 auto;padding-left:max(16px, env(safe-area-inset-left, 0px));padding-right:max(16px, env(safe-area-inset-right, 0px))}
+a{color:inherit;text-decoration-color:var(--accent);text-underline-offset:3px}
+a:focus-visible,button:focus-visible{outline:2px solid var(--accent);outline-offset:3px;border-radius:4px}
+h1,h2,h3{font-family:var(--display);text-wrap:balance;margin:0;letter-spacing:-.015em}
+p{margin:0}
+.label{font:600 var(--s1)/1.2 var(--mono);text-transform:uppercase;letter-spacing:.08em;color:var(--muted)}
+.num{font-family:var(--mono);font-variant-numeric:tabular-nums}
+
+/* header */
+header{border-bottom:1px solid var(--line)}
+header .wrap{display:flex;align-items:center;justify-content:space-between;gap:16px;padding-block:18px;flex-wrap:wrap}
+.brand{display:flex;align-items:center;gap:10px;font:800 1.35rem/1 var(--display);text-decoration:none;letter-spacing:-.02em}
+.brand svg{flex:none}
+nav{display:flex;gap:20px;flex-wrap:wrap;font-size:var(--s2)}
+nav a{text-decoration:none;color:var(--muted)} nav a:hover{color:var(--fg)}
+
+/* hero */
+.hero .wrap{display:grid;grid-template-columns:minmax(0,1.25fr) minmax(0,1fr);gap:56px;padding-block:72px 64px;align-items:end}
+.hero h1{font-size:var(--s6);line-height:1.02;font-weight:800}
+.hero h1 em{font-style:normal;color:var(--accent)}
+.lede{margin-top:22px;max-width:56ch;color:var(--muted);font-size:var(--s3)}
+.lede strong{color:var(--fg);font-weight:600}
+.funnel{margin-top:30px;display:flex;flex-wrap:wrap;gap:8px 22px;align-items:baseline}
+.funnel div{display:flex;flex-direction:column;gap:2px}
+.funnel b{font:700 var(--s5)/1 var(--mono);font-variant-numeric:tabular-nums}
+.funnel span{font-size:var(--s1);color:var(--muted)}
+.funnel .arrow{color:var(--prior);font:400 var(--s4)/1 var(--mono)}
+.funnel .hit b{color:var(--accent)}
+
+.notice{background:var(--surface);border:1px solid var(--line);border-radius:10px;padding:22px 22px 18px}
+.notice .top{display:flex;justify-content:space-between;gap:12px;flex-wrap:wrap}
+.notice h3{font-size:var(--s4);margin-top:12px;line-height:1.2}
+.notice .meta{margin-top:4px;font-size:var(--s2);color:var(--muted)}
+.history{margin-top:22px;display:grid;grid-template-columns:repeat(13,minmax(0,1fr));gap:4px;align-items:end;height:150px;border-bottom:1px solid var(--line)}
+.history i{display:block;background:var(--prior);border-radius:2px 2px 0 0;min-height:2px}
+.history i.now{background:var(--accent)}
+.axis{display:flex;justify-content:space-between;margin-top:6px;font:400 var(--s1)/1.3 var(--mono);color:var(--muted)}
+.notice .foot{margin-top:16px;display:flex;justify-content:space-between;gap:8px;flex-wrap:wrap;font-size:var(--s2)}
+
+/* sections */
+section{padding-block:64px;border-top:1px solid var(--line)}
+.sec-head{display:flex;justify-content:space-between;align-items:end;gap:16px 32px;flex-wrap:wrap;margin-bottom:28px}
+.sec-head h2{font-size:var(--s5);line-height:1.1}
+.sec-head p{color:var(--muted);max-width:52ch;font-size:var(--s2)}
+
+/* list */
+.list{background:var(--surface);border:1px solid var(--line);border-radius:10px;overflow-x:auto}
+table{width:100%;border-collapse:collapse;min-width:760px}
+th{text-align:left;font:600 var(--s1)/1.2 var(--mono);text-transform:uppercase;letter-spacing:.08em;color:var(--muted);padding:14px 16px;border-bottom:1px solid var(--line);white-space:nowrap}
+td{padding:14px 16px;border-bottom:1px solid var(--line);vertical-align:middle;font-size:var(--s2)}
+tr:last-child td{border-bottom:0}
+td.co{font-weight:600;min-width:200px}
+td.co small{display:block;font-weight:400;color:var(--muted);font-size:var(--s1)}
+td.val{text-align:right;white-space:nowrap}
+td.val small{display:block;color:var(--muted);font-size:var(--s1)}
+.redact{display:inline-block;height:.9em;border-radius:2px;background:var(--fg);opacity:.85;vertical-align:-1px}
+.jump{width:150px}
+.bars{display:grid;gap:4px}
+.bars span{display:block;height:7px;border-radius:2px}
+.bars .p{background:var(--prior)} .bars .n{background:var(--accent)}
+.mult{font:600 var(--s1)/1 var(--mono);color:var(--accent);margin-top:5px;display:block}
+.list-note{margin-top:14px;font-size:var(--s2);color:var(--muted)}
+
+/* steps */
+.steps{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:28px;counter-reset:s;list-style:none;margin:0;padding:0}
+.steps li{counter-increment:s;border-top:2px solid var(--fg);padding-top:14px}
+.steps li::before{content:counter(s);font:600 var(--s1)/1 var(--mono);color:var(--accent);display:block;margin-bottom:10px}
+.steps h3{font-size:var(--s3);font-family:var(--body);font-weight:600;letter-spacing:0}
+.steps p{margin-top:6px;color:var(--muted);font-size:var(--s2)}
+
+/* who */
+.who{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:0;border:1px solid var(--line);border-radius:10px;background:var(--surface);overflow:hidden}
+.who div{padding:22px 24px;border-bottom:1px solid var(--line)}
+.who div:nth-child(odd){border-right:1px solid var(--line)}
+.who div:nth-last-child(-n+2){border-bottom:0}
+.who h3{font-size:var(--s3);font-family:var(--body);font-weight:600;letter-spacing:0}
+.who p{margin-top:6px;color:var(--muted);font-size:var(--s2)}
+
+/* price */
+.price{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:40px;align-items:start}
+.price .big{font:800 clamp(2.6rem,7vw,4rem)/1 var(--display);letter-spacing:-.03em}
+.price .big small{font:500 var(--s3)/1 var(--body);color:var(--muted);letter-spacing:0}
+.price ul{margin:18px 0 0;padding:0;list-style:none;display:grid;gap:10px}
+.price li{display:grid;grid-template-columns:18px minmax(0,1fr);gap:10px;font-size:var(--s2)}
+.price li::before{content:"";width:10px;height:10px;margin-top:.5em;background:var(--accent);border-radius:2px}
+.exclusive{background:var(--accent-soft);border-radius:10px;padding:22px 24px}
+.exclusive h3{font-size:var(--s4)}
+.exclusive p{margin-top:8px;font-size:var(--s2)}
+
+/* faq */
+.faq{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:28px 48px}
+.faq h3{font-size:var(--s3);font-family:var(--body);font-weight:600;letter-spacing:0}
+.faq p{margin-top:6px;color:var(--muted);font-size:var(--s2);max-width:60ch}
+
+/* about + contact */
+.about{display:grid;grid-template-columns:minmax(0,1.2fr) minmax(0,1fr);gap:48px}
+.about p+p{margin-top:12px}
+.about .body p{color:var(--muted);max-width:58ch}
+.about .body p strong{color:var(--fg)}
+.card{background:var(--surface);border:1px solid var(--line);border-radius:10px;padding:22px 24px;display:grid;gap:14px}
+.card .row{display:grid;gap:4px}
+.card .row b{font-size:var(--s3);font-weight:600}
+.copy{display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+.copy code{font:400 var(--s2)/1.3 var(--mono);user-select:all;overflow-wrap:anywhere}
+.copy button{font:600 var(--s1)/1 var(--mono);text-transform:uppercase;letter-spacing:.06em;padding:7px 10px;border-radius:6px;border:1px solid var(--line);background:var(--bg);color:var(--fg);cursor:pointer}
+
+footer{border-top:1px solid var(--line);padding-block:28px 40px;font-size:var(--s1);color:var(--muted)}
+footer .wrap{display:flex;justify-content:space-between;gap:12px 32px;flex-wrap:wrap}
+footer p{max-width:70ch}
+
+@media (max-width:860px){
+  .hero .wrap{grid-template-columns:minmax(0,1fr);gap:36px;padding-block:48px}
+  .steps{grid-template-columns:repeat(2,minmax(0,1fr))}
+  .price,.about,.faq{grid-template-columns:minmax(0,1fr)}
+}
+@media (max-width:560px){
+  .steps{grid-template-columns:minmax(0,1fr)}
+  .who{grid-template-columns:minmax(0,1fr)}
+  .who div:nth-child(odd){border-right:0}
+  .who div:nth-last-child(2){border-bottom:1px solid var(--line)}
+  nav{gap:14px}
+  .history{height:120px}
+}
+@media (prefers-reduced-motion:no-preference){
+  .history i{transform-origin:bottom;animation:grow .7s cubic-bezier(.2,.7,.2,1) both}
+  .history i.now{animation-delay:.35s;animation-duration:.9s}
+  @keyframes grow{from{transform:scaleY(.04)}to{transform:scaleY(1)}}
+}
+</style>
+</head>
+<body>
+<header>
+  <div class="wrap">
+    <a class="brand" href="#top" aria-label="Outgrown, home">
+      <svg width="26" height="22" viewBox="0 0 26 22" aria-hidden="true"><rect x="0" y="16" width="5" height="6" rx="1" fill="var(--prior)"/><rect x="7" y="14" width="5" height="8" rx="1" fill="var(--prior)"/><rect x="14" y="15" width="5" height="7" rx="1" fill="var(--prior)"/><rect x="21" y="0" width="5" height="22" rx="1" fill="var(--accent)"/></svg>
+      Outgrown
+    </a>
+    <nav aria-label="Sections">
+      <a href="#list">This week</a>
+      <a href="#how">How it's made</a>
+      <a href="#pricing">Pricing</a>
+      <a href="#contact">Contact</a>
+    </nav>
+  </div>
+</header>
+
+<main id="top">
+  <div class="hero">
+    <div class="wrap">
+      <div>
+        <p class="label">Weekly · Australian federal contracts</p>
+        <h1 style="margin-top:14px">The small firms that just won <em>more than they can staff.</em></h1>
+        <p class="lede">Every Monday, Outgrown reads every Commonwealth contract published the week before and keeps only the private companies whose new contract is <strong>at least four times bigger than anything they won in the previous twelve months</strong>. Those firms are about to hire, borrow, insure and certify, fast.</p>
+        <div class="funnel" aria-label="Last week: 1,520 contracts published, checked against 62,500 from the past year, 13 made the list">
+          <div><b>1,520</b><span>contracts published last week</span></div>
+          <span class="arrow" aria-hidden="true">→</span>
+          <div><b>62,500</b><span>past-year contracts checked</span></div>
+          <span class="arrow" aria-hidden="true">→</span>
+          <div class="hit"><b>13</b><span>made the list</span></div>
+        </div>
+      </div>
+
+      <figure class="notice" style="margin:0" aria-label="Example: Pacific Aerospace Consulting won 5.66 million dollars from Defence after no federal contracts in the previous twelve months">
+        <div class="top"><span class="label">Contract notice CN4287796</span><span class="label">Published Nov 2026</span></div>
+        <h3>Pacific Aerospace Consulting Pty Ltd</h3>
+        <p class="meta">Department of Defence · Specialist system and administration support</p>
+        <div class="history" aria-hidden="true">
+          <i style="height:1.5%"></i><i style="height:1.5%"></i><i style="height:1.5%"></i><i style="height:1.5%"></i><i style="height:1.5%"></i><i style="height:1.5%"></i><i style="height:1.5%"></i><i style="height:1.5%"></i><i style="height:1.5%"></i><i style="height:1.5%"></i><i style="height:1.5%"></i><i style="height:1.5%"></i><i class="now" style="height:100%"></i>
+        </div>
+        <div class="axis"><span>Nov 2025</span><span>12 months: $0</span><span>Now</span></div>
+        <div class="foot"><span>New contract <b class="num">$5,656,013</b></span><span class="num" style="color:var(--muted)">31 Oct 2026 → 30 Oct 2029</span></div>
+      </figure>
+    </div>
+  </div>
+
+  <section id="list">
+    <div class="wrap">
+      <div class="sec-head">
+        <div>
+          <p class="label">Week of 9–17 November 2026</p>
+          <h2 style="margin-top:8px">Last week's list</h2>
+        </div>
+        <p>Three rows shown in full. Subscribers get every name with its ABN, location, years trading, contract notice number and end date, as a spreadsheet each Monday morning.</p>
+      </div>
+      <div class="list">
+        <table>
+          <thead><tr><th scope="col">Company</th><th scope="col">Work</th><th scope="col" style="text-align:right">New contract</th><th scope="col">Last 12 months vs now</th><th scope="col">Starts</th></tr></thead>
+          <tbody id="rows"></tbody>
+        </table>
+      </div>
+      <p class="list-note">Grey bar: the company's biggest federal contract in the previous 12 months. Orange bar: the new one.</p>
+    </div>
+  </section>
+
+  <section id="how">
+    <div class="wrap">
+      <div class="sec-head">
+        <h2>How the list is made</h2>
+        <p>The same four steps every week, from public government records.</p>
+      </div>
+      <ol class="steps">
+        <li><h3>Read every notice</h3><p>Every contract published on AusTender that week. Agencies publish within 42 days of signing, usually much sooner.</p></li>
+        <li><h3>Look back a year</h3><p>Each supplier's ABN is checked against the past 12 months of federal contracts, about 62,500 of them.</p></li>
+        <li><h3>Keep the jumps</h3><p>A contract of $500,000 or more that is at least four times the company's previous biggest. Private companies only.</p></li>
+        <li><h3>Check by hand</h3><p>Subsidiaries of large groups, one-off equipment purchases and anything that isn't new work come off before Monday.</p></li>
+      </ol>
+    </div>
+  </section>
+
+  <section id="who">
+    <div class="wrap">
+      <div class="sec-head">
+        <h2>Who uses it</h2>
+        <p>Anyone whose next customer is a small firm that just got bigger.</p>
+      </div>
+      <div class="who">
+        <div><h3>Recruiters</h3><p>A firm that won a three-year contract has seats to fill now, often cleared or specialist ones, and no recruiter yet.</p></div>
+        <div><h3>Finance brokers</h3><p>Payroll goes out every week. Invoices to government are paid weeks later. A bigger contract makes that gap bigger.</p></div>
+        <div><h3>Insurance brokers</h3><p>Government contracts set minimum professional indemnity and public liability cover, and a step up in contract size often means a step up in cover.</p></div>
+        <div><h3>Security and compliance consultants</h3><p>Defence work can require DISP membership, clearances and certifications the firm hasn't needed before.</p></div>
+      </div>
+    </div>
+  </section>
+
+  <section id="pricing">
+    <div class="wrap price">
+      <div>
+        <p class="label">Pricing</p>
+        <p class="big" style="margin-top:12px">A$400 <small>a month, plus GST</small></p>
+        <ul>
+          <li>The first four weeks are free.</li>
+          <li>One spreadsheet every Monday morning.</li>
+          <li>Cancel by replying to any Monday email.</li>
+        </ul>
+      </div>
+      <div class="exclusive">
+        <h3>One subscriber per specialty, per city</h3>
+        <p>If a Canberra ICT recruiter takes the list, no other Canberra ICT recruiter gets it. A Sydney engineering recruiter or a Canberra finance broker still can.</p>
+      </div>
+    </div>
+  </section>
+
+  <section id="faq">
+    <div class="wrap">
+      <div class="sec-head"><h2>Questions</h2></div>
+      <div class="faq">
+        <div><h3>Isn't this public information?</h3><p>Yes. Every row comes from AusTender and ABN Lookup, and you could build it yourself. What the subscription covers is comparing each winner with its last twelve months and checking the list by hand every week.</p></div>
+        <div><h3>How fresh is it?</h3><p>Contracts on the list usually started in the past six weeks. Most run one to three years, so the firm is still early in staffing it.</p></div>
+        <div><h3>Do you contact these companies?</h3><p>No. The list goes to subscribers only.</p></div>
+        <div><h3>Why did I get an email?</h3><p>Your business works with companies like the ones on this list. You get one email and one follow-up at most. Reply "stop" to either and you won't hear from Outgrown again.</p></div>
+        <div><h3>Can I see the whole sample first?</h3><p>Yes. Reply "yes" to the email and the full list of 13 comes back to you, free.</p></div>
+        <div><h3>Can I get a different industry or state?</h3><p>The list covers all federal contracts. Ask, and future lists can be filtered to your specialty or city.</p></div>
+      </div>
+    </div>
+  </section>
+
+  <section id="contact">
+    <div class="wrap about">
+      <div class="body">
+        <p class="label">Who's behind it</p>
+        <h2 style="font-size:var(--s5);margin-top:8px">Run by Aaron Steele</h2>
+        <p style="margin-top:14px">I build software and data tools. Outgrown started from a simple observation: the moment a small company outgrows itself is public, and almost nobody is watching for it.</p>
+        <p>More of my work: <a href="https://aaronsteele.vercel.app" target="_blank" rel="noopener">aaronsteele.vercel.app</a></p>
+      </div>
+      <div class="card">
+        <div class="row"><span class="label">Fastest</span><b>Reply to the email you received</b></div>
+        <div class="row" data-contact="email" hidden><span class="label">Email</span><div class="copy"><code id="c-email"></code><button type="button" data-copy="c-email">Copy</button></div></div>
+        <div class="row" data-contact="phone" hidden><span class="label">Phone</span><div class="copy"><code id="c-phone"></code><button type="button" data-copy="c-phone">Copy</button></div></div>
+        <div class="row"><span class="label">Unsubscribe</span><span style="font-size:var(--s2)">Reply "stop" to any email.</span></div>
+      </div>
+    </div>
+  </section>
+</main>
+
+<footer>
+  <div class="wrap">
+    <p>Contract data: AusTender, © Commonwealth of Australia, CC BY 3.0 AU. Business details: ABN Lookup. Outgrown is independent and not affiliated with the Australian Government.</p>
+    <p><span data-contact="abn" hidden>ABN <span id="c-abn" class="num"></span> · </span>© 2026 Outgrown</p>
+  </div>
+</footer>
+
+<script>
+/* Fill these in once you have them; anything left blank stays hidden. */
+var CONTACT = { email: "", phone: "", abn: "" };
+
+var ROWS = [
+  {co:"Pacific Aerospace Consulting Pty Ltd", sub:"NSW · trading since 2005", work:"Specialist system and administration support", agency:"Defence", val:5656013, prior:0, start:"31 Oct"},
+  {co:"Implementation Soft Australia Pty Ltd", sub:"NSW · trading since 2004", work:"ICT interface support services", agency:"Defence", val:4875986, prior:0, start:"26 Oct"},
+  {co:"Craft Advisory Pty Ltd", sub:"ACT · trading since 2022", work:"Strategic communications", agency:"Defence", val:1347624, prior:0, start:"8 Nov"},
+  {w:9, work:"ICT service augmentation", agency:"CSIRO", val:5500000, prior:953116, start:"2 Nov"},
+  {w:6, work:"Maintenance and support", agency:"Defence", val:3624025, prior:0, start:"30 Sep"},
+  {w:10, work:"LED street lighting upgrade", agency:"National Capital Authority", val:3042216, prior:436650, start:"28 Oct"},
+  {w:5, work:"ICT support services", agency:"Defence", val:2161321, prior:0, start:"11 Nov"},
+  {w:12, work:"Automated weather stations (2 contracts)", agency:"Bureau of Meteorology", val:2073713, prior:101790, start:"14 Oct"},
+  {w:8, work:"Logistics and research support", agency:"Defence", val:1680000, prior:0, start:"26 Oct"},
+  {w:7, work:"Reporting development and analysis", agency:"Health, Disability and Ageing", val:734976, prior:0, start:"6 Nov"},
+  {w:8, work:"Regulatory learning and development", agency:"Agriculture, Fisheries and Forestry", val:717200, prior:0, start:"8 Nov"},
+  {w:9, work:"Property management services", agency:"National Indigenous Australians Agency", val:702624, prior:60000, start:"5 Nov"},
+  {w:11, work:"Exhibition joinery", agency:"National Museum of Australia", val:549909, prior:114994, start:"10 Nov"}
+];
+
+function money(n){ return n >= 1e6 ? "$" + (n/1e6).toFixed(2) + "M" : "$" + Math.round(n/1e3) + "k"; }
+
+(function render(){
+  var tb = document.getElementById("rows"); if (!tb) return;
+  var html = "";
+  ROWS.forEach(function(r){
+    var pct = Math.max(2, Math.round(r.prior / r.val * 100));
+    var mult = r.prior ? "×" + Math.floor(r.val / r.prior) : "first in 12 months";
+    var name = r.co
+      ? r.co + "<small>" + r.sub + "</small>"
+      : '<span class="redact" style="width:' + (r.w * 0.6) + 'em" aria-label="Name hidden"></span><small>Subscribers only</small>';
+    html += "<tr>" +
+      '<td class="co">' + name + "</td>" +
+      "<td>" + r.work + '<small style="display:block;color:var(--muted);font-size:var(--s1)">' + r.agency + "</small></td>" +
+      '<td class="val num">' + money(r.val) + "<small>was " + (r.prior ? money(r.prior) : "$0") + "</small></td>" +
+      '<td class="jump"><div class="bars" aria-label="Previous biggest ' + money(r.prior) + ', new ' + money(r.val) + '"><span class="p" style="width:' + pct + '%"></span><span class="n" style="width:100%"></span></div><span class="mult">' + mult + "</span></td>" +
+      '<td class="num" style="white-space:nowrap">' + r.start + "</td></tr>";
+  });
+  tb.innerHTML = html;
+})();
+
+(function contact(){
+  ["email","phone","abn"].forEach(function(k){
+    var v = (CONTACT[k] || "").trim(); if (!v) return;
+    var el = document.getElementById("c-" + k); if (el) el.textContent = v;
+    document.querySelectorAll('[data-contact="' + k + '"]').forEach(function(n){ n.hidden = false; });
+  });
+  document.querySelectorAll("[data-copy]").forEach(function(b){
+    b.addEventListener("click", function(){
+      var t = document.getElementById(b.getAttribute("data-copy"));
+      var done = function(){ b.textContent = "Copied"; setTimeout(function(){ b.textContent = "Copy"; }, 1500); };
+      var pick = function(){ var r = document.createRange(); r.selectNodeContents(t); var s = getSelection(); s.removeAllRanges(); s.addRange(r); };
+      try { navigator.clipboard.writeText(t.textContent).then(done, pick); } catch (e) { pick(); }
+    });
+  });
+})();
+</script>
+
+</body>
+</html>
