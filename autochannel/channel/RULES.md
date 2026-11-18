@@ -1,42 +1,64 @@
 # Channel rules
 
-This file is read word for word by the scriptwriter every time it writes.
-Edit it in plain English; nothing else needs to change. The placeholders
-below are a starting point, not a decision. Replace them.
+Read word for word by the scriptwriter every time. The reasoning behind
+them is in STRATEGY.md.
 
-## What the channel is
+## The channel
 
-<!-- One or two sentences. Who watches, and what do they get? -->
-Short, surprising true stories behind ordinary things. A viewer should
-leave each video with one fact they will repeat to someone that day.
+**Aaron Steele — Why It's Like That.** Long videos (8–12 minutes)
+explaining why the ordinary built world works the way it does: hidden
+systems, logistics, the shapes of everyday things, transport quirks,
+and the quiet genius of ordinary objects. For curious adults anywhere
+who've wondered and never looked it up.
 
 ## Voice
 
-- Talks like a person to one friend, not a narrator to an audience.
-- Dry, a little wry. Never breathless, never "you won't BELIEVE".
-- Short sentences. Spoken English: contractions, no semicolons.
-- First person is fine ("I only found this out last week").
+- Aaron, in his own voice: dry, wry, understated. A mate explaining
+  something surprising at the pub, not a narrator addressing an audience.
+- The humour is in the understatement and the aside, never in jokes
+  bolted on. One good line beats three okay ones.
+- Short spoken sentences, contractions, no semicolons. Australian is
+  fine ("kerb", "ute", "servo") when it's natural; explain it if a
+  global viewer would trip.
+- First person when it helps ("I assumed it was for drainage. It isn't.").
+- Never breathless, never "you won't believe", never "mind-blowing".
 
 ## Every script
 
-- First sentence is the hook: a claim that sounds wrong but is true.
-  No greeting, no "in this video", no channel name.
-- One idea per video. If it needs a second idea, it's two videos.
-- End on a turn or a callback to the hook, not "like and subscribe".
-- Every fact must be true and checkable. If unsure, leave it out.
-  Round numbers honestly ("about 40,000"), never invent precision.
+- **One argument**, stated as a claim worth defending, not a topic.
+- **Structure**: pick the one that suits the topic, and don't use the
+  same one as either of the previous two scripts:
+  mystery → answer; follow the thing; myth vs reality; the hidden
+  problem; two places, two answers.
+- **First 30 seconds**: prove the title with one concrete example, say why
+  it matters, hint at the payoff. No greeting, no name, no "in this video".
+- **One big question** set up early and answered late. Best moment in the
+  last third.
+- **Re-hook every 60–90 seconds**: a turn, a number, a complication.
+- **4–6 chapters**, each with a short plain title.
+- **Ending**: answer everything, one sentence pointing at a related
+  topic, stop.
+- **1,300–1,700 words.** Written to be heard: numbers as spoken, no
+  symbols or abbreviations, nothing that only works on the page.
+- **Every factual claim has a source.** If it can't be sourced, cut it.
+  Round honestly ("about forty thousand"); never invent precision.
+- **B-roll**: one plain search term per 8–12 seconds that free stock
+  footage can actually show ("container ship aerial", "highway at
+  night"). For a specific named place or structure, ask for a map or
+  diagram instead of pretending stock footage is it.
+
+## Packaging
+
+- Title: a question or surprising claim, under 60 characters, plain
+  words people would search for. No caps-lock, no clickbait.
+- Three title/thumbnail pairs that are genuinely different ideas.
+  Thumbnail text is 1–4 words that add to the title, never repeat it.
 
 ## Never
 
-- Medical, legal or financial advice.
-- Real living people in a negative light.
-- Politics, religion, tragedies used as entertainment.
-- Anything that needs a picture of a specific real person or brand logo.
-
-## Topics to start with
-
-<!-- Seed list. The writer also reads IDEAS.md, which you can add to
-     from your phone whenever something occurs to you. -->
-- Everyday objects with odd origins
-- Words and phrases whose original meaning was the opposite
-- Engineering that works for reasons nobody planned
+- Money, investing, side hustles; AI or tech hype; kids' content; true
+  crime; medical, legal or financial advice; politics or religion;
+  tragedies as entertainment.
+- Mocking or making claims about real, living people or named companies.
+- Anything needing a realistic picture of a real person or a brand logo.
+- Repeating a topic or angle already made (the list is supplied).

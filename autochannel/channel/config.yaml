@@ -1,22 +1,22 @@
 # Everything mechanical about the channel. The creative rules live in
 # RULES.md (written in plain English, read by the scriptwriter verbatim).
 
-channel_name: "Untitled Channel"
+channel_name: "Aaron Steele"        # show line: Why It's Like That
 
 # --- writing --------------------------------------------------------------
 writer:
   model: claude-opus-5-5     # ~$0.05 per script. claude-haiku-5-5 is ~40x cheaper.
   effort: medium
-  batch_size: 7              # scripts written per top-up (one week at 1/day)
-  refill_below: 2            # top up the queue when fewer than this are ready
-  review: false              # true = new scripts wait for you to set
+  batch_size: 4              # scripts written per top-up (two weeks at 2/week)
+  refill_below: 4            # keep this many approved scripts ahead
+  review: true               # true = new scripts wait for you to set
                              # `approved: true` before they can be posted
 
 # --- format ---------------------------------------------------------------
 format:
-  kind: short                # short = 1080x1920 (<= 3 min); long = 1920x1080
-  target_seconds: 45         # the writer aims for this; words ~= seconds * 2.6
-  max_seconds: 170           # hard stop: a render longer than this is refused
+  kind: long                 # short = 1080x1920 (<= 3 min); long = 1920x1080
+  target_seconds: 600        # 8-12 min; the writer aims for ~1,500 words
+  max_seconds: 900           # hard stop: a render longer than this is refused
 
 # --- voice ----------------------------------------------------------------
 voice:
@@ -46,10 +46,10 @@ publish:
   publish_hour_utc: null     # e.g. 22 = schedule for 22:00 UTC; null = now
   category_id: "27"          # 27 Education, 24 Entertainment, 28 Sci&Tech
   made_for_kids: false
-  # A realistic cloned voice is "altered or synthetic content" under
-  # YouTube's rules. Declaring it costs nothing; being caught not
-  # declaring it can cost the channel.
-  synthetic_media: true
+  # YouTube lists "cloning one's own voice to create voice overs" as a
+  # minor edit that needs NO disclosure (support.google.com/youtube/answer/14328491).
+  # Set true for any video with realistic AI-generated people or events.
+  synthetic_media: false
   default_tags: []
   description_footer: |
     Narration: the creator's own voice, synthesised with Kyutai Pocket TTS (CC BY 4.0).

@@ -31,7 +31,12 @@ episode yaml moves to `posted/`.
   from the queue; one episode broken → try the next, retire after 3.
 - **faster-whisper gets numpy audio decoded by ffmpeg**, never a path:
   its PyAV decoder broke on a version drift (`metadata_errors` kwarg).
-- **`containsSyntheticMedia` stays true.** Policy, not taste.
+- **`containsSyntheticMedia` is false by default** because YouTube lists
+  cloning your own voice for voice-overs as needing no disclosure
+  (help answer 14328491, checked 2026-11-18). It must be true for any
+  video with realistic AI-generated people or events.
+- **The channel plan is `channel/STRATEGY.md`**; `channel/RULES.md` is
+  its writer-facing half. Its section 9 is the build list for long-form.
 - The voice file and Google client secrets never enter the public
   portfolio repo (root `.gitignore` blocks `autochannel/voice/*`). The
   channel runs from its own private repo.

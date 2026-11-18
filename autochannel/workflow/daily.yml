@@ -5,7 +5,7 @@ name: daily video
 
 on:
   schedule:
-    - cron: "17 21 * * *"   # 21:17 UTC every day; change to suit your audience
+    - cron: "17 21 * * 1,4"  # Mon+Thu 21:17 UTC = Tue+Fri morning in Australia; afternoon in the US
   workflow_dispatch: {}     # "Run workflow" button for a manual post
 
 concurrency:

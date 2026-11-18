@@ -1,12 +1,13 @@
 # autochannel
 
-A YouTube channel that runs itself, in your own cloned voice, for about
-a dollar a month. Every day a free GitHub runner:
+A YouTube channel that runs itself, in your own cloned voice, for a few
+dollars a month. The plan it runs (niche, format, tactics, how it's
+judged) is `channel/STRATEGY.md`. On each publishing day a free GitHub runner:
 
 1. tops up a queue of scripts written to **your rules** (`channel/RULES.md`)
 2. reads the next one aloud **in your voice**, on CPU, with no paid service
 3. cuts free stock footage to it and burns in word-by-word captions
-4. uploads it to YouTube, labelled as synthetic voice, and files it under `posted/`
+4. uploads it to YouTube and files it under `posted/`
 
 ## What it costs
 
@@ -67,9 +68,11 @@ ideas list and a daily approval are exactly that input, so use them. A
 channel that runs 100% unattended can still post, but it is the kind
 YouTube is trying to stop paying.
 
-**Disclosure.** A realistic clone counts as altered/synthetic content.
-`publish.synthetic_media: true` sets YouTube's label on every upload.
-Leave it on; YouTube also detects this itself.
+**Disclosure.** YouTube lists "cloning one's own voice to create voice
+overs" as a minor edit that needs no AI label
+(support.google.com/youtube/answer/14328491), so `publish.synthetic_media`
+is off. Turn it on for any video with realistic AI-generated people or
+events.
 
 **Uploads stuck on private.** Google has, at times, forced uploads from
 unaudited API projects to private. Its docs currently say they aren't
