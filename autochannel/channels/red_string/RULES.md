@@ -45,6 +45,8 @@ Takes fiction seriously without taking itself seriously. Never says
 
 ## Packaging
 
+**Genre look and title style:** A recognisable game screenshot or evidence-board image, high saturation, one red circle or arrow on the clue, one claim word. The franchise must be recognisable at 160 pixels. Titles: franchise name early, then a claim or question ("<Game>'s Map Is Hiding a Second Story", "The Truth About <Character>").
+
 - Title in the genre's own style (examples in IDEAS.md), under 70
   characters. Curious, not dishonest: the video must deliver what the
   title promises.

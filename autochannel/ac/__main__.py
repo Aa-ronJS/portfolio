@@ -9,6 +9,7 @@
 
   python -m ac <channel> daily             top up its queue; post if today is a posting day
   python -m ac <channel> topup             run the writers' room if its queue is low
+  python -m ac <channel> optimise          read click-through; swap packages on losing videos
   python -m ac <channel> write [N]         write N scripts into its queue
   python -m ac <channel> make [file]       render the next ready episode (no upload)
   python -m ac <channel> post [file]       render and upload it
@@ -52,6 +53,13 @@ def make(path: Path, cfg: dict) -> Path:
     bg = render.background(ep, secs + 0.3, cfg, work)
     out = render.final(bg, wav, subs, secs, cfg, work / f"{path.stem}.mp4")
     print(f"  video {out}")
+    if ep.get("packaging") and cfg.get("packaging", {}).get("thumbnails", True):
+        from . import packaging, write
+        try:
+            _, usd = packaging.thumbnails(cfg, ep["packaging"], bg, work)
+            write._add_spend(cfg, usd)
+        except Exception as e:  # a video without a custom thumbnail still posts
+            print(f"  !! thumbnails failed: {e}; YouTube will pick a frame")
     return out
 
 
@@ -62,9 +70,19 @@ def post(path: Path, cfg: dict) -> str | None:
     if not cfg["publish"].get("upload", True):
         print("  publish.upload is false; video left in build/")
         return None
-    vid = upload.upload(video, store.load(path), cfg)
+    work = store.build(cfg) / path.stem
+    vid = upload.upload(video, store.load(path), cfg, thumb=work / "thumb_a.jpg")
     ep = store.load(path)
     ep.update(youtube_id=vid, posted=dt.datetime.now(dt.timezone.utc).isoformat(timespec="seconds"))
+    # Keep the B and C packages so the optimiser (or Test & Compare) can try them.
+    alt = store.posted(cfg) / "alt"
+    for k in "abc":
+        t = work / f"thumb_{k}.jpg"
+        if t.exists():
+            alt.mkdir(parents=True, exist_ok=True)
+            shutil.copy(t, alt / f"{path.stem}-{k}.jpg")
+    if ep.get("packaging"):
+        ep["live_package"] = 0
     ep.pop("errors", None)
     store.save(ep, store.posted(cfg) / path.name)
     path.unlink()
@@ -205,6 +223,10 @@ def main(argv: list[str]) -> int:
         return 0
     if sub == "post-today":
         return post_today(cfg)
+    if sub == "optimise":
+        from . import reach
+        reach.optimise(cfg)
+        return 0
     if sub == "write":
         from . import write
         write.write(cfg, int(args[0]) if args else None)

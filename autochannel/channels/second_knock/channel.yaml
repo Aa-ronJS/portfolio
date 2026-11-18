@@ -31,3 +31,14 @@ publish:
 
 council:
   reviewers: [chief, viewer, retention, ear, slop, policy, scare, originality]
+
+thumbnail:
+  font: Anton-Regular.ttf
+  accent_colour: '#C1121F'
+  contrast: 1.35
+  saturation: 0.55
+  brightness: 0.8
+  tint: '#0b1a2a'
+  tint_strength: 0.25
+  vignette: 0.75
+  grain: 0.05

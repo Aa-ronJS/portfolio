@@ -34,6 +34,8 @@ never says "spooky", "creepy pasta" or "smash that like button".
 
 ## Packaging
 
+**Genre look and title style:** Nearly black frames with one lit, ordinary thing that is slightly wrong (a window, a hallway, a porch light, a car at night); cold blue with one red accent; 0-3 words, often none. An uncanny detail in a normal scene beats any monster. Titles: count + setting for compilations ("3 Night Shift Horror Stories"), a short eerie line in quotes for single tales.
+
 - Title in the genre's own style (examples in IDEAS.md), under 70
   characters. Curious, not dishonest: the video must deliver what the
   title promises.

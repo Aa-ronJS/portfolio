@@ -22,8 +22,11 @@ import os
 import time
 from pathlib import Path
 
+# Asked for once at sign-in. force-ssl lets the optimiser swap titles and
+# post comments; yt-analytics lets it read thumbnail click-through.
 SCOPES = ["https://www.googleapis.com/auth/youtube.upload",
-          "https://www.googleapis.com/auth/youtube.readonly"]
+          "https://www.googleapis.com/auth/youtube.force-ssl",
+          "https://www.googleapis.com/auth/yt-analytics.readonly"]
 
 
 def token_var(cfg: dict) -> str:
@@ -72,7 +75,27 @@ def _publish_at(hour: int | None) -> str | None:
     return at.isoformat().replace("+00:00", "Z")
 
 
-def upload(video: Path, ep: dict, cfg: dict) -> str:
+def client(cfg: dict):
+    from googleapiclient.discovery import build
+    return build("youtube", "v3", credentials=_creds(cfg), cache_discovery=False)
+
+
+def set_thumbnail(yt, vid: str, image: Path) -> bool:
+    """Custom thumbnails need a phone-verified channel; failing that, the
+    video keeps YouTube's own frame rather than failing the post."""
+    from googleapiclient.errors import HttpError
+    from googleapiclient.http import MediaFileUpload
+
+    try:
+        yt.thumbnails().set(videoId=vid, media_body=MediaFileUpload(str(image), mimetype="image/jpeg")).execute()
+        return True
+    except HttpError as e:
+        why = "verify the channel by phone (youtube.com/verify)" if e.resp.status == 403 else str(e)[:200]
+        print(f"  !! thumbnail not set: {why}")
+        return False
+
+
+def upload(video: Path, ep: dict, cfg: dict, thumb: Path | None = None) -> str:
     from googleapiclient.discovery import build
     from googleapiclient.errors import HttpError
     from googleapiclient.http import MediaFileUpload
@@ -121,5 +144,7 @@ def upload(video: Path, ep: dict, cfg: dict) -> str:
     if got.get("privacyStatus") != want:
         print(f"!! YouTube set this video to {got.get('privacyStatus')}, not {want}. Your API "
               f"project is probably unaudited; see README > 'Uploads stuck on private'.")
+    if thumb is not None and thumb.exists():
+        set_thumbnail(yt, vid, thumb)
     print(f"  uploaded https://youtu.be/{vid}" + (f" (goes live {publish_at})" if publish_at else ""))
     return vid

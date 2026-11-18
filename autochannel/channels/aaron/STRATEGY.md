@@ -139,6 +139,9 @@ in a row:
 - **Thumbnail:** one bold object, map or contrast, plus **1–4 words**,
   readable on a phone at thumb size. Consistent colour and type so the
   channel is recognisable across a feed.
+- **Automated in full:** see `../PORTFOLIO.md` → Packaging (eight
+  candidates, a packaging council, an A/B/C set, thumbnails art-directed
+  at phone size, and a daily optimiser that swaps losing packages).
 - **Three of each.** The robot makes 3 title/thumbnail pairs per video.
   YouTube's **Test & Compare** (desktop Studio only, up to 3 variants)
   picks the winner on watch time, which avoids rewarding clickbait.

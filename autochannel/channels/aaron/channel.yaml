@@ -14,3 +14,10 @@ publish:
 
 council:
   reviewers: [chief, viewer, retention, ear, slop, policy, factcheck, originality]
+
+thumbnail:
+  font: ArchivoBlack-Regular.ttf
+  accent_colour: '#FFD23F'
+  contrast: 1.25
+  saturation: 1.2
+  vignette: 0.35

@@ -49,6 +49,8 @@ who've wondered and never looked it up.
 
 ## Packaging
 
+**Genre look and title style:** Bright, daylit photos or maps with flat arrows and circles; 0-2 words. The dry joke lives in a visual contradiction (an ordinary object made absurd), not in the words. Titles: deadpan "Why ...", "The surprisingly complicated ...", "How ... actually works", 40-60 characters.
+
 - Title: a question or surprising claim, under 60 characters, plain
   words people would search for. No caps-lock, no clickbait.
 - Three title/thumbnail pairs that are genuinely different ideas.

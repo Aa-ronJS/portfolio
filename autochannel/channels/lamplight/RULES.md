@@ -31,6 +31,8 @@ surprises, no rising energy.
 
 ## Packaging
 
+**Genre look and title style:** Low-contrast navy and amber: a candlelit painting, a moonlit sea, an old map; small calm serif words or none. Never shock imagery: this audience is choosing calm. Stand out with an unexpected topic in the same calm look. Titles: "<Topic> | Boring History for Sleep" or "<Topic> | Calm Facts to Fall Asleep To | 2 Hours"; the word sleep and the duration are the promise.
+
 - Title format: "Boring History for Sleep | <subject>" or
   "<subject> | Calm Facts to Fall Asleep To | 2 Hours".
 - Thumbnails: dark, warm, one painting or object, no shouting text.

@@ -22,6 +22,20 @@ council:
   review_effort: medium
   max_searches: 12           # per research reviewer per round
 
+# --- packaging: titles and thumbnails (ac/packaging.py, ac/reach.py) --------
+packaging:
+  seats: [pack_click, pack_promise, pack_search]
+  thumbnails: true
+  thumb_rounds: 3            # render -> art director -> fix, at most this often
+  pass_score: 8
+  optimise:
+    settle_days: 4           # report data lags 2-3 days; judge from day 4
+    min_impressions: 500     # don't judge on less
+    below_median: 0.85       # swap if click-through < 85% of the channel median
+thumbnail:                   # the look; each channel overrides (ac/thumbs.py)
+  font: ArchivoBlack-Regular.ttf
+  accent_colour: "#FFD23F"
+
 # --- format ---------------------------------------------------------------
 format:
   kind: long                 # short = 1080x1920 (<= 3 min); long = 1920x1080

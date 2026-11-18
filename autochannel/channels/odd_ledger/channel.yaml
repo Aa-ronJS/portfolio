@@ -31,3 +31,13 @@ publish:
 
 council:
   reviewers: [chief, viewer, retention, ear, slop, policy, factcheck, originality]
+
+thumbnail:
+  font: SpecialElite-Regular.ttf
+  accent_colour: '#D4A373'
+  contrast: 1.35
+  saturation: 0.6
+  tint: '#3b2a1a'
+  tint_strength: 0.2
+  vignette: 0.6
+  grain: 0.04

@@ -291,8 +291,16 @@ def make_script(cfg: dict, idea: str, done: list[str], client=None) -> tuple[dic
                 _record_rejection(cfg, script, history, f"vetoed by {', '.join(v)}")
                 return None, room.ledger.usd
             if _passes(reviews, bar):
+                from . import packaging
+                try:
+                    packages = packaging.titles(room, script, done)
+                except (anthropic.APIError, RuntimeError) as e:  # never lose a passed script
+                    print(f"  packaging failed ({e}); using the script's own title")
+                    packages = [{"angle": "script", "title": script.title, "thumb_text": "",
+                                 "accent": [], "image_idea": ""}]
                 return ({
-                    "title": script.title.strip(),
+                    "title": packages[0]["title"].strip(),
+                    "packaging": packages,
                     "narration": script.narration.strip(),
                     "description": script.description.strip(),
                     "tags": script.tags,

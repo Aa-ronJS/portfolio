@@ -31,6 +31,8 @@ Never says "100% real", "proof" or "the government is hiding".
 
 ## Packaging
 
+**Genre look and title style:** Dark blue-and-orange cinematic landscapes: forest, fog, lake, ridge at dusk, with a scale cue (a tiny figure, a torch beam, a cabin light) and something half-seen; minimal words. Never a fake creature photo. Titles: the creature's name early for search ("The Yowie: ..."), then the tension.
+
 - Title in the genre's own style (examples in IDEAS.md), under 70
   characters. Curious, not dishonest: the video must deliver what the
   title promises.

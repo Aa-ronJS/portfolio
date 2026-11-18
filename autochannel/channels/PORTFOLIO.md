@@ -148,11 +148,60 @@ Nothing reaches a channel's queue without passing an adversarial council
 Every seat is a plain markdown file Aaron can sharpen. Every queued script
 records each seat's score and its own cost.
 
+## Packaging: titles and thumbnails
+
+Packaging decides whether anyone hears the script, so it gets its own room
+(`ac/packaging.py`, seats in `council/pack_*.md` and `thumb_critic.md`).
+The rule underneath it: YouTube ranks on **satisfied watch time**, not
+clicks. Its own A/B test picks winners by watch time, and its
+recommendations count only watch time viewers would rate 4–5 stars. So
+packaging must be irresistible **and** keep its promise.
+
+1. **Eight packages per video** (title + thumbnail words + picture idea),
+   each from a different angle.
+2. **Packaging council:**
+   - feed click critic (would it stop a scroll at phone size, next to the
+     genre's biggest channels?)
+   - promise keeper (does the video deliver it?)
+   - search critic (can it be found?)
+3. **Packaging editor** turns the best into an **A/B/C set**: three
+   genuinely different bets. Rules:
+   - hook in the first 40 characters, under 60 overall
+   - 0–3 thumbnail words that never repeat the title
+4. **Thumbnails from the video's own footage:**
+   - the sharpest frames are pulled into a numbered contact sheet
+   - Claude plans each thumbnail (frame, crop, focus, word placement, graphics)
+   - the renderer draws it in the channel's own look (font, colour grade, accent, vignette)
+5. **The art director reviews them as viewers will see them:**
+   - home-feed size, 'up next' size, and greyscale (to test contrast)
+   - fixes go back to the renderer, for up to 3 rounds
+   - one big subject, words never on the subject, bottom-right left clear
+     for the duration badge
+6. **Upload:** package A goes up with the video. B and C are kept in
+   `posted/alt/`.
+7. **The optimiser** runs daily (`ac/reach.py`). YouTube's Test & Compare
+   has no API, so this is the automatic fallback:
+   - it reads YouTube's daily click-through report per video and traffic source
+   - from day 4, a video clearly below the channel's median on its main
+     source (enough impressions to judge) is switched to B, later C
+   - a switch that does worse is reversed, and the video is locked
+   - videos doing fine are never touched
+8. **By hand, optional:** on desktop Studio, run Test & Compare with the
+   A/B/C files on flagship videos, and set `test_and_compare: true` in
+   that episode file so the optimiser leaves it alone.
+
+Each channel has its own genre conventions written into its RULES.md
+(drawn from what the genre's top channels do) and its own thumbnail look
+in channel.yaml. Custom thumbnails need each channel **verified by phone**
+(youtube.com/verify); until then YouTube picks a frame and the post still
+goes out.
+
 ## Money and compute (US$50/month for everything)
 
 The council is where the money goes: roughly **$2–2.50 per script that
 passes** (pitches, draft, 7–8 reviews per round, rewrites, web
-searches), and more for 2-hour sleep scripts.
+searches), and more for 2-hour sleep scripts. Packaging adds about
+$0.40–0.50 per video (titles ~$0.30, thumbnail art direction ~$0.15).
 
 | Item | Estimate |
 |---|---|

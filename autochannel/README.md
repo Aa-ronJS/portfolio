@@ -11,7 +11,11 @@ channel and six anonymous ones. Every day a free GitHub runner:
 2. for each channel posting today: reads the next approved script aloud
    **in your voice** (the register that channel uses), on CPU, free
 3. cuts free footage to it and burns in word-by-word captions
-4. uploads it to that channel and files it under `channels/<name>/posted/`
+4. packages it: a council-picked A/B/C set of titles and thumbnails, the
+   thumbnails art-directed at phone size from the video's own frames
+5. uploads it to that channel and files it under `channels/<name>/posted/`
+6. watches YouTube's click-through report and swaps in package B or C
+   on videos that are clearly losing
 
 The plans: `channels/aaron/STRATEGY.md` (the named channel, and the craft
 every channel follows) and `channels/PORTFOLIO.md` (the seven together).
@@ -64,6 +68,8 @@ money runs out, channels post less, never worse (`channels/PORTFOLIO.md`).
    `python -m ac <name> youtube-auth client_secret.json`. When Google
    asks which account, pick that channel. It prints which channel it
    signed into, so a mix-up is obvious.
+   Then **verify each channel by phone** (youtube.com/verify): custom
+   thumbnails need it.
 6. **Secrets:** repo → Settings → Secrets and variables → Actions:
    `ANTHROPIC_API_KEY`, `PEXELS_API_KEY`, `YT_CLIENT_ID`,
    `YT_CLIENT_SECRET`, and one `YT_REFRESH_TOKEN_<NAME>` per channel

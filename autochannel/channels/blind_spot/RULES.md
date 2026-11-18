@@ -29,6 +29,8 @@ concrete, a little playful. Never says "toxic", "narcissist",
 
 ## Packaging
 
+**Genre look and title style:** Clean and bright: the experiment's set-up as one still image (the button, the queue, the room, the number on a screen), one arrow or circle, 1-3 words. Titles about the viewer's own mind ("Why You ...", "Why Your Brain ...") or the experiment's plain name for search.
+
 - Title in the genre's own style (examples in IDEAS.md), under 70
   characters. Curious, not dishonest: the video must deliver what the
   title promises.

@@ -33,3 +33,15 @@ publish:
 
 council:
   reviewers: [chief, viewer, ear, slop, policy, calm, factcheck]
+
+thumbnail:
+  font: PlayfairDisplay.ttf
+  uppercase: false
+  accent_colour: '#F1E9DA'
+  contrast: 0.95
+  saturation: 0.8
+  brightness: 0.75
+  tint: '#2a1d10'
+  tint_strength: 0.2
+  vignette: 0.6
+  text_scrim: 0.6

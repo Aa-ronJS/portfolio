@@ -30,6 +30,8 @@ involved, fascinated by the event. Never says "creepy", "messed up" or
 
 ## Packaging
 
+**Genre look and title style:** One archive photograph, graded hard (high contrast, desaturated, warm), cropped in on the single strange or damning detail; typewriter words, 0-3. Titles: sober and factual ("The Boston Molasses Flood", "The Town That Danced Itself to Death"), the strangeness carried by the facts.
+
 - Title in the genre's own style (examples in IDEAS.md), under 70
   characters. Curious, not dishonest: the video must deliver what the
   title promises.

@@ -21,7 +21,9 @@ prefix → rewrite, up to `max_rounds`; reads the channel's `RULES.md`,
 (Pocket TTS, sentence by sentence, loudnorm -14 LUFS) → `captions.py`
 (faster-whisper word times mapped back onto the script text) →
 `render.py` (Pexels b-roll or gradient fallback, ASS captions via
-libass, one ffmpeg mux) → `upload.py` (resumable, reads privacy back) →
+libass, one ffmpeg mux) → `packaging.thumbnails` (frames → vision plan →
+`thumbs.py` render → vision review at phone size) → `upload.py`
+(resumable, reads privacy back, sets thumbnail A) →
 episode yaml moves to `posted/`.
 
 ## Decisions not to undo
@@ -43,6 +45,16 @@ episode yaml moves to `posted/`.
   can't be combined with citations, which web search can produce.
 - **Queue filenames must stay unique**: parallel writers can finish in
   the same second (`store.new_path` suffixes -2, -3).
+- **Packaging serves satisfied watch time, not clicks.** The promise
+  keeper seat must stay; the optimiser only swaps clearly losing videos,
+  reverses a worse swap, and never touches a `test_and_compare: true`
+  episode. YouTube Test & Compare has no API (checked 2026-11-18); reach
+  data comes from the Reporting API report `channel_reach_combined_a1`
+  (48-72 h late), not the Analytics API.
+- **videos.update deletes unsent snippet fields:** always read, change
+  the title, write the whole snippet back (`reach.apply`).
+- **Sign-in scopes include force-ssl and yt-analytics.readonly**: changing
+  SCOPES means every channel must sign in again.
 - **Degrade, don't fail:** no footage → gradient; writer down → post
   from the queue; one episode broken → try the next, retire after 3.
 - **faster-whisper gets numpy audio decoded by ffmpeg**, never a path:

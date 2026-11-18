@@ -31,3 +31,10 @@ publish:
 
 council:
   reviewers: [chief, viewer, retention, ear, slop, policy, science, originality]
+
+thumbnail:
+  font: ArchivoBlack-Regular.ttf
+  accent_colour: '#4EA8DE'
+  contrast: 1.2
+  saturation: 1.1
+  vignette: 0.25
