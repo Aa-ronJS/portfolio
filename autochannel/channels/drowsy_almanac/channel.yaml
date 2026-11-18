@@ -18,6 +18,7 @@ voice:
   sentence_pause: 0.6
 
 visuals:
+  sources: [library, openverse, archive, nasa]
   clip_seconds: 75
   darken: 0.65
   captions:

@@ -21,3 +21,6 @@ thumbnail:
   contrast: 1.25
   saturation: 1.2
   vignette: 0.35
+
+visuals:
+  sources: [library, pixabay, pexels, nasa, openverse]

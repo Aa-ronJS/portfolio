@@ -16,6 +16,7 @@ voice:
   speed: 1.0
 
 visuals:
+  sources: [library, archive, openverse, nasa]
   clip_seconds: 7
   darken: 0.5
   captions:

@@ -55,6 +55,12 @@ episode yaml moves to `posted/`.
   the title, write the whole snippet back (`reach.apply`).
 - **Sign-in scopes include force-ssl and yt-analytics.readonly**: changing
   SCOPES means every channel must sign in again.
+- **Footage sources (`footage.py`) only take licences usable commercially
+  without share-alike** (PD, CC0, CC BY, stock-site licences); CC BY
+  credits flow to the description via build/.../credits.json. Openverse
+  quirks (checked 2026-11-18): "+" in a query is read literally (always
+  encode spaces as %20, `_qs`), its licence filters 500, page_size > 20
+  needs auth, images max out at 1024 px. Wikimedia 429s cloud IPs.
 - **Degrade, don't fail:** no footage → gradient; writer down → post
   from the queue; one episode broken → try the next, retire after 3.
 - **faster-whisper gets numpy audio decoded by ffmpeg**, never a path:

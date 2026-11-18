@@ -9,7 +9,8 @@
 #          report and swaps title/thumbnail on clearly losing videos.
 # Free private-repo allowance is 2,000 min/month; see PORTFOLIO.md for the estimate.
 #
-# Secrets: ANTHROPIC_API_KEY, PEXELS_API_KEY, YT_CLIENT_ID, YT_CLIENT_SECRET
+# Secrets: ANTHROPIC_API_KEY (+ ANTHROPIC_WORKSPACE_ID for user keys), PIXABAY_API_KEY
+# (optional; NASA, Openverse and Internet Archive need no key), YT_CLIENT_ID, YT_CLIENT_SECRET
 # (shared) and YT_REFRESH_TOKEN_<CHANNEL> per channel, e.g. YT_REFRESH_TOKEN_AARON.
 name: daily
 
@@ -98,7 +99,8 @@ jobs:
         env:
           ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}   # thumbnail art direction
           ANTHROPIC_WORKSPACE_ID: ${{ secrets.ANTHROPIC_WORKSPACE_ID }}
-          PEXELS_API_KEY: ${{ secrets.PEXELS_API_KEY }}
+          PIXABAY_API_KEY: ${{ secrets.PIXABAY_API_KEY }}
+          PEXELS_API_KEY: ${{ secrets.PEXELS_API_KEY }}   # optional
           YT_CLIENT_ID: ${{ secrets.YT_CLIENT_ID }}
           YT_CLIENT_SECRET: ${{ secrets.YT_CLIENT_SECRET }}
           # each channel's job only ever sees its own sign-in

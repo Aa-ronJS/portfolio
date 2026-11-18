@@ -16,6 +16,7 @@ voice:
   speed: 1.0
 
 visuals:
+  sources: [library, pixabay, pexels, openverse, archive]
   clip_seconds: 5
   darken: 0.55
   captions:

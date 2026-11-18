@@ -41,7 +41,7 @@ ac/                        the engine
 | your voice | Kyutai Pocket TTS on the runner's CPU | $0 |
 | compute | GitHub Actions, private repo: 2,000 free min/month; ~60 videos use ~900 | $0 |
 | scripts | Claude Opus 5.5 writers' room: pitch, draft, 7-8 adversarial reviewers, rewrites; ~$2-2.50 per script that passes | capped at US$50/month across channels |
-| footage | Pexels and public-domain archives | $0 |
+| footage | Pixabay (free key), plus NASA, Openverse and Internet Archive (no key), credited automatically | $0 |
 | upload | YouTube Data API | $0 |
 
 No ElevenLabs. The scripts are the only bill, and they're capped: if the
@@ -71,7 +71,8 @@ money runs out, channels post less, never worse (`channels/PORTFOLIO.md`).
    Then **verify each channel by phone** (youtube.com/verify): custom
    thumbnails need it.
 6. **Secrets:** repo → Settings → Secrets and variables → Actions:
-   `ANTHROPIC_API_KEY`, `PEXELS_API_KEY`, `YT_CLIENT_ID`,
+   `ANTHROPIC_API_KEY` (and `ANTHROPIC_WORKSPACE_ID` if it's a user key),
+   `PIXABAY_API_KEY` (optional), `YT_CLIENT_ID`,
    `YT_CLIENT_SECRET`, and one `YT_REFRESH_TOKEN_<NAME>` per channel
    (e.g. `YT_REFRESH_TOKEN_SLOW_ORBIT`).
 7. **First run:** set `publish.privacy: private` in `channels/defaults.yaml`,

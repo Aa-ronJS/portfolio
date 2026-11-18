@@ -52,7 +52,8 @@ voice:
 
 # --- picture --------------------------------------------------------------
 visuals:
-  broll: pexels              # pexels (free key, PEXELS_API_KEY) | none
+  broll: footage             # footage | none (gradients only, for tests)
+  sources: [library, pixabay, pexels, nasa, openverse, archive]   # tried in order (ac/footage.py)
   clip_seconds: 4            # cut to a new background clip this often
   darken: 0.45               # dim the background so captions read
   captions:
@@ -80,4 +81,3 @@ publish:
   default_tags: []
   description_footer: |
     Narration: the creator's own voice, synthesised with Kyutai Pocket TTS (CC BY 4.0).
-    Footage: Pexels.

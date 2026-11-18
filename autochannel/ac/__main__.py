@@ -71,7 +71,12 @@ def post(path: Path, cfg: dict) -> str | None:
         print("  publish.upload is false; video left in build/")
         return None
     work = store.build(cfg) / path.stem
-    vid = upload.upload(video, store.load(path), cfg, thumb=work / "thumb_a.jpg")
+    ep = store.load(path)
+    cj = work / "credits.json"
+    if cj.exists():
+        ep["credits"] = json.loads(cj.read_text())
+        store.save(ep, path)  # kept with the episode: optimiser rewrites keep them too
+    vid = upload.upload(video, ep, cfg, thumb=work / "thumb_a.jpg")
     ep = store.load(path)
     ep.update(youtube_id=vid, posted=dt.datetime.now(dt.timezone.utc).isoformat(timespec="seconds"))
     # Keep the B and C packages so the optimiser (or Test & Compare) can try them.

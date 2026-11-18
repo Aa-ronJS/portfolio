@@ -105,7 +105,10 @@ def upload(video: Path, ep: dict, cfg: dict, thumb: Path | None = None) -> str:
     title = ep["title"][:100]
     if cfg["format"]["kind"] == "short" and "#shorts" not in title.lower() and len(title) < 92:
         title += " #shorts"
-    desc = (ep.get("description", "").strip() + "\n\n" + p.get("description_footer", "")).strip()
+    credits = ep.get("credits") or []
+    desc = (ep.get("description", "").strip()
+            + ("\n\nFootage and images:\n" + "\n".join(credits) if credits else "")
+            + "\n\n" + p.get("description_footer", "")).strip()
     tags = list(dict.fromkeys((ep.get("tags") or []) + (p.get("default_tags") or [])))
     publish_at = _publish_at(p.get("publish_hour_utc"))
     status = {

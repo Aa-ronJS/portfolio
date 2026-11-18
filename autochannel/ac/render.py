@@ -1,10 +1,11 @@
 """Narration + word timings -> finished mp4, all with ffmpeg.
 
-Picture: a background cut every few seconds from free stock footage
-(Pexels, matching the script's b-roll terms), dimmed, with big
-word-by-word captions burned in via libass. If footage can't be fetched
-for a cut, that cut becomes a slow colour gradient instead: a video with
-a plain background still posts; a missing video doesn't.
+Picture: a background cut every few seconds from free footage matching
+the script's b-roll terms (footage.py: the channel's sources in order;
+photos get a slow Ken Burns move), dimmed, with big word-by-word captions
+burned in via libass. If no source has anything for a cut, that cut
+becomes a slow colour gradient: a video with a plain background still
+posts; a missing video doesn't.
 """
 from __future__ import annotations
 
@@ -12,8 +13,6 @@ import json
 import os
 import random
 import subprocess
-import urllib.parse
-import urllib.request
 import zlib
 from pathlib import Path
 
@@ -32,84 +31,71 @@ def size(cfg: dict) -> tuple[int, int]:
 
 # --- b-roll -----------------------------------------------------------------
 
-def _pexels(term: str, portrait: bool, cache: Path, used: set[int]) -> Path | None:
-    key = os.environ.get("PEXELS_API_KEY")
-    if not key:
-        return None
-    q = urllib.parse.urlencode({"query": term, "per_page": 8,
-                                "orientation": "portrait" if portrait else "landscape"})
-    req = urllib.request.Request(f"https://api.pexels.com/videos/search?{q}",
-                                 headers={"Authorization": key, "User-Agent": "autochannel/1"})
-    try:
-        with urllib.request.urlopen(req, timeout=20) as r:
-            videos = json.load(r).get("videos", [])
-    except Exception as e:  # network, quota, anything: fall back, don't fail
-        print(f"  pexels '{term}': {e}")
-        return None
-    for v in videos:
-        if v["id"] in used or v.get("duration", 0) < 3:
-            continue
-        files = [f for f in v["video_files"] if f.get("width") and f.get("height")
-                 and (f["height"] >= f["width"]) == portrait and min(f["width"], f["height"]) >= 720]
-        if not files:
-            continue
-        f = min(files, key=lambda f: f["width"] * f["height"])  # smallest that's still sharp
-        dest = cache / f"pexels-{v['id']}.mp4"
-        if not dest.exists():
-            try:
-                req = urllib.request.Request(f["link"], headers={"User-Agent": "autochannel/1"})
-                with urllib.request.urlopen(req, timeout=60) as r, open(dest.with_suffix(".part"), "wb") as o:
-                    o.write(r.read())
-                dest.with_suffix(".part").replace(dest)
-            except Exception as e:
-                print(f"  pexels download {v['id']}: {e}")
-                continue
-        used.add(v["id"])
-        return dest
-    return None
+def _still(src: Path, seconds: float, out: Path, w: int, h: int, seed: int) -> None:
+    """A slow Ken Burns move over a photo: zoom in, or drift across."""
+    rng = random.Random(seed)
+    n = max(1, int(seconds * FPS))
+    zoom = rng.choice([True, False])
+    z = f"1+0.14*on/{n}" if zoom else "1.12"
+    dx = rng.choice([-1, 1])
+    x = "iw/2-(iw/zoom/2)" if zoom else f"(iw-iw/zoom)*({0 if dx > 0 else 1}+{dx}*on/{n})"
+    _ff("-i", str(src), "-vf",
+        f"scale={w * 2}:{h * 2}:force_original_aspect_ratio=increase,crop={w * 2}:{h * 2},"
+        f"zoompan=z='{z}':x='{x}':y='ih/2-(ih/zoom/2)':d={n}:s={w}x{h}:fps={FPS},setsar=1",
+        "-frames:v", str(n), "-c:v", "libx264", "-preset", "veryfast", "-crf", "20",
+        "-pix_fmt", "yuv420p", str(out))
 
 
-def _segment(src: Path | None, seconds: float, out: Path, w: int, h: int, seed: int) -> None:
-    if src is not None:
+def _segment(clip, seconds: float, out: Path, w: int, h: int, seed: int) -> bool:
+    """Render one cut. Returns False if it fell back to a gradient."""
+    if clip is not None:
         try:
+            if clip.kind == "image":
+                _still(clip.path, seconds, out, w, h, seed)
+                return True
             dur = float(subprocess.run(["ffprobe", "-v", "error", "-show_entries", "format=duration",
-                                        "-of", "csv=p=0", str(src)], capture_output=True,
+                                        "-of", "csv=p=0", str(clip.path)], capture_output=True,
                                        text=True).stdout.strip() or 0)
             start = random.Random(seed).uniform(0, max(0.0, dur - seconds))
             loop = ["-stream_loop", "-1"] if dur < seconds else []
-            _ff(*loop, "-ss", f"{start:.2f}", "-i", str(src), "-t", f"{seconds:.3f}", "-an",
+            _ff(*loop, "-ss", f"{start:.2f}", "-i", str(clip.path), "-t", f"{seconds:.3f}", "-an",
                 "-vf", f"scale={w}:{h}:force_original_aspect_ratio=increase,crop={w}:{h},fps={FPS},setsar=1",
                 "-c:v", "libx264", "-preset", "veryfast", "-crf", "20", "-pix_fmt", "yuv420p", str(out))
-            return
+            return True
         except subprocess.CalledProcessError as e:
-            print(f"  clip {src.name} unusable ({e}); using gradient")
+            print(f"  clip {clip.path.name} unusable ({e}); using gradient")
     rng = random.Random(seed)
     cols = ["0x1b2a49", "0x3b1f4a", "0x0f3d3e", "0x4a2a1b", "0x23233a", "0x16324f"]
     c0, c1 = rng.sample(cols, 2)
     _ff("-f", "lavfi", "-i", f"gradients=s={w}x{h}:c0={c0}:c1={c1}:speed=0.008:r={FPS}:d={seconds:.3f}",
         "-c:v", "libx264", "-preset", "veryfast", "-crf", "20", "-pix_fmt", "yuv420p", str(out))
+    return False
 
 
 def background(ep: dict, seconds: float, cfg: dict, work: Path) -> Path:
+    from . import footage
+
     w, h = size(cfg)
     vis = cfg["visuals"]
     every = float(vis.get("clip_seconds", 4))
     n = max(1, int(seconds // every) + 1)
     terms = ep.get("broll") or [ep["title"]]
-    cache = store.BUILD / "broll-cache"  # shared: channels reuse downloads
-    cache.mkdir(parents=True, exist_ok=True)
-    used: set[int] = set()
+    used: set[str] = set()
+    credits: list[str] = []
     parts = []
     for i in range(n):
         length = min(every, seconds - i * every) if i == n - 1 else every
         if length <= 0.05:
             break
         term = terms[min(i * len(terms) // n, len(terms) - 1)]
-        src = _pexels(term, w < h, cache, used) if vis.get("broll") == "pexels" else None
+        clip = footage.find(term, cfg, w < h, used)
         out = work / f"seg{i:03d}.mp4"
-        _segment(src, length, out, w, h, seed=zlib.crc32(f"{ep['title']}|{i}".encode()))
-        print(f"  bg {i + 1}/{n}: {'pexels' if src else 'gradient'}  ({term})")
+        ok = _segment(clip, length, out, w, h, seed=zlib.crc32(f"{ep['title']}|{i}".encode()))
+        if ok and clip.credit and clip.credit not in credits:
+            credits.append(clip.credit)
+        print(f"  bg {i + 1}/{n}: {clip.key.split('-')[0] if ok else 'gradient'}  ({term})")
         parts.append(out)
+    (work / "credits.json").write_text(json.dumps(credits, indent=1))
     lst = work / "segments.txt"
     lst.write_text("".join(f"file '{p.name}'\n" for p in parts))
     out = work / "background.mp4"
