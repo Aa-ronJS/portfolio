@@ -172,12 +172,13 @@ def ass(words: list[tuple[str, float, float]], cfg: dict, out: Path) -> Path:
 
 # --- final mux --------------------------------------------------------------
 
-def final(bg: Path, narration: Path, subs: Path, seconds: float, cfg: dict, out: Path) -> Path:
+def final(bg: Path, narration: Path, subs: Path | None, seconds: float, cfg: dict, out: Path) -> Path:
     vis = cfg["visuals"]
     keep = 1 - float(vis.get("darken", 0.45))
     fonts = store.ROOT / "fonts"
-    vf = (f"colorchannelmixer=rr={keep}:gg={keep}:bb={keep},"
-          f"ass={subs.as_posix()}:fontsdir={fonts.as_posix()}")
+    vf = f"colorchannelmixer=rr={keep}:gg={keep}:bb={keep}"
+    if subs is not None:
+        vf += f",ass={subs.as_posix()}:fontsdir={fonts.as_posix()}"
     inputs = ["-i", str(bg), "-i", str(narration)]
     music = vis.get("music")
     if music and music != "none" and (store.ROOT / music).exists():

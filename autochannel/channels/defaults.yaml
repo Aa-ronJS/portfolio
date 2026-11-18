@@ -25,6 +25,7 @@ voice:
   language: english_2026-10       # pinned: the voice file only fits these weights
   sentence_pause: 0.18            # seconds of silence between sentences
   speed: 1.0                      # >1 speeds up delivery without changing pitch
+  loudness: -14                   # LUFS; -14 is YouTube normal, sleep channels ~-20
 
 # --- picture --------------------------------------------------------------
 visuals:
@@ -32,6 +33,7 @@ visuals:
   clip_seconds: 4            # cut to a new background clip this often
   darken: 0.45               # dim the background so captions read
   captions:
+    enabled: true
     words_per_card: 3
     size: 0.095              # font height as a fraction of frame width
     colour: "#FFFFFF"

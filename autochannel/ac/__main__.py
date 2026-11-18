@@ -42,8 +42,11 @@ def make(path: Path, cfg: dict) -> Path:
     print(f"  narration {secs:.1f}s")
     if secs > cfg["format"]["max_seconds"]:
         raise RuntimeError(f"narration is {secs:.0f}s, over max_seconds; shorten the script")
-    words = captions.word_times(wav, ep["narration"])
-    subs = render.ass(words, cfg, work / "captions.ass")
+    if cfg["visuals"]["captions"].get("enabled", True):
+        words = captions.word_times(wav, ep["narration"])
+        subs = render.ass(words, cfg, work / "captions.ass")
+    else:  # e.g. sleep videos: no flashing words
+        subs = None
     bg = render.background(ep, secs + 0.3, cfg, work)
     out = render.final(bg, wav, subs, secs, cfg, work / f"{path.stem}.mp4")
     print(f"  video {out}")

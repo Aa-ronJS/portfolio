@@ -14,10 +14,10 @@ from __future__ import annotations
 
 import re
 import subprocess
+import wave
 from pathlib import Path
 
 import numpy as np
-import scipy.io.wavfile as wavfile
 
 from . import store
 
@@ -64,27 +64,33 @@ def synthesise(text: str, out_wav: Path, cfg: dict) -> float:
     state = model.get_state_for_audio_prompt(src)
 
     sr = model.sample_rate
-    gap = np.zeros(int(sr * v.get("sentence_pause", 0.18)), dtype=np.float32)
-    chunks = []
-    for i, s in enumerate(sentences(text)):
-        audio = model.generate_audio(state, s).numpy().astype(np.float32).reshape(-1)
-        # A sentence that comes back far too long or silent is a model
-        # hiccup: try again once before accepting it.
-        expected = len(s.split()) / 2.6
-        dur = len(audio) / sr
-        if dur > expected * 2.5 + 2 or np.abs(audio).max() < 1e-3:
-            audio = model.generate_audio(state, s).numpy().astype(np.float32).reshape(-1)
-        chunks += [audio, gap]
-        print(f"  voice {i + 1}: {len(audio) / sr:4.1f}s  {s[:60]}")
-    full = np.concatenate(chunks[:-1]) if chunks else np.zeros(sr, np.float32)
-    full = full / max(1e-6, np.abs(full).max()) * 0.9
-
+    gap = np.zeros(int(sr * v.get("sentence_pause", 0.18)), dtype=np.int16)
     out_wav.parent.mkdir(parents=True, exist_ok=True)
     raw = out_wav.with_suffix(".raw.wav")
-    wavfile.write(raw, sr, (full * 32767).astype(np.int16))
-    # Loudness to YouTube's -14 LUFS and optional speed-up, pitch kept.
+    # Stream to disk sentence by sentence: a 3-hour sleep narration would
+    # otherwise sit in memory (~1 GB) and be lost whole if anything failed.
+    with wave.open(str(raw), "wb") as w:
+        w.setnchannels(1)
+        w.setsampwidth(2)
+        w.setframerate(sr)
+        for i, s in enumerate(sentences(text)):
+            audio = model.generate_audio(state, s).numpy().astype(np.float32).reshape(-1)
+            # A sentence that comes back far too long or silent is a model
+            # hiccup: try again once before accepting it.
+            expected = len(s.split()) / 2.6
+            if len(audio) / sr > expected * 2.5 + 2 or np.abs(audio).max() < 1e-3:
+                audio = model.generate_audio(state, s).numpy().astype(np.float32).reshape(-1)
+            if i:
+                w.writeframes(gap.tobytes())
+            w.writeframes((np.clip(audio, -1, 1) * 30000).astype(np.int16).tobytes())
+            if i % 25 == 0 or len(text) < 5000:
+                print(f"  voice {i + 1}: {len(audio) / sr:4.1f}s  {s[:60]}")
+
+    # Loudness (-14 LUFS is YouTube's normal; sleep channels sit lower) and
+    # optional speed change, pitch kept.
     speed = float(v.get("speed", 1.0))
-    filt = (f"atempo={speed}," if abs(speed - 1) > 1e-3 else "") + "loudnorm=I=-14:TP=-1.5:LRA=11"
+    lufs = float(v.get("loudness", -14))
+    filt = (f"atempo={speed}," if abs(speed - 1) > 1e-3 else "") + f"loudnorm=I={lufs}:TP=-1.5:LRA=11"
     subprocess.run(["ffmpeg", "-y", "-loglevel", "error", "-i", str(raw), "-af", filt,
                     "-ar", "48000", "-ac", "1", str(out_wav)], check=True)
     raw.unlink()
