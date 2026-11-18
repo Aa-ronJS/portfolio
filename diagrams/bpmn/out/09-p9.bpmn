@@ -1,0 +1,180 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<bpmn:definitions xmlns:bpmn="http://www.omg.org/spec/BPMN/20100524/MODEL" xmlns:bpmndi="http://www.omg.org/spec/BPMN/20100524/DI" xmlns:dc="http://www.omg.org/spec/DD/20100524/DC" xmlns:di="http://www.omg.org/spec/DD/20100524/DI" id="p9_defs" targetNamespace="http://example.com/od-radio">
+<bpmn:collaboration id="p9_collab">
+<bpmn:participant id="p9_pool" name="Surface wide-area radio" processRef="p9_process"/>
+</bpmn:collaboration>
+<bpmn:process id="p9_process" name="Surface towers and wide-area radio" isExecutable="false">
+<bpmn:laneSet id="p9_ls">
+<bpmn:lane id="p9_G" name="Radio interconnect gateway">
+<bpmn:flowNodeRef>p9_s</bpmn:flowNodeRef>
+<bpmn:flowNodeRef>p9_gw</bpmn:flowNodeRef>
+<bpmn:flowNodeRef>p9_bh</bpmn:flowNodeRef>
+</bpmn:lane>
+<bpmn:lane id="p9_T" name="Tower &amp; RF">
+<bpmn:flowNodeRef>p9_rep</bpmn:flowNodeRef>
+<bpmn:flowNodeRef>p9_fd</bpmn:flowNodeRef>
+<bpmn:flowNodeRef>p9_an</bpmn:flowNodeRef>
+<bpmn:flowNodeRef>p9_gs</bpmn:flowNodeRef>
+<bpmn:flowNodeRef>p9_gsm</bpmn:flowNodeRef>
+</bpmn:lane>
+<bpmn:lane id="p9_L" name="Lightning &amp; earthing">
+<bpmn:flowNodeRef>p9_fx</bpmn:flowNodeRef>
+</bpmn:lane>
+<bpmn:lane id="p9_U" name="Surface radio users">
+<bpmn:flowNodeRef>p9_rx</bpmn:flowNodeRef>
+<bpmn:flowNodeRef>p9_e</bpmn:flowNodeRef>
+</bpmn:lane>
+</bpmn:laneSet>
+<bpmn:startEvent id="p9_s" name="Talkgroup patched to surface">
+<bpmn:outgoing>p9_f0</bpmn:outgoing>
+</bpmn:startEvent>
+<bpmn:serviceTask id="p9_gw" name="RoIP gateway bridges the underground talkgroup to a surface channel">
+<bpmn:incoming>p9_f0</bpmn:incoming>
+<bpmn:outgoing>p9_f1</bpmn:outgoing>
+</bpmn:serviceTask>
+<bpmn:serviceTask id="p9_bh" name="Fibre / microwave backhaul to the tower site">
+<bpmn:incoming>p9_f1</bpmn:incoming>
+<bpmn:outgoing>p9_f2</bpmn:outgoing>
+</bpmn:serviceTask>
+<bpmn:serviceTask id="p9_rep" name="Surface repeater / LTE eNodeB transmits">
+<bpmn:incoming>p9_f2</bpmn:incoming>
+<bpmn:outgoing>p9_f3</bpmn:outgoing>
+</bpmn:serviceTask>
+<bpmn:serviceTask id="p9_fd" name="7/8″ or 1-5/8″ heliax feeder, earthing kits, hoisting grip, wall entry plate">
+<bpmn:incoming>p9_f3</bpmn:incoming>
+<bpmn:outgoing>p9_f4</bpmn:outgoing>
+</bpmn:serviceTask>
+<bpmn:serviceTask id="p9_an" name="Tower antennas: omni collinear (VHF/UHF), LTE sector panels, Yagi links">
+<bpmn:incoming>p9_f4</bpmn:incoming>
+<bpmn:outgoing>p9_f5</bpmn:outgoing>
+</bpmn:serviceTask>
+<bpmn:exclusiveGateway id="p9_gs" name="Storm damage or high VSWR?">
+<bpmn:incoming>p9_f5</bpmn:incoming>
+<bpmn:outgoing>p9_f6</bpmn:outgoing>
+<bpmn:outgoing>p9_f7</bpmn:outgoing>
+</bpmn:exclusiveGateway>
+<bpmn:manualTask id="p9_fx" name="Replace surge arrestor cartridges; test earth grid (&lt;10 Ω); sweep feeder">
+<bpmn:incoming>p9_f7</bpmn:incoming>
+<bpmn:outgoing>p9_f8</bpmn:outgoing>
+</bpmn:manualTask>
+<bpmn:exclusiveGateway id="p9_gsm" name="">
+<bpmn:incoming>p9_f6</bpmn:incoming>
+<bpmn:incoming>p9_f8</bpmn:incoming>
+<bpmn:outgoing>p9_f9</bpmn:outgoing>
+</bpmn:exclusiveGateway>
+<bpmn:serviceTask id="p9_rx" name="Surface radios receive: supervisors, ERT, shift boss, surface fleet">
+<bpmn:incoming>p9_f9</bpmn:incoming>
+<bpmn:outgoing>p9_f10</bpmn:outgoing>
+</bpmn:serviceTask>
+<bpmn:endEvent id="p9_e" name="Heard on surface">
+<bpmn:incoming>p9_f10</bpmn:incoming>
+</bpmn:endEvent>
+<bpmn:sequenceFlow id="p9_f0" name="" sourceRef="p9_s" targetRef="p9_gw"/>
+<bpmn:sequenceFlow id="p9_f1" name="" sourceRef="p9_gw" targetRef="p9_bh"/>
+<bpmn:sequenceFlow id="p9_f2" name="" sourceRef="p9_bh" targetRef="p9_rep"/>
+<bpmn:sequenceFlow id="p9_f3" name="" sourceRef="p9_rep" targetRef="p9_fd"/>
+<bpmn:sequenceFlow id="p9_f4" name="" sourceRef="p9_fd" targetRef="p9_an"/>
+<bpmn:sequenceFlow id="p9_f5" name="" sourceRef="p9_an" targetRef="p9_gs"/>
+<bpmn:sequenceFlow id="p9_f6" name="No" sourceRef="p9_gs" targetRef="p9_gsm"/>
+<bpmn:sequenceFlow id="p9_f7" name="Yes" sourceRef="p9_gs" targetRef="p9_fx"/>
+<bpmn:sequenceFlow id="p9_f8" name="" sourceRef="p9_fx" targetRef="p9_gsm"/>
+<bpmn:sequenceFlow id="p9_f9" name="" sourceRef="p9_gsm" targetRef="p9_rx"/>
+<bpmn:sequenceFlow id="p9_f10" name="" sourceRef="p9_rx" targetRef="p9_e"/>
+<bpmn:textAnnotation id="p9_a1"><bpmn:text>Tower: lattice or monopole, climbing ladder + fall arrest, aviation obstruction light</bpmn:text></bpmn:textAnnotation>
+<bpmn:association id="p9_a1_as" sourceRef="p9_rep" targetRef="p9_a1"/>
+<bpmn:textAnnotation id="p9_a2"><bpmn:text>Lightning protection: air terminal, down conductor, coax surge arrestors, earth grid</bpmn:text></bpmn:textAnnotation>
+</bpmn:process>
+<bpmndi:BPMNDiagram id="p9_dia"><bpmndi:BPMNPlane id="p9_plane" bpmnElement="p9_collab">
+<bpmndi:BPMNShape id="p9_pool_di" bpmnElement="p9_pool" isHorizontal="true"><dc:Bounds x="40" y="40" width="2475" height="675"/>
+</bpmndi:BPMNShape>
+<bpmndi:BPMNShape id="p9_G_di" bpmnElement="p9_G" isHorizontal="true"><dc:Bounds x="70" y="40" width="2445" height="135"/>
+</bpmndi:BPMNShape>
+<bpmndi:BPMNShape id="p9_T_di" bpmnElement="p9_T" isHorizontal="true"><dc:Bounds x="70" y="175" width="2445" height="270"/>
+</bpmndi:BPMNShape>
+<bpmndi:BPMNShape id="p9_L_di" bpmnElement="p9_L" isHorizontal="true"><dc:Bounds x="70" y="445" width="2445" height="135"/>
+</bpmndi:BPMNShape>
+<bpmndi:BPMNShape id="p9_U_di" bpmnElement="p9_U" isHorizontal="true"><dc:Bounds x="70" y="580" width="2445" height="135"/>
+</bpmndi:BPMNShape>
+<bpmndi:BPMNShape id="p9_s_di" bpmnElement="p9_s"><dc:Bounds x="194" y="90" width="36" height="36"/>
+<bpmndi:BPMNLabel><dc:Bounds x="148" y="130" width="130" height="40"/></bpmndi:BPMNLabel>
+</bpmndi:BPMNShape>
+<bpmndi:BPMNShape id="p9_gw_di" bpmnElement="p9_gw"><dc:Bounds x="345" y="60" width="165" height="96"/>
+</bpmndi:BPMNShape>
+<bpmndi:BPMNShape id="p9_bh_di" bpmnElement="p9_bh"><dc:Bounds x="560" y="60" width="165" height="96"/>
+</bpmndi:BPMNShape>
+<bpmndi:BPMNShape id="p9_rep_di" bpmnElement="p9_rep"><dc:Bounds x="775" y="194" width="165" height="96"/>
+</bpmndi:BPMNShape>
+<bpmndi:BPMNShape id="p9_fd_di" bpmnElement="p9_fd"><dc:Bounds x="990" y="194" width="165" height="96"/>
+</bpmndi:BPMNShape>
+<bpmndi:BPMNShape id="p9_an_di" bpmnElement="p9_an"><dc:Bounds x="1205" y="194" width="165" height="96"/>
+</bpmndi:BPMNShape>
+<bpmndi:BPMNShape id="p9_gs_di" bpmnElement="p9_gs" isMarkerVisible="true"><dc:Bounds x="1478" y="218" width="50" height="50"/>
+<bpmndi:BPMNLabel><dc:Bounds x="1352" y="180" width="122" height="40"/></bpmndi:BPMNLabel>
+</bpmndi:BPMNShape>
+<bpmndi:BPMNShape id="p9_fx_di" bpmnElement="p9_fx"><dc:Bounds x="1635" y="464" width="165" height="96"/>
+</bpmndi:BPMNShape>
+<bpmndi:BPMNShape id="p9_gsm_di" bpmnElement="p9_gsm" isMarkerVisible="true"><dc:Bounds x="1908" y="218" width="50" height="50"/>
+<bpmndi:BPMNLabel><dc:Bounds x="1782" y="180" width="122" height="40"/></bpmndi:BPMNLabel>
+</bpmndi:BPMNShape>
+<bpmndi:BPMNShape id="p9_rx_di" bpmnElement="p9_rx"><dc:Bounds x="2065" y="600" width="165" height="96"/>
+</bpmndi:BPMNShape>
+<bpmndi:BPMNShape id="p9_e_di" bpmnElement="p9_e"><dc:Bounds x="2344" y="630" width="36" height="36"/>
+<bpmndi:BPMNLabel><dc:Bounds x="2298" y="670" width="130" height="40"/></bpmndi:BPMNLabel>
+</bpmndi:BPMNShape>
+<bpmndi:BPMNShape id="p9_a1_di" bpmnElement="p9_a1"><dc:Bounds x="765" y="322" width="410" height="70"/>
+</bpmndi:BPMNShape>
+<bpmndi:BPMNShape id="p9_a2_di" bpmnElement="p9_a2"><dc:Bounds x="765" y="457" width="625" height="70"/>
+</bpmndi:BPMNShape>
+<bpmndi:BPMNEdge id="p9_f0_di" bpmnElement="p9_f0">
+<di:waypoint x="230" y="108"/>
+<di:waypoint x="345" y="108"/>
+</bpmndi:BPMNEdge>
+<bpmndi:BPMNEdge id="p9_f1_di" bpmnElement="p9_f1">
+<di:waypoint x="510" y="108"/>
+<di:waypoint x="560" y="108"/>
+</bpmndi:BPMNEdge>
+<bpmndi:BPMNEdge id="p9_f2_di" bpmnElement="p9_f2">
+<di:waypoint x="725" y="108"/>
+<di:waypoint x="747" y="108"/>
+<di:waypoint x="747" y="242"/>
+<di:waypoint x="775" y="242"/>
+</bpmndi:BPMNEdge>
+<bpmndi:BPMNEdge id="p9_f3_di" bpmnElement="p9_f3">
+<di:waypoint x="940" y="242"/>
+<di:waypoint x="990" y="242"/>
+</bpmndi:BPMNEdge>
+<bpmndi:BPMNEdge id="p9_f4_di" bpmnElement="p9_f4">
+<di:waypoint x="1155" y="242"/>
+<di:waypoint x="1205" y="242"/>
+</bpmndi:BPMNEdge>
+<bpmndi:BPMNEdge id="p9_f5_di" bpmnElement="p9_f5">
+<di:waypoint x="1370" y="242"/>
+<di:waypoint x="1478" y="242"/>
+</bpmndi:BPMNEdge>
+<bpmndi:BPMNEdge id="p9_f6_di" bpmnElement="p9_f6">
+<di:waypoint x="1528" y="242"/>
+<di:waypoint x="1908" y="242"/>
+<bpmndi:BPMNLabel><dc:Bounds x="1534" y="224" width="30" height="14"/></bpmndi:BPMNLabel>
+</bpmndi:BPMNEdge>
+<bpmndi:BPMNEdge id="p9_f7_di" bpmnElement="p9_f7">
+<di:waypoint x="1502" y="268"/>
+<di:waypoint x="1502" y="512"/>
+<di:waypoint x="1635" y="512"/>
+<bpmndi:BPMNLabel><dc:Bounds x="1508" y="272" width="30" height="14"/></bpmndi:BPMNLabel>
+</bpmndi:BPMNEdge>
+<bpmndi:BPMNEdge id="p9_f8_di" bpmnElement="p9_f8">
+<di:waypoint x="1800" y="512"/>
+<di:waypoint x="1932" y="512"/>
+<di:waypoint x="1932" y="268"/>
+</bpmndi:BPMNEdge>
+<bpmndi:BPMNEdge id="p9_f9_di" bpmnElement="p9_f9">
+<di:waypoint x="1932" y="268"/>
+<di:waypoint x="1932" y="648"/>
+<di:waypoint x="2065" y="648"/>
+</bpmndi:BPMNEdge>
+<bpmndi:BPMNEdge id="p9_f10_di" bpmnElement="p9_f10">
+<di:waypoint x="2230" y="648"/>
+<di:waypoint x="2344" y="648"/>
+</bpmndi:BPMNEdge>
+<bpmndi:BPMNEdge id="p9_a1_as_di" bpmnElement="p9_a1_as"><di:waypoint x="858" y="290"/><di:waypoint x="775" y="322"/></bpmndi:BPMNEdge>
+</bpmndi:BPMNPlane></bpmndi:BPMNDiagram></bpmn:definitions>

@@ -1,0 +1,56 @@
+[
+ {
+  "file": "01-p1.bpmn",
+  "num": 1,
+  "title": "Underground radio call, end to end",
+  "blurb": "Overview. Every grey box with a [+] is a call activity detailed on its own page."
+ },
+ {
+  "file": "02-p2.bpmn",
+  "num": 2,
+  "title": "Pre-use radio checks",
+  "blurb": "Done at the lamp room and the portal before anyone goes underground."
+ },
+ {
+  "file": "03-p3.bpmn",
+  "num": 3,
+  "title": "Uplink along the leaky feeder",
+  "blurb": "What happens to the signal between the radio and the head of the system."
+ },
+ {
+  "file": "04-p4.bpmn",
+  "num": 4,
+  "title": "Powering the underground radio network",
+  "blurb": "Runs all the time, independent of any one call."
+ },
+ {
+  "file": "05-p5.bpmn",
+  "num": 5,
+  "title": "Fibre, IP network and riser to surface",
+  "blurb": "From the level's comms cabinet, up the shaft or decline, to the surface comms room."
+ },
+ {
+  "file": "06-p6.bpmn",
+  "num": 6,
+  "title": "Headend processing",
+  "blurb": "Receive, repeat, route and re-transmit."
+ },
+ {
+  "file": "07-p7.bpmn",
+  "num": 7,
+  "title": "Fault finding",
+  "blurb": "Triggered by a fault report from a worker, an NMS alarm or a dead-zone report."
+ },
+ {
+  "file": "08-p8.bpmn",
+  "num": 8,
+  "title": "Emergency response and backup comms",
+  "blurb": "What happens when the emergency button is pressed, including when the leaky feeder is down."
+ },
+ {
+  "file": "09-p9.bpmn",
+  "num": 9,
+  "title": "Surface towers and wide-area radio",
+  "blurb": "When an underground talkgroup is patched to surface users."
+ }
+]

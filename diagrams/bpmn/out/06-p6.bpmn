@@ -1,0 +1,309 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<bpmn:definitions xmlns:bpmn="http://www.omg.org/spec/BPMN/20100524/MODEL" xmlns:bpmndi="http://www.omg.org/spec/BPMN/20100524/DI" xmlns:dc="http://www.omg.org/spec/DD/20100524/DC" xmlns:di="http://www.omg.org/spec/DD/20100524/DI" id="p6_defs" targetNamespace="http://example.com/od-radio">
+<bpmn:collaboration id="p6_collab">
+<bpmn:participant id="p6_pool" name="Surface headend" processRef="p6_process"/>
+</bpmn:collaboration>
+<bpmn:process id="p6_process" name="Headend processing" isExecutable="false">
+<bpmn:laneSet id="p6_ls">
+<bpmn:lane id="p6_I" name="Headend RF interface">
+<bpmn:flowNodeRef>p6_s</bpmn:flowNodeRef>
+<bpmn:flowNodeRef>p6_ha</bpmn:flowNodeRef>
+<bpmn:flowNodeRef>p6_att</bpmn:flowNodeRef>
+<bpmn:flowNodeRef>p6_dup</bpmn:flowNodeRef>
+<bpmn:flowNodeRef>p6_dup2</bpmn:flowNodeRef>
+<bpmn:flowNodeRef>p6_e</bpmn:flowNodeRef>
+</bpmn:lane>
+<bpmn:lane id="p6_X" name="Receive chain">
+<bpmn:flowNodeRef>p6_mc</bpmn:flowNodeRef>
+</bpmn:lane>
+<bpmn:lane id="p6_Q" name="Repeaters &amp; controller">
+<bpmn:flowNodeRef>p6_rpt</bpmn:flowNodeRef>
+<bpmn:flowNodeRef>p6_gr</bpmn:flowNodeRef>
+<bpmn:flowNodeRef>p6_hs</bpmn:flowNodeRef>
+<bpmn:flowNodeRef>p6_grm</bpmn:flowNodeRef>
+<bpmn:flowNodeRef>p6_ctl</bpmn:flowNodeRef>
+<bpmn:flowNodeRef>p6_ge</bpmn:flowNodeRef>
+<bpmn:flowNodeRef>p6_pre</bpmn:flowNodeRef>
+<bpmn:flowNodeRef>p6_gem</bpmn:flowNodeRef>
+<bpmn:flowNodeRef>p6_rt</bpmn:flowNodeRef>
+<bpmn:flowNodeRef>p6_gd</bpmn:flowNodeRef>
+<bpmn:flowNodeRef>p6_eno</bpmn:flowNodeRef>
+</bpmn:lane>
+<bpmn:lane id="p6_Y" name="Transmit chain">
+<bpmn:flowNodeRef>p6_rtx</bpmn:flowNodeRef>
+<bpmn:flowNodeRef>p6_comb</bpmn:flowNodeRef>
+</bpmn:lane>
+</bpmn:laneSet>
+<bpmn:startEvent id="p6_s" name="Uplink arrives at surface">
+<bpmn:outgoing>p6_f0</bpmn:outgoing>
+</bpmn:startEvent>
+<bpmn:serviceTask id="p6_ha" name="Headend amplifier separates uplink / downlink; sets feeder levels">
+<bpmn:incoming>p6_f0</bpmn:incoming>
+<bpmn:outgoing>p6_f1</bpmn:outgoing>
+</bpmn:serviceTask>
+<bpmn:serviceTask id="p6_att" name="Variable attenuators and band-pass filters (balance, reject interference)">
+<bpmn:incoming>p6_f1</bpmn:incoming>
+<bpmn:outgoing>p6_f2</bpmn:outgoing>
+</bpmn:serviceTask>
+<bpmn:serviceTask id="p6_dup" name="Duplexer passes the receive band to the RX chain">
+<bpmn:incoming>p6_f2</bpmn:incoming>
+<bpmn:outgoing>p6_f3</bpmn:outgoing>
+</bpmn:serviceTask>
+<bpmn:serviceTask id="p6_mc" name="Receiver multicoupler: one RX feed → every repeater">
+<bpmn:incoming>p6_f3</bpmn:incoming>
+<bpmn:outgoing>p6_f4</bpmn:outgoing>
+</bpmn:serviceTask>
+<bpmn:serviceTask id="p6_rpt" name="Base repeater for that channel / timeslot receives (RSSI on panel)">
+<bpmn:incoming>p6_f4</bpmn:incoming>
+<bpmn:outgoing>p6_f5</bpmn:outgoing>
+</bpmn:serviceTask>
+<bpmn:exclusiveGateway id="p6_gr" name="Repeater healthy?">
+<bpmn:incoming>p6_f5</bpmn:incoming>
+<bpmn:outgoing>p6_f6</bpmn:outgoing>
+<bpmn:outgoing>p6_f7</bpmn:outgoing>
+</bpmn:exclusiveGateway>
+<bpmn:serviceTask id="p6_hs" name="Hot-standby repeater takes over; alarm to NMS">
+<bpmn:incoming>p6_f7</bpmn:incoming>
+<bpmn:outgoing>p6_f8</bpmn:outgoing>
+</bpmn:serviceTask>
+<bpmn:exclusiveGateway id="p6_grm" name="">
+<bpmn:incoming>p6_f6</bpmn:incoming>
+<bpmn:incoming>p6_f8</bpmn:incoming>
+<bpmn:outgoing>p6_f9</bpmn:outgoing>
+</bpmn:exclusiveGateway>
+<bpmn:serviceTask id="p6_ctl" name="Trunking / DMR controller: checks radio ID, assigns channel, sets priority (GPS timing)">
+<bpmn:incoming>p6_f9</bpmn:incoming>
+<bpmn:outgoing>p6_f10</bpmn:outgoing>
+</bpmn:serviceTask>
+<bpmn:exclusiveGateway id="p6_ge" name="Emergency flag set?">
+<bpmn:incoming>p6_f10</bpmn:incoming>
+<bpmn:outgoing>p6_f11</bpmn:outgoing>
+<bpmn:outgoing>p6_f12</bpmn:outgoing>
+</bpmn:exclusiveGateway>
+<bpmn:serviceTask id="p6_pre" name="Pre-empt the channel; push emergency to console">
+<bpmn:incoming>p6_f12</bpmn:incoming>
+<bpmn:outgoing>p6_f13</bpmn:outgoing>
+</bpmn:serviceTask>
+<bpmn:exclusiveGateway id="p6_gem" name="">
+<bpmn:incoming>p6_f11</bpmn:incoming>
+<bpmn:incoming>p6_f13</bpmn:incoming>
+<bpmn:outgoing>p6_f14</bpmn:outgoing>
+</bpmn:exclusiveGateway>
+<bpmn:serviceTask id="p6_rt" name="Route: console (always), surface patch, data servers">
+<bpmn:incoming>p6_f14</bpmn:incoming>
+<bpmn:outgoing>p6_f15</bpmn:outgoing>
+</bpmn:serviceTask>
+<bpmn:exclusiveGateway id="p6_gd" name="Rebroadcast underground?">
+<bpmn:incoming>p6_f15</bpmn:incoming>
+<bpmn:outgoing>p6_f16</bpmn:outgoing>
+<bpmn:outgoing>p6_f17</bpmn:outgoing>
+</bpmn:exclusiveGateway>
+<bpmn:endEvent id="p6_eno" name="Routed to console / surface / data only">
+<bpmn:incoming>p6_f17</bpmn:incoming>
+</bpmn:endEvent>
+<bpmn:serviceTask id="p6_rtx" name="Repeater transmits on the downlink frequency">
+<bpmn:incoming>p6_f16</bpmn:incoming>
+<bpmn:outgoing>p6_f18</bpmn:outgoing>
+</bpmn:serviceTask>
+<bpmn:serviceTask id="p6_comb" name="Transmitter combiner (cavity / hybrid) merges all repeaters">
+<bpmn:incoming>p6_f18</bpmn:incoming>
+<bpmn:outgoing>p6_f19</bpmn:outgoing>
+</bpmn:serviceTask>
+<bpmn:serviceTask id="p6_dup2" name="Duplexer → headend amp → downlink into the leaky feeder">
+<bpmn:incoming>p6_f19</bpmn:incoming>
+<bpmn:outgoing>p6_f20</bpmn:outgoing>
+</bpmn:serviceTask>
+<bpmn:endEvent id="p6_e" name="Downlink on the feeder (p.3, reversed)">
+<bpmn:incoming>p6_f20</bpmn:incoming>
+</bpmn:endEvent>
+<bpmn:sequenceFlow id="p6_f0" name="" sourceRef="p6_s" targetRef="p6_ha"/>
+<bpmn:sequenceFlow id="p6_f1" name="" sourceRef="p6_ha" targetRef="p6_att"/>
+<bpmn:sequenceFlow id="p6_f2" name="" sourceRef="p6_att" targetRef="p6_dup"/>
+<bpmn:sequenceFlow id="p6_f3" name="" sourceRef="p6_dup" targetRef="p6_mc"/>
+<bpmn:sequenceFlow id="p6_f4" name="" sourceRef="p6_mc" targetRef="p6_rpt"/>
+<bpmn:sequenceFlow id="p6_f5" name="" sourceRef="p6_rpt" targetRef="p6_gr"/>
+<bpmn:sequenceFlow id="p6_f6" name="Yes" sourceRef="p6_gr" targetRef="p6_grm"/>
+<bpmn:sequenceFlow id="p6_f7" name="No" sourceRef="p6_gr" targetRef="p6_hs"/>
+<bpmn:sequenceFlow id="p6_f8" name="" sourceRef="p6_hs" targetRef="p6_grm"/>
+<bpmn:sequenceFlow id="p6_f9" name="" sourceRef="p6_grm" targetRef="p6_ctl"/>
+<bpmn:sequenceFlow id="p6_f10" name="" sourceRef="p6_ctl" targetRef="p6_ge"/>
+<bpmn:sequenceFlow id="p6_f11" name="No" sourceRef="p6_ge" targetRef="p6_gem"/>
+<bpmn:sequenceFlow id="p6_f12" name="Yes" sourceRef="p6_ge" targetRef="p6_pre"/>
+<bpmn:sequenceFlow id="p6_f13" name="" sourceRef="p6_pre" targetRef="p6_gem"/>
+<bpmn:sequenceFlow id="p6_f14" name="" sourceRef="p6_gem" targetRef="p6_rt"/>
+<bpmn:sequenceFlow id="p6_f15" name="" sourceRef="p6_rt" targetRef="p6_gd"/>
+<bpmn:sequenceFlow id="p6_f16" name="Yes" sourceRef="p6_gd" targetRef="p6_rtx"/>
+<bpmn:sequenceFlow id="p6_f17" name="No" sourceRef="p6_gd" targetRef="p6_eno"/>
+<bpmn:sequenceFlow id="p6_f18" name="" sourceRef="p6_rtx" targetRef="p6_comb"/>
+<bpmn:sequenceFlow id="p6_f19" name="" sourceRef="p6_comb" targetRef="p6_dup2"/>
+<bpmn:sequenceFlow id="p6_f20" name="" sourceRef="p6_dup2" targetRef="p6_e"/>
+<bpmn:textAnnotation id="p6_a1"><bpmn:text>NMS polls every repeater, amp, PSU, switch and fibre node; alarms go to the comms tech (p.7)</bpmn:text></bpmn:textAnnotation>
+<bpmn:textAnnotation id="p6_a2"><bpmn:text>Room services: 19″ racks, earth bar, surge arrestors, HVAC, fire suppression, UPS + standby generator</bpmn:text></bpmn:textAnnotation>
+</bpmn:process>
+<bpmndi:BPMNDiagram id="p6_dia"><bpmndi:BPMNPlane id="p6_plane" bpmnElement="p6_collab">
+<bpmndi:BPMNShape id="p6_pool_di" bpmnElement="p6_pool" isHorizontal="true"><dc:Bounds x="40" y="40" width="4195" height="675"/>
+</bpmndi:BPMNShape>
+<bpmndi:BPMNShape id="p6_I_di" bpmnElement="p6_I" isHorizontal="true"><dc:Bounds x="70" y="40" width="4165" height="135"/>
+</bpmndi:BPMNShape>
+<bpmndi:BPMNShape id="p6_X_di" bpmnElement="p6_X" isHorizontal="true"><dc:Bounds x="70" y="175" width="4165" height="135"/>
+</bpmndi:BPMNShape>
+<bpmndi:BPMNShape id="p6_Q_di" bpmnElement="p6_Q" isHorizontal="true"><dc:Bounds x="70" y="310" width="4165" height="270"/>
+</bpmndi:BPMNShape>
+<bpmndi:BPMNShape id="p6_Y_di" bpmnElement="p6_Y" isHorizontal="true"><dc:Bounds x="70" y="580" width="4165" height="135"/>
+</bpmndi:BPMNShape>
+<bpmndi:BPMNShape id="p6_s_di" bpmnElement="p6_s"><dc:Bounds x="194" y="90" width="36" height="36"/>
+<bpmndi:BPMNLabel><dc:Bounds x="148" y="130" width="130" height="40"/></bpmndi:BPMNLabel>
+</bpmndi:BPMNShape>
+<bpmndi:BPMNShape id="p6_ha_di" bpmnElement="p6_ha"><dc:Bounds x="345" y="60" width="165" height="96"/>
+</bpmndi:BPMNShape>
+<bpmndi:BPMNShape id="p6_att_di" bpmnElement="p6_att"><dc:Bounds x="560" y="60" width="165" height="96"/>
+</bpmndi:BPMNShape>
+<bpmndi:BPMNShape id="p6_dup_di" bpmnElement="p6_dup"><dc:Bounds x="775" y="60" width="165" height="96"/>
+</bpmndi:BPMNShape>
+<bpmndi:BPMNShape id="p6_mc_di" bpmnElement="p6_mc"><dc:Bounds x="990" y="194" width="165" height="96"/>
+</bpmndi:BPMNShape>
+<bpmndi:BPMNShape id="p6_rpt_di" bpmnElement="p6_rpt"><dc:Bounds x="1205" y="330" width="165" height="96"/>
+</bpmndi:BPMNShape>
+<bpmndi:BPMNShape id="p6_gr_di" bpmnElement="p6_gr" isMarkerVisible="true"><dc:Bounds x="1478" y="352" width="50" height="50"/>
+<bpmndi:BPMNLabel><dc:Bounds x="1352" y="316" width="122" height="40"/></bpmndi:BPMNLabel>
+</bpmndi:BPMNShape>
+<bpmndi:BPMNShape id="p6_hs_di" bpmnElement="p6_hs"><dc:Bounds x="1635" y="464" width="165" height="96"/>
+</bpmndi:BPMNShape>
+<bpmndi:BPMNShape id="p6_grm_di" bpmnElement="p6_grm" isMarkerVisible="true"><dc:Bounds x="1908" y="352" width="50" height="50"/>
+<bpmndi:BPMNLabel><dc:Bounds x="1782" y="316" width="122" height="40"/></bpmndi:BPMNLabel>
+</bpmndi:BPMNShape>
+<bpmndi:BPMNShape id="p6_ctl_di" bpmnElement="p6_ctl"><dc:Bounds x="2065" y="330" width="165" height="96"/>
+</bpmndi:BPMNShape>
+<bpmndi:BPMNShape id="p6_ge_di" bpmnElement="p6_ge" isMarkerVisible="true"><dc:Bounds x="2338" y="352" width="50" height="50"/>
+<bpmndi:BPMNLabel><dc:Bounds x="2212" y="316" width="122" height="40"/></bpmndi:BPMNLabel>
+</bpmndi:BPMNShape>
+<bpmndi:BPMNShape id="p6_pre_di" bpmnElement="p6_pre"><dc:Bounds x="2495" y="464" width="165" height="96"/>
+</bpmndi:BPMNShape>
+<bpmndi:BPMNShape id="p6_gem_di" bpmnElement="p6_gem" isMarkerVisible="true"><dc:Bounds x="2768" y="352" width="50" height="50"/>
+<bpmndi:BPMNLabel><dc:Bounds x="2642" y="316" width="122" height="40"/></bpmndi:BPMNLabel>
+</bpmndi:BPMNShape>
+<bpmndi:BPMNShape id="p6_rt_di" bpmnElement="p6_rt"><dc:Bounds x="2925" y="330" width="165" height="96"/>
+</bpmndi:BPMNShape>
+<bpmndi:BPMNShape id="p6_gd_di" bpmnElement="p6_gd" isMarkerVisible="true"><dc:Bounds x="3198" y="352" width="50" height="50"/>
+<bpmndi:BPMNLabel><dc:Bounds x="3072" y="316" width="122" height="40"/></bpmndi:BPMNLabel>
+</bpmndi:BPMNShape>
+<bpmndi:BPMNShape id="p6_eno_di" bpmnElement="p6_eno"><dc:Bounds x="3420" y="494" width="36" height="36"/>
+<bpmndi:BPMNLabel><dc:Bounds x="3372" y="534" width="130" height="40"/></bpmndi:BPMNLabel>
+</bpmndi:BPMNShape>
+<bpmndi:BPMNShape id="p6_rtx_di" bpmnElement="p6_rtx"><dc:Bounds x="3355" y="600" width="165" height="96"/>
+</bpmndi:BPMNShape>
+<bpmndi:BPMNShape id="p6_comb_di" bpmnElement="p6_comb"><dc:Bounds x="3570" y="600" width="165" height="96"/>
+</bpmndi:BPMNShape>
+<bpmndi:BPMNShape id="p6_dup2_di" bpmnElement="p6_dup2"><dc:Bounds x="3785" y="60" width="165" height="96"/>
+</bpmndi:BPMNShape>
+<bpmndi:BPMNShape id="p6_e_di" bpmnElement="p6_e"><dc:Bounds x="4064" y="90" width="36" height="36"/>
+<bpmndi:BPMNLabel><dc:Bounds x="4018" y="130" width="130" height="40"/></bpmndi:BPMNLabel>
+</bpmndi:BPMNShape>
+<bpmndi:BPMNShape id="p6_a1_di" bpmnElement="p6_a1"><dc:Bounds x="1410" y="187" width="625" height="70"/>
+</bpmndi:BPMNShape>
+<bpmndi:BPMNShape id="p6_a2_di" bpmnElement="p6_a2"><dc:Bounds x="980" y="592" width="625" height="70"/>
+</bpmndi:BPMNShape>
+<bpmndi:BPMNEdge id="p6_f0_di" bpmnElement="p6_f0">
+<di:waypoint x="230" y="108"/>
+<di:waypoint x="345" y="108"/>
+</bpmndi:BPMNEdge>
+<bpmndi:BPMNEdge id="p6_f1_di" bpmnElement="p6_f1">
+<di:waypoint x="510" y="108"/>
+<di:waypoint x="560" y="108"/>
+</bpmndi:BPMNEdge>
+<bpmndi:BPMNEdge id="p6_f2_di" bpmnElement="p6_f2">
+<di:waypoint x="725" y="108"/>
+<di:waypoint x="775" y="108"/>
+</bpmndi:BPMNEdge>
+<bpmndi:BPMNEdge id="p6_f3_di" bpmnElement="p6_f3">
+<di:waypoint x="940" y="108"/>
+<di:waypoint x="962" y="108"/>
+<di:waypoint x="962" y="242"/>
+<di:waypoint x="990" y="242"/>
+</bpmndi:BPMNEdge>
+<bpmndi:BPMNEdge id="p6_f4_di" bpmnElement="p6_f4">
+<di:waypoint x="1155" y="242"/>
+<di:waypoint x="1177" y="242"/>
+<di:waypoint x="1177" y="378"/>
+<di:waypoint x="1205" y="378"/>
+</bpmndi:BPMNEdge>
+<bpmndi:BPMNEdge id="p6_f5_di" bpmnElement="p6_f5">
+<di:waypoint x="1370" y="378"/>
+<di:waypoint x="1478" y="378"/>
+</bpmndi:BPMNEdge>
+<bpmndi:BPMNEdge id="p6_f6_di" bpmnElement="p6_f6">
+<di:waypoint x="1528" y="378"/>
+<di:waypoint x="1908" y="378"/>
+<bpmndi:BPMNLabel><dc:Bounds x="1534" y="360" width="30" height="14"/></bpmndi:BPMNLabel>
+</bpmndi:BPMNEdge>
+<bpmndi:BPMNEdge id="p6_f7_di" bpmnElement="p6_f7">
+<di:waypoint x="1502" y="402"/>
+<di:waypoint x="1502" y="512"/>
+<di:waypoint x="1635" y="512"/>
+<bpmndi:BPMNLabel><dc:Bounds x="1508" y="406" width="30" height="14"/></bpmndi:BPMNLabel>
+</bpmndi:BPMNEdge>
+<bpmndi:BPMNEdge id="p6_f8_di" bpmnElement="p6_f8">
+<di:waypoint x="1800" y="512"/>
+<di:waypoint x="1932" y="512"/>
+<di:waypoint x="1932" y="402"/>
+</bpmndi:BPMNEdge>
+<bpmndi:BPMNEdge id="p6_f9_di" bpmnElement="p6_f9">
+<di:waypoint x="1958" y="378"/>
+<di:waypoint x="2065" y="378"/>
+</bpmndi:BPMNEdge>
+<bpmndi:BPMNEdge id="p6_f10_di" bpmnElement="p6_f10">
+<di:waypoint x="2230" y="378"/>
+<di:waypoint x="2338" y="378"/>
+</bpmndi:BPMNEdge>
+<bpmndi:BPMNEdge id="p6_f11_di" bpmnElement="p6_f11">
+<di:waypoint x="2388" y="378"/>
+<di:waypoint x="2768" y="378"/>
+<bpmndi:BPMNLabel><dc:Bounds x="2394" y="360" width="30" height="14"/></bpmndi:BPMNLabel>
+</bpmndi:BPMNEdge>
+<bpmndi:BPMNEdge id="p6_f12_di" bpmnElement="p6_f12">
+<di:waypoint x="2362" y="402"/>
+<di:waypoint x="2362" y="512"/>
+<di:waypoint x="2495" y="512"/>
+<bpmndi:BPMNLabel><dc:Bounds x="2368" y="406" width="30" height="14"/></bpmndi:BPMNLabel>
+</bpmndi:BPMNEdge>
+<bpmndi:BPMNEdge id="p6_f13_di" bpmnElement="p6_f13">
+<di:waypoint x="2660" y="512"/>
+<di:waypoint x="2792" y="512"/>
+<di:waypoint x="2792" y="402"/>
+</bpmndi:BPMNEdge>
+<bpmndi:BPMNEdge id="p6_f14_di" bpmnElement="p6_f14">
+<di:waypoint x="2818" y="378"/>
+<di:waypoint x="2925" y="378"/>
+</bpmndi:BPMNEdge>
+<bpmndi:BPMNEdge id="p6_f15_di" bpmnElement="p6_f15">
+<di:waypoint x="3090" y="378"/>
+<di:waypoint x="3198" y="378"/>
+</bpmndi:BPMNEdge>
+<bpmndi:BPMNEdge id="p6_f16_di" bpmnElement="p6_f16">
+<di:waypoint x="3248" y="378"/>
+<di:waypoint x="3270" y="378"/>
+<di:waypoint x="3270" y="648"/>
+<di:waypoint x="3355" y="648"/>
+<bpmndi:BPMNLabel><dc:Bounds x="3254" y="360" width="30" height="14"/></bpmndi:BPMNLabel>
+</bpmndi:BPMNEdge>
+<bpmndi:BPMNEdge id="p6_f17_di" bpmnElement="p6_f17">
+<di:waypoint x="3222" y="402"/>
+<di:waypoint x="3222" y="512"/>
+<di:waypoint x="3420" y="512"/>
+<bpmndi:BPMNLabel><dc:Bounds x="3228" y="406" width="30" height="14"/></bpmndi:BPMNLabel>
+</bpmndi:BPMNEdge>
+<bpmndi:BPMNEdge id="p6_f18_di" bpmnElement="p6_f18">
+<di:waypoint x="3520" y="648"/>
+<di:waypoint x="3570" y="648"/>
+</bpmndi:BPMNEdge>
+<bpmndi:BPMNEdge id="p6_f19_di" bpmnElement="p6_f19">
+<di:waypoint x="3735" y="648"/>
+<di:waypoint x="3757" y="648"/>
+<di:waypoint x="3757" y="108"/>
+<di:waypoint x="3785" y="108"/>
+</bpmndi:BPMNEdge>
+<bpmndi:BPMNEdge id="p6_f20_di" bpmnElement="p6_f20">
+<di:waypoint x="3950" y="108"/>
+<di:waypoint x="4064" y="108"/>
+</bpmndi:BPMNEdge>
+</bpmndi:BPMNPlane></bpmndi:BPMNDiagram></bpmn:definitions>

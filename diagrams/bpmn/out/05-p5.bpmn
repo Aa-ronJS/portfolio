@@ -1,0 +1,301 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<bpmn:definitions xmlns:bpmn="http://www.omg.org/spec/BPMN/20100524/MODEL" xmlns:bpmndi="http://www.omg.org/spec/BPMN/20100524/DI" xmlns:dc="http://www.omg.org/spec/DD/20100524/DC" xmlns:di="http://www.omg.org/spec/DD/20100524/DI" id="p5_defs" targetNamespace="http://example.com/od-radio">
+<bpmn:collaboration id="p5_collab">
+<bpmn:participant id="p5_pool" name="Fibre / IP transport and riser" processRef="p5_process"/>
+</bpmn:collaboration>
+<bpmn:process id="p5_process" name="Fibre, IP network and riser to surface" isExecutable="false">
+<bpmn:laneSet id="p5_ls">
+<bpmn:lane id="p5_N" name="Level equipment (fibre node / AP)">
+<bpmn:flowNodeRef>p5_s</bpmn:flowNodeRef>
+<bpmn:flowNodeRef>p5_src</bpmn:flowNodeRef>
+</bpmn:lane>
+<bpmn:lane id="p5_K" name="Underground comms cabinet">
+<bpmn:flowNodeRef>p5_pp</bpmn:flowNodeRef>
+<bpmn:flowNodeRef>p5_sw</bpmn:flowNodeRef>
+<bpmn:flowNodeRef>p5_gl</bpmn:flowNodeRef>
+<bpmn:flowNodeRef>p5_el</bpmn:flowNodeRef>
+</bpmn:lane>
+<bpmn:lane id="p5_B" name="Fibre backbone ring">
+<bpmn:flowNodeRef>p5_ring</bpmn:flowNodeRef>
+<bpmn:flowNodeRef>p5_gr</bpmn:flowNodeRef>
+<bpmn:flowNodeRef>p5_fo</bpmn:flowNodeRef>
+<bpmn:flowNodeRef>p5_grm</bpmn:flowNodeRef>
+</bpmn:lane>
+<bpmn:lane id="p5_S" name="Shaft / decline riser">
+<bpmn:flowNodeRef>p5_gp</bpmn:flowNodeRef>
+<bpmn:flowNodeRef>p5_sh</bpmn:flowNodeRef>
+<bpmn:flowNodeRef>p5_de</bpmn:flowNodeRef>
+<bpmn:flowNodeRef>p5_gsm</bpmn:flowNodeRef>
+<bpmn:flowNodeRef>p5_gd</bpmn:flowNodeRef>
+<bpmn:flowNodeRef>p5_spof</bpmn:flowNodeRef>
+</bpmn:lane>
+<bpmn:lane id="p5_R" name="Surface comms room">
+<bpmn:flowNodeRef>p5_core</bpmn:flowNodeRef>
+<bpmn:flowNodeRef>p5_e</bpmn:flowNodeRef>
+</bpmn:lane>
+</bpmn:laneSet>
+<bpmn:startEvent id="p5_s" name="Optical or IP traffic leaves the level">
+<bpmn:outgoing>p5_f0</bpmn:outgoing>
+</bpmn:startEvent>
+<bpmn:serviceTask id="p5_src" name="Fibre node optical output / Wi-Fi AP / LTE radio head (PoE)">
+<bpmn:incoming>p5_f0</bpmn:incoming>
+<bpmn:outgoing>p5_f1</bpmn:outgoing>
+</bpmn:serviceTask>
+<bpmn:serviceTask id="p5_pp" name="Fibre patch panel, splice tray, SFP optics, patch leads">
+<bpmn:incoming>p5_f1</bpmn:incoming>
+<bpmn:outgoing>p5_f2</bpmn:outgoing>
+</bpmn:serviceTask>
+<bpmn:serviceTask id="p5_sw" name="Managed industrial Ethernet switch (L2/L3, ring protocol, PoE)">
+<bpmn:incoming>p5_f2</bpmn:incoming>
+<bpmn:outgoing>p5_f3</bpmn:outgoing>
+</bpmn:serviceTask>
+<bpmn:exclusiveGateway id="p5_gl" name="Port and link up?">
+<bpmn:incoming>p5_f3</bpmn:incoming>
+<bpmn:outgoing>p5_f4</bpmn:outgoing>
+<bpmn:outgoing>p5_f5</bpmn:outgoing>
+</bpmn:exclusiveGateway>
+<bpmn:endEvent id="p5_el" name="Link alarm → tech: swap SFP / lead / switch; OTDR the fibre">
+<bpmn:incoming>p5_f5</bpmn:incoming>
+<bpmn:messageEventDefinition id="p5_el_med"/>
+</bpmn:endEvent>
+<bpmn:serviceTask id="p5_ring" name="Armoured single-mode loose-tube fibre ring between levels">
+<bpmn:incoming>p5_f4</bpmn:incoming>
+<bpmn:outgoing>p5_f6</bpmn:outgoing>
+</bpmn:serviceTask>
+<bpmn:exclusiveGateway id="p5_gr" name="Both ring paths intact?">
+<bpmn:incoming>p5_f6</bpmn:incoming>
+<bpmn:outgoing>p5_f7</bpmn:outgoing>
+<bpmn:outgoing>p5_f8</bpmn:outgoing>
+</bpmn:exclusiveGateway>
+<bpmn:serviceTask id="p5_fo" name="Ring fails over the other way (&lt;50 ms); alarm to NMS">
+<bpmn:incoming>p5_f8</bpmn:incoming>
+<bpmn:outgoing>p5_f9</bpmn:outgoing>
+</bpmn:serviceTask>
+<bpmn:exclusiveGateway id="p5_grm" name="">
+<bpmn:incoming>p5_f7</bpmn:incoming>
+<bpmn:incoming>p5_f9</bpmn:incoming>
+<bpmn:outgoing>p5_f10</bpmn:outgoing>
+</bpmn:exclusiveGateway>
+<bpmn:exclusiveGateway id="p5_gp" name="Which riser path?">
+<bpmn:incoming>p5_f10</bpmn:incoming>
+<bpmn:outgoing>p5_f11</bpmn:outgoing>
+<bpmn:outgoing>p5_f12</bpmn:outgoing>
+</bpmn:exclusiveGateway>
+<bpmn:serviceTask id="p5_sh" name="Shaft: vertical-rated coax + fibre, shaft clamps, strain relief at collar, cage feeder">
+<bpmn:incoming>p5_f11</bpmn:incoming>
+<bpmn:outgoing>p5_f13</bpmn:outgoing>
+</bpmn:serviceTask>
+<bpmn:serviceTask id="p5_de" name="Main decline: leaky feeder + fibre to the portal (vehicle coverage too)">
+<bpmn:incoming>p5_f12</bpmn:incoming>
+<bpmn:outgoing>p5_f14</bpmn:outgoing>
+</bpmn:serviceTask>
+<bpmn:exclusiveGateway id="p5_gsm" name="">
+<bpmn:incoming>p5_f13</bpmn:incoming>
+<bpmn:incoming>p5_f14</bpmn:incoming>
+<bpmn:outgoing>p5_f15</bpmn:outgoing>
+</bpmn:exclusiveGateway>
+<bpmn:exclusiveGateway id="p5_gd" name="Second, diverse route available?">
+<bpmn:incoming>p5_f15</bpmn:incoming>
+<bpmn:outgoing>p5_f16</bpmn:outgoing>
+<bpmn:outgoing>p5_f17</bpmn:outgoing>
+</bpmn:exclusiveGateway>
+<bpmn:manualTask id="p5_spof" name="Log single point of failure; plan a diverse route">
+<bpmn:incoming>p5_f17</bpmn:incoming>
+<bpmn:outgoing>p5_f18</bpmn:outgoing>
+</bpmn:manualTask>
+<bpmn:serviceTask id="p5_core" name="Surface comms room: patch panel, core switch, headend interface">
+<bpmn:incoming>p5_f16</bpmn:incoming>
+<bpmn:incoming>p5_f18</bpmn:incoming>
+<bpmn:outgoing>p5_f19</bpmn:outgoing>
+</bpmn:serviceTask>
+<bpmn:endEvent id="p5_e" name="Delivered to headend (p.6)">
+<bpmn:incoming>p5_f19</bpmn:incoming>
+</bpmn:endEvent>
+<bpmn:sequenceFlow id="p5_f0" name="" sourceRef="p5_s" targetRef="p5_src"/>
+<bpmn:sequenceFlow id="p5_f1" name="" sourceRef="p5_src" targetRef="p5_pp"/>
+<bpmn:sequenceFlow id="p5_f2" name="" sourceRef="p5_pp" targetRef="p5_sw"/>
+<bpmn:sequenceFlow id="p5_f3" name="" sourceRef="p5_sw" targetRef="p5_gl"/>
+<bpmn:sequenceFlow id="p5_f4" name="Yes" sourceRef="p5_gl" targetRef="p5_ring"/>
+<bpmn:sequenceFlow id="p5_f5" name="No" sourceRef="p5_gl" targetRef="p5_el"/>
+<bpmn:sequenceFlow id="p5_f6" name="" sourceRef="p5_ring" targetRef="p5_gr"/>
+<bpmn:sequenceFlow id="p5_f7" name="Yes" sourceRef="p5_gr" targetRef="p5_grm"/>
+<bpmn:sequenceFlow id="p5_f8" name="No" sourceRef="p5_gr" targetRef="p5_fo"/>
+<bpmn:sequenceFlow id="p5_f9" name="" sourceRef="p5_fo" targetRef="p5_grm"/>
+<bpmn:sequenceFlow id="p5_f10" name="" sourceRef="p5_grm" targetRef="p5_gp"/>
+<bpmn:sequenceFlow id="p5_f11" name="Shaft" sourceRef="p5_gp" targetRef="p5_sh"/>
+<bpmn:sequenceFlow id="p5_f12" name="Decline" sourceRef="p5_gp" targetRef="p5_de"/>
+<bpmn:sequenceFlow id="p5_f13" name="" sourceRef="p5_sh" targetRef="p5_gsm"/>
+<bpmn:sequenceFlow id="p5_f14" name="" sourceRef="p5_de" targetRef="p5_gsm"/>
+<bpmn:sequenceFlow id="p5_f15" name="" sourceRef="p5_gsm" targetRef="p5_gd"/>
+<bpmn:sequenceFlow id="p5_f16" name="Yes" sourceRef="p5_gd" targetRef="p5_core"/>
+<bpmn:sequenceFlow id="p5_f17" name="No" sourceRef="p5_gd" targetRef="p5_spof"/>
+<bpmn:sequenceFlow id="p5_f18" name="" sourceRef="p5_spof" targetRef="p5_core"/>
+<bpmn:sequenceFlow id="p5_f19" name="" sourceRef="p5_core" targetRef="p5_e"/>
+<bpmn:textAnnotation id="p5_a1"><bpmn:text>IP-rated cabinet: dust seal, cooling, earth bar, cable glands, cabinet UPS + PDU, media converters, RoIP gateway</bpmn:text></bpmn:textAnnotation>
+<bpmn:association id="p5_a1_as" sourceRef="p5_sw" targetRef="p5_a1"/>
+</bpmn:process>
+<bpmndi:BPMNDiagram id="p5_dia"><bpmndi:BPMNPlane id="p5_plane" bpmnElement="p5_collab">
+<bpmndi:BPMNShape id="p5_pool_di" bpmnElement="p5_pool" isHorizontal="true"><dc:Bounds x="40" y="40" width="3550" height="1080"/>
+</bpmndi:BPMNShape>
+<bpmndi:BPMNShape id="p5_N_di" bpmnElement="p5_N" isHorizontal="true"><dc:Bounds x="70" y="40" width="3520" height="135"/>
+</bpmndi:BPMNShape>
+<bpmndi:BPMNShape id="p5_K_di" bpmnElement="p5_K" isHorizontal="true"><dc:Bounds x="70" y="175" width="3520" height="270"/>
+</bpmndi:BPMNShape>
+<bpmndi:BPMNShape id="p5_B_di" bpmnElement="p5_B" isHorizontal="true"><dc:Bounds x="70" y="445" width="3520" height="270"/>
+</bpmndi:BPMNShape>
+<bpmndi:BPMNShape id="p5_S_di" bpmnElement="p5_S" isHorizontal="true"><dc:Bounds x="70" y="715" width="3520" height="270"/>
+</bpmndi:BPMNShape>
+<bpmndi:BPMNShape id="p5_R_di" bpmnElement="p5_R" isHorizontal="true"><dc:Bounds x="70" y="985" width="3520" height="135"/>
+</bpmndi:BPMNShape>
+<bpmndi:BPMNShape id="p5_s_di" bpmnElement="p5_s"><dc:Bounds x="194" y="90" width="36" height="36"/>
+<bpmndi:BPMNLabel><dc:Bounds x="148" y="130" width="130" height="40"/></bpmndi:BPMNLabel>
+</bpmndi:BPMNShape>
+<bpmndi:BPMNShape id="p5_src_di" bpmnElement="p5_src"><dc:Bounds x="345" y="60" width="165" height="96"/>
+</bpmndi:BPMNShape>
+<bpmndi:BPMNShape id="p5_pp_di" bpmnElement="p5_pp"><dc:Bounds x="560" y="194" width="165" height="96"/>
+</bpmndi:BPMNShape>
+<bpmndi:BPMNShape id="p5_sw_di" bpmnElement="p5_sw"><dc:Bounds x="775" y="194" width="165" height="96"/>
+</bpmndi:BPMNShape>
+<bpmndi:BPMNShape id="p5_gl_di" bpmnElement="p5_gl" isMarkerVisible="true"><dc:Bounds x="1048" y="218" width="50" height="50"/>
+<bpmndi:BPMNLabel><dc:Bounds x="922" y="180" width="122" height="40"/></bpmndi:BPMNLabel>
+</bpmndi:BPMNShape>
+<bpmndi:BPMNShape id="p5_el_di" bpmnElement="p5_el"><dc:Bounds x="1270" y="360" width="36" height="36"/>
+<bpmndi:BPMNLabel><dc:Bounds x="1222" y="400" width="130" height="40"/></bpmndi:BPMNLabel>
+</bpmndi:BPMNShape>
+<bpmndi:BPMNShape id="p5_ring_di" bpmnElement="p5_ring"><dc:Bounds x="1205" y="464" width="165" height="96"/>
+</bpmndi:BPMNShape>
+<bpmndi:BPMNShape id="p5_gr_di" bpmnElement="p5_gr" isMarkerVisible="true"><dc:Bounds x="1478" y="488" width="50" height="50"/>
+<bpmndi:BPMNLabel><dc:Bounds x="1352" y="450" width="122" height="40"/></bpmndi:BPMNLabel>
+</bpmndi:BPMNShape>
+<bpmndi:BPMNShape id="p5_fo_di" bpmnElement="p5_fo"><dc:Bounds x="1635" y="600" width="165" height="96"/>
+</bpmndi:BPMNShape>
+<bpmndi:BPMNShape id="p5_grm_di" bpmnElement="p5_grm" isMarkerVisible="true"><dc:Bounds x="1908" y="488" width="50" height="50"/>
+<bpmndi:BPMNLabel><dc:Bounds x="1782" y="450" width="122" height="40"/></bpmndi:BPMNLabel>
+</bpmndi:BPMNShape>
+<bpmndi:BPMNShape id="p5_gp_di" bpmnElement="p5_gp" isMarkerVisible="true"><dc:Bounds x="2122" y="758" width="50" height="50"/>
+<bpmndi:BPMNLabel><dc:Bounds x="1998" y="720" width="122" height="40"/></bpmndi:BPMNLabel>
+</bpmndi:BPMNShape>
+<bpmndi:BPMNShape id="p5_sh_di" bpmnElement="p5_sh"><dc:Bounds x="2280" y="734" width="165" height="96"/>
+</bpmndi:BPMNShape>
+<bpmndi:BPMNShape id="p5_de_di" bpmnElement="p5_de"><dc:Bounds x="2280" y="870" width="165" height="96"/>
+</bpmndi:BPMNShape>
+<bpmndi:BPMNShape id="p5_gsm_di" bpmnElement="p5_gsm" isMarkerVisible="true"><dc:Bounds x="2552" y="758" width="50" height="50"/>
+<bpmndi:BPMNLabel><dc:Bounds x="2428" y="720" width="122" height="40"/></bpmndi:BPMNLabel>
+</bpmndi:BPMNShape>
+<bpmndi:BPMNShape id="p5_gd_di" bpmnElement="p5_gd" isMarkerVisible="true"><dc:Bounds x="2768" y="758" width="50" height="50"/>
+<bpmndi:BPMNLabel><dc:Bounds x="2642" y="720" width="122" height="40"/></bpmndi:BPMNLabel>
+</bpmndi:BPMNShape>
+<bpmndi:BPMNShape id="p5_spof_di" bpmnElement="p5_spof"><dc:Bounds x="2925" y="870" width="165" height="96"/>
+</bpmndi:BPMNShape>
+<bpmndi:BPMNShape id="p5_core_di" bpmnElement="p5_core"><dc:Bounds x="3140" y="1004" width="165" height="96"/>
+</bpmndi:BPMNShape>
+<bpmndi:BPMNShape id="p5_e_di" bpmnElement="p5_e"><dc:Bounds x="3420" y="1034" width="36" height="36"/>
+<bpmndi:BPMNLabel><dc:Bounds x="3372" y="1074" width="130" height="40"/></bpmndi:BPMNLabel>
+</bpmndi:BPMNShape>
+<bpmndi:BPMNShape id="p5_a1_di" bpmnElement="p5_a1"><dc:Bounds x="550" y="322" width="410" height="70"/>
+</bpmndi:BPMNShape>
+<bpmndi:BPMNEdge id="p5_f0_di" bpmnElement="p5_f0">
+<di:waypoint x="230" y="108"/>
+<di:waypoint x="345" y="108"/>
+</bpmndi:BPMNEdge>
+<bpmndi:BPMNEdge id="p5_f1_di" bpmnElement="p5_f1">
+<di:waypoint x="510" y="108"/>
+<di:waypoint x="532" y="108"/>
+<di:waypoint x="532" y="242"/>
+<di:waypoint x="560" y="242"/>
+</bpmndi:BPMNEdge>
+<bpmndi:BPMNEdge id="p5_f2_di" bpmnElement="p5_f2">
+<di:waypoint x="725" y="242"/>
+<di:waypoint x="775" y="242"/>
+</bpmndi:BPMNEdge>
+<bpmndi:BPMNEdge id="p5_f3_di" bpmnElement="p5_f3">
+<di:waypoint x="940" y="242"/>
+<di:waypoint x="1048" y="242"/>
+</bpmndi:BPMNEdge>
+<bpmndi:BPMNEdge id="p5_f4_di" bpmnElement="p5_f4">
+<di:waypoint x="1098" y="242"/>
+<di:waypoint x="1120" y="242"/>
+<di:waypoint x="1120" y="512"/>
+<di:waypoint x="1205" y="512"/>
+<bpmndi:BPMNLabel><dc:Bounds x="1104" y="224" width="30" height="14"/></bpmndi:BPMNLabel>
+</bpmndi:BPMNEdge>
+<bpmndi:BPMNEdge id="p5_f5_di" bpmnElement="p5_f5">
+<di:waypoint x="1072" y="268"/>
+<di:waypoint x="1072" y="378"/>
+<di:waypoint x="1270" y="378"/>
+<bpmndi:BPMNLabel><dc:Bounds x="1078" y="272" width="30" height="14"/></bpmndi:BPMNLabel>
+</bpmndi:BPMNEdge>
+<bpmndi:BPMNEdge id="p5_f6_di" bpmnElement="p5_f6">
+<di:waypoint x="1370" y="512"/>
+<di:waypoint x="1478" y="512"/>
+</bpmndi:BPMNEdge>
+<bpmndi:BPMNEdge id="p5_f7_di" bpmnElement="p5_f7">
+<di:waypoint x="1528" y="512"/>
+<di:waypoint x="1908" y="512"/>
+<bpmndi:BPMNLabel><dc:Bounds x="1534" y="494" width="30" height="14"/></bpmndi:BPMNLabel>
+</bpmndi:BPMNEdge>
+<bpmndi:BPMNEdge id="p5_f8_di" bpmnElement="p5_f8">
+<di:waypoint x="1502" y="538"/>
+<di:waypoint x="1502" y="648"/>
+<di:waypoint x="1635" y="648"/>
+<bpmndi:BPMNLabel><dc:Bounds x="1508" y="542" width="30" height="14"/></bpmndi:BPMNLabel>
+</bpmndi:BPMNEdge>
+<bpmndi:BPMNEdge id="p5_f9_di" bpmnElement="p5_f9">
+<di:waypoint x="1800" y="648"/>
+<di:waypoint x="1932" y="648"/>
+<di:waypoint x="1932" y="538"/>
+</bpmndi:BPMNEdge>
+<bpmndi:BPMNEdge id="p5_f10_di" bpmnElement="p5_f10">
+<di:waypoint x="1958" y="512"/>
+<di:waypoint x="2148" y="512"/>
+<di:waypoint x="2148" y="758"/>
+</bpmndi:BPMNEdge>
+<bpmndi:BPMNEdge id="p5_f11_di" bpmnElement="p5_f11">
+<di:waypoint x="2172" y="782"/>
+<di:waypoint x="2280" y="782"/>
+<bpmndi:BPMNLabel><dc:Bounds x="2178" y="764" width="33" height="14"/></bpmndi:BPMNLabel>
+</bpmndi:BPMNEdge>
+<bpmndi:BPMNEdge id="p5_f12_di" bpmnElement="p5_f12">
+<di:waypoint x="2148" y="808"/>
+<di:waypoint x="2148" y="918"/>
+<di:waypoint x="2280" y="918"/>
+<bpmndi:BPMNLabel><dc:Bounds x="2154" y="812" width="46" height="14"/></bpmndi:BPMNLabel>
+</bpmndi:BPMNEdge>
+<bpmndi:BPMNEdge id="p5_f13_di" bpmnElement="p5_f13">
+<di:waypoint x="2445" y="782"/>
+<di:waypoint x="2552" y="782"/>
+</bpmndi:BPMNEdge>
+<bpmndi:BPMNEdge id="p5_f14_di" bpmnElement="p5_f14">
+<di:waypoint x="2445" y="918"/>
+<di:waypoint x="2578" y="918"/>
+<di:waypoint x="2578" y="808"/>
+</bpmndi:BPMNEdge>
+<bpmndi:BPMNEdge id="p5_f15_di" bpmnElement="p5_f15">
+<di:waypoint x="2602" y="782"/>
+<di:waypoint x="2768" y="782"/>
+</bpmndi:BPMNEdge>
+<bpmndi:BPMNEdge id="p5_f16_di" bpmnElement="p5_f16">
+<di:waypoint x="2818" y="782"/>
+<di:waypoint x="2840" y="782"/>
+<di:waypoint x="2840" y="1052"/>
+<di:waypoint x="3140" y="1052"/>
+<bpmndi:BPMNLabel><dc:Bounds x="2824" y="764" width="30" height="14"/></bpmndi:BPMNLabel>
+</bpmndi:BPMNEdge>
+<bpmndi:BPMNEdge id="p5_f17_di" bpmnElement="p5_f17">
+<di:waypoint x="2792" y="808"/>
+<di:waypoint x="2792" y="918"/>
+<di:waypoint x="2925" y="918"/>
+<bpmndi:BPMNLabel><dc:Bounds x="2798" y="812" width="30" height="14"/></bpmndi:BPMNLabel>
+</bpmndi:BPMNEdge>
+<bpmndi:BPMNEdge id="p5_f18_di" bpmnElement="p5_f18">
+<di:waypoint x="3090" y="918"/>
+<di:waypoint x="3112" y="918"/>
+<di:waypoint x="3112" y="1052"/>
+<di:waypoint x="3140" y="1052"/>
+</bpmndi:BPMNEdge>
+<bpmndi:BPMNEdge id="p5_f19_di" bpmnElement="p5_f19">
+<di:waypoint x="3305" y="1052"/>
+<di:waypoint x="3420" y="1052"/>
+</bpmndi:BPMNEdge>
+<bpmndi:BPMNEdge id="p5_a1_as_di" bpmnElement="p5_a1_as"><di:waypoint x="858" y="290"/><di:waypoint x="560" y="322"/></bpmndi:BPMNEdge>
+</bpmndi:BPMNPlane></bpmndi:BPMNDiagram></bpmn:definitions>

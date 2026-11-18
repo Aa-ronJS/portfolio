@@ -1,0 +1,308 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<bpmn:definitions xmlns:bpmn="http://www.omg.org/spec/BPMN/20100524/MODEL" xmlns:bpmndi="http://www.omg.org/spec/BPMN/20100524/DI" xmlns:dc="http://www.omg.org/spec/DD/20100524/DC" xmlns:di="http://www.omg.org/spec/DD/20100524/DI" id="p8_defs" targetNamespace="http://example.com/od-radio">
+<bpmn:collaboration id="p8_collab">
+<bpmn:participant id="p8_pool" name="Emergency communications" processRef="p8_process"/>
+</bpmn:collaboration>
+<bpmn:process id="p8_process" name="Emergency response and backup comms" isExecutable="false">
+<bpmn:laneSet id="p8_ls">
+<bpmn:lane id="p8_W" name="Underground worker">
+<bpmn:flowNodeRef>p8_s</bpmn:flowNodeRef>
+<bpmn:flowNodeRef>p8_pr</bpmn:flowNodeRef>
+</bpmn:lane>
+<bpmn:lane id="p8_R" name="Field radio">
+<bpmn:flowNodeRef>p8_al</bpmn:flowNodeRef>
+</bpmn:lane>
+<bpmn:lane id="p8_D" name="Control room">
+<bpmn:flowNodeRef>p8_alm</bpmn:flowNodeRef>
+<bpmn:flowNodeRef>p8_act</bpmn:flowNodeRef>
+<bpmn:flowNodeRef>p8_glf</bpmn:flowNodeRef>
+<bpmn:flowNodeRef>p8_man</bpmn:flowNodeRef>
+<bpmn:flowNodeRef>p8_gend</bpmn:flowNodeRef>
+<bpmn:flowNodeRef>p8_e</bpmn:flowNodeRef>
+</bpmn:lane>
+<bpmn:lane id="p8_E" name="ERT / mines rescue">
+<bpmn:flowNodeRef>p8_mob</bpmn:flowNodeRef>
+<bpmn:flowNodeRef>p8_res</bpmn:flowNodeRef>
+</bpmn:lane>
+<bpmn:lane id="p8_B" name="Backup comms systems">
+<bpmn:flowNodeRef>p8_gb</bpmn:flowNodeRef>
+<bpmn:flowNodeRef>p8_tte</bpmn:flowNodeRef>
+<bpmn:flowNodeRef>p8_ref</bpmn:flowNodeRef>
+<bpmn:flowNodeRef>p8_ph</bpmn:flowNodeRef>
+<bpmn:flowNodeRef>p8_st</bpmn:flowNodeRef>
+<bpmn:flowNodeRef>p8_self</bpmn:flowNodeRef>
+<bpmn:flowNodeRef>p8_gbm</bpmn:flowNodeRef>
+</bpmn:lane>
+</bpmn:laneSet>
+<bpmn:startEvent id="p8_s" name="Worker in danger (or man-down tilt trips)">
+<bpmn:outgoing>p8_f0</bpmn:outgoing>
+</bpmn:startEvent>
+<bpmn:userTask id="p8_pr" name="Press the orange emergency button">
+<bpmn:incoming>p8_f0</bpmn:incoming>
+<bpmn:outgoing>p8_f1</bpmn:outgoing>
+</bpmn:userTask>
+<bpmn:serviceTask id="p8_al" name="Radio sends emergency: pre-empts channel, radio ID, last location, hot mic">
+<bpmn:incoming>p8_f1</bpmn:incoming>
+<bpmn:outgoing>p8_f2</bpmn:outgoing>
+</bpmn:serviceTask>
+<bpmn:serviceTask id="p8_alm" name="Console alarm; tracking display shows location">
+<bpmn:incoming>p8_f2</bpmn:incoming>
+<bpmn:outgoing>p8_f3</bpmn:outgoing>
+</bpmn:serviceTask>
+<bpmn:userTask id="p8_act" name="Declare emergency; broadcast on all talkgroups; call out ERT">
+<bpmn:incoming>p8_f3</bpmn:incoming>
+<bpmn:outgoing>p8_f4</bpmn:outgoing>
+</bpmn:userTask>
+<bpmn:manualTask id="p8_mob" name="ERT / mines rescue mobilise">
+<bpmn:incoming>p8_f4</bpmn:incoming>
+<bpmn:outgoing>p8_f5</bpmn:outgoing>
+</bpmn:manualTask>
+<bpmn:exclusiveGateway id="p8_glf" name="Leaky feeder working in the incident area?">
+<bpmn:incoming>p8_f5</bpmn:incoming>
+<bpmn:outgoing>p8_f6</bpmn:outgoing>
+<bpmn:outgoing>p8_f7</bpmn:outgoing>
+</bpmn:exclusiveGateway>
+<bpmn:userTask id="p8_man" name="Manage the incident over radio">
+<bpmn:incoming>p8_f6</bpmn:incoming>
+<bpmn:outgoing>p8_f19</bpmn:outgoing>
+</bpmn:userTask>
+<bpmn:exclusiveGateway id="p8_gb" name="Which backup reaches them?">
+<bpmn:incoming>p8_f7</bpmn:incoming>
+<bpmn:outgoing>p8_f8</bpmn:outgoing>
+<bpmn:outgoing>p8_f9</bpmn:outgoing>
+<bpmn:outgoing>p8_f10</bpmn:outgoing>
+<bpmn:outgoing>p8_f11</bpmn:outgoing>
+<bpmn:outgoing>p8_f12</bpmn:outgoing>
+</bpmn:exclusiveGateway>
+<bpmn:serviceTask id="p8_tte" name="Through-the-earth paging: surface VLF loop → cap-lamp receivers flash + text">
+<bpmn:incoming>p8_f8</bpmn:incoming>
+<bpmn:outgoing>p8_f13</bpmn:outgoing>
+</bpmn:serviceTask>
+<bpmn:serviceTask id="p8_ref" name="Refuge chamber: hard-wired / fibre phone, own feeder tail, battery radio">
+<bpmn:incoming>p8_f9</bpmn:incoming>
+<bpmn:outgoing>p8_f14</bpmn:outgoing>
+</bpmn:serviceTask>
+<bpmn:serviceTask id="p8_ph" name="Fixed underground phones (crib rooms, workshops, shaft and pump stations)">
+<bpmn:incoming>p8_f10</bpmn:incoming>
+<bpmn:outgoing>p8_f15</bpmn:outgoing>
+</bpmn:serviceTask>
+<bpmn:serviceTask id="p8_st" name="Stench gas into ventilation and compressed air (evacuate)">
+<bpmn:incoming>p8_f11</bpmn:incoming>
+<bpmn:outgoing>p8_f16</bpmn:outgoing>
+</bpmn:serviceTask>
+<bpmn:manualTask id="p8_self" name="Nothing reaches them: self-escape or enter refuge per TARP">
+<bpmn:incoming>p8_f12</bpmn:incoming>
+<bpmn:outgoing>p8_f17</bpmn:outgoing>
+</bpmn:manualTask>
+<bpmn:exclusiveGateway id="p8_gbm" name="">
+<bpmn:incoming>p8_f13</bpmn:incoming>
+<bpmn:incoming>p8_f14</bpmn:incoming>
+<bpmn:incoming>p8_f15</bpmn:incoming>
+<bpmn:incoming>p8_f16</bpmn:incoming>
+<bpmn:incoming>p8_f17</bpmn:incoming>
+<bpmn:outgoing>p8_f18</bpmn:outgoing>
+</bpmn:exclusiveGateway>
+<bpmn:manualTask id="p8_res" name="Locate and recover workers using last tracked location">
+<bpmn:incoming>p8_f18</bpmn:incoming>
+<bpmn:outgoing>p8_f20</bpmn:outgoing>
+</bpmn:manualTask>
+<bpmn:exclusiveGateway id="p8_gend" name="">
+<bpmn:incoming>p8_f19</bpmn:incoming>
+<bpmn:incoming>p8_f20</bpmn:incoming>
+<bpmn:outgoing>p8_f21</bpmn:outgoing>
+</bpmn:exclusiveGateway>
+<bpmn:endEvent id="p8_e" name="Incident resolved; logs and recordings reviewed">
+<bpmn:incoming>p8_f21</bpmn:incoming>
+</bpmn:endEvent>
+<bpmn:sequenceFlow id="p8_f0" name="" sourceRef="p8_s" targetRef="p8_pr"/>
+<bpmn:sequenceFlow id="p8_f1" name="" sourceRef="p8_pr" targetRef="p8_al"/>
+<bpmn:sequenceFlow id="p8_f2" name="" sourceRef="p8_al" targetRef="p8_alm"/>
+<bpmn:sequenceFlow id="p8_f3" name="" sourceRef="p8_alm" targetRef="p8_act"/>
+<bpmn:sequenceFlow id="p8_f4" name="" sourceRef="p8_act" targetRef="p8_mob"/>
+<bpmn:sequenceFlow id="p8_f5" name="" sourceRef="p8_mob" targetRef="p8_glf"/>
+<bpmn:sequenceFlow id="p8_f6" name="Yes" sourceRef="p8_glf" targetRef="p8_man"/>
+<bpmn:sequenceFlow id="p8_f7" name="No" sourceRef="p8_glf" targetRef="p8_gb"/>
+<bpmn:sequenceFlow id="p8_f8" name="TTE" sourceRef="p8_gb" targetRef="p8_tte"/>
+<bpmn:sequenceFlow id="p8_f9" name="In refuge" sourceRef="p8_gb" targetRef="p8_ref"/>
+<bpmn:sequenceFlow id="p8_f10" name="Near a phone" sourceRef="p8_gb" targetRef="p8_ph"/>
+<bpmn:sequenceFlow id="p8_f11" name="Mass alert" sourceRef="p8_gb" targetRef="p8_st"/>
+<bpmn:sequenceFlow id="p8_f12" name="None" sourceRef="p8_gb" targetRef="p8_self"/>
+<bpmn:sequenceFlow id="p8_f13" name="" sourceRef="p8_tte" targetRef="p8_gbm"/>
+<bpmn:sequenceFlow id="p8_f14" name="" sourceRef="p8_ref" targetRef="p8_gbm"/>
+<bpmn:sequenceFlow id="p8_f15" name="" sourceRef="p8_ph" targetRef="p8_gbm"/>
+<bpmn:sequenceFlow id="p8_f16" name="" sourceRef="p8_st" targetRef="p8_gbm"/>
+<bpmn:sequenceFlow id="p8_f17" name="" sourceRef="p8_self" targetRef="p8_gbm"/>
+<bpmn:sequenceFlow id="p8_f18" name="" sourceRef="p8_gbm" targetRef="p8_res"/>
+<bpmn:sequenceFlow id="p8_f19" name="" sourceRef="p8_man" targetRef="p8_gend"/>
+<bpmn:sequenceFlow id="p8_f20" name="" sourceRef="p8_res" targetRef="p8_gend"/>
+<bpmn:sequenceFlow id="p8_f21" name="" sourceRef="p8_gend" targetRef="p8_e"/>
+</bpmn:process>
+<bpmndi:BPMNDiagram id="p8_dia"><bpmndi:BPMNPlane id="p8_plane" bpmnElement="p8_collab">
+<bpmndi:BPMNShape id="p8_pool_di" bpmnElement="p8_pool" isHorizontal="true"><dc:Bounds x="40" y="40" width="2905" height="1215"/>
+</bpmndi:BPMNShape>
+<bpmndi:BPMNShape id="p8_W_di" bpmnElement="p8_W" isHorizontal="true"><dc:Bounds x="70" y="40" width="2875" height="135"/>
+</bpmndi:BPMNShape>
+<bpmndi:BPMNShape id="p8_R_di" bpmnElement="p8_R" isHorizontal="true"><dc:Bounds x="70" y="175" width="2875" height="135"/>
+</bpmndi:BPMNShape>
+<bpmndi:BPMNShape id="p8_D_di" bpmnElement="p8_D" isHorizontal="true"><dc:Bounds x="70" y="310" width="2875" height="135"/>
+</bpmndi:BPMNShape>
+<bpmndi:BPMNShape id="p8_E_di" bpmnElement="p8_E" isHorizontal="true"><dc:Bounds x="70" y="445" width="2875" height="135"/>
+</bpmndi:BPMNShape>
+<bpmndi:BPMNShape id="p8_B_di" bpmnElement="p8_B" isHorizontal="true"><dc:Bounds x="70" y="580" width="2875" height="675"/>
+</bpmndi:BPMNShape>
+<bpmndi:BPMNShape id="p8_s_di" bpmnElement="p8_s"><dc:Bounds x="194" y="90" width="36" height="36"/>
+<bpmndi:BPMNLabel><dc:Bounds x="148" y="130" width="130" height="40"/></bpmndi:BPMNLabel>
+</bpmndi:BPMNShape>
+<bpmndi:BPMNShape id="p8_pr_di" bpmnElement="p8_pr"><dc:Bounds x="345" y="60" width="165" height="96"/>
+</bpmndi:BPMNShape>
+<bpmndi:BPMNShape id="p8_al_di" bpmnElement="p8_al"><dc:Bounds x="560" y="194" width="165" height="96"/>
+</bpmndi:BPMNShape>
+<bpmndi:BPMNShape id="p8_alm_di" bpmnElement="p8_alm"><dc:Bounds x="775" y="330" width="165" height="96"/>
+</bpmndi:BPMNShape>
+<bpmndi:BPMNShape id="p8_act_di" bpmnElement="p8_act"><dc:Bounds x="990" y="330" width="165" height="96"/>
+</bpmndi:BPMNShape>
+<bpmndi:BPMNShape id="p8_mob_di" bpmnElement="p8_mob"><dc:Bounds x="1205" y="464" width="165" height="96"/>
+</bpmndi:BPMNShape>
+<bpmndi:BPMNShape id="p8_glf_di" bpmnElement="p8_glf" isMarkerVisible="true"><dc:Bounds x="1478" y="352" width="50" height="50"/>
+<bpmndi:BPMNLabel><dc:Bounds x="1352" y="316" width="122" height="40"/></bpmndi:BPMNLabel>
+</bpmndi:BPMNShape>
+<bpmndi:BPMNShape id="p8_man_di" bpmnElement="p8_man"><dc:Bounds x="1635" y="330" width="165" height="96"/>
+</bpmndi:BPMNShape>
+<bpmndi:BPMNShape id="p8_gb_di" bpmnElement="p8_gb" isMarkerVisible="true"><dc:Bounds x="1692" y="622" width="50" height="50"/>
+<bpmndi:BPMNLabel><dc:Bounds x="1568" y="586" width="122" height="40"/></bpmndi:BPMNLabel>
+</bpmndi:BPMNShape>
+<bpmndi:BPMNShape id="p8_tte_di" bpmnElement="p8_tte"><dc:Bounds x="1850" y="600" width="165" height="96"/>
+</bpmndi:BPMNShape>
+<bpmndi:BPMNShape id="p8_ref_di" bpmnElement="p8_ref"><dc:Bounds x="1850" y="734" width="165" height="96"/>
+</bpmndi:BPMNShape>
+<bpmndi:BPMNShape id="p8_ph_di" bpmnElement="p8_ph"><dc:Bounds x="1850" y="870" width="165" height="96"/>
+</bpmndi:BPMNShape>
+<bpmndi:BPMNShape id="p8_st_di" bpmnElement="p8_st"><dc:Bounds x="1850" y="1004" width="165" height="96"/>
+</bpmndi:BPMNShape>
+<bpmndi:BPMNShape id="p8_self_di" bpmnElement="p8_self"><dc:Bounds x="1850" y="1140" width="165" height="96"/>
+</bpmndi:BPMNShape>
+<bpmndi:BPMNShape id="p8_gbm_di" bpmnElement="p8_gbm" isMarkerVisible="true"><dc:Bounds x="2122" y="622" width="50" height="50"/>
+<bpmndi:BPMNLabel><dc:Bounds x="1998" y="586" width="122" height="40"/></bpmndi:BPMNLabel>
+</bpmndi:BPMNShape>
+<bpmndi:BPMNShape id="p8_res_di" bpmnElement="p8_res"><dc:Bounds x="2280" y="464" width="165" height="96"/>
+</bpmndi:BPMNShape>
+<bpmndi:BPMNShape id="p8_gend_di" bpmnElement="p8_gend" isMarkerVisible="true"><dc:Bounds x="2552" y="352" width="50" height="50"/>
+<bpmndi:BPMNLabel><dc:Bounds x="2428" y="316" width="122" height="40"/></bpmndi:BPMNLabel>
+</bpmndi:BPMNShape>
+<bpmndi:BPMNShape id="p8_e_di" bpmnElement="p8_e"><dc:Bounds x="2774" y="360" width="36" height="36"/>
+<bpmndi:BPMNLabel><dc:Bounds x="2728" y="400" width="130" height="40"/></bpmndi:BPMNLabel>
+</bpmndi:BPMNShape>
+<bpmndi:BPMNEdge id="p8_f0_di" bpmnElement="p8_f0">
+<di:waypoint x="230" y="108"/>
+<di:waypoint x="345" y="108"/>
+</bpmndi:BPMNEdge>
+<bpmndi:BPMNEdge id="p8_f1_di" bpmnElement="p8_f1">
+<di:waypoint x="510" y="108"/>
+<di:waypoint x="532" y="108"/>
+<di:waypoint x="532" y="242"/>
+<di:waypoint x="560" y="242"/>
+</bpmndi:BPMNEdge>
+<bpmndi:BPMNEdge id="p8_f2_di" bpmnElement="p8_f2">
+<di:waypoint x="725" y="242"/>
+<di:waypoint x="747" y="242"/>
+<di:waypoint x="747" y="378"/>
+<di:waypoint x="775" y="378"/>
+</bpmndi:BPMNEdge>
+<bpmndi:BPMNEdge id="p8_f3_di" bpmnElement="p8_f3">
+<di:waypoint x="940" y="378"/>
+<di:waypoint x="990" y="378"/>
+</bpmndi:BPMNEdge>
+<bpmndi:BPMNEdge id="p8_f4_di" bpmnElement="p8_f4">
+<di:waypoint x="1155" y="378"/>
+<di:waypoint x="1177" y="378"/>
+<di:waypoint x="1177" y="512"/>
+<di:waypoint x="1205" y="512"/>
+</bpmndi:BPMNEdge>
+<bpmndi:BPMNEdge id="p8_f5_di" bpmnElement="p8_f5">
+<di:waypoint x="1370" y="512"/>
+<di:waypoint x="1502" y="512"/>
+<di:waypoint x="1502" y="402"/>
+</bpmndi:BPMNEdge>
+<bpmndi:BPMNEdge id="p8_f6_di" bpmnElement="p8_f6">
+<di:waypoint x="1528" y="378"/>
+<di:waypoint x="1635" y="378"/>
+<bpmndi:BPMNLabel><dc:Bounds x="1534" y="360" width="30" height="14"/></bpmndi:BPMNLabel>
+</bpmndi:BPMNEdge>
+<bpmndi:BPMNEdge id="p8_f7_di" bpmnElement="p8_f7">
+<di:waypoint x="1502" y="402"/>
+<di:waypoint x="1502" y="648"/>
+<di:waypoint x="1692" y="648"/>
+<bpmndi:BPMNLabel><dc:Bounds x="1508" y="406" width="30" height="14"/></bpmndi:BPMNLabel>
+</bpmndi:BPMNEdge>
+<bpmndi:BPMNEdge id="p8_f8_di" bpmnElement="p8_f8">
+<di:waypoint x="1742" y="648"/>
+<di:waypoint x="1850" y="648"/>
+<bpmndi:BPMNLabel><dc:Bounds x="1748" y="630" width="30" height="14"/></bpmndi:BPMNLabel>
+</bpmndi:BPMNEdge>
+<bpmndi:BPMNEdge id="p8_f9_di" bpmnElement="p8_f9">
+<di:waypoint x="1718" y="672"/>
+<di:waypoint x="1718" y="782"/>
+<di:waypoint x="1850" y="782"/>
+<bpmndi:BPMNLabel><dc:Bounds x="1724" y="764" width="59" height="14"/></bpmndi:BPMNLabel>
+</bpmndi:BPMNEdge>
+<bpmndi:BPMNEdge id="p8_f10_di" bpmnElement="p8_f10">
+<di:waypoint x="1718" y="672"/>
+<di:waypoint x="1718" y="918"/>
+<di:waypoint x="1850" y="918"/>
+<bpmndi:BPMNLabel><dc:Bounds x="1724" y="900" width="79" height="14"/></bpmndi:BPMNLabel>
+</bpmndi:BPMNEdge>
+<bpmndi:BPMNEdge id="p8_f11_di" bpmnElement="p8_f11">
+<di:waypoint x="1718" y="672"/>
+<di:waypoint x="1718" y="1052"/>
+<di:waypoint x="1850" y="1052"/>
+<bpmndi:BPMNLabel><dc:Bounds x="1724" y="1034" width="66" height="14"/></bpmndi:BPMNLabel>
+</bpmndi:BPMNEdge>
+<bpmndi:BPMNEdge id="p8_f12_di" bpmnElement="p8_f12">
+<di:waypoint x="1718" y="672"/>
+<di:waypoint x="1718" y="1188"/>
+<di:waypoint x="1850" y="1188"/>
+<bpmndi:BPMNLabel><dc:Bounds x="1724" y="1170" width="30" height="14"/></bpmndi:BPMNLabel>
+</bpmndi:BPMNEdge>
+<bpmndi:BPMNEdge id="p8_f13_di" bpmnElement="p8_f13">
+<di:waypoint x="2015" y="648"/>
+<di:waypoint x="2122" y="648"/>
+</bpmndi:BPMNEdge>
+<bpmndi:BPMNEdge id="p8_f14_di" bpmnElement="p8_f14">
+<di:waypoint x="2015" y="782"/>
+<di:waypoint x="2148" y="782"/>
+<di:waypoint x="2148" y="672"/>
+</bpmndi:BPMNEdge>
+<bpmndi:BPMNEdge id="p8_f15_di" bpmnElement="p8_f15">
+<di:waypoint x="2015" y="918"/>
+<di:waypoint x="2148" y="918"/>
+<di:waypoint x="2148" y="672"/>
+</bpmndi:BPMNEdge>
+<bpmndi:BPMNEdge id="p8_f16_di" bpmnElement="p8_f16">
+<di:waypoint x="2015" y="1052"/>
+<di:waypoint x="2148" y="1052"/>
+<di:waypoint x="2148" y="672"/>
+</bpmndi:BPMNEdge>
+<bpmndi:BPMNEdge id="p8_f17_di" bpmnElement="p8_f17">
+<di:waypoint x="2015" y="1188"/>
+<di:waypoint x="2148" y="1188"/>
+<di:waypoint x="2148" y="672"/>
+</bpmndi:BPMNEdge>
+<bpmndi:BPMNEdge id="p8_f18_di" bpmnElement="p8_f18">
+<di:waypoint x="2148" y="622"/>
+<di:waypoint x="2148" y="512"/>
+<di:waypoint x="2280" y="512"/>
+</bpmndi:BPMNEdge>
+<bpmndi:BPMNEdge id="p8_f19_di" bpmnElement="p8_f19">
+<di:waypoint x="1800" y="378"/>
+<di:waypoint x="2552" y="378"/>
+</bpmndi:BPMNEdge>
+<bpmndi:BPMNEdge id="p8_f20_di" bpmnElement="p8_f20">
+<di:waypoint x="2445" y="512"/>
+<di:waypoint x="2578" y="512"/>
+<di:waypoint x="2578" y="402"/>
+</bpmndi:BPMNEdge>
+<bpmndi:BPMNEdge id="p8_f21_di" bpmnElement="p8_f21">
+<di:waypoint x="2602" y="378"/>
+<di:waypoint x="2774" y="378"/>
+</bpmndi:BPMNEdge>
+</bpmndi:BPMNPlane></bpmndi:BPMNDiagram></bpmn:definitions>

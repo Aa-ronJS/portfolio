@@ -1,0 +1,379 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<bpmn:definitions xmlns:bpmn="http://www.omg.org/spec/BPMN/20100524/MODEL" xmlns:bpmndi="http://www.omg.org/spec/BPMN/20100524/DI" xmlns:dc="http://www.omg.org/spec/DD/20100524/DC" xmlns:di="http://www.omg.org/spec/DD/20100524/DI" id="p7_defs" targetNamespace="http://example.com/od-radio">
+<bpmn:collaboration id="p7_collab">
+<bpmn:participant id="p7_pool" name="Comms technician fault finding" processRef="p7_process"/>
+</bpmn:collaboration>
+<bpmn:process id="p7_process" name="Fault finding" isExecutable="false">
+<bpmn:laneSet id="p7_ls">
+<bpmn:lane id="p7_T" name="Comms technician">
+<bpmn:flowNodeRef>p7_s</bpmn:flowNodeRef>
+<bpmn:flowNodeRef>p7_g1</bpmn:flowNodeRef>
+<bpmn:flowNodeRef>p7_one</bpmn:flowNodeRef>
+<bpmn:flowNodeRef>p7_g2</bpmn:flowNodeRef>
+<bpmn:flowNodeRef>p7_head</bpmn:flowNodeRef>
+<bpmn:flowNodeRef>p7_walk</bpmn:flowNodeRef>
+<bpmn:flowNodeRef>p7_gc</bpmn:flowNodeRef>
+<bpmn:flowNodeRef>p7_gfm</bpmn:flowNodeRef>
+<bpmn:flowNodeRef>p7_rt</bpmn:flowNodeRef>
+<bpmn:flowNodeRef>p7_gok</bpmn:flowNodeRef>
+<bpmn:flowNodeRef>p7_ven</bpmn:flowNodeRef>
+<bpmn:flowNodeRef>p7_etmp</bpmn:flowNodeRef>
+</bpmn:lane>
+<bpmn:lane id="p7_N" name="Network management system">
+<bpmn:flowNodeRef>p7_nms</bpmn:flowNodeRef>
+</bpmn:lane>
+<bpmn:lane id="p7_U" name="Underground equipment">
+<bpmn:flowNodeRef>p7_cut</bpmn:flowNodeRef>
+<bpmn:flowNodeRef>p7_wat</bpmn:flowNodeRef>
+<bpmn:flowNodeRef>p7_amp</bpmn:flowNodeRef>
+<bpmn:flowNodeRef>p7_pwr</bpmn:flowNodeRef>
+<bpmn:flowNodeRef>p7_fib</bpmn:flowNodeRef>
+<bpmn:flowNodeRef>p7_osc</bpmn:flowNodeRef>
+<bpmn:flowNodeRef>p7_gfx</bpmn:flowNodeRef>
+</bpmn:lane>
+<bpmn:lane id="p7_D" name="Control room">
+<bpmn:flowNodeRef>p7_cl</bpmn:flowNodeRef>
+<bpmn:flowNodeRef>p7_end</bpmn:flowNodeRef>
+</bpmn:lane>
+</bpmn:laneSet>
+<bpmn:startEvent id="p7_s" name="Fault reported (radio, NMS alarm, dead zone)">
+<bpmn:outgoing>p7_f0</bpmn:outgoing>
+<bpmn:messageEventDefinition id="p7_s_med"/>
+</bpmn:startEvent>
+<bpmn:exclusiveGateway id="p7_g1" name="Only one radio affected?">
+<bpmn:incoming>p7_f0</bpmn:incoming>
+<bpmn:outgoing>p7_f1</bpmn:outgoing>
+<bpmn:outgoing>p7_f2</bpmn:outgoing>
+</bpmn:exclusiveGateway>
+<bpmn:manualTask id="p7_one" name="Swap radio; check battery, antenna, channel; reprogram codeplug">
+<bpmn:incoming>p7_f1</bpmn:incoming>
+<bpmn:outgoing>p7_f20</bpmn:outgoing>
+</bpmn:manualTask>
+<bpmn:exclusiveGateway id="p7_g2" name="Whole mine down?">
+<bpmn:incoming>p7_f2</bpmn:incoming>
+<bpmn:outgoing>p7_f3</bpmn:outgoing>
+<bpmn:outgoing>p7_f4</bpmn:outgoing>
+</bpmn:exclusiveGateway>
+<bpmn:manualTask id="p7_head" name="Check headend: repeaters, combiner, duplexer, headend amp, UPS, gateway">
+<bpmn:incoming>p7_f3</bpmn:incoming>
+<bpmn:outgoing>p7_f21</bpmn:outgoing>
+</bpmn:manualTask>
+<bpmn:serviceTask id="p7_nms" name="NMS shows the last amplifier still reporting OK">
+<bpmn:incoming>p7_f4</bpmn:incoming>
+<bpmn:outgoing>p7_f5</bpmn:outgoing>
+</bpmn:serviceTask>
+<bpmn:manualTask id="p7_walk" name="Walk the cable from the last good amp with signal meter / spectrum analyser">
+<bpmn:incoming>p7_f5</bpmn:incoming>
+<bpmn:outgoing>p7_f6</bpmn:outgoing>
+</bpmn:manualTask>
+<bpmn:exclusiveGateway id="p7_gc" name="What is the cause?">
+<bpmn:incoming>p7_f6</bpmn:incoming>
+<bpmn:outgoing>p7_f7</bpmn:outgoing>
+<bpmn:outgoing>p7_f8</bpmn:outgoing>
+<bpmn:outgoing>p7_f9</bpmn:outgoing>
+<bpmn:outgoing>p7_f10</bpmn:outgoing>
+<bpmn:outgoing>p7_f11</bpmn:outgoing>
+<bpmn:outgoing>p7_f12</bpmn:outgoing>
+</bpmn:exclusiveGateway>
+<bpmn:manualTask id="p7_cut" name="Cable cut / crushed: splice or new length + 2 N-connectors; re-hang">
+<bpmn:incoming>p7_f7</bpmn:incoming>
+<bpmn:outgoing>p7_f13</bpmn:outgoing>
+</bpmn:manualTask>
+<bpmn:manualTask id="p7_wat" name="Water in connector / amp: cut back, re-terminate, re-seal">
+<bpmn:incoming>p7_f8</bpmn:incoming>
+<bpmn:outgoing>p7_f14</bpmn:outgoing>
+</bpmn:manualTask>
+<bpmn:manualTask id="p7_amp" name="Dead amp / blown fuse: find the downstream short, then swap amp">
+<bpmn:incoming>p7_f9</bpmn:incoming>
+<bpmn:outgoing>p7_f15</bpmn:outgoing>
+</bpmn:manualTask>
+<bpmn:manualTask id="p7_pwr" name="PSU / mains / UPS failure: electrician restores supply; new batteries">
+<bpmn:incoming>p7_f10</bpmn:incoming>
+<bpmn:outgoing>p7_f16</bpmn:outgoing>
+</bpmn:manualTask>
+<bpmn:manualTask id="p7_fib" name="Fibre node or switch fault: swap module; OTDR test; re-splice">
+<bpmn:incoming>p7_f11</bpmn:incoming>
+<bpmn:outgoing>p7_f17</bpmn:outgoing>
+</bpmn:manualTask>
+<bpmn:manualTask id="p7_osc" name="Amp oscillation / overload: fit missing terminator; rebalance gains">
+<bpmn:incoming>p7_f12</bpmn:incoming>
+<bpmn:outgoing>p7_f18</bpmn:outgoing>
+</bpmn:manualTask>
+<bpmn:exclusiveGateway id="p7_gfx" name="">
+<bpmn:incoming>p7_f13</bpmn:incoming>
+<bpmn:incoming>p7_f14</bpmn:incoming>
+<bpmn:incoming>p7_f15</bpmn:incoming>
+<bpmn:incoming>p7_f16</bpmn:incoming>
+<bpmn:incoming>p7_f17</bpmn:incoming>
+<bpmn:incoming>p7_f18</bpmn:incoming>
+<bpmn:outgoing>p7_f19</bpmn:outgoing>
+</bpmn:exclusiveGateway>
+<bpmn:exclusiveGateway id="p7_gfm" name="">
+<bpmn:incoming>p7_f19</bpmn:incoming>
+<bpmn:incoming>p7_f20</bpmn:incoming>
+<bpmn:incoming>p7_f21</bpmn:incoming>
+<bpmn:outgoing>p7_f22</bpmn:outgoing>
+</bpmn:exclusiveGateway>
+<bpmn:manualTask id="p7_rt" name="Radio check from the far end of the section">
+<bpmn:incoming>p7_f22</bpmn:incoming>
+<bpmn:outgoing>p7_f23</bpmn:outgoing>
+</bpmn:manualTask>
+<bpmn:exclusiveGateway id="p7_gok" name="Fault cleared?">
+<bpmn:incoming>p7_f23</bpmn:incoming>
+<bpmn:outgoing>p7_f24</bpmn:outgoing>
+<bpmn:outgoing>p7_f25</bpmn:outgoing>
+</bpmn:exclusiveGateway>
+<bpmn:manualTask id="p7_ven" name="Escalate to vendor; deploy portable repeater as a stop-gap">
+<bpmn:incoming>p7_f25</bpmn:incoming>
+<bpmn:outgoing>p7_f26</bpmn:outgoing>
+</bpmn:manualTask>
+<bpmn:endEvent id="p7_etmp" name="Temporary coverage in place">
+<bpmn:incoming>p7_f26</bpmn:incoming>
+</bpmn:endEvent>
+<bpmn:userTask id="p7_cl" name="Update coverage map; close fault; tell crews">
+<bpmn:incoming>p7_f24</bpmn:incoming>
+<bpmn:outgoing>p7_f27</bpmn:outgoing>
+</bpmn:userTask>
+<bpmn:endEvent id="p7_end" name="Fault closed">
+<bpmn:incoming>p7_f27</bpmn:incoming>
+</bpmn:endEvent>
+<bpmn:sequenceFlow id="p7_f0" name="" sourceRef="p7_s" targetRef="p7_g1"/>
+<bpmn:sequenceFlow id="p7_f1" name="Yes" sourceRef="p7_g1" targetRef="p7_one"/>
+<bpmn:sequenceFlow id="p7_f2" name="No" sourceRef="p7_g1" targetRef="p7_g2"/>
+<bpmn:sequenceFlow id="p7_f3" name="Yes" sourceRef="p7_g2" targetRef="p7_head"/>
+<bpmn:sequenceFlow id="p7_f4" name="No: one area" sourceRef="p7_g2" targetRef="p7_nms"/>
+<bpmn:sequenceFlow id="p7_f5" name="" sourceRef="p7_nms" targetRef="p7_walk"/>
+<bpmn:sequenceFlow id="p7_f6" name="" sourceRef="p7_walk" targetRef="p7_gc"/>
+<bpmn:sequenceFlow id="p7_f7" name="Cut" sourceRef="p7_gc" targetRef="p7_cut"/>
+<bpmn:sequenceFlow id="p7_f8" name="Water" sourceRef="p7_gc" targetRef="p7_wat"/>
+<bpmn:sequenceFlow id="p7_f9" name="Amp" sourceRef="p7_gc" targetRef="p7_amp"/>
+<bpmn:sequenceFlow id="p7_f10" name="Power" sourceRef="p7_gc" targetRef="p7_pwr"/>
+<bpmn:sequenceFlow id="p7_f11" name="Fibre / switch" sourceRef="p7_gc" targetRef="p7_fib"/>
+<bpmn:sequenceFlow id="p7_f12" name="Oscillation" sourceRef="p7_gc" targetRef="p7_osc"/>
+<bpmn:sequenceFlow id="p7_f13" name="" sourceRef="p7_cut" targetRef="p7_gfx"/>
+<bpmn:sequenceFlow id="p7_f14" name="" sourceRef="p7_wat" targetRef="p7_gfx"/>
+<bpmn:sequenceFlow id="p7_f15" name="" sourceRef="p7_amp" targetRef="p7_gfx"/>
+<bpmn:sequenceFlow id="p7_f16" name="" sourceRef="p7_pwr" targetRef="p7_gfx"/>
+<bpmn:sequenceFlow id="p7_f17" name="" sourceRef="p7_fib" targetRef="p7_gfx"/>
+<bpmn:sequenceFlow id="p7_f18" name="" sourceRef="p7_osc" targetRef="p7_gfx"/>
+<bpmn:sequenceFlow id="p7_f19" name="" sourceRef="p7_gfx" targetRef="p7_gfm"/>
+<bpmn:sequenceFlow id="p7_f20" name="" sourceRef="p7_one" targetRef="p7_gfm"/>
+<bpmn:sequenceFlow id="p7_f21" name="" sourceRef="p7_head" targetRef="p7_gfm"/>
+<bpmn:sequenceFlow id="p7_f22" name="" sourceRef="p7_gfm" targetRef="p7_rt"/>
+<bpmn:sequenceFlow id="p7_f23" name="" sourceRef="p7_rt" targetRef="p7_gok"/>
+<bpmn:sequenceFlow id="p7_f24" name="Yes" sourceRef="p7_gok" targetRef="p7_cl"/>
+<bpmn:sequenceFlow id="p7_f25" name="No" sourceRef="p7_gok" targetRef="p7_ven"/>
+<bpmn:sequenceFlow id="p7_f26" name="" sourceRef="p7_ven" targetRef="p7_etmp"/>
+<bpmn:sequenceFlow id="p7_f27" name="" sourceRef="p7_cl" targetRef="p7_end"/>
+</bpmn:process>
+<bpmndi:BPMNDiagram id="p7_dia"><bpmndi:BPMNPlane id="p7_plane" bpmnElement="p7_collab">
+<bpmndi:BPMNShape id="p7_pool_di" bpmnElement="p7_pool" isHorizontal="true"><dc:Bounds x="40" y="40" width="2905" height="1485"/>
+</bpmndi:BPMNShape>
+<bpmndi:BPMNShape id="p7_T_di" bpmnElement="p7_T" isHorizontal="true"><dc:Bounds x="70" y="40" width="2875" height="405"/>
+</bpmndi:BPMNShape>
+<bpmndi:BPMNShape id="p7_N_di" bpmnElement="p7_N" isHorizontal="true"><dc:Bounds x="70" y="445" width="2875" height="135"/>
+</bpmndi:BPMNShape>
+<bpmndi:BPMNShape id="p7_U_di" bpmnElement="p7_U" isHorizontal="true"><dc:Bounds x="70" y="580" width="2875" height="810"/>
+</bpmndi:BPMNShape>
+<bpmndi:BPMNShape id="p7_D_di" bpmnElement="p7_D" isHorizontal="true"><dc:Bounds x="70" y="1390" width="2875" height="135"/>
+</bpmndi:BPMNShape>
+<bpmndi:BPMNShape id="p7_s_di" bpmnElement="p7_s"><dc:Bounds x="194" y="90" width="36" height="36"/>
+<bpmndi:BPMNLabel><dc:Bounds x="148" y="130" width="130" height="40"/></bpmndi:BPMNLabel>
+</bpmndi:BPMNShape>
+<bpmndi:BPMNShape id="p7_g1_di" bpmnElement="p7_g1" isMarkerVisible="true"><dc:Bounds x="402" y="82" width="50" height="50"/>
+<bpmndi:BPMNLabel><dc:Bounds x="278" y="46" width="122" height="40"/></bpmndi:BPMNLabel>
+</bpmndi:BPMNShape>
+<bpmndi:BPMNShape id="p7_one_di" bpmnElement="p7_one"><dc:Bounds x="560" y="330" width="165" height="96"/>
+</bpmndi:BPMNShape>
+<bpmndi:BPMNShape id="p7_g2_di" bpmnElement="p7_g2" isMarkerVisible="true"><dc:Bounds x="832" y="82" width="50" height="50"/>
+<bpmndi:BPMNLabel><dc:Bounds x="708" y="46" width="122" height="40"/></bpmndi:BPMNLabel>
+</bpmndi:BPMNShape>
+<bpmndi:BPMNShape id="p7_head_di" bpmnElement="p7_head"><dc:Bounds x="990" y="194" width="165" height="96"/>
+</bpmndi:BPMNShape>
+<bpmndi:BPMNShape id="p7_nms_di" bpmnElement="p7_nms"><dc:Bounds x="990" y="464" width="165" height="96"/>
+</bpmndi:BPMNShape>
+<bpmndi:BPMNShape id="p7_walk_di" bpmnElement="p7_walk"><dc:Bounds x="1205" y="60" width="165" height="96"/>
+</bpmndi:BPMNShape>
+<bpmndi:BPMNShape id="p7_gc_di" bpmnElement="p7_gc" isMarkerVisible="true"><dc:Bounds x="1478" y="82" width="50" height="50"/>
+<bpmndi:BPMNLabel><dc:Bounds x="1352" y="46" width="122" height="40"/></bpmndi:BPMNLabel>
+</bpmndi:BPMNShape>
+<bpmndi:BPMNShape id="p7_cut_di" bpmnElement="p7_cut"><dc:Bounds x="1635" y="600" width="165" height="96"/>
+</bpmndi:BPMNShape>
+<bpmndi:BPMNShape id="p7_wat_di" bpmnElement="p7_wat"><dc:Bounds x="1635" y="734" width="165" height="96"/>
+</bpmndi:BPMNShape>
+<bpmndi:BPMNShape id="p7_amp_di" bpmnElement="p7_amp"><dc:Bounds x="1635" y="870" width="165" height="96"/>
+</bpmndi:BPMNShape>
+<bpmndi:BPMNShape id="p7_pwr_di" bpmnElement="p7_pwr"><dc:Bounds x="1635" y="1004" width="165" height="96"/>
+</bpmndi:BPMNShape>
+<bpmndi:BPMNShape id="p7_fib_di" bpmnElement="p7_fib"><dc:Bounds x="1635" y="1140" width="165" height="96"/>
+</bpmndi:BPMNShape>
+<bpmndi:BPMNShape id="p7_osc_di" bpmnElement="p7_osc"><dc:Bounds x="1635" y="1274" width="165" height="96"/>
+</bpmndi:BPMNShape>
+<bpmndi:BPMNShape id="p7_gfx_di" bpmnElement="p7_gfx" isMarkerVisible="true"><dc:Bounds x="1908" y="622" width="50" height="50"/>
+<bpmndi:BPMNLabel><dc:Bounds x="1782" y="586" width="122" height="40"/></bpmndi:BPMNLabel>
+</bpmndi:BPMNShape>
+<bpmndi:BPMNShape id="p7_gfm_di" bpmnElement="p7_gfm" isMarkerVisible="true"><dc:Bounds x="1908" y="82" width="50" height="50"/>
+<bpmndi:BPMNLabel><dc:Bounds x="1782" y="46" width="122" height="40"/></bpmndi:BPMNLabel>
+</bpmndi:BPMNShape>
+<bpmndi:BPMNShape id="p7_rt_di" bpmnElement="p7_rt"><dc:Bounds x="2065" y="60" width="165" height="96"/>
+</bpmndi:BPMNShape>
+<bpmndi:BPMNShape id="p7_gok_di" bpmnElement="p7_gok" isMarkerVisible="true"><dc:Bounds x="2338" y="82" width="50" height="50"/>
+<bpmndi:BPMNLabel><dc:Bounds x="2212" y="46" width="122" height="40"/></bpmndi:BPMNLabel>
+</bpmndi:BPMNShape>
+<bpmndi:BPMNShape id="p7_ven_di" bpmnElement="p7_ven"><dc:Bounds x="2495" y="194" width="165" height="96"/>
+</bpmndi:BPMNShape>
+<bpmndi:BPMNShape id="p7_etmp_di" bpmnElement="p7_etmp"><dc:Bounds x="2774" y="224" width="36" height="36"/>
+<bpmndi:BPMNLabel><dc:Bounds x="2728" y="264" width="130" height="40"/></bpmndi:BPMNLabel>
+</bpmndi:BPMNShape>
+<bpmndi:BPMNShape id="p7_cl_di" bpmnElement="p7_cl"><dc:Bounds x="2495" y="1410" width="165" height="96"/>
+</bpmndi:BPMNShape>
+<bpmndi:BPMNShape id="p7_end_di" bpmnElement="p7_end"><dc:Bounds x="2774" y="1440" width="36" height="36"/>
+<bpmndi:BPMNLabel><dc:Bounds x="2728" y="1480" width="130" height="40"/></bpmndi:BPMNLabel>
+</bpmndi:BPMNShape>
+<bpmndi:BPMNEdge id="p7_f0_di" bpmnElement="p7_f0">
+<di:waypoint x="230" y="108"/>
+<di:waypoint x="402" y="108"/>
+</bpmndi:BPMNEdge>
+<bpmndi:BPMNEdge id="p7_f1_di" bpmnElement="p7_f1">
+<di:waypoint x="428" y="132"/>
+<di:waypoint x="428" y="378"/>
+<di:waypoint x="560" y="378"/>
+<bpmndi:BPMNLabel><dc:Bounds x="434" y="136" width="30" height="14"/></bpmndi:BPMNLabel>
+</bpmndi:BPMNEdge>
+<bpmndi:BPMNEdge id="p7_f2_di" bpmnElement="p7_f2">
+<di:waypoint x="452" y="108"/>
+<di:waypoint x="832" y="108"/>
+<bpmndi:BPMNLabel><dc:Bounds x="458" y="90" width="30" height="14"/></bpmndi:BPMNLabel>
+</bpmndi:BPMNEdge>
+<bpmndi:BPMNEdge id="p7_f3_di" bpmnElement="p7_f3">
+<di:waypoint x="858" y="132"/>
+<di:waypoint x="858" y="242"/>
+<di:waypoint x="990" y="242"/>
+<bpmndi:BPMNLabel><dc:Bounds x="864" y="136" width="30" height="14"/></bpmndi:BPMNLabel>
+</bpmndi:BPMNEdge>
+<bpmndi:BPMNEdge id="p7_f4_di" bpmnElement="p7_f4">
+<di:waypoint x="882" y="108"/>
+<di:waypoint x="904" y="108"/>
+<di:waypoint x="904" y="512"/>
+<di:waypoint x="990" y="512"/>
+<bpmndi:BPMNLabel><dc:Bounds x="888" y="90" width="79" height="14"/></bpmndi:BPMNLabel>
+</bpmndi:BPMNEdge>
+<bpmndi:BPMNEdge id="p7_f5_di" bpmnElement="p7_f5">
+<di:waypoint x="1155" y="512"/>
+<di:waypoint x="1177" y="512"/>
+<di:waypoint x="1177" y="108"/>
+<di:waypoint x="1205" y="108"/>
+</bpmndi:BPMNEdge>
+<bpmndi:BPMNEdge id="p7_f6_di" bpmnElement="p7_f6">
+<di:waypoint x="1370" y="108"/>
+<di:waypoint x="1478" y="108"/>
+</bpmndi:BPMNEdge>
+<bpmndi:BPMNEdge id="p7_f7_di" bpmnElement="p7_f7">
+<di:waypoint x="1502" y="132"/>
+<di:waypoint x="1502" y="648"/>
+<di:waypoint x="1635" y="648"/>
+<bpmndi:BPMNLabel><dc:Bounds x="1508" y="630" width="30" height="14"/></bpmndi:BPMNLabel>
+</bpmndi:BPMNEdge>
+<bpmndi:BPMNEdge id="p7_f8_di" bpmnElement="p7_f8">
+<di:waypoint x="1502" y="132"/>
+<di:waypoint x="1502" y="782"/>
+<di:waypoint x="1635" y="782"/>
+<bpmndi:BPMNLabel><dc:Bounds x="1508" y="764" width="33" height="14"/></bpmndi:BPMNLabel>
+</bpmndi:BPMNEdge>
+<bpmndi:BPMNEdge id="p7_f9_di" bpmnElement="p7_f9">
+<di:waypoint x="1502" y="132"/>
+<di:waypoint x="1502" y="918"/>
+<di:waypoint x="1635" y="918"/>
+<bpmndi:BPMNLabel><dc:Bounds x="1508" y="900" width="30" height="14"/></bpmndi:BPMNLabel>
+</bpmndi:BPMNEdge>
+<bpmndi:BPMNEdge id="p7_f10_di" bpmnElement="p7_f10">
+<di:waypoint x="1502" y="132"/>
+<di:waypoint x="1502" y="1052"/>
+<di:waypoint x="1635" y="1052"/>
+<bpmndi:BPMNLabel><dc:Bounds x="1508" y="1034" width="33" height="14"/></bpmndi:BPMNLabel>
+</bpmndi:BPMNEdge>
+<bpmndi:BPMNEdge id="p7_f11_di" bpmnElement="p7_f11">
+<di:waypoint x="1502" y="132"/>
+<di:waypoint x="1502" y="1188"/>
+<di:waypoint x="1635" y="1188"/>
+<bpmndi:BPMNLabel><dc:Bounds x="1508" y="1170" width="92" height="14"/></bpmndi:BPMNLabel>
+</bpmndi:BPMNEdge>
+<bpmndi:BPMNEdge id="p7_f12_di" bpmnElement="p7_f12">
+<di:waypoint x="1502" y="132"/>
+<di:waypoint x="1502" y="1322"/>
+<di:waypoint x="1635" y="1322"/>
+<bpmndi:BPMNLabel><dc:Bounds x="1508" y="1304" width="73" height="14"/></bpmndi:BPMNLabel>
+</bpmndi:BPMNEdge>
+<bpmndi:BPMNEdge id="p7_f13_di" bpmnElement="p7_f13">
+<di:waypoint x="1800" y="648"/>
+<di:waypoint x="1908" y="648"/>
+</bpmndi:BPMNEdge>
+<bpmndi:BPMNEdge id="p7_f14_di" bpmnElement="p7_f14">
+<di:waypoint x="1800" y="782"/>
+<di:waypoint x="1932" y="782"/>
+<di:waypoint x="1932" y="672"/>
+</bpmndi:BPMNEdge>
+<bpmndi:BPMNEdge id="p7_f15_di" bpmnElement="p7_f15">
+<di:waypoint x="1800" y="918"/>
+<di:waypoint x="1932" y="918"/>
+<di:waypoint x="1932" y="672"/>
+</bpmndi:BPMNEdge>
+<bpmndi:BPMNEdge id="p7_f16_di" bpmnElement="p7_f16">
+<di:waypoint x="1800" y="1052"/>
+<di:waypoint x="1932" y="1052"/>
+<di:waypoint x="1932" y="672"/>
+</bpmndi:BPMNEdge>
+<bpmndi:BPMNEdge id="p7_f17_di" bpmnElement="p7_f17">
+<di:waypoint x="1800" y="1188"/>
+<di:waypoint x="1932" y="1188"/>
+<di:waypoint x="1932" y="672"/>
+</bpmndi:BPMNEdge>
+<bpmndi:BPMNEdge id="p7_f18_di" bpmnElement="p7_f18">
+<di:waypoint x="1800" y="1322"/>
+<di:waypoint x="1932" y="1322"/>
+<di:waypoint x="1932" y="672"/>
+</bpmndi:BPMNEdge>
+<bpmndi:BPMNEdge id="p7_f19_di" bpmnElement="p7_f19">
+<di:waypoint x="1932" y="622"/>
+<di:waypoint x="1932" y="132"/>
+</bpmndi:BPMNEdge>
+<bpmndi:BPMNEdge id="p7_f20_di" bpmnElement="p7_f20">
+<di:waypoint x="725" y="378"/>
+<di:waypoint x="1932" y="378"/>
+<di:waypoint x="1932" y="132"/>
+</bpmndi:BPMNEdge>
+<bpmndi:BPMNEdge id="p7_f21_di" bpmnElement="p7_f21">
+<di:waypoint x="1155" y="242"/>
+<di:waypoint x="1932" y="242"/>
+<di:waypoint x="1932" y="132"/>
+</bpmndi:BPMNEdge>
+<bpmndi:BPMNEdge id="p7_f22_di" bpmnElement="p7_f22">
+<di:waypoint x="1958" y="108"/>
+<di:waypoint x="2065" y="108"/>
+</bpmndi:BPMNEdge>
+<bpmndi:BPMNEdge id="p7_f23_di" bpmnElement="p7_f23">
+<di:waypoint x="2230" y="108"/>
+<di:waypoint x="2338" y="108"/>
+</bpmndi:BPMNEdge>
+<bpmndi:BPMNEdge id="p7_f24_di" bpmnElement="p7_f24">
+<di:waypoint x="2388" y="108"/>
+<di:waypoint x="2410" y="108"/>
+<di:waypoint x="2410" y="1458"/>
+<di:waypoint x="2495" y="1458"/>
+<bpmndi:BPMNLabel><dc:Bounds x="2394" y="90" width="30" height="14"/></bpmndi:BPMNLabel>
+</bpmndi:BPMNEdge>
+<bpmndi:BPMNEdge id="p7_f25_di" bpmnElement="p7_f25">
+<di:waypoint x="2362" y="132"/>
+<di:waypoint x="2362" y="242"/>
+<di:waypoint x="2495" y="242"/>
+<bpmndi:BPMNLabel><dc:Bounds x="2368" y="136" width="30" height="14"/></bpmndi:BPMNLabel>
+</bpmndi:BPMNEdge>
+<bpmndi:BPMNEdge id="p7_f26_di" bpmnElement="p7_f26">
+<di:waypoint x="2660" y="242"/>
+<di:waypoint x="2774" y="242"/>
+</bpmndi:BPMNEdge>
+<bpmndi:BPMNEdge id="p7_f27_di" bpmnElement="p7_f27">
+<di:waypoint x="2660" y="1458"/>
+<di:waypoint x="2774" y="1458"/>
+</bpmndi:BPMNEdge>
+</bpmndi:BPMNPlane></bpmndi:BPMNDiagram></bpmn:definitions>

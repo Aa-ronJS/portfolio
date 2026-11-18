@@ -1,0 +1,352 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<bpmn:definitions xmlns:bpmn="http://www.omg.org/spec/BPMN/20100524/MODEL" xmlns:bpmndi="http://www.omg.org/spec/BPMN/20100524/DI" xmlns:dc="http://www.omg.org/spec/DD/20100524/DC" xmlns:di="http://www.omg.org/spec/DD/20100524/DI" id="p2_defs" targetNamespace="http://example.com/od-radio">
+<bpmn:collaboration id="p2_collab">
+<bpmn:participant id="p2_pool" name="Pre-use radio checks" processRef="p2_process"/>
+</bpmn:collaboration>
+<bpmn:process id="p2_process" name="Pre-use radio checks" isExecutable="false">
+<bpmn:laneSet id="p2_ls">
+<bpmn:lane id="p2_W" name="Underground worker">
+<bpmn:flowNodeRef>p2_s</bpmn:flowNodeRef>
+<bpmn:flowNodeRef>p2_gk</bpmn:flowNodeRef>
+<bpmn:flowNodeRef>p2_ant</bpmn:flowNodeRef>
+<bpmn:flowNodeRef>p2_ga</bpmn:flowNodeRef>
+<bpmn:flowNodeRef>p2_rep</bpmn:flowNodeRef>
+<bpmn:flowNodeRef>p2_gam</bpmn:flowNodeRef>
+<bpmn:flowNodeRef>p2_ch</bpmn:flowNodeRef>
+<bpmn:flowNodeRef>p2_gmv</bpmn:flowNodeRef>
+<bpmn:flowNodeRef>p2_rc</bpmn:flowNodeRef>
+<bpmn:flowNodeRef>p2_eok</bpmn:flowNodeRef>
+</bpmn:lane>
+<bpmn:lane id="p2_K" name="Lamp room / charger rack">
+<bpmn:flowNodeRef>p2_take</bpmn:flowNodeRef>
+<bpmn:flowNodeRef>p2_swap</bpmn:flowNodeRef>
+</bpmn:lane>
+<bpmn:lane id="p2_R" name="Radio (handheld or vehicle)">
+<bpmn:flowNodeRef>p2_veh</bpmn:flowNodeRef>
+<bpmn:flowNodeRef>p2_pwr</bpmn:flowNodeRef>
+<bpmn:flowNodeRef>p2_gv</bpmn:flowNodeRef>
+<bpmn:flowNodeRef>p2_gb</bpmn:flowNodeRef>
+<bpmn:flowNodeRef>p2_vfix</bpmn:flowNodeRef>
+<bpmn:flowNodeRef>p2_ev</bpmn:flowNodeRef>
+<bpmn:flowNodeRef>p2_gbm</bpmn:flowNodeRef>
+</bpmn:lane>
+<bpmn:lane id="p2_D" name="Control room">
+<bpmn:flowNodeRef>p2_ack</bpmn:flowNodeRef>
+<bpmn:flowNodeRef>p2_gr</bpmn:flowNodeRef>
+<bpmn:flowNodeRef>p2_ebad</bpmn:flowNodeRef>
+</bpmn:lane>
+</bpmn:laneSet>
+<bpmn:startEvent id="p2_s" name="Start of shift">
+<bpmn:outgoing>p2_f0</bpmn:outgoing>
+</bpmn:startEvent>
+<bpmn:exclusiveGateway id="p2_gk" name="Handheld or vehicle radio?">
+<bpmn:incoming>p2_f0</bpmn:incoming>
+<bpmn:outgoing>p2_f1</bpmn:outgoing>
+<bpmn:outgoing>p2_f2</bpmn:outgoing>
+</bpmn:exclusiveGateway>
+<bpmn:manualTask id="p2_take" name="Take handheld from the multi-unit charger rack">
+<bpmn:incoming>p2_f1</bpmn:incoming>
+<bpmn:outgoing>p2_f3</bpmn:outgoing>
+</bpmn:manualTask>
+<bpmn:serviceTask id="p2_veh" name="Vehicle radio: ignition sense, inline fuse, DC-DC converter, roof antenna, coax jumper">
+<bpmn:incoming>p2_f2</bpmn:incoming>
+<bpmn:outgoing>p2_f4</bpmn:outgoing>
+</bpmn:serviceTask>
+<bpmn:serviceTask id="p2_pwr" name="Power on: Li-ion battery pack, channel knob, display">
+<bpmn:incoming>p2_f3</bpmn:incoming>
+<bpmn:outgoing>p2_f8</bpmn:outgoing>
+</bpmn:serviceTask>
+<bpmn:exclusiveGateway id="p2_gv" name="Vehicle radio working?">
+<bpmn:incoming>p2_f4</bpmn:incoming>
+<bpmn:outgoing>p2_f5</bpmn:outgoing>
+<bpmn:outgoing>p2_f6</bpmn:outgoing>
+</bpmn:exclusiveGateway>
+<bpmn:exclusiveGateway id="p2_gb" name="Powers on and battery charged?">
+<bpmn:incoming>p2_f8</bpmn:incoming>
+<bpmn:outgoing>p2_f9</bpmn:outgoing>
+<bpmn:outgoing>p2_f10</bpmn:outgoing>
+</bpmn:exclusiveGateway>
+<bpmn:manualTask id="p2_vfix" name="Fit-out tech repairs; driver carries a handheld meanwhile">
+<bpmn:incoming>p2_f6</bpmn:incoming>
+<bpmn:outgoing>p2_f7</bpmn:outgoing>
+</bpmn:manualTask>
+<bpmn:manualTask id="p2_swap" name="Swap battery pack from charger; tag faulty pack">
+<bpmn:incoming>p2_f10</bpmn:incoming>
+<bpmn:outgoing>p2_f11</bpmn:outgoing>
+</bpmn:manualTask>
+<bpmn:endEvent id="p2_ev" name="Vehicle radio tagged out">
+<bpmn:incoming>p2_f7</bpmn:incoming>
+</bpmn:endEvent>
+<bpmn:exclusiveGateway id="p2_gbm" name="">
+<bpmn:incoming>p2_f9</bpmn:incoming>
+<bpmn:incoming>p2_f11</bpmn:incoming>
+<bpmn:outgoing>p2_f12</bpmn:outgoing>
+</bpmn:exclusiveGateway>
+<bpmn:manualTask id="p2_ant" name="Inspect antenna (SMA), speaker-mic cable, PTT, emergency button, belt clip, IS label">
+<bpmn:incoming>p2_f12</bpmn:incoming>
+<bpmn:outgoing>p2_f13</bpmn:outgoing>
+</bpmn:manualTask>
+<bpmn:exclusiveGateway id="p2_ga" name="All intact and tight?">
+<bpmn:incoming>p2_f13</bpmn:incoming>
+<bpmn:outgoing>p2_f14</bpmn:outgoing>
+<bpmn:outgoing>p2_f15</bpmn:outgoing>
+</bpmn:exclusiveGateway>
+<bpmn:manualTask id="p2_rep" name="Replace antenna or accessory from comms store">
+<bpmn:incoming>p2_f15</bpmn:incoming>
+<bpmn:outgoing>p2_f16</bpmn:outgoing>
+</bpmn:manualTask>
+<bpmn:exclusiveGateway id="p2_gam" name="">
+<bpmn:incoming>p2_f14</bpmn:incoming>
+<bpmn:incoming>p2_f16</bpmn:incoming>
+<bpmn:outgoing>p2_f17</bpmn:outgoing>
+</bpmn:exclusiveGateway>
+<bpmn:userTask id="p2_ch" name="Select underground leaky-feeder channel / talkgroup">
+<bpmn:incoming>p2_f17</bpmn:incoming>
+<bpmn:outgoing>p2_f18</bpmn:outgoing>
+</bpmn:userTask>
+<bpmn:exclusiveGateway id="p2_gmv" name="">
+<bpmn:incoming>p2_f5</bpmn:incoming>
+<bpmn:incoming>p2_f18</bpmn:incoming>
+<bpmn:outgoing>p2_f19</bpmn:outgoing>
+</bpmn:exclusiveGateway>
+<bpmn:userTask id="p2_rc" name="Radio check with control at portal or shaft collar">
+<bpmn:incoming>p2_f19</bpmn:incoming>
+<bpmn:outgoing>p2_f20</bpmn:outgoing>
+</bpmn:userTask>
+<bpmn:userTask id="p2_ack" name="Controller acknowledges and reports readability">
+<bpmn:incoming>p2_f20</bpmn:incoming>
+<bpmn:outgoing>p2_f21</bpmn:outgoing>
+</bpmn:userTask>
+<bpmn:exclusiveGateway id="p2_gr" name="Heard clearly both ways?">
+<bpmn:incoming>p2_f21</bpmn:incoming>
+<bpmn:outgoing>p2_f22</bpmn:outgoing>
+<bpmn:outgoing>p2_f23</bpmn:outgoing>
+</bpmn:exclusiveGateway>
+<bpmn:endEvent id="p2_eok" name="Cleared to go underground">
+<bpmn:incoming>p2_f22</bpmn:incoming>
+</bpmn:endEvent>
+<bpmn:endEvent id="p2_ebad" name="Do not enter: radio fault reported">
+<bpmn:incoming>p2_f23</bpmn:incoming>
+<bpmn:messageEventDefinition id="p2_ebad_med"/>
+</bpmn:endEvent>
+<bpmn:sequenceFlow id="p2_f0" name="" sourceRef="p2_s" targetRef="p2_gk"/>
+<bpmn:sequenceFlow id="p2_f1" name="Handheld" sourceRef="p2_gk" targetRef="p2_take"/>
+<bpmn:sequenceFlow id="p2_f2" name="Vehicle" sourceRef="p2_gk" targetRef="p2_veh"/>
+<bpmn:sequenceFlow id="p2_f3" name="" sourceRef="p2_take" targetRef="p2_pwr"/>
+<bpmn:sequenceFlow id="p2_f4" name="" sourceRef="p2_veh" targetRef="p2_gv"/>
+<bpmn:sequenceFlow id="p2_f5" name="Yes" sourceRef="p2_gv" targetRef="p2_gmv"/>
+<bpmn:sequenceFlow id="p2_f6" name="No" sourceRef="p2_gv" targetRef="p2_vfix"/>
+<bpmn:sequenceFlow id="p2_f7" name="" sourceRef="p2_vfix" targetRef="p2_ev"/>
+<bpmn:sequenceFlow id="p2_f8" name="" sourceRef="p2_pwr" targetRef="p2_gb"/>
+<bpmn:sequenceFlow id="p2_f9" name="Yes" sourceRef="p2_gb" targetRef="p2_gbm"/>
+<bpmn:sequenceFlow id="p2_f10" name="No" sourceRef="p2_gb" targetRef="p2_swap"/>
+<bpmn:sequenceFlow id="p2_f11" name="" sourceRef="p2_swap" targetRef="p2_gbm"/>
+<bpmn:sequenceFlow id="p2_f12" name="" sourceRef="p2_gbm" targetRef="p2_ant"/>
+<bpmn:sequenceFlow id="p2_f13" name="" sourceRef="p2_ant" targetRef="p2_ga"/>
+<bpmn:sequenceFlow id="p2_f14" name="Yes" sourceRef="p2_ga" targetRef="p2_gam"/>
+<bpmn:sequenceFlow id="p2_f15" name="No" sourceRef="p2_ga" targetRef="p2_rep"/>
+<bpmn:sequenceFlow id="p2_f16" name="" sourceRef="p2_rep" targetRef="p2_gam"/>
+<bpmn:sequenceFlow id="p2_f17" name="" sourceRef="p2_gam" targetRef="p2_ch"/>
+<bpmn:sequenceFlow id="p2_f18" name="" sourceRef="p2_ch" targetRef="p2_gmv"/>
+<bpmn:sequenceFlow id="p2_f19" name="" sourceRef="p2_gmv" targetRef="p2_rc"/>
+<bpmn:sequenceFlow id="p2_f20" name="" sourceRef="p2_rc" targetRef="p2_ack"/>
+<bpmn:sequenceFlow id="p2_f21" name="" sourceRef="p2_ack" targetRef="p2_gr"/>
+<bpmn:sequenceFlow id="p2_f22" name="Yes" sourceRef="p2_gr" targetRef="p2_eok"/>
+<bpmn:sequenceFlow id="p2_f23" name="No" sourceRef="p2_gr" targetRef="p2_ebad"/>
+<bpmn:textAnnotation id="p2_a1"><bpmn:text>Surface simplex channels do not reach underground</bpmn:text></bpmn:textAnnotation>
+<bpmn:association id="p2_a1_as" sourceRef="p2_ch" targetRef="p2_a1"/>
+</bpmn:process>
+<bpmndi:BPMNDiagram id="p2_dia"><bpmndi:BPMNPlane id="p2_plane" bpmnElement="p2_collab">
+<bpmndi:BPMNShape id="p2_pool_di" bpmnElement="p2_pool" isHorizontal="true"><dc:Bounds x="40" y="40" width="3765" height="1080"/>
+</bpmndi:BPMNShape>
+<bpmndi:BPMNShape id="p2_W_di" bpmnElement="p2_W" isHorizontal="true"><dc:Bounds x="70" y="40" width="3735" height="270"/>
+</bpmndi:BPMNShape>
+<bpmndi:BPMNShape id="p2_K_di" bpmnElement="p2_K" isHorizontal="true"><dc:Bounds x="70" y="310" width="3735" height="135"/>
+</bpmndi:BPMNShape>
+<bpmndi:BPMNShape id="p2_R_di" bpmnElement="p2_R" isHorizontal="true"><dc:Bounds x="70" y="445" width="3735" height="405"/>
+</bpmndi:BPMNShape>
+<bpmndi:BPMNShape id="p2_D_di" bpmnElement="p2_D" isHorizontal="true"><dc:Bounds x="70" y="850" width="3735" height="270"/>
+</bpmndi:BPMNShape>
+<bpmndi:BPMNShape id="p2_s_di" bpmnElement="p2_s"><dc:Bounds x="194" y="90" width="36" height="36"/>
+<bpmndi:BPMNLabel><dc:Bounds x="148" y="130" width="130" height="40"/></bpmndi:BPMNLabel>
+</bpmndi:BPMNShape>
+<bpmndi:BPMNShape id="p2_gk_di" bpmnElement="p2_gk" isMarkerVisible="true"><dc:Bounds x="402" y="82" width="50" height="50"/>
+<bpmndi:BPMNLabel><dc:Bounds x="278" y="46" width="122" height="40"/></bpmndi:BPMNLabel>
+</bpmndi:BPMNShape>
+<bpmndi:BPMNShape id="p2_take_di" bpmnElement="p2_take"><dc:Bounds x="560" y="330" width="165" height="96"/>
+</bpmndi:BPMNShape>
+<bpmndi:BPMNShape id="p2_veh_di" bpmnElement="p2_veh"><dc:Bounds x="560" y="600" width="165" height="96"/>
+</bpmndi:BPMNShape>
+<bpmndi:BPMNShape id="p2_pwr_di" bpmnElement="p2_pwr"><dc:Bounds x="775" y="464" width="165" height="96"/>
+</bpmndi:BPMNShape>
+<bpmndi:BPMNShape id="p2_gv_di" bpmnElement="p2_gv" isMarkerVisible="true"><dc:Bounds x="832" y="622" width="50" height="50"/>
+<bpmndi:BPMNLabel><dc:Bounds x="708" y="586" width="122" height="40"/></bpmndi:BPMNLabel>
+</bpmndi:BPMNShape>
+<bpmndi:BPMNShape id="p2_gb_di" bpmnElement="p2_gb" isMarkerVisible="true"><dc:Bounds x="1048" y="488" width="50" height="50"/>
+<bpmndi:BPMNLabel><dc:Bounds x="922" y="450" width="122" height="40"/></bpmndi:BPMNLabel>
+</bpmndi:BPMNShape>
+<bpmndi:BPMNShape id="p2_vfix_di" bpmnElement="p2_vfix"><dc:Bounds x="990" y="734" width="165" height="96"/>
+</bpmndi:BPMNShape>
+<bpmndi:BPMNShape id="p2_swap_di" bpmnElement="p2_swap"><dc:Bounds x="1205" y="330" width="165" height="96"/>
+</bpmndi:BPMNShape>
+<bpmndi:BPMNShape id="p2_ev_di" bpmnElement="p2_ev"><dc:Bounds x="1270" y="764" width="36" height="36"/>
+<bpmndi:BPMNLabel><dc:Bounds x="1222" y="804" width="130" height="40"/></bpmndi:BPMNLabel>
+</bpmndi:BPMNShape>
+<bpmndi:BPMNShape id="p2_gbm_di" bpmnElement="p2_gbm" isMarkerVisible="true"><dc:Bounds x="1478" y="488" width="50" height="50"/>
+<bpmndi:BPMNLabel><dc:Bounds x="1352" y="450" width="122" height="40"/></bpmndi:BPMNLabel>
+</bpmndi:BPMNShape>
+<bpmndi:BPMNShape id="p2_ant_di" bpmnElement="p2_ant"><dc:Bounds x="1635" y="60" width="165" height="96"/>
+</bpmndi:BPMNShape>
+<bpmndi:BPMNShape id="p2_ga_di" bpmnElement="p2_ga" isMarkerVisible="true"><dc:Bounds x="1908" y="82" width="50" height="50"/>
+<bpmndi:BPMNLabel><dc:Bounds x="1782" y="46" width="122" height="40"/></bpmndi:BPMNLabel>
+</bpmndi:BPMNShape>
+<bpmndi:BPMNShape id="p2_rep_di" bpmnElement="p2_rep"><dc:Bounds x="2065" y="194" width="165" height="96"/>
+</bpmndi:BPMNShape>
+<bpmndi:BPMNShape id="p2_gam_di" bpmnElement="p2_gam" isMarkerVisible="true"><dc:Bounds x="2338" y="82" width="50" height="50"/>
+<bpmndi:BPMNLabel><dc:Bounds x="2212" y="46" width="122" height="40"/></bpmndi:BPMNLabel>
+</bpmndi:BPMNShape>
+<bpmndi:BPMNShape id="p2_ch_di" bpmnElement="p2_ch"><dc:Bounds x="2495" y="60" width="165" height="96"/>
+</bpmndi:BPMNShape>
+<bpmndi:BPMNShape id="p2_gmv_di" bpmnElement="p2_gmv" isMarkerVisible="true"><dc:Bounds x="2768" y="82" width="50" height="50"/>
+<bpmndi:BPMNLabel><dc:Bounds x="2642" y="46" width="122" height="40"/></bpmndi:BPMNLabel>
+</bpmndi:BPMNShape>
+<bpmndi:BPMNShape id="p2_rc_di" bpmnElement="p2_rc"><dc:Bounds x="2925" y="60" width="165" height="96"/>
+</bpmndi:BPMNShape>
+<bpmndi:BPMNShape id="p2_ack_di" bpmnElement="p2_ack"><dc:Bounds x="3140" y="870" width="165" height="96"/>
+</bpmndi:BPMNShape>
+<bpmndi:BPMNShape id="p2_gr_di" bpmnElement="p2_gr" isMarkerVisible="true"><dc:Bounds x="3412" y="892" width="50" height="50"/>
+<bpmndi:BPMNLabel><dc:Bounds x="3288" y="856" width="122" height="40"/></bpmndi:BPMNLabel>
+</bpmndi:BPMNShape>
+<bpmndi:BPMNShape id="p2_eok_di" bpmnElement="p2_eok"><dc:Bounds x="3634" y="90" width="36" height="36"/>
+<bpmndi:BPMNLabel><dc:Bounds x="3588" y="130" width="130" height="40"/></bpmndi:BPMNLabel>
+</bpmndi:BPMNShape>
+<bpmndi:BPMNShape id="p2_ebad_di" bpmnElement="p2_ebad"><dc:Bounds x="3634" y="1034" width="36" height="36"/>
+<bpmndi:BPMNLabel><dc:Bounds x="3588" y="1074" width="130" height="40"/></bpmndi:BPMNLabel>
+</bpmndi:BPMNShape>
+<bpmndi:BPMNShape id="p2_a1_di" bpmnElement="p2_a1"><dc:Bounds x="2485" y="187" width="195" height="70"/>
+</bpmndi:BPMNShape>
+<bpmndi:BPMNEdge id="p2_f0_di" bpmnElement="p2_f0">
+<di:waypoint x="230" y="108"/>
+<di:waypoint x="402" y="108"/>
+</bpmndi:BPMNEdge>
+<bpmndi:BPMNEdge id="p2_f1_di" bpmnElement="p2_f1">
+<di:waypoint x="428" y="132"/>
+<di:waypoint x="428" y="378"/>
+<di:waypoint x="560" y="378"/>
+<bpmndi:BPMNLabel><dc:Bounds x="434" y="136" width="53" height="14"/></bpmndi:BPMNLabel>
+</bpmndi:BPMNEdge>
+<bpmndi:BPMNEdge id="p2_f2_di" bpmnElement="p2_f2">
+<di:waypoint x="452" y="108"/>
+<di:waypoint x="474" y="108"/>
+<di:waypoint x="474" y="648"/>
+<di:waypoint x="560" y="648"/>
+<bpmndi:BPMNLabel><dc:Bounds x="458" y="90" width="46" height="14"/></bpmndi:BPMNLabel>
+</bpmndi:BPMNEdge>
+<bpmndi:BPMNEdge id="p2_f3_di" bpmnElement="p2_f3">
+<di:waypoint x="725" y="378"/>
+<di:waypoint x="747" y="378"/>
+<di:waypoint x="747" y="512"/>
+<di:waypoint x="775" y="512"/>
+</bpmndi:BPMNEdge>
+<bpmndi:BPMNEdge id="p2_f4_di" bpmnElement="p2_f4">
+<di:waypoint x="725" y="648"/>
+<di:waypoint x="832" y="648"/>
+</bpmndi:BPMNEdge>
+<bpmndi:BPMNEdge id="p2_f5_di" bpmnElement="p2_f5">
+<di:waypoint x="882" y="648"/>
+<di:waypoint x="2792" y="648"/>
+<di:waypoint x="2792" y="132"/>
+<bpmndi:BPMNLabel><dc:Bounds x="888" y="630" width="30" height="14"/></bpmndi:BPMNLabel>
+</bpmndi:BPMNEdge>
+<bpmndi:BPMNEdge id="p2_f6_di" bpmnElement="p2_f6">
+<di:waypoint x="858" y="672"/>
+<di:waypoint x="858" y="782"/>
+<di:waypoint x="990" y="782"/>
+<bpmndi:BPMNLabel><dc:Bounds x="864" y="676" width="30" height="14"/></bpmndi:BPMNLabel>
+</bpmndi:BPMNEdge>
+<bpmndi:BPMNEdge id="p2_f7_di" bpmnElement="p2_f7">
+<di:waypoint x="1155" y="782"/>
+<di:waypoint x="1270" y="782"/>
+</bpmndi:BPMNEdge>
+<bpmndi:BPMNEdge id="p2_f8_di" bpmnElement="p2_f8">
+<di:waypoint x="940" y="512"/>
+<di:waypoint x="1048" y="512"/>
+</bpmndi:BPMNEdge>
+<bpmndi:BPMNEdge id="p2_f9_di" bpmnElement="p2_f9">
+<di:waypoint x="1098" y="512"/>
+<di:waypoint x="1478" y="512"/>
+<bpmndi:BPMNLabel><dc:Bounds x="1104" y="494" width="30" height="14"/></bpmndi:BPMNLabel>
+</bpmndi:BPMNEdge>
+<bpmndi:BPMNEdge id="p2_f10_di" bpmnElement="p2_f10">
+<di:waypoint x="1072" y="488"/>
+<di:waypoint x="1072" y="378"/>
+<di:waypoint x="1205" y="378"/>
+<bpmndi:BPMNLabel><dc:Bounds x="1078" y="468" width="30" height="14"/></bpmndi:BPMNLabel>
+</bpmndi:BPMNEdge>
+<bpmndi:BPMNEdge id="p2_f11_di" bpmnElement="p2_f11">
+<di:waypoint x="1370" y="378"/>
+<di:waypoint x="1502" y="378"/>
+<di:waypoint x="1502" y="488"/>
+</bpmndi:BPMNEdge>
+<bpmndi:BPMNEdge id="p2_f12_di" bpmnElement="p2_f12">
+<di:waypoint x="1528" y="512"/>
+<di:waypoint x="1550" y="512"/>
+<di:waypoint x="1550" y="108"/>
+<di:waypoint x="1635" y="108"/>
+</bpmndi:BPMNEdge>
+<bpmndi:BPMNEdge id="p2_f13_di" bpmnElement="p2_f13">
+<di:waypoint x="1800" y="108"/>
+<di:waypoint x="1908" y="108"/>
+</bpmndi:BPMNEdge>
+<bpmndi:BPMNEdge id="p2_f14_di" bpmnElement="p2_f14">
+<di:waypoint x="1958" y="108"/>
+<di:waypoint x="2338" y="108"/>
+<bpmndi:BPMNLabel><dc:Bounds x="1964" y="90" width="30" height="14"/></bpmndi:BPMNLabel>
+</bpmndi:BPMNEdge>
+<bpmndi:BPMNEdge id="p2_f15_di" bpmnElement="p2_f15">
+<di:waypoint x="1932" y="132"/>
+<di:waypoint x="1932" y="242"/>
+<di:waypoint x="2065" y="242"/>
+<bpmndi:BPMNLabel><dc:Bounds x="1938" y="136" width="30" height="14"/></bpmndi:BPMNLabel>
+</bpmndi:BPMNEdge>
+<bpmndi:BPMNEdge id="p2_f16_di" bpmnElement="p2_f16">
+<di:waypoint x="2230" y="242"/>
+<di:waypoint x="2362" y="242"/>
+<di:waypoint x="2362" y="132"/>
+</bpmndi:BPMNEdge>
+<bpmndi:BPMNEdge id="p2_f17_di" bpmnElement="p2_f17">
+<di:waypoint x="2388" y="108"/>
+<di:waypoint x="2495" y="108"/>
+</bpmndi:BPMNEdge>
+<bpmndi:BPMNEdge id="p2_f18_di" bpmnElement="p2_f18">
+<di:waypoint x="2660" y="108"/>
+<di:waypoint x="2768" y="108"/>
+</bpmndi:BPMNEdge>
+<bpmndi:BPMNEdge id="p2_f19_di" bpmnElement="p2_f19">
+<di:waypoint x="2818" y="108"/>
+<di:waypoint x="2925" y="108"/>
+</bpmndi:BPMNEdge>
+<bpmndi:BPMNEdge id="p2_f20_di" bpmnElement="p2_f20">
+<di:waypoint x="3090" y="108"/>
+<di:waypoint x="3112" y="108"/>
+<di:waypoint x="3112" y="918"/>
+<di:waypoint x="3140" y="918"/>
+</bpmndi:BPMNEdge>
+<bpmndi:BPMNEdge id="p2_f21_di" bpmnElement="p2_f21">
+<di:waypoint x="3305" y="918"/>
+<di:waypoint x="3412" y="918"/>
+</bpmndi:BPMNEdge>
+<bpmndi:BPMNEdge id="p2_f22_di" bpmnElement="p2_f22">
+<di:waypoint x="3438" y="892"/>
+<di:waypoint x="3438" y="108"/>
+<di:waypoint x="3634" y="108"/>
+<bpmndi:BPMNLabel><dc:Bounds x="3444" y="872" width="30" height="14"/></bpmndi:BPMNLabel>
+</bpmndi:BPMNEdge>
+<bpmndi:BPMNEdge id="p2_f23_di" bpmnElement="p2_f23">
+<di:waypoint x="3438" y="942"/>
+<di:waypoint x="3438" y="1052"/>
+<di:waypoint x="3634" y="1052"/>
+<bpmndi:BPMNLabel><dc:Bounds x="3444" y="946" width="30" height="14"/></bpmndi:BPMNLabel>
+</bpmndi:BPMNEdge>
+<bpmndi:BPMNEdge id="p2_a1_as_di" bpmnElement="p2_a1_as"><di:waypoint x="2578" y="156"/><di:waypoint x="2495" y="187"/></bpmndi:BPMNEdge>
+</bpmndi:BPMNPlane></bpmndi:BPMNDiagram></bpmn:definitions>

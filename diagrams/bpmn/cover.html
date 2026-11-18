@@ -1,0 +1,33 @@
+<!doctype html><html><head><meta charset="utf-8"><style>/*CSS*/
+.wrap{padding:44px 56px}
+h1{font-size:54px;margin:0 0 6px;font-weight:900;letter-spacing:-1px}
+.sub{font-size:21px;color:#444;margin-bottom:26px}
+.cols{display:grid;grid-template-columns:1fr 1.05fr;gap:44px}
+h2{font-size:20px;text-transform:uppercase;letter-spacing:1.5px;border-bottom:2px solid #1d1d1f;padding-bottom:6px;margin:0 0 12px}
+table{border-collapse:collapse;width:100%;font-size:16px}
+td{padding:7px 8px;border-bottom:1px solid #ddd;vertical-align:top}
+td.n{font-weight:900;font-size:22px;width:44px}
+td span{color:#555;font-size:14px}
+.how{font-size:15px;line-height:1.5;color:#333}
+.how li{margin-bottom:4px}
+.note{margin-top:18px;font-size:13px;color:#666;line-height:1.5;border-left:3px solid #c9c9c9;padding-left:12px}
+.legend svg{width:88%;height:auto;display:block;margin:0 auto}
+</style></head><body><div class="wrap">
+<h1>Olympic Dam: Underground Radio System</h1>
+<div class="sub">Every component, as a BPMN 2.0 process model with swimlanes: handset → leaky feeder → amplifiers → fibre → riser → headend → towers → control room, with fault-finding and emergency fallbacks.</div>
+<div class="cols">
+<div>
+<h2>Pages</h2>
+<table><!--INDEX--></table>
+</div>
+<div>
+<h2>How to read it</h2>
+<ul class="how">
+<li>Start at the thin circle on the left of each page and follow the arrows right.</li>
+<li>Each horizontal <b>lane</b> is the person or piece of equipment doing that step. When the arrow drops into another lane, the work has moved to that component.</li>
+<li>At every <b>diamond</b>, take the one labelled path that is true. A diamond with a circle sends to <i>every</i> path that applies.</li>
+<li>A box with <b>[+]</b> is expanded on the page number shown in it.</li>
+<li>Dashed arrows are <b>message flows</b> to another party (a separate pool).</li>
+</ul>
+<div class="note">Built from the standard architecture for a large underground mine with a leaky-feeder backbone. BHP does not publish Olympic Dam's equipment vendors, frequencies or channel plans, so specific models, distances and limits are typical industry values, not confirmed site data. On public record for Olympic Dam: leaky-feeder radio, which also carries the automated underground electric train, and the Minlog tracking rollout. Source files (.bpmn) open in Camunda Modeler, bpmn.io or Signavio for editing.</div>
+</div></div><h2 style="margin-top:30px">Notation (BPMN 2.0)</h2><div class="legend"><!--LEGEND--></div></div></body></html>

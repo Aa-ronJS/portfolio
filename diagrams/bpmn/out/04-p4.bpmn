@@ -1,0 +1,259 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<bpmn:definitions xmlns:bpmn="http://www.omg.org/spec/BPMN/20100524/MODEL" xmlns:bpmndi="http://www.omg.org/spec/BPMN/20100524/DI" xmlns:dc="http://www.omg.org/spec/DD/20100524/DC" xmlns:di="http://www.omg.org/spec/DD/20100524/DI" id="p4_defs" targetNamespace="http://example.com/od-radio">
+<bpmn:collaboration id="p4_collab">
+<bpmn:participant id="p4_pool" name="Feeder power supply" processRef="p4_process"/>
+</bpmn:collaboration>
+<bpmn:process id="p4_process" name="Powering the underground radio network" isExecutable="false">
+<bpmn:laneSet id="p4_ls">
+<bpmn:lane id="p4_E" name="Mine electrical reticulation">
+<bpmn:flowNodeRef>p4_s</bpmn:flowNodeRef>
+<bpmn:flowNodeRef>p4_hv</bpmn:flowNodeRef>
+<bpmn:flowNodeRef>p4_db</bpmn:flowNodeRef>
+</bpmn:lane>
+<bpmn:lane id="p4_P" name="Line power supply &amp; UPS">
+<bpmn:flowNodeRef>p4_psu</bpmn:flowNodeRef>
+<bpmn:flowNodeRef>p4_dcb</bpmn:flowNodeRef>
+<bpmn:flowNodeRef>p4_gm</bpmn:flowNodeRef>
+<bpmn:flowNodeRef>p4_ups</bpmn:flowNodeRef>
+<bpmn:flowNodeRef>p4_gbc</bpmn:flowNodeRef>
+<bpmn:flowNodeRef>p4_gpm</bpmn:flowNodeRef>
+</bpmn:lane>
+<bpmn:lane id="p4_F" name="Feeder &amp; amplifiers">
+<bpmn:flowNodeRef>p4_draw</bpmn:flowNodeRef>
+<bpmn:flowNodeRef>p4_gv</bpmn:flowNodeRef>
+<bpmn:flowNodeRef>p4_eok</bpmn:flowNodeRef>
+</bpmn:lane>
+<bpmn:lane id="p4_N" name="Network management system">
+<bpmn:flowNodeRef>p4_alm</bpmn:flowNodeRef>
+</bpmn:lane>
+<bpmn:lane id="p4_T" name="Electrician / comms tech">
+<bpmn:flowNodeRef>p4_fix</bpmn:flowNodeRef>
+<bpmn:flowNodeRef>p4_eout</bpmn:flowNodeRef>
+<bpmn:flowNodeRef>p4_vfix</bpmn:flowNodeRef>
+<bpmn:flowNodeRef>p4_ev</bpmn:flowNodeRef>
+</bpmn:lane>
+</bpmn:laneSet>
+<bpmn:startEvent id="p4_s" name="Supply energised">
+<bpmn:outgoing>p4_f0</bpmn:outgoing>
+</bpmn:startEvent>
+<bpmn:serviceTask id="p4_hv" name="HV substation → transformer → 415/240 V">
+<bpmn:incoming>p4_f0</bpmn:incoming>
+<bpmn:outgoing>p4_f1</bpmn:outgoing>
+</bpmn:serviceTask>
+<bpmn:serviceTask id="p4_db" name="Distribution board: breaker, RCD, isolation and lock-out point">
+<bpmn:incoming>p4_f1</bpmn:incoming>
+<bpmn:outgoing>p4_f2</bpmn:outgoing>
+</bpmn:serviceTask>
+<bpmn:serviceTask id="p4_psu" name="Line PSU / power inserter: 240 VAC → 12–60 VDC onto coax centre conductor">
+<bpmn:incoming>p4_f2</bpmn:incoming>
+<bpmn:outgoing>p4_f3</bpmn:outgoing>
+</bpmn:serviceTask>
+<bpmn:serviceTask id="p4_dcb" name="DC blocks split power zones (one short kills one zone, not the level)">
+<bpmn:incoming>p4_f3</bpmn:incoming>
+<bpmn:outgoing>p4_f4</bpmn:outgoing>
+</bpmn:serviceTask>
+<bpmn:exclusiveGateway id="p4_gm" name="Mains present?">
+<bpmn:incoming>p4_f4</bpmn:incoming>
+<bpmn:outgoing>p4_f5</bpmn:outgoing>
+<bpmn:outgoing>p4_f6</bpmn:outgoing>
+</bpmn:exclusiveGateway>
+<bpmn:serviceTask id="p4_ups" name="UPS / PSU batteries carry the load (typically 4–8+ h)">
+<bpmn:incoming>p4_f6</bpmn:incoming>
+<bpmn:outgoing>p4_f7</bpmn:outgoing>
+</bpmn:serviceTask>
+<bpmn:exclusiveGateway id="p4_gbc" name="Battery charge OK?">
+<bpmn:incoming>p4_f7</bpmn:incoming>
+<bpmn:outgoing>p4_f8</bpmn:outgoing>
+<bpmn:outgoing>p4_f9</bpmn:outgoing>
+</bpmn:exclusiveGateway>
+<bpmn:exclusiveGateway id="p4_gpm" name="">
+<bpmn:incoming>p4_f5</bpmn:incoming>
+<bpmn:incoming>p4_f8</bpmn:incoming>
+<bpmn:outgoing>p4_f12</bpmn:outgoing>
+</bpmn:exclusiveGateway>
+<bpmn:serviceTask id="p4_alm" name="NMS alarm: zone on battery or power lost">
+<bpmn:incoming>p4_f9</bpmn:incoming>
+<bpmn:outgoing>p4_f10</bpmn:outgoing>
+</bpmn:serviceTask>
+<bpmn:manualTask id="p4_fix" name="Electrician restores supply; tech replaces batteries">
+<bpmn:incoming>p4_f10</bpmn:incoming>
+<bpmn:outgoing>p4_f11</bpmn:outgoing>
+</bpmn:manualTask>
+<bpmn:endEvent id="p4_eout" name="Control warns crews: zone comms at risk">
+<bpmn:incoming>p4_f11</bpmn:incoming>
+<bpmn:messageEventDefinition id="p4_eout_med"/>
+</bpmn:endEvent>
+<bpmn:serviceTask id="p4_draw" name="Amps and fibre nodes draw DC along the run (volts drop with distance)">
+<bpmn:incoming>p4_f12</bpmn:incoming>
+<bpmn:outgoing>p4_f13</bpmn:outgoing>
+</bpmn:serviceTask>
+<bpmn:exclusiveGateway id="p4_gv" name="DC volts at the farthest amp above minimum?">
+<bpmn:incoming>p4_f13</bpmn:incoming>
+<bpmn:outgoing>p4_f14</bpmn:outgoing>
+<bpmn:outgoing>p4_f15</bpmn:outgoing>
+</bpmn:exclusiveGateway>
+<bpmn:endEvent id="p4_eok" name="All amplifiers powered">
+<bpmn:incoming>p4_f14</bpmn:incoming>
+</bpmn:endEvent>
+<bpmn:manualTask id="p4_vfix" name="Add mid-run power inserter or fewer amps per PSU; fix high-resistance joints">
+<bpmn:incoming>p4_f15</bpmn:incoming>
+<bpmn:outgoing>p4_f16</bpmn:outgoing>
+</bpmn:manualTask>
+<bpmn:endEvent id="p4_ev" name="Voltage restored">
+<bpmn:incoming>p4_f16</bpmn:incoming>
+</bpmn:endEvent>
+<bpmn:sequenceFlow id="p4_f0" name="" sourceRef="p4_s" targetRef="p4_hv"/>
+<bpmn:sequenceFlow id="p4_f1" name="" sourceRef="p4_hv" targetRef="p4_db"/>
+<bpmn:sequenceFlow id="p4_f2" name="" sourceRef="p4_db" targetRef="p4_psu"/>
+<bpmn:sequenceFlow id="p4_f3" name="" sourceRef="p4_psu" targetRef="p4_dcb"/>
+<bpmn:sequenceFlow id="p4_f4" name="" sourceRef="p4_dcb" targetRef="p4_gm"/>
+<bpmn:sequenceFlow id="p4_f5" name="Yes" sourceRef="p4_gm" targetRef="p4_gpm"/>
+<bpmn:sequenceFlow id="p4_f6" name="No" sourceRef="p4_gm" targetRef="p4_ups"/>
+<bpmn:sequenceFlow id="p4_f7" name="" sourceRef="p4_ups" targetRef="p4_gbc"/>
+<bpmn:sequenceFlow id="p4_f8" name="Yes" sourceRef="p4_gbc" targetRef="p4_gpm"/>
+<bpmn:sequenceFlow id="p4_f9" name="No" sourceRef="p4_gbc" targetRef="p4_alm"/>
+<bpmn:sequenceFlow id="p4_f10" name="" sourceRef="p4_alm" targetRef="p4_fix"/>
+<bpmn:sequenceFlow id="p4_f11" name="" sourceRef="p4_fix" targetRef="p4_eout"/>
+<bpmn:sequenceFlow id="p4_f12" name="" sourceRef="p4_gpm" targetRef="p4_draw"/>
+<bpmn:sequenceFlow id="p4_f13" name="" sourceRef="p4_draw" targetRef="p4_gv"/>
+<bpmn:sequenceFlow id="p4_f14" name="Yes" sourceRef="p4_gv" targetRef="p4_eok"/>
+<bpmn:sequenceFlow id="p4_f15" name="No" sourceRef="p4_gv" targetRef="p4_vfix"/>
+<bpmn:sequenceFlow id="p4_f16" name="" sourceRef="p4_vfix" targetRef="p4_ev"/>
+</bpmn:process>
+<bpmndi:BPMNDiagram id="p4_dia"><bpmndi:BPMNPlane id="p4_plane" bpmnElement="p4_collab">
+<bpmndi:BPMNShape id="p4_pool_di" bpmnElement="p4_pool" isHorizontal="true"><dc:Bounds x="40" y="40" width="2905" height="945"/>
+</bpmndi:BPMNShape>
+<bpmndi:BPMNShape id="p4_E_di" bpmnElement="p4_E" isHorizontal="true"><dc:Bounds x="70" y="40" width="2875" height="135"/>
+</bpmndi:BPMNShape>
+<bpmndi:BPMNShape id="p4_P_di" bpmnElement="p4_P" isHorizontal="true"><dc:Bounds x="70" y="175" width="2875" height="270"/>
+</bpmndi:BPMNShape>
+<bpmndi:BPMNShape id="p4_F_di" bpmnElement="p4_F" isHorizontal="true"><dc:Bounds x="70" y="445" width="2875" height="135"/>
+</bpmndi:BPMNShape>
+<bpmndi:BPMNShape id="p4_N_di" bpmnElement="p4_N" isHorizontal="true"><dc:Bounds x="70" y="580" width="2875" height="135"/>
+</bpmndi:BPMNShape>
+<bpmndi:BPMNShape id="p4_T_di" bpmnElement="p4_T" isHorizontal="true"><dc:Bounds x="70" y="715" width="2875" height="270"/>
+</bpmndi:BPMNShape>
+<bpmndi:BPMNShape id="p4_s_di" bpmnElement="p4_s"><dc:Bounds x="194" y="90" width="36" height="36"/>
+<bpmndi:BPMNLabel><dc:Bounds x="148" y="130" width="130" height="40"/></bpmndi:BPMNLabel>
+</bpmndi:BPMNShape>
+<bpmndi:BPMNShape id="p4_hv_di" bpmnElement="p4_hv"><dc:Bounds x="345" y="60" width="165" height="96"/>
+</bpmndi:BPMNShape>
+<bpmndi:BPMNShape id="p4_db_di" bpmnElement="p4_db"><dc:Bounds x="560" y="60" width="165" height="96"/>
+</bpmndi:BPMNShape>
+<bpmndi:BPMNShape id="p4_psu_di" bpmnElement="p4_psu"><dc:Bounds x="775" y="194" width="165" height="96"/>
+</bpmndi:BPMNShape>
+<bpmndi:BPMNShape id="p4_dcb_di" bpmnElement="p4_dcb"><dc:Bounds x="990" y="194" width="165" height="96"/>
+</bpmndi:BPMNShape>
+<bpmndi:BPMNShape id="p4_gm_di" bpmnElement="p4_gm" isMarkerVisible="true"><dc:Bounds x="1262" y="218" width="50" height="50"/>
+<bpmndi:BPMNLabel><dc:Bounds x="1138" y="180" width="122" height="40"/></bpmndi:BPMNLabel>
+</bpmndi:BPMNShape>
+<bpmndi:BPMNShape id="p4_ups_di" bpmnElement="p4_ups"><dc:Bounds x="1420" y="330" width="165" height="96"/>
+</bpmndi:BPMNShape>
+<bpmndi:BPMNShape id="p4_gbc_di" bpmnElement="p4_gbc" isMarkerVisible="true"><dc:Bounds x="1692" y="352" width="50" height="50"/>
+<bpmndi:BPMNLabel><dc:Bounds x="1568" y="316" width="122" height="40"/></bpmndi:BPMNLabel>
+</bpmndi:BPMNShape>
+<bpmndi:BPMNShape id="p4_gpm_di" bpmnElement="p4_gpm" isMarkerVisible="true"><dc:Bounds x="1908" y="218" width="50" height="50"/>
+<bpmndi:BPMNLabel><dc:Bounds x="1782" y="180" width="122" height="40"/></bpmndi:BPMNLabel>
+</bpmndi:BPMNShape>
+<bpmndi:BPMNShape id="p4_alm_di" bpmnElement="p4_alm"><dc:Bounds x="1850" y="600" width="165" height="96"/>
+</bpmndi:BPMNShape>
+<bpmndi:BPMNShape id="p4_fix_di" bpmnElement="p4_fix"><dc:Bounds x="1850" y="734" width="165" height="96"/>
+</bpmndi:BPMNShape>
+<bpmndi:BPMNShape id="p4_eout_di" bpmnElement="p4_eout"><dc:Bounds x="2130" y="764" width="36" height="36"/>
+<bpmndi:BPMNLabel><dc:Bounds x="2082" y="804" width="130" height="40"/></bpmndi:BPMNLabel>
+</bpmndi:BPMNShape>
+<bpmndi:BPMNShape id="p4_draw_di" bpmnElement="p4_draw"><dc:Bounds x="2065" y="464" width="165" height="96"/>
+</bpmndi:BPMNShape>
+<bpmndi:BPMNShape id="p4_gv_di" bpmnElement="p4_gv" isMarkerVisible="true"><dc:Bounds x="2338" y="488" width="50" height="50"/>
+<bpmndi:BPMNLabel><dc:Bounds x="2212" y="450" width="122" height="40"/></bpmndi:BPMNLabel>
+</bpmndi:BPMNShape>
+<bpmndi:BPMNShape id="p4_eok_di" bpmnElement="p4_eok"><dc:Bounds x="2560" y="494" width="36" height="36"/>
+<bpmndi:BPMNLabel><dc:Bounds x="2512" y="534" width="130" height="40"/></bpmndi:BPMNLabel>
+</bpmndi:BPMNShape>
+<bpmndi:BPMNShape id="p4_vfix_di" bpmnElement="p4_vfix"><dc:Bounds x="2495" y="870" width="165" height="96"/>
+</bpmndi:BPMNShape>
+<bpmndi:BPMNShape id="p4_ev_di" bpmnElement="p4_ev"><dc:Bounds x="2774" y="900" width="36" height="36"/>
+<bpmndi:BPMNLabel><dc:Bounds x="2728" y="940" width="130" height="40"/></bpmndi:BPMNLabel>
+</bpmndi:BPMNShape>
+<bpmndi:BPMNEdge id="p4_f0_di" bpmnElement="p4_f0">
+<di:waypoint x="230" y="108"/>
+<di:waypoint x="345" y="108"/>
+</bpmndi:BPMNEdge>
+<bpmndi:BPMNEdge id="p4_f1_di" bpmnElement="p4_f1">
+<di:waypoint x="510" y="108"/>
+<di:waypoint x="560" y="108"/>
+</bpmndi:BPMNEdge>
+<bpmndi:BPMNEdge id="p4_f2_di" bpmnElement="p4_f2">
+<di:waypoint x="725" y="108"/>
+<di:waypoint x="747" y="108"/>
+<di:waypoint x="747" y="242"/>
+<di:waypoint x="775" y="242"/>
+</bpmndi:BPMNEdge>
+<bpmndi:BPMNEdge id="p4_f3_di" bpmnElement="p4_f3">
+<di:waypoint x="940" y="242"/>
+<di:waypoint x="990" y="242"/>
+</bpmndi:BPMNEdge>
+<bpmndi:BPMNEdge id="p4_f4_di" bpmnElement="p4_f4">
+<di:waypoint x="1155" y="242"/>
+<di:waypoint x="1262" y="242"/>
+</bpmndi:BPMNEdge>
+<bpmndi:BPMNEdge id="p4_f5_di" bpmnElement="p4_f5">
+<di:waypoint x="1312" y="242"/>
+<di:waypoint x="1908" y="242"/>
+<bpmndi:BPMNLabel><dc:Bounds x="1318" y="224" width="30" height="14"/></bpmndi:BPMNLabel>
+</bpmndi:BPMNEdge>
+<bpmndi:BPMNEdge id="p4_f6_di" bpmnElement="p4_f6">
+<di:waypoint x="1288" y="268"/>
+<di:waypoint x="1288" y="378"/>
+<di:waypoint x="1420" y="378"/>
+<bpmndi:BPMNLabel><dc:Bounds x="1294" y="272" width="30" height="14"/></bpmndi:BPMNLabel>
+</bpmndi:BPMNEdge>
+<bpmndi:BPMNEdge id="p4_f7_di" bpmnElement="p4_f7">
+<di:waypoint x="1585" y="378"/>
+<di:waypoint x="1692" y="378"/>
+</bpmndi:BPMNEdge>
+<bpmndi:BPMNEdge id="p4_f8_di" bpmnElement="p4_f8">
+<di:waypoint x="1742" y="378"/>
+<di:waypoint x="1932" y="378"/>
+<di:waypoint x="1932" y="268"/>
+<bpmndi:BPMNLabel><dc:Bounds x="1748" y="360" width="30" height="14"/></bpmndi:BPMNLabel>
+</bpmndi:BPMNEdge>
+<bpmndi:BPMNEdge id="p4_f9_di" bpmnElement="p4_f9">
+<di:waypoint x="1718" y="402"/>
+<di:waypoint x="1718" y="648"/>
+<di:waypoint x="1850" y="648"/>
+<bpmndi:BPMNLabel><dc:Bounds x="1724" y="406" width="30" height="14"/></bpmndi:BPMNLabel>
+</bpmndi:BPMNEdge>
+<bpmndi:BPMNEdge id="p4_f10_di" bpmnElement="p4_f10">
+<di:waypoint x="1932" y="696"/>
+<di:waypoint x="1932" y="734"/>
+</bpmndi:BPMNEdge>
+<bpmndi:BPMNEdge id="p4_f11_di" bpmnElement="p4_f11">
+<di:waypoint x="2015" y="782"/>
+<di:waypoint x="2130" y="782"/>
+</bpmndi:BPMNEdge>
+<bpmndi:BPMNEdge id="p4_f12_di" bpmnElement="p4_f12">
+<di:waypoint x="1932" y="268"/>
+<di:waypoint x="1932" y="512"/>
+<di:waypoint x="2065" y="512"/>
+</bpmndi:BPMNEdge>
+<bpmndi:BPMNEdge id="p4_f13_di" bpmnElement="p4_f13">
+<di:waypoint x="2230" y="512"/>
+<di:waypoint x="2338" y="512"/>
+</bpmndi:BPMNEdge>
+<bpmndi:BPMNEdge id="p4_f14_di" bpmnElement="p4_f14">
+<di:waypoint x="2388" y="512"/>
+<di:waypoint x="2560" y="512"/>
+<bpmndi:BPMNLabel><dc:Bounds x="2394" y="494" width="30" height="14"/></bpmndi:BPMNLabel>
+</bpmndi:BPMNEdge>
+<bpmndi:BPMNEdge id="p4_f15_di" bpmnElement="p4_f15">
+<di:waypoint x="2362" y="538"/>
+<di:waypoint x="2362" y="918"/>
+<di:waypoint x="2495" y="918"/>
+<bpmndi:BPMNLabel><dc:Bounds x="2368" y="542" width="30" height="14"/></bpmndi:BPMNLabel>
+</bpmndi:BPMNEdge>
+<bpmndi:BPMNEdge id="p4_f16_di" bpmnElement="p4_f16">
+<di:waypoint x="2660" y="918"/>
+<di:waypoint x="2774" y="918"/>
+</bpmndi:BPMNEdge>
+</bpmndi:BPMNPlane></bpmndi:BPMNDiagram></bpmn:definitions>

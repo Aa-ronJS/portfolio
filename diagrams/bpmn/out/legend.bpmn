@@ -1,0 +1,92 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<bpmn:definitions xmlns:bpmn="http://www.omg.org/spec/BPMN/20100524/MODEL" xmlns:bpmndi="http://www.omg.org/spec/BPMN/20100524/DI" xmlns:dc="http://www.omg.org/spec/DD/20100524/DC" xmlns:di="http://www.omg.org/spec/DD/20100524/DI" id="lg_defs" targetNamespace="http://example.com/od-radio">
+<bpmn:collaboration id="lg_collab">
+<bpmn:participant id="lg_pool" name="Pool = the process" processRef="lg_process"/>
+<bpmn:participant id="lg_bb" name="Another party (black-box pool)"/>
+<bpmn:messageFlow id="lg_m0" name="Message flow" sourceRef="lg_em" targetRef="lg_bb"/>
+</bpmn:collaboration>
+<bpmn:process id="lg_process" name="Legend" isExecutable="false">
+<bpmn:laneSet id="lg_ls">
+<bpmn:lane id="lg_A" name="Lane = who / what does it">
+<bpmn:flowNodeRef>lg_s</bpmn:flowNodeRef>
+<bpmn:flowNodeRef>lg_u</bpmn:flowNodeRef>
+<bpmn:flowNodeRef>lg_m</bpmn:flowNodeRef>
+<bpmn:flowNodeRef>lg_v</bpmn:flowNodeRef>
+<bpmn:flowNodeRef>lg_c</bpmn:flowNodeRef>
+<bpmn:flowNodeRef>lg_g</bpmn:flowNodeRef>
+<bpmn:flowNodeRef>lg_o</bpmn:flowNodeRef>
+<bpmn:flowNodeRef>lg_ms</bpmn:flowNodeRef>
+<bpmn:flowNodeRef>lg_e</bpmn:flowNodeRef>
+<bpmn:flowNodeRef>lg_em</bpmn:flowNodeRef>
+</bpmn:lane>
+</bpmn:laneSet>
+<bpmn:startEvent id="lg_s" name="Start event">
+<bpmn:outgoing>lg_f0</bpmn:outgoing>
+</bpmn:startEvent>
+<bpmn:userTask id="lg_u" name="User task: a person on a radio / console">
+<bpmn:incoming>lg_f0</bpmn:incoming>
+</bpmn:userTask>
+<bpmn:manualTask id="lg_m" name="Manual task: hands-on physical work">
+</bpmn:manualTask>
+<bpmn:serviceTask id="lg_v" name="Service task: equipment does it automatically">
+</bpmn:serviceTask>
+<bpmn:callActivity id="lg_c" name="Call activity [+]: detailed on its own page" calledElement="x">
+</bpmn:callActivity>
+<bpmn:exclusiveGateway id="lg_g" name="Exclusive gateway: take ONE path">
+</bpmn:exclusiveGateway>
+<bpmn:inclusiveGateway id="lg_o" name="Inclusive: ALL that apply">
+</bpmn:inclusiveGateway>
+<bpmn:startEvent id="lg_ms" name="Message start">
+<bpmn:messageEventDefinition id="lg_ms_med"/>
+</bpmn:startEvent>
+<bpmn:endEvent id="lg_e" name="End event">
+</bpmn:endEvent>
+<bpmn:endEvent id="lg_em" name="Message end">
+<bpmn:messageEventDefinition id="lg_em_med"/>
+</bpmn:endEvent>
+<bpmn:sequenceFlow id="lg_f0" name="Sequence flow" sourceRef="lg_s" targetRef="lg_u"/>
+</bpmn:process>
+<bpmndi:BPMNDiagram id="lg_dia"><bpmndi:BPMNPlane id="lg_plane" bpmnElement="lg_collab">
+<bpmndi:BPMNShape id="lg_pool_di" bpmnElement="lg_pool" isHorizontal="true"><dc:Bounds x="40" y="40" width="1400" height="270"/>
+</bpmndi:BPMNShape>
+<bpmndi:BPMNShape id="lg_A_di" bpmnElement="lg_A" isHorizontal="true"><dc:Bounds x="70" y="40" width="1370" height="270"/>
+</bpmndi:BPMNShape>
+<bpmndi:BPMNShape id="lg_bb_di" bpmnElement="lg_bb" isHorizontal="true"><dc:Bounds x="40" y="350" width="1400" height="70"/>
+</bpmndi:BPMNShape>
+<bpmndi:BPMNShape id="lg_s_di" bpmnElement="lg_s"><dc:Bounds x="194" y="90" width="36" height="36"/>
+<bpmndi:BPMNLabel><dc:Bounds x="148" y="130" width="130" height="40"/></bpmndi:BPMNLabel>
+</bpmndi:BPMNShape>
+<bpmndi:BPMNShape id="lg_u_di" bpmnElement="lg_u"><dc:Bounds x="345" y="60" width="165" height="96"/>
+</bpmndi:BPMNShape>
+<bpmndi:BPMNShape id="lg_m_di" bpmnElement="lg_m"><dc:Bounds x="560" y="60" width="165" height="96"/>
+</bpmndi:BPMNShape>
+<bpmndi:BPMNShape id="lg_v_di" bpmnElement="lg_v"><dc:Bounds x="775" y="60" width="165" height="96"/>
+</bpmndi:BPMNShape>
+<bpmndi:BPMNShape id="lg_c_di" bpmnElement="lg_c" isExpanded="false"><dc:Bounds x="990" y="60" width="165" height="96"/>
+</bpmndi:BPMNShape>
+<bpmndi:BPMNShape id="lg_g_di" bpmnElement="lg_g" isMarkerVisible="true"><dc:Bounds x="402" y="218" width="50" height="50"/>
+<bpmndi:BPMNLabel><dc:Bounds x="278" y="180" width="122" height="40"/></bpmndi:BPMNLabel>
+</bpmndi:BPMNShape>
+<bpmndi:BPMNShape id="lg_o_di" bpmnElement="lg_o"><dc:Bounds x="618" y="218" width="50" height="50"/>
+<bpmndi:BPMNLabel><dc:Bounds x="492" y="180" width="122" height="40"/></bpmndi:BPMNLabel>
+</bpmndi:BPMNShape>
+<bpmndi:BPMNShape id="lg_ms_di" bpmnElement="lg_ms"><dc:Bounds x="840" y="224" width="36" height="36"/>
+<bpmndi:BPMNLabel><dc:Bounds x="792" y="264" width="130" height="40"/></bpmndi:BPMNLabel>
+</bpmndi:BPMNShape>
+<bpmndi:BPMNShape id="lg_e_di" bpmnElement="lg_e"><dc:Bounds x="1054" y="224" width="36" height="36"/>
+<bpmndi:BPMNLabel><dc:Bounds x="1008" y="264" width="130" height="40"/></bpmndi:BPMNLabel>
+</bpmndi:BPMNShape>
+<bpmndi:BPMNShape id="lg_em_di" bpmnElement="lg_em"><dc:Bounds x="1270" y="224" width="36" height="36"/>
+<bpmndi:BPMNLabel><dc:Bounds x="1222" y="264" width="130" height="40"/></bpmndi:BPMNLabel>
+</bpmndi:BPMNShape>
+<bpmndi:BPMNEdge id="lg_f0_di" bpmnElement="lg_f0">
+<di:waypoint x="230" y="108"/>
+<di:waypoint x="345" y="108"/>
+<bpmndi:BPMNLabel><dc:Bounds x="236" y="90" width="86" height="14"/></bpmndi:BPMNLabel>
+</bpmndi:BPMNEdge>
+<bpmndi:BPMNEdge id="lg_m0_di" bpmnElement="lg_m0">
+<di:waypoint x="1288" y="260"/>
+<di:waypoint x="1288" y="350"/>
+<bpmndi:BPMNLabel><dc:Bounds x="1296" y="298" width="79" height="14"/></bpmndi:BPMNLabel>
+</bpmndi:BPMNEdge>
+</bpmndi:BPMNPlane></bpmndi:BPMNDiagram></bpmn:definitions>
