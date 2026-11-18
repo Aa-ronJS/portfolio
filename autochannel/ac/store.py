@@ -75,7 +75,10 @@ def load(path: Path) -> dict:
 
 def new_path(cfg: dict, title: str) -> Path:
     stamp = dt.datetime.now(dt.timezone.utc).strftime("%Y%m%d-%H%M%S")
-    return queue(cfg) / f"{stamp}-{slug(title)}.yaml"
+    path, k = queue(cfg) / f"{stamp}-{slug(title)}.yaml", 2
+    while path.exists():  # scripts written in parallel can finish in the same second
+        path, k = queue(cfg) / f"{stamp}-{slug(title)}-{k}.yaml", k + 1
+    return path
 
 
 def ready(cfg: dict) -> list[Path]:

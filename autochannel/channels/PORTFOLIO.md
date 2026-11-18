@@ -43,21 +43,25 @@ someone's story without permission is copyright infringement, it's the
 exact "readings of other materials you did not originally create" that
 YouTube's reused-content rule bans, and r/nosleep went dark in 2020 over
 narrators doing it. So The Second Knock writes **original fiction in that
-style**, every description says so, and titles never say "true". Real
-usernames, real crimes and real people are banned. Violence stays
+style**. No fiction label is needed, but titles never claim "true".
+Real usernames, real crimes and real people are banned. Violence stays
 implied, which also keeps full ads.
 *Later, optionally:* narrate real authors' stories with written
 permission (and a revenue share), the way established narrators do.
 That's a manual relationship, not something to automate.
 
-**Theories: an evidence board, never the footage.** Game and film clips,
-trailers and music trigger Content ID (YouTube's automatic copyright
-matching): ad money goes to the rights holder, or the video is blocked,
-and disputed claims can become strikes (three in 90 days ends the
-channel). AI images of copyrighted characters are the kind of content
-behind the December 2025 bans of the fake-trailer channels. So Red String
-Files is built from quoted dialogue on text cards, timelines, diagrams,
-maps and mood stock. It's a distinct look that nobody can claim.
+**Theories: gameplay yes, film footage sparingly.** Most game publishers
+allow gameplay videos and many allow monetising them. Nintendo's
+guidelines name the YouTube Partner Program; Microsoft has allowed it
+since 2015. That's why so many channels run on gameplay. So games lead,
+using footage from the channel's own library (recorded or
+publisher-supplied, never ripped from other channels), per each
+publisher's rules (`red_string/FOOTAGE.md`). Films and TV are different:
+no blanket licence, and YouTube's automatic matching usually hands a
+clip's ad money to the studio. So those videos are mostly evidence-board
+(quotes, timelines, diagrams) with a few short clips where the moment is
+the evidence. AI images of copyrighted characters stay banned; they're
+what the fake-trailer channels were removed for.
 
 **Sleep: the honest one in a sloppy genre.** "Boring history for sleep"
 networks still monetise, but they are the textbook mass-produced
@@ -106,20 +110,67 @@ aren't linked in writing.
 
 - Named channel: 5 minutes a day.
 - Six anonymous channels: one weekly batch, ~15–20 minutes, approving
-  scripts (title, opening and outline, not every word). Each channel
+  scripts (title, opening and outline, not every word). By the time a
+  script reaches Aaron it has already survived the council, so the
+  approval is a taste check, not a proofread. Each channel
   keeps two weeks of scripts ahead; Lamplight keeps four.
+
+## The quality bar: the writers' room
+
+Nothing reaches a channel's queue without passing an adversarial council
+(`council/`, `ac/council.py`):
+
+1. **Pitch:** three different angles per idea. A commissioning editor
+   picks one or bins all three. Weak ideas die for cents.
+2. **Draft** from the commissioned pitch and the editor's notes.
+3. **Council:** 7–8 reviewers per channel, each a different adversary.
+   Everyone gets: editor-in-chief (is it exceptional?), cold viewer
+   (where would I click away?), retention editor, read-aloud editor (TTS
+   pitfalls), AI-slop detector (veto) and policy reviewer (veto). Each
+   genre adds its specialists:
+
+   | Channel | Specialist seats |
+   |---|---|
+   | Aaron Steele | fact-checker (veto, web search), originality (veto, web search) |
+   | The Second Knock | horror editor, originality (veto, searches for borrowed plots) |
+   | Red String Files | theory logic (searches the canon), originality |
+   | Ledger of the Odd, Treeline Reports | fact-checker, originality |
+   | Lamplight Lectures | sleep-content editor, fact-checker (no retention seat: no hooks in sleep) |
+   | Blind Spot Lab | psychology science reviewer (studies and replication), originality |
+
+4. **Rewrite and re-review,** up to 3 rounds. A script passes only when
+   **every** seat scores 8+ with nothing blocking. A veto seat's
+   "reject" bins it on the spot.
+5. **Learn:** binned scripts go to `rejected/` with every review, and
+   their blocking issues feed the channel's `LESSONS.md`, which the
+   writer reads next time.
+
+Every seat is a plain markdown file Aaron can sharpen. Every queued script
+records each seat's score and its own cost.
 
 ## Money and compute (US$50/month for everything)
 
+The council is where the money goes: roughly **$2–2.50 per script that
+passes** (pitches, draft, 7–8 reviews per round, rewrites, web
+searches), and more for 2-hour sleep scripts.
+
 | Item | Estimate |
 |---|---|
-| Scripts: ~55 regular (~$0.30–0.50) + 4 two-hour sleep scripts (~$1.50) | ~$30 |
+| Writing budget, capped per channel: Aaron $10, Lamplight $8, the other five $6.40 each | $50 hard cap |
 | Voice, rendering, footage, upload | $0 |
-| Compute: ~1,500 of the 2,000 free private-repo minutes (sleep videos are ~40% of it) | $0 |
-| Headroom | ~$20 |
+| Compute | ~1,500–1,900 of the 2,000 free private-repo minutes |
 
-If minutes run out, the cheapest fix is GitHub's pay-per-minute overage
-(a few dollars) or running the jobs on a spare home computer for free.
+**What the cap means:** at full volume (13 videos a week) the council
+would cost about $130 a month. With $50 it can pass roughly 20–25
+scripts a month, so **channels post less rather than worse**. A channel
+whose writing budget runs out simply has nothing new in its queue.
+Two levers raise volume without lowering the bar:
+- **Batch API** (build list): the council doesn't need instant answers,
+  and batched requests cost half. Roughly doubles volume for the same money.
+- **Raise the caps** in each `channel.yaml` (`writer.monthly_budget_usd`).
+
+If compute minutes run out, GitHub's per-minute overage costs a few
+dollars, or the jobs can run on a spare home computer for free.
 
 **What these genres pay:** entertainment-type genres (horror, theories,
 cryptids) sit nearer YouTube's all-niche median of about $2–4 per 1,000
@@ -157,6 +208,10 @@ the cliffhanger. They're trailers, judged on whether long-form views follow.
    maps from b-roll cues like `text card: ...`, `timeline: ...`,
    `map: ...`. Red String Files and Blind Spot Lab depend on it; today
    those cues would be sent to stock search.
+1a. **Footage library matching:** `gameplay:` and `clip:` cues pick
+   clips from `channels/<name>/footage/` by name (Red String Files).
+1b. **Batch API for the writers' room:** half price, so about twice the
+   scripts for the same budget.
 2. **Stills mode:** slow pans over archive scans and paintings (Ledger
    of the Odd, Lamplight Lectures).
 3. **Footage sources** beyond Pexels: Pixabay, Library of Congress,

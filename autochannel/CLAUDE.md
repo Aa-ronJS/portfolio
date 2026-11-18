@@ -14,8 +14,10 @@ Each channel is a folder in `channels/` (channel.yaml merged over
 `channels/defaults.yaml`; loaded config carries `_slug`/`_dir`). The
 workflow runs `python -m ac topup` (writers only, light job), then
 `python -m ac <channel> daily` in a matrix over `python -m ac due`:
-`write.py` tops up `queue/` (one Claude call, structured output, reads
-the channel's `RULES.md` + `IDEAS.md` + titles already made) → `voice.py`
+`write.py` tops up `queue/` through `council.py` (pitch x3 → commission
+→ draft → council of `council/*.md` seats in parallel, sharing a cached
+prefix → rewrite, up to `max_rounds`; reads the channel's `RULES.md`,
+`IDEAS.md`, `LESSONS.md` and titles already made) → `voice.py`
 (Pocket TTS, sentence by sentence, loudnorm -14 LUFS) → `captions.py`
 (faster-whisper word times mapped back onto the script text) →
 `render.py` (Pexels b-roll or gradient fallback, ASS captions via
@@ -32,6 +34,15 @@ episode yaml moves to `posted/`.
   Rejected: XTTS-v2 and F5-TTS weights are non-commercial; Chatterbox
   wants a GPU for sane speed. Pocket TTS ran 27 s of speech in ~15 s on
   4 vCPU (measured 2026-11-18).
+- **The council is the quality bar; don't weaken it to save money.**
+  Every seat must score `pass_score`+ with no blocking issues; veto seats
+  bin outright. Budget is enforced by per-channel monthly caps
+  (`writer.monthly_budget_usd`, spend in `spend.yaml`), so overspend
+  means fewer videos, never a lower bar. Next lever: Batch API (half price).
+- **Search seats research then judge in two calls:** structured output
+  can't be combined with citations, which web search can produce.
+- **Queue filenames must stay unique**: parallel writers can finish in
+  the same second (`store.new_path` suffixes -2, -3).
 - **Degrade, don't fail:** no footage → gradient; writer down → post
   from the queue; one episode broken → try the next, retire after 3.
 - **faster-whisper gets numpy audio decoded by ffmpeg**, never a path:

@@ -1,9 +1,10 @@
 # Copy to .github/workflows/daily.yml in the channels' private repo.
 #
-# Every day: one light job writes scripts for any channel whose queue is
-# low (Claude only, ~1 min), then one heavy job per channel that posts
-# today renders and uploads in parallel (~10-15 min each). Free private-repo
-# allowance is 2,000 min/month: enough for ~120 long videos.
+# Every day, in parallel:
+#   write: one job per channel runs the writers' room (pitch, draft,
+#          council review, rewrite) if that channel's queue is low.
+#   post:  one job per channel that posts today renders and uploads.
+# Free private-repo allowance is 2,000 min/month; see PORTFOLIO.md for the estimate.
 #
 # Secrets: ANTHROPIC_API_KEY, PEXELS_API_KEY, YT_CLIENT_ID, YT_CLIENT_SECRET
 # (shared) and YT_REFRESH_TOKEN_<CHANNEL> per channel, e.g. YT_REFRESH_TOKEN_AARON.
@@ -24,28 +25,45 @@ permissions:
 jobs:
   plan:
     runs-on: ubuntu-latest
-    timeout-minutes: 30
+    timeout-minutes: 5
     outputs:
-      due: ${{ steps.due.outputs.due }}
+      all: ${{ steps.p.outputs.all }}
+      due: ${{ steps.p.outputs.due }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with: { python-version: "3.12" }
+      - run: pip install -q PyYAML==6.0.3
+      - id: p
+        run: |
+          echo "all=$(python -m ac channels)" >> "$GITHUB_OUTPUT"
+          echo "due=$(python -m ac due)" >> "$GITHUB_OUTPUT"
+
+  write:
+    needs: plan
+    runs-on: ubuntu-latest
+    timeout-minutes: 120
+    strategy:
+      fail-fast: false
+      matrix:
+        channel: ${{ fromJSON(needs.plan.outputs.all) }}
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-python@v5
         with: { python-version: "3.12" }
       - run: pip install -q anthropic==2.10.0 pydantic==2.14.3 PyYAML==6.0.3
-      - name: Write scripts where queues are low
+      - name: Writers' room
         env:
           ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
-        run: python -m ac topup
-      - id: due
-        run: echo "due=$(python -m ac due)" >> "$GITHUB_OUTPUT"
-      - name: Save new scripts
+        run: python -m ac ${{ matrix.channel }} topup
+      - name: Save scripts, rejections and spend
         if: always()
         run: |
           git config user.name "autochannel"
           git config user.email "autochannel@users.noreply.github.com"
-          git add channels
-          git diff --cached --quiet || git commit -q -m "scripts: $(date -u +%F)"
-          git pull -q --rebase && git push -q
+          git add channels/${{ matrix.channel }}
+          git diff --cached --quiet || git commit -q -m "${{ matrix.channel }} scripts: $(date -u +%F)"
+          for i in 1 2 3 4 5; do git pull -q --rebase && git push -q && break; sleep $((i*3)); done
 
   post:
     needs: plan
@@ -59,7 +77,6 @@ jobs:
         channel: ${{ fromJSON(needs.plan.outputs.due) }}
     steps:
       - uses: actions/checkout@v4
-        with: { ref: main }         # pick up the scripts the plan job just pushed
       - uses: actions/setup-python@v5
         with:
           python-version: "3.12"
@@ -75,13 +92,12 @@ jobs:
           pip install -q -r requirements.txt
       - name: Post
         env:
-          ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
           PEXELS_API_KEY: ${{ secrets.PEXELS_API_KEY }}
           YT_CLIENT_ID: ${{ secrets.YT_CLIENT_ID }}
           YT_CLIENT_SECRET: ${{ secrets.YT_CLIENT_SECRET }}
           # each channel's job only ever sees its own sign-in
           YT_REFRESH_TOKEN: ${{ secrets[format('YT_REFRESH_TOKEN_{0}', matrix.channel)] }}
-        run: python -m ac ${{ matrix.channel }} daily
+        run: python -m ac ${{ matrix.channel }} post-today
       - name: Save state
         if: always()
         run: |

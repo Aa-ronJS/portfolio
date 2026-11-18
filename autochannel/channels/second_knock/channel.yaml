@@ -4,6 +4,7 @@
 channel_name: "The Second Knock"
 
 writer:
+  monthly_budget_usd: 6.4
   batch_size: 4
 
 format:
@@ -26,5 +27,7 @@ publish:
   days: [wed, sat]
   category_id: "24"
   description_footer: |
-    Original fiction. All stories, people and events are invented.
     Narration synthesised with Kyutai Pocket TTS (CC BY 4.0).
+
+council:
+  reviewers: [chief, viewer, retention, ear, slop, policy, scare, originality]

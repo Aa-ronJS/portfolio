@@ -4,9 +4,11 @@
   python -m ac pending                     every script waiting for approval (weekly batch)
   python -m ac topup                       every channel: write scripts if its queue is low
   python -m ac due                         channels that post today (JSON, for the workflow)
+  python -m ac channels                    every channel (JSON, for the workflow)
   python -m ac new <name>                  start a channel from channels/_template
 
   python -m ac <channel> daily             top up its queue; post if today is a posting day
+  python -m ac <channel> topup             run the writers' room if its queue is low
   python -m ac <channel> write [N]         write N scripts into its queue
   python -m ac <channel> make [file]       render the next ready episode (no upload)
   python -m ac <channel> post [file]       render and upload it
@@ -99,6 +101,10 @@ def topup(cfg: dict) -> None:
 
 def daily(cfg: dict) -> int:
     topup(cfg)
+    return post_today(cfg)
+
+
+def post_today(cfg: dict) -> int:
     if not store.due_today(cfg):
         print(f"[{cfg['_slug']}] not a posting day")
         return 0
@@ -175,6 +181,9 @@ def main(argv: list[str]) -> int:
         for slug in store.channels():
             topup(store.load_config(slug))
         return 0
+    if cmd == "channels":
+        print(json.dumps(store.channels()))
+        return 0
     if cmd == "due":
         print(json.dumps([s for s in store.channels() if store.due_today(store.load_config(s))]))
         return 0
@@ -191,6 +200,11 @@ def main(argv: list[str]) -> int:
     sub, args = (args[0] if args else "status"), args[1:]
     if sub == "daily":
         return daily(cfg)
+    if sub == "topup":
+        topup(cfg)
+        return 0
+    if sub == "post-today":
+        return post_today(cfg)
     if sub == "write":
         from . import write
         write.write(cfg, int(args[0]) if args else None)

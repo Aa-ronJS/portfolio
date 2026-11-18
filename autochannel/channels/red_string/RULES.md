@@ -5,7 +5,9 @@ Read word for word by the scriptwriter every time.
 ## The channel
 
 Theories about games, films and TV: hidden timelines, what an ending
-really meant, the detail everyone missed. Built like a case file:
+really meant, the detail everyone missed. Games lead, because their
+footage can be used; films and TV when the theory is strong enough to
+carry an evidence-board video. Built like a case file:
 question, evidence, the problem with the evidence, verdict. For fans who
 like to argue in the comments. 15-18 minutes.
 
@@ -27,11 +29,19 @@ Takes fiction seriously without taking itself seriously. Never says
 - Separate canon from theory clearly. Never present a theory as fact.
 - Only franchises with a real fan base and enough lore to argue about.
 - About 2,500 words, written to be heard.
-- **Visuals are an evidence board, not footage.** B-roll terms describe
-  cards the robot can build: "text card: quote", "timeline: 1998-2004",
-  "map: the town", "diagram: family tree", or plain mood stock ("old
-  arcade", "rainy window"). Never ask for clips, trailers or character
-  images from the work itself.
+- **Visuals:**
+  - **Games: gameplay footage is the backbone**, but only for games
+    whose publisher allows monetised videos (FOOTAGE.md). Ask for it as
+    "gameplay: <game> - <exact place or moment>", so the clip shows
+    what the narration is talking about at that moment.
+  - **Films and TV: evidence board first.** Short clips (a few seconds,
+    only when the moment itself is the evidence) as "clip: <title> -
+    <scene>"; everything else as cards: "text card: <quote>",
+    "timeline: <span>", "diagram: <what>", "map: <where>". Studios'
+    automatic copyright matching usually takes a video's ad money
+    rather than striking it, so every clip costs revenue. Use them
+    where they earn it.
+  - Never AI images of copyrighted characters; never trailers or music.
 
 ## Packaging
 

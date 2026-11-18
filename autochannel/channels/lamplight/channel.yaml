@@ -4,6 +4,7 @@
 channel_name: "Lamplight Lectures"
 
 writer:
+  monthly_budget_usd: 8
   batch_size: 2
 
 format:
@@ -29,3 +30,6 @@ publish:
   category_id: "27"
   description_footer: |
     Narration synthesised with Kyutai Pocket TTS (CC BY 4.0).
+
+council:
+  reviewers: [chief, viewer, ear, slop, policy, calm, factcheck]

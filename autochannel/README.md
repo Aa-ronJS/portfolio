@@ -4,8 +4,10 @@ One engine that runs any number of YouTube channels in your own cloned
 voice, for a few dollars a month. Right now that's seven: your named
 channel and six anonymous ones. Every day a free GitHub runner:
 
-1. writes scripts for any channel whose queue is low, each to **that
-   channel's rules** (`channels/<name>/RULES.md`)
+1. for any channel whose queue is low, runs the **writers' room**: three
+   pitches, a commissioning editor, a draft, then an adversarial council
+   of 7-8 reviewers (`council/`) that must all pass it, with rewrites in
+   between, to **that channel's rules** (`channels/<name>/RULES.md`)
 2. for each channel posting today: reads the next approved script aloud
    **in your voice** (the register that channel uses), on CPU, free
 3. cuts free footage to it and burns in word-by-word captions
@@ -34,11 +36,12 @@ ac/                        the engine
 |---|---|---|
 | your voice | Kyutai Pocket TTS on the runner's CPU | $0 |
 | compute | GitHub Actions, private repo: 2,000 free min/month; ~60 videos use ~900 | $0 |
-| scripts | Claude Opus 5.5, researched long-form, ~$0.50 each, ~60 a month | ~US$30/month |
+| scripts | Claude Opus 5.5 writers' room: pitch, draft, 7-8 adversarial reviewers, rewrites; ~$2-2.50 per script that passes | capped at US$50/month across channels |
 | footage | Pexels and public-domain archives | $0 |
 | upload | YouTube Data API | $0 |
 
-No ElevenLabs. The scripts are the only bill.
+No ElevenLabs. The scripts are the only bill, and they're capped: if the
+money runs out, channels post less, never worse (`channels/PORTFOLIO.md`).
 
 ## Setting it up (once)
 

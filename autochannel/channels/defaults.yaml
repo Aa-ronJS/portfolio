@@ -6,12 +6,21 @@ channel_name: "Unnamed"
 
 # --- writing --------------------------------------------------------------
 writer:
-  model: claude-opus-5-5     # ~$0.50 per long researched script
+  model: claude-opus-5-5     # ~$2-2.50 per script that passes the council
   effort: medium
   batch_size: 4              # scripts written per top-up (two weeks at 2/week)
   refill_below: 4            # keep this many approved scripts ahead
   review: true               # true = new scripts wait for you to set
                              # `approved: true` before they can be posted
+  monthly_budget_usd: 6.5    # the writers' room stops for the month at this spend
+
+# --- the writers' room (council/README.md) ----------------------------------
+council:
+  reviewers: [chief, viewer, retention, ear, slop, policy]
+  pass_score: 8              # every reviewer must score at least this
+  max_rounds: 3              # rewrites before a script is binned
+  review_effort: medium
+  max_searches: 12           # per research reviewer per round
 
 # --- format ---------------------------------------------------------------
 format:

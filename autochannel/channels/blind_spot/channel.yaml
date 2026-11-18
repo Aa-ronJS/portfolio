@@ -4,6 +4,7 @@
 channel_name: "Blind Spot Lab"
 
 writer:
+  monthly_budget_usd: 6.4
   batch_size: 4
 
 format:
@@ -27,3 +28,6 @@ publish:
   category_id: "27"
   description_footer: |
     Narration synthesised with Kyutai Pocket TTS (CC BY 4.0).
+
+council:
+  reviewers: [chief, viewer, retention, ear, slop, policy, science, originality]

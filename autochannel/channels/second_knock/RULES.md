@@ -7,8 +7,8 @@ Read word for word by the scriptwriter every time.
 Scary stories in the style people love from r/nosleep and r/LetsNotMeet:
 first-person, ordinary settings (night shifts, road trips, new
 neighbours, camping), slow dread, one moment that makes you check the
-door. **Every story is original fiction written for this channel.**
-We never retell, adapt or borrow anyone else's post. Each video is 3-4
+door. **Every story is written for this channel.** We never retell,
+adapt or borrow anyone else's post. Each video is 3-4
 stories (or one long one) linked by a theme, about 20 minutes.
 
 ## Voice
@@ -28,8 +28,6 @@ never says "spooky", "creepy pasta" or "smash that like button".
 - Each story turns once, late, and ends without over-explaining.
 - No real usernames, no real named towns tied to real crimes, no real
   people. Invented places, or vague real ones ("a highway outside Dubbo").
-- The narration never claims the stories are true and never says
-  "this really happened" in its own voice. Characters may.
 - About 3,000 words total, written to be heard.
 - B-roll: one plain atmospheric search term every 6-8 seconds (night
   road, motel corridor, porch light, pine forest fog).
@@ -41,9 +39,8 @@ never says "spooky", "creepy pasta" or "smash that like button".
   title promises.
 - Three genuinely different title/thumbnail ideas; thumbnail text 1-4
   words that add to the title.
-- Titles never say "true". "Scary", "disturbing", "unsettling" are fine.
-- The description starts: "Original fiction. All stories, people and
-  events are invented."
+- Titles never claim the stories are true ("true", "real") since we
+  wrote them. "Scary", "disturbing", "unsettling" are fine.
 
 ## Never
 
