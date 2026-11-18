@@ -20,12 +20,12 @@ one template with the nouns swapped, which is exactly YouTube's
 | Channel | Genre | Length | Register (voice file) | Posts (UTC) |
 |---|---|---|---|---|
 | **Aaron Steele** (named) | Why the ordinary world works like this | 8–12 min | dry (`aaron-dry`) | Tue, Fri |
-| **The Second Knock** | Original horror stories in the r/nosleep style | ~20 min, 3–4 stories | low, close (`aaron-low`) | Wed, Sat |
-| **Red String Files** | Game, film and TV theories | 15–18 min | brisk detective (`aaron-brisk`) | Wed, Sun |
+| **Three Knocks Late** | Original horror stories in the r/nosleep style | ~20 min, 3–4 stories | low, close (`aaron-low`) | Wed, Sat |
+| **Corkboard Theories** | Game, film and TV theories | 15–18 min | brisk detective (`aaron-brisk`) | Wed, Sun |
 | **Ledger of the Odd** | Strange and creepy real history | 10–15 min | measured (`aaron-measured`) | Mon, Thu |
 | **Treeline Reports** | Cryptids: the case for and against | 15–18 min | hushed campfire (`aaron-hushed`) | Tue, Sat |
-| **Lamplight Lectures** | Calm history and science to fall asleep to | ~2 hours | slowest, softest (`aaron-sleep`) | Sun |
-| **Blind Spot Lab** | Psychology: biases and experiments | 11–15 min | curious teacher (`aaron-warm`) | Mon, Fri |
+| **The Drowsy Almanac** | Calm history and science to fall asleep to | ~2 hours | slowest, softest (`aaron-sleep`) | Sun |
+| **Mindfield Notes** | Psychology: biases and experiments | 11–15 min | curious teacher (`aaron-warm`) | Mon, Fri |
 
 Thirteen uploads a week, never more than two a day. Comparable channels
 prove the demand: Mr. Nightmare (~7.1M) and Lazy Masquerade (~1.9M) for
@@ -42,7 +42,7 @@ own their posts; Reddit's licence covers Reddit, not narrators. Reading
 someone's story without permission is copyright infringement, it's the
 exact "readings of other materials you did not originally create" that
 YouTube's reused-content rule bans, and r/nosleep went dark in 2020 over
-narrators doing it. So The Second Knock writes **original fiction in that
+narrators doing it. So Three Knocks Late writes **original fiction in that
 style**. No fiction label is needed, but titles never claim "true".
 Real usernames, real crimes and real people are banned. Violence stays
 implied, which also keeps full ads.
@@ -56,7 +56,7 @@ guidelines name the YouTube Partner Program; Microsoft has allowed it
 since 2015. That's why so many channels run on gameplay. So games lead,
 using footage from the channel's own library (recorded or
 publisher-supplied, never ripped from other channels), per each
-publisher's rules (`red_string/FOOTAGE.md`). Films and TV are different:
+publisher's rules (`corkboard/FOOTAGE.md`). Films and TV are different:
 no blanket licence, and YouTube's automatic matching usually hands a
 clip's ad money to the studio. So those videos are mostly evidence-board
 (quotes, timelines, diagrams) with a few short clips where the moment is
@@ -65,7 +65,7 @@ what the fake-trailer channels were removed for.
 
 **Sleep: the honest one in a sloppy genre.** "Boring history for sleep"
 networks still monetise, but they are the textbook mass-produced
-template, and historians have documented their invented facts. Lamplight
+template, and historians have documented their invented facts. The Drowsy Almanac
 Lectures differs on purpose: one a week (not daily), sourced facts in the
 description, distinct chapters per video, no loops or re-uploads, no
 captions, quieter audio (-20 LUFS) and slow pans. A 2-hour video watched
@@ -113,7 +113,7 @@ aren't linked in writing.
   scripts (title, opening and outline, not every word). By the time a
   script reaches Aaron it has already survived the council, so the
   approval is a taste check, not a proofread. Each channel
-  keeps two weeks of scripts ahead; Lamplight keeps four.
+  keeps two weeks of scripts ahead; The Drowsy Almanac keeps four.
 
 ## The quality bar: the writers' room
 
@@ -132,11 +132,11 @@ Nothing reaches a channel's queue without passing an adversarial council
    | Channel | Specialist seats |
    |---|---|
    | Aaron Steele | fact-checker (veto, web search), originality (veto, web search) |
-   | The Second Knock | horror editor, originality (veto, searches for borrowed plots) |
-   | Red String Files | theory logic (searches the canon), originality |
+   | Three Knocks Late | horror editor, originality (veto, searches for borrowed plots) |
+   | Corkboard Theories | theory logic (searches the canon), originality |
    | Ledger of the Odd, Treeline Reports | fact-checker, originality |
-   | Lamplight Lectures | sleep-content editor, fact-checker (no retention seat: no hooks in sleep) |
-   | Blind Spot Lab | psychology science reviewer (studies and replication), originality |
+   | The Drowsy Almanac | sleep-content editor, fact-checker (no retention seat: no hooks in sleep) |
+   | Mindfield Notes | psychology science reviewer (studies and replication), originality |
 
 4. **Rewrite and re-review,** up to 3 rounds. A script passes only when
    **every** seat scores 8+ with nothing blocking. A veto seat's
@@ -205,7 +205,7 @@ $0.40–0.50 per video (titles ~$0.30, thumbnail art direction ~$0.15).
 
 | Item | Estimate |
 |---|---|
-| Writing budget, capped per channel: Aaron $10, Lamplight $8, the other five $6.40 each | $50 hard cap |
+| Writing budget, capped per channel: Aaron $10, The Drowsy Almanac $8, the other five $6.40 each | $50 hard cap |
 | Voice, rendering, footage, upload | $0 |
 | Compute | ~1,500–1,900 of the 2,000 free private-repo minutes |
 
@@ -237,7 +237,7 @@ apply to each channel. On top of those:
   others in the first 3 months.
 - **Mid-February review: rank all seven** on share of video watched and
   watch-time growth.
-  - **Top 2:** move to 3 a week (Lamplight: 2 a week).
+  - **Top 2:** move to 3 a week (The Drowsy Almanac: 2 a week).
   - **Middle:** unchanged.
   - **Bottom 2:** one month of format or register change, then retire or
     replace if still bottom.
@@ -247,7 +247,7 @@ apply to each channel. On top of those:
 
 ## Shorts
 
-About 2 per long video (none for Lamplight). Horror and cryptids
+About 2 per long video (none for The Drowsy Almanac). Horror and cryptids
 make the strongest Shorts: one story beat or one sighting, ending on
 the cliffhanger. They're trailers, judged on whether long-form views follow.
 
@@ -255,14 +255,14 @@ the cliffhanger. They're trailers, judged on whether long-form views follow.
 
 1. **Card renderer:** text cards, quote cards, timelines, diagrams and
    maps from b-roll cues like `text card: ...`, `timeline: ...`,
-   `map: ...`. Red String Files and Blind Spot Lab depend on it; today
+   `map: ...`. Corkboard Theories and Mindfield Notes depend on it; today
    those cues would be sent to stock search.
 1a. **Footage library matching:** `gameplay:` and `clip:` cues pick
-   clips from `channels/<name>/footage/` by name (Red String Files).
+   clips from `channels/<name>/footage/` by name (Corkboard Theories).
 1b. **Batch API for the writers' room:** half price, so about twice the
    scripts for the same budget.
 2. **Stills mode:** slow pans over archive scans and paintings (Ledger
-   of the Odd, Lamplight Lectures).
+   of the Odd, The Drowsy Almanac).
 3. **Footage sources** beyond Pexels: Pixabay, Library of Congress,
    Chronicling America, Prelinger, Wikimedia Commons, NPS/US Fish &
    Wildlife, each clip logged with its licence.
@@ -274,8 +274,10 @@ the cliffhanger. They're trailers, judged on whether long-form views follow.
 
 ## Before launch, by hand
 
-- Check each channel name as a YouTube handle (web searches found none
-  in use, but small channels index badly).
+- Handles checked 18 Nov 2026 (404 = free): @threeknockslate,
+  @corkboardtheories, @ledgeroftheodd, @treelinereports, @drowsyalmanac,
+  @mindfieldnotes. The first-choice names (@thesecondknock,
+  @redstringfiles, @lamplightlectures, @blindspotlab) were already taken.
 - Record the seven voice takes.
 - Create the six Brand Accounts and sign each in.
 

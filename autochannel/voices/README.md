@@ -11,12 +11,12 @@ one take per register gives each channel its own narrator:
 | file | how to read the take | used by |
 |---|---|---|
 | `aaron-dry` | dry, wry, like telling a mate something surprising | Aaron Steele |
-| `aaron-low` | low, close to the mic, slow, as if it's 2am and you'd rather not say it | The Second Knock |
-| `aaron-brisk` | quick, sharp, a detective laying out evidence | Red String Files |
+| `aaron-low` | low, close to the mic, slow, as if it's 2am and you'd rather not say it | Three Knocks Late |
+| `aaron-brisk` | quick, sharp, a detective laying out evidence | Corkboard Theories |
 | `aaron-measured` | steady documentary, serious but not grim | Ledger of the Odd |
 | `aaron-hushed` | quiet campfire voice, curious, a bit wary | Treeline Reports |
-| `aaron-sleep` | slowest and softest, reading to someone half asleep | Lamplight Lectures |
-| `aaron-warm` | warm, curious teacher, a little playful | Blind Spot Lab |
+| `aaron-sleep` | slowest and softest, reading to someone half asleep | The Drowsy Almanac |
+| `aaron-warm` | warm, curious teacher, a little playful | Mindfield Notes |
 
 Read a paragraph that suits each channel (a story opening for
 `aaron-low`, a calm history passage for `aaron-sleep`). How you sound in

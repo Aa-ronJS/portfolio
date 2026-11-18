@@ -1,7 +1,7 @@
-# Lamplight Lectures (anonymous). Plan: ../PORTFOLIO.md. Only what differs from ../defaults.yaml.
+# The Drowsy Almanac (anonymous). Plan: ../PORTFOLIO.md. Only what differs from ../defaults.yaml.
 # Visual sources (build list): Very slow pans over public-domain paintings, engravings, old maps and calm nature stock; dark palette, 60-90 seconds per image, no text on screen.
 
-channel_name: "Lamplight Lectures"
+channel_name: "The Drowsy Almanac"
 
 writer:
   monthly_budget_usd: 8

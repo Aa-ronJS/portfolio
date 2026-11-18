@@ -23,7 +23,7 @@ take named as below (`aaron-dry.m4a` etc.).
 > breathing. Which is either reassuring or not, depending on how you feel
 > about bridges.
 
-### 2. `aaron-low`: The Second Knock
+### 2. `aaron-low`: Three Knocks Late
 *Low, close to the mic, slow. It's 2am and you'd rather not be telling this.*
 
 > I worked nights at a servo outside town for about a year. Nothing ever
@@ -33,7 +33,7 @@ take named as below (`aaron-dry.m4a` etc.).
 > over, the driver's seat was empty, and the radio was playing the song
 > I'd been humming all night. Quietly. Like it didn't want to wake anyone.
 
-### 3. `aaron-brisk`: Red String Files
+### 3. `aaron-brisk`: Corkboard Theories
 *Quick and sharp, a detective laying out evidence. Enjoying it.*
 
 > Here's the problem with the ending. Everyone says the hero wins. But
@@ -63,7 +63,7 @@ take named as below (`aaron-dry.m4a` etc.).
 > He said it didn't run. It looked at him for a moment, and walked into
 > the trees like it had somewhere better to be. He never went back.
 
-### 6. `aaron-sleep`: Lamplight Lectures
+### 6. `aaron-sleep`: The Drowsy Almanac
 *The slowest, softest version of you. Reading to someone half asleep. Long pauses.*
 
 > Get comfortable. Let your shoulders drop. Tonight we're going to spend
@@ -73,7 +73,7 @@ take named as below (`aaron-dry.m4a` etc.).
 > stone wall, and polish the great glass lens until it shone. Then he
 > would light the lamp, and settle into his chair, and listen to the sea.
 
-### 7. `aaron-warm`: Blind Spot Lab
+### 7. `aaron-warm`: Mindfield Notes
 *Warm, curious teacher. A little playful. You love how strange people are.*
 
 > Quick question. Is the population of Turkey more or less than thirty

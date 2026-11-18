@@ -1,4 +1,4 @@
-# The Second Knock: channel rules
+# Three Knocks Late: channel rules
 
 Read word for word by the scriptwriter every time.
 

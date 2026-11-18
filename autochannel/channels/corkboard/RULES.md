@@ -1,4 +1,4 @@
-# Red String Files: channel rules
+# Corkboard Theories: channel rules
 
 Read word for word by the scriptwriter every time.
 

@@ -1,4 +1,4 @@
-# Blind Spot Lab: channel rules
+# Mindfield Notes: channel rules
 
 Read word for word by the scriptwriter every time.
 

@@ -1,4 +1,4 @@
-# Footage rules for Red String Files
+# Footage rules for Corkboard Theories
 
 Checked 18 Nov 2026. **Re-check a publisher's page before a game's
 first video**: these change.
@@ -16,7 +16,7 @@ them, on conditions. Known so far:
 
 Footage source: the robot doesn't download other people's gameplay
 (that's both their capture and YouTube's reused-content rule). It uses
-the channel's own **footage library**, `channels/red_string/footage/<game>/`:
+the channel's own **footage library**, `channels/corkboard/footage/<game>/`:
 clips Aaron records, or official press-kit and trailer-free media the
 publisher offers creators. Clip names say what they show
 (`hollow-knight_abyss-shriek.mp4`) so the robot can match them to the

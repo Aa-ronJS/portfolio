@@ -1,4 +1,4 @@
-# Lamplight Lectures: channel rules
+# The Drowsy Almanac: channel rules
 
 Read word for word by the scriptwriter every time.
 
