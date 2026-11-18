@@ -11,4 +11,5 @@ node_modules/
 # public repo (they belong only in the channel's private repo)
 autochannel/voices/*
 !autochannel/voices/README.md
+!autochannel/voices/READ-THESE.md
 autochannel/**/client_secret*.json
