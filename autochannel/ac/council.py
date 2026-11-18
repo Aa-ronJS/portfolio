@@ -92,6 +92,14 @@ def _reviewer(name: str) -> dict:
 
 # --- plumbing ---------------------------------------------------------------
 
+def make_client():
+    """Keys that aren't tied to one workspace (user keys) must name it on
+    every request: set ANTHROPIC_WORKSPACE_ID for those."""
+    import os
+    ws = os.environ.get("ANTHROPIC_WORKSPACE_ID")
+    return anthropic.Anthropic(default_headers={"anthropic-workspace-id": ws} if ws else None)
+
+
 class Ledger:
     """Adds up tokens and searches so every script carries its real cost."""
 
@@ -113,7 +121,7 @@ class Room:
         self.cfg = cfg
         self.w = cfg["writer"]
         self.c = cfg.get("council", {})
-        self.client = client or anthropic.Anthropic()
+        self.client = client or make_client()
         self.ledger = Ledger()
 
     # One structured call. Streams, so long scripts never hit a timeout.
