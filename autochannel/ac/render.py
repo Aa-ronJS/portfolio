@@ -96,7 +96,7 @@ def background(ep: dict, seconds: float, cfg: dict, work: Path) -> Path:
     every = float(vis.get("clip_seconds", 4))
     n = max(1, int(seconds // every) + 1)
     terms = ep.get("broll") or [ep["title"]]
-    cache = store.BUILD / "broll-cache"
+    cache = store.BUILD / "broll-cache"  # shared: channels reuse downloads
     cache.mkdir(parents=True, exist_ok=True)
     used: set[int] = set()
     parts = []

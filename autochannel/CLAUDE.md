@@ -1,16 +1,21 @@
 # autochannel — notes for Claude sessions
 
-Automated YouTube channel narrated in Aaron's cloned voice, built to run
-on almost nothing. User docs: `README.md`. This is a separate project
+One engine running several YouTube channels (one named, six anonymous)
+narrated in Aaron's cloned voice, built to run on almost nothing. User
+docs: `README.md`; plans: `channels/aaron/STRATEGY.md` and
+`channels/PORTFOLIO.md`. This is a separate project
 from `animation-pipeline/`. That project's "never add voice synthesis"
 rule is about those cartoons and does not apply here; equally, nothing
 here should be pulled into the pipeline.
 
 ## Flow
 
-`python -m ac daily` (GitHub Actions cron, `workflow/daily.yml`):
+Each channel is a folder in `channels/` (channel.yaml merged over
+`channels/defaults.yaml`; loaded config carries `_slug`/`_dir`). The
+workflow runs `python -m ac topup` (writers only, light job), then
+`python -m ac <channel> daily` in a matrix over `python -m ac due`:
 `write.py` tops up `queue/` (one Claude call, structured output, reads
-`channel/RULES.md` + `IDEAS.md` + titles already made) → `voice.py`
+the channel's `RULES.md` + `IDEAS.md` + titles already made) → `voice.py`
 (Pocket TTS, sentence by sentence, loudnorm -14 LUFS) → `captions.py`
 (faster-whisper word times mapped back onto the script text) →
 `render.py` (Pexels b-roll or gradient fallback, ASS captions via
@@ -35,15 +40,24 @@ episode yaml moves to `posted/`.
   cloning your own voice for voice-overs as needing no disclosure
   (help answer 14328491, checked 2026-11-18). It must be true for any
   video with realistic AI-generated people or events.
-- **The channel plan is `channel/STRATEGY.md`**; `channel/RULES.md` is
-  its writer-facing half. Its section 9 is the build list for long-form.
+- **Plans:** `channels/aaron/STRATEGY.md` (craft for every channel, build
+  list in section 9) and `channels/PORTFOLIO.md` (distinctness across
+  channels, build-list additions). RULES.md per channel is the
+  writer-facing half.
+- **Distinctness is the design constraint:** channels must not look like
+  one template (YouTube's inauthentic-content test). Per-channel voice
+  register, rules, look, pacing, footage and schedule; never make a
+  change that converges them.
+- **Channel names are secret-name safe** (`[a-z][a-z0-9_]`): a channel's
+  YouTube token is `YT_REFRESH_TOKEN_<NAME>`, handed to its matrix job
+  as plain `YT_REFRESH_TOKEN`.
 - The voice file and Google client secrets never enter the public
-  portfolio repo (root `.gitignore` blocks `autochannel/voice/*`). The
+  portfolio repo (root `.gitignore` blocks `autochannel/voices/*`). The
   channel runs from its own private repo.
 
 ## Testing without credentials
 
 Set `voice.file: alba` (built-in voice), `visuals.broll: none`,
-`publish.upload: false`, drop a hand-written episode yaml in `queue/`,
-and `python -m ac make`. That exercises everything but Claude, Pexels
+`publish.upload: false`, drop a hand-written episode yaml in `channels/<name>/queue/`,
+and `python -m ac <name> make`. That exercises everything but Claude, Pexels
 and YouTube.

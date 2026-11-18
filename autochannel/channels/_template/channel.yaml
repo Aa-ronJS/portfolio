@@ -1,0 +1,17 @@
+# Only what differs from ../defaults.yaml. Anonymous channels: keep the
+# name, look and voice register distinct from every other channel.
+
+channel_name: "New Channel"
+
+voice:
+  file: voices/aaron-dry.safetensors   # pick the register that suits this channel
+  speed: 1.0
+
+visuals:
+  captions:
+    colour: "#FFFFFF"
+    highlight: "#FFD23F"
+
+publish:
+  days: [tue, fri]
+  category_id: "27"

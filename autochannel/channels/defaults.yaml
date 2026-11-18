@@ -1,11 +1,12 @@
-# Everything mechanical about the channel. The creative rules live in
-# RULES.md (written in plain English, read by the scriptwriter verbatim).
+# Defaults for every channel. Each channels/<name>/channel.yaml only
+# lists what's different for that channel; anything it leaves out comes
+# from here. Creative rules live in each channel's RULES.md.
 
-channel_name: "Aaron Steele"        # show line: Why It's Like That
+channel_name: "Unnamed"
 
 # --- writing --------------------------------------------------------------
 writer:
-  model: claude-opus-5-5     # ~$0.05 per script. claude-haiku-5-5 is ~40x cheaper.
+  model: claude-opus-5-5     # ~$0.50 per long researched script
   effort: medium
   batch_size: 4              # scripts written per top-up (two weeks at 2/week)
   refill_below: 4            # keep this many approved scripts ahead
@@ -20,7 +21,7 @@ format:
 
 # --- voice ----------------------------------------------------------------
 voice:
-  file: voice/voice.safetensors   # made once with `python -m ac voice-export`
+  file: voices/aaron-dry.safetensors  # made once with `python -m ac voice-export`
   language: english_2026-10       # pinned: the voice file only fits these weights
   sentence_pause: 0.18            # seconds of silence between sentences
   speed: 1.0                      # >1 speeds up delivery without changing pitch
@@ -41,6 +42,7 @@ visuals:
 
 # --- publishing -----------------------------------------------------------
 publish:
+  days: [tue, fri]           # UTC weekdays the robot posts on
   upload: true
   privacy: public            # public | unlisted | private
   publish_hour_utc: null     # e.g. 22 = schedule for 22:00 UTC; null = now

@@ -1,8 +1,10 @@
 """YouTube upload (Data API v3, free) and the one-time sign-in.
 
-Credentials come from three environment variables, set once as GitHub
-secrets: YT_CLIENT_ID, YT_CLIENT_SECRET, YT_REFRESH_TOKEN. Get the refresh
-token by running `python -m ac youtube-auth` on your own computer.
+One Google Cloud app (YT_CLIENT_ID, YT_CLIENT_SECRET) serves every
+channel. Each channel has its own sign-in, YT_REFRESH_TOKEN_<NAME> (e.g.
+YT_REFRESH_TOKEN_AARON), made by `python -m ac youtube-auth <name>
+client_secret.json` on your own computer, choosing that channel when
+Google asks which account or brand account to use.
 
 Two traps this module checks for rather than trusting:
   * An OAuth app left in "Testing" mode issues refresh tokens that die
@@ -24,27 +26,40 @@ SCOPES = ["https://www.googleapis.com/auth/youtube.upload",
           "https://www.googleapis.com/auth/youtube.readonly"]
 
 
-def _creds():
+def token_var(cfg: dict) -> str:
+    return "YT_REFRESH_TOKEN_" + cfg["_slug"].upper().replace("-", "_")
+
+
+def _creds(cfg: dict):
     from google.oauth2.credentials import Credentials
 
-    missing = [k for k in ("YT_CLIENT_ID", "YT_CLIENT_SECRET", "YT_REFRESH_TOKEN") if not os.environ.get(k)]
+    var = token_var(cfg)
+    if not os.environ.get(var) and os.environ.get("YT_REFRESH_TOKEN"):
+        var = "YT_REFRESH_TOKEN"  # the workflow hands each job only its own channel's token
+    missing = [k for k in ("YT_CLIENT_ID", "YT_CLIENT_SECRET", var) if not os.environ.get(k)]
     if missing:
-        raise RuntimeError(f"missing {', '.join(missing)}; run `python -m ac youtube-auth` once")
-    return Credentials(None, refresh_token=os.environ["YT_REFRESH_TOKEN"],
+        raise RuntimeError(f"missing {', '.join(missing)}; run `python -m ac youtube-auth {cfg['_slug']}` once")
+    return Credentials(None, refresh_token=os.environ[var],
                        client_id=os.environ["YT_CLIENT_ID"], client_secret=os.environ["YT_CLIENT_SECRET"],
                        token_uri="https://oauth2.googleapis.com/token", scopes=SCOPES)
 
 
-def authorise(client_secret_json: Path) -> None:
-    """Run once on your own computer: opens a browser, prints the token."""
+def authorise(cfg: dict, client_secret_json: Path) -> None:
+    """Run once per channel on your own computer: opens a browser, prints the token."""
     from google_auth_oauthlib.flow import InstalledAppFlow
 
     flow = InstalledAppFlow.from_client_secrets_file(str(client_secret_json), SCOPES)
     creds = flow.run_local_server(port=0, access_type="offline", prompt="consent")
-    print("\nAdd these three as GitHub repository secrets:\n")
+    from googleapiclient.discovery import build
+
+    me = build("youtube", "v3", credentials=creds, cache_discovery=False).channels().list(
+        part="snippet", mine=True).execute()["items"][0]["snippet"]["title"]
+    print(f"\nSigned in as the YouTube channel: {me}")
+    print(f"If that's not the channel for '{cfg['_slug']}', run this again and pick the other one.\n")
+    print("GitHub repository secrets (the first two are shared by every channel):\n")
     print(f"YT_CLIENT_ID      {creds.client_id}")
     print(f"YT_CLIENT_SECRET  {creds.client_secret}")
-    print(f"YT_REFRESH_TOKEN  {creds.refresh_token}")
+    print(f"{token_var(cfg):<17} {creds.refresh_token}")
 
 
 def _publish_at(hour: int | None) -> str | None:
@@ -63,7 +78,7 @@ def upload(video: Path, ep: dict, cfg: dict) -> str:
     from googleapiclient.http import MediaFileUpload
 
     p = cfg["publish"]
-    yt = build("youtube", "v3", credentials=_creds(), cache_discovery=False)
+    yt = build("youtube", "v3", credentials=_creds(cfg), cache_discovery=False)
     title = ep["title"][:100]
     if cfg["format"]["kind"] == "short" and "#shorts" not in title.lower() and len(title) < 92:
         title += " #shorts"

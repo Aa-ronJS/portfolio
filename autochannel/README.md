@@ -1,61 +1,82 @@
 # autochannel
 
-A YouTube channel that runs itself, in your own cloned voice, for a few
-dollars a month. The plan it runs (niche, format, tactics, how it's
-judged) is `channel/STRATEGY.md`. On each publishing day a free GitHub runner:
+One engine that runs any number of YouTube channels in your own cloned
+voice, for a few dollars a month. Right now that's seven: your named
+channel and six anonymous ones. Every day a free GitHub runner:
 
-1. tops up a queue of scripts written to **your rules** (`channel/RULES.md`)
-2. reads the next one aloud **in your voice**, on CPU, with no paid service
-3. cuts free stock footage to it and burns in word-by-word captions
-4. uploads it to YouTube and files it under `posted/`
+1. writes scripts for any channel whose queue is low, each to **that
+   channel's rules** (`channels/<name>/RULES.md`)
+2. for each channel posting today: reads the next approved script aloud
+   **in your voice** (the register that channel uses), on CPU, free
+3. cuts free footage to it and burns in word-by-word captions
+4. uploads it to that channel and files it under `channels/<name>/posted/`
+
+The plans: `channels/aaron/STRATEGY.md` (the named channel, and the craft
+every channel follows) and `channels/PORTFOLIO.md` (the seven together).
+
+## Layout
+
+```
+channels/defaults.yaml     settings every channel starts from
+channels/<name>/           one folder per channel:
+   channel.yaml              only what differs from defaults
+   RULES.md                  what it is, its voice, what's off limits (the writer reads it)
+   IDEAS.md                  topics to use first
+   queue/  posted/           scripts waiting, scripts done
+channels/_template/        copied by `python -m ac new <name>`
+voices/                    your voice files, one per register (private repo only)
+ac/                        the engine
+```
 
 ## What it costs
 
 | piece | how | cost |
 |---|---|---|
-| your voice | Kyutai Pocket TTS, runs on the runner's CPU (~1 s of compute per 1 s of speech) | $0 |
-| compute | GitHub Actions, private repo: 2,000 free min/month; a video takes ~4 | $0 |
-| scripts | Claude Opus 5.5, one call writes a week of scripts | ~US$0.70/month (Haiku 5.5: ~2 cents) |
-| footage | Pexels API, free key | $0 |
+| your voice | Kyutai Pocket TTS on the runner's CPU | $0 |
+| compute | GitHub Actions, private repo: 2,000 free min/month; ~60 videos use ~900 | $0 |
+| scripts | Claude Opus 5.5, researched long-form, ~$0.50 each, ~60 a month | ~US$30/month |
+| footage | Pexels and public-domain archives | $0 |
 | upload | YouTube Data API | $0 |
 
-No ElevenLabs. The only bill is the scripts, and you can swap to Haiku
-in `channel/config.yaml` to make that a rounding error.
+No ElevenLabs. The scripts are the only bill.
 
-## Setting it up (about an hour, once)
+## Setting it up (once)
 
-1. **Make a private GitHub repo** for the channel and copy everything in
-   this folder into it. Copy `workflow/daily.yml` to
-   `.github/workflows/daily.yml`. (Private, because your voice file goes
-   in it. Public repos would give you unlimited minutes but publish your voice.)
-2. **Your voice:** follow `voice/README.md`. Commit `voice/voice.safetensors`.
-3. **YouTube upload access:**
+1. **Private GitHub repo:** copy everything in this folder into it, and
+   `workflow/daily.yml` to `.github/workflows/daily.yml`. Private,
+   because your voice files go in it.
+2. **Your voice:** record one take per register and export each
+   (`voices/README.md`). Commit `voices/*.safetensors`.
+3. **YouTube channels:** your named channel, plus a **Brand Account**
+   for each anonymous one (YouTube → Settings → Add or manage channels).
+   Viewers can't see who owns a Brand Account.
+4. **One Google Cloud app for all of them:**
    - console.cloud.google.com → new project → enable *YouTube Data API v3*.
    - *OAuth consent screen*: External, add yourself as a test user, then
-     press **Publish app** ("In production"). Skip this and your login
-     silently dies after 7 days. You'll see an "unverified app" warning
-     when you sign in; that's expected for an app only you use.
+     press **Publish app** ("In production"). Skip this and every login
+     silently dies after 7 days. The "unverified app" warning at sign-in
+     is expected for an app only you use.
    - *Credentials* → OAuth client ID → Desktop app → download the JSON.
-   - On your computer: `python -m ac youtube-auth client_secret.json`,
-     sign in **as the channel**, and copy the three values it prints.
-4. **Secrets:** repo → Settings → Secrets and variables → Actions → add
-   `ANTHROPIC_API_KEY` (console.anthropic.com), `PEXELS_API_KEY`
-   (pexels.com/api, free), `YT_CLIENT_ID`, `YT_CLIENT_SECRET`, `YT_REFRESH_TOKEN`.
-5. **Rules:** rewrite `channel/RULES.md` and set `channel_name` in
-   `channel/config.yaml`.
-6. **First run:** set `publish.privacy: private`, then Actions → *daily
-   video* → Run workflow. Watch the result on YouTube Studio. When you're
-   happy, set it back to `public`. From then on it posts daily on its own.
+5. **Sign each channel in** on your computer:
+   `python -m ac <name> youtube-auth client_secret.json`. When Google
+   asks which account, pick that channel. It prints which channel it
+   signed into, so a mix-up is obvious.
+6. **Secrets:** repo → Settings → Secrets and variables → Actions:
+   `ANTHROPIC_API_KEY`, `PEXELS_API_KEY`, `YT_CLIENT_ID`,
+   `YT_CLIENT_SECRET`, and one `YT_REFRESH_TOKEN_<NAME>` per channel
+   (e.g. `YT_REFRESH_TOKEN_SLOW_ORBIT`).
+7. **First run:** set `publish.privacy: private` in `channels/defaults.yaml`,
+   run the workflow by hand, check each video in YouTube Studio, then set it
+   back to `public`.
 
 ## Steering it (from your phone, in the GitHub app)
 
-- `channel/RULES.md`: what the channel is, its voice, what's off limits.
-  The writer reads it word for word every time.
-- `channel/IDEAS.md`: jot a topic under *Up next*; it's used before anything the writer invents.
-- `queue/`: the scripts waiting to go out. Edit or delete any of them.
-- `writer.review: true` in config: nothing posts until you set
-  `approved: true` on it. That's thirty seconds of reading a day, and it's
-  the strongest protection the channel has (see below).
+- `channels/<name>/RULES.md`: change what a channel is or how it sounds.
+- `channels/<name>/IDEAS.md`: jot a topic under *Up next*.
+- `channels/<name>/queue/`: scripts waiting. Set `approved: true` to let
+  one post; delete it to bin it. `python -m ac pending` lists every
+  waiting script across channels in one read.
+- New channel: `python -m ac new <name>`, then fill in its three files.
 
 ## Things that will bite if ignored
 
@@ -64,7 +85,7 @@ mass-produced channels, and in January 2026 it removed a batch of
 faceless AI channels from the Partner Program in one sweep, judging
 whole channels rather than single videos. What it looks for is "no
 meaningful human creative input". Your real voice, your rules, your
-ideas list and a daily approval are exactly that input, so use them. A
+ideas list and your approvals are exactly that input, so use them. A
 channel that runs 100% unattended can still post, but it is the kind
 YouTube is trying to stop paying.
 
@@ -83,18 +104,23 @@ each video to public in the YouTube Studio app.
 
 **Accuracy.** The writer is told to leave out anything it isn't sure of,
 but it can still be wrong. A wrong "fact" in your own voice is worse
-than one in a robot voice. Another reason to use `review: true` for the first month.
+than one in a robot voice. That's why every channel has `review: true`.
 
 ## Commands
 
 ```bash
-python -m ac status            # queue and recent posts
-python -m ac write 7           # write 7 scripts now
-python -m ac make              # render the next one into build/ (no upload)
-python -m ac post              # render and upload the next one
-python -m ac daily             # what the robot runs
+python -m ac list                    # every channel: ready, waiting, posting days
+python -m ac pending                 # every script waiting for approval
+python -m ac new <name>              # start a channel from the template
+python -m ac <name> status           # one channel's queue and recent posts
+python -m ac <name> write 4          # write 4 scripts now
+python -m ac <name> make             # render its next video into build/ (no upload)
+python -m ac <name> post             # render and upload it
+python -m ac <name> daily            # top up, and post if today is a posting day
+python -m ac voice-export take.wav aaron-calm   # make a voice file
 ```
 
-A failed video stays in `queue/` with the error written into it; after
-three failures it's marked `failed:` and skipped, so one bad script can't
-stall the channel. GitHub emails you when a daily run fails.
+A failed video stays queued with the error written into it; after three
+failures it's marked `failed:` and skipped, so one bad script can't stall
+a channel, and one failing channel never stops the others. GitHub emails
+you when a run fails.

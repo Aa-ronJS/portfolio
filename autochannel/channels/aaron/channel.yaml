@@ -1,0 +1,10 @@
+# Aaron Steele — Why It's Like That. Named channel; plan in STRATEGY.md.
+# Only what differs from ../defaults.yaml goes here.
+
+channel_name: "Aaron Steele"
+
+voice:
+  file: voices/aaron-dry.safetensors
+
+publish:
+  days: [tue, fri]

@@ -43,16 +43,16 @@ the way they are said ("about forty thousand"), avoid abbreviations, \
 symbols, emoji and anything that only works on the page."""
 
 
-def _ideas() -> list[str]:
-    text = (store.CHANNEL / "IDEAS.md").read_text()
+def _ideas(cfg: dict) -> list[str]:
+    text = (cfg["_dir"] / "IDEAS.md").read_text()
     m = re.search(r"## Up next\n(.*?)(\n## |\Z)", text, re.S)
     if not m:
         return []
     return [l.strip("-* \t") for l in m.group(1).splitlines() if l.strip("-* \t")]
 
 
-def _mark_used(used: list[str]) -> None:
-    path = store.CHANNEL / "IDEAS.md"
+def _mark_used(cfg: dict, used: list[str]) -> None:
+    path = cfg["_dir"] / "IDEAS.md"
     text = path.read_text()
     for idea in used:
         if not idea:
@@ -68,13 +68,13 @@ def write(cfg: dict, n: int | None = None) -> list:
     n = n or w["batch_size"]
     seconds = f["target_seconds"]
     system = SYSTEM.format(
-        rules=(store.CHANNEL / "RULES.md").read_text(),
+        rules=(cfg["_dir"] / "RULES.md").read_text(),
         kind="vertical Short" if f["kind"] == "short" else "landscape video",
         seconds=seconds,
         words=int(seconds * 2.6),
     )
-    ideas = _ideas()
-    done = store.history()
+    ideas = _ideas(cfg)
+    done = store.history(cfg)
     prompt = (
         f"Write {n} new scripts.\n\n"
         + ("Use these ideas from the creator first, in order, one per script:\n"
@@ -111,8 +111,8 @@ def write(cfg: dict, n: int | None = None) -> list:
             "idea": s.idea,
             "writer": resp.model,
         }
-        paths.append(store.save(ep, store.new_path(s.title)))
-    _mark_used([s.idea for s in resp.parsed_output.scripts])
+        paths.append(store.save(ep, store.new_path(cfg, s.title)))
+    _mark_used(cfg, [s.idea for s in resp.parsed_output.scripts])
     u = resp.usage
     print(f"wrote {len(paths)} scripts ({u.input_tokens} in / {u.output_tokens} out tokens)")
     return paths

@@ -51,10 +51,11 @@ Three independent things live here:
   every button must still work with its word
   (`tests/apptest/pics.cjs`).
 
-- **`autochannel/`** — a YouTube channel that runs itself in Aaron's
-  cloned voice (free local TTS, GitHub Actions cron, Claude-written
-  scripts from his `channel/RULES.md`). Meant to be copied into its own
-  private repo; his voice file never goes in this one. Start with
+- **`autochannel/`** — one engine running several YouTube channels in
+  Aaron's cloned voice: his named channel plus six anonymous ones (free
+  local TTS, GitHub Actions cron, Claude-written scripts from each
+  channel's `RULES.md`). Meant to be copied into its own private repo;
+  his voice files never go in this one. Start with
   `autochannel/CLAUDE.md`. Separate from `animation-pipeline/`, whose
   no-voice-synthesis rule covers those cartoons only.
 
