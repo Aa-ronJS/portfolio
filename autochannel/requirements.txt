@@ -1,0 +1,12 @@
+# Pinned: the voice file only fits the pocket-tts weights it was made with.
+--extra-index-url https://download.pytorch.org/whl/cpu
+pocket-tts==4.0.1
+torch==2.15.0+cpu
+faster-whisper==1.2.1
+anthropic==2.10.0
+google-api-python-client==2.202.0
+google-auth-oauthlib==1.5.0
+pydantic==2.14.3
+PyYAML==6.0.3
+numpy==2.5.5
+scipy==1.18.1

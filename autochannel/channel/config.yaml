@@ -1,0 +1,56 @@
+# Everything mechanical about the channel. The creative rules live in
+# RULES.md (written in plain English, read by the scriptwriter verbatim).
+
+channel_name: "Untitled Channel"
+
+# --- writing --------------------------------------------------------------
+writer:
+  model: claude-opus-5-5     # ~$0.05 per script. claude-haiku-5-5 is ~40x cheaper.
+  effort: medium
+  batch_size: 7              # scripts written per top-up (one week at 1/day)
+  refill_below: 2            # top up the queue when fewer than this are ready
+  review: false              # true = new scripts wait for you to set
+                             # `approved: true` before they can be posted
+
+# --- format ---------------------------------------------------------------
+format:
+  kind: short                # short = 1080x1920 (<= 3 min); long = 1920x1080
+  target_seconds: 45         # the writer aims for this; words ~= seconds * 2.6
+  max_seconds: 170           # hard stop: a render longer than this is refused
+
+# --- voice ----------------------------------------------------------------
+voice:
+  file: voice/voice.safetensors   # made once with `python -m ac voice-export`
+  language: english_2026-10       # pinned: the voice file only fits these weights
+  sentence_pause: 0.18            # seconds of silence between sentences
+  speed: 1.0                      # >1 speeds up delivery without changing pitch
+
+# --- picture --------------------------------------------------------------
+visuals:
+  broll: pexels              # pexels (free key, PEXELS_API_KEY) | none
+  clip_seconds: 4            # cut to a new background clip this often
+  darken: 0.45               # dim the background so captions read
+  captions:
+    words_per_card: 3
+    size: 0.095              # font height as a fraction of frame width
+    colour: "#FFFFFF"
+    highlight: "#FFD23F"     # the word being spoken
+    position: 0.62           # vertical centre, fraction of frame height
+  music: none                # none | path to an mp3/wav you own the rights to
+  music_volume: 0.08
+
+# --- publishing -----------------------------------------------------------
+publish:
+  upload: true
+  privacy: public            # public | unlisted | private
+  publish_hour_utc: null     # e.g. 22 = schedule for 22:00 UTC; null = now
+  category_id: "27"          # 27 Education, 24 Entertainment, 28 Sci&Tech
+  made_for_kids: false
+  # A realistic cloned voice is "altered or synthetic content" under
+  # YouTube's rules. Declaring it costs nothing; being caught not
+  # declaring it can cost the channel.
+  synthetic_media: true
+  default_tags: []
+  description_footer: |
+    Narration: the creator's own voice, synthesised with Kyutai Pocket TTS (CC BY 4.0).
+    Footage: Pexels.

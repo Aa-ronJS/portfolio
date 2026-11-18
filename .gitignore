@@ -6,3 +6,9 @@ node_modules/
 .env
 .env.*
 !.env.example
+
+# autochannel: a cloned voice and Google tokens must never reach this
+# public repo (they belong only in the channel's private repo)
+autochannel/voice/*
+!autochannel/voice/README.md
+autochannel/**/client_secret*.json
